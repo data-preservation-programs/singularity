@@ -31,6 +31,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			DownloadCmd,
+			InitCmd,
 			{
 				Name:    "replication",
 				Aliases: []string{"repl"},
