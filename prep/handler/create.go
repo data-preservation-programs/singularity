@@ -68,6 +68,7 @@ func CreateHandler(c *cli.Context) error {
 
 		source.ScanInterval = rescanInterval
 		source.ScanningState = model.Ready
+		source.MaxWait = maxWait
 		sources[i] = *source
 	}
 	db := database.MustOpenFromCLI(c)
@@ -79,11 +80,10 @@ func CreateHandler(c *cli.Context) error {
 		OutputDirs:           outputDirs,
 		EncryptionRecipients: recipients,
 		EncryptionScript:     script,
-		MaxWait:              maxWait,
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		result := db.Create(&dataset)
+		result := tx.Create(&dataset)
 		if result.Error != nil {
 			return cli.Exit(result.Error.Error(), 1)
 		}
@@ -91,10 +91,16 @@ func CreateHandler(c *cli.Context) error {
 		logger.Infof("Dataset created with ID: %d", dataset.ID)
 
 		for _, source := range sources {
+			rootDirectory := model.Directory{}
+			err := tx.Create(&rootDirectory).Error
+			if err != nil {
+				return cli.Exit(err.Error(), 1)
+			}
 			source.DatasetID = dataset.ID
-			result := db.Create(&source)
-			if result.Error != nil {
-				return cli.Exit(result.Error.Error(), 1)
+			source.RootDirectoryID = rootDirectory.ID
+			err = tx.Create(&source).Error
+			if err != nil {
+				return cli.Exit(err.Error(), 1)
 			}
 
 			logger.Infof("Dataset source created with ID: %d, path: %s", source.ID, source.Path)
