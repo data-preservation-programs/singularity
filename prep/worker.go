@@ -6,9 +6,7 @@ import (
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/data-preservation-programs/go-singularity/pack"
 	"github.com/google/uuid"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"os"
@@ -394,7 +392,6 @@ func (w *WorkerThread) scan(ctx context.Context, source model.Source) error {
 	if err != nil {
 		w.logger.Errorw("failed to scan source", "error", err)
 		source.ScanningState = model.Error
-		source.ScanningWorkerID = ""
 		source.ErrorMessage = err.Error()
 		source.LastScanned = time.Now().UTC()
 		err = w.db.Save(&source).Error

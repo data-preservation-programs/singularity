@@ -83,16 +83,16 @@ type Global struct {
 // Dataset is the top level object that represents a set of data to be onboarded
 type Dataset struct {
 	ID                   uint32 `gorm:"primaryKey"`
-	Name                 string
+	Name                 string `gorm:"unique"`
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 	MinSize              uint64
 	MaxSize              uint64
 	PieceSize            uint64
-	OutputDirs           []string `gorm:"type:JSON"`
-	EncryptionRecipients []string `gorm:"type:JSON"`
+	OutputDirs           StringSlice `gorm:"type:JSON"`
+	EncryptionRecipients StringSlice `gorm:"type:JSON"`
 	EncryptionScript     string
-	Wallets              []Wallet `gorm:"many2many:wallet_assignment;"`
+	Wallets              []Wallet `gorm:"many2many:wallet_assignments;" json:"Wallets,omitempty"`
 }
 
 // Source represents a source of data, i.e. a local file system directory
@@ -101,13 +101,13 @@ type Source struct {
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DatasetID        uint32
-	Dataset          Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"`
+	Dataset          *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"Dataset,omitempty"`
 	Type             SourceType
 	Path             string
 	ScanInterval     time.Duration
 	ScanningState    WorkState
-	ScanningWorkerID string
-	ScanningWorker   Worker `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL"`
+	ScanningWorkerID *string
+	ScanningWorker   *Worker `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL"`
 	LastScanned      time.Time
 	MaxWait          time.Duration
 	ErrorMessage     string
@@ -147,8 +147,8 @@ type Chunk struct {
 	SourceID        uint32
 	Source          Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"`
 	PackingState    WorkState
-	PackingWorkerID string
-	PackingWorker   Worker `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL"`
+	PackingWorkerID *string
+	PackingWorker   *Worker `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL"`
 	ErrorMessage    string
 	Items           []Item
 }
@@ -157,8 +157,8 @@ type Chunk struct {
 type Item struct {
 	ID           uint64 `gorm:"primaryKey"`
 	ScannedAt    time.Time
-	ChunkID      uint32
-	Chunk        Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"`
+	ChunkID      uint32 `gorm:"index"`
+	Chunk        *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"Chunk,omitempty"`
 	Type         ItemType
 	Path         string
 	Size         uint64
@@ -169,7 +169,7 @@ type Item struct {
 	CID          string `gorm:"column:cid"`
 	ErrorMessage string
 	DirectoryID  uint64
-	Directory    Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"`
+	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"Directory,omitempty"`
 }
 
 // Directory is a link between parent and child directories
@@ -187,15 +187,15 @@ type Directory struct {
 type Car struct {
 	ID        uint32 `gorm:"primaryKey"`
 	CreatedAt time.Time
-	PieceCID  string `gorm:"column:piece_cid"`
+	PieceCID  string `gorm:"column:piece_cid;index"`
 	PieceSize uint64
 	RootCID   string `gorm:"column:root_cid"`
 	FileSize  uint64
 	FilePath  string
-	DatasetID uint32
-	Dataset   Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"`
+	DatasetID uint32   `gorm:"index"`
+	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"Dataset,omitempty"`
 	ChunkID   uint32
-	Chunk     Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"`
+	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"Chunk,omitempty"`
 	Header    []byte
 }
 

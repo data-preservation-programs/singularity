@@ -41,7 +41,10 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 
 func MustOpenFromCLI(c *cli.Context) *gorm.DB {
 	connString := c.String("database-connection-string")
-	db, err := Open(connString, &gorm.Config{})
+	db, err := Open(connString, &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
 	if err != nil {
 		logger.Panic(err)
 	}
