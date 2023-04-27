@@ -14,7 +14,7 @@ const (
 	DealProposalExpired DealState = "proposal_expired"
 	DealRejected        DealState = "rejected"
 	DealSlashed         DealState = "slashed"
-	DealFailed          DealState = "failed"
+	DealErrored         DealState = "error"
 )
 
 const (
@@ -28,17 +28,18 @@ type Deal struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DealID        *uint64
-	State         DealState
+	State         DealState `gorm:"index:idx_stat"`
 	Client        string
 	ClientAddress string
+	Provider      string `gorm:"index:idx_stat"`
 	ProposalID    string
 	Label         string
-	PieceCID      string `gorm:"column:piece_cid"`
+	PieceCID      string `gorm:"column:piece_cid;index"`
 	PieceSize     uint64
 	Start         time.Time
 	Duration      time.Duration
 	End           time.Time
-	SectorStart   time.Time
+	SectorStart   time.Time `gorm:"index:idx_stat"`
 	Price         float64
 	Verified      bool
 	ErrorMessage  string
@@ -71,6 +72,7 @@ type Schedule struct {
 	MaxPendingDealSize   uint64
 	Notes                string
 	ErrorMessage         string
+	PieceCIDListPath     string `gorm:"column:piece_cid_list_path"`
 }
 
 func (s Schedule) Equal(other Schedule) bool {

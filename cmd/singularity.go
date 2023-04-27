@@ -30,6 +30,7 @@ func main() {
 			},
 		},
 		Commands: []*cli.Command{
+			MigrateCmd,
 			DownloadCmd,
 			InitCmd,
 			{
@@ -53,6 +54,7 @@ func main() {
 					run.ContentProviderCmd,
 					run.ReplicationCmd,
 					run.SpadeAPICmd,
+					run.DashboardCmd,
 				},
 			},
 			{
