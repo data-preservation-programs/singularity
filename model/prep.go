@@ -168,7 +168,7 @@ type Item struct {
 	Version      uint32
 	CID          string `gorm:"column:cid"`
 	ErrorMessage string
-	DirectoryID  uint64
+	DirectoryID  uint64     `gorm:"index"`
 	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"Directory,omitempty"`
 }
 
@@ -177,8 +177,8 @@ type Directory struct {
 	ID       uint64 `gorm:"primaryKey"`
 	CID      string `gorm:"column:cid"`
 	Name     string
-	ParentID *uint64
-	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE"`
+	ParentID *uint64    `gorm:"index"`
+	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"Parent,omitempty"`
 }
 
 // Car makes a reference to a CAR file that has been potentially exported to the disk.

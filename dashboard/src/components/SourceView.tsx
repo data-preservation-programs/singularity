@@ -1,20 +1,21 @@
 import React from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
+import DatasetExplorer from "./DatasetExplorer";
+import CarExplorer from "./CarExplorer";
 
 interface SourceViewProps {
   sourceID: string;
+  rootDirectoryID: string;
 }
 
-const SourceView: React.FC<SourceViewProps> = ({ sourceID }) => {
+const SourceView: React.FC<SourceViewProps> = ({ sourceID, rootDirectoryID  }) => {
   return (
     <Tabs defaultActiveKey="datasetExplorer" id="source-view-tabs">
       <Tab eventKey="datasetExplorer" title="Dataset Explorer">
-        {/* Add Dataset Explorer content here */}
-        <p>Dataset Explorer content for source {sourceID} goes here.</p>
+        <DatasetExplorer rootDirectoryID={rootDirectoryID} />
       </Tab>
       <Tab eventKey="carExplorer" title="Car Explorer">
-        {/* Add Car Explorer content here */}
-        <p>Car Explorer content for source {sourceID} goes here.</p>
+        <CarExplorer sourceID={sourceID} />
       </Tab>
     </Tabs>
   );

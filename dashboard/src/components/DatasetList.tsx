@@ -31,9 +31,10 @@ interface Wallet {
 
 interface DatasetListProps {
   onDatasetClick: (id: string) => void;
+  onSourceClick: (sourceID: string, rootDirectoryID: string) => void;
 }
 
-const DatasetList: React.FC<DatasetListProps> = ({ onDatasetClick }) => {
+const DatasetList: React.FC<DatasetListProps> = ({ onDatasetClick, onSourceClick }) => {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ const DatasetList: React.FC<DatasetListProps> = ({ onDatasetClick }) => {
           </Card.Header>
           <div id={`dataset-${dataset.ID}`} className="collapse" data-parent="#accordion">
             <Card.Body>
-              <SourceList datasetID={dataset.ID} />
+              <SourceList datasetID={dataset.ID} onSourceClick={onSourceClick} />
             </Card.Body>
           </div>
         </Card>

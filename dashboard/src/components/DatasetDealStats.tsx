@@ -50,8 +50,8 @@ const DatasetDealStats: React.FC<DatasetDealStatsProps> = ({ datasetId }) => {
   // Calculate required stats from the dealStats
   const activeDeals = dealStats.filter((deal) => deal.State === 'active');
   const totalActiveDealsNumber = activeDeals.reduce((acc, deal) => acc + deal.DealSize, 0)
-  const totalActiveDeals = xbytes(totalActiveDealsNumber, {iec: true}) +
-    " (" + xbytes(totalActiveDealsNumber * 10, {iec: true}) +" QAP)";
+  const totalActiveDeals = xbytes(totalActiveDealsNumber, {iec: true});
+  const qap = xbytes(totalActiveDealsNumber * 10, {iec: true})
   const distinctProviders = new Set(activeDeals.map((deal) => deal.Provider)).size;
 
   // Prepare data for the time series line chart
@@ -112,6 +112,12 @@ const DatasetDealStats: React.FC<DatasetDealStatsProps> = ({ datasetId }) => {
         </Card>
         <Card>
           <Card.Body>
+            <Card.Title>Quality Adjusted Power</Card.Title>
+            <Card.Text>{qap}</Card.Text>
+          </Card.Body>
+        </Card>
+        <Card>
+          <Card.Body>
             <Card.Title>Distinct Providers</Card.Title>
             <Card.Text>{distinctProviders}</Card.Text>
           </Card.Body>
@@ -121,7 +127,7 @@ const DatasetDealStats: React.FC<DatasetDealStatsProps> = ({ datasetId }) => {
   {/* Second row - Time series line chart */}
   <div style={{ marginTop: '1rem', marginBottom: '1rem', width: '100%', height: '400px' }}>
     <ResponsiveContainer>
-      <LineChart data={timeSeriesData} margin={{top: 20}}>
+      <LineChart data={timeSeriesData} margin={{top: 20, left: 20}}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="Day" tickFormatter={CustomXAxisTickFormatter} />
         <YAxis tickFormatter={CustomYAxisTickFormatter} />
@@ -141,7 +147,7 @@ const DatasetDealStats: React.FC<DatasetDealStatsProps> = ({ datasetId }) => {
               <XAxis type="number" tickFormatter={CustomYAxisTickFormatter} orientation="top" />
               <Tooltip />
               <Legend verticalAlign="top"  />
-              <Bar dataKey="Deals" fill="#8884d8" />
+              <Bar dataKey="Deals" name="Deals by state" fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -153,7 +159,7 @@ const DatasetDealStats: React.FC<DatasetDealStatsProps> = ({ datasetId }) => {
               <XAxis type="number" tickFormatter={CustomYAxisTickFormatter} orientation="top" />
               <Tooltip />
               <Legend verticalAlign="top" />
-              <Bar dataKey="Deals" fill="#82ca9d" />
+              <Bar dataKey="Deals" name="Active deals by Provider" fill="#82ca9d" />
             </BarChart>
           </ResponsiveContainer>
         </div>
