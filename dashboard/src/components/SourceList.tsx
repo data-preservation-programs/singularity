@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Button } from 'react-bootstrap';
+import './SourceList.css';
 
 interface Source {
   ID: number;
@@ -48,7 +49,7 @@ const SourceList: React.FC<SourceListProps> = ({ datasetID, onSourceClick }) => 
         <Button
           key={source.ID}
           variant="outline-secondary"
-          className="list-group-item list-group-item-action"
+          className="list-group-item list-group-item-action source-button"
           onClick={() => onSourceClick(source.ID.toString(), source.RootDirectoryID.toString())}
         >
           {source.Path}
