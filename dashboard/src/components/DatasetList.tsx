@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Accordion, Card, Button } from 'react-bootstrap';
 import SourceList from './SourceList';
+import './DatasetList.css';
 
 interface Dataset {
   ID: number;
@@ -52,11 +53,11 @@ const DatasetList: React.FC<DatasetListProps> = ({ onDatasetClick, onSourceClick
 
 
   return (
-    <Accordion defaultActiveKey="0">
+    <Accordion defaultActiveKey="0" className="dataset-list">
       {datasets.map((dataset, index) => (
         <Card key={dataset.ID}>
           <Card.Header>
-            <Button
+            <Button className="dataset-button"
               variant="link"
               onClick={() => {
                 onDatasetClick(dataset.ID.toString());

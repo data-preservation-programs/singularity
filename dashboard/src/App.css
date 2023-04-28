@@ -40,3 +40,61 @@
 .navbar-brand {
   margin-left: 20px;
 }
+
+/* General styles */
+body {
+  font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  background-color: #f5f5f5;
+}
+
+/* Main theme color */
+:root {
+  --main-color: #1565c0;
+}
+
+/* Navbar styles */
+.navbar {
+  background-color: var(--main-color);
+}
+
+.navbar-brand,
+.navbar-nav .nav-link {
+  color: #fff;
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: var(--main-color);
+  border-color: var(--main-color);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: #0d47a1;
+  border-color: #0d47a1;
+}
+
+/* Table styles */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(21, 101, 192, 0.05);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(21, 101, 192, 0.1);
+}
+
+/* Pagination styles */
+.pagination .page-item.active .page-link {
+  background-color: var(--main-color);
+  border-color: var(--main-color);
+}
+
+.pagination .page-item .page-link {
+  color: var(--main-color);
+}
+
+.pagination .page-item .page-link:hover {
+  background-color: rgba(21, 101, 192, 0.1);
+}
+
