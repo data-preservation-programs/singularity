@@ -20,8 +20,9 @@ interface Source {
 
 interface SourceListProps {
   datasetID: number;
+  onSourceClick: (sourceID: string, rootDirectoryID: string) => void;
 }
-const SourceList: React.FC<SourceListProps> = ({ datasetID }) => {
+const SourceList: React.FC<SourceListProps> = ({ datasetID, onSourceClick }) => {
   const [sources, setSources] = useState<Source[]>([]);
   const [fetched, setFetched] = useState(false);
 
@@ -44,7 +45,12 @@ const SourceList: React.FC<SourceListProps> = ({ datasetID }) => {
   return (
     <div className="list-group">
       {sources.map((source) => (
-        <Button key={source.ID} variant="outline-secondary" className="list-group-item list-group-item-action">
+        <Button
+          key={source.ID}
+          variant="outline-secondary"
+          className="list-group-item list-group-item-action"
+          onClick={() => onSourceClick(source.ID.toString(), source.RootDirectoryID.toString())}
+        >
           {source.Path}
         </Button>
       ))}
