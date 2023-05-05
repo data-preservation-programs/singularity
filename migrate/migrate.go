@@ -113,14 +113,14 @@ func Migrate(cctx *cli.Context) error {
 			fileType = model.S3Object
 		}
 		source := model.Source{
-			DatasetID:     dataset.ID,
-			CreatedAt:     request.UpdatedAt,
-			UpdatedAt:     request.UpdatedAt,
-			Type:          sourceType,
-			Path:          request.Path,
-			ScanningState: model.Complete,
-			LastScanned:   request.UpdatedAt,
-			RootDirectory: rootDirectory,
+			DatasetID:            dataset.ID,
+			CreatedAt:            request.UpdatedAt,
+			UpdatedAt:            request.UpdatedAt,
+			Type:                 sourceType,
+			Path:                 request.Path,
+			ScanningState:        model.Complete,
+			LastScannedTimestamp: request.UpdatedAt.Unix(),
+			RootDirectory:        rootDirectory,
 		}
 		logger.Info("Creating source: ", request.Name)
 		err = db.Where("dataset_id = ?", dataset.ID).Attrs(source).FirstOrCreate(&source).Error
@@ -225,7 +225,7 @@ func Migrate(cctx *cli.Context) error {
 					}
 					item := model.Item{
 						ScannedAt:    generation.CreatedAt,
-						ChunkID:      chunk.ID,
+						ChunkID:      &chunk.ID,
 						Type:         fileType,
 						Path:         file.Path,
 						Size:         file.Size,
@@ -233,7 +233,7 @@ func Migrate(cctx *cli.Context) error {
 						Length:       file.End - file.Start,
 						LastModified: nil,
 						CID:          file.CID,
-						DirectoryID:  directory.ID,
+						DirectoryID:  &directory.ID,
 					}
 					items = append(items, item)
 				}

@@ -3,11 +3,19 @@ package pack
 import (
 	"github.com/pkg/errors"
 	"github.com/shirou/gopsutil/v3/disk"
+	"math/rand"
+	"time"
 )
+
+func getRandomString(strings []string) string {
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(strings))
+	return strings[randomIndex]
+}
 
 func GetPathWithMostSpace(paths []string) (string, error) {
 	var maxSpace uint64
-	var maxPath string
+	var maxPaths []string
 
 	for _, path := range paths {
 		usage, err := disk.Usage(path)
@@ -17,15 +25,18 @@ func GetPathWithMostSpace(paths []string) (string, error) {
 
 		availableSpace := usage.Free
 
-		if availableSpace > maxSpace {
+		if availableSpace == maxSpace {
+			maxPaths = append(maxPaths, path)
+		} else if availableSpace > maxSpace {
 			maxSpace = availableSpace
-			maxPath = path
+			maxPaths = []string{path}
 		}
 	}
 
-	if maxPath == "" {
+	if len(maxPaths) == 0 {
 		return "", errors.New("no paths provided")
 	}
 
-	return maxPath, nil
+	// Get a random path from the list of paths with the most space
+	return getRandomString(maxPaths), nil
 }

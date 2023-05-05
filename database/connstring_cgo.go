@@ -3,10 +3,8 @@
 package database
 
 import (
-	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -37,22 +35,4 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 	}
 
 	return nil, DatabaseNotSupportedError
-}
-
-func MustOpenFromCLI(c *cli.Context) *gorm.DB {
-	connString := c.String("database-connection-string")
-	db, err := Open(connString, &gorm.Config{
-		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
-	})
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	err = model.AutoMigrate(db)
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	return db
 }

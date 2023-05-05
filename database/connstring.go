@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"strings"
@@ -34,19 +35,4 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 	}
 
 	return nil, DatabaseNotSupportedError
-}
-
-func MustOpenFromCLI(c *cli.Context) *gorm.DB {
-	connString := c.String("database-connection-string")
-	db, err := database.Open(connString, &gorm.Config{})
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	err = model.AutoMigrate(db)
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	return db
 }
