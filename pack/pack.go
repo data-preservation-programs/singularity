@@ -26,6 +26,8 @@ import (
 	"path"
 )
 
+const CidLength = 32
+
 type BlockResult struct {
 	CID    cid.Cid
 	Offset uint64
@@ -45,30 +47,37 @@ type Result struct {
 	CarBlocks   []model.CarBlock
 }
 
-const ChunkSize int64 = 1 << 21
+const ChunkSize int64 = 1 << 20
 const NumLinkPerNode = 1024
 
-func createParentNode(links []format.Link) (format.Node, error) {
+type Link struct {
+	format.Link
+	ChunkSize uint64
+}
+
+func createParentNode(links []Link) (format.Node, uint64, error) {
 	node := unixfs.NewFSNode(unixfs_pb.Data_File)
+	total := uint64(0)
 	for _, link := range links {
-		node.AddBlockSize(link.Size)
+		node.AddBlockSize(link.ChunkSize)
+		total += link.ChunkSize
 	}
 	nodeBytes, err := node.GetBytes()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get bytes from node")
+		return nil, 0, errors.Wrap(err, "failed to get bytes from node")
 	}
 	pbNode := merkledag.NodeWithData(nodeBytes)
 	pbNode.SetCidBuilder(merkledag.V1CidPrefix())
 	for _, link := range links {
-		err = pbNode.AddRawLink("", &link)
+		err = pbNode.AddRawLink("", &link.Link)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to add link to node")
+			return nil, 0, errors.Wrap(err, "failed to add link to node")
 		}
 	}
-	return pbNode, nil
+	return pbNode, total, nil
 }
 
-func writeCarBlock(block blocks.BasicBlock, writer io.Writer) (uint64, error) {
+func writeCarBlock(writer io.Writer, block blocks.BasicBlock) (uint64, error) {
 	written := uint64(0)
 	varintBytes := varint.ToUvarint(uint64(len(block.RawData()) + block.Cid().ByteLen()))
 	n, err := io.Copy(writer, bytes.NewReader(varintBytes))
@@ -93,6 +102,7 @@ func writeCarBlock(block blocks.BasicBlock, writer io.Writer) (uint64, error) {
 
 func PackItems(
 	ctx context.Context,
+	handler datasource.Handler,
 	items []model.Item,
 	outDir string,
 	pieceSize uint64) (*Result, error) {
@@ -106,7 +116,6 @@ func PackItems(
 	if outDir != "" {
 		filename := uuid.NewString() + ".car"
 		filepath = path.Join(outDir, filename)
-		result.CarFilePath = filepath
 		file, err := os.Create(filepath)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create file at "+filepath)
@@ -116,18 +125,19 @@ func PackItems(
 	}
 
 	for _, item := range items {
-		links := make([]format.Link, 0)
-		blockChan, err := streamItem(ctx, item)
+		links := make([]Link, 0)
+		blockChan, err := streamItem(ctx, handler, item)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to stream item")
 		}
 
 		for block := range blockChan {
-			links = append(links, format.Link{
-				Name: "",
-				Size: block.Length,
-				Cid:  block.CID,
-			})
+			links = append(links, Link{
+				Link: format.Link{
+					Name: "",
+					Size: block.Length,
+					Cid:  block.CID,
+				}})
 			if block.Error != nil {
 				return nil, errors.Wrap(block.Error, "failed to stream block")
 			}
@@ -154,7 +164,7 @@ func PackItems(
 			}
 
 			basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
-			written, err := writeCarBlock(*basicBlock, writer)
+			written, err := writeCarBlock(writer, *basicBlock)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to write block")
 			}
@@ -170,43 +180,46 @@ func PackItems(
 			result.CarBlocks = append(result.CarBlocks, model.CarBlock{
 				CID:    block.CID.String(),
 				Offset: offset - block.Length,
-				Length: block.Length,
+				Length: written,
+				Varint: block.Length + CidLength,
 			})
 		}
 
 		for len(links) > 1 {
-			newLinks := make([]format.Link, 0)
+			newLinks := make([]Link, 0)
 			for start := 0; start < len(links); start += NumLinkPerNode {
-				newNode, err := createParentNode(links[start:Min(start+NumLinkPerNode, len(links))])
+				newNode, total, err := createParentNode(links[start:Min(start+NumLinkPerNode, len(links))])
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to create parent node")
 				}
 
 				basicBlock, _ := blocks.NewBlockWithCid(newNode.RawData(), newNode.Cid())
-				written, err := writeCarBlock(*basicBlock, writer)
+				written, err := writeCarBlock(writer, *basicBlock)
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to write block")
 				}
 				offset += written
 
 				result.RawBlocks = append(result.RawBlocks, model.RawBlock{
-					CID:      basicBlock.Cid().String(),
-					SourceID: item.Chunk.SourceID,
-					Block:    basicBlock.RawData(),
-					Length:   uint64(len(basicBlock.RawData())),
+					CID:    basicBlock.Cid().String(),
+					Block:  basicBlock.RawData(),
+					Length: uint32(len(basicBlock.RawData())),
 				})
 				result.CarBlocks = append(result.CarBlocks, model.CarBlock{
 					CID:    basicBlock.Cid().String(),
-					Offset: offset - uint64(len(basicBlock.RawData())),
-					Length: uint64(len(basicBlock.RawData())),
+					Offset: offset - written,
+					Length: written,
+					Varint: uint64(len(basicBlock.RawData())) + CidLength,
 				})
 
 				newNodeSize, _ := newNode.Size()
-				newLinks = append(newLinks, format.Link{
-					Name: "",
-					Size: newNodeSize,
-					Cid:  newNode.Cid(),
-				})
+				newLinks = append(newLinks, Link{
+					ChunkSize: total,
+					Link: format.Link{
+						Name: "",
+						Size: newNodeSize,
+						Cid:  newNode.Cid(),
+					}})
 			}
 
 			links = newLinks
@@ -238,14 +251,17 @@ func PackItems(
 	result.PieceSize = rawPieceSize
 	result.CarFileSize = offset
 
+	if outDir != "" {
+		result.CarFilePath = path.Join(outDir, commCid.String()+".car")
+	}
 	if filepath != "" {
-		err = os.Symlink(path.Join(outDir, commCid.String()+".car"), filepath)
+		err = os.Rename(filepath, result.CarFilePath)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create symlink")
 		}
 	}
 
-	return nil, nil
+	return result, nil
 }
 
 func Min(i int, i2 int) int {
@@ -255,17 +271,16 @@ func Min(i int, i2 int) int {
 	return i2
 }
 
-func streamItem(ctx context.Context, item model.Item) (<-chan BlockResult, error) {
-	streamer := datasource.Streamers[item.Type]
-	readStream, err := streamer.Open(ctx, item.Path, item.Offset, item.Length)
+func streamItem(ctx context.Context, handler datasource.Handler, item model.Item) (<-chan BlockResult, error) {
+	readStream, err := handler.Open(ctx, item.Path, item.Offset, item.Length)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open stream")
 	}
-	defer readStream.Close()
 
 	blockChan := make(chan BlockResult)
 	chunker := chunk.NewSizeSplitter(readStream, ChunkSize)
 	go func() {
+		defer readStream.Close()
 		defer close(blockChan)
 		offset := item.Offset
 		for {

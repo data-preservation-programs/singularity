@@ -1,4 +1,5 @@
 build:
+	go build ./...
 	go build -o singularity ./cmd
 
 gen:

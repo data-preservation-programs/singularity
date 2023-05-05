@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/data-preservation-programs/go-singularity/cmd/prep"
+	"github.com/data-preservation-programs/go-singularity/cmd/dataset"
 	"github.com/data-preservation-programs/go-singularity/cmd/repl"
 	"github.com/data-preservation-programs/go-singularity/cmd/run"
 	"github.com/data-preservation-programs/go-singularity/util/must"
@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 )
+
 
 func main() {
 	app := &cli.App{
@@ -28,6 +29,9 @@ func main() {
 				Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
 				EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 			},
+			&cli.StringFlag{
+				Name: "credential-encryption-key",
+			},
 		},
 		Commands: []*cli.Command{
 			MigrateCmd,
@@ -39,17 +43,13 @@ func main() {
 				Usage:   "Replication / deal making management",
 				Subcommands: []*cli.Command{
 					repl.ScheduleCmd,
-					repl.ListCmd,
-					repl.PauseCmd,
-					repl.ResumeCmd,
-					repl.StatusCmd,
 				},
 			},
 			{
 				Name:  "run",
 				Usage: "Run different singularity components",
 				Subcommands: []*cli.Command{
-					run.PrepWorkerCmd,
+					run.DatasetWorkerCmd,
 					run.DataListenerCmd,
 					run.ContentProviderCmd,
 					run.ReplicationCmd,
@@ -58,19 +58,11 @@ func main() {
 				},
 			},
 			{
-				Name:    "preparation",
-				Aliases: []string{"prep"},
-				Usage:   "Dataset preparation management",
+				Name:  "dataset",
+				Usage: "Dataset preparation management",
 				Subcommands: []*cli.Command{
-					prep.CreateCmd,
-					prep.ListCmd,
-					prep.PauseCmd,
-					prep.RemoveCmd,
-					prep.ResumeCmd,
-					prep.StatusCmd,
-					prep.UpdateCmd,
-					prep.QueueCmd,
-					prep.ExportCmd,
+					dataset.CreateCmd,
+					dataset.AddSourceCmd,
 				},
 			},
 		},
