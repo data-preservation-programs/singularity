@@ -294,15 +294,6 @@ type RawBlock struct {
 	Length  uint32
 }
 
-// ItemBlock tells us the CIDs of all blocks inside an item
-type ItemBlock struct {
-	CID    string `gorm:"index;column:cid"`
-	ItemID uint64
-	Item   *Item `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"`
-	Offset uint64
-	Length uint64
-}
-
 // CarBlock tells us the CIDs of all blocks inside a CAR file
 // and the offset of the block inside the CAR file. From this table
 // we can determine how to get the block by CID from a CAR file.
@@ -315,4 +306,14 @@ type CarBlock struct {
 	Offset uint64
 	Length uint64
 	Varint uint64
+	// Raw block
+	RawBlock []byte
+	// If block is null, this block is a part of an item
+	SourceID   *uint32
+	Source     *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"`
+	ItemID     *uint64
+	Item       *Item `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"`
+	ItemOffset uint64
+	// Common
+	BlockLength uint64
 }

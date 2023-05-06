@@ -22,9 +22,15 @@ type Entry struct {
 	LastModified *time.Time
 }
 
+type ReadAtCloser interface {
+	io.ReaderAt
+	io.Closer
+}
+
 type Handler interface {
 	Scan(ctx context.Context, path string, last string) <-chan Entry
-	Open(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error)
+	Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error)
+	Open(ctx context.Context, path string) (ReadAtCloser, error)
 	CheckItem(ctx context.Context, path string) (uint64, *time.Time, error)
 }
 

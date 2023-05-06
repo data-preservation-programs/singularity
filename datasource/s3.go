@@ -174,7 +174,7 @@ func (s S3) Scan(ctx context.Context, path string, last string) <-chan Entry {
 	return entries
 }
 
-func (s S3) Open(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+func (s S3) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
 	parsedPath, err := url.Parse(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse S3 path: %w", err)
@@ -201,3 +201,55 @@ func (s S3) Open(ctx context.Context, path string, offset uint64, length uint64)
 
 	return result.Body, nil
 }
+
+func (s S3) Open(ctx context.Context, path string) (ReadAtCloser, error) {
+	parsedPath, err := url.Parse(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse S3 path: %w", err)
+	}
+
+	if parsedPath.Scheme != "s3" {
+		return nil, errors.New("invalid S3 path, missing s3:// scheme")
+	}
+
+	bucket := parsedPath.Host
+	key := strings.TrimLeft(parsedPath.Path, "/")
+
+	return S3ReadAtCloser{
+		s3Client: s.s3Client,
+		bucket:   bucket,
+		key:      key,
+		ctx:      ctx,
+	}, nil
+}
+
+type S3ReadAtCloser struct {
+	s3Client S3API
+	bucket   string
+	key      string
+	ctx      context.Context
+}
+
+func (s S3ReadAtCloser) ReadAt(p []byte, off int64) (n int, err error) {
+	rangeHeaderValue := fmt.Sprintf("bytes=%d-%d", off, off+int64(len(p))-1)
+
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(s.key),
+		Range:  aws.String(rangeHeaderValue),
+	}
+
+	result, err := s.s3Client.GetObject(s.ctx, input)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get object: %w", err)
+	}
+
+	defer result.Body.Close()
+	return result.Body.Read(p)
+}
+
+func (s S3ReadAtCloser) Close() error {
+	return nil
+}
+
+

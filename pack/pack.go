@@ -272,7 +272,7 @@ func Min(i int, i2 int) int {
 }
 
 func streamItem(ctx context.Context, handler datasource.Handler, item model.Item) (<-chan BlockResult, error) {
-	readStream, err := handler.Open(ctx, item.Path, item.Offset, item.Length)
+	readStream, err := handler.Read(ctx, item.Path, item.Offset, item.Length)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open stream")
 	}

@@ -20,7 +20,7 @@ type MockHandler struct {
 	mock.Mock
 }
 
-func (m *MockHandler) Open(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+func (m *MockHandler) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
 	args := m.Called(path, offset, length)
 	return args.Get(0).(io.ReadCloser), args.Error(1)
 }
@@ -58,7 +58,7 @@ func newRandomReadCloser(size int, seed int64) io.ReadCloser {
 func TestStreamItem(t *testing.T) {
 	assert := assert.New(t)
 	streamer := &MockHandler{}
-	streamer.On("Open", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(newRandomReadCloser(1024 * 1024 * 256 + 1, 0), nil)
 
 	ctx := context.TODO()
@@ -136,7 +136,7 @@ func TestCreateParentNode(t *testing.T) {
 func TestPackItems(t *testing.T) {
 	assert := assert.New(t)
 	streamer := &MockHandler{}
-	streamer.On("Open", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(newRandomReadCloser(10_000_000, 0), nil)
 	item := model.Item{
 		Type:         model.File,
@@ -164,7 +164,7 @@ func TestPackItems(t *testing.T) {
 func TestPackItemsWithoutOutdir(t *testing.T) {
 	assert := assert.New(t)
 	streamer := &MockHandler{}
-	streamer.On("Open", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(newRandomReadCloser(10_000_000, 0), nil)
 	item := model.Item{
 		Type:         model.File,

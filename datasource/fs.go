@@ -13,7 +13,16 @@ import (
 
 type Filesystem struct{}
 
-func (Filesystem) Open(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+func (Filesystem) Open(ctx context.Context, path string) (ReadAtCloser, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open file")
+	}
+
+	return file, nil
+}
+
+func (Filesystem) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open file")

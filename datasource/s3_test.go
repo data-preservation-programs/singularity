@@ -47,7 +47,7 @@ func TestS3_Open(t *testing.T) {
 	offset := uint64(10)
 	length := uint64(5)
 
-	reader, err := s3.Open(ctx, path, offset, length)
+	reader, err := s3.Read(ctx, path, offset, length)
 	assert.NoError(t, err)
 
 	data, err := ioutil.ReadAll(reader)
@@ -55,7 +55,7 @@ func TestS3_Open(t *testing.T) {
 	assert.Equal(t, mockData[offset:offset+length], data)
 
 	// Test invalid path
-	_, err = s3.Open(ctx, "invalid-path", 0, 10)
+	_, err = s3.Read(ctx, "invalid-path", 0, 10)
 	assert.Error(t, err)
 }
 

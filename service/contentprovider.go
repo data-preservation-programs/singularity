@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/store"
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -55,7 +54,8 @@ func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pie
 		return nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
 	}
 
-	return store.NewPieceReader(s.db, &car), &car, nil
+	// TODO
+	return nil, &car, nil
 }
 
 func (s *ContentProviderService) findPiece(ctx context.Context, pieceCid cid.Cid) (*os.File, os.FileInfo, error) {
