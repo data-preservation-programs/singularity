@@ -15,7 +15,7 @@ import (
 
 func TestSite_Open(t *testing.T) {
 	// Test data
-	testContent := "This is a test content for the Open function."
+	testContent := "This is a test content for the Read function."
 	offset := uint64(5)
 	length := uint64(10)
 
@@ -49,13 +49,13 @@ func TestSite_Open(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	// Run the Open function
+	// Run the Read function
 	site := Site{}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	rc, err := site.Open(ctx, ts.URL, offset, length)
-	assert.NoError(t, err, "Open function should not return an error")
+	rc, err := site.Read(ctx, ts.URL, offset, length)
+	assert.NoError(t, err, "Read function should not return an error")
 
 	// Read the response body
 	body, err := ioutil.ReadAll(rc)

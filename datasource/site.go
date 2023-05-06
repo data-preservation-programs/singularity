@@ -182,7 +182,7 @@ func (s Site) scan(ctx context.Context, entryChan chan Entry, path string, last 
 	}
 }
 
-func (s Site) Open(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+func (s Site) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
 	// Create an HTTP client with the context
 	client := http.Client{
 		Transport: &http.Transport{},
@@ -215,4 +215,57 @@ func (s Site) Open(ctx context.Context, path string, offset uint64, length uint6
 	}
 
 	return resp.Body, nil
+}
+
+func (s Site) Open(ctx context.Context, path string) (ReadAtCloser, error) {
+	return HTTPReadAtCloser{
+		path:    path,
+		headers: s.Headers,
+		ctx:     ctx,
+	}, nil
+}
+
+type HTTPReadAtCloser struct {
+	path    string
+	headers map[string]string
+	ctx     context.Context
+}
+
+func (s HTTPReadAtCloser) ReadAt(p []byte, off int64) (n int, err error) {
+	// Create an HTTP client with the context
+	client := http.Client{
+		Transport: &http.Transport{},
+	}
+
+	// Create a new request
+	req, err := http.NewRequestWithContext(s.ctx, http.MethodGet, s.path, nil)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create request")
+	}
+
+	for k, v := range s.headers {
+		req.Header.Set(k, v)
+	}
+
+	// Set the "Range" header for partial download
+	rangeValue := fmt.Sprintf("bytes=%d-%d", off, off+int64(len(p))-1)
+	req.Header.Set("Range", rangeValue)
+
+	// Send the request
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to send request")
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusPartialContent {
+		return 0, errors.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return resp.Body.Read(p)
+}
+
+func (s HTTPReadAtCloser) Close() error {
+	return nil
 }

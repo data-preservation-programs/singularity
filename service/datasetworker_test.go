@@ -330,7 +330,7 @@ func TestDatasetWorkerThread_Pack(t *testing.T) {
 	err = db.Create(&item).Error
 	assert.Nil(err)
 	streamer := &MockStreamer{}
-	streamer.On("Open", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(newRandomReadCloser(10_000_000, 0), nil)
 
 	mockResolver := &MockResolver{}

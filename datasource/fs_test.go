@@ -232,7 +232,7 @@ func TestFileSource_Open(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			readCloser, err := fileSource.Open(ctx, tmpfile.Name(), tt.offset, tt.length)
+			readCloser, err := fileSource.Read(ctx, tmpfile.Name(), tt.offset, tt.length)
 			assert.NoError(t, err)
 			defer readCloser.Close()
 
