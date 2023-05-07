@@ -42,8 +42,6 @@ type Result struct {
 	PieceSize   uint64
 	RootCID     cid.Cid
 	Header      []byte
-	RawBlocks   []model.RawBlock
-	ItemBlocks  []model.ItemBlock
 	CarBlocks   []model.CarBlock
 }
 
@@ -67,7 +65,10 @@ func createParentNode(links []Link) (format.Node, uint64, error) {
 		return nil, 0, errors.Wrap(err, "failed to get bytes from node")
 	}
 	pbNode := merkledag.NodeWithData(nodeBytes)
-	pbNode.SetCidBuilder(merkledag.V1CidPrefix())
+	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
+	if err != nil {
+		return nil, 0, errors.Wrap(err, "failed to set cid builder")
+	}
 	for _, link := range links {
 		err = pbNode.AddRawLink("", &link.Link)
 		if err != nil {
@@ -100,7 +101,7 @@ func writeCarBlock(writer io.Writer, block blocks.BasicBlock) (uint64, error) {
 	return written, nil
 }
 
-func PackItems(
+func ProcessItems(
 	ctx context.Context,
 	handler datasource.Handler,
 	items []model.Item,
@@ -125,6 +126,7 @@ func PackItems(
 	}
 
 	for _, item := range items {
+		item := item
 		links := make([]Link, 0)
 		blockChan, err := streamItem(ctx, handler, item)
 		if err != nil {
@@ -170,18 +172,15 @@ func PackItems(
 			}
 
 			offset += written
-			result.ItemBlocks = append(result.ItemBlocks, model.ItemBlock{
-				CID:    block.CID.String(),
-				ItemID: item.ID,
-				Offset: block.Offset,
-				Length: block.Length,
-			})
 
 			result.CarBlocks = append(result.CarBlocks, model.CarBlock{
-				CID:    block.CID.String(),
-				Offset: offset - block.Length,
-				Length: written,
-				Varint: block.Length + CidLength,
+				CID:         block.CID.String(),
+				Offset:      offset - block.Length,
+				Length:      written,
+				Varint:      block.Length + CidLength,
+				ItemID:      &item.ID,
+				ItemOffset:  block.Offset,
+				BlockLength: block.Length,
 			})
 		}
 
@@ -200,16 +199,13 @@ func PackItems(
 				}
 				offset += written
 
-				result.RawBlocks = append(result.RawBlocks, model.RawBlock{
-					CID:    basicBlock.Cid().String(),
-					Block:  basicBlock.RawData(),
-					Length: uint32(len(basicBlock.RawData())),
-				})
 				result.CarBlocks = append(result.CarBlocks, model.CarBlock{
-					CID:    basicBlock.Cid().String(),
-					Offset: offset - written,
-					Length: written,
-					Varint: uint64(len(basicBlock.RawData())) + CidLength,
+					CID:         basicBlock.Cid().String(),
+					Offset:      offset - written,
+					Length:      written,
+					Varint:      uint64(len(basicBlock.RawData())) + CidLength,
+					RawBlock:    basicBlock.RawData(),
+					BlockLength: uint64(len(basicBlock.RawData())),
 				})
 
 				newNodeSize, _ := newNode.Size()
@@ -286,7 +282,7 @@ func streamItem(ctx context.Context, handler datasource.Handler, item model.Item
 		for {
 			chunkerBytes, err := chunker.NextBytes()
 			if err != nil {
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					return
 				}
 				blockChan <- BlockResult{Error: errors.Wrap(err, "failed to read chunk")}

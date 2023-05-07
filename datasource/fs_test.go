@@ -30,7 +30,6 @@ func TestCheckItem(t *testing.T) {
 	assert.True(t, modTime.After(time.Now().Add(-time.Minute))) // Check that modTime is recent enough
 }
 
-
 func TestDirSource_Scan_Last(t *testing.T) {
 	tmpDir, err := ioutil.TempDir("", "testdir")
 	require.NoError(t, err)
@@ -113,7 +112,6 @@ func TestDirSource_Scan_FileAccessError(t *testing.T) {
 
 	assert.True(t, foundFileAccessError, "file access error not found")
 }
-
 
 func TestDirSource_Scan_BrokenSymlink(t *testing.T) {
 	tmpDir, err := ioutil.TempDir("", "testdir")

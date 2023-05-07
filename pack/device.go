@@ -9,6 +9,7 @@ import (
 
 func getRandomString(strings []string) string {
 	rand.Seed(time.Now().UnixNano())
+	// nolint:gosec
 	randomIndex := rand.Intn(len(strings))
 	return strings[randomIndex]
 }

@@ -49,7 +49,6 @@ func TestReadAt2(t *testing.T) {
 	assert.Equal(t, 5, n)
 	assert.Equal(t, "eader", string(buf[:n]))
 
-
 	buf = make([]byte, 100)
 	n, err = pieceReader.ReadAt(buf, 10)
 	assert.NoError(t, err)

@@ -13,7 +13,7 @@ import (
 )
 
 type ItemReferenceBlockStore struct {
-	DB *gorm.DB
+	DB              *gorm.DB
 	HandlerResolver datasource.HandlerResolver
 }
 

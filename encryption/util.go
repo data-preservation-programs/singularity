@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/pbkdf2"
 	"gorm.io/gorm"
@@ -16,9 +15,8 @@ import (
 )
 
 var encryptionKey []byte
-var logger = log.Logger("encryption")
 
-var lock sync.Mutex = sync.Mutex{}
+var lock = sync.Mutex{}
 
 func getSalt(db *gorm.DB) ([]byte, error) {
 	row := model.Global{}
@@ -33,7 +31,7 @@ func getSalt(db *gorm.DB) ([]byte, error) {
 	return decoded, nil
 }
 
-func Init(keyStr string, db *gorm.DB) error{
+func Init(keyStr string, db *gorm.DB) error {
 	lock.Lock()
 	defer lock.Unlock()
 	if encryptionKey != nil {
@@ -67,6 +65,8 @@ func EncryptToBytes(payload []byte) ([]byte, error) {
 	}
 
 	ciphertext := aesgcm.Seal(nil, nonce, payload, nil)
+
+	// nolint:makezero
 	return append(nonce, ciphertext...), nil
 }
 

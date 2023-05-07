@@ -98,7 +98,7 @@ func (s Site) scanNginx(ctx context.Context, body []byte, entryChan chan Entry, 
 			if !strings.HasPrefix(last, fullPath) && fullPath <= last {
 				continue
 			}
-			newDoc, _, err := s.getHtmlDoc(ctx, fullPath)
+			newDoc, _, err := s.getHTMLDoc(ctx, fullPath)
 			if err != nil {
 				select {
 				case <-ctx.Done():
@@ -138,11 +138,11 @@ func (s Site) scanNginx(ctx context.Context, body []byte, entryChan chan Entry, 
 	}
 }
 
-func (s Site) getHtmlDoc(ctx context.Context, url string) ([]byte, string, error) {
+func (s Site) getHTMLDoc(ctx context.Context, url string) ([]byte, string, error) {
 	var doc []byte
 	var server string
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, "", errors.Wrap(err, "failed to create request")
 	}
@@ -168,7 +168,7 @@ func (s Site) getHtmlDoc(ctx context.Context, url string) ([]byte, string, error
 }
 
 func (s Site) scan(ctx context.Context, entryChan chan Entry, path string, last string) {
-	doc, server, err := s.getHtmlDoc(ctx, path)
+	doc, server, err := s.getHTMLDoc(ctx, path)
 	if err != nil {
 		select {
 		case <-ctx.Done():

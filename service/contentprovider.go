@@ -18,8 +18,8 @@ import (
 )
 
 type ContentProviderService struct {
-	db         *gorm.DB
-	bind       string
+	db   *gorm.DB
+	bind string
 }
 
 func NewContentProviderService(db *gorm.DB, bind string) *ContentProviderService {
@@ -30,7 +30,6 @@ func (s *ContentProviderService) Start() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.GET("/info", s.handleInfo)
 	e.GET("/piece/:id", s.handleGetPiece)
 	e.HEAD("/piece/:id", s.handleHeadPiece)
 
@@ -38,10 +37,6 @@ func (s *ContentProviderService) Start() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-type apiVersion struct {
-	Version string `json:"Version"`
 }
 
 func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (io.ReaderAt, *model.Car, error) {
@@ -90,7 +85,7 @@ func (s *ContentProviderService) findPiece(ctx context.Context, pieceCid cid.Cid
 }
 
 func (s *ContentProviderService) setCommonHeaders(c echo.Context, pieceCid string) {
-	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", pieceCid + ".car"))
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", pieceCid+".car"))
 	c.Response().Header().Set("Content-Type", "application/piece")
 	c.Response().Header().Set("Accept-Ranges", "bytes")
 }
@@ -142,13 +137,14 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 		fileSize = fInfo.Size()
 	} else {
 		pieceReader, car, err := s.findPieceAsPieceReader(c.Request().Context(), pieceCid)
-		if err == nil {
+		switch {
+		case err == nil:
 			reader = pieceReader
 			lastModified = car.CreatedAt
 			fileSize = int64(car.FileSize)
-		} else if os.IsNotExist(err) {
+		case os.IsNotExist(err):
 			return c.String(http.StatusNotFound, "piece not found")
-		} else {
+		default:
 			return c.String(http.StatusInternalServerError, "failed to find CAR file: "+err.Error())
 		}
 	}
@@ -156,7 +152,7 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 	s.setCommonHeaders(c, pieceCid.String())
 	rangeHeader := c.Request().Header.Get("Range")
 	if rangeHeader == "" {
-		http.ServeContent(c.Response(), c.Request(), pieceCid.String() + ".car", lastModified, io.NewSectionReader(reader, 0, fileSize))
+		http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, 0, fileSize))
 		return nil
 	}
 
@@ -188,11 +184,6 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 
 	// Send the specified range of bytes
 	c.Response().WriteHeader(http.StatusPartialContent)
-	http.ServeContent(c.Response(), c.Request(), pieceCid.String() + ".car", lastModified, io.NewSectionReader(reader, start, end-start+1))
+	http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, start, end-start+1))
 	return nil
-}
-
-func (s *ContentProviderService) handleInfo(c echo.Context) error {
-	c.Response().Header().Set("Content-Type", "application/json")
-	return c.JSON(http.StatusOK, apiVersion{Version: "singularity"})
 }

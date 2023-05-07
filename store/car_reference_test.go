@@ -11,6 +11,7 @@ import (
 	"os"
 	"testing"
 )
+
 func TestCarReferenceBlockStore(t *testing.T) {
 	// Create a temporary test file
 	f, err := ioutil.TempFile("", "test-car-file")
@@ -34,7 +35,7 @@ func TestCarReferenceBlockStore(t *testing.T) {
 
 	// Create a new Car record in the database referencing the test file
 	car := model.Car{
-		FilePath:  f.Name(),
+		FilePath: f.Name(),
 	}
 	err = db.Create(&car).Error
 	require.NoError(t, err)

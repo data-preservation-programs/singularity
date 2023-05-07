@@ -65,7 +65,7 @@ func (d DashboardAPI) GetOverallDealStats(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetDealStats(c echo.Context) error {
-	datasetId, err := strconv.Atoi(c.Param("id"))
+	datasetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
@@ -74,7 +74,7 @@ func (d DashboardAPI) GetDealStats(c echo.Context) error {
 	err = d.db.Table("deals").
 		Select("provider, state, DATE(sector_start) as day, SUM(deals.piece_size) as deal_size").
 		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
-		Where("cars.dataset_id = ?", datasetId).
+		Where("cars.dataset_id = ?", datasetID).
 		Group("provider, state, day").
 		Find(&stats).Error
 	if err != nil {
@@ -95,12 +95,12 @@ func (d DashboardAPI) GetDatasets(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetSources(c echo.Context) error {
-	datasetId, err := strconv.Atoi(c.Param("id"))
+	datasetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var sources []model.Source
-	err = d.db.Where("dataset_id = ?", datasetId).Find(&sources).Error
+	err = d.db.Where("dataset_id = ?", datasetID).Find(&sources).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -109,13 +109,13 @@ func (d DashboardAPI) GetSources(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetCars(c echo.Context) error {
-	sourceId, err := strconv.Atoi(c.Param("id"))
+	sourceID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var cars []model.Car
 	err = d.db.Where("chunk_id in (?)",
-		d.db.Table("chunks").Where("source_id", sourceId).Select("id"),
+		d.db.Table("chunks").Where("source_id", sourceID).Select("id"),
 	).Find(&cars).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
@@ -125,13 +125,13 @@ func (d DashboardAPI) GetCars(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetItems(c echo.Context) error {
-	carId, err := strconv.Atoi(c.Param("id"))
+	carID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var items []model.Item
 	err = d.db.Where("chunk_id in (?)",
-		d.db.Table("cars").Where("id = ?", carId).Select("chunk_id")).Find(&items).Error
+		d.db.Table("cars").Where("id = ?", carID).Select("chunk_id")).Find(&items).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -140,13 +140,13 @@ func (d DashboardAPI) GetItems(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetDealsForCar(c echo.Context) error {
-	carId, err := strconv.Atoi(c.Param("id"))
+	carID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var deals []model.Deal
 	err = d.db.Where("piece_cid in (?)",
-		d.db.Table("cars").Where("id = ?", carId).Select("piece_cid")).Find(&deals).Error
+		d.db.Table("cars").Where("id = ?", carID).Select("piece_cid")).Find(&deals).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -155,14 +155,14 @@ func (d DashboardAPI) GetDealsForCar(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetDealsForItem(c echo.Context) error {
-	itemId, err := strconv.Atoi(c.Param("id"))
+	itemID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var deals []model.Deal
 	err = d.db.Where("piece_cid in (?)",
 		d.db.Table("cars").Where("chunk_id in (?)",
-			d.db.Table("items").Where("id = ?", itemId).Select("chunk_id")).
+			d.db.Table("items").Where("id = ?", itemID).Select("chunk_id")).
 			Select("piece_cid")).Find(&deals).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
@@ -172,18 +172,18 @@ func (d DashboardAPI) GetDealsForItem(c echo.Context) error {
 }
 
 func (d DashboardAPI) GetDirectoryEntries(c echo.Context) error {
-	directoryId, err := strconv.Atoi(c.Param("id"))
+	directoryID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var dirs []model.Directory
-	err = d.db.Where("parent_id = ?", directoryId).Find(&dirs).Error
+	err = d.db.Where("parent_id = ?", directoryID).Find(&dirs).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
 
 	var items []model.Item
-	err = d.db.Where("directory_id = ?", directoryId).Find(&items).Error
+	err = d.db.Where("directory_id = ?", directoryID).Find(&items).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}

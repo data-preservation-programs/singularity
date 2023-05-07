@@ -8,11 +8,11 @@ import (
 
 func TestResolveSourceType(t *testing.T) {
 	tests := []struct {
-		name           string
-		path           string
-		expectedType   model.SourceType
-		expectedPath   string
-		expectedError  bool
+		name          string
+		path          string
+		expectedType  model.SourceType
+		expectedPath  string
+		expectedError bool
 	}{
 		{
 			name:          "S3 path",

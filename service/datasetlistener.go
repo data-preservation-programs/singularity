@@ -131,7 +131,7 @@ func (s DatasetListenerService) Start() {
 type ItemInfo struct {
 	Type     model.ItemType `json:"type"`
 	Path     string         `json:"path"`
-	SourceID uint32         `json:"source_id"`
+	SourceID uint32         `json:"sourceId"`
 }
 
 func (s DatasetListenerService) pushItem(c echo.Context, itemInfo ItemInfo) error {

@@ -251,5 +251,3 @@ func (s S3ReadAtCloser) ReadAt(p []byte, off int64) (n int, err error) {
 func (s S3ReadAtCloser) Close() error {
 	return nil
 }
-
-

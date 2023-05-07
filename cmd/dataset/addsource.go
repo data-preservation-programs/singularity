@@ -16,10 +16,10 @@ var AddSourceCmd = &cli.Command{
 		"To add an S3 path, use the s3:// prefix, i.e. s3://bucket-name/path/to/dataset",
 	Flags: []cli.Flag{
 		&cli.DurationFlag{
-			Name:     "scan-interval",
-			Usage:    "Interval to rescan the data source, or to handle the pushed data source",
-			Category: "Scanning",
-			Value:    0,
+			Name:        "scan-interval",
+			Usage:       "Interval to rescan the data source, or to handle the pushed data source",
+			Category:    "Scanning",
+			Value:       0,
 			DefaultText: "disabled",
 		},
 		&cli.BoolFlag{
@@ -73,7 +73,7 @@ var AddSourceCmd = &cli.Command{
 				S3AccessKeyID:     c.String("s3-access-key-id"),
 				S3SecretAccessKey: c.String("s3-secret-access-key"),
 				S3Region:          c.String("s3-region"),
-				PushOnly: c.Bool("push-only"),
+				PushOnly:          c.Bool("push-only"),
 			},
 		)
 		return err

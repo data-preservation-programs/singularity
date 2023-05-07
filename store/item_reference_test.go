@@ -12,6 +12,7 @@ import (
 	"os"
 	"testing"
 )
+
 func TestItemReferenceBlockStore(t *testing.T) {
 	// Create a temporary test file
 	f, err := ioutil.TempFile("", "test-file")
@@ -39,12 +40,12 @@ func TestItemReferenceBlockStore(t *testing.T) {
 	assert.NoError(t, db.Create(&source).Error)
 
 	item := model.Item{
-		SourceID:     source.ID,
-		Type:         model.File,
-		Path:         f.Name(),
-		Size:         11,
-		Offset:       0,
-		Length:       11,
+		SourceID: source.ID,
+		Type:     model.File,
+		Path:     f.Name(),
+		Size:     11,
+		Offset:   0,
+		Length:   11,
 	}
 	assert.NoError(t, db.Create(&item).Error)
 

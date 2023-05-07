@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 )
+
 type mockS3API struct {
 	mock.Mock
 }

@@ -42,9 +42,10 @@ func EpochToTime(epoch abi.ChainEpoch) time.Time {
 	return time.Unix(int64(epoch*30+1598306400), 0)
 }
 
+// nolint: tagliatelle
 type MinerInfo struct {
-	PeerIdEncoded           string `json:"PeerId"`
-	PeerId                  peer.ID
+	PeerIDEncoded           string `json:"PeerID"`
+	PeerID                  peer.ID
 	MultiaddrsBase64Encoded []string `json:"Multiaddrs"`
 	Multiaddrs              []multiaddr.Multiaddr
 }
@@ -101,7 +102,7 @@ func (d DealMaker) GetProviderInfo(ctx context.Context, provider string) (MinerI
 			return MinerInfo{}, errors.Wrap(err, "failed to create multiaddr")
 		}
 	}
-	minerInfo.PeerId, err = peer.Decode(minerInfo.PeerIdEncoded)
+	minerInfo.PeerID, err = peer.Decode(minerInfo.PeerIDEncoded)
 	if err != nil {
 		return MinerInfo{}, errors.Wrap(err, "failed to decode peer id")
 	}
@@ -134,19 +135,19 @@ func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize uint64, verif
 
 func (d DealMaker) makeDeal120(ctx context.Context,
 	deal market9.ClientDealProposal,
-	dealId uuid.UUID,
+	dealID uuid.UUID,
 	car model.Car, schedule model.Schedule,
 	minerInfo peer.AddrInfo) (*proposal120.DealResponse, error) {
 	transfer := proposal120.Transfer{
 		Size: car.FileSize,
 	}
-	url := strings.Replace(schedule.UrlTemplate, "{PIECE_CID}", car.PieceCID, 1)
+	url := strings.Replace(schedule.URLTemplate, "{PIECE_CID}", car.PieceCID, 1)
 	isOnline := url != ""
 	if isOnline {
 		transferParams := &proposal120.HttpRequest{URL: url}
-		if len(schedule.HttpHeaders) > 0 {
+		if len(schedule.HTTPHeaders) > 0 {
 			transferParams.Headers = make(map[string]string)
-			for _, header := range schedule.HttpHeaders {
+			for _, header := range schedule.HTTPHeaders {
 				sp := strings.Split(header, "=")
 				if len(sp) != 2 {
 					return nil, errors.Errorf("invalid http header %s", header)
@@ -163,7 +164,7 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 	}
 
 	dealParams := proposal120.DealParams{
-		DealUUID:           dealId,
+		DealUUID:           dealID,
 		ClientDealProposal: deal,
 		DealDataRoot:       cid.MustParse(car.RootCID),
 		IsOffline:          !isOnline,
@@ -178,7 +179,11 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 	}
 	defer stream.Close()
 	if deadline, ok := ctx.Deadline(); ok {
-		stream.SetDeadline(deadline)
+		err := stream.SetDeadline(deadline)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to set stream deadline")
+		}
+		//nolint:errcheck
 		defer stream.SetDeadline(time.Time{})
 	}
 
@@ -217,7 +222,11 @@ func (d DealMaker) makeDeal111(ctx context.Context,
 	}
 	defer stream.Close()
 	if deadline, ok := ctx.Deadline(); ok {
-		stream.SetDeadline(deadline)
+		err = stream.SetDeadline(deadline)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to set stream deadline")
+		}
+		//nolint:errcheck
 		defer stream.SetDeadline(time.Time{})
 	}
 
@@ -235,7 +244,8 @@ func (d DealMaker) makeDeal111(ctx context.Context,
 	return &resp, nil
 }
 
-func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.Wallet, car model.Car, schedule model.Schedule, minerInfo peer.AddrInfo) (string, error) {
+func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.Wallet,
+	car model.Car, schedule model.Schedule, minerInfo peer.AddrInfo) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)

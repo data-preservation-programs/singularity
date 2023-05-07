@@ -53,8 +53,8 @@ type Schedule struct {
 	UpdatedAt            time.Time
 	DatasetID            uint32
 	Dataset              Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"`
-	UrlTemplate          string
-	HttpHeaders          []string `gorm:"type:JSON"`
+	URLTemplate          string
+	HTTPHeaders          []string `gorm:"type:JSON"`
 	Provider             string
 	Price                float64
 	TotalDealNumber      uint64
@@ -77,7 +77,7 @@ type Schedule struct {
 
 func (s Schedule) Equal(other Schedule) bool {
 	return s.DatasetID == other.DatasetID &&
-		s.UrlTemplate == other.UrlTemplate &&
+		s.URLTemplate == other.URLTemplate &&
 		s.Provider == other.Provider &&
 		s.Price == other.Price &&
 		s.TotalDealNumber == other.TotalDealNumber &&

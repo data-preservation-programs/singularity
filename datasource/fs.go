@@ -84,6 +84,7 @@ func (Filesystem) Scan(ctx context.Context, path string, last string) <-chan Ent
 				info, err := os.Stat(currentPath)
 				if err != nil {
 					entryChan <- Entry{Error: err}
+					//nolint: nilerr
 					return nil
 				}
 

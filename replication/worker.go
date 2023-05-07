@@ -65,13 +65,17 @@ func (w *WorkerThread) Cancel() {
 func (w *WorkerThread) Run(ctx context.Context) {
 	if w.scheduleJob.SchedulePattern == "" {
 		w.cronJob = cron.New()
-		w.cronJob.AddFunc(w.scheduleJob.SchedulePattern, func() {
+		_, err := w.cronJob.AddFunc(w.scheduleJob.SchedulePattern, func() {
 			w.RunBatch(ctx)
 			if w.dealNumber >= w.scheduleJob.TotalDealNumber || w.dealSize >= w.scheduleJob.TotalDealSize {
 				w.logger.Infow("stopping cron since the total deal number is reached")
 				w.Cancel()
 			}
 		})
+		if err != nil {
+			w.logger.Errorw("failed to add cron job", "error", err)
+			return
+		}
 	} else {
 		w.logger.Infow("no schedule pattern, running once")
 		w.RunBatch(ctx)
@@ -115,9 +119,9 @@ func (w *WorkerThread) RunBatch(ctx context.Context) {
 
 		if w.dealNumber >= w.scheduleJob.TotalDealNumber || w.dealSize >= w.scheduleJob.TotalDealSize {
 			w.logger.Infow("finished making deals")
-			error := w.db.Model(&w.scheduleJob).Update("state", model.ScheduleFinished).Error
-			if error != nil {
-				w.logger.Errorw("failed to update schedule state", "error", error)
+			err := w.db.Model(&w.scheduleJob).Update("state", model.ScheduleFinished).Error
+			if err != nil {
+				w.logger.Errorw("failed to update schedule state", "err", err)
 			}
 			return
 		}
@@ -162,8 +166,8 @@ func (w *WorkerThread) RunBatch(ctx context.Context) {
 
 		walletObj := w.walletChooser.Choose(ctx, w.scheduleJob.Dataset.Wallets)
 		now := time.Now().UTC()
-		proposalId, err := w.dealMaker.MakeDeal(ctx, now, walletObj, car, w.scheduleJob, peer.AddrInfo{
-			ID:    providerInfo.PeerId,
+		proposalID, err := w.dealMaker.MakeDeal(ctx, now, walletObj, car, w.scheduleJob, peer.AddrInfo{
+			ID:    providerInfo.PeerID,
 			Addrs: providerInfo.Multiaddrs,
 		})
 		if err != nil {
@@ -176,7 +180,7 @@ func (w *WorkerThread) RunBatch(ctx context.Context) {
 			State:         model.DealProposed,
 			Client:        walletObj.ID,
 			ClientAddress: walletObj.ID,
-			ProposalID:    proposalId,
+			ProposalID:    proposalID,
 			Label:         car.RootCID,
 			PieceCID:      car.PieceCID,
 			PieceSize:     car.PieceSize,
@@ -226,19 +230,22 @@ func (w *Worker) Run(parent context.Context) error {
 
 	<-signalChan
 	w.logger.Info("received signal, cleaning up")
-	w.Cleanup()
+	err := w.Cleanup()
+	if err != nil {
+		w.logger.Errorw("failed to cleanup", "error", err)
+	}
 	return cli.Exit("received signal", 130)
 }
 
-func (w *Worker) run(ctx context.Context) error {
-	host, err := util.InitHost(context.Background(), nil)
+func (w *Worker) run(ctx context.Context) {
+	host, err := util.InitHost(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to init host")
+		panic(err)
 	}
 	running := map[uint32]*WorkerThread{}
 	dealMaker, err := NewDealMaker("", "", host)
 	if err != nil {
-		return errors.Wrap(err, "failed to create deal maker")
+		panic(err)
 	}
 	for {
 		schedules := make([]model.Schedule, 0)

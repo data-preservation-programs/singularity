@@ -17,8 +17,6 @@ var Tables = []interface{}{
 	&Item{},
 	&Directory{},
 	&Car{},
-	&RawBlock{},
-	&ItemBlock{},
 	&CarBlock{},
 	&Deal{},
 	&Schedule{},

@@ -98,7 +98,8 @@ func TestSite_Scan(t *testing.T) {
 </pre><hr></body>
 </html>
 `)
-		case "/dir2/": io.WriteString(w, `<html>
+		case "/dir2/":
+			io.WriteString(w, `<html>
 <head><title>Index of /dir2/</title></head>
 <body>
 <h1>Index of /dir2/</h1><hr><pre><a href="../">../</a>
@@ -116,7 +117,7 @@ func TestSite_Scan(t *testing.T) {
 
 	site := Site{}
 	ctx := context.Background()
-	entryChan := site.Scan(ctx, ts.URL, ts.URL + "/dir2/test.txt")
+	entryChan := site.Scan(ctx, ts.URL, ts.URL+"/dir2/test.txt")
 
 	expectedEntries := []Entry{
 		{Type: model.URL, Path: ts.URL + "/dir2/test2.txt", Size: 100, LastModified: timePtr(time.Date(2023, 5, 3, 20, 36, 24, 0, time.UTC))},

@@ -4,3 +4,7 @@ build:
 
 gen:
 	go generate ./replication/internal/types.go
+
+lint:
+	gofmt -s -w .
+	golangci-lint run

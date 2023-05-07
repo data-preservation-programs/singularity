@@ -37,7 +37,7 @@ func TestDatasetListenerService_uploadFile(t *testing.T) {
 
 	// Create a test dataset
 	dataset := model.Dataset{
-		Name:                 "test",
+		Name: "test",
 	}
 	assert.NoError(t, db.Create(&dataset).Error)
 
