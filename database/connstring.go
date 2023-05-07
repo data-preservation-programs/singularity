@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-var DatabaseNotSupportedError = errors.New("database not supported")
+var ErrDatabaseNotSupported = errors.New("database not supported")
 
 var logger = log.Logger("database")
 
@@ -34,5 +34,5 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 		return gorm.Open(sqlserver.Open(connString[10:]), config)
 	}
 
-	return nil, DatabaseNotSupportedError
+	return nil, ErrDatabaseNotSupported
 }

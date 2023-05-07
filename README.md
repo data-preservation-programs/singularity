@@ -6,25 +6,25 @@ This project is currently in active development. Below are the current feature l
 |   |   |
 |---|---|
 | ![Stable](https://img.shields.io/badge/-Stable-brightgreen) | Feature is stable and ready for production use |
-| ![Beta](https://img.shields.io/badge/-Beta-yellow) | Feature is in beta and may still contain bugs |
-| ![Alpha](https://img.shields.io/badge/-Alpha-red) | Feature is in alpha and should not be used in production |
-| ![WIP](https://img.shields.io/badge/-WIP-blue) | Feature is currently being worked on and is not usable |
+| ![Beta](https://img.shields.io/badge/-Beta-blue) | Feature is in beta and may still contain bugs |
+| ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Feature is in alpha and should not be used in production |
+| ![WIP](https://img.shields.io/badge/-WIP-yellow) | Feature is currently being worked on and is not usable |
 | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Feature is planned but not yet implemented |
 
 | Category | Feature | Status | Description |
 | --- | --- | --- | --- |
-| Data Source | File System | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for preparing data on local file system |
-| Data Source | Nginx File Browser | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for preparing data from Nginx directory listing service with autoindex turned on |
-| Data Source | S3 Compatible | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for preparing data from S3 compatible storage service |
-| Data Prep | Create Dataset | ![WIP](https://img.shields.io/badge/-WIP-blue) | CLI tool for creating dataset |
-| Data Prep | Add Data Source | ![WIP](https://img.shields.io/badge/-WIP-blue) | CLI tool for adding data sources to existing dataset |
-| Data Prep | Inline Preparation | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for inline preparation. No need to export CAR files |
-| Data Prep | Upload API | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for manually upload files via API |
-| Data Prep | Push API | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for manually queue a new item with an item path via API |
+| Data Source | File System | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data on local file system |
+| Data Source | Nginx File Browser | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data from Nginx directory listing service with autoindex turned on |
+| Data Source | S3 Compatible | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data from S3 compatible storage service |
+| Data Prep | Create Dataset | ![WIP](https://img.shields.io/badge/-WIP-yellow) | CLI tool for creating dataset |
+| Data Prep | Add Data Source | ![WIP](https://img.shields.io/badge/-WIP-yellow) | CLI tool for adding data sources to existing dataset |
+| Data Prep | Inline Preparation | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for inline preparation. No need to export CAR files |
+| Data Prep | Upload API | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for manually upload files via API |
+| Data Prep | Push API | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for manually queue a new item with an item path via API |
 | Data Prep | Dag regen | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Regenerate the unixfs dag to update the root CID of the whole dataset |
 | Data Prep | Basic Encryption | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for basic encryption with asynmmtric keys |
 | Data Prep | Custom Encryption | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for custom encryption with user providing encryption tools |
-| Content Provider | HTTP piece | ![WIP](https://img.shields.io/badge/-WIP-blue) | Support for HTTP piece download (CAR file download) |
+| Content Provider | HTTP piece | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for HTTP piece download (CAR file download) |
 | Content Provider | IPFS gateway | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for IPFS Gatway compliant retrieval |
 | Content Provider | Bitswap | ![Planned](https://img.shields.io/badge/-Planned-lightgrey)| Support for Bitswap retrieval (IPFS interop) |
 | Content Provider | Graphsync | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for Graphsync retrieval |

@@ -131,7 +131,7 @@ func Migrate(cctx *cli.Context) error {
 		directoryCache["."] = source.RootDirectory
 
 		cursor, err := mg.Database("singularity").Collection("generationrequests").Find(ctx, bson.D{
-			{"datasetName", request.Name},
+			{Key: "datasetName", Value: request.Name},
 		})
 		if err != nil {
 			return cli.Exit("Failed to query mongo: "+err.Error(), 1)
@@ -175,8 +175,8 @@ func Migrate(cctx *cli.Context) error {
 			}
 
 			cursor, err := mg.Database("singularity").Collection("outputfilelists").
-				Find(ctx, bson.D{{"generationId", generation.ID}},
-					options.Find().SetSort(bson.D{{"index", 1}}))
+				Find(ctx, bson.D{{Key: "generationId", Value: generation.ID}},
+					options.Find().SetSort(bson.D{{Key: "index", Value: 1}}))
 			if err != nil {
 				return cli.Exit("Failed to query mongo: "+err.Error(), 1)
 			}
@@ -250,7 +250,7 @@ func Migrate(cctx *cli.Context) error {
 		}
 
 		cursor, err = mg.Database("singularity").Collection("replicationrequests").Find(ctx, bson.D{
-			{"datasetId", request.ID},
+			{Key: "datasetId", Value: request.ID},
 		})
 		if err != nil {
 			return cli.Exit("Failed to query mongo: "+err.Error(), 1)
@@ -271,7 +271,7 @@ func Migrate(cctx *cli.Context) error {
 				CreatedAt:            replication.CreatedAt,
 				UpdatedAt:            replication.UpdatedAt,
 				DatasetID:            dataset.ID,
-				UrlTemplate:          replication.UrlPrefix + "/{PIECE_CID}.car",
+				URLTemplate:          replication.URLPrefix + "/{PIECE_CID}.car",
 				Provider:             replication.StorageProviders,
 				TotalDealNumber:      max,
 				Verified:             replication.IsVerified,

@@ -42,15 +42,15 @@ type DefaultHandlerResolver struct {
 	cache sync.Map
 }
 
-func NewDefaultHandlerResolver() DefaultHandlerResolver {
-	return DefaultHandlerResolver{cache: sync.Map{}}
+func NewDefaultHandlerResolver() *DefaultHandlerResolver {
+	return &DefaultHandlerResolver{cache: sync.Map{}}
 }
 
-func (DefaultHandlerResolver) getFileSystemHandler() Handler {
+func (*DefaultHandlerResolver) getFileSystemHandler() Handler {
 	return Filesystem{}
 }
 
-func (DefaultHandlerResolver) getHTTPHandler(meta model.Metadata) (Handler, error) {
+func (*DefaultHandlerResolver) getHTTPHandler(meta model.Metadata) (Handler, error) {
 	metadata, err := meta.GetHTTPMetadata()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get http metadata")
@@ -60,7 +60,7 @@ func (DefaultHandlerResolver) getHTTPHandler(meta model.Metadata) (Handler, erro
 	return site, nil
 }
 
-func (DefaultHandlerResolver) getS3Handler(meta model.Metadata) (Handler, error) {
+func (*DefaultHandlerResolver) getS3Handler(meta model.Metadata) (Handler, error) {
 	metadata, err := meta.GetS3Metadata()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get s3 metadata")
@@ -78,8 +78,9 @@ func (DefaultHandlerResolver) getS3Handler(meta model.Metadata) (Handler, error)
 	return s3, nil
 }
 
-func (d DefaultHandlerResolver) GetHandler(source model.Source) (Handler, error) {
+func (d *DefaultHandlerResolver) GetHandler(source model.Source) (Handler, error) {
 	if handler, ok := d.cache.Load(source.ID); ok {
+		//nolint: forcetypeassert
 		return handler.(Handler), nil
 	}
 	var handler Handler

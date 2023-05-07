@@ -11,7 +11,6 @@ import (
 	"os"
 )
 
-
 func main() {
 	app := &cli.App{
 		Name:  "singularity",

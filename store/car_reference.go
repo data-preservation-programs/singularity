@@ -92,8 +92,6 @@ func (c CarReferenceBlockStore) HashOnRead(enabled bool) {
 	panic("implement me")
 }
 
-
 func (c CarReferenceBlockStore) DeleteBlock(ctx context.Context, cid cid.Cid) error {
 	panic("implement me")
 }
-

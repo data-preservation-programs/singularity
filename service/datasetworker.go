@@ -205,6 +205,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 		return &chunk, nil
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		//nolint: nilnil
 		return nil, nil
 	}
 
@@ -268,6 +269,7 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 		return nil, err
 	}
 
+	//nolint: nilnil
 	return nil, nil
 }
 
@@ -484,7 +486,8 @@ func (w *DatasetWorkerThread) chunkOnce(
 	return nil
 }
 
-func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32, source model.Source, items []model.Item, ourDirs []string, pieceSize uint64) error {
+func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32,
+	source model.Source, items []model.Item, ourDirs []string, pieceSize uint64) error {
 	var outDir string
 	if len(ourDirs) > 0 {
 		var err error
@@ -498,7 +501,7 @@ func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32, source m
 	if err != nil {
 		return errors.Wrap(err, "failed to get datasource handler")
 	}
-	result, err := pack.PackItems(ctx, handler, items, outDir, pieceSize)
+	result, err := pack.ProcessItems(ctx, handler, items, outDir, pieceSize)
 	if err != nil {
 		return errors.Wrap(err, "failed to pack items")
 	}
@@ -517,22 +520,8 @@ func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32, source m
 		if err != nil {
 			return errors.Wrap(err, "failed to create car")
 		}
-		for _, rawBlock := range result.RawBlocks {
-			rawBlock.ChunkID = chunkID
-		}
 		for _, carBlock := range result.CarBlocks {
 			carBlock.CarID = car.ID
-		}
-		err = tx.Create(&result.RawBlocks).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to create raw blocks")
-		}
-		err = tx.Create(&result.ItemBlocks).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to create item blocks")
-		}
-		for _, item := range result.CarBlocks {
-			item.CarID = car.ID
 		}
 		err = tx.Create(&result.CarBlocks).Error
 		if err != nil {

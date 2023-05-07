@@ -21,7 +21,7 @@ func TestAddSourceHandler_DatasetNotFound(t *testing.T) {
 	defer model.DropAll(db)
 	_, err := AddSourceHandler(db, AddSourceRequest{
 		DatasetName: "test",
-		SourcePath: "/",
+		SourcePath:  "/",
 	})
 	assert.ErrorContains(err, "failed to find dataset")
 }
@@ -34,7 +34,7 @@ func TestAddSourceHandler_SourceInvalid(t *testing.T) {
 	assert.Nil(err)
 	_, err = AddSourceHandler(db, AddSourceRequest{
 		DatasetName: "test",
-		SourcePath: "not exist",
+		SourcePath:  "not exist",
 	})
 	assert.ErrorContains(err, "no such file or directory")
 }
@@ -47,7 +47,7 @@ func TestAddSourceHandler_SourceResolved(t *testing.T) {
 	assert.Nil(err)
 	source, err := AddSourceHandler(db, AddSourceRequest{
 		DatasetName: "test",
-		SourcePath: ".",
+		SourcePath:  ".",
 	})
 	assert.Nil(err)
 	assert.NotEqual(".", source.Path)
@@ -61,7 +61,7 @@ func TestAddSourceHandler_WithHTTPHeader(t *testing.T) {
 	assert.Nil(err)
 	_, err = AddSourceHandler(db, AddSourceRequest{
 		DatasetName: "test",
-		SourcePath: "https://example.com",
+		SourcePath:  "https://example.com",
 		HTTPHeaders: []string{
 			"key1=value1",
 			"key2=value2",

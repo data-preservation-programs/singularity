@@ -34,12 +34,12 @@ func (m *MockScanner) Scan(ctx context.Context, path string, last string) <-chan
 	return args.Get(0).(chan datasource.Entry)
 }
 
-func (m *MockResolver) GetHandler(source model.Source) (datasource.Handler, error){
+func (m *MockResolver) GetHandler(source model.Source) (datasource.Handler, error) {
 	args := m.Called(source)
 	return args.Get(0).(datasource.Handler), args.Error(1)
 }
 
-func TestScan_EmptyEntries(t *testing.T ) {
+func TestScan_EmptyEntries(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer database.DropAll(db)
@@ -80,21 +80,21 @@ func TestScan_NewEntries(t *testing.T) {
 	go func() {
 		t := time.Now().UTC()
 		entryChan <- datasource.Entry{
-			Type: model.File,
-			Path: "/tmp/1.img",
-			Size: 1_000_000,
+			Type:         model.File,
+			Path:         "/tmp/1.img",
+			Size:         1_000_000,
 			LastModified: &t,
 		}
 		entryChan <- datasource.Entry{
-			Type: model.File,
-			Path: "/tmp/2.img",
-			Size: 2_000_000,
+			Type:         model.File,
+			Path:         "/tmp/2.img",
+			Size:         2_000_000,
 			LastModified: &t,
 		}
 		entryChan <- datasource.Entry{
-			Type: model.File,
-			Path: "/tmp/3.img",
-			Size: 4_000_000,
+			Type:         model.File,
+			Path:         "/tmp/3.img",
+			Size:         4_000_000,
 			LastModified: &t,
 		}
 		close(entryChan)
@@ -110,40 +110,39 @@ func TestScan_NewEntries(t *testing.T) {
 	assert.Equal(6, len(items))
 }
 
-
 func TestChunk_SplitBigItem(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer database.DropAll(db)
 	ds, src, _ := createTestSource(db, 0)
 	items := []model.Item{{
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/tmp/relative/path/file1.txt",
-		Size:         1_000_000,
-		Offset:       0,
-		Length:       1_000_000,
-	},{
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/tmp/relative/path/file2.txt",
-		Size:         2_000_000,
-		Offset:       0,
-		Length:       2_000_000,
-	},{
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/tmp/relative/path/file3.txt",
-		Size:         4_000_000,
-		Offset:       0,
-		Length:       4_000_000,
-	},{
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/tmp/relative/path/file4.txt",
-		Size:         8_000_000,
-		Offset:       0,
-		Length:       8_000_000,
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/tmp/relative/path/file1.txt",
+		Size:     1_000_000,
+		Offset:   0,
+		Length:   1_000_000,
+	}, {
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/tmp/relative/path/file2.txt",
+		Size:     2_000_000,
+		Offset:   0,
+		Length:   2_000_000,
+	}, {
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/tmp/relative/path/file3.txt",
+		Size:     4_000_000,
+		Offset:   0,
+		Length:   4_000_000,
+	}, {
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/tmp/relative/path/file4.txt",
+		Size:     8_000_000,
+		Offset:   0,
+		Length:   8_000_000,
 	}}
 	assert.Nil(db.Create(&items).Error)
 	thread := createWorkerThread(db)
@@ -173,9 +172,8 @@ func TestChunk_SplitBigItem(t *testing.T) {
 	assert.Equal("9 /tmp/relative/path/file4.txt 8000000 (7997250-8000000)", ToString(items[10]))
 }
 
-
 func ToString(i model.Item) string {
-	return fmt.Sprintf("%d %s %d (%d-%d)",*i.ChunkID, i.Path, i.Size, i.Offset, i.Length + i.Offset)
+	return fmt.Sprintf("%d %s %d (%d-%d)", *i.ChunkID, i.Path, i.Size, i.Offset, i.Length+i.Offset)
 }
 
 func TestChunk(t *testing.T) {
@@ -184,12 +182,12 @@ func TestChunk(t *testing.T) {
 	defer database.DropAll(db)
 	ds, src, _ := createTestSource(db, 0)
 	item := model.Item{
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/tmp/relative/path/file.txt",
-		Size:         1_000_000,
-		Offset:       0,
-		Length:       1_000_000,
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/tmp/relative/path/file.txt",
+		Size:     1_000_000,
+		Offset:   0,
+		Length:   1_000_000,
 	}
 	assert.Nil(db.Create(&item).Error)
 	thread := createWorkerThread(db)
@@ -211,20 +209,20 @@ func TestEnsureParentDirectories(t *testing.T) {
 	defer database.DropAll(db)
 	_, src, _ := createTestSource(db, 0)
 	chunk := model.Chunk{
-		SourceID:        src.ID,
-		PackingState:    model.Ready,
+		SourceID:     src.ID,
+		PackingState: model.Ready,
 	}
 	assert.Nil(db.Create(&chunk).Error)
 	var root model.Directory
 	assert.Nil(db.Find(&root, src.RootDirectoryID).Error)
 	item := model.Item{
-		ChunkID:      &chunk.ID,
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/tmp/relative/path/file.txt",
-		Size:         1000,
-		Offset:       100,
-		Length:       100,
+		ChunkID:  &chunk.ID,
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/tmp/relative/path/file.txt",
+		Size:     1000,
+		Offset:   100,
+		Length:   100,
 	}
 	thread := createWorkerThread(db)
 	err := db.Create(&item).Error
@@ -241,7 +239,7 @@ func TestEnsureParentDirectories(t *testing.T) {
 	assert.Equal(*dirs[1].ParentID, dirs[0].ID)
 }
 
-func createWorkerThread(db *gorm.DB) DatasetWorkerThread{
+func createWorkerThread(db *gorm.DB) DatasetWorkerThread {
 	id := uuid.New()
 	return DatasetWorkerThread{
 		id:             id,
@@ -253,7 +251,7 @@ func createWorkerThread(db *gorm.DB) DatasetWorkerThread{
 
 func createTestSource(db *gorm.DB, scanInterval time.Duration) (model.Dataset, model.Source, model.Directory) {
 	ds, err := dataset.CreateHandler(db, dataset.CreateRequest{
-		Name: "test",
+		Name:       "test",
 		MinSizeStr: "1MB",
 		MaxSizeStr: "2MB",
 	})
@@ -261,8 +259,8 @@ func createTestSource(db *gorm.DB, scanInterval time.Duration) (model.Dataset, m
 		panic(err)
 	}
 	src, err := dataset.AddSourceHandler(db, dataset.AddSourceRequest{
-		DatasetName:       "test",
-		SourcePath:        "/tmp",
+		DatasetName:  "test",
+		SourcePath:   "/tmp",
 		ScanInterval: scanInterval,
 	})
 	if err != nil {
@@ -311,21 +309,21 @@ func TestDatasetWorkerThread_Pack(t *testing.T) {
 	db := database.OpenInMemory()
 	defer database.DropAll(db)
 	thread := createWorkerThread(db)
-	ds, src, _ := createTestSource(db,  0)
+	ds, src, _ := createTestSource(db, 0)
 	chunk := model.Chunk{
-		SourceID:        src.ID,
-		PackingState:    model.Ready,
+		SourceID:     src.ID,
+		PackingState: model.Ready,
 	}
 	err := db.Create(&chunk).Error
 	assert.Nil(err)
 	item := model.Item{
-		ChunkID:      &chunk.ID,
-		SourceID:     src.ID,
-		Type:         model.File,
-		Path:         "/mnt/test.bin",
-		Size:         10_000_000,
-		Offset:       0,
-		Length:       10_000_000,
+		ChunkID:  &chunk.ID,
+		SourceID: src.ID,
+		Type:     model.File,
+		Path:     "/mnt/test.bin",
+		Size:     10_000_000,
+		Offset:   0,
+		Length:   10_000_000,
 	}
 	err = db.Create(&item).Error
 	assert.Nil(err)
@@ -362,16 +360,16 @@ func TestDatasetWorkerThread_FindPackWork_NeedPack(t *testing.T) {
 	assert.Nil(err)
 	assert.Nil(chunk)
 
-	_, src, _ := createTestSource(db,  0)
+	_, src, _ := createTestSource(db, 0)
 	db.Model(&src).Update("scanning_state", model.Complete)
 	chunk = &model.Chunk{
-		SourceID: src.ID,
-		PackingState:    model.Ready,
+		SourceID:     src.ID,
+		PackingState: model.Ready,
 	}
 	assert.NoError(db.Create(chunk).Error)
 	assert.NoError(db.Create(&model.Item{
-		ChunkID:      &chunk.ID,
-		SourceID:     src.ID,
+		ChunkID:  &chunk.ID,
+		SourceID: src.ID,
 	}).Error)
 
 	chunk, err = thread.findPackWork()
@@ -392,7 +390,7 @@ func TestDatasetWorkerThread_FindScanWork_NeedScan(t *testing.T) {
 	assert.Nil(err)
 	assert.Nil(source)
 
-	_, _, _ = createTestSource(db,  0)
+	_, _, _ = createTestSource(db, 0)
 	source, err = thread.findScanWork()
 	assert.Nil(err)
 	assert.NotNil(source)
@@ -416,10 +414,10 @@ func TestDatasetWorkerThread_FindScanWork_NeedRescan(t *testing.T) {
 	assert.Nil(err)
 	assert.Nil(source)
 
-	_, src, _ := createTestSource(db,  time.Second)
+	_, src, _ := createTestSource(db, time.Second)
 	db.Model(src).Updates(map[string]interface{}{
-		"scanning_state": model.Complete,
-		"scanning_worker_id": nil,
+		"scanning_state":         model.Complete,
+		"scanning_worker_id":     nil,
 		"last_scanned_timestamp": time.Now().UTC().Unix(),
 	})
 
@@ -454,11 +452,10 @@ func TestDatasetWorker_ReceiveInterruption(t *testing.T) {
 
 	pid := os.Getpid()
 	syscall.Kill(pid, syscall.SIGTERM)
-	err = <- errChan
+	err = <-errChan
 	assert.ErrorContains(err, "received signal")
 
 	err = db.Model(&model.Worker{}).Count(&wCount).Error
 	assert.Nil(err)
 	assert.Equal(int64(0), wCount)
 }
-

@@ -50,7 +50,7 @@ type ReplicationRequest struct {
 	ID                  string    `bson:"_id"`
 	DatasetID           string    `bson:"datasetId"`
 	StorageProviders    string    `bson:"storageProviders"`
-	UrlPrefix           string    `bson:"urlPrefix"`
+	URLPrefix           string    `bson:"urlPrefix"`
 	MaxPrice            uint64    `bson:"maxPrice"`
 	IsVerified          bool      `bson:"isVerified"`
 	StartDelay          uint64    `bson:"startDelay"`

@@ -75,7 +75,7 @@ func CreateHandler(c *cli.Context) error {
 
 	schedule := model.Schedule{
 		DatasetID:            dataset.ID,
-		UrlTemplate:          urlTemplate,
+		URLTemplate:          urlTemplate,
 		Provider:             provider,
 		Price:                price,
 		TotalDealNumber:      totalDealNumber,
@@ -92,7 +92,7 @@ func CreateHandler(c *cli.Context) error {
 		Notes:                notes,
 		AnnounceToIPNI:       ipni,
 		KeepUnsealed:         unsealed,
-		HttpHeaders:          httpHeaders,
+		HTTPHeaders:          httpHeaders,
 	}
 
 	err = db.Create(&schedule).Error

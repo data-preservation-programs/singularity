@@ -3,7 +3,6 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"os"
@@ -76,7 +75,7 @@ func (ss *StringSlice) Scan(src interface{}) error {
 
 	source, ok := src.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan StringSlice: %v", src)
+		return errors.New("failed to scan StringSlice")
 	}
 
 	return json.Unmarshal(source, ss)
@@ -90,7 +89,7 @@ func (m *Metadata) Scan(src interface{}) error {
 
 	source, ok := src.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Map: %v", src)
+		return errors.New("failed to scan Metadata")
 	}
 
 	return json.Unmarshal(source, m)
@@ -117,7 +116,7 @@ const (
 
 func (s SourceType) GetSupportedItemType() ItemType {
 	switch s {
-	case Dir:
+	case Dir, Upload:
 		return File
 	case Website:
 		return URL
@@ -137,15 +136,15 @@ const (
 var ItemTypes = []ItemType{File, URL, S3Object}
 
 const (
-	// Created means the item has been created is not ready for processing
+	// Created means the item has been created is not ready for processing.
 	Created WorkState = "created"
-	// Ready means the item is ready to be processed
+	// Ready means the item is ready to be processed.
 	Ready WorkState = "ready"
-	// Processing means the work is currently being processed
+	// Processing means the work is currently being processed.
 	Processing WorkState = "processing"
-	// Complete means the work is complete
+	// Complete means the work is complete.
 	Complete WorkState = "complete"
-	// Error means the work has some error
+	// Error means the work has some error.
 	Error WorkState = "error"
 )
 
@@ -162,7 +161,7 @@ type Global struct {
 	Value string
 }
 
-// Dataset is the top level object that represents a set of data to be onboarded
+// Dataset is the top level object that represents a set of data to be onboarded.
 type Dataset struct {
 	ID                   uint32 `gorm:"primaryKey"`
 	Name                 string `gorm:"unique"`
@@ -174,16 +173,16 @@ type Dataset struct {
 	OutputDirs           StringSlice `gorm:"type:JSON"`
 	EncryptionRecipients StringSlice `gorm:"type:JSON"`
 	EncryptionScript     string
-	Wallets              []Wallet `gorm:"many2many:wallet_assignments;" json:"Wallets,omitempty"`
+	Wallets              []Wallet `gorm:"many2many:wallet_assignments;"`
 }
 
-// Source represents a source of data, i.e. a local file system directory
+// Source represents a source of data, i.e. a local file system directory.
 type Source struct {
 	ID                   uint32 `gorm:"primaryKey"`
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
 	DatasetID            uint32   `gorm:"index"`
-	Dataset              *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"Dataset,omitempty"`
+	Dataset              *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	Type                 SourceType
 	Path                 string
 	Metadata             Metadata `gorm:"type:JSON"`
@@ -223,7 +222,7 @@ func NewSource(source string) (*Source, error) { // Get the absolute path
 	}, nil
 }
 
-// Chunk is a grouping of items that are packed into a single CAR
+// Chunk is a grouping of items that are packed into a single CAR.
 type Chunk struct {
 	ID              uint32 `gorm:"primaryKey"`
 	CreatedAt       time.Time
@@ -236,14 +235,14 @@ type Chunk struct {
 	Items           []Item
 }
 
-// Item makes a reference to the data source item, i.e. a local file
+// Item makes a reference to the data source item, i.e. a local file.
 type Item struct {
 	ID           uint64 `gorm:"primaryKey"`
 	ScannedAt    time.Time
 	ChunkID      *uint32 `gorm:"index"`
-	Chunk        *Chunk  `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"Chunk,omitempty"`
+	Chunk        *Chunk  `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	SourceID     uint32  `gorm:"index"`
-	Source       *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"Source,omitempty"`
+	Source       *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	Type         ItemType
 	Path         string
 	Size         uint64
@@ -254,16 +253,16 @@ type Item struct {
 	CID          string `gorm:"column:cid"`
 	ErrorMessage string
 	DirectoryID  *uint64    `gorm:"index"`
-	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"Directory,omitempty"`
+	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"omitempty"`
 }
 
-// Directory is a link between parent and child directories
+// Directory is a link between parent and child directories.
 type Directory struct {
 	ID       uint64 `gorm:"primaryKey"`
 	CID      string `gorm:"column:cid"`
 	Name     string
 	ParentID *uint64    `gorm:"index"`
-	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"Parent,omitempty"`
+	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"omitempty"`
 }
 
 // Car makes a reference to a CAR file that has been potentially exported to the disk.
@@ -278,20 +277,10 @@ type Car struct {
 	FileSize  uint64
 	FilePath  string
 	DatasetID uint32   `gorm:"index"`
-	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"Dataset,omitempty"`
+	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	ChunkID   uint32
-	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"Chunk,omitempty"`
+	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	Header    []byte
-}
-
-// RawBlock tells us the CIDs of all blocks for constructing the unixfs dag.
-// i.e. the blocks that are upper layer of a file, or the directory blocks.
-type RawBlock struct {
-	CID     string `gorm:"index;column:cid"`
-	ChunkID uint32
-	Chunk   *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"`
-	Block   []byte
-	Length  uint32
 }
 
 // CarBlock tells us the CIDs of all blocks inside a CAR file

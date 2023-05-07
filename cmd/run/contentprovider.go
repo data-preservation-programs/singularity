@@ -9,19 +9,19 @@ var ContentProviderCmd = &cli.Command{
 	Usage: "Start a content provider that serves retrieval requests",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
-			Name:    "http-piece",
-			Usage:   "Enable HTTP piece retrieval (for downloading CAR files)",
-			Value:   true,
+			Name:  "http-piece",
+			Usage: "Enable HTTP piece retrieval (for downloading CAR files)",
+			Value: true,
 		},
 		&cli.BoolFlag{
-			Name:    "http-payload",
-			Usage:   "Enable HTTP payload retrieval",
-			Value:   false,
+			Name:  "http-payload",
+			Usage: "Enable HTTP payload retrieval",
+			Value: false,
 		},
 		&cli.BoolFlag{
-			Name:    "bitswap",
-			Usage:   "Enable Bitswap retrieval",
-			Value:   false,
+			Name:  "bitswap",
+			Usage: "Enable Bitswap retrieval",
+			Value: false,
 		},
 	},
 	Action: func(c *cli.Context) error {

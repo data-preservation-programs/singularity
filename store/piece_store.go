@@ -109,14 +109,14 @@ func (i *PieceReader) Read(p []byte) (n int, err error) {
 				return n, nil
 			}
 		}
-		i.blockID += 1
+		i.blockID++
 		i.innerBlockID = 0
 		return n, nil
 	}
 
 	itemBlock, _ := currentBlock.(itemBlock)
 	if i.innerBlockID >= len(itemBlock.meta) {
-		i.blockID += 1
+		i.blockID++
 		i.innerBlockID = 0
 		return n, nil
 	}
@@ -149,9 +149,9 @@ func (i *PieceReader) Read(p []byte) (n int, err error) {
 		}
 		i.pos += uint64(n)
 		if i.pos == innerBlock.EndOffset() {
-			i.innerBlockID += 1
+			i.innerBlockID++
 			if i.innerBlockID >= len(itemBlock.meta) {
-				i.blockID += 1
+				i.blockID++
 				i.innerBlockID = 0
 				i.reader.Close()
 				i.reader = nil

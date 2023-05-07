@@ -53,27 +53,22 @@ func (p PriorityBlockStore) GetSize(ctx context.Context, cid cid.Cid) (int, erro
 }
 
 func (p PriorityBlockStore) Put(ctx context.Context, block blocks.Block) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (p PriorityBlockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (p PriorityBlockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (p PriorityBlockStore) HashOnRead(enabled bool) {
-	//TODO implement me
 	panic("implement me")
 }
 
 func (p PriorityBlockStore) DeleteBlock(ctx context.Context, cid cid.Cid) error {
-	//TODO implement me
 	panic("implement me")
 }
 

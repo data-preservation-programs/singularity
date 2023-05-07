@@ -17,7 +17,7 @@ func TestHealthCheck(t *testing.T) {
 	id := uuid.New()
 	healthCheck(db, id, func() State {
 		return State{
-			WorkType: model.Packing,
+			WorkType:  model.Packing,
 			WorkingOn: "something",
 		}
 	})
@@ -31,7 +31,7 @@ func TestHealthCheck(t *testing.T) {
 
 	healthCheck(db, id, func() State {
 		return State{
-			WorkType: model.Packing,
+			WorkType:  model.Packing,
 			WorkingOn: "something else",
 		}
 	})

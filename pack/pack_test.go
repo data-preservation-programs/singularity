@@ -59,15 +59,15 @@ func TestStreamItem(t *testing.T) {
 	assert := assert.New(t)
 	streamer := &MockHandler{}
 	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(newRandomReadCloser(1024 * 1024 * 256 + 1, 0), nil)
+		Return(newRandomReadCloser(1024*1024*256+1, 0), nil)
 
 	ctx := context.TODO()
 	item := model.Item{
-		Type:         model.File,
-		Path:         "/test",
-		Size:         1024 * 1024 * 256 + 1,
-		Offset:       0,
-		Length:       1024 * 1024 * 256 + 1,
+		Type:   model.File,
+		Path:   "/test",
+		Size:   1024*1024*256 + 1,
+		Offset: 0,
+		Length: 1024*1024*256 + 1,
 	}
 	resultChan, err := streamItem(ctx, streamer, item)
 	assert.NoError(err)
@@ -78,12 +78,12 @@ func TestStreamItem(t *testing.T) {
 	}
 
 	assert.Equal(257, len(results))
-	assert.EqualValues(1024 * 1024, results[1].Length)
-	assert.EqualValues(1024 * 1024, results[1].Offset)
+	assert.EqualValues(1024*1024, results[1].Length)
+	assert.EqualValues(1024*1024, results[1].Offset)
 	assert.Equal("bafkreibiwr2p5y6amnlumocf7rl5tc6zctdfcjioy5eigbx3cvipwxbl4e", results[1].CID.String())
 	assert.NotEmpty(results[1].Raw)
 	assert.EqualValues(1, results[256].Length)
-	assert.EqualValues(1024 * 1024 * 256, results[256].Offset)
+	assert.EqualValues(1024*1024*256, results[256].Offset)
 	assert.Equal("bafkreicfpzefjbr6p35kamtgvv4bqixmzzu56mnfcf4gcggba5y2q7tj6i", results[256].CID.String())
 	assert.NotEmpty(results[256].Raw)
 }
@@ -102,7 +102,7 @@ func TestWriteCarBlock(t *testing.T) {
 
 func TestCreateParentNode(t *testing.T) {
 	assert := assert.New(t)
-	links := []Link {
+	links := []Link{
 		{
 			Link: format.Link{
 				Name: "",
@@ -139,21 +139,21 @@ func TestPackItems(t *testing.T) {
 	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(newRandomReadCloser(10_000_000, 0), nil)
 	item := model.Item{
-		Type:         model.File,
-		Path:         "/tmp/file1.img",
-		Size:         10_000_000,
-		Offset:       0,
-		Length:       10_000_000,
+		Type:   model.File,
+		Path:   "/tmp/file1.img",
+		Size:   10_000_000,
+		Offset: 0,
+		Length: 10_000_000,
 	}
 	ctx := context.Background()
 	outDir := os.TempDir()
 	pieceSize := uint64(1 << 35)
-	result, err := PackItems(ctx, streamer, []model.Item{item}, outDir, pieceSize)
+	result, err := ProcessItems(ctx, streamer, []model.Item{item}, outDir, pieceSize)
 	assert.NoError(err)
 	assert.Equal("/tmp/baga6ea4seaqln473vpjjacg4b3tfcgdemopmgjpq4uwxm6drmr2tawj7lvqrgki.car", result.CarFilePath)
 	assert.EqualValues(10000972, result.CarFileSize)
 	assert.Equal("baga6ea4seaqln473vpjjacg4b3tfcgdemopmgjpq4uwxm6drmr2tawj7lvqrgki", result.PieceCID.String())
-	assert.EqualValues(1 << 35, result.PieceSize)
+	assert.EqualValues(1<<35, result.PieceSize)
 	assert.Equal("bafkreib5gcnatcliv7ubb3qwpygfwic66nqqqkng2nha6c5ezjthk3dply", result.RootCID.String())
 	assert.Equal([]byte{0xa2, 0x65, 0x72, 0x6f, 0x6f, 0x74, 0x73, 0x81, 0xd8, 0x2a, 0x58, 0x25, 0x0, 0x1, 0x55, 0x12, 0x20, 0x3d, 0x30, 0x9a, 0x9, 0x89, 0x68, 0xaf, 0xe8, 0x10, 0xee, 0x16, 0x7e, 0xc, 0x5b, 0x20, 0x5e, 0xf3, 0x61, 0x8, 0x29, 0xa6, 0xd3, 0x4e, 0xf, 0xb, 0xa4, 0xca, 0x66, 0x75, 0x6c, 0x6f, 0x5e, 0x67, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x0}, result.Header)
 	assert.Equal(1, len(result.RawBlocks))
@@ -167,20 +167,20 @@ func TestPackItemsWithoutOutdir(t *testing.T) {
 	streamer.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(newRandomReadCloser(10_000_000, 0), nil)
 	item := model.Item{
-		Type:         model.File,
-		Path:         "/tmp/file1.img",
-		Size:         10_000_000,
-		Offset:       0,
-		Length:       10_000_000,
+		Type:   model.File,
+		Path:   "/tmp/file1.img",
+		Size:   10_000_000,
+		Offset: 0,
+		Length: 10_000_000,
 	}
 	ctx := context.Background()
 	pieceSize := uint64(1 << 35)
-	result, err := PackItems(ctx, streamer, []model.Item{item}, "", pieceSize)
+	result, err := ProcessItems(ctx, streamer, []model.Item{item}, "", pieceSize)
 	assert.NoError(err)
 	assert.Equal("", result.CarFilePath)
 	assert.EqualValues(10000972, result.CarFileSize)
 	assert.Equal("baga6ea4seaqln473vpjjacg4b3tfcgdemopmgjpq4uwxm6drmr2tawj7lvqrgki", result.PieceCID.String())
-	assert.EqualValues(1 << 35, result.PieceSize)
+	assert.EqualValues(1<<35, result.PieceSize)
 	assert.Equal("bafkreib5gcnatcliv7ubb3qwpygfwic66nqqqkng2nha6c5ezjthk3dply", result.RootCID.String())
 	assert.Equal([]byte{0xa2, 0x65, 0x72, 0x6f, 0x6f, 0x74, 0x73, 0x81, 0xd8, 0x2a, 0x58, 0x25, 0x0, 0x1, 0x55, 0x12, 0x20, 0x3d, 0x30, 0x9a, 0x9, 0x89, 0x68, 0xaf, 0xe8, 0x10, 0xee, 0x16, 0x7e, 0xc, 0x5b, 0x20, 0x5e, 0xf3, 0x61, 0x8, 0x29, 0xa6, 0xd3, 0x4e, 0xf, 0xb, 0xa4, 0xca, 0x66, 0x75, 0x6c, 0x6f, 0x5e, 0x67, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x0}, result.Header)
 	assert.Equal(1, len(result.RawBlocks))

@@ -87,7 +87,7 @@ func TestCreateHandler_EncryptionNeedsOutputDir(t *testing.T) {
 	assert.ErrorContains(err, "encryption is not compatible with inline preparation")
 }
 
-func TestCreateHandler_Success (t *testing.T) {
+func TestCreateHandler_Success(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer model.DropAll(db)
