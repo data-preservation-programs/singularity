@@ -45,13 +45,13 @@ func (c CarReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Bl
 			errors = append(errors, err)
 			continue
 		}
-		_, err = reader.Seek(int64(carBlock.Offset), io.SeekStart)
+		_, err = reader.Seek(int64(carBlock.CarOffset), io.SeekStart)
 		if err != nil {
 			errors = append(errors, err)
 			reader.Close()
 			continue
 		}
-		readBytes := make([]byte, carBlock.Length)
+		readBytes := make([]byte, carBlock.CarBlockLength)
 		_, err = io.ReadFull(reader, readBytes)
 		if err != nil {
 			errors = append(errors, err)
@@ -73,7 +73,7 @@ func (c CarReferenceBlockStore) GetSize(ctx context.Context, cid cid.Cid) (int, 
 		}
 		return 0, err
 	}
-	return int(carBlock.Length), nil
+	return int(carBlock.CarBlockLength), nil
 }
 
 func (c CarReferenceBlockStore) Put(ctx context.Context, block blocks.Block) error {

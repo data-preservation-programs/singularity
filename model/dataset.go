@@ -201,27 +201,28 @@ type Dataset struct {
 	OutputDirs           StringSlice `gorm:"type:JSON" json:"outputDirs"`
 	EncryptionRecipients StringSlice `gorm:"type:JSON" json:"encryptionRecipients"`
 	EncryptionScript     string      `json:"encryptionScript"`
+	Wallets              []Wallet    `gorm:"many2many:wallet_assignments" json:"wallets,omitempty" swaggerignore:"true"`
 }
 
 // Source represents a source of data, i.e. a local file system directory.
 type Source struct {
-	ID                   uint32 `gorm:"primaryKey"`
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
-	DatasetID            uint32   `gorm:"uniqueIndex:dataset_path"`
-	Dataset              *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"Dataset,omitempty"`
-	Type                 SourceType
-	Path                 string   `gorm:"uniqueIndex:dataset_path"`
-	Metadata             Metadata `gorm:"type:JSON"`
-	PushOnly             bool
-	ScanIntervalSeconds  uint64
-	ScanningState        WorkState
-	ScanningWorkerID     *string `json:"ScanningWorkerID,omitempty"`
-	ScanningWorker       *Worker `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"ScanningWorker,omitempty"`
-	LastScannedTimestamp int64
-	ErrorMessage         string
-	RootDirectoryID      uint64
-	RootDirectory        *Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:CASCADE" json:"RootDirectory,omitempty"`
+	ID                   uint32     `gorm:"primaryKey" json:"id"`
+	CreatedAt            time.Time  `json:"createdAt"`
+	UpdatedAt            time.Time  `json:"updatedAt"`
+	DatasetID            uint32     `gorm:"uniqueIndex:dataset_path" json:"datasetID"`
+	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
+	Type                 SourceType `json:"type"`
+	Path                 string     `gorm:"uniqueIndex:dataset_path" json:"path"`
+	Metadata             Metadata   `gorm:"type:JSON" json:"metadata"`
+	PushOnly             bool       `json:"pushOnly"`
+	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
+	ScanningState        WorkState  `json:"scanningState"`
+	ScanningWorkerID     *string    `json:"scanningWorkerId,omitempty"`
+	ScanningWorker       *Worker    `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"scanningWorker,omitempty" swaggerignore:"true"`
+	LastScannedTimestamp int64      `json:"lastScannedTimestamp"`
+	ErrorMessage         string     `json:"errorMessage"`
+	RootDirectoryID      uint64     `json:"rootDirectoryId"`
+	RootDirectory        *Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:CASCADE" json:"rootDirectory,omitempty" swaggerignore:"true"`
 }
 
 func NewSource(source string) (*Source, error) { // Get the absolute path
@@ -316,16 +317,18 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
-	CarID  uint32
-	Car    *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"`
-	CID    string `gorm:"index;column:cid"`
-	Offset uint64
-	Length uint64
+	CarID uint32
+	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"`
+	CID   string `gorm:"index;column:cid"`
+	// Offset of the varint inside the CAR
+	CarOffset      uint64
+	CarBlockLength uint64
+	// Value of the varint
 	Varint uint64
 	// Raw block
 	RawBlock []byte
 	// If block is null, this block is a part of an item
-	SourceID   *uint32
+	SourceID   uint32
 	Source     *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"`
 	ItemID     *uint64
 	Item       *Item `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"`

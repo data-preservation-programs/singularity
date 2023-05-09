@@ -1,5 +1,26 @@
 basePath: /admin/api
 definitions:
+  dataset.AddSourceRequest:
+    properties:
+      httpheaders:
+        items:
+          type: string
+        type: array
+      pushOnly:
+        type: boolean
+      s3AccessKeyID:
+        type: string
+      s3Endpoint:
+        type: string
+      s3Region:
+        type: string
+      s3SecretAccessKey:
+        type: string
+      scanInterval:
+        $ref: '#/definitions/time.Duration'
+      sourcePath:
+        type: string
+    type: object
   dataset.CreateRequest:
     properties:
       maxSize:
@@ -52,20 +73,87 @@ definitions:
         type: integer
       updatedAt:
         type: string
-      wallets:
-        items:
-          $ref: '#/definitions/model.Wallet'
-        type: array
     type: object
-  model.Wallet:
+  model.Metadata:
+    additionalProperties: true
+    type: object
+  model.Source:
     properties:
+      createdAt:
+        type: string
+      datasetID:
+        type: integer
+      errorMessage:
+        type: string
       id:
+        type: integer
+      lastScannedTimestamp:
+        type: integer
+      metadata:
+        $ref: '#/definitions/model.Metadata'
+      path:
         type: string
-      privateKey:
+      pushOnly:
+        type: boolean
+      rootDirectoryId:
+        type: integer
+      scanIntervalSeconds:
+        type: integer
+      scanningState:
+        $ref: '#/definitions/model.WorkState'
+      scanningWorkerId:
         type: string
-      shortID:
+      type:
+        $ref: '#/definitions/model.SourceType'
+      updatedAt:
         type: string
     type: object
+  model.SourceType:
+    enum:
+    - dir
+    - website
+    - s3path
+    - upload
+    type: string
+    x-enum-varnames:
+    - Dir
+    - Website
+    - S3Path
+    - Upload
+  model.WorkState:
+    enum:
+    - created
+    - ready
+    - processing
+    - complete
+    - error
+    type: string
+    x-enum-varnames:
+    - Created
+    - Ready
+    - Processing
+    - Complete
+    - Error
+  time.Duration:
+    enum:
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    type: integer
+    x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
 host: localhost:9090
 info:
   contact: {}
@@ -101,6 +189,115 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: Create a new dataset
+      tags:
+      - Dataset
+  /dataset/{datasetName}:
+    delete:
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Remove a dataset
+      tags:
+      - Dataset
+  /dataset/{name}/source:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataset.AddSourceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add a source to a dataset
+      tags:
+      - Dataset
+  /dataset/{name}/source/{sourcePath}:
+    delete:
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Source path
+        in: path
+        name: sourcePath
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Remove a source from a dataset
+      tags:
+      - Dataset
+  /dataset/{name}/sources:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all sources for a dataset
       tags:
       - Dataset
   /datasets:

@@ -38,6 +38,17 @@ func healthCheckCleanup(db *gorm.DB) {
 	if err != nil {
 		log.Logger("healthcheck").Errorw("failed to remove dead workers", "error", err)
 	}
+
+	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
+	err = db.Model(&model.Source{}).Where("scanning_worker_id NOT IN (?)", db.Table("workers").Select("id")).Update("scanning_worker_id", nil).Error
+	if err != nil {
+		log.Logger("healthcheck").Errorw("failed to remove stale scanning worker", "error", err)
+	}
+
+	err = db.Model(&model.Chunk{}).Where("packing_worker_id NOT IN (?)", db.Table("workers").Select("id")).Update("packing_worker_id", nil).Error
+	if err != nil {
+		log.Logger("healthcheck").Errorw("failed to remove stale packing worker", "error", err)
+	}
 }
 
 func healthCheck(db *gorm.DB, workerID uuid.UUID, getState func() State) {
@@ -67,12 +78,12 @@ func StartHealthCheck(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getS
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
-		healthCheck(db, workerID, getState)
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			continue
 		}
+		healthCheck(db, workerID, getState)
 	}
 }

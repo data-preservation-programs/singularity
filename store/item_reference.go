@@ -42,8 +42,8 @@ func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.B
 		reader, err := handler.Read(
 			ctx,
 			itemBlock.Item.Path,
-			itemBlock.Offset+itemBlock.Item.Offset,
-			itemBlock.Length)
+			itemBlock.CarOffset+itemBlock.Item.Offset,
+			itemBlock.CarBlockLength)
 		if err != nil {
 			errors = append(errors, err)
 			continue
@@ -68,7 +68,7 @@ func (i ItemReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, e
 		}
 		return 0, err
 	}
-	return int(itemBlocks.Length), nil
+	return int(itemBlocks.CarBlockLength), nil
 }
 
 func (i ItemReferenceBlockStore) Put(ctx context.Context, block blocks.Block) error {

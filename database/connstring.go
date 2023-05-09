@@ -19,7 +19,22 @@ var logger = log.Logger("database")
 
 func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 	if strings.HasPrefix(connString, "sqlite:") {
-		return gorm.Open(sqlite.Open(connString[7:]), config)
+		db, err := gorm.Open(sqlite.Open(connString[7:]), config)
+		if err != nil {
+			return nil, err
+		}
+
+		err = db.Exec("PRAGMA foreign_keys = ON").Error
+		if err != nil {
+			return nil, err
+		}
+
+		err = db.Exec("PRAGMA busy_timeout = 5000").Error
+		if err != nil {
+			return nil, err
+		}
+
+		return db, nil
 	}
 
 	if strings.HasPrefix(connString, "postgres:") {

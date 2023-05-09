@@ -14,7 +14,7 @@ var ListSourceCmd = &cli.Command{
 	ArgsUsage: "DATASET_NAME",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		if err := model.Init(c.String("password"), db); err != nil {
+		if err := model.InitializeEncryption(c.String("password"), db); err != nil {
 			return cli.Exit("Cannot initialize encryption"+err.Error(), 1)
 		}
 		sources, err := dataset.ListSourceHandler(
