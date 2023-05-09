@@ -1,0 +1,144 @@
+basePath: /admin/api
+definitions:
+  dataset.CreateRequest:
+    properties:
+      maxSize:
+        type: string
+      minSize:
+        type: string
+      name:
+        type: string
+      outputDirs:
+        items:
+          type: string
+        type: array
+      pieceSize:
+        type: string
+      recipients:
+        items:
+          type: string
+        type: array
+      script:
+        type: string
+    type: object
+  handler.HTTPError:
+    properties:
+      err:
+        type: string
+    type: object
+  model.Dataset:
+    properties:
+      createdAt:
+        type: string
+      encryptionRecipients:
+        items:
+          type: string
+        type: array
+      encryptionScript:
+        type: string
+      id:
+        type: integer
+      maxSize:
+        type: integer
+      minSize:
+        type: integer
+      name:
+        type: string
+      outputDirs:
+        items:
+          type: string
+        type: array
+      pieceSize:
+        type: integer
+      updatedAt:
+        type: string
+      wallets:
+        items:
+          $ref: '#/definitions/model.Wallet'
+        type: array
+    type: object
+  model.Wallet:
+    properties:
+      id:
+        type: string
+      privateKey:
+        type: string
+      shortID:
+        type: string
+    type: object
+host: localhost:9090
+info:
+  contact: {}
+  description: This is the API for Singularity, a tool for large-scale clients with
+    PB-scale data onboarding to Filecoin network.
+  title: Singularity API
+  version: beta
+paths:
+  /dataset:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataset.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Dataset'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Create a new dataset
+      tags:
+      - Dataset
+  /datasets:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Dataset'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all datasets
+      tags:
+      - Dataset
+  /init:
+    post:
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Initialize the database
+      tags:
+      - Global
+swagger: "2.0"

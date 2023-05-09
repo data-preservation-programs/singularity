@@ -11,6 +11,12 @@ import (
 	"os"
 )
 
+// @title Singularity API
+// @version beta
+// @description This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.
+// @host localhost:9090
+// @BasePath /admin/api
+// @securityDefinitions none
 func main() {
 	app := &cli.App{
 		Name:  "singularity",
@@ -29,7 +35,20 @@ func main() {
 				EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 			},
 			&cli.StringFlag{
-				Name: "credential-encryption-key",
+				Name:    "password",
+				Usage:   "Password used to derive encryption key for credentials encryption",
+				EnvVars: []string{"PASSWORD"},
+				Value:   "1234",
+			},
+			&cli.BoolFlag{
+				Name:  "verbose",
+				Usage: "Enable verbose logging",
+				Value: false,
+			},
+			&cli.BoolFlag{
+				Name:  "json",
+				Usage: "Enable JSON output",
+				Value: false,
 			},
 		},
 		Commands: []*cli.Command{
@@ -53,7 +72,7 @@ func main() {
 					run.ContentProviderCmd,
 					run.ReplicationCmd,
 					run.SpadeAPICmd,
-					run.DashboardCmd,
+					run.ApiCmd,
 				},
 			},
 			{
@@ -61,7 +80,11 @@ func main() {
 				Usage: "Dataset preparation management",
 				Subcommands: []*cli.Command{
 					dataset.CreateCmd,
+					dataset.ListDatasetCmd,
+					dataset.RemoveDatasetCmd,
 					dataset.AddSourceCmd,
+					dataset.ListSourceCmd,
+					dataset.RemoveSourceCmd,
 				},
 			},
 		},

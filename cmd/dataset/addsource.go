@@ -1,8 +1,10 @@
 package dataset
 
 import (
+	"github.com/data-preservation-programs/go-singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/handler/dataset"
+	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/urfave/cli/v2"
 )
 
@@ -62,7 +64,12 @@ var AddSourceCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		_, err := dataset.AddSourceHandler(
+
+		if err := model.Init(c.String("password"), db); err != nil {
+			return cli.Exit("Cannot initialize encryption"+err.Error(), 1)
+		}
+
+		source, err := dataset.AddSourceHandler(
 			db,
 			dataset.AddSourceRequest{
 				DatasetName:       c.Args().Get(0),
@@ -76,6 +83,10 @@ var AddSourceCmd = &cli.Command{
 				PushOnly:          c.Bool("push-only"),
 			},
 		)
-		return err
+		if err != nil {
+			return err
+		}
+		cliutil.PrintToConsole(source, c.Bool("json"))
+		return nil
 	},
 }

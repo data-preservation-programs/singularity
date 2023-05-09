@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"github.com/data-preservation-programs/go-singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/handler/dataset"
 	"github.com/urfave/cli/v2"
@@ -54,7 +55,7 @@ var CreateCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		_, err := dataset.CreateHandler(
+		dataset, err := dataset.CreateHandler(
 			db,
 			dataset.CreateRequest{
 				Name:         c.Args().Get(0),
@@ -65,6 +66,10 @@ var CreateCmd = &cli.Command{
 				Recipients:   c.StringSlice("encryption-recipients"),
 				Script:       c.String("encryption-script")},
 		)
-		return err
+		if err != nil {
+			return err
+		}
+		cliutil.PrintToConsole(dataset, c.Bool("json"))
+		return nil
 	},
 }

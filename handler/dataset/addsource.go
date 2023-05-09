@@ -3,10 +3,9 @@ package dataset
 import (
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/encryption"
+	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/ipfs/go-log/v2"
-	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -27,22 +26,22 @@ type AddSourceRequest struct {
 func AddSourceHandler(
 	db *gorm.DB,
 	request AddSourceRequest,
-) (*model.Source, error) {
+) (*model.Source, *handler.Error) {
 	logger := log.Logger("cli")
 	log.SetAllLoggers(log.LevelInfo)
 	if request.DatasetName == "" {
-		return nil, cli.Exit("dataset name is required", 1)
+		return nil, handler.NewBadRequestString("dataset name is required")
 	}
 
 	if request.SourcePath == "" {
-		return nil, cli.Exit("source path is required", 1)
+		return nil, handler.NewBadRequestString("source path is required")
 	}
 
 	headers := map[string]string{}
 	for _, header := range request.HTTPHeaders {
 		parts := strings.SplitN(header, "=", 2)
 		if len(parts) != 2 {
-			return nil, cli.Exit("invalid header: "+header, 1)
+			return nil, handler.NewBadRequestString("invalid header: " + header)
 		}
 
 		headers[parts[0]] = parts[1]
@@ -50,29 +49,25 @@ func AddSourceHandler(
 
 	dataset, err := database.FindDatasetByName(db, request.DatasetName)
 	if err != nil {
-		return nil, cli.Exit("failed to find dataset: "+err.Error(), 1)
+		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}
 
 	sourceType, sourcePath, err := datasource.ResolveSourceType(request.SourcePath)
 	if err != nil {
-		return nil, cli.Exit("failed to resolve source type: "+err.Error(), 1)
+		return nil, handler.NewBadRequestString("failed to resolve source type: " + err.Error())
 	}
 
 	var metadata model.Metadata
-	secret, err := encryption.EncryptToBase64String([]byte(request.S3SecretAccessKey))
-	if err != nil {
-		return nil, cli.Exit("failed to encrypt secret access key: "+err.Error(), 1)
-	}
 	if sourceType == model.S3Path {
 		m := model.S3Metadata{
 			Region:          request.S3Region,
 			Endpoint:        request.S3Endpoint,
 			AccessKeyID:     request.S3AccessKeyID,
-			SecretAccessKey: secret,
+			SecretAccessKey: request.S3SecretAccessKey,
 		}
 		metadata, err = m.Encode()
 		if err != nil {
-			return nil, cli.Exit("failed to encode metadata: "+err.Error(), 1)
+			return nil, handler.NewBadRequestString("failed to encode metadata: " + err.Error())
 		}
 	} else if sourceType == model.Website {
 		m := model.HTTPMetadata{
@@ -80,12 +75,12 @@ func AddSourceHandler(
 		}
 		metadata, err = m.Encode()
 		if err != nil {
-			return nil, cli.Exit("failed to encode metadata: "+err.Error(), 1)
+			return nil, handler.NewBadRequestString("failed to encode metadata: " + err.Error())
 		}
 	}
 
 	if request.ScanInterval == 0 && request.PushOnly {
-		return nil, cli.Exit("scan interval is required to handle pushed data", 1)
+		return nil, handler.NewBadRequestString("scan interval is required to handle pushed data")
 	}
 
 	dir := model.Directory{
@@ -93,7 +88,7 @@ func AddSourceHandler(
 	}
 	err = db.Create(&dir).Error
 	if err != nil {
-		return nil, cli.Exit("failed to create root directory: "+err.Error(), 1)
+		return nil, handler.NewBadRequestString("failed to create root directory: " + err.Error())
 	}
 
 	source := model.Source{
@@ -110,7 +105,7 @@ func AddSourceHandler(
 	}
 	err = db.Create(&source).Error
 	if err != nil {
-		return nil, cli.Exit("failed to create source: "+err.Error(), 1)
+		return nil, handler.NewBadRequestString("failed to create source: " + err.Error())
 	}
 	logger.Infof("created source %d", source.ID)
 	return &source, nil

@@ -4,8 +4,10 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"github.com/google/uuid"
+	logging "github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var Tables = []interface{}{
@@ -24,13 +26,19 @@ var Tables = []interface{}{
 	&WalletAssignment{},
 }
 
+var logger = logging.Logger("model")
+
 func AutoMigrate(db *gorm.DB) error {
+	logger.Info("Auto migrating tables")
 	err := db.AutoMigrate(Tables...)
 	if err != nil {
 		return errors.Wrap(err, "failed to auto migrate")
 	}
 
-	err = db.FirstOrCreate(&Global{}, Global{Key: "instance_id", Value: uuid.NewString()}).Error
+	logger.Debug("Creating instance id")
+	err = db.Clauses(clause.OnConflict{
+		DoNothing: true,
+	}).Create(&Global{Key: "instance_id", Value: uuid.NewString()}).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create instance id")
 	}
@@ -46,7 +54,10 @@ func AutoMigrate(db *gorm.DB) error {
 		Value: encoded,
 	}
 
-	err = db.FirstOrCreate(&Global{}, row).Error
+	logger.Debug("Creating encryption salt")
+	err = db.Clauses(clause.OnConflict{
+		DoNothing: true,
+	}).Create(row).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create salt")
 	}

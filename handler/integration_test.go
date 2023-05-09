@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestInitHandler(t *testing.T) {
+func TestCoreFunctionality(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer model.DropAll(db)

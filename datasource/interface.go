@@ -2,7 +2,6 @@ package datasource
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/encryption"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/pkg/errors"
 	"io"
@@ -66,7 +65,7 @@ func (*DefaultHandlerResolver) getS3Handler(meta model.Metadata) (Handler, error
 		return nil, errors.Wrap(err, "failed to get s3 metadata")
 	}
 
-	secret, err := encryption.DecryptFromBase64String(metadata.SecretAccessKey)
+	secret, err := model.DecryptFromBase64String(metadata.SecretAccessKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to decrypt secret access key")
 	}
