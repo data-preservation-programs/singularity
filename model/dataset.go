@@ -19,6 +19,13 @@ func (m Metadata) GetS3Metadata() (S3Metadata, error) {
 	if err != nil {
 		return S3Metadata{}, errors.Wrap(err, "failed to decode metadata")
 	}
+	if out.SecretAccessKey != "" {
+		secret, err := DecryptFromBase64String(out.SecretAccessKey)
+		if err != nil {
+			return S3Metadata{}, errors.Wrap(err, "failed to decrypt secret access key")
+		}
+		out.SecretAccessKey = string(secret)
+	}
 	return out, nil
 }
 
@@ -28,10 +35,24 @@ func (m Metadata) GetHTTPMetadata() (HTTPMetadata, error) {
 	if err != nil {
 		return HTTPMetadata{}, errors.Wrap(err, "failed to decode metadata")
 	}
+	for k, v := range out.Headers {
+		decrypted, err := DecryptFromBase64String(v)
+		if err != nil {
+			return HTTPMetadata{}, errors.Wrap(err, "failed to decrypt header")
+		}
+		out.Headers[k] = string(decrypted)
+	}
 	return out, nil
 }
 
 func (m S3Metadata) Encode() (Metadata, error) {
+	if m.SecretAccessKey != "" {
+		secret, err := EncryptToBase64String([]byte(m.SecretAccessKey))
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to encrypt secret access key")
+		}
+		m.SecretAccessKey = secret
+	}
 	var out Metadata
 	err := mapstructure.Decode(m, &out)
 	if err != nil {
@@ -41,6 +62,13 @@ func (m S3Metadata) Encode() (Metadata, error) {
 }
 
 func (m HTTPMetadata) Encode() (Metadata, error) {
+	for k, v := range m.Headers {
+		encrypted, err := EncryptToBase64String([]byte(v))
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to encrypt header")
+		}
+		m.Headers[k] = encrypted
+	}
 	var out Metadata
 	err := mapstructure.Decode(m, &out)
 	if err != nil {
@@ -163,17 +191,16 @@ type Global struct {
 
 // Dataset is the top level object that represents a set of data to be onboarded.
 type Dataset struct {
-	ID                   uint32 `gorm:"primaryKey"`
-	Name                 string `gorm:"unique"`
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
-	MinSize              uint64
-	MaxSize              uint64
-	PieceSize            uint64
-	OutputDirs           StringSlice `gorm:"type:JSON"`
-	EncryptionRecipients StringSlice `gorm:"type:JSON"`
-	EncryptionScript     string
-	Wallets              []Wallet `gorm:"many2many:wallet_assignments;"`
+	ID                   uint32      `gorm:"primaryKey" json:"id"`
+	Name                 string      `gorm:"unique" json:"name"`
+	CreatedAt            time.Time   `json:"createdAt"`
+	UpdatedAt            time.Time   `json:"updatedAt"`
+	MinSize              uint64      `json:"minSize"`
+	MaxSize              uint64      `json:"maxSize"`
+	PieceSize            uint64      `json:"pieceSize"`
+	OutputDirs           StringSlice `gorm:"type:JSON" json:"outputDirs"`
+	EncryptionRecipients StringSlice `gorm:"type:JSON" json:"encryptionRecipients"`
+	EncryptionScript     string      `json:"encryptionScript"`
 }
 
 // Source represents a source of data, i.e. a local file system directory.
@@ -181,20 +208,20 @@ type Source struct {
 	ID                   uint32 `gorm:"primaryKey"`
 	CreatedAt            time.Time
 	UpdatedAt            time.Time
-	DatasetID            uint32   `gorm:"index"`
-	Dataset              *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"omitempty"`
+	DatasetID            uint32   `gorm:"uniqueIndex:dataset_path"`
+	Dataset              *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"Dataset,omitempty"`
 	Type                 SourceType
-	Path                 string
+	Path                 string   `gorm:"uniqueIndex:dataset_path"`
 	Metadata             Metadata `gorm:"type:JSON"`
 	PushOnly             bool
 	ScanIntervalSeconds  uint64
 	ScanningState        WorkState
-	ScanningWorkerID     *string
-	ScanningWorker       *Worker `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL"`
+	ScanningWorkerID     *string `json:"ScanningWorkerID,omitempty"`
+	ScanningWorker       *Worker `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"ScanningWorker,omitempty"`
 	LastScannedTimestamp int64
 	ErrorMessage         string
 	RootDirectoryID      uint64
-	RootDirectory        Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:CASCADE"`
+	RootDirectory        *Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:CASCADE" json:"RootDirectory,omitempty"`
 }
 
 func NewSource(source string) (*Source, error) { // Get the absolute path

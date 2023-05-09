@@ -2,14 +2,20 @@ package handler
 
 import (
 	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
 
-func InitHandler(db *gorm.DB) error {
+// InitHandler godoc
+// @Summary Initialize the database
+// @Tags Global
+// @Success 204
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /init [post]
+func InitHandler(db *gorm.DB) *Error {
 	err := model.AutoMigrate(db)
 	if err != nil {
-		return cli.Exit(err.Error(), 1)
+		return NewHandlerError(err)
 	}
 
 	return nil

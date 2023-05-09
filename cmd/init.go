@@ -10,7 +10,8 @@ var InitCmd = &cli.Command{
 	Name:  "init",
 	Usage: "Initialize the database",
 	Action: func(context *cli.Context) error {
+		reduceCLILogLevel(context)
 		db := database.MustOpenFromCLI(context)
-		return handler.InitHandler(db)
+		return handler.InitHandler(db).CliError()
 	},
 }

@@ -120,15 +120,15 @@ func Migrate(cctx *cli.Context) error {
 			Path:                 request.Path,
 			ScanningState:        model.Complete,
 			LastScannedTimestamp: request.UpdatedAt.Unix(),
-			RootDirectory:        rootDirectory,
+			RootDirectory:        &rootDirectory,
 		}
 		logger.Info("Creating source: ", request.Name)
 		err = db.Where("dataset_id = ?", dataset.ID).Attrs(source).FirstOrCreate(&source).Error
 		if err != nil {
 			return cli.Exit("Failed to create source: "+err.Error(), 1)
 		}
-		directoryCache[""] = source.RootDirectory
-		directoryCache["."] = source.RootDirectory
+		directoryCache[""] = *source.RootDirectory
+		directoryCache["."] = *source.RootDirectory
 
 		cursor, err := mg.Database("singularity").Collection("generationrequests").Find(ctx, bson.D{
 			{Key: "datasetName", Value: request.Name},

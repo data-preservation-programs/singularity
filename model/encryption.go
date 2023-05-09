@@ -1,4 +1,4 @@
-package encryption
+package model
 
 import (
 	"crypto/aes"
@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/pbkdf2"
 	"gorm.io/gorm"
@@ -19,7 +18,7 @@ var encryptionKey []byte
 var lock = sync.Mutex{}
 
 func getSalt(db *gorm.DB) ([]byte, error) {
-	row := model.Global{}
+	row := Global{}
 	err := db.Where("key = ?", "salt").First(&row).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get salt")
@@ -34,7 +33,7 @@ func getSalt(db *gorm.DB) ([]byte, error) {
 func Init(keyStr string, db *gorm.DB) error {
 	lock.Lock()
 	defer lock.Unlock()
-	if encryptionKey != nil {
+	if encryptionKey == nil {
 		salt, err := getSalt(db)
 		if err != nil {
 			return errors.Wrap(err, "failed to get salt")

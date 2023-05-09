@@ -1,8 +1,7 @@
-package encryption
+package model
 
 import (
 	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -22,7 +21,7 @@ func TestEncryptWithoutInit(t *testing.T) {
 func TestInit(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
-	defer model.DropAll(db)
+	defer DropAll(db)
 	err := Init("password", db)
 	assert.NoError(err)
 
