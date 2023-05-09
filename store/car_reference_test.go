@@ -58,10 +58,10 @@ func TestCarReferenceBlockStore(t *testing.T) {
 
 	// Create a new CarBlock record in the database referencing the CID of the test data
 	cb := model.CarBlock{
-		CarID:  car.ID,
-		CID:    c.String(),
-		Offset: 5,
-		Length: 5,
+		CarID:          car.ID,
+		CID:            c.String(),
+		CarOffset:      5,
+		CarBlockLength: 5,
 	}
 	err = db.Create(&cb).Error
 	require.NoError(t, err)

@@ -22,7 +22,7 @@ func TestInit(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer DropAll(db)
-	err := Init("password", db)
+	err := InitializeEncryption("password", db)
 	assert.NoError(err)
 
 	encrypted, err := EncryptToBytes([]byte("test"))

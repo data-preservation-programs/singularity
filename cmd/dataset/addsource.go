@@ -65,14 +65,14 @@ var AddSourceCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 
-		if err := model.Init(c.String("password"), db); err != nil {
+		if err := model.InitializeEncryption(c.String("password"), db); err != nil {
 			return cli.Exit("Cannot initialize encryption"+err.Error(), 1)
 		}
 
 		source, err := dataset.AddSourceHandler(
 			db,
+			c.Args().Get(0),
 			dataset.AddSourceRequest{
-				DatasetName:       c.Args().Get(0),
 				SourcePath:        c.Args().Get(1),
 				ScanInterval:      c.Duration("scan-interval"),
 				HTTPHeaders:       c.StringSlice("http-header"),

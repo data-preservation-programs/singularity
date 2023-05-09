@@ -13,12 +13,12 @@ This project is currently in active development. Below are the current feature l
 
 | Category | Feature | Status | Description |
 | --- | --- | --- | --- |
-| Data Source | File System | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data on local file system |
+| Data Source | File System | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for preparing data on local file system |
 | Data Source | Nginx File Browser | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data from Nginx directory listing service with autoindex turned on |
 | Data Source | S3 Compatible | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data from S3 compatible storage service |
-| Data Prep | Create Dataset | ![WIP](https://img.shields.io/badge/-WIP-yellow) | CLI tool for creating dataset |
-| Data Prep | Add Data Source | ![WIP](https://img.shields.io/badge/-WIP-yellow) | CLI tool for adding data sources to existing dataset |
-| Data Prep | Inline Preparation | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for inline preparation. No need to export CAR files |
+| Data Prep | Create Dataset | ![Beta](https://img.shields.io/badge/-Beta-blue) | CLI tool for creating dataset |
+| Data Prep | Add Data Source | ![Beta](https://img.shields.io/badge/-Beta-blue) | CLI tool for adding data sources to existing dataset |
+| Data Prep | Inline Preparation | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for inline preparation. No need to export CAR files |
 | Data Prep | Upload API | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for manually upload files via API |
 | Data Prep | Push API | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for manually queue a new item with an item path via API |
 | Data Prep | Dag regen | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Regenerate the unixfs dag to update the root CID of the whole dataset |

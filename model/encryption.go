@@ -30,7 +30,7 @@ func getSalt(db *gorm.DB) ([]byte, error) {
 	return decoded, nil
 }
 
-func Init(keyStr string, db *gorm.DB) error {
+func InitializeEncryption(keyStr string, db *gorm.DB) error {
 	lock.Lock()
 	defer lock.Unlock()
 	if encryptionKey == nil {

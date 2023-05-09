@@ -61,6 +61,173 @@ const docTemplate = `{
                 }
             }
         },
+        "/dataset/{datasetName}": {
+            "delete": {
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Remove a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/source": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Add a source to a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataset.AddSourceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/source/{sourcePath}": {
+            "delete": {
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Remove a source from a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Source path",
+                        "name": "sourcePath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/sources": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all sources for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/datasets": {
             "get": {
                 "produces": [
@@ -122,6 +289,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dataset.AddSourceRequest": {
+            "type": "object",
+            "properties": {
+                "httpheaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pushOnly": {
+                    "type": "boolean"
+                },
+                "s3AccessKeyID": {
+                    "type": "string"
+                },
+                "s3Endpoint": {
+                    "type": "string"
+                },
+                "s3Region": {
+                    "type": "string"
+                },
+                "s3SecretAccessKey": {
+                    "type": "string"
+                },
+                "scanInterval": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "sourcePath": {
+                    "type": "string"
+                }
+            }
+        },
         "dataset.CreateRequest": {
             "type": "object",
             "properties": {
@@ -200,28 +399,114 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
-                },
-                "wallets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Wallet"
-                    }
                 }
             }
         },
-        "model.Wallet": {
+        "model.Metadata": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "model.Source": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "datasetID": {
+                    "type": "integer"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "lastScannedTimestamp": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/model.Metadata"
+                },
+                "path": {
                     "type": "string"
                 },
-                "privateKey": {
+                "pushOnly": {
+                    "type": "boolean"
+                },
+                "rootDirectoryId": {
+                    "type": "integer"
+                },
+                "scanIntervalSeconds": {
+                    "type": "integer"
+                },
+                "scanningState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "scanningWorkerId": {
                     "type": "string"
                 },
-                "shortID": {
+                "type": {
+                    "$ref": "#/definitions/model.SourceType"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
+        },
+        "model.SourceType": {
+            "type": "string",
+            "enum": [
+                "dir",
+                "website",
+                "s3path",
+                "upload"
+            ],
+            "x-enum-varnames": [
+                "Dir",
+                "Website",
+                "S3Path",
+                "Upload"
+            ]
+        },
+        "model.WorkState": {
+            "type": "string",
+            "enum": [
+                "created",
+                "ready",
+                "processing",
+                "complete",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "Created",
+                "Ready",
+                "Processing",
+                "Complete",
+                "Error"
+            ]
+        },
+        "time.Duration": {
+            "type": "integer",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
+            ],
+            "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
+            ]
         }
     }
 }`

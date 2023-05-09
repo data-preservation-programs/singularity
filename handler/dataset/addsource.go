@@ -12,7 +12,6 @@ import (
 )
 
 type AddSourceRequest struct {
-	DatasetName       string
 	SourcePath        string
 	ScanInterval      time.Duration
 	HTTPHeaders       []string
@@ -23,13 +22,25 @@ type AddSourceRequest struct {
 	PushOnly          bool
 }
 
+// AddSourceHandler godoc
+// @Summary Add a source to a dataset
+// @Tags Dataset
+// @Produce json
+// @Accept json
+// @Param name path string true "Dataset name"
+// @Param request body AddSourceRequest true "Request body"
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
+// @Router /dataset/{name}/source [post]
 func AddSourceHandler(
 	db *gorm.DB,
+	name string,
 	request AddSourceRequest,
 ) (*model.Source, *handler.Error) {
 	logger := log.Logger("cli")
 	log.SetAllLoggers(log.LevelInfo)
-	if request.DatasetName == "" {
+	if name == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}
 
@@ -47,7 +58,7 @@ func AddSourceHandler(
 		headers[parts[0]] = parts[1]
 	}
 
-	dataset, err := database.FindDatasetByName(db, request.DatasetName)
+	dataset, err := database.FindDatasetByName(db, name)
 	if err != nil {
 		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}

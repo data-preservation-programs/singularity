@@ -22,11 +22,11 @@ func TestReadAt2(t *testing.T) {
 	block1 := blocks.NewBlock([]byte("block-data"))
 	varint1 := uint64(block1.Cid().ByteLen() + len(block1.RawData()))
 	carBlock1 := model.CarBlock{
-		CarID:  car.ID,
-		CID:    block1.Cid().String(),
-		Offset: 10,
-		Length: varint1 + uint64(varint.UvarintSize(varint1)),
-		Varint: varint1,
+		CarID:          car.ID,
+		CID:            block1.Cid().String(),
+		CarOffset:      10,
+		CarBlockLength: varint1 + uint64(varint.UvarintSize(varint1)),
+		Varint:         varint1,
 	}
 	assert.NoError(t, db.Create(&carBlock1).Error)
 

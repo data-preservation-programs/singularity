@@ -13,6 +13,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"time"
@@ -61,7 +62,11 @@ func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 				}
 				paramValue := c.ParamValues()[i-1]
-				inputParams = append(inputParams, reflect.ValueOf(paramValue))
+				decoded, err := url.QueryUnescape(paramValue)
+				if err != nil {
+					return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
+				}
+				inputParams = append(inputParams, reflect.ValueOf(decoded))
 				continue
 			}
 
@@ -105,53 +110,13 @@ func (d Server) setupRoutes(e *echo.Echo) {
 
 	e.GET("/admin/api/datasets", d.toEchoHandler(dataset.ListHandler))
 
-	e.DELETE("/admin/api/dataset/:name", func(c echo.Context) error {
-		name := c.Param("name")
-		err := dataset.RemoveHandler(d.db, name)
-		if err != nil {
-			return err.HttpResponse(c)
-		}
+	e.DELETE("/admin/api/dataset/:name", d.toEchoHandler(dataset.RemoveHandler))
 
-		return c.String(http.StatusNoContent, "")
-	})
+	e.POST("/admin/api/dataset/:name/source", d.toEchoHandler(dataset.AddSourceHandler))
 
-	e.POST("/admin/api/dataset/:name/source", func(c echo.Context) error {
-		name := c.Param("name")
-		request := dataset.AddSourceRequest{}
-		err := c.Bind(&request)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"err": err.Error()})
-		}
-		request.DatasetName = name
+	e.GET("/admin/api/dataset/:name/sources", d.toEchoHandler(dataset.ListSourceHandler))
 
-		response, err2 := dataset.AddSourceHandler(d.db, request)
-		if err != nil {
-			return err2.HttpResponse(c)
-		}
-
-		return c.JSON(http.StatusOK, response)
-	})
-
-	e.GET("/admin/api/dataset/:name/sources", func(c echo.Context) error {
-		name := c.Param("name")
-		response, err := dataset.ListSourceHandler(d.db, name)
-		if err != nil {
-			return err.HttpResponse(c)
-		}
-
-		return c.JSON(http.StatusOK, response)
-	})
-
-	e.DELETE("/admin/api/dataset/:name/sourcepath/:source", func(c echo.Context) error {
-		name := c.Param("name")
-		source := c.Param("source")
-		err := dataset.RemoveSourceHandler(d.db, name, source)
-		if err != nil {
-			return err.HttpResponse(c)
-		}
-
-		return c.String(http.StatusNoContent, "")
-	})
+	e.DELETE("/admin/api/dataset/:name/source/:sourcepath", d.toEchoHandler(dataset.RemoveSourceHandler))
 }
 
 var logger = logging.Logger("api")
@@ -170,7 +135,7 @@ func (d Server) Run(c *cli.Context) error {
 			status := v.Status
 			latency := time.Now().Sub(v.StartTime)
 			err := v.Error
-			method := v.Method
+			method := c.Request().Method
 			if err != nil {
 				logger.With("status", status, "latency_ms", latency.Milliseconds(), "err", err).Error(method + " " + uri)
 			} else {

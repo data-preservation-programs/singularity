@@ -26,8 +26,6 @@ import (
 	"path"
 )
 
-const CidLength = 32
-
 type BlockResult struct {
 	CID    cid.Cid
 	Offset uint64
@@ -45,7 +43,7 @@ type Result struct {
 	CarBlocks   []model.CarBlock
 }
 
-const ChunkSize int64 = 1 << 20
+const ChunkSize int64 = 1 << 21
 const NumLinkPerNode = 1024
 
 type Link struct {
@@ -174,13 +172,13 @@ func ProcessItems(
 			offset += written
 
 			result.CarBlocks = append(result.CarBlocks, model.CarBlock{
-				CID:         block.CID.String(),
-				Offset:      offset - block.Length,
-				Length:      written,
-				Varint:      block.Length + CidLength,
-				ItemID:      &item.ID,
-				ItemOffset:  block.Offset,
-				BlockLength: block.Length,
+				CID:            block.CID.String(),
+				CarOffset:      offset - written,
+				CarBlockLength: written,
+				Varint:         block.Length + uint64(block.CID.ByteLen()),
+				ItemID:         &item.ID,
+				ItemOffset:     block.Offset,
+				BlockLength:    block.Length,
 			})
 		}
 
@@ -200,12 +198,12 @@ func ProcessItems(
 				offset += written
 
 				result.CarBlocks = append(result.CarBlocks, model.CarBlock{
-					CID:         basicBlock.Cid().String(),
-					Offset:      offset - written,
-					Length:      written,
-					Varint:      uint64(len(basicBlock.RawData())) + CidLength,
-					RawBlock:    basicBlock.RawData(),
-					BlockLength: uint64(len(basicBlock.RawData())),
+					CID:            basicBlock.Cid().String(),
+					CarOffset:      offset - written,
+					CarBlockLength: written,
+					Varint:         uint64(len(basicBlock.RawData()) + basicBlock.Cid().ByteLen()),
+					RawBlock:       basicBlock.RawData(),
+					BlockLength:    uint64(len(basicBlock.RawData())),
 				})
 
 				newNodeSize, _ := newNode.Size()
