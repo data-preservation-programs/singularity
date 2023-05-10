@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/go-singularity/store"
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
@@ -62,7 +63,7 @@ func (s *ContentProviderService) Start() {
 	}
 }
 
-func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (io.ReaderAt, *model.Car, error) {
+func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (*store.PieceReader, *model.Car, error) {
 	var car model.Car
 	err := s.db.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).First(&car).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -150,6 +151,7 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 	}
 
 	var reader io.ReaderAt
+	var pieceReader *store.PieceReader
 	var lastModified time.Time
 	var fileSize int64
 	fil, fInfo, err := s.findPiece(c.Request().Context(), pieceCid)
@@ -159,10 +161,10 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 		lastModified = fInfo.ModTime()
 		fileSize = fInfo.Size()
 	} else {
-		pieceReader, car, err := s.findPieceAsPieceReader(c.Request().Context(), pieceCid)
+		var car *model.Car
+		pieceReader, car, err = s.findPieceAsPieceReader(c.Request().Context(), pieceCid)
 		switch {
 		case err == nil:
-			reader = pieceReader
 			lastModified = car.CreatedAt
 			fileSize = int64(car.FileSize)
 		case os.IsNotExist(err):
@@ -175,7 +177,15 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 	s.setCommonHeaders(c, pieceCid.String())
 	rangeHeader := c.Request().Header.Get("Range")
 	if rangeHeader == "" {
-		http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, 0, fileSize))
+		if reader != nil {
+			http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, 0, fileSize))
+		} else {
+			c.Response().Header().Set("Last-Modified", lastModified.UTC().Format(http.TimeFormat))
+			_, err := io.Copy(c.Response().Writer, pieceReader)
+			if err != nil {
+				return c.String(http.StatusInternalServerError, "failed to copy piece reader: "+err.Error())
+			}
+		}
 		return nil
 	}
 
@@ -207,6 +217,13 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 
 	// Send the specified range of bytes
 	c.Response().WriteHeader(http.StatusPartialContent)
-	http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, start, end-start+1))
+	if reader != nil {
+		http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, start, end-start+1))
+	} else {
+		_, err := io.CopyN(c.Response().Writer, pieceReader, end-start+1)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to copy piece reader: "+err.Error())
+		}
+	}
 	return nil
 }
