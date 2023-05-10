@@ -3,6 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/data-preservation-programs/go-singularity/datasource"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/data-preservation-programs/go-singularity/store"
 	"github.com/ipfs/go-cid"
@@ -11,21 +19,16 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"io"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type ContentProviderService struct {
-	db   *gorm.DB
-	bind string
+	resolver datasource.HandlerResolver
+	db       *gorm.DB
+	bind     string
 }
 
 func NewContentProviderService(db *gorm.DB, bind string) *ContentProviderService {
-	return &ContentProviderService{db: db, bind: bind}
+	return &ContentProviderService{db: db, bind: bind, resolver: datasource.NewDefaultHandlerResolver()}
 }
 
 func (s *ContentProviderService) Start() {
@@ -36,23 +39,34 @@ func (s *ContentProviderService) Start() {
 		logging.SetAllLoggers(logging.LevelInfo)
 	}
 
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogStatus: true,
-		LogURI:    true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			uri := v.URI
-			status := v.Status
-			latency := time.Now().Sub(v.StartTime)
-			err := v.Error
-			method := c.Request().Method
-			if err != nil {
-				logger.With("status", status, "latency_ms", latency.Milliseconds(), "err", err).Error(method + " " + uri)
-			} else {
-				logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
-			}
-			return nil
-		},
-	}))
+	e.Use(
+		middleware.RequestLoggerWithConfig(
+			middleware.RequestLoggerConfig{
+				LogStatus: true,
+				LogURI:    true,
+				LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+					uri := v.URI
+					status := v.Status
+					latency := time.Now().Sub(v.StartTime)
+					err := v.Error
+					method := c.Request().Method
+					if err != nil {
+						logger.With(
+							"status",
+							status,
+							"latency_ms",
+							latency.Milliseconds(),
+							"err",
+							err,
+						).Error(method + " " + uri)
+					} else {
+						logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
+					}
+					return nil
+				},
+			},
+		),
+	)
 	e.Use(middleware.Recover())
 	e.GET("/piece/:id", s.handleGetPiece)
 	e.HEAD("/piece/:id", s.handleHeadPiece)
@@ -63,7 +77,11 @@ func (s *ContentProviderService) Start() {
 	}
 }
 
-func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (*store.PieceReader, *model.Car, error) {
+func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (
+	*store.PieceReader,
+	*model.Car,
+	error,
+) {
 	var car model.Car
 	err := s.db.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).First(&car).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -73,8 +91,17 @@ func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pie
 		return nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
 	}
 
-	// TODO
-	return nil, &car, nil
+	var carBlocks []model.CarBlock
+	err = s.db.WithContext(ctx).Preload("Source").Preload("Item").Where("car_id = ?", car.ID).
+		Find(&carBlocks).Error
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to query for CAR items: %w", err)
+	}
+	reader, err := store.NewPieceReader(ctx, car, carBlocks, s.resolver)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create piece reader: %w", err)
+	}
+	return reader, &car, nil
 }
 
 func (s *ContentProviderService) findPiece(ctx context.Context, pieceCid cid.Cid) (*os.File, os.FileInfo, error) {
@@ -178,7 +205,13 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 	rangeHeader := c.Request().Header.Get("Range")
 	if rangeHeader == "" {
 		if reader != nil {
-			http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, 0, fileSize))
+			http.ServeContent(
+				c.Response(),
+				c.Request(),
+				pieceCid.String()+".car",
+				lastModified,
+				io.NewSectionReader(reader, 0, fileSize),
+			)
 		} else {
 			c.Response().Header().Set("Last-Modified", lastModified.UTC().Format(http.TimeFormat))
 			_, err := io.Copy(c.Response().Writer, pieceReader)
@@ -218,7 +251,13 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 	// Send the specified range of bytes
 	c.Response().WriteHeader(http.StatusPartialContent)
 	if reader != nil {
-		http.ServeContent(c.Response(), c.Request(), pieceCid.String()+".car", lastModified, io.NewSectionReader(reader, start, end-start+1))
+		http.ServeContent(
+			c.Response(),
+			c.Request(),
+			pieceCid.String()+".car",
+			lastModified,
+			io.NewSectionReader(reader, start, end-start+1),
+		)
 	} else {
 		_, err := io.CopyN(c.Response().Writer, pieceReader, end-start+1)
 		if err != nil {

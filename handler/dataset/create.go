@@ -1,14 +1,15 @@
 package dataset
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/data-preservation-programs/go-singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
-	"os"
-	"path/filepath"
 )
 
 type CreateRequest struct {
@@ -71,7 +72,7 @@ func CreateHandler(
 		return nil, handler.NewBadRequestString("max size needs to be reduced to leave space for padding")
 	}
 
-	outDirs := make([]string, 0, len(request.OutputDirs))
+	outDirs := make([]string, len(request.OutputDirs))
 	for i, outputDir := range request.OutputDirs {
 		info, err := os.Stat(outputDir)
 		if err != nil || !info.IsDir() {
@@ -89,8 +90,10 @@ func CreateHandler(
 	}
 
 	if (len(request.Recipients) > 0 || request.Script != "") && len(request.OutputDirs) == 0 {
-		return nil, handler.NewBadRequestString("encryption is not compatible with inline preparation and " +
-			"requires at least one output directory")
+		return nil, handler.NewBadRequestString(
+			"encryption is not compatible with inline preparation and " +
+				"requires at least one output directory",
+		)
 	}
 
 	dataset := model.Dataset{
@@ -98,7 +101,7 @@ func CreateHandler(
 		MinSize:              minSize,
 		MaxSize:              maxSize,
 		PieceSize:            pieceSize,
-		OutputDirs:           request.OutputDirs,
+		OutputDirs:           outDirs,
 		EncryptionRecipients: request.Recipients,
 		EncryptionScript:     request.Script,
 	}
