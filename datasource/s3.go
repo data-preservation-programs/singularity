@@ -26,16 +26,25 @@ type S3 struct {
 }
 
 func NewS3(ctx context.Context, region string, endpoint string, accessKeyID string, secretAccessKey string) (S3, error) {
-	awsConfig, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(region),
-		config.WithEndpointResolverWithOptions(
+	var configs []func(*config.LoadOptions) error
+	if region != "" {
+		configs = append(configs, config.WithRegion(region))
+	}
+	if endpoint != "" {
+		configs = append(configs, config.WithEndpointResolverWithOptions(
 			aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 				return aws.Endpoint{
 					URL: endpoint,
 				}, nil
-			})),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
-	)
+			})))
+	}
+	if secretAccessKey != "" {
+		configs = append(configs, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")))
+	} else {
+		configs = append(configs, config.WithCredentialsProvider(aws.AnonymousCredentials{}))
+	}
+
+	awsConfig, err := config.LoadDefaultConfig(ctx, configs...)
 	if err != nil {
 		return S3{}, fmt.Errorf("failed to load AWS config: %w", err)
 	}
@@ -175,6 +184,9 @@ func (s S3) Scan(ctx context.Context, path string, last string) <-chan Entry {
 }
 
 func (s S3) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+	if length == 0 {
+		return &emptyReadCloser{}, nil
+	}
 	parsedPath, err := url.Parse(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse S3 path: %w", err)

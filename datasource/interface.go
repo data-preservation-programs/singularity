@@ -65,11 +65,7 @@ func (*DefaultHandlerResolver) getS3Handler(meta model.Metadata) (Handler, error
 		return nil, errors.Wrap(err, "failed to get s3 metadata")
 	}
 
-	secret, err := model.DecryptFromBase64String(metadata.SecretAccessKey)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to decrypt secret access key")
-	}
-	s3, err := NewS3(context.Background(), metadata.Region, metadata.Endpoint, metadata.AccessKeyID, string(secret))
+	s3, err := NewS3(context.Background(), metadata.Region, metadata.Endpoint, metadata.AccessKeyID, metadata.SecretAccessKey)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create s3 client")
 	}
@@ -131,4 +127,14 @@ func ResolveSourceType(path string) (model.SourceType, string, error) {
 		abs = strings.TrimRight(abs, "/")
 	}
 	return model.Dir, abs, nil
+}
+
+type emptyReadCloser struct{}
+
+func (e *emptyReadCloser) Read(p []byte) (n int, err error) {
+	return 0, io.EOF
+}
+
+func (e *emptyReadCloser) Close() error {
+	return nil
 }

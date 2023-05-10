@@ -19,6 +19,7 @@ test:
 	make build
 	./singularity init
 	./singularity dataset create -m 80MiB -M 100MiB test
-	./singularity dataset add-source --s3-region us-west-2 test s3://public-dataset-test/subfolder/15M.random
+	#./singularity dataset add-source --s3-region us-west-2 test s3://public-dataset-test
 	#./singularity dataset add-source test /mnt/e/test
-	#./singularity run dataset-worker
+	./singularity dataset add-source test http://127.0.0.1
+	./singularity run dataset-worker

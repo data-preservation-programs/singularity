@@ -41,10 +41,13 @@ type Result struct {
 	RootCID     cid.Cid
 	Header      []byte
 	CarBlocks   []model.CarBlock
+	ItemCIDs    map[uint64]cid.Cid
 }
 
 const ChunkSize int64 = 1 << 21
 const NumLinkPerNode = 1024
+
+var EmptyBlockCID = cid.NewCidV1(cid.Raw, util.Hash([]byte{}))
 
 type Link struct {
 	format.Link
@@ -105,7 +108,9 @@ func ProcessItems(
 	items []model.Item,
 	outDir string,
 	pieceSize uint64) (*Result, error) {
-	result := &Result{}
+	result := &Result{
+		ItemCIDs: make(map[uint64]cid.Cid),
+	}
 	offset := uint64(0)
 	var headerBytes []byte
 
@@ -217,6 +222,12 @@ func ProcessItems(
 			}
 
 			links = newLinks
+		}
+
+		if len(links) == 0 {
+			result.ItemCIDs[item.ID] = EmptyBlockCID
+		} else {
+			result.ItemCIDs[item.ID] = links[0].Cid
 		}
 	}
 

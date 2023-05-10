@@ -127,6 +127,7 @@ func (d Server) Run(c *cli.Context) error {
 	if logging.LevelInfo < current {
 		logging.SetAllLoggers(logging.LevelInfo)
 	}
+	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,
 		LogURI:    true,

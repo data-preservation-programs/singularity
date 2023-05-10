@@ -34,6 +34,11 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 			return nil, err
 		}
 
+		err = db.Exec("PRAGMA journal_mode = WAL").Error
+		if err != nil {
+			return nil, err
+		}
+
 		return db, nil
 	}
 

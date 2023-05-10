@@ -515,7 +515,13 @@ func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32,
 	if err != nil {
 		return errors.Wrap(err, "failed to pack items")
 	}
-	err = w.db.Transaction(func(tx *gorm.DB) error {
+	err = w.db.Transaction(func(db *gorm.DB) error {
+		for itemID, itemCID := range result.ItemCIDs {
+			err := db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", itemCID.String()).Error
+			if err != nil {
+				return errors.Wrap(err, "failed to update cid of item")
+			}
+		}
 		car := model.Car{
 			CreatedAt: time.Now().UTC(),
 			PieceCID:  result.PieceCID.String(),
@@ -527,7 +533,7 @@ func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32,
 			DatasetID: source.DatasetID,
 			Header:    result.Header,
 		}
-		err := tx.Create(&car).Error
+		err := db.Create(&car).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to create car")
 		}
@@ -535,7 +541,7 @@ func (w *DatasetWorkerThread) pack(ctx context.Context, chunkID uint32,
 			result.CarBlocks[i].CarID = car.ID
 			result.CarBlocks[i].SourceID = source.ID
 		}
-		err = tx.Create(&result.CarBlocks).Error
+		err = db.Create(&result.CarBlocks).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to create car blocks")
 		}
