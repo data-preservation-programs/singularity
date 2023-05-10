@@ -3,6 +3,10 @@ package pack
 import (
 	"bytes"
 	"context"
+	"io"
+	"os"
+	"path"
+
 	"github.com/data-preservation-programs/go-singularity/datasource"
 	"github.com/data-preservation-programs/go-singularity/model"
 	commcid "github.com/filecoin-project/go-fil-commcid"
@@ -21,9 +25,6 @@ import (
 	"github.com/ipld/go-car"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
-	"io"
-	"os"
-	"path"
 )
 
 type BlockResult struct {
@@ -44,7 +45,7 @@ type Result struct {
 	ItemCIDs    map[uint64]cid.Cid
 }
 
-const ChunkSize int64 = 1 << 21
+const ChunkSize int64 = 1 << 20
 const NumLinkPerNode = 1024
 
 var EmptyBlockCID = cid.NewCidV1(cid.Raw, util.Hash([]byte{}))
@@ -107,7 +108,8 @@ func ProcessItems(
 	handler datasource.Handler,
 	items []model.Item,
 	outDir string,
-	pieceSize uint64) (*Result, error) {
+	pieceSize uint64,
+) (*Result, error) {
 	result := &Result{
 		ItemCIDs: make(map[uint64]cid.Cid),
 	}
@@ -137,12 +139,16 @@ func ProcessItems(
 		}
 
 		for block := range blockChan {
-			links = append(links, Link{
-				Link: format.Link{
-					Name: "",
-					Size: block.Length,
-					Cid:  block.CID,
-				}})
+			links = append(
+				links, Link{
+					Link: format.Link{
+						Name: "",
+						Size: block.Length,
+						Cid:  block.CID,
+					},
+					ChunkSize: block.Length,
+				},
+			)
 			if block.Error != nil {
 				return nil, errors.Wrap(block.Error, "failed to stream block")
 			}
@@ -151,16 +157,17 @@ func ProcessItems(
 				result.RootCID = block.CID
 				header := car.CarHeader{
 					Roots:   []cid.Cid{block.CID},
-					Version: 0,
+					Version: 1,
 				}
 
 				headerBytes, err = cbor.DumpObject(&header)
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to dump header")
 				}
+				headerBytesVarint := varint.ToUvarint(uint64(len(headerBytes)))
 
-				result.Header = headerBytes
-				n, err := io.Copy(writer, bytes.NewReader(headerBytes))
+				result.Header = append(headerBytesVarint, headerBytes...)
+				n, err := io.Copy(writer, bytes.NewReader(result.Header))
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to write header")
 				}
@@ -176,15 +183,17 @@ func ProcessItems(
 
 			offset += written
 
-			result.CarBlocks = append(result.CarBlocks, model.CarBlock{
-				CID:            block.CID.String(),
-				CarOffset:      offset - written,
-				CarBlockLength: written,
-				Varint:         block.Length + uint64(block.CID.ByteLen()),
-				ItemID:         &item.ID,
-				ItemOffset:     block.Offset,
-				BlockLength:    block.Length,
-			})
+			result.CarBlocks = append(
+				result.CarBlocks, model.CarBlock{
+					CID:            block.CID.String(),
+					CarOffset:      offset - written,
+					CarBlockLength: written,
+					Varint:         block.Length + uint64(block.CID.ByteLen()),
+					ItemID:         &item.ID,
+					ItemOffset:     block.Offset,
+					BlockLength:    block.Length,
+				},
+			)
 		}
 
 		for len(links) > 1 {
@@ -202,23 +211,27 @@ func ProcessItems(
 				}
 				offset += written
 
-				result.CarBlocks = append(result.CarBlocks, model.CarBlock{
-					CID:            basicBlock.Cid().String(),
-					CarOffset:      offset - written,
-					CarBlockLength: written,
-					Varint:         uint64(len(basicBlock.RawData()) + basicBlock.Cid().ByteLen()),
-					RawBlock:       basicBlock.RawData(),
-					BlockLength:    uint64(len(basicBlock.RawData())),
-				})
+				result.CarBlocks = append(
+					result.CarBlocks, model.CarBlock{
+						CID:            basicBlock.Cid().String(),
+						CarOffset:      offset - written,
+						CarBlockLength: written,
+						Varint:         uint64(len(basicBlock.RawData()) + basicBlock.Cid().ByteLen()),
+						RawBlock:       basicBlock.RawData(),
+						BlockLength:    uint64(len(basicBlock.RawData())),
+					},
+				)
 
-				newNodeSize, _ := newNode.Size()
-				newLinks = append(newLinks, Link{
-					ChunkSize: total,
-					Link: format.Link{
-						Name: "",
-						Size: newNodeSize,
-						Cid:  newNode.Cid(),
-					}})
+				newLinks = append(
+					newLinks, Link{
+						ChunkSize: total,
+						Link: format.Link{
+							Name: "",
+							Size: total,
+							Cid:  newNode.Cid(),
+						},
+					},
+				)
 			}
 
 			links = newLinks
