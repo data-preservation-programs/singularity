@@ -3,6 +3,7 @@ package deal
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/handler/deal"
 	"github.com/data-preservation-programs/go-singularity/model"
@@ -17,15 +18,19 @@ var SendManualCmd = &cli.Command{
 		&cli.StringSliceFlag{
 			Name:     "http-header",
 			Category: "Boost Only",
-			Aliases:  []string{"H"},
 			Usage:    "http headers to be passed with the request (i.e. key=value)",
 		},
 		&cli.StringFlag{
 			Name:     "url-template",
 			Category: "Boost Only",
-			Aliases:  []string{"u"},
 			Usage:    "URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car",
 			Value:    "",
+		},
+		&cli.Uint64Flag{
+			Name:     "file-size",
+			Category: "Boost Only",
+			Usage:    "File size in bytes for boost to fetch the CAR file",
+			Value:    0,
 		},
 		&cli.Float64Flag{
 			Name:     "price",
@@ -101,6 +106,7 @@ var SendManualCmd = &cli.Command{
 			ProviderID:     cctx.Args().Get(1),
 			PieceCID:       cctx.Args().Get(2),
 			PieceSize:      cctx.Args().Get(3),
+			FileSize:       cctx.Uint64("file-size"),
 		}
 		db := database.MustOpenFromCLI(cctx)
 		err := model.InitializeEncryption(cctx.String("password"), db)

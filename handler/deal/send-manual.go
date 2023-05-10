@@ -2,14 +2,17 @@ package deal
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/data-preservation-programs/go-singularity/replication"
 	"github.com/data-preservation-programs/go-singularity/util"
+	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Proposal struct {
@@ -26,6 +29,7 @@ type Proposal struct {
 	ProviderID     string   `json:"providerID"`
 	PieceCID       string   `json:"pieceCID"`
 	PieceSize      string   `json:"pieceSize"`
+	FileSize       uint64   `json:"fileSize"`
 }
 
 func SendManualHandler(
@@ -59,23 +63,33 @@ func SendManualHandler(
 	if err != nil {
 		return "", handler.NewHandlerError(err)
 	}
+	_, err = cid.Parse(request.PieceCID)
+	if err != nil {
+		return "", handler.NewBadRequestString("invalid piece CID")
+	}
+	pieceSize, err := strconv.ParseInt(request.PieceSize, 10, 64)
+	if err != nil {
+		return "", handler.NewBadRequestString("invalid piece size")
+	}
+	if (pieceSize & (pieceSize - 1)) != 0 {
+		return "", handler.NewBadRequestString("piece size must be a power of 2")
+	}
 	car := model.Car{
-		PieceCID:  "",
-		PieceSize: 0,
-		RootCID:   "",
-		FileSize:  0,
-		FilePath:  "",
+		PieceCID:  request.PieceCID,
+		PieceSize: uint64(pieceSize),
+		RootCID:   request.Label,
+		FileSize:  request.FileSize,
 	}
 	schedule := model.Schedule{
-		URLTemplate:          request.URLTemplate,
-		HTTPHeaders:          request.HTTPHeaders,
-		Provider:             request.ProviderID,
-		Price:                request.Price,
-		Verified:             request.Verified,
-		KeepUnsealed:         request.KeepUnsealed,
-		AnnounceToIPNI:       request.IPNI,
-		StartDelay:           time.Duration(request.StartDelayDays * 24 * float64(time.Hour) / float64(time.Nanosecond)),
-		Duration:             time.Duration(request.DurationDays * 24 * float64(time.Hour) / float64(time.Nanosecond)),
+		URLTemplate:    request.URLTemplate,
+		HTTPHeaders:    request.HTTPHeaders,
+		Provider:       request.ProviderID,
+		Price:          request.Price,
+		Verified:       request.Verified,
+		KeepUnsealed:   request.KeepUnsealed,
+		AnnounceToIPNI: request.IPNI,
+		StartDelay:     time.Duration(request.StartDelayDays * 24 * float64(time.Hour) / float64(time.Nanosecond)),
+		Duration:       time.Duration(request.DurationDays * 24 * float64(time.Hour) / float64(time.Nanosecond)),
 	}
 	addrInfo := peer.AddrInfo{
 		ID:    providerInfo.PeerID,
