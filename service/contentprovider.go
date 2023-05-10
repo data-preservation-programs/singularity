@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/ipfs/go-cid"
+	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
@@ -27,8 +28,30 @@ func NewContentProviderService(db *gorm.DB, bind string) *ContentProviderService
 }
 
 func (s *ContentProviderService) Start() {
+	logger := logging.Logger("contentprovider")
 	e := echo.New()
-	e.Use(middleware.Logger())
+	current := logging.GetConfig().Level
+	if logging.LevelInfo < current {
+		logging.SetAllLoggers(logging.LevelInfo)
+	}
+
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogStatus: true,
+		LogURI:    true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			uri := v.URI
+			status := v.Status
+			latency := time.Now().Sub(v.StartTime)
+			err := v.Error
+			method := c.Request().Method
+			if err != nil {
+				logger.With("status", status, "latency_ms", latency.Milliseconds(), "err", err).Error(method + " " + uri)
+			} else {
+				logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
+			}
+			return nil
+		},
+	}))
 	e.Use(middleware.Recover())
 	e.GET("/piece/:id", s.handleGetPiece)
 	e.HEAD("/piece/:id", s.handleHeadPiece)

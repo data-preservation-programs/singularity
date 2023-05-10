@@ -23,6 +23,9 @@ func (Filesystem) Open(ctx context.Context, path string) (ReadAtCloser, error) {
 }
 
 func (Filesystem) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+	if length == 0 {
+		return &emptyReadCloser{}, nil
+	}
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open file")

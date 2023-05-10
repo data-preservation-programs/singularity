@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/data-preservation-programs/go-singularity/cmd/dataset"
-	"github.com/data-preservation-programs/go-singularity/cmd/repl"
+	"github.com/data-preservation-programs/go-singularity/cmd/deal"
 	"github.com/data-preservation-programs/go-singularity/cmd/run"
 	"github.com/data-preservation-programs/go-singularity/util/must"
 	_ "github.com/joho/godotenv/autoload"
@@ -60,7 +60,7 @@ func main() {
 				Aliases: []string{"repl"},
 				Usage:   "Replication / deal making management",
 				Subcommands: []*cli.Command{
-					repl.ScheduleCmd,
+					deal.ScheduleCmd,
 				},
 			},
 			{

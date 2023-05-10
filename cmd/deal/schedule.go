@@ -1,4 +1,4 @@
-package repl
+package deal
 
 import "github.com/urfave/cli/v2"
 

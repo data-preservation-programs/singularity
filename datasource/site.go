@@ -183,6 +183,10 @@ func (s Site) scan(ctx context.Context, entryChan chan Entry, path string, last 
 }
 
 func (s Site) Read(ctx context.Context, path string, offset uint64, length uint64) (io.ReadCloser, error) {
+	if length == 0 {
+		return &emptyReadCloser{}, nil
+	}
+
 	// Create an HTTP client with the context
 	client := http.Client{
 		Transport: &http.Transport{},
