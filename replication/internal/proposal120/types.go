@@ -6,6 +6,8 @@ import (
 	"github.com/ipfs/go-cid"
 )
 
+//go:generate go run github.com/hannahhoward/cbor-gen-for --map-encoding DealParams Transfer DealResponse
+
 type DealParams struct {
 	DealUUID           uuid.UUID
 	IsOffline          bool

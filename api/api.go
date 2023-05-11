@@ -5,6 +5,9 @@ import (
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/handler/dataset"
+	"github.com/data-preservation-programs/go-singularity/handler/deal"
+	"github.com/data-preservation-programs/go-singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/go-singularity/handler/wallet"
 	"github.com/data-preservation-programs/go-singularity/model"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
@@ -51,7 +54,7 @@ func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 		}
 
 		// Prepare input parameters
-		inputParams := []reflect.Value{reflect.ValueOf(d.db)}
+		inputParams := []reflect.Value{reflect.ValueOf(d.db.WithContext(c.Request().Context()))}
 
 		// Get path parameters
 		for i := 1; i < handlerFuncType.NumIn(); i++ {
@@ -117,6 +120,22 @@ func (d Server) setupRoutes(e *echo.Echo) {
 	e.GET("/admin/api/dataset/:name/sources", d.toEchoHandler(dataset.ListSourceHandler))
 
 	e.DELETE("/admin/api/dataset/:name/source/:sourcepath", d.toEchoHandler(dataset.RemoveSourceHandler))
+
+	e.POST("/admin/api/dataset/:name/piece", d.toEchoHandler(dataset.AddPieceHandler))
+
+	e.POST("/admin/api/deal/send_manual", d.toEchoHandler(deal.SendManualHandler))
+
+	e.POST("/admin/api/wallet", d.toEchoHandler(wallet.ImportHandler))
+
+	e.GET("/admin/api/wallets", d.toEchoHandler(wallet.ListHandler))
+
+	e.POST("/admin/api/deal/schedule", d.toEchoHandler(schedule.CreateHandler))
+
+	e.GET("/admin/api/deal/schedules", d.toEchoHandler(schedule.ListHandler))
+
+	e.POST("/admin/api/deal/schedule/:id/pause", d.toEchoHandler(schedule.PauseHandler))
+	
+	e.POST("/admin/api/deal/schedule/:id/resume", d.toEchoHandler(schedule.ResumeHandler))
 }
 
 var logger = logging.Logger("api")

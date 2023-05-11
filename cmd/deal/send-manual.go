@@ -40,9 +40,11 @@ var SendManualCmd = &cli.Command{
 			Value:    0,
 		},
 		&cli.StringFlag{
-			Name:     "label",
-			Category: "Deal Proposal",
-			Usage:    "Label in the deal proposal, which is usually the dataCid/payloadCid/rootCid",
+			Name:        "root-cid",
+			Category:    "Deal Proposal",
+			Usage:       "Root CID that is required as part of the deal proposal, if empty, will be set to empty CID",
+			Value:       "bafkqaaa",
+			DefaultText: "Empty CID",
 		},
 		&cli.BoolFlag{
 			Name:     "verified",
@@ -90,13 +92,11 @@ var SendManualCmd = &cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-		lotusAPI := cctx.String("lotus-api")
-		lotusToken := cctx.String("lotus-token")
 		proposal := deal.Proposal{
 			HTTPHeaders:    cctx.StringSlice("http-header"),
 			URLTemplate:    cctx.String("url-template"),
 			Price:          cctx.Float64("price"),
-			Label:          cctx.String("label"),
+			RootCID:        cctx.String("root-cid"),
 			Verified:       cctx.Bool("verified"),
 			IPNI:           cctx.Bool("ipni"),
 			KeepUnsealed:   cctx.Bool("keep-unsealed"),
@@ -107,6 +107,8 @@ var SendManualCmd = &cli.Command{
 			PieceCID:       cctx.Args().Get(2),
 			PieceSize:      cctx.Args().Get(3),
 			FileSize:       cctx.Uint64("file-size"),
+			LotusAPI:       cctx.String("lotus-api"),
+			LotusToken:     cctx.String("lotus-token"),
 		}
 		db := database.MustOpenFromCLI(cctx)
 		err := model.InitializeEncryption(cctx.String("password"), db)
@@ -114,7 +116,7 @@ var SendManualCmd = &cli.Command{
 			return cli.Exit(err.Error(), 1)
 		}
 
-		proposalID, err2 := deal.SendManualHandler(db, lotusAPI, lotusToken, proposal)
+		proposalID, err2 := deal.SendManualHandler(db, proposal)
 		if err2 != nil {
 			return err2.CliError()
 		}

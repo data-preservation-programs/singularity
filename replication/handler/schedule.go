@@ -83,7 +83,7 @@ func CreateHandler(c *cli.Context) error {
 		Verified:             verified,
 		StartDelay:           startDelay,
 		Duration:             duration,
-		State:                model.ScheduleStarted,
+		State:                model.ScheduleActive,
 		SchedulePattern:      cronSchedule,
 		ScheduleDealNumber:   scheduleDealNumber,
 		ScheduleDealSize:     scheduleDealSize,

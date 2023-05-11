@@ -286,7 +286,7 @@ func Migrate(cctx *cli.Context) error {
 				AnnounceToIPNI:       true,
 				StartDelay:           time.Second * time.Duration(replication.StartDelay) * 30,
 				Duration:             time.Second * time.Duration(replication.Duration) * 30,
-				State:                model.ScheduleFinished,
+				State:                model.ScheduleCompleted,
 				SchedulePattern:      replication.CronSchedule,
 				ScheduleDealNumber:   replication.MaxNumberOfDeals,
 				MaxPendingDealNumber: replication.CronMaxPendingDeals,

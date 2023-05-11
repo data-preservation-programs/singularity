@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/data-preservation-programs/go-singularity/cmd/deal/schedule"
+	"github.com/data-preservation-programs/go-singularity/cmd/wallet"
 	"log"
 	"os"
 
@@ -57,11 +59,20 @@ func main() {
 			DownloadCmd,
 			InitCmd,
 			{
-				Name:    "replication",
-				Aliases: []string{"repl"},
-				Usage:   "Replication / deal making management",
+				Name:  "deal",
+				Usage: "Replication / Deal making management",
 				Subcommands: []*cli.Command{
-					deal.ScheduleCmd,
+					{
+						Name:  "schedule",
+						Usage: "Schedule deals",
+						Subcommands: []*cli.Command{
+							schedule.CreateCmd,
+							schedule.ListCmd,
+							schedule.PauseCmd,
+							schedule.ResumeCmd,
+						},
+					},
+					deal.SendManualCmd,
 				},
 			},
 			{
@@ -71,7 +82,6 @@ func main() {
 					run.DatasetWorkerCmd,
 					run.DataListenerCmd,
 					run.ContentProviderCmd,
-					run.ReplicationCmd,
 					run.SpadeAPICmd,
 					run.ApiCmd,
 				},
@@ -87,6 +97,14 @@ func main() {
 					dataset.ListSourceCmd,
 					dataset.RemoveSourceCmd,
 					dataset.AddPieceCmd,
+				},
+			},
+			{
+				Name:  "wallet",
+				Usage: "Wallet management",
+				Subcommands: []*cli.Command{
+					wallet.ImportCmd,
+					wallet.ListCmd,
 				},
 			},
 		},
