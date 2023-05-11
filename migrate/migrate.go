@@ -2,6 +2,10 @@ package migrate
 
 import (
 	"context"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/data-preservation-programs/go-singularity/replication"
@@ -13,9 +17,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/exp/slices"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 func Migrate(cctx *cli.Context) error {
@@ -130,9 +131,11 @@ func Migrate(cctx *cli.Context) error {
 		directoryCache[""] = *source.RootDirectory
 		directoryCache["."] = *source.RootDirectory
 
-		cursor, err := mg.Database("singularity").Collection("generationrequests").Find(ctx, bson.D{
-			{Key: "datasetName", Value: request.Name},
-		})
+		cursor, err := mg.Database("singularity").Collection("generationrequests").Find(
+			ctx, bson.D{
+				{Key: "datasetName", Value: request.Name},
+			},
+		)
 		if err != nil {
 			return cli.Exit("Failed to query mongo: "+err.Error(), 1)
 		}
@@ -164,7 +167,7 @@ func Migrate(cctx *cli.Context) error {
 				FileSize:  generation.CarSize,
 				FilePath:  generation.OutDir + "/" + generation.PieceCID + ".car",
 				DatasetID: dataset.ID,
-				ChunkID:   chunk.ID,
+				ChunkID:   &chunk.ID,
 			}
 			logger.Info("Creating car: ", generation.PieceCID)
 			err = db.Where("dataset_id = ? AND piece_cid = ?", dataset.ID, generation.PieceCID).
@@ -175,8 +178,10 @@ func Migrate(cctx *cli.Context) error {
 			}
 
 			cursor, err := mg.Database("singularity").Collection("outputfilelists").
-				Find(ctx, bson.D{{Key: "generationId", Value: generation.ID}},
-					options.Find().SetSort(bson.D{{Key: "index", Value: 1}}))
+				Find(
+					ctx, bson.D{{Key: "generationId", Value: generation.ID}},
+					options.Find().SetSort(bson.D{{Key: "index", Value: 1}}),
+				)
 			if err != nil {
 				return cli.Exit("Failed to query mongo: "+err.Error(), 1)
 			}
@@ -249,9 +254,11 @@ func Migrate(cctx *cli.Context) error {
 			}
 		}
 
-		cursor, err = mg.Database("singularity").Collection("replicationrequests").Find(ctx, bson.D{
-			{Key: "datasetId", Value: request.ID},
-		})
+		cursor, err = mg.Database("singularity").Collection("replicationrequests").Find(
+			ctx, bson.D{
+				{Key: "datasetId", Value: request.ID},
+			},
+		)
 		if err != nil {
 			return cli.Exit("Failed to query mongo: "+err.Error(), 1)
 		}

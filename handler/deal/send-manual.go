@@ -63,9 +63,12 @@ func SendManualHandler(
 	if err != nil {
 		return "", handler.NewHandlerError(err)
 	}
-	_, err = cid.Parse(request.PieceCID)
+	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
 		return "", handler.NewBadRequestString("invalid piece CID")
+	}
+	if pieceCID.Type() != cid.FilCommitmentUnsealed {
+		return "", handler.NewBadRequestString("piece CID must be commp")
 	}
 	pieceSize, err := strconv.ParseInt(request.PieceSize, 10, 64)
 	if err != nil {
