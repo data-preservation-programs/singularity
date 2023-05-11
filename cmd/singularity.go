@@ -1,14 +1,15 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/data-preservation-programs/go-singularity/cmd/dataset"
 	"github.com/data-preservation-programs/go-singularity/cmd/deal"
 	"github.com/data-preservation-programs/go-singularity/cmd/run"
 	"github.com/data-preservation-programs/go-singularity/util/must"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli/v2"
-	"log"
-	"os"
 )
 
 // @title Singularity API
@@ -85,6 +86,7 @@ func main() {
 					dataset.AddSourceCmd,
 					dataset.ListSourceCmd,
 					dataset.RemoveSourceCmd,
+					dataset.AddPieceCmd,
 				},
 			},
 		},

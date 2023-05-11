@@ -3,11 +3,12 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 )
 
 type StringSlice []string
@@ -306,7 +307,7 @@ type Car struct {
 	FilePath  string
 	DatasetID uint32   `gorm:"index"`
 	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"omitempty"`
-	ChunkID   uint32
+	ChunkID   *uint32
 	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	Header    []byte
 }
