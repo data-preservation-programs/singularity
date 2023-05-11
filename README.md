@@ -11,29 +11,29 @@ This project is currently in active development. Below are the current feature l
 | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Feature is currently being worked on and is not usable |
 | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Feature is planned but not yet implemented |
 
-| Category | Feature | Status | Description |
-| --- | --- | --- | --- |
-| Data Source | File System | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for preparing data on local file system |
-| Data Source | Nginx File Browser | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data from Nginx directory listing service with autoindex turned on |
-| Data Source | S3 Compatible | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for preparing data from S3 compatible storage service |
-| Data Prep | Create Dataset | ![Beta](https://img.shields.io/badge/-Beta-blue) | CLI tool for creating dataset |
-| Data Prep | Add Data Source | ![Beta](https://img.shields.io/badge/-Beta-blue) | CLI tool for adding data sources to existing dataset |
-| Data Prep | Inline Preparation | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for inline preparation. No need to export CAR files |
-| Data Prep | Upload API | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for manually upload files via API |
-| Data Prep | Push API | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for manually queue a new item with an item path via API |
+| Category | Feature | Status                                                      | Description |
+| --- | --- |-------------------------------------------------------------| --- |
+| Data Source | File System | ![Alpha](https://img.shields.io/badge/-Alpha-orange)        | Support for preparing data on local file system |
+| Data Source | Nginx File Browser | ![Alpha](https://img.shields.io/badge/-Alpha-orange)                                                            | Support for preparing data from Nginx directory listing service with autoindex turned on |
+| Data Source | S3 Compatible | ![Alpha](https://img.shields.io/badge/-Alpha-orange)            | Support for preparing data from S3 compatible storage service |
+| Data Prep | Create Dataset | ![Beta](https://img.shields.io/badge/-Beta-blue)            | CLI tool for creating dataset |
+| Data Prep | Add Data Source | ![Beta](https://img.shields.io/badge/-Beta-blue)            | CLI tool for adding data sources to existing dataset |
+| Data Prep | Inline Preparation | ![Alpha](https://img.shields.io/badge/-Alpha-orange)        | Support for inline preparation. No need to export CAR files |
+| Data Prep | Upload API | ![WIP](https://img.shields.io/badge/-WIP-yellow)            | Support for manually upload files via API |
+| Data Prep | Push API | ![WIP](https://img.shields.io/badge/-WIP-yellow)            | Support for manually queue a new item with an item path via API |
 | Data Prep | Dag regen | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Regenerate the unixfs dag to update the root CID of the whole dataset |
 | Data Prep | Basic Encryption | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for basic encryption with asynmmtric keys |
 | Data Prep | Custom Encryption | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for custom encryption with user providing encryption tools |
-| Content Provider | HTTP piece | ![WIP](https://img.shields.io/badge/-WIP-yellow) | Support for HTTP piece download (CAR file download) |
+| Content Provider | HTTP piece | ![Alpha](https://img.shields.io/badge/-Alpha-orange)            | Support for HTTP piece download (CAR file download) |
 | Content Provider | IPFS gateway | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for IPFS Gatway compliant retrieval |
-| Content Provider | Bitswap | ![Planned](https://img.shields.io/badge/-Planned-lightgrey)| Support for Bitswap retrieval (IPFS interop) |
+| Content Provider | Bitswap | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for Bitswap retrieval (IPFS interop) |
 | Content Provider | Graphsync | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for Graphsync retrieval |
 | Content Provider | Metadata API | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Allow CAR file distribution from the original data owner |
 | Content Provider | Donwload Client | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support downloading CAR file from the original data owner with the help of Metadata API |
-| Deal Making | Deal Tracking | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Track deal status |
-| Deal Making | Deal Scheduler | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Feature parity with [js-singularity](https://github.com/tech-greedy/singularity/tree/main#deal-replication) deal replication |
+| Deal Making | Deal Tracking | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Track deal status |
+| Deal Making | Deal Scheduler | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Feature parity with [js-singularity](https://github.com/tech-greedy/singularity/tree/main#deal-replication) deal replication |
 | Deal Making | Spade API | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for compatible Spade API for storage provider to self proposal deals |
-| Deal Making | Wallet Management | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for wallet management |
+| Deal Making | Wallet Management | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for wallet management |
 | Deal Making | Remote Signer | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for remote signer |
 | Utilities | Benchmark | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for benchmarking data preparation |
 | Utilities | Monitoring | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for monitoring data preparation and deal making |
