@@ -19,7 +19,7 @@ type Proposal struct {
 	HTTPHeaders    []string `json:"httpHeaders"`
 	URLTemplate    string   `json:"urlTemplate"`
 	Price          float64  `json:"price"`
-	Label          string   `json:"label"`
+	RootCID        string   `json:"rootCID"`
 	Verified       bool     `json:"verified"`
 	IPNI           bool     `json:"ipni"`
 	KeepUnsealed   bool     `json:"keepUnsealed"`
@@ -30,12 +30,23 @@ type Proposal struct {
 	PieceCID       string   `json:"pieceCID"`
 	PieceSize      string   `json:"pieceSize"`
 	FileSize       uint64   `json:"fileSize"`
+	LotusAPI       string   `swaggerignore:"true"`
+	LotusToken     string   `swaggerignore:"true"`
 }
 
+// SendManualHandler godoc
+// @Summary Send a manual deal proposal
+// @Description Send a manual deal proposal
+// @Tags Deal
+// @Accept json
+// @Produce json
+// @Param proposal body Proposal true "Proposal"
+// @Success 200 {string} string
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
+// @Router /deal/send_manual [post]
 func SendManualHandler(
 	db *gorm.DB,
-	lotusAPI string,
-	lotusToken string,
 	request Proposal,
 ) (string, *handler.Error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -55,7 +66,7 @@ func SendManualHandler(
 	if err != nil {
 		return "", handler.NewHandlerError(err)
 	}
-	dealMaker, err := replication.NewDealMaker(lotusAPI, lotusToken, host)
+	dealMaker, err := replication.NewDealMaker(request.LotusAPI, request.LotusToken, host)
 	if err != nil {
 		return "", handler.NewHandlerError(err)
 	}
@@ -77,10 +88,14 @@ func SendManualHandler(
 	if (pieceSize & (pieceSize - 1)) != 0 {
 		return "", handler.NewBadRequestString("piece size must be a power of 2")
 	}
+	_, err = cid.Parse(request.RootCID)
+	if err != nil {
+		return "", handler.NewBadRequestString("invalid root CID")
+	}
 	car := model.Car{
 		PieceCID:  request.PieceCID,
 		PieceSize: uint64(pieceSize),
-		RootCID:   request.Label,
+		RootCID:   request.RootCID,
 		FileSize:  request.FileSize,
 	}
 	schedule := model.Schedule{

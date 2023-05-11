@@ -119,7 +119,7 @@ func (w *WorkerThread) RunBatch(ctx context.Context) {
 
 		if w.dealNumber >= w.scheduleJob.TotalDealNumber || w.dealSize >= w.scheduleJob.TotalDealSize {
 			w.logger.Infow("finished making deals")
-			err := w.db.Model(&w.scheduleJob).Update("state", model.ScheduleFinished).Error
+			err := w.db.Model(&w.scheduleJob).Update("state", model.ScheduleCompleted).Error
 			if err != nil {
 				w.logger.Errorw("failed to update schedule state", "err", err)
 			}
@@ -178,7 +178,7 @@ func (w *WorkerThread) RunBatch(ctx context.Context) {
 
 		err = w.db.Create(&model.Deal{
 			State:         model.DealProposed,
-			Client:        walletObj.ID,
+			ClientID:      walletObj.ID,
 			ClientAddress: walletObj.ID,
 			ProposalID:    proposalID,
 			Label:         car.RootCID,
@@ -249,7 +249,7 @@ func (w *Worker) run(ctx context.Context) {
 	}
 	for {
 		schedules := make([]model.Schedule, 0)
-		err := w.db.Where("state = ?", model.ScheduleStarted).Find(&schedules)
+		err := w.db.Where("state = ?", model.ScheduleActive).Find(&schedules)
 		if err != nil {
 			w.logger.Error("failed to fetch schedules", err)
 			time.Sleep(time.Minute)
@@ -277,13 +277,13 @@ func (w *Worker) run(ctx context.Context) {
 					worker.Cancel()
 					delete(running, id)
 					workerCtx, cancel := context.WithCancel(ctx)
-					if schedule.State == model.ScheduleStarted {
+					if schedule.State == model.ScheduleActive {
 						worker = NewWorkerThread(w.db, schedule, cancel, dealMaker)
 						running[id] = worker
 						go worker.Run(workerCtx)
 					}
 				}
-			} else if schedule.State == model.ScheduleStarted {
+			} else if schedule.State == model.ScheduleActive {
 				workerCtx, cancel := context.WithCancel(ctx)
 				worker = NewWorkerThread(w.db, schedule, cancel, dealMaker)
 				running[id] = worker

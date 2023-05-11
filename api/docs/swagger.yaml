@@ -1,5 +1,18 @@
 basePath: /admin/api
 definitions:
+  dataset.AddPieceRequest:
+    properties:
+      filePath:
+        type: string
+      fileSize:
+        type: integer
+      pieceCID:
+        type: string
+      pieceSize:
+        type: string
+      rootCID:
+        type: string
+    type: object
   dataset.AddSourceRequest:
     properties:
       httpheaders:
@@ -42,10 +55,93 @@ definitions:
       script:
         type: string
     type: object
+  deal.Proposal:
+    properties:
+      clientAddress:
+        type: string
+      durationDays:
+        type: number
+      fileSize:
+        type: integer
+      httpHeaders:
+        items:
+          type: string
+        type: array
+      ipni:
+        type: boolean
+      keepUnsealed:
+        type: boolean
+      label:
+        type: string
+      pieceCID:
+        type: string
+      pieceSize:
+        type: string
+      price:
+        type: number
+      providerID:
+        type: string
+      startDelayDays:
+        type: number
+      urlTemplate:
+        type: string
+      verified:
+        type: boolean
+    type: object
   handler.HTTPError:
     properties:
       err:
         type: string
+    type: object
+  model.Car:
+    properties:
+      chunkID:
+        type: integer
+      createdAt:
+        type: string
+      datasetID:
+        type: integer
+      filePath:
+        type: string
+      fileSize:
+        type: integer
+      header:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      omitempty:
+        $ref: '#/definitions/model.Chunk'
+      pieceCID:
+        type: string
+      pieceSize:
+        type: integer
+      rootCID:
+        type: string
+    type: object
+  model.Chunk:
+    properties:
+      createdAt:
+        type: string
+      errorMessage:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/model.Item'
+        type: array
+      packingState:
+        $ref: '#/definitions/model.WorkState'
+      packingWorker:
+        $ref: '#/definitions/model.Worker'
+      packingWorkerID:
+        type: string
+      source:
+        $ref: '#/definitions/model.Source'
+      sourceID:
+        type: integer
     type: object
   model.Dataset:
     properties:
@@ -74,6 +170,62 @@ definitions:
       updatedAt:
         type: string
     type: object
+  model.Directory:
+    properties:
+      cid:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      omitempty:
+        $ref: '#/definitions/model.Directory'
+      parentID:
+        type: integer
+    type: object
+  model.Item:
+    properties:
+      chunkID:
+        type: integer
+      cid:
+        type: string
+      directoryID:
+        type: integer
+      errorMessage:
+        type: string
+      id:
+        type: integer
+      lastModified:
+        type: string
+      length:
+        type: integer
+      offset:
+        type: integer
+      omitempty:
+        $ref: '#/definitions/model.Directory'
+      path:
+        type: string
+      scannedAt:
+        type: string
+      size:
+        type: integer
+      sourceID:
+        type: integer
+      type:
+        $ref: '#/definitions/model.ItemType'
+      version:
+        type: integer
+    type: object
+  model.ItemType:
+    enum:
+    - file
+    - url
+    - s3object
+    type: string
+    x-enum-varnames:
+    - File
+    - URL
+    - S3Object
   model.Metadata:
     additionalProperties: true
     type: object
@@ -120,6 +272,13 @@ definitions:
     - Website
     - S3Path
     - Upload
+  model.Wallet:
+    properties:
+      id:
+        type: string
+      privateKey:
+        type: string
+    type: object
   model.WorkState:
     enum:
     - created
@@ -134,6 +293,29 @@ definitions:
     - Processing
     - Complete
     - Error
+  model.WorkType:
+    enum:
+    - scan
+    - deal_making
+    - packing
+    type: string
+    x-enum-varnames:
+    - Scan
+    - DealMaking
+    - Packing
+  model.Worker:
+    properties:
+      hostname:
+        type: string
+      id:
+        type: string
+      lastHeartbeat:
+        type: string
+      workType:
+        $ref: '#/definitions/model.WorkType'
+      workingOn:
+        type: string
+    type: object
   time.Duration:
     enum:
     - -9223372036854775808
@@ -154,6 +336,11 @@ definitions:
     - Second
     - Minute
     - Hour
+  wallet.ImportRequest:
+    properties:
+      privateKey:
+        type: string
+    type: object
 host: localhost:9090
 info:
   contact: {}
@@ -211,6 +398,40 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: Remove a dataset
+      tags:
+      - Dataset
+  /dataset/{name}/piece:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataset.AddPieceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Car'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Register a CAR file piece with a dataset
       tags:
       - Dataset
   /dataset/{name}/source:
@@ -322,6 +543,36 @@ paths:
       summary: List all datasets
       tags:
       - Dataset
+  /deal/send_manual:
+    post:
+      consumes:
+      - application/json
+      description: Send a manual deal proposal
+      parameters:
+      - description: Proposal
+        in: body
+        name: proposal
+        required: true
+        schema:
+          $ref: '#/definitions/deal.Proposal'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Send a manual deal proposal
+      tags:
+      - deal
   /init:
     post:
       responses:
@@ -338,4 +589,51 @@ paths:
       summary: Initialize the database
       tags:
       - Global
+  /wallet:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/wallet.ImportRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Import a private key
+      tags:
+      - Wallet
+  /wallets:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wallet'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all imported wallets
+      tags:
+      - Wallet
 swagger: "2.0"

@@ -95,6 +95,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/dataset/{name}/piece": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Register a CAR file piece with a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataset.AddPieceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Car"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/dataset/{name}/source": {
             "post": {
                 "consumes": [
@@ -262,6 +314,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/deal/send_manual": {
+            "post": {
+                "description": "Send a manual deal proposal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "deal"
+                ],
+                "summary": "Send a manual deal proposal",
+                "parameters": [
+                    {
+                        "description": "Proposal",
+                        "name": "proposal",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/deal.Proposal"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/init": {
             "post": {
                 "tags": [
@@ -286,9 +384,102 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/wallet": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Import a private key",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.ImportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallets": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "List all imported wallets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dataset.AddPieceRequest": {
+            "type": "object",
+            "properties": {
+                "filePath": {
+                    "type": "string"
+                },
+                "fileSize": {
+                    "type": "integer"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "string"
+                },
+                "rootCID": {
+                    "type": "string"
+                }
+            }
+        },
         "dataset.AddSourceRequest": {
             "type": "object",
             "properties": {
@@ -353,11 +544,137 @@ const docTemplate = `{
                 }
             }
         },
+        "deal.Proposal": {
+            "type": "object",
+            "properties": {
+                "clientAddress": {
+                    "type": "string"
+                },
+                "durationDays": {
+                    "type": "number"
+                },
+                "fileSize": {
+                    "type": "integer"
+                },
+                "httpHeaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipni": {
+                    "type": "boolean"
+                },
+                "keepUnsealed": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "providerID": {
+                    "type": "string"
+                },
+                "startDelayDays": {
+                    "type": "number"
+                },
+                "urlTemplate": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handler.HTTPError": {
             "type": "object",
             "properties": {
                 "err": {
                     "type": "string"
+                }
+            }
+        },
+        "model.Car": {
+            "type": "object",
+            "properties": {
+                "chunkID": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "datasetID": {
+                    "type": "integer"
+                },
+                "filePath": {
+                    "type": "string"
+                },
+                "fileSize": {
+                    "type": "integer"
+                },
+                "header": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "omitempty": {
+                    "$ref": "#/definitions/model.Chunk"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "integer"
+                },
+                "rootCID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Chunk": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Item"
+                    }
+                },
+                "packingState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "packingWorker": {
+                    "$ref": "#/definitions/model.Worker"
+                },
+                "packingWorkerID": {
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/model.Source"
+                },
+                "sourceID": {
+                    "type": "integer"
                 }
             }
         },
@@ -401,6 +718,89 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.Directory": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "omitempty": {
+                    "$ref": "#/definitions/model.Directory"
+                },
+                "parentID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Item": {
+            "type": "object",
+            "properties": {
+                "chunkID": {
+                    "type": "integer"
+                },
+                "cid": {
+                    "type": "string"
+                },
+                "directoryID": {
+                    "type": "integer"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "omitempty": {
+                    "$ref": "#/definitions/model.Directory"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "scannedAt": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "sourceID": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.ItemType"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ItemType": {
+            "type": "string",
+            "enum": [
+                "file",
+                "url",
+                "s3object"
+            ],
+            "x-enum-varnames": [
+                "File",
+                "URL",
+                "S3Object"
+            ]
         },
         "model.Metadata": {
             "type": "object",
@@ -468,6 +868,17 @@ const docTemplate = `{
                 "Upload"
             ]
         },
+        "model.Wallet": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                }
+            }
+        },
         "model.WorkState": {
             "type": "string",
             "enum": [
@@ -484,6 +895,39 @@ const docTemplate = `{
                 "Complete",
                 "Error"
             ]
+        },
+        "model.WorkType": {
+            "type": "string",
+            "enum": [
+                "scan",
+                "deal_making",
+                "packing"
+            ],
+            "x-enum-varnames": [
+                "Scan",
+                "DealMaking",
+                "Packing"
+            ]
+        },
+        "model.Worker": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastHeartbeat": {
+                    "type": "string"
+                },
+                "workType": {
+                    "$ref": "#/definitions/model.WorkType"
+                },
+                "workingOn": {
+                    "type": "string"
+                }
+            }
         },
         "time.Duration": {
             "type": "integer",
@@ -507,6 +951,14 @@ const docTemplate = `{
                 "Minute",
                 "Hour"
             ]
+        },
+        "wallet.ImportRequest": {
+            "type": "object",
+            "properties": {
+                "privateKey": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
