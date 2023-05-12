@@ -41,21 +41,20 @@ func Migrate(cctx *cli.Context) error {
 			return cli.Exit("Failed to decode mongo document: "+err.Error(), 1)
 		}
 		d := model.Deal{
-			CreatedAt:     time.Time{},
-			UpdatedAt:     time.Time{},
-			DealID:        &deal.DealID,
-			State:         model.DealState(deal.State),
-			ClientAddress: deal.Client,
-			Provider:      deal.Provider,
-			ProposalID:    deal.DealCID,
-			PieceCID:      deal.PieceCID,
-			PieceSize:     2 << 35,
-			Start:         replication.EpochToTime(abi.ChainEpoch(deal.StartEpoch)),
-			Duration:      time.Duration(deal.Duration) * 30 * time.Second,
-			End:           replication.EpochToTime(abi.ChainEpoch(deal.StartEpoch + deal.Duration)),
-			SectorStart:   replication.EpochToTime(abi.ChainEpoch(deal.StartEpoch)).Add(time.Hour * 24),
-			Price:         0,
-			Verified:      true,
+			CreatedAt:   time.Time{},
+			UpdatedAt:   time.Time{},
+			DealID:      &deal.DealID,
+			State:       model.DealState(deal.State),
+			Provider:    deal.Provider,
+			ProposalID:  deal.DealCID,
+			PieceCID:    deal.PieceCID,
+			PieceSize:   2 << 35,
+			Start:       replication.EpochToTime(abi.ChainEpoch(deal.StartEpoch)),
+			Duration:    time.Duration(deal.Duration) * 30 * time.Second,
+			End:         replication.EpochToTime(abi.ChainEpoch(deal.StartEpoch + deal.Duration)),
+			SectorStart: replication.EpochToTime(abi.ChainEpoch(deal.StartEpoch)).Add(time.Hour * 24),
+			Price:       0,
+			Verified:    true,
 		}
 		deals = append(deals, d)
 	}
@@ -280,18 +279,16 @@ func Migrate(cctx *cli.Context) error {
 				DatasetID:            dataset.ID,
 				URLTemplate:          replication.URLPrefix + "/{PIECE_CID}.car",
 				Provider:             replication.StorageProviders,
-				TotalDealNumber:      max,
+				TotalDealNumber:      int(max),
 				Verified:             replication.IsVerified,
 				KeepUnsealed:         true,
 				AnnounceToIPNI:       true,
 				StartDelay:           time.Second * time.Duration(replication.StartDelay) * 30,
 				Duration:             time.Second * time.Duration(replication.Duration) * 30,
 				State:                model.ScheduleCompleted,
-				SchedulePattern:      replication.CronSchedule,
-				ScheduleDealNumber:   replication.MaxNumberOfDeals,
-				MaxPendingDealNumber: replication.CronMaxPendingDeals,
+				ScheduleDealNumber:   int(replication.MaxNumberOfDeals),
+				MaxPendingDealNumber: int(replication.CronMaxPendingDeals),
 				Notes:                replication.Notes,
-				PieceCIDListPath:     replication.FileListPath,
 			}
 			logger.Info("Creating schedule: ", replication.ID)
 			err = db.Create(&schedule).Error

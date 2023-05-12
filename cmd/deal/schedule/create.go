@@ -83,7 +83,7 @@ var CreateCmd = &cli.Command{
 			Usage:       "Max deal number per triggered schedule, i.e. 30",
 			DefaultText: "Unlimited",
 		},
-		&cli.StringFlag{
+		&cli.IntFlag{
 			Name:        "total-deal-number",
 			Category:    "Scheduling",
 			Aliases:     []string{"total-number"},
@@ -96,6 +96,7 @@ var CreateCmd = &cli.Command{
 			Aliases:     []string{"size"},
 			Usage:       "Max deal sizes per triggered schedule, i.e. 500GB",
 			DefaultText: "Unlimited",
+			Value:       "0",
 		},
 		&cli.StringFlag{
 			Name:        "total-deal-size",
@@ -103,6 +104,7 @@ var CreateCmd = &cli.Command{
 			Aliases:     []string{"total-size"},
 			Usage:       "Max total deal sizes for this request, i.e. 100TB",
 			DefaultText: "Unlimited",
+			Value:       "0",
 		},
 		&cli.StringFlag{
 			Name:     "notes",
@@ -117,6 +119,7 @@ var CreateCmd = &cli.Command{
 			Aliases:     []string{"pending-size"},
 			Usage:       "Max pending deal sizes overall for this request",
 			DefaultText: "Unlimited",
+			Value:       "0",
 		},
 		&cli.IntFlag{
 			Name:        "max-pending-deal-number",

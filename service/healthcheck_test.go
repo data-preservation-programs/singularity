@@ -15,7 +15,7 @@ func TestHealthCheck(t *testing.T) {
 	defer database.DropAll(db)
 
 	id := uuid.New()
-	healthCheck(db, id, func() State {
+	HealthCheck(db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something",
@@ -29,7 +29,7 @@ func TestHealthCheck(t *testing.T) {
 	assert.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
-	healthCheck(db, id, func() State {
+	HealthCheck(db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something else",

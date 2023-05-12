@@ -9,5 +9,5 @@ type WalletChooser struct {
 }
 
 func (w WalletChooser) Choose(ctx context.Context, wallets []model.Wallet) model.Wallet {
-	panic("implement me")
+	return wallets[0]
 }

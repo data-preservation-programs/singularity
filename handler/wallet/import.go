@@ -1,15 +1,19 @@
 package wallet
 
 import (
+	"context"
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
 type ImportRequest struct {
 	PrivateKey string `json:"privateKey"`
+	LotusAPI   string `json:"lotusApi" swaggerignore:"true"`
+	LotusToken string `json:"lotusToken" swaggerignore:"true"`
 }
 
 // ImportHandler godoc
@@ -35,8 +39,26 @@ func ImportHandler(
 		return handler.NewHandlerError(err)
 	}
 
+	var lotusClient jsonrpc.RPCClient
+	if request.LotusToken == "" {
+		lotusClient = jsonrpc.NewClient(request.LotusAPI)
+	} else {
+		lotusClient = jsonrpc.NewClientWithOpts(request.LotusAPI, &jsonrpc.RPCClientOpts{
+			CustomHeaders: map[string]string{
+				"Authorization": "Bearer " + request.LotusToken,
+			},
+		})
+	}
+
+	var result string
+	err = lotusClient.CallFor(context.Background(), &result, "Filecoin.StateLookupID", addr.String(), nil)
+	if err != nil {
+		return handler.NewBadRequestString("invalid private key")
+	}
+
 	wallet := model.Wallet{
-		ID:         addr.String(),
+		ID:         result,
+		Address:    addr.String(),
 		PrivateKey: encryptedPrivateKey,
 	}
 

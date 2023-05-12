@@ -2,6 +2,7 @@ package api
 
 import (
 	_ "github.com/data-preservation-programs/go-singularity/api/docs"
+	"github.com/data-preservation-programs/go-singularity/dashboard"
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/handler/dataset"
@@ -15,6 +16,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
+	"io/fs"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -32,14 +34,12 @@ type DealStats struct {
 type Server struct {
 	db   *gorm.DB
 	bind string
-	port int
 }
 
 func Run(c *cli.Context) error {
 	db := database.MustOpenFromCLI(c)
-	port := c.Int("port")
 	bind := c.String("bind")
-	return Server{db: db, bind: bind, port: port}.Run(c)
+	return Server{db: db, bind: bind}.Run(c)
 }
 
 func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
@@ -134,7 +134,7 @@ func (d Server) setupRoutes(e *echo.Echo) {
 	e.GET("/admin/api/deal/schedules", d.toEchoHandler(schedule.ListHandler))
 
 	e.POST("/admin/api/deal/schedule/:id/pause", d.toEchoHandler(schedule.PauseHandler))
-	
+
 	e.POST("/admin/api/deal/schedule/:id/resume", d.toEchoHandler(schedule.ResumeHandler))
 }
 
@@ -171,6 +171,11 @@ func (d Server) Run(c *cli.Context) error {
 	}))
 
 	d.setupRoutes(e)
+	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
+	if err != nil {
+		return err
+	}
+
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/api/datasets", d.GetDatasets)
 	e.GET("/api/dataset/:id/sources", d.GetSources)
@@ -181,7 +186,8 @@ func (d Server) Run(c *cli.Context) error {
 	e.GET("/api/directory/:id/entries", d.GetDirectoryEntries)
 	e.GET("/api/dataset/:id/deal_stats", d.GetDealStats)
 	e.GET("/api/deal_stats", d.GetOverallDealStats)
-	return e.Start(d.bind + ":" + c.String("port"))
+	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
+	return e.Start(d.bind)
 }
 
 func (d Server) GetOverallDealStats(c echo.Context) error {

@@ -258,7 +258,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 		return "", errors.Wrap(err, "failed to get supported protocol")
 	}
 
-	addr, err := address.NewFromString(walletObj.ID)
+	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse wallet address")
 	}
