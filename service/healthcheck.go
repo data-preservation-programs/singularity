@@ -59,9 +59,18 @@ func healthCheckCleanup(db *gorm.DB) {
 	if err != nil {
 		log.Logger("healthcheck").Errorw("failed to remove stale packing worker", "error", err)
 	}
+
+	err = db.Model(&model.Schedule{}).Where("schedule_worker_id NOT IN (?)",
+		db.Table("workers").Select("id")).
+		Updates(map[string]interface{}{
+			"schedule_worker_id": nil,
+		}).Error
+	if err != nil {
+		log.Logger("healthcheck").Errorw("failed to remove stale schedule worker", "error", err)
+	}
 }
 
-func healthCheck(db *gorm.DB, workerID uuid.UUID, getState func() State) {
+func HealthCheck(db *gorm.DB, workerID uuid.UUID, getState func() State) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Logger("healthcheck").Warnw("failed to get hostname", "error", err)
@@ -92,8 +101,8 @@ func StartHealthCheck(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getS
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			HealthCheck(db, workerID, getState)
 			continue
 		}
-		healthCheck(db, workerID, getState)
 	}
 }

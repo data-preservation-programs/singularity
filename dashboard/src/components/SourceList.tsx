@@ -4,19 +4,19 @@ import { Button } from 'react-bootstrap';
 import './SourceList.css';
 
 interface Source {
-  ID: number;
+  id: number;
   CreatedAt: string;
   UpdatedAt: string;
   DatasetID: number;
   Type: string;
-  Path: string;
+  path: string;
   ScanInterval: number;
   ScanningState: string;
   ScanningWorkerID: string | null;
   LastScanned: string;
   MaxWait: number;
   ErrorMessage: string;
-  RootDirectoryID: number;
+  rootDirectoryId: number;
 }
 
 interface SourceListProps {
@@ -47,12 +47,12 @@ const SourceList: React.FC<SourceListProps> = ({ datasetID, onSourceClick }) => 
     <div className="list-group">
       {sources.map((source) => (
         <Button
-          key={source.ID}
+          key={source.id}
           variant="outline-secondary"
           className="list-group-item list-group-item-action source-button"
-          onClick={() => onSourceClick(source.ID.toString(), source.RootDirectoryID.toString())}
+          onClick={() => onSourceClick(source.id.toString(), source.rootDirectoryId.toString())}
         >
-          {source.Path}
+          {source.path}
         </Button>
       ))}
     </div>

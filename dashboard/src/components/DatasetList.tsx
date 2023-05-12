@@ -5,17 +5,8 @@ import SourceList from './SourceList';
 import './DatasetList.css';
 
 interface Dataset {
-  ID: number;
-  Name: string;
-  CreatedAt: string;
-  UpdatedAt: string;
-  MinSize: number;
-  MaxSize: number;
-  PieceSize: number;
-  OutputDirs: string[];
-  EncryptionRecipients: string[];
-  EncryptionScript: string;
-  Wallets: Wallet[];
+  id: number;
+  name: string;
 }
 
 interface Wallet {
@@ -55,23 +46,23 @@ const DatasetList: React.FC<DatasetListProps> = ({ onDatasetClick, onSourceClick
   return (
     <Accordion defaultActiveKey="0" className="dataset-list">
       {datasets.map((dataset, index) => (
-        <Card key={dataset.ID}>
+        <Card key={dataset.id}>
           <Card.Header>
             <Button className="dataset-button"
               variant="link"
               onClick={() => {
-                onDatasetClick(dataset.ID.toString());
-                document.getElementById(`dataset-${dataset.ID}`)?.classList.toggle('show');
+                onDatasetClick(dataset.id.toString());
+                document.getElementById(`dataset-${dataset.id}`)?.classList.toggle('show');
               }}
-              aria-controls={`dataset-${dataset.ID}`}
+              aria-controls={`dataset-${dataset.name}`}
               aria-expanded="false"
             >
-              {dataset.Name}
+              {dataset.name}
             </Button>
           </Card.Header>
-          <div id={`dataset-${dataset.ID}`} className="collapse" data-parent="#accordion">
+          <div id={`dataset-${dataset.id}`} className="collapse" data-parent="#accordion">
             <Card.Body>
-              <SourceList datasetID={dataset.ID} onSourceClick={onSourceClick} />
+              <SourceList datasetID={dataset.id} onSourceClick={onSourceClick} />
             </Card.Body>
           </div>
         </Card>

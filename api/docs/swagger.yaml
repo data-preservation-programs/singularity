@@ -55,6 +55,25 @@ definitions:
       script:
         type: string
     type: object
+  deal.ListDealRequest:
+    properties:
+      datasets:
+        items:
+          type: string
+        type: array
+      providers:
+        items:
+          type: string
+        type: array
+      schedules:
+        items:
+          type: integer
+        type: array
+      states:
+        items:
+          type: string
+        type: array
+    type: object
   deal.Proposal:
     properties:
       clientAddress:
@@ -71,8 +90,6 @@ definitions:
         type: boolean
       keepUnsealed:
         type: boolean
-      label:
-        type: string
       pieceCID:
         type: string
       pieceSize:
@@ -80,6 +97,8 @@ definitions:
       price:
         type: number
       providerID:
+        type: string
+      rootCID:
         type: string
       startDelayDays:
         type: number
@@ -95,10 +114,14 @@ definitions:
     type: object
   model.Car:
     properties:
+      chunk:
+        $ref: '#/definitions/model.Chunk'
       chunkID:
         type: integer
       createdAt:
         type: string
+      dataset:
+        $ref: '#/definitions/model.Dataset'
       datasetID:
         type: integer
       filePath:
@@ -111,8 +134,6 @@ definitions:
         type: array
       id:
         type: integer
-      omitempty:
-        $ref: '#/definitions/model.Chunk'
       pieceCID:
         type: string
       pieceSize:
@@ -170,6 +191,75 @@ definitions:
       updatedAt:
         type: string
     type: object
+  model.Deal:
+    properties:
+      clientID:
+        type: string
+      createdAt:
+        type: string
+      dataset:
+        $ref: '#/definitions/model.Dataset'
+      datasetID:
+        type: integer
+      dealID:
+        type: integer
+      duration:
+        $ref: '#/definitions/time.Duration'
+      end:
+        type: string
+      errorMessage:
+        type: string
+      id:
+        type: integer
+      label:
+        type: string
+      pieceCID:
+        type: string
+      pieceSize:
+        type: integer
+      price:
+        type: number
+      proposalID:
+        type: string
+      provider:
+        type: string
+      schedule:
+        $ref: '#/definitions/model.Schedule'
+      scheduleID:
+        type: integer
+      sectorStart:
+        type: string
+      start:
+        type: string
+      state:
+        $ref: '#/definitions/model.DealState'
+      updatedAt:
+        type: string
+      verified:
+        type: boolean
+      wallet:
+        $ref: '#/definitions/model.Wallet'
+    type: object
+  model.DealState:
+    enum:
+    - proposed
+    - published
+    - active
+    - expired
+    - proposal_expired
+    - rejected
+    - slashed
+    - error
+    type: string
+    x-enum-varnames:
+    - DealProposed
+    - DealPublished
+    - DealActive
+    - DealExpired
+    - DealProposalExpired
+    - DealRejected
+    - DealSlashed
+    - DealErrored
   model.Directory:
     properties:
       cid:
@@ -229,6 +319,75 @@ definitions:
   model.Metadata:
     additionalProperties: true
     type: object
+  model.Schedule:
+    properties:
+      AllowedPieceCIDs:
+        items:
+          type: string
+        type: array
+      announceToIPNI:
+        type: boolean
+      createdAt:
+        type: string
+      datasetId:
+        type: integer
+      duration:
+        $ref: '#/definitions/time.Duration'
+      errorMessage:
+        type: string
+      httpHeaders:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      keepUnsealed:
+        type: boolean
+      lastProcessedTimestamp:
+        type: integer
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: integer
+      notes:
+        type: string
+      price:
+        type: number
+      provider:
+        type: string
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: integer
+      scheduleIntervalSeconds:
+        type: integer
+      scheduleWorkerId:
+        type: string
+      startDelay:
+        $ref: '#/definitions/time.Duration'
+      state:
+        $ref: '#/definitions/model.ScheduleState'
+      totalDealNumber:
+        type: integer
+      totalDealSize:
+        type: integer
+      updatedAt:
+        type: string
+      urlTemplate:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  model.ScheduleState:
+    enum:
+    - active
+    - paused
+    - completed
+    type: string
+    x-enum-varnames:
+    - ScheduleActive
+    - SchedulePaused
+    - ScheduleCompleted
   model.Source:
     properties:
       createdAt:
@@ -274,6 +433,8 @@ definitions:
     - Upload
   model.Wallet:
     properties:
+      address:
+        type: string
       id:
         type: string
       privateKey:
@@ -315,6 +476,51 @@ definitions:
         $ref: '#/definitions/model.WorkType'
       workingOn:
         type: string
+    type: object
+  schedule.CreateRequest:
+    properties:
+      allowedPieceCIDs:
+        items:
+          type: string
+        type: array
+      datasetName:
+        type: string
+      durationDays:
+        type: number
+      httpHeaders:
+        items:
+          type: string
+        type: array
+      ipni:
+        type: boolean
+      keepUnsealed:
+        type: boolean
+      maxPendingDealNumber:
+        type: integer
+      maxPendingDealSize:
+        type: string
+      notes:
+        type: string
+      price:
+        type: number
+      provider:
+        type: string
+      scheduleDealNumber:
+        type: integer
+      scheduleDealSize:
+        type: string
+      scheduleInterval:
+        $ref: '#/definitions/time.Duration'
+      startDelayDays:
+        type: number
+      totalDealNumber:
+        type: integer
+      totalDealSize:
+        type: string
+      urlTemplate:
+        type: string
+      verified:
+        type: boolean
     type: object
   time.Duration:
     enum:
@@ -521,6 +727,93 @@ paths:
       summary: List all sources for a dataset
       tags:
       - Dataset
+  /dataset/{name}/wallet:
+    get:
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wallet'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all wallets of a dataset.
+      tags:
+      - Dataset
+  /dataset/{name}/wallet/{wallet}:
+    delete:
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Wallet Address
+        in: path
+        name: wallet
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Remove an associated wallet from a dataset
+      tags:
+      - Dataset
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Wallet Address
+        in: path
+        name: wallet
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Associate a new wallet with a dataset
+      tags:
+      - Dataset
   /datasets:
     get:
       produces:
@@ -543,6 +836,142 @@ paths:
       summary: List all datasets
       tags:
       - Dataset
+  /deal/list:
+    post:
+      consumes:
+      - application/json
+      description: List all deals
+      parameters:
+      - description: ListDealRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/deal.ListDealRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Deal'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all deals
+      tags:
+      - Deal
+  /deal/schedule:
+    post:
+      consumes:
+      - application/json
+      description: Create a new schedule
+      parameters:
+      - description: CreateRequest
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/schedule.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Create a new schedule
+      tags:
+      - Deal Schedule
+  /deal/schedule/{scheduleID}/pause:
+    post:
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Pause a specific schedule
+      tags:
+      - Deal Schedule
+  /deal/schedule/{scheduleID}/resume:
+    post:
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Resume a specific schedule
+      tags:
+      - Deal Schedule
+  /deal/schedules:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Schedule'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all deal making schedules
+      tags:
+      - Deal Schedule
   /deal/send_manual:
     post:
       consumes:
@@ -565,14 +994,14 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handler.HTTPError'
       summary: Send a manual deal proposal
       tags:
-      - deal
+      - Deal
   /init:
     post:
       responses:

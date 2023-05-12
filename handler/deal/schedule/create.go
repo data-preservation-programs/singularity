@@ -67,8 +67,8 @@ func CreateHandler(
 		return nil, handler.NewBadRequestString("invalid max pending deal size")
 	}
 	intervalSeconds := uint64(request.ScheduleInterval.Seconds())
-	startDelay := time.Duration(float64(time.Hour * 24) * request.StartDelayDays)
-	duration := time.Duration(float64(time.Hour * 24) * request.DurationDays)
+	startDelay := time.Duration(float64(time.Hour*24) * request.StartDelayDays)
+	duration := time.Duration(float64(time.Hour*24) * request.DurationDays)
 	schedule := model.Schedule{
 		DatasetID:               dataset.ID,
 		URLTemplate:             request.URLTemplate,

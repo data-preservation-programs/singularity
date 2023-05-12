@@ -306,9 +306,9 @@ type Car struct {
 	FileSize  uint64
 	FilePath  string
 	DatasetID uint32   `gorm:"index"`
-	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"omitempty"`
+	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"`
 	ChunkID   *uint32
-	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"omitempty"`
+	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"chunk,omitempty"`
 	Header    []byte
 }
 

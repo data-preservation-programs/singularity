@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/data-preservation-programs/go-singularity/cmd/deal/schedule"
+	"github.com/data-preservation-programs/go-singularity/cmd/deal/spadepolicy"
 	"github.com/data-preservation-programs/go-singularity/cmd/wallet"
 	"log"
 	"os"
@@ -72,18 +73,29 @@ func main() {
 							schedule.ResumeCmd,
 						},
 					},
+					{
+						Name:  "spade-policy",
+						Usage: "Manage SPADE policies",
+						Subcommands: []*cli.Command{
+							spadepolicy.CreateCmd,
+							spadepolicy.ListCmd,
+							spadepolicy.RemoveCmd,
+						},
+					},
 					deal.SendManualCmd,
+					deal.ListCmd,
 				},
 			},
 			{
 				Name:  "run",
 				Usage: "Run different singularity components",
 				Subcommands: []*cli.Command{
+					run.ApiCmd,
 					run.DatasetWorkerCmd,
 					run.DataListenerCmd,
 					run.ContentProviderCmd,
+					run.DealMakerCmd,
 					run.SpadeAPICmd,
-					run.ApiCmd,
 				},
 			},
 			{
@@ -97,6 +109,9 @@ func main() {
 					dataset.ListSourceCmd,
 					dataset.RemoveSourceCmd,
 					dataset.AddPieceCmd,
+					dataset.AddWalletCmd,
+					dataset.ListWalletCmd,
+					dataset.RemoveWalletCmd,
 				},
 			},
 			{

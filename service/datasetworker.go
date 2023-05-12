@@ -95,7 +95,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error) {
 			errChan <- errors.Errorf("panic: %v", err)
 		}
 	}()
-	healthCheck(w.db, w.id, w.getState)
+	HealthCheck(w.db, w.id, w.getState)
 	go StartHealthCheck(ctx, w.db, w.id, w.getState)
 	for {
 		w.directoryCache = map[string]model.Directory{}
