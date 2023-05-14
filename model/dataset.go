@@ -309,7 +309,7 @@ type Car struct {
 	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"`
 	ChunkID   *uint32
 	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"chunk,omitempty"`
-	Header    []byte
+	Header    []byte `swaggerignore:"true"`
 }
 
 // CarBlock tells us the CIDs of all blocks inside a CAR file

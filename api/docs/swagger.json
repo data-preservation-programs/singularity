@@ -54,6 +54,103 @@
                 }
             }
         },
+        "/dataset/push": {
+            "post": {
+                "description": "Push an item to the staging area",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Push an item to the staging area",
+                "parameters": [
+                    {
+                        "description": "Item",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ItemInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/upload": {
+            "post": {
+                "description": "Upload a file to a dataset",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Upload a file to a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "dataset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Error: dataset not found.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error: internal server error.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/dataset/{datasetName}": {
             "delete": {
                 "tags": [
@@ -273,49 +370,6 @@
                 }
             }
         },
-        "/dataset/{name}/wallet": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "List all wallets of a dataset.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wallet"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/dataset/{name}/wallet/{wallet}": {
             "post": {
                 "consumes": [
@@ -389,6 +443,49 @@
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/wallets": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all wallets of a dataset.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -719,6 +816,50 @@
                 }
             }
         },
+        "/piece/metadata/{piece}": {
+            "get": {
+                "description": "Get metadata for a piece",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Piece"
+                ],
+                "summary": "Get metadata for a piece",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Piece CID",
+                        "name": "piece",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.PieceReader"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet": {
             "post": {
                 "consumes": [
@@ -794,6 +935,20 @@
         }
     },
     "definitions": {
+        "api.ItemInfo": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "sourceId": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.ItemType"
+                }
+            }
+        },
         "dataset.AddPieceRequest": {
             "type": "object",
             "properties": {
@@ -1562,6 +1717,21 @@
                 },
                 "verified": {
                     "type": "boolean"
+                }
+            }
+        },
+        "store.PieceReader": {
+            "type": "object",
+            "properties": {
+                "blocks": {
+                    "type": "array",
+                    "items": {}
+                },
+                "header": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

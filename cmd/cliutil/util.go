@@ -46,7 +46,7 @@ func printTable(objects interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" {
+		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -61,7 +61,7 @@ func printTable(objects interface{}) {
 		for j := 0; j < objType.NumField(); j++ {
 			field := objType.Field(j)
 			fieldValue := objValue.Field(j)
-			if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" {
+			if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
 				continue
 			}
 			row = append(row, fieldValue.Interface())
@@ -81,7 +81,7 @@ func printSingleObject(obj interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" {
+		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -94,7 +94,7 @@ func printSingleObject(obj interface{}) {
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		fieldValue := value.Field(i)
-		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" {
+		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
 			continue
 		}
 		row = append(row, fieldValue.Interface())

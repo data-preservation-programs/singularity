@@ -15,7 +15,7 @@ func TestReadAt2(t *testing.T) {
 	defer database.DropAll(db)
 
 	car := model.Car{
-		Header: []byte("car-header"),
+		Header: []byte("car-Header"),
 	}
 	assert.NoError(t, db.Create(&car).Error)
 
@@ -41,7 +41,7 @@ func TestReadAt2(t *testing.T) {
 	n, err := pieceReader.ReadAt(buf, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 10, n)
-	assert.Equal(t, "car-header", string(buf))
+	assert.Equal(t, "car-Header", string(buf))
 
 	buf = make([]byte, 10)
 	n, err = pieceReader.ReadAt(buf, 5)

@@ -1,40 +1,42 @@
 package dataset
 
 import (
+	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/model"
 	"github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-
-// ListWalletHandler godoc
-// @Summary List all wallets of a dataset.
+// ListPieceHandler godoc
+// @Summary List all pieces for a dataset
 // @Tags Dataset
 // @Produce json
+// @Accept json
 // @Param name path string true "Dataset name"
-// @Success 200 {array} model.Wallet
+// @Success 200 {array} model.Car
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{name}/wallets [get]
-func ListWalletHandler(
+// @Router /dataset/{name}/piece [get]
+func ListPieceHandler(
 	db *gorm.DB,
 	name string,
-) ([]model.Wallet, *handler.Error) {
+) ([]model.Car, *handler.Error) {
 	log.SetAllLoggers(log.LevelInfo)
 	if name == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}
 
-	var dataset model.Dataset
-	err := db.Preload("Wallets").Where("name = ?", name).First(&dataset).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("dataset not found")
+	dataset, err := database.FindDatasetByName(db, name)
+	if err != nil {
+		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}
+
+	var cars []model.Car
+	err = db.Where("dataset_id = ?", dataset.ID).Find(&cars).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
 
-	return dataset.Wallets, nil
+	return cars, nil
 }

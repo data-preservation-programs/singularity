@@ -12,110 +12,110 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type pieceBlock interface {
-	PieceOffset() uint64
+type PieceBlock interface {
+	GetPieceOffset() uint64
 }
 
-type itemBlockMetadata struct {
-	pieceOffset uint64
-	varint      []byte
-	cid         []byte
-	itemOffset  uint64
-	itemLength  uint64
+type ItemBlockMetadata struct {
+	PieceOffset uint64 `json:"PieceOffset"`
+	Varint      []byte `json:"Varint"`
+	Cid         []byte `json:"Cid"`
+	ItemOffset  uint64 `json:"itemOffset"`
+	ItemLength  uint64 `json:"itemLength"`
 }
 
-func (i itemBlockMetadata) PieceOffset() uint64 {
-	return i.pieceOffset
+func (i ItemBlockMetadata) GetPieceOffset() uint64 {
+	return i.PieceOffset
 }
-func (i itemBlockMetadata) CidOffset() uint64 {
-	return i.pieceOffset + uint64(len(i.varint))
+func (i ItemBlockMetadata) CidOffset() uint64 {
+	return i.PieceOffset + uint64(len(i.Varint))
 }
-func (i itemBlockMetadata) BlockOffset() uint64 {
-	return i.pieceOffset + uint64(len(i.varint)) + uint64(len(i.cid))
+func (i ItemBlockMetadata) BlockOffset() uint64 {
+	return i.PieceOffset + uint64(len(i.Varint)) + uint64(len(i.Cid))
 }
-func (i itemBlockMetadata) EndOffset() uint64 {
-	return i.pieceOffset + uint64(len(i.varint)) + uint64(len(i.cid)) + uint64(i.itemLength)
+func (i ItemBlockMetadata) EndOffset() uint64 {
+	return i.PieceOffset + uint64(len(i.Varint)) + uint64(len(i.Cid)) + uint64(i.ItemLength)
 }
-func (i itemBlockMetadata) Length() int {
-	return len(i.varint) + len(i.cid) + int(i.itemLength)
-}
-
-type rawBlock struct {
-	pieceOffset uint64
-	varint      []byte
-	cid         []byte
-	blockData   []byte
+func (i ItemBlockMetadata) Length() int {
+	return len(i.Varint) + len(i.Cid) + int(i.ItemLength)
 }
 
-func (r rawBlock) PieceOffset() uint64 {
-	return r.pieceOffset
-}
-func (r rawBlock) CidOffset() uint64 {
-	return r.pieceOffset + uint64(len(r.varint))
-}
-func (r rawBlock) BlockOffset() uint64 {
-	return r.pieceOffset + uint64(len(r.varint)) + uint64(len(r.cid))
-}
-func (r rawBlock) EndOffset() uint64 {
-	return r.pieceOffset + uint64(len(r.varint)) + uint64(len(r.cid)) + uint64(len(r.blockData))
+type RawBlock struct {
+	PieceOffset uint64 `json:"pieceOffset"`
+	Varint      []byte `json:"varint"`
+	Cid         []byte `json:"cid"`
+	BlockData   []byte `json:"blockData"`
 }
 
-func (r rawBlock) Length() int {
-	return len(r.varint) + len(r.cid) + len(r.blockData)
+func (r RawBlock) GetPieceOffset() uint64 {
+	return r.PieceOffset
+}
+func (r RawBlock) CidOffset() uint64 {
+	return r.PieceOffset + uint64(len(r.Varint))
+}
+func (r RawBlock) BlockOffset() uint64 {
+	return r.PieceOffset + uint64(len(r.Varint)) + uint64(len(r.Cid))
+}
+func (r RawBlock) EndOffset() uint64 {
+	return r.PieceOffset + uint64(len(r.Varint)) + uint64(len(r.Cid)) + uint64(len(r.BlockData))
 }
 
-type itemBlock struct {
-	pieceOffset   uint64
-	sourceHandler datasource.Handler
-	item          *model.Item
-	meta          []itemBlockMetadata
+func (r RawBlock) Length() int {
+	return len(r.Varint) + len(r.Cid) + len(r.BlockData)
 }
 
-func (i itemBlock) PieceOffset() uint64 {
-	return i.pieceOffset
+type ItemBlock struct {
+	PieceOffset   uint64              `json:"pieceOffset"`
+	SourceHandler datasource.Handler  `json:"-"`
+	Item          *model.Item         `json:"item"`
+	Meta          []ItemBlockMetadata `json:"meta"`
+}
+
+func (i ItemBlock) GetPieceOffset() uint64 {
+	return i.PieceOffset
 }
 
 type PieceReader struct {
 	ctx          context.Context
-	blocks       []pieceBlock
+	Blocks       []PieceBlock `json:"blocks"`
 	reader       io.ReadCloser
 	pos          uint64
 	blockID      int
 	innerBlockID int
 	blockOffset  uint64
-	header       []byte
+	Header       []byte `json:"header"`
 }
 
 func (pr *PieceReader) MakeCopy(ctx context.Context, offset uint64) (*PieceReader, error) {
 	newReader := &PieceReader{
 		ctx:    ctx,
-		blocks: pr.blocks,
+		Blocks: pr.Blocks,
 		reader: nil,
 		pos:    offset,
-		header: pr.header,
+		Header: pr.Header,
 	}
 
-	if offset < uint64(len(pr.header)) {
+	if offset < uint64(len(pr.Header)) {
 		return newReader, nil
 	}
 
 	index, _ := slices.BinarySearchFunc(
-		pr.blocks, offset, func(b pieceBlock, o uint64) int {
-			return int(b.PieceOffset() - o)
+		pr.Blocks, offset, func(b PieceBlock, o uint64) int {
+			return int(b.GetPieceOffset() - o)
 		},
 	)
 	newReader.blockID = index
-	switch block := pr.blocks[index].(type) {
-	case rawBlock:
-		newReader.blockOffset = offset - block.PieceOffset()
-	case itemBlock:
+	switch block := pr.Blocks[index].(type) {
+	case RawBlock:
+		newReader.blockOffset = offset - block.GetPieceOffset()
+	case ItemBlock:
 		innerIndex, _ := slices.BinarySearchFunc(
-			block.meta, offset, func(b itemBlockMetadata, o uint64) int {
-				return int(b.PieceOffset() - o)
+			block.Meta, offset, func(b ItemBlockMetadata, o uint64) int {
+				return int(b.GetPieceOffset() - o)
 			},
 		)
 		newReader.innerBlockID = innerIndex
-		newReader.blockOffset = offset - block.meta[innerIndex].PieceOffset()
+		newReader.blockOffset = offset - block.Meta[innerIndex].GetPieceOffset()
 	}
 
 	return newReader, nil
@@ -132,11 +132,11 @@ func NewPieceReader(
 ) {
 	// Sanitize carBlocks
 	if len(carBlocks) == 0 {
-		return nil, errors.New("no blocks provided")
+		return nil, errors.New("no Blocks provided")
 	}
 
 	if carBlocks[0].CarOffset != uint64(len(car.Header)) {
-		return nil, errors.New("first block must start at car header")
+		return nil, errors.New("first block must start at car Header")
 	}
 
 	lastBlock := carBlocks[len(carBlocks)-1]
@@ -146,28 +146,28 @@ func NewPieceReader(
 
 	for i := 0; i < len(carBlocks)-1; i++ {
 		if carBlocks[i].CarOffset+carBlocks[i].CarBlockLength != carBlocks[i+1].CarOffset {
-			return nil, errors.New("blocks must be contiguous")
+			return nil, errors.New("Blocks must be contiguous")
 		}
 		if carBlocks[i].RawBlock == nil && (carBlocks[i].Item == nil || carBlocks[i].Source == nil) {
-			return nil, errors.New("block must be either raw or item, and the item/source needs to be preloaded")
+			return nil, errors.New("block must be either raw or Item, and the Item/source needs to be preloaded")
 		}
 	}
 
-	// Combine nearby clocks with same item
-	blocks := make([]pieceBlock, 0)
-	var lastItemBlock *itemBlock
+	// Combine nearby clocks with same Item
+	blocks := make([]PieceBlock, 0)
+	var lastItemBlock *ItemBlock
 	for _, carBlock := range carBlocks {
-		if lastItemBlock != nil && (carBlock.RawBlock != nil || lastItemBlock.item.ID != carBlock.Item.ID) {
+		if lastItemBlock != nil && (carBlock.RawBlock != nil || lastItemBlock.Item.ID != carBlock.Item.ID) {
 			blocks = append(blocks, *lastItemBlock)
 			lastItemBlock = nil
 		}
 		if carBlock.RawBlock != nil {
 			blocks = append(
-				blocks, rawBlock{
-					pieceOffset: carBlock.CarOffset,
-					varint:      varint.ToUvarint(carBlock.Varint),
-					cid:         cid.MustParse(carBlock.CID).Bytes(),
-					blockData:   carBlock.RawBlock,
+				blocks, RawBlock{
+					PieceOffset: carBlock.CarOffset,
+					Varint:      varint.ToUvarint(carBlock.Varint),
+					Cid:         cid.MustParse(carBlock.CID).Bytes(),
+					BlockData:   carBlock.RawBlock,
 				},
 			)
 			continue
@@ -177,30 +177,30 @@ func NewPieceReader(
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to get handler")
 			}
-			lastItemBlock = &itemBlock{
-				pieceOffset:   carBlock.CarOffset,
-				sourceHandler: handler,
-				item:          carBlock.Item,
-				meta: []itemBlockMetadata{
+			lastItemBlock = &ItemBlock{
+				PieceOffset:   carBlock.CarOffset,
+				SourceHandler: handler,
+				Item:          carBlock.Item,
+				Meta: []ItemBlockMetadata{
 					{
-						pieceOffset: carBlock.CarOffset,
-						varint:      varint.ToUvarint(carBlock.Varint),
-						cid:         cid.MustParse(carBlock.CID).Bytes(),
-						itemOffset:  carBlock.ItemOffset,
-						itemLength:  carBlock.BlockLength,
+						PieceOffset: carBlock.CarOffset,
+						Varint:      varint.ToUvarint(carBlock.Varint),
+						Cid:         cid.MustParse(carBlock.CID).Bytes(),
+						ItemOffset:  carBlock.ItemOffset,
+						ItemLength:  carBlock.BlockLength,
 					},
 				},
 			}
 			continue
 		}
-		// merge last item with the new item
-		lastItemBlock.meta = append(
-			lastItemBlock.meta, itemBlockMetadata{
-				pieceOffset: carBlock.CarOffset,
-				varint:      varint.ToUvarint(carBlock.Varint),
-				cid:         cid.MustParse(carBlock.CID).Bytes(),
-				itemOffset:  carBlock.ItemOffset,
-				itemLength:  carBlock.BlockLength,
+		// merge last Item with the new Item
+		lastItemBlock.Meta = append(
+			lastItemBlock.Meta, ItemBlockMetadata{
+				PieceOffset: carBlock.CarOffset,
+				Varint:      varint.ToUvarint(carBlock.Varint),
+				Cid:         cid.MustParse(carBlock.CID).Bytes(),
+				ItemOffset:  carBlock.ItemOffset,
+				ItemLength:  carBlock.BlockLength,
 			},
 		)
 	}
@@ -210,31 +210,31 @@ func NewPieceReader(
 
 	return &PieceReader{
 		ctx:          ctx,
-		blocks:       blocks,
+		Blocks:       blocks,
 		reader:       nil,
 		pos:          0,
 		blockID:      0,
 		innerBlockID: 0,
-		header:       car.Header,
+		Header:       car.Header,
 	}, nil
 }
 
 func (pr *PieceReader) Read(p []byte) (n int, err error) {
-	if pr.blockID >= len(pr.blocks) {
+	if pr.blockID >= len(pr.Blocks) {
 		return 0, io.EOF
 	}
-	if pr.pos < uint64(len(pr.header)) {
-		copied := copy(p[n:], pr.header[pr.pos:])
+	if pr.pos < uint64(len(pr.Header)) {
+		copied := copy(p[n:], pr.Header[pr.pos:])
 		pr.pos += uint64(copied)
 		n += copied
 		if n == len(p) {
 			return n, nil
 		}
 	}
-	currentBlock := pr.blocks[pr.blockID]
-	if rawBlock, ok := currentBlock.(rawBlock); ok {
+	currentBlock := pr.Blocks[pr.blockID]
+	if rawBlock, ok := currentBlock.(RawBlock); ok {
 		if pr.pos < rawBlock.CidOffset() {
-			copied := copy(p[n:], rawBlock.varint[pr.pos-rawBlock.pieceOffset:])
+			copied := copy(p[n:], rawBlock.Varint[pr.pos-rawBlock.PieceOffset:])
 			pr.pos += uint64(copied)
 			n += copied
 			if n == len(p) {
@@ -242,7 +242,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 			}
 		}
 		if pr.pos < rawBlock.BlockOffset() {
-			copied := copy(p[n:], rawBlock.cid[pr.pos-rawBlock.CidOffset():])
+			copied := copy(p[n:], rawBlock.Cid[pr.pos-rawBlock.CidOffset():])
 			pr.pos += uint64(copied)
 			n += copied
 			if n == len(p) {
@@ -250,7 +250,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 			}
 		}
 		if pr.pos < rawBlock.EndOffset() {
-			copied := copy(p[n:], rawBlock.blockData[pr.pos-rawBlock.BlockOffset():])
+			copied := copy(p[n:], rawBlock.BlockData[pr.pos-rawBlock.BlockOffset():])
 			pr.pos += uint64(copied)
 			n += copied
 			if n == len(p) {
@@ -262,21 +262,21 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		return n, nil
 	}
 
-	itemBlock, _ := currentBlock.(itemBlock)
-	innerBlock := itemBlock.meta[pr.innerBlockID]
+	itemBlock, _ := currentBlock.(ItemBlock)
+	innerBlock := itemBlock.Meta[pr.innerBlockID]
 	if pr.reader == nil {
-		pr.reader, err = itemBlock.sourceHandler.Read(
+		pr.reader, err = itemBlock.SourceHandler.Read(
 			pr.ctx,
-			itemBlock.item.Path,
-			innerBlock.itemOffset+pr.blockOffset,
-			itemBlock.item.Size-(innerBlock.itemOffset+pr.blockOffset),
+			itemBlock.Item.Path,
+			innerBlock.ItemOffset+pr.blockOffset,
+			itemBlock.Item.Size-(innerBlock.ItemOffset+pr.blockOffset),
 		)
 		if err != nil {
-			return 0, errors.Wrap(err, "failed to read item")
+			return 0, errors.Wrap(err, "failed to read Item")
 		}
 	}
 	if pr.pos < innerBlock.CidOffset() {
-		copied := copy(p[n:], innerBlock.varint[pr.pos-innerBlock.pieceOffset:])
+		copied := copy(p[n:], innerBlock.Varint[pr.pos-innerBlock.PieceOffset:])
 		pr.pos += uint64(copied)
 		n += copied
 		if n == len(p) {
@@ -284,7 +284,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		}
 	}
 	if pr.pos < innerBlock.BlockOffset() {
-		copied := copy(p[n:], innerBlock.cid[pr.pos-innerBlock.CidOffset():])
+		copied := copy(p[n:], innerBlock.Cid[pr.pos-innerBlock.CidOffset():])
 		pr.pos += uint64(copied)
 		n += copied
 		if n == len(p) {
@@ -296,12 +296,12 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		read, err := pr.reader.Read(p[n:readTill])
 		n += read
 		pr.pos += uint64(read)
-		if err != nil {
-			return n, errors.Wrap(err, "failed to read item")
+		if err != nil && err != io.EOF {
+			return n, errors.Wrap(err, "failed to read Item")
 		}
 		if pr.pos == innerBlock.EndOffset() {
 			pr.innerBlockID++
-			if pr.innerBlockID >= len(itemBlock.meta) {
+			if pr.innerBlockID >= len(itemBlock.Meta) {
 				pr.blockID++
 				pr.innerBlockID = 0
 				pr.reader.Close()

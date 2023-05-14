@@ -18,7 +18,7 @@ type CarReferenceBlockStore struct {
 
 func (c CarReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var carBlock model.CarBlock
-	err := c.DB.WithContext(ctx).Select("cid").Where("cid = ?", cid.String()).First(&carBlock).Error
+	err := c.DB.WithContext(ctx).Select("Cid").Where("Cid = ?", cid.String()).First(&carBlock).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
@@ -30,7 +30,7 @@ func (c CarReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, err
 
 func (c CarReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var carBlocks []model.CarBlock
-	err := c.DB.WithContext(ctx).Preload("Car").Where("cid = ?", cid.String()).Limit(10).Find(&carBlocks).Error
+	err := c.DB.WithContext(ctx).Preload("Car").Where("Cid = ?", cid.String()).Limit(10).Find(&carBlocks).Error
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c CarReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Bl
 
 func (c CarReferenceBlockStore) GetSize(ctx context.Context, cid cid.Cid) (int, error) {
 	var carBlock model.CarBlock
-	err := c.DB.WithContext(ctx).Where("cid = ?", cid.String()).First(&carBlock).Error
+	err := c.DB.WithContext(ctx).Where("Cid = ?", cid.String()).First(&carBlock).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, format.ErrNotFound{Cid: cid}

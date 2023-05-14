@@ -1,5 +1,14 @@
 basePath: /admin/api
 definitions:
+  api.ItemInfo:
+    properties:
+      path:
+        type: string
+      sourceId:
+        type: integer
+      type:
+        $ref: '#/definitions/model.ItemType'
+    type: object
   dataset.AddPieceRequest:
     properties:
       filePath:
@@ -522,6 +531,16 @@ definitions:
       verified:
         type: boolean
     type: object
+  store.PieceReader:
+    properties:
+      blocks:
+        items: {}
+        type: array
+      header:
+        items:
+          type: integer
+        type: array
+    type: object
   time.Duration:
     enum:
     - -9223372036854775808
@@ -727,34 +746,6 @@ paths:
       summary: List all sources for a dataset
       tags:
       - Dataset
-  /dataset/{name}/wallet:
-    get:
-      parameters:
-      - description: Dataset name
-        in: path
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Wallet'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: List all wallets of a dataset.
-      tags:
-      - Dataset
   /dataset/{name}/wallet/{wallet}:
     delete:
       parameters:
@@ -812,6 +803,98 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: Associate a new wallet with a dataset
+      tags:
+      - Dataset
+  /dataset/{name}/wallets:
+    get:
+      parameters:
+      - description: Dataset name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Wallet'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all wallets of a dataset.
+      tags:
+      - Dataset
+  /dataset/push:
+    post:
+      consumes:
+      - application/json
+      description: Push an item to the staging area
+      parameters:
+      - description: Item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/api.ItemInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Push an item to the staging area
+      tags:
+      - Dataset
+  /dataset/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file to a dataset
+      parameters:
+      - description: Dataset name
+        in: query
+        name: dataset
+        required: true
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: File uploaded
+          schema:
+            type: string
+        "400":
+          description: 'Error: dataset not found.'
+          schema:
+            type: string
+        "500":
+          description: 'Error: internal server error.'
+          schema:
+            type: string
+      summary: Upload a file to a dataset
       tags:
       - Dataset
   /datasets:
@@ -1018,6 +1101,35 @@ paths:
       summary: Initialize the database
       tags:
       - Global
+  /piece/metadata/{piece}:
+    get:
+      consumes:
+      - application/json
+      description: Get metadata for a piece
+      parameters:
+      - description: Piece CID
+        in: path
+        name: piece
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.PieceReader'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get metadata for a piece
+      tags:
+      - Piece
   /wallet:
     post:
       consumes:
