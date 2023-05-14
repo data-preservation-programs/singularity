@@ -1,26 +1,39 @@
 package api
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	_ "github.com/data-preservation-programs/go-singularity/api/docs"
 	"github.com/data-preservation-programs/go-singularity/dashboard"
 	"github.com/data-preservation-programs/go-singularity/database"
+	"github.com/data-preservation-programs/go-singularity/datasource"
 	"github.com/data-preservation-programs/go-singularity/handler"
 	"github.com/data-preservation-programs/go-singularity/handler/dataset"
 	"github.com/data-preservation-programs/go-singularity/handler/deal"
 	"github.com/data-preservation-programs/go-singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/go-singularity/handler/wallet"
 	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/go-singularity/service"
+	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/pkg/errors"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
+	"io"
 	"io/fs"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"reflect"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,14 +45,267 @@ type DealStats struct {
 }
 
 type Server struct {
-	db   *gorm.DB
-	bind string
+	db                        *gorm.DB
+	bind                      string
+	stagingDir                string
+	datasets                  map[string]model.Source
+	datasourceHandlerResolver datasource.HandlerResolver
+	contentProvider           *service.ContentProviderService
+}
+
+// UploadFile godoc
+// @Summary Upload a file to a dataset
+// @Description Upload a file to a dataset
+// @Tags Dataset
+// @Accept mpfd
+// @Produce text/plain
+// @Param dataset query string true "Dataset name"
+// @Param file formData file true "File to upload"
+// @Success 200 {string} string "File uploaded"
+// @Failure 400 {string} string "Error: dataset name is required."
+// @Failure 400 {string} string "Error: file is required."
+// @Failure 400 {string} string "Error: dataset not found."
+// @Failure 500 {string} string "Error: internal server error."
+// @Router /dataset/upload [post]
+func (s Server) UploadFile(c echo.Context) error {
+	datasetName := c.QueryParams().Get("dataset")
+	if datasetName == "" {
+		return c.String(http.StatusBadRequest, "Error: dataset name is required. Use &dataset=<dataset_name> in the query string.")
+	}
+
+	source, err := s.getSource(c.Request().Context(), datasetName)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: dataset %s not found.", datasetName))
+	}
+
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	filename := file.Filename
+	itemPath := filepath.Clean("/" + filename)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get the best staging directory: %s", err.Error()))
+	}
+	dstPath := filepath.Join(s.stagingDir, encodeDatasetName(datasetName), itemPath)
+	// ensure the directory exists
+	if err := os.MkdirAll(filepath.Dir(dstPath), 0755); err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	defer src.Close()
+
+	dst, err := os.Create(dstPath)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	defer dst.Close()
+
+	var written int64
+	if written, err = io.Copy(dst, src); err != nil {
+		os.Remove(dstPath)
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	now := time.Now().UTC()
+	lastModified := now
+	fileInfo, err := os.Stat(dstPath)
+	if err != nil {
+		logger.Errorw("Failed to get file info", "error", err.Error())
+	} else {
+		lastModified = fileInfo.ModTime().UTC()
+	}
+
+	s.db.WithContext(c.Request().Context()).Create(&model.Item{
+		ScannedAt:    now,
+		SourceID:     source.ID,
+		Type:         model.File,
+		Path:         dstPath,
+		Size:         uint64(written),
+		Offset:       0,
+		Length:       uint64(written),
+		LastModified: &lastModified,
+		Version:      0,
+	})
+
+	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))
+}
+
+func encodeDatasetName(str string) string {
+	reg := regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
+	encoded := reg.ReplaceAllString(str, "_")
+
+	hashBytes := sha256.Sum256([]byte(str))
+	hashStr := hex.EncodeToString(hashBytes[:])
+
+	return encoded + "-" + hashStr[:8]
+}
+
+func (s Server) getSource(ctx context.Context, datasetName string) (model.Source, error) {
+	if source, ok := s.datasets[datasetName]; ok {
+		return source, nil
+	}
+	var dataset model.Dataset
+	err := s.db.WithContext(ctx).Where("name = ?", datasetName).First(&dataset).Error
+	if err != nil {
+		return model.Source{}, err
+	}
+
+	var source model.Source
+	err = s.db.WithContext(ctx).Transaction(func(db *gorm.DB) error {
+		err := db.Where("dataset_id = ? AND type = ?", dataset.ID, model.Upload).First(&source).Error
+		if err == nil {
+			return nil
+		}
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			root := model.Directory{}
+			err = db.Create(&root).Error
+			if err != nil {
+				return err
+			}
+			source = model.Source{
+				DatasetID:            dataset.ID,
+				Type:                 model.Upload,
+				Path:                 filepath.Join(s.stagingDir, encodeDatasetName(datasetName)),
+				ScanIntervalSeconds:  0,
+				ScanningState:        "",
+				LastScannedTimestamp: time.Now().Unix(),
+				RootDirectoryID:      root.ID,
+			}
+			err = db.Create(&source).Error
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		return err
+	})
+	if err != nil {
+		return model.Source{}, err
+	}
+	s.datasets[datasetName] = source
+	return source, nil
+}
+
+type ItemInfo struct {
+	Type     model.ItemType `json:"type"`
+	Path     string         `json:"path"`
+	SourceID uint32         `json:"sourceId"`
+}
+
+// PushItem godoc
+// @Summary Push an item to the staging area
+// @Description Push an item to the staging area
+// @Tags Dataset
+// @Accept json
+// @Produce json
+// @Param item body ItemInfo true "Item"
+// @Success 200 {string} string "OK"
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /dataset/push [post]
+func (s Server) PushItem(c echo.Context) error {
+	var itemInfo ItemInfo
+	err := c.Bind(&itemInfo)
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	return s.pushItem(c, itemInfo)
+}
+
+// GetMetadataHandler godoc
+// @Summary Get metadata for a piece
+// @Description Get metadata for a piece
+// @Tags Piece
+// @Accept json
+// @Produce json
+// @Param piece path string true "Piece CID"
+// @Success 200 {object} store.PieceReader
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /piece/metadata/{piece} [get]
+func (s Server) GetMetadataHandler(c echo.Context) error {
+	piece := c.Param("piece")
+	if piece == "" {
+		return c.String(http.StatusBadRequest, "Error: missing piece")
+	}
+	pieceCID, err := cid.Parse(piece)
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	pieceReader, _, err := s.contentProvider.FindPieceAsPieceReader(c.Request().Context(), pieceCID)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	return c.JSON(http.StatusOK, pieceReader)
+}
+
+func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
+	var source model.Source
+	err := s.db.WithContext(c.Request().Context()).Where("id = ?", itemInfo.SourceID).First(&source).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d not found.", itemInfo.SourceID))
+	}
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	handler, err := s.datasourceHandlerResolver.GetHandler(source)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	// source and item does not match
+	if source.Type.GetSupportedItemType() != itemInfo.Type {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d does not support item type %s", itemInfo.SourceID, itemInfo.Type))
+	}
+
+	// item is not a subpath of source path
+	if !strings.HasPrefix(itemInfo.Path, source.Path) {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: item path %s is not a subpath of source path %s", itemInfo.Path, source.Path))
+	}
+
+	size, lastModified, err := handler.CheckItem(c.Request().Context(), itemInfo.Path)
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	err = s.db.WithContext(c.Request().Context()).Create(&model.Item{
+		ScannedAt:    time.Now().UTC(),
+		SourceID:     source.ID,
+		Type:         itemInfo.Type,
+		Path:         itemInfo.Path,
+		Size:         size,
+		Length:       size,
+		LastModified: lastModified,
+	}).Error
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	return c.String(http.StatusOK, "OK")
 }
 
 func Run(c *cli.Context) error {
 	db := database.MustOpenFromCLI(c)
 	bind := c.String("bind")
-	return Server{db: db, bind: bind}.Run(c)
+	stagingDir := c.String("staging-dir")
+	return Server{db: db, bind: bind, stagingDir: stagingDir,
+		datasourceHandlerResolver: datasource.NewDefaultHandlerResolver(),
+		datasets:                  make(map[string]model.Source),
+		contentProvider:           service.NewContentProviderService(db, ""),
+	}.Run(c)
 }
 
 func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
@@ -107,6 +373,12 @@ func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 }
 
 func (d Server) setupRoutes(e *echo.Echo) {
+	e.GET("/admin/api/piece/metadata/:piece", d.GetMetadataHandler)
+
+	e.POST("/admin/api/dataset/upload", d.UploadFile)
+
+	e.POST("/admin/api/dataset/push", d.PushItem)
+
 	e.POST("/admin/api/init", d.toEchoHandler(handler.InitHandler))
 
 	e.POST("/admin/api/dataset", d.toEchoHandler(dataset.CreateHandler))
@@ -136,6 +408,14 @@ func (d Server) setupRoutes(e *echo.Echo) {
 	e.POST("/admin/api/deal/schedule/:id/pause", d.toEchoHandler(schedule.PauseHandler))
 
 	e.POST("/admin/api/deal/schedule/:id/resume", d.toEchoHandler(schedule.ResumeHandler))
+
+	e.POST("/admin/api/dataset/:name/wallet/:wallet", d.toEchoHandler(dataset.AddWalletHandler))
+
+	e.GET("/admin/api/dataset/:name/wallets", d.toEchoHandler(dataset.ListWalletHandler))
+
+	e.DELETE("/admin/api/dataset/:name/wallet/:wallet", d.toEchoHandler(dataset.RemoveWalletHandler))
+
+	e.POST("/admin/api/deal/list", d.toEchoHandler(deal.ListHandler))
 }
 
 var logger = logging.Logger("api")

@@ -17,6 +17,8 @@ var encryptionKey []byte
 
 var lock = sync.Mutex{}
 
+var DisableEncryption = false
+
 func getSalt(db *gorm.DB) ([]byte, error) {
 	row := Global{}
 	err := db.Where("key = ?", "salt").First(&row).Error
@@ -45,6 +47,9 @@ func InitializeEncryption(keyStr string, db *gorm.DB) error {
 }
 
 func EncryptToBytes(payload []byte) ([]byte, error) {
+	if DisableEncryption {
+		return payload, nil
+	}
 	if encryptionKey == nil {
 		return nil, errors.New("encryption key not initialized")
 	}
@@ -78,6 +83,9 @@ func EncryptToBase64String(payload []byte) (string, error) {
 }
 
 func DecryptFromBytes(payload []byte) ([]byte, error) {
+	if DisableEncryption {
+		return payload, nil
+	}
 	if encryptionKey == nil {
 		return nil, errors.New("encryption key not initialized")
 	}

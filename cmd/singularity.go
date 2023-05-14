@@ -92,7 +92,6 @@ func main() {
 				Subcommands: []*cli.Command{
 					run.ApiCmd,
 					run.DatasetWorkerCmd,
-					run.DataListenerCmd,
 					run.ContentProviderCmd,
 					run.DealMakerCmd,
 					run.SpadeAPICmd,
@@ -112,6 +111,7 @@ func main() {
 					dataset.AddWalletCmd,
 					dataset.ListWalletCmd,
 					dataset.RemoveWalletCmd,
+					dataset.ListPieceCmd,
 				},
 			},
 			{

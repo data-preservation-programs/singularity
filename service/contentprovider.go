@@ -70,6 +70,7 @@ func (s *ContentProviderService) Start() {
 	e.Use(middleware.Recover())
 	e.GET("/piece/:id", s.handleGetPiece)
 	e.HEAD("/piece/:id", s.handleHeadPiece)
+	e.GET("/ipfs/:cid", s.handleGetCid)
 
 	err := e.Start(s.bind)
 	if err != nil {
@@ -77,7 +78,7 @@ func (s *ContentProviderService) Start() {
 	}
 }
 
-func (s *ContentProviderService) findPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (
+func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (
 	*store.PieceReader,
 	*model.Car,
 	error,
@@ -156,7 +157,7 @@ func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
 		return c.NoContent(http.StatusOK)
 	}
 
-	_, car, err := s.findPieceAsPieceReader(c.Request().Context(), pieceCid)
+	_, car, err := s.FindPieceAsPieceReader(c.Request().Context(), pieceCid)
 	if err == nil {
 		s.setCommonHeaders(c, pieceCid.String())
 		c.Response().Header().Set("Content-Length", strconv.FormatInt(int64(car.FileSize), 10))
@@ -168,6 +169,31 @@ func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
 	}
 
 	return c.String(http.StatusNotFound, "piece not found")
+}
+
+func (s *ContentProviderService) handleGetCid(c echo.Context) error {
+	id := c.Param("cid")
+	cid, err := cid.Parse(id)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "failed to parse CID: "+err.Error())
+	}
+
+	var item model.Item
+	err = s.db.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&item).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.String(http.StatusNotFound, "CID not found")
+	}
+	handler, err := s.resolver.GetHandler(*item.Source)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to get handler: "+err.Error())
+	}
+
+	handle, err := handler.Read(c.Request().Context(), item.Path, item.Offset, item.Length)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to open handler: "+err.Error())
+	}
+	defer handle.Close()
+	return c.Stream(http.StatusOK, "application/octet-stream", handle)
 }
 
 func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
@@ -189,7 +215,7 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 		fileSize = fInfo.Size()
 	} else {
 		var car *model.Car
-		pieceReader, car, err = s.findPieceAsPieceReader(c.Request().Context(), pieceCid)
+		pieceReader, car, err = s.FindPieceAsPieceReader(c.Request().Context(), pieceCid)
 		switch {
 		case err == nil:
 			lastModified = car.CreatedAt

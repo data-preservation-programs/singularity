@@ -19,13 +19,13 @@ type ItemReferenceBlockStore struct {
 
 func (i ItemReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var count int64
-	err := i.DB.WithContext(ctx).Model(&model.CarBlock{}).Select("cid").Where("cid = ?", cid.String()).Count(&count).Error
+	err := i.DB.WithContext(ctx).Model(&model.CarBlock{}).Select("Cid").Where("Cid = ?", cid.String()).Count(&count).Error
 	return count > 0, err
 }
 
 func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var itemBlocks []model.CarBlock
-	err := i.DB.WithContext(ctx).Preload("Item.Source").Where("cid = ?", cid.String()).Limit(10).Find(&itemBlocks).Error
+	err := i.DB.WithContext(ctx).Preload("Item.Source").Where("Cid = ?", cid.String()).Limit(10).Find(&itemBlocks).Error
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.B
 
 func (i ItemReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 	var itemBlocks model.CarBlock
-	err := i.DB.WithContext(ctx).Where("cid = ?", c.String()).First(&itemBlocks).Error
+	err := i.DB.WithContext(ctx).Where("Cid = ?", c.String()).First(&itemBlocks).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, format.ErrNotFound{Cid: c}
