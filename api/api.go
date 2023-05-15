@@ -304,7 +304,7 @@ func Run(c *cli.Context) error {
 	return Server{db: db, bind: bind, stagingDir: stagingDir,
 		datasourceHandlerResolver: datasource.NewDefaultHandlerResolver(),
 		datasets:                  make(map[string]model.Source),
-		contentProvider:           service.NewContentProviderService(db, ""),
+		contentProvider:           &service.ContentProviderService{DB: db},
 	}.Run(c)
 }
 
@@ -412,6 +412,8 @@ func (d Server) setupRoutes(e *echo.Echo) {
 	e.POST("/admin/api/dataset/:name/wallet/:wallet", d.toEchoHandler(dataset.AddWalletHandler))
 
 	e.GET("/admin/api/dataset/:name/wallets", d.toEchoHandler(dataset.ListWalletHandler))
+
+	e.POST("/admin/api/wallet/remote", d.toEchoHandler(wallet.AddRemoteHandler))
 
 	e.DELETE("/admin/api/dataset/:name/wallet/:wallet", d.toEchoHandler(dataset.RemoveWalletHandler))
 

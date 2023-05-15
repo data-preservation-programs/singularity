@@ -2,7 +2,18 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
+	"github.com/data-preservation-programs/go-singularity/util"
+	nilrouting "github.com/ipfs/go-ipfs-routing/none"
+	bsnetwork "github.com/ipfs/go-libipfs/bitswap/network"
+	"github.com/ipfs/go-libipfs/bitswap/server"
+	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/multiformats/go-multiaddr"
 	"io"
 	"net/http"
 	"os"
@@ -21,17 +32,90 @@ import (
 	"gorm.io/gorm"
 )
 
-type ContentProviderService struct {
-	resolver datasource.HandlerResolver
-	db       *gorm.DB
-	bind     string
+func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
+	private, public, err := crypto.GenerateEd25519Key(rand.Reader)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot generate new peer")
+	}
+
+	peerID, err := peer.IDFromPublicKey(public)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot generate peer id")
+	}
+
+	privateBytes, err := crypto.MarshalPrivateKey(private)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot marshal private key")
+	}
+
+	publicBytes, err := crypto.MarshalPublicKey(public)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot marshal public key")
+	}
+	return privateBytes, publicBytes, peerID, nil
 }
 
-func NewContentProviderService(db *gorm.DB, bind string) *ContentProviderService {
-	return &ContentProviderService{db: db, bind: bind, resolver: datasource.NewDefaultHandlerResolver()}
+type ContentProviderService struct {
+	resolver datasource.HandlerResolver
+	DB       *gorm.DB
+	bind     string
+	host     host.Host
+}
+
+func NewContentProviderService(db *gorm.DB, bind string, identity string, listen []string) (*ContentProviderService, error) {
+	var private []byte
+	if identity == "" {
+		var err error
+		private, _, _, err = GenerateNewPeer()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		var err error
+		private, err = base64.StdEncoding.DecodeString(identity)
+		if err != nil {
+			return nil, err
+		}
+	}
+	identityKey, err := crypto.UnmarshalPrivateKey(private)
+	if err != nil {
+		return nil, err
+	}
+	var listenAddrs []multiaddr.Multiaddr
+	for _, addr := range listen {
+		ma, err := multiaddr.NewMultiaddr(addr)
+		if err != nil {
+			return nil, err
+		}
+		listenAddrs = append(listenAddrs, ma)
+	}
+	h, err := util.InitHost(context.Background(), []libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range h.Addrs() {
+		logging.Logger("contentprovider").Info("listening on " + m.String())
+	}
+	logging.Logger("contentprovider").Info("peerID: " + h.ID().String())
+	return &ContentProviderService{DB: db, bind: bind, resolver: datasource.NewDefaultHandlerResolver(), host: h}, nil
+}
+
+func (s *ContentProviderService) StartBitswap() error {
+	ctx := context.Background()
+	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
+	bs := store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.NewDefaultHandlerResolver()}
+	bsserver := server.New(ctx, net, bs)
+	net.Start(bsserver)
+	return nil
 }
 
 func (s *ContentProviderService) Start() {
+	s.StartBitswap()
 	logger := logging.Logger("contentprovider")
 	e := echo.New()
 	current := logging.GetConfig().Level
@@ -84,7 +168,7 @@ func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pie
 	error,
 ) {
 	var car model.Car
-	err := s.db.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).First(&car).Error
+	err := s.DB.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).First(&car).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil, os.ErrNotExist
 	}
@@ -93,7 +177,7 @@ func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pie
 	}
 
 	var carBlocks []model.CarBlock
-	err = s.db.WithContext(ctx).Preload("Source").Preload("Item").Where("car_id = ?", car.ID).
+	err = s.DB.WithContext(ctx).Preload("Source").Preload("Item").Where("car_id = ?", car.ID).
 		Find(&carBlocks).Error
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to query for CAR items: %w", err)
@@ -107,7 +191,7 @@ func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pie
 
 func (s *ContentProviderService) findPiece(ctx context.Context, pieceCid cid.Cid) (*os.File, os.FileInfo, error) {
 	var cars []model.Car
-	err := s.db.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).Find(&cars).Error
+	err := s.DB.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).Find(&cars).Error
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
 	}
@@ -179,7 +263,7 @@ func (s *ContentProviderService) handleGetCid(c echo.Context) error {
 	}
 
 	var item model.Item
-	err = s.db.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&item).Error
+	err = s.DB.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "CID not found")
 	}

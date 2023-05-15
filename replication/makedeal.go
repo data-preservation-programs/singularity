@@ -5,14 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/go-singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/go-singularity/replication/internal/proposal120"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
-	"github.com/filecoin-project/go-fil-markets/storagemarket"
-	"github.com/filecoin-project/go-fil-markets/storagemarket/network"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
-	market9 "github.com/filecoin-project/go-state-types/builtin/v9/market"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
@@ -134,7 +132,7 @@ func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize uint64, verif
 }
 
 func (d DealMaker) makeDeal120(ctx context.Context,
-	deal market9.ClientDealProposal,
+	deal proposal110.ClientDealProposal,
 	dealID uuid.UUID,
 	car model.Car, schedule model.Schedule,
 	minerInfo peer.AddrInfo) (*proposal120.DealResponse, error) {
@@ -202,14 +200,14 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 }
 
 func (d DealMaker) makeDeal111(ctx context.Context,
-	deal market9.ClientDealProposal,
+	deal proposal110.ClientDealProposal,
 	car model.Car, schedule model.Schedule,
-	minerInfo peer.AddrInfo) (*network.SignedResponse, error) {
-	proposal := network.Proposal{
+	minerInfo peer.AddrInfo) (*proposal110.SignedResponse, error) {
+	proposal := proposal110.Proposal{
 		FastRetrieval: schedule.KeepUnsealed,
 		DealProposal:  &deal,
-		Piece: &storagemarket.DataRef{
-			TransferType: storagemarket.TTManual,
+		Piece: &proposal110.DataRef{
+			TransferType: proposal110.TTManual,
 			Root:         cid.MustParse(car.RootCID),
 			PieceCid:     &deal.Proposal.PieceCID,
 			PieceSize:    deal.Proposal.PieceSize.Unpadded(),
@@ -230,7 +228,7 @@ func (d DealMaker) makeDeal111(ctx context.Context,
 		defer stream.SetDeadline(time.Time{})
 	}
 
-	var resp network.SignedResponse
+	var resp proposal110.SignedResponse
 	err = cborutil.WriteCborRPC(stream, &proposal)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to write deal params")
@@ -266,7 +264,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse provider address")
 	}
-	label, err := market9.NewLabelFromString(car.RootCID)
+	label, err := proposal110.NewLabelFromString(car.RootCID)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse label")
 	}
@@ -281,7 +279,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get min collateral")
 	}
-	proposal := market9.DealProposal{
+	proposal := proposal110.DealProposal{
 		PieceCID:             pieceCID,
 		PieceSize:            pieceSize,
 		VerifiedDeal:         verified,
@@ -307,7 +305,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 		return "", errors.Wrap(err, "failed to sign deal proposal")
 	}
 
-	deal := market9.ClientDealProposal{
+	deal := proposal110.ClientDealProposal{
 		Proposal:        proposal,
 		ClientSignature: *signature,
 	}

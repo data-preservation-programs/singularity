@@ -1,7 +1,7 @@
 package proposal120
 
 import (
-	"github.com/filecoin-project/go-state-types/builtin/v9/market"
+	"github.com/data-preservation-programs/go-singularity/replication/internal/proposal110"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 )
@@ -11,7 +11,7 @@ import (
 type DealParams struct {
 	DealUUID           uuid.UUID
 	IsOffline          bool
-	ClientDealProposal market.ClientDealProposal
+	ClientDealProposal proposal110.ClientDealProposal
 	DealDataRoot       cid.Cid
 	Transfer           Transfer // Transfer params will be the zero value if this is an offline deal
 	RemoveUnsealedCopy bool

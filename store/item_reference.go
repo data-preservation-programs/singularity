@@ -24,39 +24,36 @@ func (i ItemReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, er
 }
 
 func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
-	var itemBlocks []model.CarBlock
-	err := i.DB.WithContext(ctx).Preload("Item.Source").Where("Cid = ?", cid.String()).Limit(10).Find(&itemBlocks).Error
+	var carBlock model.CarBlock
+	err := i.DB.WithContext(ctx).Preload("Item.Source").Where("Cid = ?", cid.String()).First(&carBlock).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, format.ErrNotFound{Cid: cid}
+	}
 	if err != nil {
 		return nil, err
 	}
-	if len(itemBlocks) == 0 {
-		return nil, format.ErrNotFound{Cid: cid}
+	if carBlock.RawBlock != nil {
+		return blocks.NewBlockWithCid(carBlock.RawBlock, cid)
 	}
-	errors := make([]error, 0)
-	for _, itemBlock := range itemBlocks {
-		handler, err := i.HandlerResolver.GetHandler(*itemBlock.Item.Source)
-		if err != nil {
-			errors = append(errors, err)
-			continue
-		}
-		reader, err := handler.Read(
-			ctx,
-			itemBlock.Item.Path,
-			itemBlock.CarOffset+itemBlock.Item.Offset,
-			itemBlock.CarBlockLength)
-		if err != nil {
-			errors = append(errors, err)
-			continue
-		}
-		readBytes, err := io.ReadAll(reader)
-		if err != nil {
-			errors = append(errors, err)
-			reader.Close()
-			continue
-		}
-		return blocks.NewBlockWithCid(readBytes, cid)
+
+	handler, err := i.HandlerResolver.GetHandler(*carBlock.Item.Source)
+	if err != nil {
+		return nil, err
 	}
-	return nil, AggregateError{Errors: errors}
+	reader, err := handler.Read(
+		ctx,
+		carBlock.Item.Path,
+		carBlock.CarOffset+carBlock.Item.Offset,
+		carBlock.CarBlockLength)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	readBytes, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	return blocks.NewBlockWithCid(readBytes, cid)
 }
 
 func (i ItemReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {

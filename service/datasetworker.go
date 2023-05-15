@@ -562,7 +562,7 @@ func (w *DatasetWorkerThread) pack(
 	if err != nil {
 		return errors.Wrap(err, "failed to get datasource handler")
 	}
-	result, err := pack.ProcessItems(ctx, handler, items, outDir, pieceSize)
+	result, err := pack.ProcessItems(ctx, handler, items, outDir, pieceSize, source.Dataset.EncryptionRecipients)
 	if err != nil {
 		return errors.Wrap(err, "failed to pack items")
 	}

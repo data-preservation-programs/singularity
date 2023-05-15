@@ -118,7 +118,7 @@ func (t *DealParams) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.ClientDealProposal (market.ClientDealProposal) (struct)
+	// t.ClientDealProposal (proposal110.ClientDealProposal) (struct)
 	if len("ClientDealProposal") > cbg.MaxLength {
 		return xerrors.Errorf("Value in field \"ClientDealProposal\" was too long")
 	}
@@ -273,7 +273,7 @@ func (t *DealParams) UnmarshalCBOR(r io.Reader) (err error) {
 			default:
 				return fmt.Errorf("booleans are either major type 7, value 20 or 21 (got %d)", extra)
 			}
-			// t.ClientDealProposal (market.ClientDealProposal) (struct)
+			// t.ClientDealProposal (proposal110.ClientDealProposal) (struct)
 		case "ClientDealProposal":
 
 			{
