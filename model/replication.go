@@ -127,6 +127,7 @@ type Wallet struct {
 	ID         string `gorm:"primaryKey" json:"id"`
 	Address    string `gorm:"unique" json:"address"`
 	PrivateKey string `json:"privateKey"`
+	RemotePeer string `json:"remotePeer"`
 }
 
 func (w Wallet) GetExportedKey() (string, error) {

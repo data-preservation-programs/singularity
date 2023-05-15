@@ -120,6 +120,7 @@ func main() {
 				Subcommands: []*cli.Command{
 					wallet.ImportCmd,
 					wallet.ListCmd,
+					wallet.AddRemoteCmd,
 				},
 			},
 		},

@@ -3,6 +3,7 @@ package pack
 import (
 	"bytes"
 	"context"
+	"filippo.io/age"
 	"io"
 	"os"
 	"path"
@@ -109,6 +110,7 @@ func ProcessItems(
 	items []model.Item,
 	outDir string,
 	pieceSize uint64,
+	recipients []string,
 ) (*Result, error) {
 	result := &Result{
 		ItemCIDs: make(map[uint64]cid.Cid),
@@ -133,7 +135,7 @@ func ProcessItems(
 	for _, item := range items {
 		item := item
 		links := make([]Link, 0)
-		blockChan, err := streamItem(ctx, handler, item)
+		blockChan, err := streamItem(ctx, handler, item, recipients)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to stream item")
 		}
@@ -289,10 +291,32 @@ func Min(i int, i2 int) int {
 	return i2
 }
 
-func streamItem(ctx context.Context, handler datasource.Handler, item model.Item) (<-chan BlockResult, error) {
+func streamItem(ctx context.Context, handler datasource.Handler, item model.Item, recipients []string) (<-chan BlockResult, error) {
 	readStream, err := handler.Read(ctx, item.Path, item.Offset, item.Length)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open stream")
+	}
+
+	if len(recipients) > 0 {
+		var rs []age.Recipient
+		for _, recipient := range recipients {
+			r, err := age.ParseX25519Recipient(recipient)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to parse recipient")
+			}
+			rs = append(rs, r)
+		}
+		reader, writer := io.Pipe()
+		target, err := age.Encrypt(writer, rs...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create encrypt stream")
+		}
+		readStream2 := readStream
+		go func() {
+			defer target.Close()
+			io.Copy(target, readStream2)
+		}()
+		readStream = reader
 	}
 
 	blockChan := make(chan BlockResult)
