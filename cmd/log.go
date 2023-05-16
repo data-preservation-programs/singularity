@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	logging "github.com/ipfs/go-log/v2"

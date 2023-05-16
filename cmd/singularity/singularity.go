@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/data-preservation-programs/go-singularity/cmd"
 	"github.com/data-preservation-programs/go-singularity/cmd/deal/schedule"
 	"github.com/data-preservation-programs/go-singularity/cmd/deal/spadepolicy"
 	"github.com/data-preservation-programs/go-singularity/cmd/wallet"
@@ -56,9 +57,9 @@ func main() {
 			},
 		},
 		Commands: []*cli.Command{
-			MigrateCmd,
-			DownloadCmd,
-			InitCmd,
+			cmd.MigrateCmd,
+			cmd.DownloadCmd,
+			cmd.InitCmd,
 			{
 				Name:  "deal",
 				Usage: "Replication / Deal making management",
