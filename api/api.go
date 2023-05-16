@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	_ "github.com/data-preservation-programs/go-singularity/api/docs"
-	"github.com/data-preservation-programs/go-singularity/dashboard"
+	"github.com/data-preservation-programs/go-singularity/cmd/embed"
 	"github.com/data-preservation-programs/go-singularity/database"
 	"github.com/data-preservation-programs/go-singularity/datasource"
 	"github.com/data-preservation-programs/go-singularity/handler"
@@ -453,7 +453,7 @@ func (d Server) Run(c *cli.Context) error {
 	}))
 
 	d.setupRoutes(e)
-	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
+	efs, err := fs.Sub(embed.DashboardStaticFiles, "build")
 	if err != nil {
 		return err
 	}
