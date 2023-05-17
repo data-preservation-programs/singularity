@@ -56,7 +56,7 @@ func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
 }
 
 type ContentProviderService struct {
-	resolver datasource.HandlerResolver
+	Resolver datasource.HandlerResolver
 	DB       *gorm.DB
 	bind     string
 	host     host.Host
@@ -97,7 +97,7 @@ func NewContentProviderService(db *gorm.DB, bind string, identity string, listen
 		logging.Logger("contentprovider").Info("listening on " + m.String())
 	}
 	logging.Logger("contentprovider").Info("peerID: " + h.ID().String())
-	return &ContentProviderService{DB: db, bind: bind, resolver: datasource.NewDefaultHandlerResolver(), host: h}, nil
+	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.NewDefaultHandlerResolver(), host: h}, nil
 }
 
 func (s *ContentProviderService) StartBitswap() error {
@@ -182,7 +182,7 @@ func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pie
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to query for CAR items: %w", err)
 	}
-	reader, err := store.NewPieceReader(ctx, car, carBlocks, s.resolver)
+	reader, err := store.NewPieceReader(ctx, car, carBlocks, s.Resolver)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create piece reader: %w", err)
 	}
@@ -267,7 +267,7 @@ func (s *ContentProviderService) handleGetCid(c echo.Context) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "CID not found")
 	}
-	handler, err := s.resolver.GetHandler(*item.Source)
+	handler, err := s.Resolver.GetHandler(*item.Source)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to get handler: "+err.Error())
 	}

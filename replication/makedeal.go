@@ -185,12 +185,12 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 		defer stream.SetDeadline(time.Time{})
 	}
 
-	var resp proposal120.DealResponse
 	err = cborutil.WriteCborRPC(stream, &dealParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to write deal params")
 	}
 
+	var resp proposal120.DealResponse
 	err = cborutil.ReadCborRPC(stream, &resp)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read deal response")

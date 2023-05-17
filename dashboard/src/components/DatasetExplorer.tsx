@@ -127,7 +127,7 @@ const DatasetExplorer: React.FC<DatasetExplorerProps> = ({ rootDirectoryID }) =>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td></td>
+                <td>{dir.CID}</td>
               </tr>
             ))}
             {items.map((item) => (
