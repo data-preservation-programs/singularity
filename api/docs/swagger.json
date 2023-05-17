@@ -1,0 +1,1770 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.",
+        "title": "Singularity API",
+        "contact": {},
+        "version": "beta"
+    },
+    "host": "localhost:9090",
+    "basePath": "/admin/api",
+    "paths": {
+        "/dataset": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Create a new dataset",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataset.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Dataset"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/push": {
+            "post": {
+                "description": "Push an item to the staging area",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Push an item to the staging area",
+                "parameters": [
+                    {
+                        "description": "Item",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ItemInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/upload": {
+            "post": {
+                "description": "Upload a file to a dataset",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Upload a file to a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "dataset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "File to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Error: dataset not found.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error: internal server error.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}": {
+            "delete": {
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Remove a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/piece": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Register a CAR file piece with a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataset.AddPieceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Car"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/source": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Add a source to a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataset.AddSourceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/source/{sourcePath}": {
+            "delete": {
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Remove a source from a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Source path",
+                        "name": "sourcePath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/sources": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all sources for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/wallet/{wallet}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Associate a new wallet with a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "Remove an associated wallet from a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{name}/wallets": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all wallets of a dataset.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/datasets": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all datasets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Dataset"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal/list": {
+            "post": {
+                "description": "List all deals",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal"
+                ],
+                "summary": "List all deals",
+                "parameters": [
+                    {
+                        "description": "ListDealRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/deal.ListDealRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Deal"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal/schedule": {
+            "post": {
+                "description": "Create a new schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "Create a new schedule",
+                "parameters": [
+                    {
+                        "description": "CreateRequest",
+                        "name": "schedule",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Schedule"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal/schedule/{scheduleID}/pause": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "Pause a specific schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Schedule"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal/schedule/{scheduleID}/resume": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "Resume a specific schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Schedule"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal/schedules": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "List all deal making schedules",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Schedule"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/deal/send_manual": {
+            "post": {
+                "description": "Send a manual deal proposal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal"
+                ],
+                "summary": "Send a manual deal proposal",
+                "parameters": [
+                    {
+                        "description": "Proposal",
+                        "name": "proposal",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/deal.Proposal"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/init": {
+            "post": {
+                "tags": [
+                    "Global"
+                ],
+                "summary": "Initialize the database",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/piece/metadata/{piece}": {
+            "get": {
+                "description": "Get metadata for a piece",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Piece"
+                ],
+                "summary": "Get metadata for a piece",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Piece CID",
+                        "name": "piece",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/store.PieceReader"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Import a private key",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.ImportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallets": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "List all imported wallets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.ItemInfo": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string"
+                },
+                "sourceId": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.ItemType"
+                }
+            }
+        },
+        "dataset.AddPieceRequest": {
+            "type": "object",
+            "properties": {
+                "filePath": {
+                    "type": "string"
+                },
+                "fileSize": {
+                    "type": "integer"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "string"
+                },
+                "rootCID": {
+                    "type": "string"
+                }
+            }
+        },
+        "dataset.AddSourceRequest": {
+            "type": "object",
+            "properties": {
+                "httpheaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pushOnly": {
+                    "type": "boolean"
+                },
+                "s3AccessKeyID": {
+                    "type": "string"
+                },
+                "s3Endpoint": {
+                    "type": "string"
+                },
+                "s3Region": {
+                    "type": "string"
+                },
+                "s3SecretAccessKey": {
+                    "type": "string"
+                },
+                "scanInterval": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "sourcePath": {
+                    "type": "string"
+                }
+            }
+        },
+        "dataset.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "maxSize": {
+                    "type": "string"
+                },
+                "minSize": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outputDirs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pieceSize": {
+                    "type": "string"
+                },
+                "recipients": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "script": {
+                    "type": "string"
+                }
+            }
+        },
+        "deal.ListDealRequest": {
+            "type": "object",
+            "properties": {
+                "datasets": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "providers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "states": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "deal.Proposal": {
+            "type": "object",
+            "properties": {
+                "clientAddress": {
+                    "type": "string"
+                },
+                "durationDays": {
+                    "type": "number"
+                },
+                "fileSize": {
+                    "type": "integer"
+                },
+                "httpHeaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipni": {
+                    "type": "boolean"
+                },
+                "keepUnsealed": {
+                    "type": "boolean"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "providerID": {
+                    "type": "string"
+                },
+                "rootCID": {
+                    "type": "string"
+                },
+                "startDelayDays": {
+                    "type": "number"
+                },
+                "urlTemplate": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.HTTPError": {
+            "type": "object",
+            "properties": {
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Car": {
+            "type": "object",
+            "properties": {
+                "chunk": {
+                    "$ref": "#/definitions/model.Chunk"
+                },
+                "chunkID": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dataset": {
+                    "$ref": "#/definitions/model.Dataset"
+                },
+                "datasetID": {
+                    "type": "integer"
+                },
+                "filePath": {
+                    "type": "string"
+                },
+                "fileSize": {
+                    "type": "integer"
+                },
+                "header": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "integer"
+                },
+                "rootCID": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Chunk": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Item"
+                    }
+                },
+                "packingState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "packingWorker": {
+                    "$ref": "#/definitions/model.Worker"
+                },
+                "packingWorkerID": {
+                    "type": "string"
+                },
+                "source": {
+                    "$ref": "#/definitions/model.Source"
+                },
+                "sourceID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Dataset": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "encryptionRecipients": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "encryptionScript": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "maxSize": {
+                    "type": "integer"
+                },
+                "minSize": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outputDirs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pieceSize": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Deal": {
+            "type": "object",
+            "properties": {
+                "clientID": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dataset": {
+                    "$ref": "#/definitions/model.Dataset"
+                },
+                "datasetID": {
+                    "type": "integer"
+                },
+                "dealID": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "pieceCID": {
+                    "type": "string"
+                },
+                "pieceSize": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "proposalID": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "schedule": {
+                    "$ref": "#/definitions/model.Schedule"
+                },
+                "scheduleID": {
+                    "type": "integer"
+                },
+                "sectorStart": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "state": {
+                    "$ref": "#/definitions/model.DealState"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                },
+                "wallet": {
+                    "$ref": "#/definitions/model.Wallet"
+                }
+            }
+        },
+        "model.DealState": {
+            "type": "string",
+            "enum": [
+                "proposed",
+                "published",
+                "active",
+                "expired",
+                "proposal_expired",
+                "rejected",
+                "slashed",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "DealProposed",
+                "DealPublished",
+                "DealActive",
+                "DealExpired",
+                "DealProposalExpired",
+                "DealRejected",
+                "DealSlashed",
+                "DealErrored"
+            ]
+        },
+        "model.Directory": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "omitempty": {
+                    "$ref": "#/definitions/model.Directory"
+                },
+                "parentID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Item": {
+            "type": "object",
+            "properties": {
+                "chunkID": {
+                    "type": "integer"
+                },
+                "cid": {
+                    "type": "string"
+                },
+                "directoryID": {
+                    "type": "integer"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "omitempty": {
+                    "$ref": "#/definitions/model.Directory"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "scannedAt": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "sourceID": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.ItemType"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ItemType": {
+            "type": "string",
+            "enum": [
+                "file",
+                "url",
+                "s3object"
+            ],
+            "x-enum-varnames": [
+                "File",
+                "URL",
+                "S3Object"
+            ]
+        },
+        "model.Metadata": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "model.Schedule": {
+            "type": "object",
+            "properties": {
+                "AllowedPieceCIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "announceToIPNI": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "datasetId": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "httpHeaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "keepUnsealed": {
+                    "type": "boolean"
+                },
+                "lastProcessedTimestamp": {
+                    "type": "integer"
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "integer"
+                },
+                "scheduleIntervalSeconds": {
+                    "type": "integer"
+                },
+                "scheduleWorkerId": {
+                    "type": "string"
+                },
+                "startDelay": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "state": {
+                    "$ref": "#/definitions/model.ScheduleState"
+                },
+                "totalDealNumber": {
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.ScheduleState": {
+            "type": "string",
+            "enum": [
+                "active",
+                "paused",
+                "completed"
+            ],
+            "x-enum-varnames": [
+                "ScheduleActive",
+                "SchedulePaused",
+                "ScheduleCompleted"
+            ]
+        },
+        "model.Source": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "datasetID": {
+                    "type": "integer"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastScannedTimestamp": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/model.Metadata"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "pushOnly": {
+                    "type": "boolean"
+                },
+                "rootDirectoryId": {
+                    "type": "integer"
+                },
+                "scanIntervalSeconds": {
+                    "type": "integer"
+                },
+                "scanningState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "scanningWorkerId": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.SourceType"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SourceType": {
+            "type": "string",
+            "enum": [
+                "dir",
+                "website",
+                "s3path",
+                "upload"
+            ],
+            "x-enum-varnames": [
+                "Dir",
+                "Website",
+                "S3Path",
+                "Upload"
+            ]
+        },
+        "model.Wallet": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.WorkState": {
+            "type": "string",
+            "enum": [
+                "created",
+                "ready",
+                "processing",
+                "complete",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "Created",
+                "Ready",
+                "Processing",
+                "Complete",
+                "Error"
+            ]
+        },
+        "model.WorkType": {
+            "type": "string",
+            "enum": [
+                "scan",
+                "deal_making",
+                "packing"
+            ],
+            "x-enum-varnames": [
+                "Scan",
+                "DealMaking",
+                "Packing"
+            ]
+        },
+        "model.Worker": {
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastHeartbeat": {
+                    "type": "string"
+                },
+                "workType": {
+                    "$ref": "#/definitions/model.WorkType"
+                },
+                "workingOn": {
+                    "type": "string"
+                }
+            }
+        },
+        "schedule.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "allowedPieceCIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "datasetName": {
+                    "type": "string"
+                },
+                "durationDays": {
+                    "type": "number"
+                },
+                "httpHeaders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipni": {
+                    "type": "boolean"
+                },
+                "keepUnsealed": {
+                    "type": "boolean"
+                },
+                "maxPendingDealNumber": {
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "scheduleDealNumber": {
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "type": "string"
+                },
+                "scheduleInterval": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "startDelayDays": {
+                    "type": "number"
+                },
+                "totalDealNumber": {
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "store.PieceReader": {
+            "type": "object",
+            "properties": {
+                "blocks": {
+                    "type": "array",
+                    "items": {}
+                },
+                "header": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "time.Duration": {
+            "type": "integer",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
+            ],
+            "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
+            ]
+        },
+        "wallet.ImportRequest": {
+            "type": "object",
+            "properties": {
+                "privateKey": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
