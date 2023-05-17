@@ -299,12 +299,16 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 
 func Run(c *cli.Context) error {
 	db := database.MustOpenFromCLI(c)
+	err := model.InitializeEncryption(c.String("password"), db)
+	if err != nil {
+		return err
+	}
 	bind := c.String("bind")
 	stagingDir := c.String("staging-dir")
 	return Server{db: db, bind: bind, stagingDir: stagingDir,
 		datasourceHandlerResolver: datasource.NewDefaultHandlerResolver(),
 		datasets:                  make(map[string]model.Source),
-		contentProvider:           &service.ContentProviderService{DB: db},
+		contentProvider:           &service.ContentProviderService{DB: db, Resolver: datasource.NewDefaultHandlerResolver()},
 	}.Run(c)
 }
 

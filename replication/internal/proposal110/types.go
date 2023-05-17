@@ -10,7 +10,7 @@ import (
 	addr "github.com/filecoin-project/go-address"
 )
 
-//go:generate go run github.com/hannahhoward/cbor-gen-for --map-encoding DataRef Proposal ClientDealProposal DealProposal DealLabel SignedResponse Response
+//go:generate go run github.com/hannahhoward/cbor-gen-for --map-encoding DataRef Proposal SignedResponse Response
 
 // DataRef is a reference for how data will be transferred for a given storage deal
 type DataRef struct {
