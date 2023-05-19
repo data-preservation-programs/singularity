@@ -5,14 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/ipfs/go-log/v2"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/pkg/errors"
-	"golang.org/x/exp/slices"
-	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"os"
@@ -21,6 +13,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/data-preservation-programs/go-singularity/datasource"
+	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/ipfs/go-log/v2"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type DatasetListenerService struct {
@@ -87,7 +87,7 @@ func NewDatasetListenerService(db *gorm.DB, stagingDir string, bind string) Data
 		bind:                      bind,
 		datasets:                  map[string]model.Source{},
 		logger:                    log.Logger("dataset-listener"),
-		datasourceHandlerResolver: datasource.NewDefaultHandlerResolver(),
+		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 	}
 }
 
@@ -97,10 +97,7 @@ func (s DatasetListenerService) Start() {
 	e.Use(middleware.Recover())
 	e.POST("/upload", s.uploadFile)
 	e.GET("/push", func(c echo.Context) error {
-		t := c.QueryParam("type")
-		if !slices.Contains(model.ItemTypes, model.ItemType(t)) {
-			return c.String(http.StatusBadRequest, fmt.Sprintf("Error: invalid type %s", t))
-		}
+		//TODO _ := c.QueryParam("type")
 		path := c.QueryParam("path")
 		sourceIDStr := c.QueryParam("source_id")
 		sourceID, err := strconv.ParseUint(sourceIDStr, 10, 32)
@@ -108,7 +105,7 @@ func (s DatasetListenerService) Start() {
 			return c.String(http.StatusBadRequest, fmt.Sprintf("Error: invalid source_id %s", sourceIDStr))
 		}
 		itemInfo := ItemInfo{
-			Type:     model.ItemType(t),
+			// TODO: Type:     model.ItemType(t),
 			Path:     path,
 			SourceID: uint32(sourceID),
 		}
@@ -129,9 +126,9 @@ func (s DatasetListenerService) Start() {
 }
 
 type ItemInfo struct {
-	Type     model.ItemType `json:"type"`
-	Path     string         `json:"path"`
-	SourceID uint32         `json:"sourceId"`
+	Type     model.SourceType `json:"type"`
+	Path     string           `json:"path"`
+	SourceID uint32           `json:"sourceId"`
 }
 
 func (s DatasetListenerService) pushItem(c echo.Context, itemInfo ItemInfo) error {
@@ -144,34 +141,31 @@ func (s DatasetListenerService) pushItem(c echo.Context, itemInfo ItemInfo) erro
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	handler, err := s.datasourceHandlerResolver.GetHandler(source)
+	handler, err := s.datasourceHandlerResolver.Resolve(c.Request().Context(), source)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	// source and item does not match
-	if source.Type.GetSupportedItemType() != itemInfo.Type {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d does not support item type %s", itemInfo.SourceID, itemInfo.Type))
-	}
+	// TODO source and item does not match
 
 	// item is not a subpath of source path
 	if !strings.HasPrefix(itemInfo.Path, source.Path) {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: item path %s is not a subpath of source path %s", itemInfo.Path, source.Path))
 	}
 
-	size, lastModified, err := handler.CheckItem(c.Request().Context(), itemInfo.Path)
+	entry, err := handler.Check(c.Request().Context(), itemInfo.Path)
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
 	err = s.db.WithContext(c.Request().Context()).Create(&model.Item{
-		ScannedAt:    time.Now().UTC(),
-		SourceID:     source.ID,
-		Type:         itemInfo.Type,
+		ScannedAt: time.Now().UTC(),
+		SourceID:  source.ID,
+		//TODO: Type:         itemInfo.Type,
 		Path:         itemInfo.Path,
-		Size:         size,
-		Length:       size,
-		LastModified: lastModified,
+		Size:         entry.Size(),
+		Length:       entry.Size(),
+		LastModified: entry.ModTime(c.Request().Context()),
 	}).Error
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
@@ -249,14 +243,14 @@ func (s DatasetListenerService) uploadFile(c echo.Context) error {
 	}
 
 	s.db.WithContext(c.Request().Context()).Create(&model.Item{
-		ScannedAt:    now,
-		SourceID:     source.ID,
-		Type:         model.File,
+		ScannedAt: now,
+		SourceID:  source.ID,
+		//TODO: Type:         model.File,
 		Path:         dstPath,
-		Size:         uint64(written),
+		Size:         written,
 		Offset:       0,
-		Length:       uint64(written),
-		LastModified: &lastModified,
+		Length:       written,
+		LastModified: lastModified,
 		Version:      0,
 	})
 

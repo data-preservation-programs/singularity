@@ -39,7 +39,7 @@ type DealMakerWorker struct {
 
 type sumResult struct {
 	DealNumber int
-	DealSize   uint64
+	DealSize   int64
 }
 
 func NewDealMakerWorker(db *gorm.DB,
@@ -91,19 +91,19 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 		schedule.ScheduleDealNumber = math.MaxInt
 	}
 	if schedule.ScheduleDealSize == 0 {
-		schedule.ScheduleDealSize = math.MaxUint64
+		schedule.ScheduleDealSize = math.MaxInt64
 	}
 	if schedule.TotalDealNumber == 0 {
 		schedule.TotalDealNumber = math.MaxInt
 	}
 	if schedule.TotalDealSize == 0 {
-		schedule.TotalDealSize = math.MaxUint64
+		schedule.TotalDealSize = math.MaxInt64
 	}
 	if schedule.MaxPendingDealNumber == 0 {
 		schedule.MaxPendingDealNumber = math.MaxInt
 	}
 	if schedule.MaxPendingDealSize == 0 {
-		schedule.MaxPendingDealSize = math.MaxUint64
+		schedule.MaxPendingDealSize = math.MaxInt64
 	}
 
 	var pendingResult sumResult

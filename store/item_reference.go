@@ -36,11 +36,11 @@ func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.B
 		return blocks.NewBlockWithCid(carBlock.RawBlock, cid)
 	}
 
-	handler, err := i.HandlerResolver.GetHandler(*carBlock.Item.Source)
+	handler, err := i.HandlerResolver.Resolve(ctx, *carBlock.Item.Source)
 	if err != nil {
 		return nil, err
 	}
-	reader, err := handler.Read(
+	reader, _, err := handler.Read(
 		ctx,
 		carBlock.Item.Path,
 		carBlock.CarOffset+carBlock.Item.Offset,

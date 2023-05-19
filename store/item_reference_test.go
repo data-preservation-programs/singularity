@@ -35,7 +35,7 @@ func TestItemReferenceBlockStore(t *testing.T) {
 	store := ItemReferenceBlockStore{DB: db, HandlerResolver: datasource.NewDefaultHandlerResolver()}
 
 	source := model.Source{
-		Type: model.Dir,
+		Type: model.Local,
 	}
 	assert.NoError(t, db.Create(&source).Error)
 

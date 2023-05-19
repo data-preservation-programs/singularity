@@ -65,7 +65,7 @@ func AddPieceHandler(
 		return nil, handler.NewBadRequestString("piece size must be a power of 2")
 	}
 	rootCID := ""
-	fileSize := uint64(0)
+	fileSize := int64(0)
 	if request.FilePath != "" {
 		file, err := os.Open(request.FilePath)
 		if err != nil {
@@ -90,26 +90,26 @@ func AddPieceHandler(
 		if err != nil {
 			return nil, handler.NewBadRequestString("failed to stat file: " + err.Error())
 		}
-		fileSize = uint64(stat.Size())
+		fileSize = stat.Size()
 		request.FilePath, err = filepath.Abs(request.FilePath)
 		if err != nil {
 			return nil, handler.NewBadRequestString("failed to get absolute path: " + err.Error())
 		}
 	}
 	if request.FileSize != 0 {
-		fileSize = request.FileSize
+		fileSize = int64(request.FileSize)
 	}
 	if request.RootCID != "" {
 		rootCID = request.RootCID
 	}
 
-	if fileSize >= uint64(pieceSize) {
+	if fileSize >= pieceSize {
 		return nil, handler.NewBadRequestString("piece size must be larger than file size")
 	}
 
 	car := model.Car{
 		PieceCID:  request.PieceCID,
-		PieceSize: uint64(pieceSize),
+		PieceSize: pieceSize,
 		RootCID:   rootCID,
 		FileSize:  fileSize,
 		FilePath:  request.FilePath,

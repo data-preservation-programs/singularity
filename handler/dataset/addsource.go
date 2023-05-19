@@ -69,7 +69,7 @@ func AddSourceHandler(
 	}
 
 	var metadata model.Metadata
-	if sourceType == model.S3Path {
+	if sourceType == model.S3 {
 		m := model.S3Metadata{
 			Region:          request.S3Region,
 			Endpoint:        request.S3Endpoint,
@@ -80,7 +80,7 @@ func AddSourceHandler(
 		if err != nil {
 			return nil, handler.NewBadRequestString("failed to encode metadata: " + err.Error())
 		}
-	} else if sourceType == model.Website {
+	} else if sourceType == model.URL {
 		m := model.HTTPMetadata{
 			Headers: headers,
 		}
