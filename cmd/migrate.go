@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/data-preservation-programs/go-singularity/migrate"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,5 +15,5 @@ var MigrateCmd = &cli.Command{
 			Value:   "mongodb://localhost:27017",
 		},
 	},
-	Action: migrate.Migrate,
+	// TODO Action: migrate.Migrate,
 }

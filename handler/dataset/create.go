@@ -98,9 +98,9 @@ func CreateHandler(
 
 	dataset := model.Dataset{
 		Name:                 request.Name,
-		MinSize:              minSize,
-		MaxSize:              maxSize,
-		PieceSize:            pieceSize,
+		MinSize:              int64(minSize),
+		MaxSize:              int64(maxSize),
+		PieceSize:            int64(pieceSize),
 		OutputDirs:           outDirs,
 		EncryptionRecipients: request.Recipients,
 		EncryptionScript:     request.Script,

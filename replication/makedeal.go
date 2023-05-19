@@ -121,7 +121,7 @@ func (d DealMaker) GetProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([
 	return protocols, nil
 }
 
-func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize uint64, verified bool) (big.Int, error) {
+func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize int64, verified bool) (big.Int, error) {
 	bound := new(DealProviderCollateralBound)
 	err := d.lotusClient.CallFor(ctx, bound, "Filecoin.StateDealProviderCollateralBounds", pieceSize, verified, nil)
 	if err != nil {
@@ -137,7 +137,7 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 	car model.Car, schedule model.Schedule,
 	minerInfo peer.AddrInfo) (*proposal120.DealResponse, error) {
 	transfer := proposal120.Transfer{
-		Size: car.FileSize,
+		Size: uint64(car.FileSize),
 	}
 	url := strings.Replace(schedule.URLTemplate, "{PIECE_CID}", car.PieceCID, 1)
 	isOnline := url != ""

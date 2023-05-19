@@ -49,7 +49,7 @@ type Cid struct {
 
 type DealProposal struct {
 	PieceCID             Cid
-	PieceSize            uint64
+	PieceSize            int64
 	VerifiedDeal         bool
 	Client               string
 	Provider             string

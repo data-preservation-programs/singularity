@@ -106,10 +106,10 @@ func Migrate(cctx *cli.Context) error {
 			return cli.Exit("Failed to create root directory: "+err.Error(), 1)
 		}
 
-		sourceType := model.Dir
+		sourceType := model.Local
 		fileType := model.File
 		if strings.HasPrefix(request.Path, "s3") {
-			sourceType = model.S3Path
+			sourceType = model.S3
 			fileType = model.S3Object
 		}
 		source := model.Source{

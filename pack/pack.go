@@ -30,16 +30,16 @@ import (
 
 type BlockResult struct {
 	CID    cid.Cid
-	Offset uint64
-	Length uint64
+	Offset int64
+	Length int64
 	Raw    []byte
 	Error  error
 }
 type Result struct {
 	CarFilePath string
-	CarFileSize uint64
+	CarFileSize int64
 	PieceCID    cid.Cid
-	PieceSize   uint64
+	PieceSize   int64
 	RootCID     cid.Cid
 	Header      []byte
 	CarBlocks   []model.CarBlock
@@ -81,26 +81,26 @@ func createParentNode(links []Link) (format.Node, uint64, error) {
 	return pbNode, total, nil
 }
 
-func writeCarBlock(writer io.Writer, block blocks.BasicBlock) (uint64, error) {
-	written := uint64(0)
+func writeCarBlock(writer io.Writer, block blocks.BasicBlock) (int64, error) {
+	written := int64(0)
 	varintBytes := varint.ToUvarint(uint64(len(block.RawData()) + block.Cid().ByteLen()))
 	n, err := io.Copy(writer, bytes.NewReader(varintBytes))
 	if err != nil {
 		return written, errors.Wrap(err, "failed to write varint")
 	}
-	written += uint64(n)
+	written += int64(n)
 
 	n, err = io.Copy(writer, bytes.NewReader(block.Cid().Bytes()))
 	if err != nil {
 		return written, errors.Wrap(err, "failed to write cid")
 	}
-	written += uint64(n)
+	written += int64(n)
 
 	n, err = io.Copy(writer, bytes.NewReader(block.RawData()))
 	if err != nil {
 		return written, errors.Wrap(err, "failed to write raw")
 	}
-	written += uint64(n)
+	written += int64(n)
 	return written, nil
 }
 
@@ -109,13 +109,13 @@ func ProcessItems(
 	handler datasource.Handler,
 	items []model.Item,
 	outDir string,
-	pieceSize uint64,
+	pieceSize int64,
 	recipients []string,
 ) (*Result, error) {
 	result := &Result{
 		ItemCIDs: make(map[uint64]cid.Cid),
 	}
-	offset := uint64(0)
+	offset := int64(0)
 	var headerBytes []byte
 
 	calc := &commp.Calc{}
@@ -145,10 +145,10 @@ func ProcessItems(
 				links, Link{
 					Link: format.Link{
 						Name: "",
-						Size: block.Length,
+						Size: uint64(block.Length),
 						Cid:  block.CID,
 					},
-					ChunkSize: block.Length,
+					ChunkSize: uint64(block.Length),
 				},
 			)
 			if block.Error != nil {
@@ -174,7 +174,7 @@ func ProcessItems(
 					return nil, errors.Wrap(err, "failed to write header")
 				}
 
-				offset += uint64(n)
+				offset += int64(n)
 			}
 
 			basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
@@ -190,7 +190,7 @@ func ProcessItems(
 					CID:            block.CID.String(),
 					CarOffset:      offset - written,
 					CarBlockLength: written,
-					Varint:         block.Length + uint64(block.CID.ByteLen()),
+					Varint:         uint64(block.Length) + uint64(block.CID.ByteLen()),
 					ItemID:         &item.ID,
 					ItemOffset:     block.Offset,
 					BlockLength:    block.Length,
@@ -220,7 +220,7 @@ func ProcessItems(
 						CarBlockLength: written,
 						Varint:         uint64(len(basicBlock.RawData()) + basicBlock.Cid().ByteLen()),
 						RawBlock:       basicBlock.RawData(),
-						BlockLength:    uint64(len(basicBlock.RawData())),
+						BlockLength:    int64(len(basicBlock.RawData())),
 					},
 				)
 
@@ -251,14 +251,14 @@ func ProcessItems(
 		return nil, errors.Wrap(err, "failed to calculate commp")
 	}
 
-	if rawPieceSize < pieceSize {
-		rawCommp, err = commp.PadCommP(rawCommp, rawPieceSize, pieceSize)
+	if rawPieceSize < uint64(pieceSize) {
+		rawCommp, err = commp.PadCommP(rawCommp, rawPieceSize, uint64(pieceSize))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to pad commp")
 		}
 
-		rawPieceSize = pieceSize
-	} else if rawPieceSize > pieceSize {
+		rawPieceSize = uint64(pieceSize)
+	} else if rawPieceSize > uint64(pieceSize) {
 		log.Logger("packing").Warn("piece size is larger than the target piece size")
 	}
 
@@ -268,7 +268,7 @@ func ProcessItems(
 	}
 
 	result.PieceCID = commCid
-	result.PieceSize = rawPieceSize
+	result.PieceSize = int64(rawPieceSize)
 	result.CarFileSize = offset
 
 	if outDir != "" {
@@ -292,7 +292,7 @@ func Min(i int, i2 int) int {
 }
 
 func streamItem(ctx context.Context, handler datasource.Handler, item model.Item, recipients []string) (<-chan BlockResult, error) {
-	readStream, err := handler.Read(ctx, item.Path, item.Offset, item.Length)
+	readStream, _, err := handler.Read(ctx, item.Path, item.Offset, item.Length)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open stream")
 	}
@@ -340,12 +340,12 @@ func streamItem(ctx context.Context, handler datasource.Handler, item model.Item
 			blockChan <- BlockResult{
 				CID:    c,
 				Offset: offset,
-				Length: uint64(len(chunkerBytes)),
+				Length: int64(len(chunkerBytes)),
 				Raw:    chunkerBytes,
 				Error:  nil,
 			}
 
-			offset += uint64(len(chunkerBytes))
+			offset += int64(len(chunkerBytes))
 		}
 	}()
 

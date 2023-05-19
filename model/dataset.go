@@ -12,7 +12,7 @@ import (
 )
 
 type StringSlice []string
-type Metadata map[string]interface{}
+type Metadata map[string]string
 
 func (m Metadata) GetS3Metadata() (S3Metadata, error) {
 	var out S3Metadata
@@ -124,8 +124,7 @@ func (m *Metadata) Scan(src interface{}) error {
 	return json.Unmarshal(source, m)
 }
 
-type SourceType string
-type ItemType string
+type SourceType = string
 type WorkState string
 
 type WorkType string
@@ -137,32 +136,9 @@ const (
 )
 
 const (
-	Dir     SourceType = "dir"
-	Website SourceType = "website"
-	S3Path  SourceType = "s3path"
-	Upload  SourceType = "upload"
+	Local  SourceType = "local"
+	Upload SourceType = "upload"
 )
-
-func (s SourceType) GetSupportedItemType() ItemType {
-	switch s {
-	case Dir, Upload:
-		return File
-	case Website:
-		return URL
-	case S3Path:
-		return S3Object
-	default:
-		return ""
-	}
-}
-
-const (
-	File     ItemType = "file"
-	URL      ItemType = "url"
-	S3Object ItemType = "s3object"
-)
-
-var ItemTypes = []ItemType{File, URL, S3Object}
 
 const (
 	// Created means the item has been created is not ready for processing.
@@ -196,9 +172,9 @@ type Dataset struct {
 	Name                 string      `gorm:"unique" json:"name"`
 	CreatedAt            time.Time   `json:"createdAt"`
 	UpdatedAt            time.Time   `json:"updatedAt"`
-	MinSize              uint64      `json:"minSize"`
-	MaxSize              uint64      `json:"maxSize"`
-	PieceSize            uint64      `json:"pieceSize"`
+	MinSize              int64       `json:"minSize"`
+	MaxSize              int64       `json:"maxSize"`
+	PieceSize            int64       `json:"pieceSize"`
 	OutputDirs           StringSlice `gorm:"type:JSON" json:"outputDirs"`
 	EncryptionRecipients StringSlice `gorm:"type:JSON" json:"encryptionRecipients"`
 	EncryptionScript     string      `json:"encryptionScript"`
@@ -210,10 +186,11 @@ type Source struct {
 	ID                   uint32     `gorm:"primaryKey" json:"id"`
 	CreatedAt            time.Time  `json:"createdAt"`
 	UpdatedAt            time.Time  `json:"updatedAt"`
-	DatasetID            uint32     `gorm:"uniqueIndex:dataset_path" json:"datasetID"`
+	DatasetID            uint32     `gorm:"uniqueIndex:dataset_name" json:"datasetID"`
 	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
 	Type                 SourceType `json:"type"`
-	Path                 string     `gorm:"uniqueIndex:dataset_path" json:"path"`
+	Name                 string     `gorm:"uniqueIndex:dataset_name" json:"name"`
+	Path                 string     `json:"path"`
 	Metadata             Metadata   `gorm:"type:JSON" json:"metadata"`
 	PushOnly             bool       `json:"pushOnly"`
 	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
@@ -246,7 +223,7 @@ func NewSource(source string) (*Source, error) { // Get the absolute path
 	}
 
 	return &Source{
-		Type: Dir,
+		Type: Local,
 		Path: absPath,
 	}, nil
 }
@@ -272,12 +249,11 @@ type Item struct {
 	Chunk        *Chunk  `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"omitempty"`
 	SourceID     uint32  `gorm:"index"`
 	Source       *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"omitempty"`
-	Type         ItemType
 	Path         string
-	Size         uint64
-	Offset       uint64
-	Length       uint64
-	LastModified *time.Time
+	Size         int64
+	Offset       int64
+	Length       int64
+	LastModified time.Time
 	Version      uint32
 	CID          string `gorm:"column:cid"`
 	ErrorMessage string
@@ -301,9 +277,9 @@ type Car struct {
 	ID        uint32 `gorm:"primaryKey"`
 	CreatedAt time.Time
 	PieceCID  string `gorm:"column:piece_cid;index"`
-	PieceSize uint64
+	PieceSize int64
 	RootCID   string `gorm:"column:root_cid"`
-	FileSize  uint64
+	FileSize  int64
 	FilePath  string
 	DatasetID uint32   `gorm:"index"`
 	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"`
@@ -322,8 +298,8 @@ type CarBlock struct {
 	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"`
 	CID   string `gorm:"index;column:cid"`
 	// Offset of the varint inside the CAR
-	CarOffset      uint64
-	CarBlockLength uint64
+	CarOffset      int64
+	CarBlockLength int64
 	// Value of the varint
 	Varint uint64
 	// Raw block
@@ -333,7 +309,7 @@ type CarBlock struct {
 	Source     *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"`
 	ItemID     *uint64
 	Item       *Item `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"`
-	ItemOffset uint64
+	ItemOffset int64
 	// Common
-	BlockLength uint64
+	BlockLength int64
 }

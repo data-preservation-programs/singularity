@@ -13,7 +13,7 @@ import (
 )
 
 func DownloadHandler(piece string, api string, meta model.Metadata) error {
-	resolver := datasource.NewDefaultHandlerResolver()
+	resolver := datasource.DefaultHandlerResolver{}
 	resp, err := http.Get(api + "/admin/api/piece/metadata/" + piece)
 	if err != nil {
 		return errors.Wrap(err, "failed to get metadata")
@@ -35,16 +35,9 @@ func DownloadHandler(piece string, api string, meta model.Metadata) error {
 	for i, _ := range pieceReader.Blocks {
 		if itemBlock, ok := pieceReader.Blocks[i].(store.ItemBlock); ok {
 			source := model.Source{}
-			switch itemBlock.Item.Type {
-			case model.File:
-				source.Type = model.Dir
-			case model.URL:
-				source.Type = model.Website
-			case model.S3Object:
-				source.Type = model.S3Path
-			}
+			// TODO source.Type = model.Local
 			source.Metadata = meta
-			handler, err := resolver.GetHandler(source)
+			handler, err := resolver.Resolve(context.TODO(), source)
 			if err != nil {
 				return errors.Wrap(err, "failed to get handler")
 			}

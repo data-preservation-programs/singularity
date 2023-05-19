@@ -39,7 +39,7 @@ const (
 	ScheduleCompleted ScheduleState = "completed"
 )
 
-func StoragePricePerEpochToPricePerDeal(price string, dealSize uint64, durationEpoch int32) float64 {
+func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEpoch int32) float64 {
 	pricePerEpoch, _ := strconv.ParseFloat(price, 64)
 	return pricePerEpoch / 1e18 / (float64(dealSize) / float64(1<<35)) * float64(durationEpoch)
 }
@@ -58,7 +58,7 @@ type Deal struct {
 	ProposalID   string
 	Label        string
 	PieceCID     string `gorm:"column:piece_cid;index"`
-	PieceSize    uint64
+	PieceSize    int64
 	Start        time.Time
 	Duration     time.Duration
 	End          time.Time
@@ -85,7 +85,7 @@ type Schedule struct {
 	Provider                string        `json:"provider"`
 	Price                   float64       `json:"price"`
 	TotalDealNumber         int           `json:"totalDealNumber"`
-	TotalDealSize           uint64        `json:"totalDealSize"`
+	TotalDealSize           int64         `json:"totalDealSize"`
 	Verified                bool          `json:"verified"`
 	KeepUnsealed            bool          `json:"keepUnsealed"`
 	AnnounceToIPNI          bool          `json:"announceToIPNI"`
@@ -97,9 +97,9 @@ type Schedule struct {
 	ScheduleWorker          *Worker       `gorm:"foreignKey:ScheduleWorkerID;constraint:OnDelete:NO ACTION" json:"scheduleWorker,omitempty" swaggerignore:"true"`
 	ScheduleIntervalSeconds uint64        `json:"scheduleIntervalSeconds"`
 	ScheduleDealNumber      int           `json:"scheduleDealNumber"`
-	ScheduleDealSize        uint64        `json:"scheduleDealSize"`
+	ScheduleDealSize        int64         `json:"scheduleDealSize"`
 	MaxPendingDealNumber    int           `json:"maxPendingDealNumber"`
-	MaxPendingDealSize      uint64        `json:"maxPendingDealSize"`
+	MaxPendingDealSize      int64         `json:"maxPendingDealSize"`
 	Notes                   string        `json:"notes"`
 	ErrorMessage            string        `json:"errorMessage"`
 	AllowedPieceCIDs        StringSlice   `json:"AllowedPieceCIDs"`

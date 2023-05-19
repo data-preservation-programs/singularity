@@ -97,7 +97,7 @@ func NewContentProviderService(db *gorm.DB, bind string, identity string, listen
 		logging.Logger("contentprovider").Info("listening on " + m.String())
 	}
 	logging.Logger("contentprovider").Info("peerID: " + h.ID().String())
-	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.NewDefaultHandlerResolver(), host: h}, nil
+	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}, host: h}, nil
 }
 
 func (s *ContentProviderService) StartBitswap() error {
@@ -108,7 +108,7 @@ func (s *ContentProviderService) StartBitswap() error {
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.NewDefaultHandlerResolver()}
+	bs := store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.DefaultHandlerResolver{}}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
 	return nil
@@ -267,12 +267,12 @@ func (s *ContentProviderService) handleGetCid(c echo.Context) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "CID not found")
 	}
-	handler, err := s.Resolver.GetHandler(*item.Source)
+	handler, err := s.Resolver.Resolve(c.Request().Context(), *item.Source)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to get handler: "+err.Error())
 	}
 
-	handle, err := handler.Read(c.Request().Context(), item.Path, item.Offset, item.Length)
+	handle, _, err := handler.Read(c.Request().Context(), item.Path, item.Offset, item.Length)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to open handler: "+err.Error())
 	}

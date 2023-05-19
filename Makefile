@@ -1,5 +1,5 @@
 build:
-	go build -o singularity ./cmd/singularity
+	go build -o singularity .
 
 buildall:
 	go build ./...
@@ -15,3 +15,5 @@ lint:
 swag:
 	swag init --parseDependency --parseInternal -g singularity.go -d ./cmd,./api,./handler -o ./api/docs
 
+remote:
+	go build -o testremote ./datasource/cmd

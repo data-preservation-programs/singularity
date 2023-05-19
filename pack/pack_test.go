@@ -30,7 +30,7 @@ func (m *MockHandler) Scan(ctx context.Context, path string, last string) <-chan
 	return args.Get(0).(chan datasource.Entry)
 }
 
-func (m *MockHandler) CheckItem(ctx context.Context, path string) (uint64, *time.Time, error) {
+func (m *MockHandler) Check(ctx context.Context, path string) (uint64, *time.Time, error) {
 	args := m.Called(path)
 	return args.Get(0).(uint64), args.Get(1).(*time.Time), args.Error(2)
 }

@@ -62,7 +62,7 @@ func (w DatasetWorker) Run(parent context.Context) error {
 			db:                        w.db.WithContext(ctx),
 			logger:                    log.Logger("worker").With("workerID", id.String()),
 			directoryCache:            map[string]model.Directory{},
-			datasourceHandlerResolver: datasource.NewDefaultHandlerResolver(),
+			datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		}
 		w.threads[i] = thread
 		go thread.run(ctx, errChan)
@@ -354,7 +354,7 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, root mod
 
 type remain struct {
 	items   []model.Item
-	carSize uint64
+	carSize int64
 }
 
 const carHeaderSize = 200
@@ -385,7 +385,7 @@ func (r *remain) itemIDs() []uint64 {
 	return out
 }
 
-func toCarSize(size uint64) uint64 {
+func toCarSize(size int64) int64 {
 	out := size
 	nBlocks := size / 1024 / 1024
 	if size%(1024*1024) != 0 {
@@ -404,7 +404,7 @@ func toCarSize(size uint64) uint64 {
 	return out
 }
 
-func fromCarSize(size uint64) uint64 {
+func fromCarSize(size int64) int64 {
 	// Rough estimate for how much can we store for remaining space of car file
 	return size - (size/1024/1024+1)*90
 }
@@ -509,7 +509,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 			newItem := model.Item{
 				ScannedAt:    bigItem.ScannedAt,
 				ChunkID:      &chunk.ID,
-				Type:         bigItem.Type,
+				//TODO Type:         bigItem.Type,
 				Path:         bigItem.Path,
 				Size:         bigItem.Size,
 				Offset:       bigItem.Offset,
@@ -547,7 +547,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 
 func (w *DatasetWorkerThread) pack(
 	ctx context.Context, chunkID uint32,
-	source model.Source, items []model.Item, ourDirs []string, pieceSize uint64,
+	source model.Source, items []model.Item, ourDirs []string, pieceSize int64,
 ) error {
 	var outDir string
 	if len(ourDirs) > 0 {
@@ -558,7 +558,7 @@ func (w *DatasetWorkerThread) pack(
 			outDir = ourDirs[0]
 		}
 	}
-	handler, err := w.datasourceHandlerResolver.GetHandler(source)
+	handler, err := w.datasourceHandlerResolver.Resolve(ctx, source)
 	if err != nil {
 		return errors.Wrap(err, "failed to get datasource handler")
 	}
@@ -634,7 +634,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 	}
 
 	if !source.PushOnly {
-		sourceScanner, err := w.datasourceHandlerResolver.GetHandler(source)
+		sourceScanner, err := w.datasourceHandlerResolver.Resolve(ctx, source)
 		if err != nil {
 			return errors.Wrap(err, "failed to get source scanner")
 		}
@@ -647,7 +647,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 			existing := int64(0)
 			err = w.db.Model(&model.Item{}).Where(
 				"source_id = ? AND path = ? AND size = ? AND last_modified = ?",
-				source.ID, entry.Path, entry.Size, entry.LastModified,
+				source.ID, entry.Info.Remote(), entry.Info.Size(), entry.Info.ModTime(ctx),
 			).Count(&existing).Error
 			if err != nil {
 				return err
@@ -656,14 +656,14 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 				continue
 			}
 			item := model.Item{
-				SourceID:     source.ID,
-				ScannedAt:    entry.ScannedAt,
-				Type:         entry.Type,
-				Path:         entry.Path,
-				Size:         entry.Size,
+				SourceID:  source.ID,
+				ScannedAt: entry.ScannedAt,
+				//TODO Type:         entry.Type,
+				Path:         entry.Info.Remote(),
+				Size:         entry.Info.Size(),
 				Offset:       0,
-				Length:       entry.Size,
-				LastModified: entry.LastModified,
+				Length:       entry.Info.Size(),
+				LastModified: entry.Info.ModTime(ctx),
 				Version:      0,
 			}
 			w.logger.Debugw("found item", "item", item)

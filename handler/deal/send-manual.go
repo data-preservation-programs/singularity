@@ -94,9 +94,9 @@ func SendManualHandler(
 	}
 	car := model.Car{
 		PieceCID:  request.PieceCID,
-		PieceSize: uint64(pieceSize),
+		PieceSize: pieceSize,
 		RootCID:   request.RootCID,
-		FileSize:  request.FileSize,
+		FileSize:  int64(request.FileSize),
 	}
 	schedule := model.Schedule{
 		URLTemplate:    request.URLTemplate,

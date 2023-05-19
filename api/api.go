@@ -5,6 +5,18 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"io/fs"
+	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
 	_ "github.com/data-preservation-programs/go-singularity/api/docs"
 	"github.com/data-preservation-programs/go-singularity/cmd/embed"
 	"github.com/data-preservation-programs/go-singularity/database"
@@ -24,17 +36,6 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
-	"io"
-	"io/fs"
-	"net/http"
-	"net/url"
-	"os"
-	"path/filepath"
-	"reflect"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type DealStats struct {
@@ -276,7 +277,7 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: item path %s is not a subpath of source path %s", itemInfo.Path, source.Path))
 	}
 
-	size, lastModified, err := handler.CheckItem(c.Request().Context(), itemInfo.Path)
+	size, lastModified, err := handler.Check(c.Request().Context(), itemInfo.Path)
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
