@@ -1,9 +1,9 @@
 package dataset
 
 import (
-	"github.com/data-preservation-programs/go-singularity/cmd/cliutil"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler/dataset"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/urfave/cli/v2"
 )
 

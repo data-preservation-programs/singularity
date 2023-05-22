@@ -1,4 +1,4 @@
-package cmd
+package admin
 
 import (
 	"github.com/urfave/cli/v2"

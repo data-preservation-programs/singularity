@@ -1,17 +1,20 @@
 package main
 
 import (
-	"github.com/data-preservation-programs/go-singularity/cmd"
-	"github.com/data-preservation-programs/go-singularity/cmd/deal/schedule"
-	"github.com/data-preservation-programs/go-singularity/cmd/deal/spadepolicy"
-	"github.com/data-preservation-programs/go-singularity/cmd/wallet"
+	"github.com/data-preservation-programs/singularity/cmd"
+	"github.com/data-preservation-programs/singularity/cmd/admin"
+	"github.com/data-preservation-programs/singularity/cmd/datasource"
+	"github.com/data-preservation-programs/singularity/cmd/datasource/status"
+	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
+	"github.com/data-preservation-programs/singularity/cmd/deal/spadepolicy"
+	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"log"
 	"os"
 
-	"github.com/data-preservation-programs/go-singularity/cmd/dataset"
-	"github.com/data-preservation-programs/go-singularity/cmd/deal"
-	"github.com/data-preservation-programs/go-singularity/cmd/run"
-	"github.com/data-preservation-programs/go-singularity/util/must"
+	"github.com/data-preservation-programs/singularity/cmd/dataset"
+	"github.com/data-preservation-programs/singularity/cmd/deal"
+	"github.com/data-preservation-programs/singularity/cmd/run"
+	"github.com/data-preservation-programs/singularity/util/must"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/urfave/cli/v2"
 )
@@ -20,12 +23,13 @@ import (
 // @version beta
 // @description This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.
 // @host localhost:9090
-// @BasePath /admin/api
+// @BasePath /api
 // @securityDefinitions none
 func main() {
 	app := &cli.App{
-		Name:  "singularity",
-		Usage: "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
+		Name:                 "singularity",
+		Usage:                "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
+		EnableBashCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name: "database-connection-string",
@@ -57,9 +61,16 @@ func main() {
 			},
 		},
 		Commands: []*cli.Command{
-			cmd.MigrateCmd,
+			{
+				Name:  "admin",
+				Usage: "Admin commands",
+				Subcommands: []*cli.Command{
+					admin.InitCmd,
+					admin.ResetCmd,
+					admin.MigrateCmd,
+				},
+			},
 			cmd.DownloadCmd,
-			cmd.InitCmd,
 			{
 				Name:  "deal",
 				Usage: "Replication / Deal making management",
@@ -100,19 +111,36 @@ func main() {
 			},
 			{
 				Name:  "dataset",
-				Usage: "Dataset preparation management",
+				Usage: "Dataset management",
 				Subcommands: []*cli.Command{
 					dataset.CreateCmd,
 					dataset.ListDatasetCmd,
 					dataset.RemoveDatasetCmd,
-					dataset.AddSourceCmd,
-					dataset.ListSourceCmd,
-					dataset.RemoveSourceCmd,
-					dataset.AddPieceCmd,
 					dataset.AddWalletCmd,
 					dataset.ListWalletCmd,
 					dataset.RemoveWalletCmd,
-					dataset.ListPieceCmd,
+					dataset.AddPieceCmd,
+					dataset.ListPiecesCmd,
+				},
+			},
+			{
+				Name:  "datasource",
+				Usage: "Data source management",
+				Subcommands: []*cli.Command{
+					datasource.AddCmd,
+					datasource.ListCmd,
+					datasource.RemoveCmd,
+					datasource.CheckCmd,
+					datasource.UpdateCmd,
+					{
+						Name:  "status",
+						Usage: "Get preparation status of a data source",
+						Subcommands: []*cli.Command{
+							status.SummaryCmd,
+							status.ChunksCmd,
+							status.ItemsCmd,
+						},
+					},
 				},
 			},
 			{
@@ -122,6 +150,7 @@ func main() {
 					wallet.ImportCmd,
 					wallet.ListCmd,
 					wallet.AddRemoteCmd,
+					wallet.RemoveCmd,
 				},
 			},
 		},

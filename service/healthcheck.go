@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"

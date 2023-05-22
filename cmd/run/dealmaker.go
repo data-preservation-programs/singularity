@@ -1,9 +1,8 @@
 package run
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/service"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,10 +25,6 @@ var DealMakerCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		err := model.InitializeEncryption(c.String("password"), db)
-		if err != nil {
-			return cli.Exit(err.Error(), 1)
-		}
 		dealMaker, err := service.NewDealMakerService(db, c.String("lotus-api"), c.String("lotus-token"))
 		if err != nil {
 			return cli.Exit(err.Error(), 1)

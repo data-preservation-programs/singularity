@@ -1,9 +1,8 @@
 package run
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/service"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/urfave/cli/v2"
 )
 
@@ -17,13 +16,33 @@ var DatasetWorkerCmd = &cli.Command{
 			EnvVars: []string{"DATASET_WORKER_CONCURRENCY"},
 			Value:   1,
 		},
+		&cli.BoolFlag{
+			Name:    "enable-scan",
+			Usage:   "Enable scanning of datasets",
+			EnvVars: []string{"DATASET_WORKER_ENABLE_SCAN"},
+			Value:   true,
+		},
+		&cli.BoolFlag{
+			Name:    "enable-pack",
+			Usage:   "Enable packing of datasets that calculates CIDs and packs them into CAR files",
+			EnvVars: []string{"DATASET_WORKER_ENABLE_PACK"},
+			Value:   true,
+		},
+		&cli.BoolFlag{
+			Name:    "enable-dag",
+			Usage:   "Enable dag generation of datasets that maintains the directory structure of datasets",
+			EnvVars: []string{"DATASET_WORKER_ENABLE_DAG"},
+			Value:   true,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		if err := model.InitializeEncryption(c.String("password"), db); err != nil {
-			return cli.Exit("Cannot initialize encryption"+err.Error(), 1)
-		}
-		worker := service.NewDatasetWorker(db, c.Int("concurrency"))
+		worker := service.NewDatasetWorker(
+			db,
+			c.Int("concurrency"),
+			c.Bool("enable-scan"),
+			c.Bool("enable-pack"),
+			c.Bool("enable-dag"))
 		err := worker.Run(c.Context)
 		if err != nil {
 			return err

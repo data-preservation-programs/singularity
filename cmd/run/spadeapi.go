@@ -2,11 +2,10 @@ package run
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/replication"
-	"github.com/data-preservation-programs/go-singularity/service"
-	"github.com/data-preservation-programs/go-singularity/util"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -34,10 +33,6 @@ var SpadeAPICmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		err := model.InitializeEncryption(c.String("password"), db)
-		if err != nil {
-			return err
-		}
 
 		h, err := util.InitHost(context.Background(), nil)
 		if err != nil {

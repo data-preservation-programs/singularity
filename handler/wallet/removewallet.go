@@ -1,29 +1,29 @@
-package dataset
+package wallet
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
 // RemoveWalletHandler godoc
 // @Summary Remove an associated wallet from a dataset
-// @Tags Dataset
+// @Tags Wallet
 // @Param name path string true "Dataset name"
 // @Param wallet path string true "Wallet Address"
 // @Success 204
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{name}/wallet/{wallet} [delete]
+// @Router /dataset/{datasetName}/wallet/{wallet} [delete]
 func RemoveWalletHandler(
 	db *gorm.DB,
-	name string,
+	datasetName string,
 	wallet string,
 ) *handler.Error {
 	log.SetAllLoggers(log.LevelInfo)
-	if name == "" {
+	if datasetName == "" {
 		return handler.NewBadRequestString("dataset name is required")
 	}
 
@@ -31,8 +31,7 @@ func RemoveWalletHandler(
 		return handler.NewBadRequestString("wallet address is required")
 	}
 
-
-	dataset, err := database.FindDatasetByName(db, name)
+	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}

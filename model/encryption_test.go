@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

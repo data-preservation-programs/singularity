@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/replication"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

@@ -1,15 +1,15 @@
 package wallet
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/urfave/cli/v2"
 )
 
 var AddRemoteCmd = &cli.Command{
 	Name:      "add-remote",
 	Usage:     "Add remote wallet",
-	ArgsUsage: "WALLET_ADDRESS REMOTE_PEER",
+	ArgsUsage: "<address> <remote_peer>",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "lotus-api",
@@ -28,7 +28,7 @@ var AddRemoteCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 
 		err2 := wallet.AddRemoteHandler(db, wallet.AddRemoteRequest{
-			WalletAddress: c.Args().Get(0),
+			Address:    c.Args().Get(0),
 			RemotePeer: c.Args().Get(1),
 			LotusAPI:   c.String("lotus-api"),
 			LotusToken: c.String("lotus-token"),

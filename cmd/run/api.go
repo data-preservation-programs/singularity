@@ -1,7 +1,7 @@
 package run
 
 import (
-	"github.com/data-preservation-programs/go-singularity/api"
+	"github.com/data-preservation-programs/singularity/api"
 	"github.com/urfave/cli/v2"
 )
 

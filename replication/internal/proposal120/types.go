@@ -1,7 +1,7 @@
 package proposal120
 
 import (
-	"github.com/data-preservation-programs/go-singularity/replication/internal/proposal110"
+	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 )

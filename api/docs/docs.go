@@ -16,8 +16,60 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/init": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Initialize the database",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/reset": {
+            "post": {
+                "description": "This will drop all tables and recreate them.",
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Reset the database",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/dataset": {
             "post": {
+                "description": "The dataset is a top level object to distinguish different dataset.",
                 "consumes": [
                     "application/json"
                 ],
@@ -71,7 +123,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Dataset"
+                    "Data Source"
                 ],
                 "summary": "Push an item to the staging area",
                 "parameters": [
@@ -81,7 +133,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.ItemInfo"
+                            "$ref": "#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo"
                         }
                     }
                 ],
@@ -117,7 +169,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "Dataset"
+                    "Data Source"
                 ],
                 "summary": "Upload a file to a dataset",
                 "parameters": [
@@ -160,15 +212,16 @@ const docTemplate = `{
         },
         "/dataset/{datasetName}": {
             "delete": {
+                "description": "Important! If the dataset is large, this command will take some time to remove all relevant data.",
                 "tags": [
                     "Dataset"
                 ],
-                "summary": "Remove a dataset",
+                "summary": "Remove a specific dataset. This will not remove the CAR files.",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Dataset name",
-                        "name": "name",
+                        "name": "datasetName",
                         "in": "path",
                         "required": true
                     }
@@ -190,10 +243,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/dataset/{name}/piece": {
-            "post": {
+            },
+            "patch": {
                 "consumes": [
                     "application/json"
                 ],
@@ -203,12 +254,64 @@ const docTemplate = `{
                 "tags": [
                     "Dataset"
                 ],
-                "summary": "Register a CAR file piece with a dataset",
+                "summary": "Update a dataset",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Dataset name",
-                        "name": "name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataset.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Dataset"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/piece": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset Piece"
+                ],
+                "summary": "Manually register a piece (CAR file) with the dataset for deal making purpose",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
                         "in": "path",
                         "required": true
                     },
@@ -244,7 +347,53 @@ const docTemplate = `{
                 }
             }
         },
-        "/dataset/{name}/source": {
+        "/dataset/{datasetName}/pieces": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset Piece"
+                ],
+                "summary": "List all pieces for the dataset that are available for deal making\"",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Car"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/acd": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -253,14 +402,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Dataset"
+                    "New Data Source"
                 ],
-                "summary": "Add a source to a dataset",
+                "summary": "Add acd source for a dataset",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Dataset name",
-                        "name": "name",
+                        "name": "datasetName",
                         "in": "path",
                         "required": true
                     },
@@ -270,92 +419,8 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dataset.AddSourceRequest"
+                            "$ref": "#/definitions/datasource.AcdRequest"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Source"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{name}/source/{sourcePath}": {
-            "delete": {
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "Remove a source from a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Source path",
-                        "name": "sourcePath",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{name}/sources": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "List all sources for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -367,17 +432,11 @@ const docTemplate = `{
                                 "$ref": "#/definitions/model.Source"
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
                     }
                 }
             }
         },
-        "/dataset/{name}/wallet/{wallet}": {
+        "/dataset/{datasetName}/source/azureblob": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -386,7 +445,1856 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Dataset"
+                    "New Data Source"
+                ],
+                "summary": "Add azureblob source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.AzureblobRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/b2": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add b2 source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.B2Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/box": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add box source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.BoxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/crypt": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add crypt source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.CryptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/drive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add drive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.DriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/dropbox": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add dropbox source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.DropboxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/fichier": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add fichier source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.FichierRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/filefabric": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add filefabric source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.FilefabricRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/ftp": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add ftp source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.FtpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/gcs": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add gcs source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.GcsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/gphotos": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add gphotos source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.GphotosRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/hdfs": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add hdfs source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.HdfsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/hidrive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add hidrive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.HidriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/http": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add http source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.HttpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/internetarchive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add internetarchive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.InternetarchiveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/jottacloud": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add jottacloud source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.JottacloudRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/koofr": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add koofr source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.KoofrRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/local": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add local source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.LocalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/mailru": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add mailru source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.MailruRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/mega": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add mega source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.MegaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/memory": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add memory source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.MemoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/netstorage": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add netstorage source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.NetstorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/onedrive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add onedrive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.OnedriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/oos": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add oos source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.OosRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/opendrive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add opendrive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.OpendriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/pcloud": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add pcloud source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.PcloudRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/premiumizeme": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add premiumizeme source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.PremiumizemeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/putio": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add putio source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.PutioRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/qingstor": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add qingstor source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.QingstorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/s3": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add s3 source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.S3Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/seafile": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add seafile source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SeafileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/sftp": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add sftp source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SftpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/sharefile": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add sharefile source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SharefileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/sia": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add sia source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SiaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/smb": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add smb source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SmbRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/storj": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add storj source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.StorjRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/sugarsync": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add sugarsync source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SugarsyncRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/swift": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add swift source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SwiftRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/tardigrade": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add tardigrade source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.TardigradeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/uptobox": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add uptobox source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.UptoboxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/webdav": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add webdav source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.WebdavRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/yandex": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add yandex source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.YandexRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/source/zoho": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "New Data Source"
+                ],
+                "summary": "Add zoho source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.ZohoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset/{datasetName}/wallet/{wallet}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
                 ],
                 "summary": "Associate a new wallet with a dataset",
                 "parameters": [
@@ -428,7 +2336,7 @@ const docTemplate = `{
             },
             "delete": {
                 "tags": [
-                    "Dataset"
+                    "Wallet"
                 ],
                 "summary": "Remove an associated wallet from a dataset",
                 "parameters": [
@@ -466,13 +2374,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/dataset/{name}/wallets": {
+        "/dataset/{datasetName}/wallets": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Dataset"
+                    "Wallet"
                 ],
                 "summary": "List all wallets of a dataset.",
                 "parameters": [
@@ -798,31 +2706,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/init": {
-            "post": {
-                "tags": [
-                    "Global"
-                ],
-                "summary": "Initialize the database",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/piece/metadata/{piece}": {
             "get": {
                 "description": "Get metadata for a piece",
@@ -867,6 +2750,295 @@ const docTemplate = `{
                 }
             }
         },
+        "/source/{id}": {
+            "delete": {
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Remove a source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Update the config options of a source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Config",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.Config"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/check": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Check the connection of the data source by listing a path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.CheckSourceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_data-preservation-programs_singularity_handler_datasource.Entry"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/chunks": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get all chunk details of a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Chunk"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/items": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get all item details of a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Chunk ID",
+                        "name": "chunk_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Item"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/summary": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get the data preparation summary of a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/status.ChunksByState"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/sources": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "List all sources for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "dataset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/wallet": {
             "post": {
                 "consumes": [
@@ -884,6 +3056,79 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/wallet.ImportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet/:address": {
+            "delete": {
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Remove a wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallet/remote": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Add a remote wallet",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.AddRemoteRequest"
                         }
                     }
                 ],
@@ -942,20 +3187,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.ItemInfo": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string"
-                },
-                "sourceId": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/model.ItemType"
-                }
-            }
-        },
         "dataset.AddPieceRequest": {
             "type": "object",
             "properties": {
@@ -976,66 +3207,2854 @@ const docTemplate = `{
                 }
             }
         },
-        "dataset.AddSourceRequest": {
+        "dataset.CreateRequest": {
             "type": "object",
+            "required": [
+                "maxSize",
+                "minSize",
+                "name"
+            ],
             "properties": {
-                "httpheaders": {
+                "encryptionRecipients": {
+                    "description": "Public key of the encryption recipient",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "pushOnly": {
-                    "type": "boolean"
-                },
-                "s3AccessKeyID": {
+                "encryptionScript": {
+                    "description": "EncryptionScript command to run for custom encryption",
                     "type": "string"
                 },
-                "s3Endpoint": {
-                    "type": "string"
-                },
-                "s3Region": {
-                    "type": "string"
-                },
-                "s3SecretAccessKey": {
-                    "type": "string"
-                },
-                "scanInterval": {
-                    "$ref": "#/definitions/time.Duration"
-                },
-                "sourcePath": {
-                    "type": "string"
-                }
-            }
-        },
-        "dataset.CreateRequest": {
-            "type": "object",
-            "properties": {
                 "maxSize": {
-                    "type": "string"
+                    "description": "Maximum size of the CAR files to be created",
+                    "type": "string",
+                    "default": "31.5GiB"
                 },
                 "minSize": {
-                    "type": "string"
+                    "description": "Minimum size of the CAR files to be created",
+                    "type": "string",
+                    "default": "30GiB"
                 },
                 "name": {
+                    "description": "Name must be a unique identifier for a dataset",
                     "type": "string"
                 },
                 "outputDirs": {
+                    "description": "Output directory for CAR files. Do not set if using inline preparation",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "pieceSize": {
+                    "description": "Target piece size of the CAR files used for piece commitment calculation",
                     "type": "string"
-                },
-                "recipients": {
+                }
+            }
+        },
+        "dataset.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "encryptionRecipients": {
+                    "description": "Public key of the encryption recipient",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "script": {
+                "encryptionScript": {
+                    "description": "EncryptionScript command to run for custom encryption",
+                    "type": "string"
+                },
+                "maxSize": {
+                    "description": "Maximum size of the CAR files to be created",
+                    "type": "string",
+                    "default": "31.5GiB"
+                },
+                "minSize": {
+                    "description": "Minimum size of the CAR files to be created",
+                    "type": "string",
+                    "default": "30GiB"
+                },
+                "outputDirs": {
+                    "description": "Output directory for CAR files. Do not set if using inline preparation",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pieceSize": {
+                    "description": "Target piece size of the CAR files used for piece commitment calculation",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.AcdRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "checkpoint": {
+                    "description": "Checkpoint for internal polling (debug).",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "templinkThreshold": {
+                    "description": "Files \u003e= this size will be downloaded via their tempLink.",
+                    "type": "string",
+                    "default": "9Gi"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "uploadWaitPerGb": {
+                    "description": "Additional time per GiB to wait after a failed complete upload to see if it appears.",
+                    "type": "string",
+                    "default": "3m0s"
+                }
+            }
+        },
+        "datasource.AzureblobRequest": {
+            "type": "object",
+            "properties": {
+                "accessTier": {
+                    "description": "Access tier of blob: hot, cool or archive.",
+                    "type": "string"
+                },
+                "account": {
+                    "description": "Azure Storage Account Name.",
+                    "type": "string"
+                },
+                "archiveTierDelete": {
+                    "description": "Delete archive tier blobs before overwriting.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "4Mi"
+                },
+                "clientCertificatePassword": {
+                    "description": "Password for the certificate file (optional).",
+                    "type": "string"
+                },
+                "clientCertificatePath": {
+                    "description": "Path to a PEM or PKCS12 certificate file including the private key.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "The ID of the client in use.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "One of the service principal's client secrets",
+                    "type": "string"
+                },
+                "clientSendCertificateChain": {
+                    "description": "Send the certificate chain when using certificate auth.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Read credentials from runtime (environment variables, CLI or MSI).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "key": {
+                    "description": "Storage Account Shared Key.",
+                    "type": "string"
+                },
+                "listChunk": {
+                    "description": "Size of blob list.",
+                    "type": "string",
+                    "default": "5000"
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "msiClientId": {
+                    "description": "Object ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "msiMiResId": {
+                    "description": "Azure resource ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "msiObjectId": {
+                    "description": "Object ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "noCheckContainer": {
+                    "description": "If set, don't attempt to check the container exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "password": {
+                    "description": "The user's password",
+                    "type": "string"
+                },
+                "publicAccess": {
+                    "description": "Public access level of a container: blob or container.",
+                    "type": "string"
+                },
+                "sasUrl": {
+                    "description": "SAS URL for container level access only.",
+                    "type": "string"
+                },
+                "servicePrincipalFile": {
+                    "description": "Path to file containing credentials for use with a service principal.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "tenant": {
+                    "description": "ID of the service principal's tenant. Also called its directory ID.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "16"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload (\u003c= 256 MiB) (deprecated).",
+                    "type": "string"
+                },
+                "useEmulator": {
+                    "description": "Uses local storage emulator if provided as 'true'.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "useMsi": {
+                    "description": "Use a managed service identity to authenticate (only works in Azure).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "username": {
+                    "description": "User name (usually an email address)",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.B2Request": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "Account ID or Application Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "96Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4Gi"
+                },
+                "disableChecksum": {
+                    "description": "Disable checksums for large (\u003e upload cutoff) files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "downloadAuthDuration": {
+                    "description": "Time before the authorization token will expire in s or suffix ms|s|m|h|d.",
+                    "type": "string",
+                    "default": "1w"
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "hardDelete": {
+                    "description": "Permanently delete files on remote removal, otherwise hide files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "key": {
+                    "description": "Application Key.",
+                    "type": "string"
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "testMode": {
+                    "description": "A flag string for X-Bz-Test-Mode header for debugging.",
+                    "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "string",
+                    "default": "false"
+                }
+            }
+        },
+        "datasource.BoxRequest": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "description": "Box App Primary Access Token",
+                    "type": "string"
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "boxConfigFile": {
+                    "description": "Box App config.json location",
+                    "type": "string"
+                },
+                "boxSubType": {
+                    "type": "string",
+                    "default": "user"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "commitRetries": {
+                    "description": "Max number of times to try committing a multipart file.",
+                    "type": "string",
+                    "default": "100"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk 1-1000.",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "ownedBy": {
+                    "description": "Only show items owned by the login (email address) passed in.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "Fill in for rclone to use a non root folder as its starting point.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to multipart upload (\u003e= 50 MiB).",
+                    "type": "string",
+                    "default": "50Mi"
+                }
+            }
+        },
+        "datasource.CheckSourceRequest": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "Path relative to the data source root",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.Config": {
+            "description": "The field name can be using snake_case or lowerCamelCase This will override the current config in the database To check what options are available, check the request model of the corresponding data source type",
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "datasource.CryptRequest": {
+            "type": "object",
+            "properties": {
+                "directoryNameEncryption": {
+                    "description": "Option to either encrypt directory names or leave them intact.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "filenameEncoding": {
+                    "description": "How to encode the encrypted filename to text string.",
+                    "type": "string",
+                    "default": "base32"
+                },
+                "filenameEncryption": {
+                    "description": "How to encrypt the filenames.",
+                    "type": "string",
+                    "default": "standard"
+                },
+                "noDataEncryption": {
+                    "description": "Option to either encrypt file data or leave it unencrypted.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "password": {
+                    "description": "Password or pass phrase for encryption.",
+                    "type": "string"
+                },
+                "password2": {
+                    "description": "Password or pass phrase for salt.",
+                    "type": "string"
+                },
+                "remote": {
+                    "description": "Remote to encrypt/decrypt.",
+                    "type": "string"
+                },
+                "serverSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different crypt configs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "showMapping": {
+                    "description": "For all files listed show how the names encrypt.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.DriveRequest": {
+            "type": "object",
+            "properties": {
+                "acknowledgeAbuse": {
+                    "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "allowImportNameChange": {
+                    "description": "Allow the filetype to change when uploading Google docs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "alternateExport": {
+                    "description": "Deprecated: No longer needed.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "authOwnerOnly": {
+                    "description": "Only consider files owned by the authenticated user.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
+                "clientId": {
+                    "description": "Google Application Client Id",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "copyShortcutContent": {
+                    "description": "Server side copy contents of shortcuts instead of the shortcut.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableHttp2": {
+                    "description": "Disable drive using http2.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "InvalidUtf8"
+                },
+                "exportFormats": {
+                    "description": "Comma separated list of preferred formats for downloading Google docs.",
+                    "type": "string",
+                    "default": "docx,xlsx,pptx,svg"
+                },
+                "formats": {
+                    "description": "Deprecated: See export_formats.",
+                    "type": "string"
+                },
+                "impersonate": {
+                    "description": "Impersonate this user when using a service account.",
+                    "type": "string"
+                },
+                "importFormats": {
+                    "description": "Comma separated list of preferred formats for uploading Google docs.",
+                    "type": "string"
+                },
+                "keepRevisionForever": {
+                    "description": "Keep new head revision of each file forever.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk 100-1000, 0 to disable.",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "pacerBurst": {
+                    "description": "Number of API calls to allow without sleeping.",
+                    "type": "string",
+                    "default": "100"
+                },
+                "pacerMinSleep": {
+                    "description": "Minimum time to sleep between API calls.",
+                    "type": "string",
+                    "default": "100ms"
+                },
+                "resourceKey": {
+                    "description": "Resource key for accessing a link-shared file.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "scope": {
+                    "description": "Scope that rclone should use when requesting access from drive.",
+                    "type": "string"
+                },
+                "serverSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different drive configs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "serviceAccountCredentials": {
+                    "description": "Service Account Credentials JSON blob.",
+                    "type": "string"
+                },
+                "serviceAccountFile": {
+                    "description": "Service Account Credentials JSON file path.",
+                    "type": "string"
+                },
+                "sharedWithMe": {
+                    "description": "Only show files that are shared with me.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sizeAsQuota": {
+                    "description": "Show sizes as storage quota usage, not actual size.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "skipChecksumGphotos": {
+                    "description": "Skip MD5 checksum on Google photos and videos only.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "skipDanglingShortcuts": {
+                    "description": "If set skip dangling shortcut files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "skipGdocs": {
+                    "description": "Skip google documents in all listings.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "skipShortcuts": {
+                    "description": "If set skip shortcut files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "starredOnly": {
+                    "description": "Only show files that are starred.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "stopOnDownloadLimit": {
+                    "description": "Make download limit errors be fatal.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "stopOnUploadLimit": {
+                    "description": "Make upload limit errors be fatal.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "teamDrive": {
+                    "description": "ID of the Shared Drive (Team Drive).",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "trashedOnly": {
+                    "description": "Only show files that are in the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
+                "useCreatedDate": {
+                    "description": "Use file created date instead of modified date.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "useSharedDate": {
+                    "description": "Use date file was shared instead of modified date.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "useTrash": {
+                    "description": "Send files to the trash instead of deleting permanently.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "v2DownloadMinSize": {
+                    "description": "If Object's are greater, use drive v2 API to download.",
+                    "type": "string",
+                    "default": "off"
+                }
+            }
+        },
+        "datasource.DropboxRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "batchCommitTimeout": {
+                    "description": "Max time to wait for a batch to finish committing",
+                    "type": "string",
+                    "default": "10m0s"
+                },
+                "batchMode": {
+                    "description": "Upload file batching sync|async|off.",
+                    "type": "string",
+                    "default": "sync"
+                },
+                "batchSize": {
+                    "description": "Max number of files in upload batch.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "batchTimeout": {
+                    "description": "Max time to allow an idle upload batch before uploading.",
+                    "type": "string",
+                    "default": "0s"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size (\u003c 150Mi).",
+                    "type": "string",
+                    "default": "48Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
+                },
+                "impersonate": {
+                    "description": "Impersonate this user when using a business account.",
+                    "type": "string"
+                },
+                "sharedFiles": {
+                    "description": "Instructs rclone to work on individual shared files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sharedFolders": {
+                    "description": "Instructs rclone to work on shared folders.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.FichierRequest": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
+                },
+                "filePassword": {
+                    "description": "If you want to download a shared file that is password protected, add this parameter.",
+                    "type": "string"
+                },
+                "folderPassword": {
+                    "description": "If you want to list the files in a shared folder that is password protected, add this parameter.",
+                    "type": "string"
+                },
+                "sharedFolder": {
+                    "description": "If you want to download a shared folder, add this parameter.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.FilefabricRequest": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "permanentToken": {
+                    "description": "Permanent Authentication Token.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "Session Token.",
+                    "type": "string"
+                },
+                "tokenExpiry": {
+                    "description": "Token expiry time.",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of the Enterprise File Fabric to connect to.",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "Version read from the file fabric.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.FtpRequest": {
+            "type": "object",
+            "properties": {
+                "askPassword": {
+                    "description": "Allow asking for FTP password when needed.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "closeTimeout": {
+                    "description": "Maximum time to wait for a response to close.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "concurrency": {
+                    "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "disableEpsv": {
+                    "description": "Disable using EPSV even if server advertises support.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableMlsd": {
+                    "description": "Disable using MLSD even if server advertises support.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableTls13": {
+                    "description": "Disable TLS 1.3 (workaround for FTP servers with buggy TLS)",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableUtf8": {
+                    "description": "Disable using UTF-8 even if server advertises support.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,RightSpace,Dot"
+                },
+                "explicitTls": {
+                    "description": "Use Explicit FTPS (FTP over TLS).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "forceListHidden": {
+                    "description": "Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "host": {
+                    "description": "FTP host to connect to.",
+                    "type": "string"
+                },
+                "idleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "noCheckCertificate": {
+                    "description": "Do not verify the TLS certificate of the server.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "pass": {
+                    "description": "FTP password.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "FTP port number.",
+                    "type": "string",
+                    "default": "21"
+                },
+                "shutTimeout": {
+                    "description": "Maximum time to wait for data connection closing status.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "tls": {
+                    "description": "Use Implicit FTPS (FTP over TLS).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "tlsCacheSize": {
+                    "description": "Size of TLS session cache for all control and data connections.",
+                    "type": "string",
+                    "default": "32"
+                },
+                "user": {
+                    "description": "FTP username.",
+                    "type": "string",
+                    "default": "shane"
+                },
+                "writingMdtm": {
+                    "description": "Use MDTM to set modification time (VsFtpd quirk)",
+                    "type": "string",
+                    "default": "false"
+                }
+            }
+        },
+        "datasource.GcsRequest": {
+            "type": "object",
+            "properties": {
+                "anonymous": {
+                    "description": "Access public buckets and objects without credentials.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Access Control List for new buckets.",
+                    "type": "string"
+                },
+                "bucketPolicyOnly": {
+                    "description": "Access checks should use bucket-level IAM policies.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,CrLf,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "location": {
+                    "description": "Location for the newly created buckets.",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "objectAcl": {
+                    "description": "Access Control List for new objects.",
+                    "type": "string"
+                },
+                "projectNumber": {
+                    "description": "Project number.",
+                    "type": "string"
+                },
+                "serviceAccountCredentials": {
+                    "description": "Service Account Credentials JSON blob.",
+                    "type": "string"
+                },
+                "serviceAccountFile": {
+                    "description": "Service Account Credentials JSON file path.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing objects in Google Cloud Storage.",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.GphotosRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,CrLf,InvalidUtf8,Dot"
+                },
+                "includeArchived": {
+                    "description": "Also view and download archived media.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "readOnly": {
+                    "description": "Set to make the Google Photos backend read only.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "readSize": {
+                    "description": "Set to read the size of media items.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "startYear": {
+                    "description": "Year limits the photos to be downloaded to those which are uploaded after the given year.",
+                    "type": "string",
+                    "default": "2000"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.HdfsRequest": {
+            "type": "object",
+            "properties": {
+                "dataTransferProtection": {
+                    "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "namenode": {
+                    "description": "Hadoop name node and port.",
+                    "type": "string"
+                },
+                "servicePrincipalName": {
+                    "description": "Kerberos service principal name for the namenode.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Hadoop user name.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.HidriveRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunksize for chunked uploads.",
+                    "type": "string",
+                    "default": "48Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "disableFetchingMemberCount": {
+                    "description": "Do not fetch number of objects in directories unless it is absolutely necessary.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string",
+                    "default": "https://api.hidrive.strato.com/2.1"
+                },
+                "rootPrefix": {
+                    "description": "The root/parent folder for all paths.",
+                    "type": "string",
+                    "default": "/"
+                },
+                "scopeAccess": {
+                    "description": "Access permissions that rclone should use when requesting access from HiDrive.",
+                    "type": "string",
+                    "default": "rw"
+                },
+                "scopeRole": {
+                    "description": "User-level that rclone should use when requesting access from HiDrive.",
+                    "type": "string",
+                    "default": "user"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for chunked uploads.",
+                    "type": "string",
+                    "default": "4"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff/Threshold for chunked uploads.",
+                    "type": "string",
+                    "default": "96Mi"
+                }
+            }
+        },
+        "datasource.HttpRequest": {
+            "type": "object",
+            "properties": {
+                "headers": {
+                    "description": "Set HTTP headers for all transactions.",
+                    "type": "string"
+                },
+                "noHead": {
+                    "description": "Don't use HEAD requests.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noSlash": {
+                    "description": "Set this if the site doesn't end directories with /.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of HTTP host to connect to.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.InternetarchiveRequest": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "IAS3 Access Key.",
+                    "type": "string"
+                },
+                "disableChecksum": {
+                    "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "IAS3 Endpoint.",
+                    "type": "string",
+                    "default": "https://s3.us.archive.org"
+                },
+                "frontEndpoint": {
+                    "description": "Host of InternetArchive Frontend.",
+                    "type": "string",
+                    "default": "https://archive.org"
+                },
+                "secretAccessKey": {
+                    "description": "IAS3 Secret Key (password).",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "waitArchive": {
+                    "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
+                    "type": "string",
+                    "default": "0s"
+                }
+            }
+        },
+        "datasource.JottacloudRequest": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "md5MemoryLimit": {
+                    "description": "Files bigger than this will be cached on disk to calculate the MD5 if required.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "noVersions": {
+                    "description": "Avoid server side versioning by deleting files and recreating files instead of overwriting them.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "trashedOnly": {
+                    "description": "Only show files that are in the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "uploadResumeLimit": {
+                    "description": "Files bigger than this can be resumed if the upload fail's.",
+                    "type": "string",
+                    "default": "10Mi"
+                }
+            }
+        },
+        "datasource.KoofrRequest": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "The Koofr API endpoint to use.",
+                    "type": "string"
+                },
+                "mountid": {
+                    "description": "Mount ID of the mount to use.",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Choose your storage provider.",
+                    "type": "string"
+                },
+                "setmtime": {
+                    "description": "Does the backend support setting modification time.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Your user name.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.LocalRequest": {
+            "type": "object",
+            "properties": {
+                "caseInsensitive": {
+                    "description": "Force the filesystem to report itself as case insensitive.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "caseSensitive": {
+                    "description": "Force the filesystem to report itself as case sensitive.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "copyLinks": {
+                    "description": "Follow symlinks and copy the pointed to item.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Dot"
+                },
+                "links": {
+                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noCheckUpdated": {
+                    "description": "Don't check to see if the files change during upload.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noPreallocate": {
+                    "description": "Disable preallocation of disk space for transferred files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noSetModtime": {
+                    "description": "Disable setting modtime.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noSparse": {
+                    "description": "Disable sparse files for multi-thread downloads.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "nounc": {
+                    "description": "Disable UNC (long path names) conversion on Windows.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "oneFileSystem": {
+                    "description": "Don't cross filesystem boundaries (unix/macOS only).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "skipLinks": {
+                    "description": "Don't warn about skipped symlinks.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "unicodeNormalization": {
+                    "description": "Apply unicode NFC normalization to paths and filenames.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "zeroSizeLinks": {
+                    "description": "Assume the Stat size of links is zero (and read them instead) (deprecated).",
+                    "type": "string",
+                    "default": "false"
+                }
+            }
+        },
+        "datasource.MailruRequest": {
+            "type": "object",
+            "properties": {
+                "checkHash": {
+                    "description": "What should copy do if file checksum is mismatched or invalid.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "quirks": {
+                    "description": "Comma separated list of internal maintenance flags.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "speedupEnable": {
+                    "description": "Skip full upload if there is another file with same data hash.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "speedupFilePatterns": {
+                    "description": "Comma separated list of file name patterns eligible for speedup (put by hash).",
+                    "type": "string",
+                    "default": "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
+                },
+                "speedupMaxDisk": {
+                    "description": "This option allows you to disable speedup (put by hash) for large files.",
+                    "type": "string",
+                    "default": "3Gi"
+                },
+                "speedupMaxMemory": {
+                    "description": "Files larger than the size given below will always be hashed on disk.",
+                    "type": "string",
+                    "default": "32Mi"
+                },
+                "user": {
+                    "description": "User name (usually email).",
+                    "type": "string"
+                },
+                "userAgent": {
+                    "description": "HTTP user agent used internally by client.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.MegaRequest": {
+            "type": "object",
+            "properties": {
+                "debug": {
+                    "description": "Output more debug from Mega.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "useHttps": {
+                    "description": "Use HTTPS for transfers.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "user": {
+                    "description": "User name.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.MemoryRequest": {
+            "type": "object",
+            "properties": {
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.NetstorageRequest": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "Set the NetStorage account name",
+                    "type": "string"
+                },
+                "host": {
+                    "description": "Domain+path of NetStorage host to connect to.",
+                    "type": "string"
+                },
+                "protocol": {
+                    "description": "Select between HTTP or HTTPS protocol.",
+                    "type": "string",
+                    "default": "https"
+                },
+                "secret": {
+                    "description": "Set the NetStorage account secret/G2O key for authentication.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.OnedriveRequest": {
+            "type": "object",
+            "properties": {
+                "accessScopes": {
+                    "description": "Set scopes to be requested by rclone.",
+                    "type": "string",
+                    "default": "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "disableSitePermission": {
+                    "description": "Disable the request for Sites.Read.All permission.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveId": {
+                    "description": "The ID of the drive to use.",
+                    "type": "string"
+                },
+                "driveType": {
+                    "description": "The type of the drive (personal | business | documentLibrary).",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "exposeOnenoteFiles": {
+                    "description": "Set to make OneNote files show up in directory listings.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "hashType": {
+                    "description": "Specify the hash in use for the backend.",
+                    "type": "string",
+                    "default": "auto"
+                },
+                "linkPassword": {
+                    "description": "Set the password for links created by the link command.",
+                    "type": "string"
+                },
+                "linkScope": {
+                    "description": "Set the scope of the links created by the link command.",
+                    "type": "string",
+                    "default": "anonymous"
+                },
+                "linkType": {
+                    "description": "Set the type of the links created by the link command.",
+                    "type": "string",
+                    "default": "view"
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk.",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "noVersions": {
+                    "description": "Remove all versions on modifying operations.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "region": {
+                    "description": "Choose national cloud region for OneDrive.",
+                    "type": "string",
+                    "default": "global"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "serverSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.OosRequest": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "compartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "configFile": {
+                    "description": "Path to OCI config file",
+                    "type": "string",
+                    "default": "~/.oci/config"
+                },
+                "configProfile": {
+                    "description": "Profile name inside the oci config file",
+                    "type": "string",
+                    "default": "Default"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "provider": {
+                    "description": "Choose your Auth Provider",
+                    "type": "string",
+                    "default": "env_auth"
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string"
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string"
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string"
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string"
+                },
+                "sseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string"
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "10"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
+        "datasource.OpendriveRequest": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Files will be uploaded in chunks this size.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
+                },
+                "password": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Username.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.PcloudRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hostname": {
+                    "description": "Hostname to connect to.",
+                    "type": "string",
+                    "default": "api.pcloud.com"
+                },
+                "password": {
+                    "description": "Your pcloud password.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "Fill in for rclone to use a non root folder as its starting point.",
+                    "type": "string",
+                    "default": "d0"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Your pcloud username.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.PremiumizemeRequest": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "description": "API Key.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.PutioRequest": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.QingstorRequest": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "QingStor Access Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "4Mi"
+                },
+                "connectionRetries": {
+                    "description": "Number of connection retries.",
+                    "type": "string",
+                    "default": "3"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Ctl,InvalidUtf8"
+                },
+                "endpoint": {
+                    "description": "Enter an endpoint URL to connection QingStor API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get QingStor credentials from runtime.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "secretAccessKey": {
+                    "description": "QingStor Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "1"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "zone": {
+                    "description": "Zone to connect to.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.S3Request": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "string",
+                    "default": "10000"
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "string",
+                    "default": "false"
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Choose your S3 provider.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string"
+                },
+                "requesterPays": {
+                    "description": "Enables requester pays option when interacting with S3 bucket.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "serverSideEncryption": {
+                    "description": "The server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string"
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
+                    "type": "string"
+                },
+                "sseCustomerKeyBase64": {
+                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
+                    "type": "string"
+                },
+                "sseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string"
+                },
+                "sseKmsKeyId": {
+                    "description": "If using KMS ID you must provide the ARN of Key.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
+                },
+                "stsEndpoint": {
+                    "description": "Endpoint for STS.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "4"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAccelerateEndpoint": {
+                    "description": "If true use the AWS S3 accelerated endpoint.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "string",
+                    "default": "false"
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "string",
+                    "default": "false"
+                }
+            }
+        },
+        "datasource.SeafileRequest": {
+            "type": "object",
+            "properties": {
+                "2fa": {
+                    "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "authToken": {
+                    "description": "Authentication token.",
+                    "type": "string"
+                },
+                "createLibrary": {
+                    "description": "Should rclone create a library if it doesn't exist.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
+                },
+                "library": {
+                    "description": "Name of the library.",
+                    "type": "string"
+                },
+                "libraryKey": {
+                    "description": "Library password (for encrypted libraries only).",
+                    "type": "string"
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of seafile host to connect to.",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "User name (usually email address).",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.SftpRequest": {
+            "type": "object",
+            "properties": {
+                "askPassword": {
+                    "description": "Allow asking for SFTP password when needed.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "chunkSize": {
+                    "description": "Upload and download chunk size.",
+                    "type": "string",
+                    "default": "32Ki"
+                },
+                "ciphers": {
+                    "description": "Space separated list of ciphers to be used for session encryption, ordered by preference.",
+                    "type": "string"
+                },
+                "concurrency": {
+                    "description": "The maximum number of outstanding requests for one file",
+                    "type": "string",
+                    "default": "64"
+                },
+                "disableConcurrentReads": {
+                    "description": "If set don't use concurrent reads.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableConcurrentWrites": {
+                    "description": "If set don't use concurrent writes.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "disableHashcheck": {
+                    "description": "Disable the execution of SSH commands to determine if remote file hashing is available.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "host": {
+                    "description": "SSH host to connect to.",
+                    "type": "string"
+                },
+                "idleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "keyExchange": {
+                    "description": "Space separated list of key exchange algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "keyFile": {
+                    "description": "Path to PEM-encoded private key file.",
+                    "type": "string"
+                },
+                "keyFilePass": {
+                    "description": "The passphrase to decrypt the PEM-encoded private key file.",
+                    "type": "string"
+                },
+                "keyPem": {
+                    "description": "Raw PEM-encoded private key.",
+                    "type": "string"
+                },
+                "keyUseAgent": {
+                    "description": "When set forces the usage of the ssh-agent.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "knownHostsFile": {
+                    "description": "Optional path to known_hosts file.",
+                    "type": "string"
+                },
+                "macs": {
+                    "description": "Space separated list of MACs (message authentication code) algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "md5sumCommand": {
+                    "description": "The command used to read md5 hashes.",
+                    "type": "string"
+                },
+                "pass": {
+                    "description": "SSH password, leave blank to use ssh-agent.",
+                    "type": "string"
+                },
+                "pathOverride": {
+                    "description": "Override path used by SSH shell commands.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "SSH port number.",
+                    "type": "string",
+                    "default": "22"
+                },
+                "pubkeyFile": {
+                    "description": "Optional path to public key file.",
+                    "type": "string"
+                },
+                "serverCommand": {
+                    "description": "Specifies the path or command to run a sftp server on the remote host.",
+                    "type": "string"
+                },
+                "setEnv": {
+                    "description": "Environment variables to pass to sftp and commands",
+                    "type": "string"
+                },
+                "setModtime": {
+                    "description": "Set the modified time on the remote if set.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "sha1sumCommand": {
+                    "description": "The command used to read sha1 hashes.",
+                    "type": "string"
+                },
+                "shellType": {
+                    "description": "The type of SSH shell on remote server, if any.",
+                    "type": "string"
+                },
+                "skipLinks": {
+                    "description": "Set to skip any symlinks and any other non regular files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "subsystem": {
+                    "description": "Specifies the SSH2 subsystem on the remote host.",
+                    "type": "string",
+                    "default": "sftp"
+                },
+                "useFstat": {
+                    "description": "If set use fstat instead of stat.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "useInsecureCipher": {
+                    "description": "Enable the use of insecure ciphers and key exchange methods.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "user": {
+                    "description": "SSH username.",
+                    "type": "string",
+                    "default": "shane"
+                }
+            }
+        },
+        "datasource.SharefileRequest": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "64Mi"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for API calls.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to multipart upload.",
+                    "type": "string",
+                    "default": "128Mi"
+                }
+            }
+        },
+        "datasource.SiaRequest": {
+            "type": "object",
+            "properties": {
+                "apiPassword": {
+                    "description": "Sia Daemon API Password.",
+                    "type": "string"
+                },
+                "apiUrl": {
+                    "description": "Sia daemon API URL, like http://sia.daemon.host:9980.",
+                    "type": "string",
+                    "default": "http://127.0.0.1:9980"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "userAgent": {
+                    "description": "Siad User Agent",
+                    "type": "string",
+                    "default": "Sia-Agent"
+                }
+            }
+        },
+        "datasource.SmbRequest": {
+            "type": "object",
+            "properties": {
+                "caseInsensitive": {
+                    "description": "Whether the server is configured to be case-insensitive.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "domain": {
+                    "description": "Domain name for NTLM authentication.",
+                    "type": "string",
+                    "default": "WORKGROUP"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "hideSpecialShare": {
+                    "description": "Hide special shares (e.g. print$) which users aren't supposed to access.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "host": {
+                    "description": "SMB server hostname to connect to.",
+                    "type": "string"
+                },
+                "idleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "pass": {
+                    "description": "SMB password.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "SMB port number.",
+                    "type": "string",
+                    "default": "445"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "spn": {
+                    "description": "Service principal name.",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "SMB username.",
+                    "type": "string",
+                    "default": "shane"
+                }
+            }
+        },
+        "datasource.StorjRequest": {
+            "type": "object",
+            "properties": {
+                "accessGrant": {
+                    "description": "Access grant.",
+                    "type": "string"
+                },
+                "apiKey": {
+                    "description": "API key.",
+                    "type": "string"
+                },
+                "passphrase": {
+                    "description": "Encryption passphrase.",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Choose an authentication method.",
+                    "type": "string",
+                    "default": "existing"
+                },
+                "satelliteAddress": {
+                    "description": "Satellite address.",
+                    "type": "string",
+                    "default": "us1.storj.io"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.SugarsyncRequest": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "Sugarsync Access Key ID.",
+                    "type": "string"
+                },
+                "appId": {
+                    "description": "Sugarsync App ID.",
+                    "type": "string"
+                },
+                "authorization": {
+                    "description": "Sugarsync authorization.",
+                    "type": "string"
+                },
+                "authorizationExpiry": {
+                    "description": "Sugarsync authorization expiry.",
+                    "type": "string"
+                },
+                "deletedId": {
+                    "description": "Sugarsync deleted folder id.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Ctl,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Permanently delete files if true",
+                    "type": "string",
+                    "default": "false"
+                },
+                "privateAccessKey": {
+                    "description": "Sugarsync Private Access Key.",
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "description": "Sugarsync refresh token.",
+                    "type": "string"
+                },
+                "rootId": {
+                    "description": "Sugarsync root id.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Sugarsync user.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.SwiftRequest": {
+            "type": "object",
+            "properties": {
+                "applicationCredentialId": {
+                    "description": "Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).",
+                    "type": "string"
+                },
+                "applicationCredentialName": {
+                    "description": "Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).",
+                    "type": "string"
+                },
+                "applicationCredentialSecret": {
+                    "description": "Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).",
+                    "type": "string"
+                },
+                "auth": {
+                    "description": "Authentication URL for server (OS_AUTH_URL).",
+                    "type": "string"
+                },
+                "authToken": {
+                    "description": "Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).",
+                    "type": "string"
+                },
+                "authVersion": {
+                    "description": "AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).",
+                    "type": "string",
+                    "default": "0"
+                },
+                "chunkSize": {
+                    "description": "Above this size files will be chunked into a _segments container.",
+                    "type": "string",
+                    "default": "5Gi"
+                },
+                "domain": {
+                    "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8"
+                },
+                "endpointType": {
+                    "description": "Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).",
+                    "type": "string",
+                    "default": "public"
+                },
+                "envAuth": {
+                    "description": "Get swift credentials from environment variables in standard OpenStack form.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "key": {
+                    "description": "API key or password (OS_PASSWORD).",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noChunk": {
+                    "description": "Don't chunk files during streaming upload.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "noLargeObjects": {
+                    "description": "Disable support for static and dynamic large objects",
+                    "type": "string",
+                    "default": "false"
+                },
+                "region": {
+                    "description": "Region name - optional (OS_REGION_NAME).",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "storagePolicy": {
+                    "description": "The storage policy to use when creating a new container.",
+                    "type": "string"
+                },
+                "storageUrl": {
+                    "description": "Storage URL - optional (OS_STORAGE_URL).",
+                    "type": "string"
+                },
+                "tenant": {
+                    "description": "Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).",
+                    "type": "string"
+                },
+                "tenantDomain": {
+                    "description": "Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).",
+                    "type": "string"
+                },
+                "tenantId": {
+                    "description": "Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "User name to log in (OS_USERNAME).",
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.TardigradeRequest": {
+            "type": "object",
+            "properties": {
+                "accessGrant": {
+                    "description": "Access grant.",
+                    "type": "string"
+                },
+                "apiKey": {
+                    "description": "API key.",
+                    "type": "string"
+                },
+                "passphrase": {
+                    "description": "Encryption passphrase.",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Choose an authentication method.",
+                    "type": "string",
+                    "default": "existing"
+                },
+                "satelliteAddress": {
+                    "description": "Satellite address.",
+                    "type": "string",
+                    "default": "us1.storj.io"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.UptoboxRequest": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "description": "Your access token.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.WebdavRequest": {
+            "type": "object",
+            "properties": {
+                "bearerToken": {
+                    "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
+                    "type": "string"
+                },
+                "bearerTokenCommand": {
+                    "description": "Command to run to get a bearer token.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string"
+                },
+                "headers": {
+                    "description": "Set HTTP headers for all transactions.",
+                    "type": "string"
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of http host to connect to.",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "User name.",
+                    "type": "string"
+                },
+                "vendor": {
+                    "description": "Name of the WebDAV site/service/software you are using.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.YandexRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.ZohoRequest": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Del,Ctl,InvalidUtf8"
+                },
+                "region": {
+                    "description": "Zoho region to connect to.",
+                    "type": "string"
+                },
+                "sourcePath": {
+                    "description": "The path of the source to scan items",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
                     "type": "string"
                 }
             }
@@ -1119,6 +6138,32 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_data-preservation-programs_singularity_api.ItemInfo": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "TODO Type     model.ItemType ` + "`" + `json:\"type\"` + "`" + `",
+                    "type": "string"
+                },
+                "sourceId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_data-preservation-programs_singularity_handler_datasource.Entry": {
+            "type": "object",
+            "properties": {
+                "isDir": {
+                    "type": "boolean"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
         "handler.HTTPError": {
             "type": "object",
             "properties": {
@@ -1130,19 +6175,13 @@ const docTemplate = `{
         "model.Car": {
             "type": "object",
             "properties": {
-                "chunk": {
-                    "$ref": "#/definitions/model.Chunk"
-                },
-                "chunkID": {
+                "chunkId": {
                     "type": "integer"
                 },
                 "createdAt": {
                     "type": "string"
                 },
-                "dataset": {
-                    "$ref": "#/definitions/model.Dataset"
-                },
-                "datasetID": {
+                "datasetId": {
                     "type": "integer"
                 },
                 "filePath": {
@@ -1160,20 +6199,26 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "pieceCID": {
+                "pieceCid": {
                     "type": "string"
                 },
                 "pieceSize": {
                     "type": "integer"
                 },
-                "rootCID": {
+                "rootCid": {
                     "type": "string"
+                },
+                "sourceId": {
+                    "type": "integer"
                 }
             }
         },
         "model.Chunk": {
             "type": "object",
             "properties": {
+                "car": {
+                    "$ref": "#/definitions/model.Car"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -1183,25 +6228,13 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Item"
-                    }
-                },
                 "packingState": {
                     "$ref": "#/definitions/model.WorkState"
                 },
-                "packingWorker": {
-                    "$ref": "#/definitions/model.Worker"
-                },
-                "packingWorkerID": {
+                "packingWorkerId": {
                     "type": "string"
                 },
-                "source": {
-                    "$ref": "#/definitions/model.Source"
-                },
-                "sourceID": {
+                "sourceId": {
                     "type": "integer"
                 }
             }
@@ -1344,36 +6377,16 @@ const docTemplate = `{
                 "DealErrored"
             ]
         },
-        "model.Directory": {
-            "type": "object",
-            "properties": {
-                "cid": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "omitempty": {
-                    "$ref": "#/definitions/model.Directory"
-                },
-                "parentID": {
-                    "type": "integer"
-                }
-            }
-        },
         "model.Item": {
             "type": "object",
             "properties": {
-                "chunkID": {
+                "chunkId": {
                     "type": "integer"
                 },
                 "cid": {
                     "type": "string"
                 },
-                "directoryID": {
+                "directoryId": {
                     "type": "integer"
                 },
                 "errorMessage": {
@@ -1391,9 +6404,6 @@ const docTemplate = `{
                 "offset": {
                     "type": "integer"
                 },
-                "omitempty": {
-                    "$ref": "#/definitions/model.Directory"
-                },
                 "path": {
                     "type": "string"
                 },
@@ -1403,33 +6413,16 @@ const docTemplate = `{
                 "size": {
                     "type": "integer"
                 },
-                "sourceID": {
-                    "type": "integer"
-                },
-                "type": {
-                    "$ref": "#/definitions/model.ItemType"
-                },
-                "version": {
+                "sourceId": {
                     "type": "integer"
                 }
             }
         },
-        "model.ItemType": {
-            "type": "string",
-            "enum": [
-                "file",
-                "url",
-                "s3object"
-            ],
-            "x-enum-varnames": [
-                "File",
-                "URL",
-                "S3Object"
-            ]
-        },
         "model.Metadata": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": {
+                "type": "string"
+            }
         },
         "model.Schedule": {
             "type": "object",
@@ -1539,7 +6532,7 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "datasetID": {
+                "datasetId": {
                     "type": "integer"
                 },
                 "errorMessage": {
@@ -1583,15 +6576,11 @@ const docTemplate = `{
         "model.SourceType": {
             "type": "string",
             "enum": [
-                "dir",
-                "website",
-                "s3path",
+                "local",
                 "upload"
             ],
             "x-enum-varnames": [
-                "Dir",
-                "Website",
-                "S3Path",
+                "Local",
                 "Upload"
             ]
         },
@@ -1599,12 +6588,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
+                    "description": "Address is the Filecoin full address of the wallet",
                     "type": "string"
                 },
                 "id": {
+                    "description": "ID is the short ID of the wallet",
                     "type": "string"
                 },
                 "privateKey": {
+                    "description": "PrivateKey is the private key of the wallet",
+                    "type": "string"
+                },
+                "remotePeer": {
+                    "description": "RemotePeer is the remote peer ID of the wallet, for remote signing purpose",
                     "type": "string"
                 }
             }
@@ -1625,39 +6621,6 @@ const docTemplate = `{
                 "Complete",
                 "Error"
             ]
-        },
-        "model.WorkType": {
-            "type": "string",
-            "enum": [
-                "scan",
-                "deal_making",
-                "packing"
-            ],
-            "x-enum-varnames": [
-                "Scan",
-                "DealMaking",
-                "Packing"
-            ]
-        },
-        "model.Worker": {
-            "type": "object",
-            "properties": {
-                "hostname": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "lastHeartbeat": {
-                    "type": "string"
-                },
-                "workType": {
-                    "$ref": "#/definitions/model.WorkType"
-                },
-                "workingOn": {
-                    "type": "string"
-                }
-            }
         },
         "schedule.CreateRequest": {
             "type": "object",
@@ -1727,6 +6690,23 @@ const docTemplate = `{
                 }
             }
         },
+        "status.ChunksByState": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "number of chunks in this state",
+                    "type": "integer"
+                },
+                "state": {
+                    "description": "the state of the chunks",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                }
+            }
+        },
         "store.PieceReader": {
             "type": "object",
             "properties": {
@@ -1765,10 +6745,24 @@ const docTemplate = `{
                 "Hour"
             ]
         },
+        "wallet.AddRemoteRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address is the Filecoin full address of the wallet",
+                    "type": "string"
+                },
+                "remotePeer": {
+                    "description": "RemotePeer is the remote peer ID of the wallet, for remote signing purpose",
+                    "type": "string"
+                }
+            }
+        },
         "wallet.ImportRequest": {
             "type": "object",
             "properties": {
                 "privateKey": {
+                    "description": "This is the exported private key from lotus wallet export",
                     "type": "string"
                 }
             }
@@ -1780,7 +6774,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "beta",
 	Host:             "localhost:9090",
-	BasePath:         "/admin/api",
+	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Singularity API",
 	Description:      "This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.",

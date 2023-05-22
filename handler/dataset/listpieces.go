@@ -1,33 +1,33 @@
 package dataset
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
-// ListPieceHandler godoc
-// @Summary List all pieces for a dataset
-// @Tags Dataset
+// ListPiecesHandler godoc
+// @Summary List all pieces for the dataset that are available for deal making"
+// @Tags Dataset Piece
 // @Produce json
 // @Accept json
-// @Param name path string true "Dataset name"
+// @Param datasetName path string true "Dataset name"
 // @Success 200 {array} model.Car
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{name}/piece [get]
-func ListPieceHandler(
+// @Router /dataset/{datasetName}/pieces [get]
+func ListPiecesHandler(
 	db *gorm.DB,
-	name string,
+	datasetName string,
 ) ([]model.Car, *handler.Error) {
 	log.SetAllLoggers(log.LevelInfo)
-	if name == "" {
+	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}
 
-	dataset, err := database.FindDatasetByName(db, name)
+	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}

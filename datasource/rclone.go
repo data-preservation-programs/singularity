@@ -3,7 +3,7 @@ package datasource
 import (
 	"context"
 	"fmt"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
 	_ "github.com/rclone/rclone/backend/azureblob"
@@ -53,12 +53,17 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type RCloneHandler struct {
 	fs.Fs
+}
+
+func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, error) {
+	return h.Fs.List(ctx, path)
 }
 
 func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch chan<- Entry) error {
@@ -92,7 +97,7 @@ func (h RCloneHandler) Scan(ctx context.Context, path string, last string) <-cha
 	go func() {
 		defer close(ch)
 		_ = h.scan(ctx, path, last, ch)
-	} ()
+	}()
 	return ch
 }
 
@@ -119,7 +124,7 @@ func NewRCloneHandler(ctx context.Context, source model.Source) (*RCloneHandler,
 		return nil, errors.Wrap(err, "failed to find rclone backend")
 	}
 
-	f, err := registry.NewFs(ctx, source.Name, source.Path, configmap.Simple(source.Metadata))
+	f, err := registry.NewFs(ctx, strconv.Itoa(int(source.ID)), source.Path, configmap.Simple(source.Metadata))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create rclone backend")
 	}
@@ -127,30 +132,19 @@ func NewRCloneHandler(ctx context.Context, source model.Source) (*RCloneHandler,
 	return &RCloneHandler{f}, nil
 }
 
-var Registry = fs.Registry
-
-func CLIContextToSimpleMap(cctx *cli.Context) configmap.Simple {
-	result := make(configmap.Simple)
-	for _, flagName := range cctx.LocalFlagNames() {
-		if cctx.IsSet(flagName) {
-			result[flagName] = cctx.String(flagName)
-		}
-	}
-
-	return result
-}
-
 func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 	cmd := &cli.Command{
 		Name:      regInfo.Prefix,
 		Aliases:   regInfo.Aliases,
-		ArgsUsage: "<name> <path>",
+		ArgsUsage: "<dataset_name> <source_path>",
 		Usage:     regInfo.Description,
 	}
 	var usageLines []string
 	var flags []cli.Flag
 	var providerSet = make(map[string]struct{})
+	var optionsByName = make(map[string][]fs.Option)
 	for _, option := range regInfo.Options {
+		optionsByName[option.Name] = append(optionsByName[option.Name], option)
 		if strings.HasPrefix(option.Provider, "!") || option.Provider == "" {
 			continue
 		}
@@ -159,77 +153,74 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 			providerSet[provider] = struct{}{}
 		}
 	}
-	for _, option := range regInfo.Options {
-		option := option
-		apply := func(provider string){
-			category := provider
-			if option.Advanced {
-				if provider != "" {
-					category = category + " Advanced Options"
-				} else {
-					category = "Advanced Options"
-				}
-			}
-			var aliases []string
-			if option.ShortOpt != "" {
-				aliases = append(aliases, option.ShortOpt)
-			}
-			envvar := regInfo.Prefix + "-"
-			if provider != "" {
-				envvar += provider + "-"
-			}
-			envvar += option.Name
-			name := strings.Replace(envvar, "_", "-", -1)
-			name = strings.ToLower(name)
-			envvar = strings.ReplaceAll(envvar, "-", "_")
-			envvar = strings.ToUpper(envvar)
-			flag := &cli.StringFlag{
-				Name:     name,
-				Category: category,
-				Usage:    strings.Split(option.Help, "\n")[0],
-				Required: option.Required,
-				Hidden:   option.Hide&fs.OptionHideCommandLine != 0,
-				Value:    fmt.Sprint(option.Default),
-				Aliases:  aliases,
-				EnvVars:  []string{envvar},
-			}
-			flags = append(flags, flag)
 
-			usageLines = append(usageLines, "--"+flag.Name)
-			lines := underscore.Map(strings.Split(option.Help, "\n"), func(line string) string { return "   " + line })
+	for name, options := range optionsByName {
+		category := ""
+		if options[0].Advanced {
+			category = "Advanced Options"
+		}
+		var aliases []string
+		if options[0].ShortOpt != "" {
+			aliases = append(aliases, options[0].ShortOpt)
+		}
+		envvar := strings.ToUpper(regInfo.Prefix + "_" + name)
+		flagName := strings.ToLower(strings.ReplaceAll(envvar, "_", "-"))
+		flag := &cli.StringFlag{
+			Name:     flagName,
+			Category: category,
+			Usage:    strings.Split(options[0].Help, "\n")[0],
+			Required: options[0].Required,
+			Hidden:   options[0].Hide&fs.OptionHideCommandLine != 0,
+			Value:    fmt.Sprint(options[0].Default),
+			Aliases:  aliases,
+			EnvVars:  []string{envvar},
+		}
+		flags = append(flags, flag)
+		usageLines = append(usageLines, "--"+flag.Name)
+		for _, option := range options {
+			margin := "   "
+			if option.Provider != "" {
+				margin = "      "
+			}
+			var providers []string
+			if strings.HasPrefix(option.Provider, "!") {
+				excludes := strings.Split(option.Provider[1:], ",")
+				for provider := range providerSet {
+					if !slices.Contains(excludes, provider) {
+						providers = append(providers, provider)
+					}
+				}
+			} else if option.Provider != "" {
+				providers = strings.Split(option.Provider, ",")
+			}
+			if option.Provider != "" {
+				usageLines = append(usageLines, "   [Provider] - "+strings.Join(providers, ", "))
+			}
+			lines := underscore.Map(strings.Split(option.Help, "\n"), func(line string) string { return margin + line })
 			usageLines = append(usageLines, lines...)
 			if len(option.Examples) > 0 {
-				usageLines = append(usageLines, "")
-				usageLines = append(usageLines, "   Examples:")
-				for _, example := range option.Examples {
+				for i, example := range option.Examples {
 					if example.Value == "" {
-						example.Value = "<unset>"
+						option.Examples[i].Value = "<unset>"
 					}
-					usageLines = append(usageLines, "      " + example.Value)
-					for _, line := range strings.Split(example.Help, "\n") {
-						usageLines = append(usageLines, "         " + line)
+				}
+				usageLines = append(usageLines, "")
+				usageLines = append(usageLines, margin+"Examples:")
+				maxValueLen := underscore.Max(underscore.Map(option.Examples, func(example fs.OptionExample) int { return len(example.Value) }))
+				for _, example := range option.Examples {
+					pattern := margin + "   | %-" + strconv.Itoa(maxValueLen) + "s | %s"
+					helpLines := strings.Split(example.Help, "\n")
+					exampleLine := fmt.Sprintf(pattern, example.Value, helpLines[0])
+					usageLines = append(usageLines, exampleLine)
+					for _, helpLine := range helpLines[1:] {
+						usageLines = append(usageLines, margin+"     "+strings.Repeat(" ", maxValueLen)+" | "+helpLine)
 					}
 				}
 			}
 			usageLines = append(usageLines, "")
 		}
-
-		if option.Provider == "" {
-			apply(option.Provider)
-		} else if strings.HasPrefix(option.Provider, "!") {
-			excludes := strings.Split(option.Provider[1:], ",")
-			for provider := range providerSet {
-				if !slices.Contains(excludes, provider) {
-					apply(provider)
-				}
-			}
-		} else {
-			providers := strings.Split(option.Provider, ",")
-			for _, provider := range providers {
-				apply(provider)
-			}
-		}
 	}
+
 	cmd.Flags = flags
 	cmd.Description = strings.Join(usageLines, "\n")
 	return cmd

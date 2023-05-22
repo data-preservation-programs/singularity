@@ -51,7 +51,7 @@ linters-settings:
   errcheck:
     exclude-functions:
       - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
-      - (github.com/data-preservation-programs/go-singularity/service.DatasetWorker).cleanup
+      - (github.com/data-preservation-programs/singularity/service.DatasetWorker).cleanup
   revive:
     rules:
       - name: var-naming

@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/pkg/errors"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/urfave/cli/v2"
-	"strings"
 )
 
 var DownloadCmd = &cli.Command{
@@ -54,40 +52,6 @@ var DownloadCmd = &cli.Command{
 		model.DisableEncryption = true
 		piece := c.Args().First()
 		api := c.String("api")
-		httpHeaders := c.StringSlice("http-header")
-		s3Endpoint := c.String("s3-endpoint")
-		s3Region := c.String("s3-region")
-		s3AccessKeyID := c.String("s3-access-key-id")
-		s3SecretAccessKey := c.String("s3-secret-access-key")
-		var meta model.Metadata
-		if len(httpHeaders) > 0 {
-			headers := map[string]string{}
-			for _, header := range httpHeaders {
-				parts := strings.SplitN(header, "=", 2)
-				if len(parts) != 2 {
-					return errors.New("invalid header: " + header)
-				}
-
-				headers[parts[0]] = parts[1]
-			}
-
-			var err error
-			meta, err = model.HTTPMetadata{Headers: headers}.Encode()
-			if err != nil {
-				return err
-			}
-		} else {
-			var err error
-			meta, err = model.S3Metadata{
-				Region:          s3Region,
-				Endpoint:        s3Endpoint,
-				AccessKeyID:     s3AccessKeyID,
-				SecretAccessKey: s3SecretAccessKey,
-			}.Encode()
-			if err != nil {
-				return err
-			}
-		}
-		return handler.DownloadHandler(piece, api, meta)
+		return handler.DownloadHandler(piece, api, nil)
 	},
 }

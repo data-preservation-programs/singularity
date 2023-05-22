@@ -2,8 +2,8 @@ package wallet
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
 	"github.com/ybbus/jsonrpc/v3"
@@ -11,7 +11,7 @@ import (
 )
 
 type ImportRequest struct {
-	PrivateKey string `json:"privateKey"`
+	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
 	LotusAPI   string `json:"lotusApi" swaggerignore:"true"`
 	LotusToken string `json:"lotusToken" swaggerignore:"true"`
 }

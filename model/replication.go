@@ -48,7 +48,7 @@ type Deal struct {
 	ID           uint64 `gorm:"primaryKey"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
-	DealID       *uint64 `gorm:"uniqueIndex"`
+	DealID       *uint64 `gorm:"unique"`
 	DatasetID    *uint32
 	Dataset      *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:SET NULL"`
 	State        DealState `gorm:"index:idx_stat"`
@@ -124,10 +124,10 @@ func (s Schedule) Equal(other Schedule) bool {
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey" json:"id"`
-	Address    string `gorm:"unique" json:"address"`
-	PrivateKey string `json:"privateKey"`
-	RemotePeer string `json:"remotePeer"`
+	ID         string `gorm:"primaryKey" json:"id"`  // ID is the short ID of the wallet
+	Address    string `gorm:"unique" json:"address"` // Address is the Filecoin full address of the wallet
+	PrivateKey string `json:"privateKey,omitempty"`  // PrivateKey is the private key of the wallet
+	RemotePeer string `json:"remotePeer,omitempty"`  // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
 func (w Wallet) GetExportedKey() (string, error) {

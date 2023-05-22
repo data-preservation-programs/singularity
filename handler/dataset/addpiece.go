@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/ipld/go-car"
@@ -24,28 +24,28 @@ type AddPieceRequest struct {
 }
 
 // AddPieceHandler godoc
-// @Summary Register a CAR file piece with a dataset
-// @Tags Dataset
+// @Summary Manually register a piece (CAR file) with the dataset for deal making purpose
+// @Tags Dataset Piece
 // @Produce json
 // @Accept json
-// @Param name path string true "Dataset name"
+// @Param datasetName path string true "Dataset name"
 // @Param request body AddPieceRequest true "Request body"
 // @Success 200 {object} model.Car
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{name}/piece [post]
+// @Router /dataset/{datasetName}/piece [post]
 func AddPieceHandler(
 	db *gorm.DB,
-	name string,
+	datasetName string,
 	request AddPieceRequest,
 ) (*model.Car, *handler.Error) {
 	logger := log.Logger("cli")
 	log.SetAllLoggers(log.LevelInfo)
-	if name == "" {
+	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}
 
-	dataset, err := database.FindDatasetByName(db, name)
+	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}

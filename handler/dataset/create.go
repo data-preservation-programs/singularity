@@ -1,47 +1,29 @@
 package dataset
 
 import (
+	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
 
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/util"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
 type CreateRequest struct {
-	Name         string   `json:"name"`
-	MinSizeStr   string   `json:"minSize"`
-	MaxSizeStr   string   `json:"maxSize"`
-	PieceSizeStr string   `json:"pieceSize"`
-	OutputDirs   []string `json:"outputDirs"`
-	Recipients   []string `json:"recipients"`
-	Script       string   `json:"script"`
+	Name                 string   `json:"name" validate:"required"`                      // Name must be a unique identifier for a dataset
+	MinSizeStr           string   `json:"minSize" default:"30GiB" validate:"required"`   // Minimum size of the CAR files to be created
+	MaxSizeStr           string   `json:"maxSize" default:"31.5GiB" validate:"required"` // Maximum size of the CAR files to be created
+	PieceSizeStr         string   `json:"pieceSize" default:"" validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
+	OutputDirs           []string `json:"outputDirs" validate:"optional"`                // Output directory for CAR files. Do not set if using inline preparation
+	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`      // Public key of the encryption recipient
+	EncryptionScript     string   `json:"encryptionScript" validate:"optional"`          // EncryptionScript command to run for custom encryption
 }
 
-// CreateHandler godoc
-// @Summary Create a new dataset
-// @Tags Dataset
-// @Accept json
-// @Produce json
-// @Param request body CreateRequest true "Request body"
-// @Success 200 {object} model.Dataset
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
-// @Router /dataset [post]
-func CreateHandler(
-	db *gorm.DB,
-	request CreateRequest,
-) (*model.Dataset, *handler.Error) {
-	logger := log.Logger("cli")
-	log.SetAllLoggers(log.LevelInfo)
-	if request.Name == "" {
-		return nil, handler.NewBadRequestString("name is required")
-	}
-
+func parseCreateRequest(request CreateRequest) (*model.Dataset, *handler.Error) {
 	minSize, err := humanize.ParseBytes(request.MinSizeStr)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid value for min-size: " + err.Error())
@@ -85,32 +67,63 @@ func CreateHandler(
 		outDirs[i] = abs
 	}
 
-	if len(request.Recipients) > 0 && request.Script != "" {
+	if len(request.EncryptionRecipients) > 0 && request.EncryptionScript != "" {
 		return nil, handler.NewBadRequestString("encryption recipients and script cannot be used together")
 	}
 
-	if (len(request.Recipients) > 0 || request.Script != "") && len(request.OutputDirs) == 0 {
+	if (len(request.EncryptionRecipients) > 0 || request.EncryptionScript != "") && len(request.OutputDirs) == 0 {
 		return nil, handler.NewBadRequestString(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
 		)
 	}
 
-	dataset := model.Dataset{
+	return &model.Dataset{
 		Name:                 request.Name,
 		MinSize:              int64(minSize),
 		MaxSize:              int64(maxSize),
 		PieceSize:            int64(pieceSize),
 		OutputDirs:           outDirs,
-		EncryptionRecipients: request.Recipients,
-		EncryptionScript:     request.Script,
+		EncryptionRecipients: request.EncryptionRecipients,
+		EncryptionScript:     request.EncryptionScript,
+	}, nil
+}
+
+// CreateHandler godoc
+// @Summary Create a new dataset
+// @Tags Dataset
+// @Accept json
+// @Produce json
+// @Description The dataset is a top level object to distinguish different dataset.
+// @Param request body CreateRequest true "Request body"
+// @Success 200 {object} model.Dataset
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
+// @Router /dataset [post]
+func CreateHandler(
+	db *gorm.DB,
+	request CreateRequest,
+) (*model.Dataset, *handler.Error) {
+	logger := log.Logger("cli")
+	log.SetAllLoggers(log.LevelInfo)
+	if request.Name == "" {
+		return nil, handler.NewBadRequestString("name is required")
 	}
 
-	err = db.Create(&dataset).Error
+	dataset, err := parseCreateRequest(request)
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
+	}
+
+	err2 := db.Create(dataset).Error
+	if errors.Is(err2, gorm.ErrDuplicatedKey) {
+		return nil, handler.NewBadRequestString("dataset with this name already exists")
+	}
+
+	if err2 != nil {
+		return nil, handler.NewHandlerError(err2)
 	}
 
 	logger.Infof("Dataset created with ID: %d", dataset.ID)
-	return &dataset, nil
+	return dataset, nil
 }

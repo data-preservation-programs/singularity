@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -251,7 +251,6 @@ func (s DatasetListenerService) uploadFile(c echo.Context) error {
 		Offset:       0,
 		Length:       written,
 		LastModified: lastModified,
-		Version:      0,
 	})
 
 	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))

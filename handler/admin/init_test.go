@@ -1,8 +1,8 @@
-package handler
+package admin
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
