@@ -1,14 +1,5 @@
-basePath: /admin/api
+basePath: /api
 definitions:
-  api.ItemInfo:
-    properties:
-      path:
-        type: string
-      sourceId:
-        type: integer
-      type:
-        $ref: '#/definitions/model.ItemType'
-    type: object
   dataset.AddPieceRequest:
     properties:
       filePath:
@@ -22,46 +13,2239 @@ definitions:
       rootCID:
         type: string
     type: object
-  dataset.AddSourceRequest:
+  dataset.CreateRequest:
     properties:
-      httpheaders:
+      encryptionRecipients:
+        description: Public key of the encryption recipient
         items:
           type: string
         type: array
-      pushOnly:
-        type: boolean
-      s3AccessKeyID:
+      encryptionScript:
+        description: EncryptionScript command to run for custom encryption
         type: string
-      s3Endpoint:
-        type: string
-      s3Region:
-        type: string
-      s3SecretAccessKey:
-        type: string
-      scanInterval:
-        $ref: '#/definitions/time.Duration'
-      sourcePath:
-        type: string
-    type: object
-  dataset.CreateRequest:
-    properties:
       maxSize:
+        default: 31.5GiB
+        description: Maximum size of the CAR files to be created
         type: string
       minSize:
+        default: 30GiB
+        description: Minimum size of the CAR files to be created
         type: string
       name:
+        description: Name must be a unique identifier for a dataset
         type: string
       outputDirs:
+        description: Output directory for CAR files. Do not set if using inline preparation
         items:
           type: string
         type: array
       pieceSize:
+        description: Target piece size of the CAR files used for piece commitment
+          calculation
         type: string
-      recipients:
+    required:
+    - maxSize
+    - minSize
+    - name
+    type: object
+  dataset.UpdateRequest:
+    properties:
+      encryptionRecipients:
+        description: Public key of the encryption recipient
         items:
           type: string
         type: array
-      script:
+      encryptionScript:
+        description: EncryptionScript command to run for custom encryption
+        type: string
+      maxSize:
+        default: 31.5GiB
+        description: Maximum size of the CAR files to be created
+        type: string
+      minSize:
+        default: 30GiB
+        description: Minimum size of the CAR files to be created
+        type: string
+      outputDirs:
+        description: Output directory for CAR files. Do not set if using inline preparation
+        items:
+          type: string
+        type: array
+      pieceSize:
+        description: Target piece size of the CAR files used for piece commitment
+          calculation
+        type: string
+    type: object
+  datasource.AcdRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      checkpoint:
+        description: Checkpoint for internal polling (debug).
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      templinkThreshold:
+        default: 9Gi
+        description: Files >= this size will be downloaded via their tempLink.
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      uploadWaitPerGb:
+        default: 3m0s
+        description: Additional time per GiB to wait after a failed complete upload
+          to see if it appears.
+        type: string
+    type: object
+  datasource.AzureblobRequest:
+    properties:
+      accessTier:
+        description: 'Access tier of blob: hot, cool or archive.'
+        type: string
+      account:
+        description: Azure Storage Account Name.
+        type: string
+      archiveTierDelete:
+        default: "false"
+        description: Delete archive tier blobs before overwriting.
+        type: string
+      chunkSize:
+        default: 4Mi
+        description: Upload chunk size.
+        type: string
+      clientCertificatePassword:
+        description: Password for the certificate file (optional).
+        type: string
+      clientCertificatePath:
+        description: Path to a PEM or PKCS12 certificate file including the private
+          key.
+        type: string
+      clientId:
+        description: The ID of the client in use.
+        type: string
+      clientSecret:
+        description: One of the service principal's client secrets
+        type: string
+      clientSendCertificateChain:
+        default: "false"
+        description: Send the certificate chain when using certificate auth.
+        type: string
+      disableChecksum:
+        default: "false"
+        description: Don't store MD5 checksum with object metadata.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for the service.
+        type: string
+      envAuth:
+        default: "false"
+        description: Read credentials from runtime (environment variables, CLI or
+          MSI).
+        type: string
+      key:
+        description: Storage Account Shared Key.
+        type: string
+      listChunk:
+        default: "5000"
+        description: Size of blob list.
+        type: string
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: "false"
+        description: Whether to use mmap buffers in internal memory pool.
+        type: string
+      msiClientId:
+        description: Object ID of the user-assigned MSI to use, if any.
+        type: string
+      msiMiResId:
+        description: Azure resource ID of the user-assigned MSI to use, if any.
+        type: string
+      msiObjectId:
+        description: Object ID of the user-assigned MSI to use, if any.
+        type: string
+      noCheckContainer:
+        default: "false"
+        description: If set, don't attempt to check the container exists or create
+          it.
+        type: string
+      noHeadObject:
+        default: "false"
+        description: If set, do not do HEAD before GET when getting objects.
+        type: string
+      password:
+        description: The user's password
+        type: string
+      publicAccess:
+        description: 'Public access level of a container: blob or container.'
+        type: string
+      sasUrl:
+        description: SAS URL for container level access only.
+        type: string
+      servicePrincipalFile:
+        description: Path to file containing credentials for use with a service principal.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      tenant:
+        description: ID of the service principal's tenant. Also called its directory
+          ID.
+        type: string
+      uploadConcurrency:
+        default: "16"
+        description: Concurrency for multipart uploads.
+        type: string
+      uploadCutoff:
+        description: Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
+        type: string
+      useEmulator:
+        default: "false"
+        description: Uses local storage emulator if provided as 'true'.
+        type: string
+      useMsi:
+        default: "false"
+        description: Use a managed service identity to authenticate (only works in
+          Azure).
+        type: string
+      username:
+        description: User name (usually an email address)
+        type: string
+    type: object
+  datasource.B2Request:
+    properties:
+      account:
+        description: Account ID or Application Key ID.
+        type: string
+      chunkSize:
+        default: 96Mi
+        description: Upload chunk size.
+        type: string
+      copyCutoff:
+        default: 4Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      disableChecksum:
+        default: "false"
+        description: Disable checksums for large (> upload cutoff) files.
+        type: string
+      downloadAuthDuration:
+        default: 1w
+        description: Time before the authorization token will expire in s or suffix
+          ms|s|m|h|d.
+        type: string
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for the service.
+        type: string
+      hardDelete:
+        default: "false"
+        description: Permanently delete files on remote removal, otherwise hide files.
+        type: string
+      key:
+        description: Application Key.
+        type: string
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: "false"
+        description: Whether to use mmap buffers in internal memory pool.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      testMode:
+        description: A flag string for X-Bz-Test-Mode header for debugging.
+        type: string
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: "false"
+        description: Include old versions in directory listings.
+        type: string
+    type: object
+  datasource.BoxRequest:
+    properties:
+      accessToken:
+        description: Box App Primary Access Token
+        type: string
+      authUrl:
+        description: Auth server URL.
+        type: string
+      boxConfigFile:
+        description: Box App config.json location
+        type: string
+      boxSubType:
+        default: user
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      commitRetries:
+        default: "100"
+        description: Max number of times to try committing a multipart file.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      listChunk:
+        default: "1000"
+        description: Size of listing chunk 1-1000.
+        type: string
+      ownedBy:
+        description: Only show items owned by the login (email address) passed in.
+        type: string
+      rootFolderId:
+        default: "0"
+        description: Fill in for rclone to use a non root folder as its starting point.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      uploadCutoff:
+        default: 50Mi
+        description: Cutoff for switching to multipart upload (>= 50 MiB).
+        type: string
+    type: object
+  datasource.CheckSourceRequest:
+    properties:
+      path:
+        description: Path relative to the data source root
+        type: string
+    type: object
+  datasource.Config:
+    additionalProperties:
+      type: string
+    description: The field name can be using snake_case or lowerCamelCase This will
+      override the current config in the database To check what options are available,
+      check the request model of the corresponding data source type
+    type: object
+  datasource.CryptRequest:
+    properties:
+      directoryNameEncryption:
+        default: "true"
+        description: Option to either encrypt directory names or leave them intact.
+        type: string
+      filenameEncoding:
+        default: base32
+        description: How to encode the encrypted filename to text string.
+        type: string
+      filenameEncryption:
+        default: standard
+        description: How to encrypt the filenames.
+        type: string
+      noDataEncryption:
+        default: "false"
+        description: Option to either encrypt file data or leave it unencrypted.
+        type: string
+      password:
+        description: Password or pass phrase for encryption.
+        type: string
+      password2:
+        description: Password or pass phrase for salt.
+        type: string
+      remote:
+        description: Remote to encrypt/decrypt.
+        type: string
+      serverSideAcrossConfigs:
+        default: "false"
+        description: Allow server-side operations (e.g. copy) to work across different
+          crypt configs.
+        type: string
+      showMapping:
+        default: "false"
+        description: For all files listed show how the names encrypt.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.DriveRequest:
+    properties:
+      acknowledgeAbuse:
+        default: "false"
+        description: Set to allow files which return cannotDownloadAbusiveFile to
+          be downloaded.
+        type: string
+      allowImportNameChange:
+        default: "false"
+        description: Allow the filetype to change when uploading Google docs.
+        type: string
+      alternateExport:
+        default: "false"
+        description: 'Deprecated: No longer needed.'
+        type: string
+      authOwnerOnly:
+        default: "false"
+        description: Only consider files owned by the authenticated user.
+        type: string
+      authUrl:
+        description: Auth server URL.
+        type: string
+      chunkSize:
+        default: 8Mi
+        description: Upload chunk size.
+        type: string
+      clientId:
+        description: Google Application Client Id
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      copyShortcutContent:
+        default: "false"
+        description: Server side copy contents of shortcuts instead of the shortcut.
+        type: string
+      disableHttp2:
+        default: "true"
+        description: Disable drive using http2.
+        type: string
+      encoding:
+        default: InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      exportFormats:
+        default: docx,xlsx,pptx,svg
+        description: Comma separated list of preferred formats for downloading Google
+          docs.
+        type: string
+      formats:
+        description: 'Deprecated: See export_formats.'
+        type: string
+      impersonate:
+        description: Impersonate this user when using a service account.
+        type: string
+      importFormats:
+        description: Comma separated list of preferred formats for uploading Google
+          docs.
+        type: string
+      keepRevisionForever:
+        default: "false"
+        description: Keep new head revision of each file forever.
+        type: string
+      listChunk:
+        default: "1000"
+        description: Size of listing chunk 100-1000, 0 to disable.
+        type: string
+      pacerBurst:
+        default: "100"
+        description: Number of API calls to allow without sleeping.
+        type: string
+      pacerMinSleep:
+        default: 100ms
+        description: Minimum time to sleep between API calls.
+        type: string
+      resourceKey:
+        description: Resource key for accessing a link-shared file.
+        type: string
+      rootFolderId:
+        description: ID of the root folder.
+        type: string
+      scope:
+        description: Scope that rclone should use when requesting access from drive.
+        type: string
+      serverSideAcrossConfigs:
+        default: "false"
+        description: Allow server-side operations (e.g. copy) to work across different
+          drive configs.
+        type: string
+      serviceAccountCredentials:
+        description: Service Account Credentials JSON blob.
+        type: string
+      serviceAccountFile:
+        description: Service Account Credentials JSON file path.
+        type: string
+      sharedWithMe:
+        default: "false"
+        description: Only show files that are shared with me.
+        type: string
+      sizeAsQuota:
+        default: "false"
+        description: Show sizes as storage quota usage, not actual size.
+        type: string
+      skipChecksumGphotos:
+        default: "false"
+        description: Skip MD5 checksum on Google photos and videos only.
+        type: string
+      skipDanglingShortcuts:
+        default: "false"
+        description: If set skip dangling shortcut files.
+        type: string
+      skipGdocs:
+        default: "false"
+        description: Skip google documents in all listings.
+        type: string
+      skipShortcuts:
+        default: "false"
+        description: If set skip shortcut files.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      starredOnly:
+        default: "false"
+        description: Only show files that are starred.
+        type: string
+      stopOnDownloadLimit:
+        default: "false"
+        description: Make download limit errors be fatal.
+        type: string
+      stopOnUploadLimit:
+        default: "false"
+        description: Make upload limit errors be fatal.
+        type: string
+      teamDrive:
+        description: ID of the Shared Drive (Team Drive).
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      trashedOnly:
+        default: "false"
+        description: Only show files that are in the trash.
+        type: string
+      uploadCutoff:
+        default: 8Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useCreatedDate:
+        default: "false"
+        description: Use file created date instead of modified date.
+        type: string
+      useSharedDate:
+        default: "false"
+        description: Use date file was shared instead of modified date.
+        type: string
+      useTrash:
+        default: "true"
+        description: Send files to the trash instead of deleting permanently.
+        type: string
+      v2DownloadMinSize:
+        default: "off"
+        description: If Object's are greater, use drive v2 API to download.
+        type: string
+    type: object
+  datasource.DropboxRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      batchCommitTimeout:
+        default: 10m0s
+        description: Max time to wait for a batch to finish committing
+        type: string
+      batchMode:
+        default: sync
+        description: Upload file batching sync|async|off.
+        type: string
+      batchSize:
+        default: "0"
+        description: Max number of files in upload batch.
+        type: string
+      batchTimeout:
+        default: 0s
+        description: Max time to allow an idle upload batch before uploading.
+        type: string
+      chunkSize:
+        default: 48Mi
+        description: Upload chunk size (< 150Mi).
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      impersonate:
+        description: Impersonate this user when using a business account.
+        type: string
+      sharedFiles:
+        default: "false"
+        description: Instructs rclone to work on individual shared files.
+        type: string
+      sharedFolders:
+        default: "false"
+        description: Instructs rclone to work on shared folders.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
+  datasource.FichierRequest:
+    properties:
+      apiKey:
+        description: Your API Key, get it from https://1fichier.com/console/params.pl.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      filePassword:
+        description: If you want to download a shared file that is password protected,
+          add this parameter.
+        type: string
+      folderPassword:
+        description: If you want to list the files in a shared folder that is password
+          protected, add this parameter.
+        type: string
+      sharedFolder:
+        description: If you want to download a shared folder, add this parameter.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.FilefabricRequest:
+    properties:
+      encoding:
+        default: Slash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      permanentToken:
+        description: Permanent Authentication Token.
+        type: string
+      rootFolderId:
+        description: ID of the root folder.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: Session Token.
+        type: string
+      tokenExpiry:
+        description: Token expiry time.
+        type: string
+      url:
+        description: URL of the Enterprise File Fabric to connect to.
+        type: string
+      version:
+        description: Version read from the file fabric.
+        type: string
+    type: object
+  datasource.FtpRequest:
+    properties:
+      askPassword:
+        default: "false"
+        description: Allow asking for FTP password when needed.
+        type: string
+      closeTimeout:
+        default: 1m0s
+        description: Maximum time to wait for a response to close.
+        type: string
+      concurrency:
+        default: "0"
+        description: Maximum number of FTP simultaneous connections, 0 for unlimited.
+        type: string
+      disableEpsv:
+        default: "false"
+        description: Disable using EPSV even if server advertises support.
+        type: string
+      disableMlsd:
+        default: "false"
+        description: Disable using MLSD even if server advertises support.
+        type: string
+      disableTls13:
+        default: "false"
+        description: Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+        type: string
+      disableUtf8:
+        default: "false"
+        description: Disable using UTF-8 even if server advertises support.
+        type: string
+      encoding:
+        default: Slash,Del,Ctl,RightSpace,Dot
+        description: The encoding for the backend.
+        type: string
+      explicitTls:
+        default: "false"
+        description: Use Explicit FTPS (FTP over TLS).
+        type: string
+      forceListHidden:
+        default: "false"
+        description: Use LIST -a to force listing of hidden files and folders. This
+          will disable the use of MLSD.
+        type: string
+      host:
+        description: FTP host to connect to.
+        type: string
+      idleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      noCheckCertificate:
+        default: "false"
+        description: Do not verify the TLS certificate of the server.
+        type: string
+      pass:
+        description: FTP password.
+        type: string
+      port:
+        default: "21"
+        description: FTP port number.
+        type: string
+      shutTimeout:
+        default: 1m0s
+        description: Maximum time to wait for data connection closing status.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      tls:
+        default: "false"
+        description: Use Implicit FTPS (FTP over TLS).
+        type: string
+      tlsCacheSize:
+        default: "32"
+        description: Size of TLS session cache for all control and data connections.
+        type: string
+      user:
+        default: shane
+        description: FTP username.
+        type: string
+      writingMdtm:
+        default: "false"
+        description: Use MDTM to set modification time (VsFtpd quirk)
+        type: string
+    type: object
+  datasource.GcsRequest:
+    properties:
+      anonymous:
+        default: "false"
+        description: Access public buckets and objects without credentials.
+        type: string
+      authUrl:
+        description: Auth server URL.
+        type: string
+      bucketAcl:
+        description: Access Control List for new buckets.
+        type: string
+      bucketPolicyOnly:
+        default: "false"
+        description: Access checks should use bucket-level IAM policies.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      decompress:
+        default: "false"
+        description: If set this will decompress gzip encoded objects.
+        type: string
+      encoding:
+        default: Slash,CrLf,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for the service.
+        type: string
+      envAuth:
+        default: "false"
+        description: Get GCP IAM credentials from runtime (environment variables or
+          instance meta data if no env vars).
+        type: string
+      location:
+        description: Location for the newly created buckets.
+        type: string
+      noCheckBucket:
+        default: "false"
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: string
+      objectAcl:
+        description: Access Control List for new objects.
+        type: string
+      projectNumber:
+        description: Project number.
+        type: string
+      serviceAccountCredentials:
+        description: Service Account Credentials JSON blob.
+        type: string
+      serviceAccountFile:
+        description: Service Account Credentials JSON file path.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      storageClass:
+        description: The storage class to use when storing objects in Google Cloud
+          Storage.
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
+  datasource.GphotosRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,CrLf,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      includeArchived:
+        default: "false"
+        description: Also view and download archived media.
+        type: string
+      readOnly:
+        default: "false"
+        description: Set to make the Google Photos backend read only.
+        type: string
+      readSize:
+        default: "false"
+        description: Set to read the size of media items.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      startYear:
+        default: "2000"
+        description: Year limits the photos to be downloaded to those which are uploaded
+          after the given year.
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
+  datasource.HdfsRequest:
+    properties:
+      dataTransferProtection:
+        description: 'Kerberos data transfer protection: authentication|integrity|privacy.'
+        type: string
+      encoding:
+        default: Slash,Colon,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      namenode:
+        description: Hadoop name node and port.
+        type: string
+      servicePrincipalName:
+        description: Kerberos service principal name for the namenode.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      username:
+        description: Hadoop user name.
+        type: string
+    type: object
+  datasource.HidriveRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      chunkSize:
+        default: 48Mi
+        description: Chunksize for chunked uploads.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      disableFetchingMemberCount:
+        default: "false"
+        description: Do not fetch number of objects in directories unless it is absolutely
+          necessary.
+        type: string
+      encoding:
+        default: Slash,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        default: https://api.hidrive.strato.com/2.1
+        description: Endpoint for the service.
+        type: string
+      rootPrefix:
+        default: /
+        description: The root/parent folder for all paths.
+        type: string
+      scopeAccess:
+        default: rw
+        description: Access permissions that rclone should use when requesting access
+          from HiDrive.
+        type: string
+      scopeRole:
+        default: user
+        description: User-level that rclone should use when requesting access from
+          HiDrive.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      uploadConcurrency:
+        default: "4"
+        description: Concurrency for chunked uploads.
+        type: string
+      uploadCutoff:
+        default: 96Mi
+        description: Cutoff/Threshold for chunked uploads.
+        type: string
+    type: object
+  datasource.HttpRequest:
+    properties:
+      headers:
+        description: Set HTTP headers for all transactions.
+        type: string
+      noHead:
+        default: "false"
+        description: Don't use HEAD requests.
+        type: string
+      noSlash:
+        default: "false"
+        description: Set this if the site doesn't end directories with /.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      url:
+        description: URL of HTTP host to connect to.
+        type: string
+    type: object
+  datasource.InternetarchiveRequest:
+    properties:
+      accessKeyId:
+        description: IAS3 Access Key.
+        type: string
+      disableChecksum:
+        default: "true"
+        description: Don't ask the server to test against MD5 checksum calculated
+          by rclone.
+        type: string
+      encoding:
+        default: Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        default: https://s3.us.archive.org
+        description: IAS3 Endpoint.
+        type: string
+      frontEndpoint:
+        default: https://archive.org
+        description: Host of InternetArchive Frontend.
+        type: string
+      secretAccessKey:
+        description: IAS3 Secret Key (password).
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      waitArchive:
+        default: 0s
+        description: Timeout for waiting the server's processing tasks (specifically
+          archive and book_op) to finish.
+        type: string
+    type: object
+  datasource.JottacloudRequest:
+    properties:
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hardDelete:
+        default: "false"
+        description: Delete files permanently rather than putting them into the trash.
+        type: string
+      md5MemoryLimit:
+        default: 10Mi
+        description: Files bigger than this will be cached on disk to calculate the
+          MD5 if required.
+        type: string
+      noVersions:
+        default: "false"
+        description: Avoid server side versioning by deleting files and recreating
+          files instead of overwriting them.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      trashedOnly:
+        default: "false"
+        description: Only show files that are in the trash.
+        type: string
+      uploadResumeLimit:
+        default: 10Mi
+        description: Files bigger than this can be resumed if the upload fail's.
+        type: string
+    type: object
+  datasource.KoofrRequest:
+    properties:
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: The Koofr API endpoint to use.
+        type: string
+      mountid:
+        description: Mount ID of the mount to use.
+        type: string
+      password:
+        description: Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).
+        type: string
+      provider:
+        description: Choose your storage provider.
+        type: string
+      setmtime:
+        default: "true"
+        description: Does the backend support setting modification time.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      user:
+        description: Your user name.
+        type: string
+    type: object
+  datasource.LocalRequest:
+    properties:
+      caseInsensitive:
+        default: "false"
+        description: Force the filesystem to report itself as case insensitive.
+        type: string
+      caseSensitive:
+        default: "false"
+        description: Force the filesystem to report itself as case sensitive.
+        type: string
+      copyLinks:
+        default: "false"
+        description: Follow symlinks and copy the pointed to item.
+        type: string
+      encoding:
+        default: Slash,Dot
+        description: The encoding for the backend.
+        type: string
+      links:
+        default: "false"
+        description: Translate symlinks to/from regular files with a '.rclonelink'
+          extension.
+        type: string
+      noCheckUpdated:
+        default: "false"
+        description: Don't check to see if the files change during upload.
+        type: string
+      noPreallocate:
+        default: "false"
+        description: Disable preallocation of disk space for transferred files.
+        type: string
+      noSetModtime:
+        default: "false"
+        description: Disable setting modtime.
+        type: string
+      noSparse:
+        default: "false"
+        description: Disable sparse files for multi-thread downloads.
+        type: string
+      nounc:
+        default: "false"
+        description: Disable UNC (long path names) conversion on Windows.
+        type: string
+      oneFileSystem:
+        default: "false"
+        description: Don't cross filesystem boundaries (unix/macOS only).
+        type: string
+      skipLinks:
+        default: "false"
+        description: Don't warn about skipped symlinks.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      unicodeNormalization:
+        default: "false"
+        description: Apply unicode NFC normalization to paths and filenames.
+        type: string
+      zeroSizeLinks:
+        default: "false"
+        description: Assume the Stat size of links is zero (and read them instead)
+          (deprecated).
+        type: string
+    type: object
+  datasource.MailruRequest:
+    properties:
+      checkHash:
+        default: "true"
+        description: What should copy do if file checksum is mismatched or invalid.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      pass:
+        description: Password.
+        type: string
+      quirks:
+        description: Comma separated list of internal maintenance flags.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      speedupEnable:
+        default: "true"
+        description: Skip full upload if there is another file with same data hash.
+        type: string
+      speedupFilePatterns:
+        default: '*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf'
+        description: Comma separated list of file name patterns eligible for speedup
+          (put by hash).
+        type: string
+      speedupMaxDisk:
+        default: 3Gi
+        description: This option allows you to disable speedup (put by hash) for large
+          files.
+        type: string
+      speedupMaxMemory:
+        default: 32Mi
+        description: Files larger than the size given below will always be hashed
+          on disk.
+        type: string
+      user:
+        description: User name (usually email).
+        type: string
+      userAgent:
+        description: HTTP user agent used internally by client.
+        type: string
+    type: object
+  datasource.MegaRequest:
+    properties:
+      debug:
+        default: "false"
+        description: Output more debug from Mega.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hardDelete:
+        default: "false"
+        description: Delete files permanently rather than putting them into the trash.
+        type: string
+      pass:
+        description: Password.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      useHttps:
+        default: "false"
+        description: Use HTTPS for transfers.
+        type: string
+      user:
+        description: User name.
+        type: string
+    type: object
+  datasource.MemoryRequest:
+    properties:
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.NetstorageRequest:
+    properties:
+      account:
+        description: Set the NetStorage account name
+        type: string
+      host:
+        description: Domain+path of NetStorage host to connect to.
+        type: string
+      protocol:
+        default: https
+        description: Select between HTTP or HTTPS protocol.
+        type: string
+      secret:
+        description: Set the NetStorage account secret/G2O key for authentication.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.OnedriveRequest:
+    properties:
+      accessScopes:
+        default: Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All
+          offline_access
+        description: Set scopes to be requested by rclone.
+        type: string
+      authUrl:
+        description: Auth server URL.
+        type: string
+      chunkSize:
+        default: 10Mi
+        description: Chunk size to upload files with - must be multiple of 320k (327,680
+          bytes).
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      disableSitePermission:
+        default: "false"
+        description: Disable the request for Sites.Read.All permission.
+        type: string
+      driveId:
+        description: The ID of the drive to use.
+        type: string
+      driveType:
+        description: The type of the drive (personal | business | documentLibrary).
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      exposeOnenoteFiles:
+        default: "false"
+        description: Set to make OneNote files show up in directory listings.
+        type: string
+      hashType:
+        default: auto
+        description: Specify the hash in use for the backend.
+        type: string
+      linkPassword:
+        description: Set the password for links created by the link command.
+        type: string
+      linkScope:
+        default: anonymous
+        description: Set the scope of the links created by the link command.
+        type: string
+      linkType:
+        default: view
+        description: Set the type of the links created by the link command.
+        type: string
+      listChunk:
+        default: "1000"
+        description: Size of listing chunk.
+        type: string
+      noVersions:
+        default: "false"
+        description: Remove all versions on modifying operations.
+        type: string
+      region:
+        default: global
+        description: Choose national cloud region for OneDrive.
+        type: string
+      rootFolderId:
+        description: ID of the root folder.
+        type: string
+      serverSideAcrossConfigs:
+        default: "false"
+        description: Allow server-side operations (e.g. copy) to work across different
+          onedrive configs.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
+  datasource.OosRequest:
+    properties:
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      compartment:
+        description: Object storage compartment OCID
+        type: string
+      configFile:
+        default: ~/.oci/config
+        description: Path to OCI config file
+        type: string
+      configProfile:
+        default: Default
+        description: Profile name inside the oci config file
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      disableChecksum:
+        default: "false"
+        description: Don't store MD5 checksum with object metadata.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: "false"
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: string
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: "false"
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: string
+      provider:
+        default: env_auth
+        description: Choose your Auth Provider
+        type: string
+      region:
+        description: Object storage Region
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        type: string
+      sseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        type: string
+      uploadConcurrency:
+        default: "10"
+        description: Concurrency for multipart uploads.
+        type: string
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
+  datasource.OpendriveRequest:
+    properties:
+      chunkSize:
+        default: 10Mi
+        description: Files will be uploaded in chunks this size.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      password:
+        description: Password.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      username:
+        description: Username.
+        type: string
+    type: object
+  datasource.PcloudRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hostname:
+        default: api.pcloud.com
+        description: Hostname to connect to.
+        type: string
+      password:
+        description: Your pcloud password.
+        type: string
+      rootFolderId:
+        default: d0
+        description: Fill in for rclone to use a non root folder as its starting point.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      username:
+        description: Your pcloud username.
+        type: string
+    type: object
+  datasource.PremiumizemeRequest:
+    properties:
+      apiKey:
+        description: API Key.
+        type: string
+      encoding:
+        default: Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.PutioRequest:
+    properties:
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.QingstorRequest:
+    properties:
+      accessKeyId:
+        description: QingStor Access Key ID.
+        type: string
+      chunkSize:
+        default: 4Mi
+        description: Chunk size to use for uploading.
+        type: string
+      connectionRetries:
+        default: "3"
+        description: Number of connection retries.
+        type: string
+      encoding:
+        default: Slash,Ctl,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Enter an endpoint URL to connection QingStor API.
+        type: string
+      envAuth:
+        default: "false"
+        description: Get QingStor credentials from runtime.
+        type: string
+      secretAccessKey:
+        description: QingStor Secret Access Key (password).
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      uploadConcurrency:
+        default: "1"
+        description: Concurrency for multipart uploads.
+        type: string
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      zone:
+        description: Zone to connect to.
+        type: string
+    type: object
+  datasource.S3Request:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: "false"
+        description: If set this will decompress gzip encoded objects.
+        type: string
+      disableChecksum:
+        default: "false"
+        description: Don't store MD5 checksum with object metadata.
+        type: string
+      disableHttp2:
+        default: "false"
+        description: Disable usage of http2 for S3 backends.
+        type: string
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: "false"
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        type: string
+      forcePathStyle:
+        default: "true"
+        description: If true use path style access if false use virtual hosted style.
+        type: string
+      leavePartsOnError:
+        default: "false"
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: string
+      listChunk:
+        default: "1000"
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: string
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: "0"
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: string
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: "10000"
+        description: Maximum number of parts in a multipart upload.
+        type: string
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: "false"
+        description: Whether to use mmap buffers in internal memory pool.
+        type: string
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: "false"
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: string
+      noHead:
+        default: "false"
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: string
+      noHeadObject:
+        default: "false"
+        description: If set, do not do HEAD before GET when getting objects.
+        type: string
+      noSystemMetadata:
+        default: "false"
+        description: Suppress setting and reading of system metadata
+        type: string
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      provider:
+        description: Choose your S3 provider.
+        type: string
+      region:
+        description: Region to connect to.
+        type: string
+      requesterPays:
+        default: "false"
+        description: Enables requester pays option when interacting with S3 bucket.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      serverSideEncryption:
+        description: The server-side encryption algorithm used when storing this object
+          in S3.
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the server-side encryption algorithm used when
+          storing this object in S3.
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C you may provide the secret encryption key used to
+          encrypt/decrypt your data.
+        type: string
+      sseCustomerKeyBase64:
+        description: If using SSE-C you must provide the secret encryption key encoded
+          in base64 format to encrypt/decrypt your data.
+        type: string
+      sseCustomerKeyMd5:
+        description: If using SSE-C you may provide the secret encryption key MD5
+          checksum (optional).
+        type: string
+      sseKmsKeyId:
+        description: If using KMS ID you must provide the ARN of Key.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in S3.
+        type: string
+      stsEndpoint:
+        description: Endpoint for STS.
+        type: string
+      uploadConcurrency:
+        default: "4"
+        description: Concurrency for multipart uploads.
+        type: string
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAccelerateEndpoint:
+        default: "false"
+        description: If true use the AWS S3 accelerated endpoint.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: "false"
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: string
+      v2Auth:
+        default: "false"
+        description: If true use v2 authentication.
+        type: string
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: "false"
+        description: Include old versions in directory listings.
+        type: string
+    type: object
+  datasource.SeafileRequest:
+    properties:
+      2fa:
+        default: "false"
+        description: Two-factor authentication ('true' if the account has 2FA enabled).
+        type: string
+      authToken:
+        description: Authentication token.
+        type: string
+      createLibrary:
+        default: "false"
+        description: Should rclone create a library if it doesn't exist.
+        type: string
+      encoding:
+        default: Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      library:
+        description: Name of the library.
+        type: string
+      libraryKey:
+        description: Library password (for encrypted libraries only).
+        type: string
+      pass:
+        description: Password.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      url:
+        description: URL of seafile host to connect to.
+        type: string
+      user:
+        description: User name (usually email address).
+        type: string
+    type: object
+  datasource.SftpRequest:
+    properties:
+      askPassword:
+        default: "false"
+        description: Allow asking for SFTP password when needed.
+        type: string
+      chunkSize:
+        default: 32Ki
+        description: Upload and download chunk size.
+        type: string
+      ciphers:
+        description: Space separated list of ciphers to be used for session encryption,
+          ordered by preference.
+        type: string
+      concurrency:
+        default: "64"
+        description: The maximum number of outstanding requests for one file
+        type: string
+      disableConcurrentReads:
+        default: "false"
+        description: If set don't use concurrent reads.
+        type: string
+      disableConcurrentWrites:
+        default: "false"
+        description: If set don't use concurrent writes.
+        type: string
+      disableHashcheck:
+        default: "false"
+        description: Disable the execution of SSH commands to determine if remote
+          file hashing is available.
+        type: string
+      host:
+        description: SSH host to connect to.
+        type: string
+      idleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      keyExchange:
+        description: Space separated list of key exchange algorithms, ordered by preference.
+        type: string
+      keyFile:
+        description: Path to PEM-encoded private key file.
+        type: string
+      keyFilePass:
+        description: The passphrase to decrypt the PEM-encoded private key file.
+        type: string
+      keyPem:
+        description: Raw PEM-encoded private key.
+        type: string
+      keyUseAgent:
+        default: "false"
+        description: When set forces the usage of the ssh-agent.
+        type: string
+      knownHostsFile:
+        description: Optional path to known_hosts file.
+        type: string
+      macs:
+        description: Space separated list of MACs (message authentication code) algorithms,
+          ordered by preference.
+        type: string
+      md5sumCommand:
+        description: The command used to read md5 hashes.
+        type: string
+      pass:
+        description: SSH password, leave blank to use ssh-agent.
+        type: string
+      pathOverride:
+        description: Override path used by SSH shell commands.
+        type: string
+      port:
+        default: "22"
+        description: SSH port number.
+        type: string
+      pubkeyFile:
+        description: Optional path to public key file.
+        type: string
+      serverCommand:
+        description: Specifies the path or command to run a sftp server on the remote
+          host.
+        type: string
+      setEnv:
+        description: Environment variables to pass to sftp and commands
+        type: string
+      setModtime:
+        default: "true"
+        description: Set the modified time on the remote if set.
+        type: string
+      sha1sumCommand:
+        description: The command used to read sha1 hashes.
+        type: string
+      shellType:
+        description: The type of SSH shell on remote server, if any.
+        type: string
+      skipLinks:
+        default: "false"
+        description: Set to skip any symlinks and any other non regular files.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      subsystem:
+        default: sftp
+        description: Specifies the SSH2 subsystem on the remote host.
+        type: string
+      useFstat:
+        default: "false"
+        description: If set use fstat instead of stat.
+        type: string
+      useInsecureCipher:
+        default: "false"
+        description: Enable the use of insecure ciphers and key exchange methods.
+        type: string
+      user:
+        default: shane
+        description: SSH username.
+        type: string
+    type: object
+  datasource.SharefileRequest:
+    properties:
+      chunkSize:
+        default: 64Mi
+        description: Upload chunk size.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for API calls.
+        type: string
+      rootFolderId:
+        description: ID of the root folder.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      uploadCutoff:
+        default: 128Mi
+        description: Cutoff for switching to multipart upload.
+        type: string
+    type: object
+  datasource.SiaRequest:
+    properties:
+      apiPassword:
+        description: Sia Daemon API Password.
+        type: string
+      apiUrl:
+        default: http://127.0.0.1:9980
+        description: Sia daemon API URL, like http://sia.daemon.host:9980.
+        type: string
+      encoding:
+        default: Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      userAgent:
+        default: Sia-Agent
+        description: Siad User Agent
+        type: string
+    type: object
+  datasource.SmbRequest:
+    properties:
+      caseInsensitive:
+        default: "true"
+        description: Whether the server is configured to be case-insensitive.
+        type: string
+      domain:
+        default: WORKGROUP
+        description: Domain name for NTLM authentication.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hideSpecialShare:
+        default: "true"
+        description: Hide special shares (e.g. print$) which users aren't supposed
+          to access.
+        type: string
+      host:
+        description: SMB server hostname to connect to.
+        type: string
+      idleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      pass:
+        description: SMB password.
+        type: string
+      port:
+        default: "445"
+        description: SMB port number.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      spn:
+        description: Service principal name.
+        type: string
+      user:
+        default: shane
+        description: SMB username.
+        type: string
+    type: object
+  datasource.StorjRequest:
+    properties:
+      accessGrant:
+        description: Access grant.
+        type: string
+      apiKey:
+        description: API key.
+        type: string
+      passphrase:
+        description: Encryption passphrase.
+        type: string
+      provider:
+        default: existing
+        description: Choose an authentication method.
+        type: string
+      satelliteAddress:
+        default: us1.storj.io
+        description: Satellite address.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.SugarsyncRequest:
+    properties:
+      accessKeyId:
+        description: Sugarsync Access Key ID.
+        type: string
+      appId:
+        description: Sugarsync App ID.
+        type: string
+      authorization:
+        description: Sugarsync authorization.
+        type: string
+      authorizationExpiry:
+        description: Sugarsync authorization expiry.
+        type: string
+      deletedId:
+        description: Sugarsync deleted folder id.
+        type: string
+      encoding:
+        default: Slash,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hardDelete:
+        default: "false"
+        description: Permanently delete files if true
+        type: string
+      privateAccessKey:
+        description: Sugarsync Private Access Key.
+        type: string
+      refreshToken:
+        description: Sugarsync refresh token.
+        type: string
+      rootId:
+        description: Sugarsync root id.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      user:
+        description: Sugarsync user.
+        type: string
+    type: object
+  datasource.SwiftRequest:
+    properties:
+      applicationCredentialId:
+        description: Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).
+        type: string
+      applicationCredentialName:
+        description: Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).
+        type: string
+      applicationCredentialSecret:
+        description: Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).
+        type: string
+      auth:
+        description: Authentication URL for server (OS_AUTH_URL).
+        type: string
+      authToken:
+        description: Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).
+        type: string
+      authVersion:
+        default: "0"
+        description: AuthVersion - optional - set to (1,2,3) if your auth URL has
+          no version (ST_AUTH_VERSION).
+        type: string
+      chunkSize:
+        default: 5Gi
+        description: Above this size files will be chunked into a _segments container.
+        type: string
+      domain:
+        description: User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      endpointType:
+        default: public
+        description: Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
+        type: string
+      envAuth:
+        default: "false"
+        description: Get swift credentials from environment variables in standard
+          OpenStack form.
+        type: string
+      key:
+        description: API key or password (OS_PASSWORD).
+        type: string
+      leavePartsOnError:
+        default: "false"
+        description: If true avoid calling abort upload on a failure.
+        type: string
+      noChunk:
+        default: "false"
+        description: Don't chunk files during streaming upload.
+        type: string
+      noLargeObjects:
+        default: "false"
+        description: Disable support for static and dynamic large objects
+        type: string
+      region:
+        description: Region name - optional (OS_REGION_NAME).
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      storagePolicy:
+        description: The storage policy to use when creating a new container.
+        type: string
+      storageUrl:
+        description: Storage URL - optional (OS_STORAGE_URL).
+        type: string
+      tenant:
+        description: Tenant name - optional for v1 auth, this or tenant_id required
+          otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).
+        type: string
+      tenantDomain:
+        description: Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).
+        type: string
+      tenantId:
+        description: Tenant ID - optional for v1 auth, this or tenant required otherwise
+          (OS_TENANT_ID).
+        type: string
+      user:
+        description: User name to log in (OS_USERNAME).
+        type: string
+      userId:
+        description: User ID to log in - optional - most swift systems use user and
+          leave this blank (v3 auth) (OS_USER_ID).
+        type: string
+    type: object
+  datasource.TardigradeRequest:
+    properties:
+      accessGrant:
+        description: Access grant.
+        type: string
+      apiKey:
+        description: API key.
+        type: string
+      passphrase:
+        description: Encryption passphrase.
+        type: string
+      provider:
+        default: existing
+        description: Choose an authentication method.
+        type: string
+      satelliteAddress:
+        default: us1.storj.io
+        description: Satellite address.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.UptoboxRequest:
+    properties:
+      accessToken:
+        description: Your access token.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+    type: object
+  datasource.WebdavRequest:
+    properties:
+      bearerToken:
+        description: Bearer token instead of user/pass (e.g. a Macaroon).
+        type: string
+      bearerTokenCommand:
+        description: Command to run to get a bearer token.
+        type: string
+      encoding:
+        description: The encoding for the backend.
+        type: string
+      headers:
+        description: Set HTTP headers for all transactions.
+        type: string
+      pass:
+        description: Password.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      url:
+        description: URL of http host to connect to.
+        type: string
+      user:
+        description: User name.
+        type: string
+      vendor:
+        description: Name of the WebDAV site/service/software you are using.
+        type: string
+    type: object
+  datasource.YandexRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hardDelete:
+        default: "false"
+        description: Delete files permanently rather than putting them into the trash.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
+  datasource.ZohoRequest:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Del,Ctl,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      region:
+        description: Zoho region to connect to.
+        type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
         type: string
     type: object
   deal.ListDealRequest:
@@ -116,6 +2300,23 @@ definitions:
       verified:
         type: boolean
     type: object
+  github_com_data-preservation-programs_singularity_api.ItemInfo:
+    properties:
+      path:
+        description: TODO Type     model.ItemType `json:"type"`
+        type: string
+      sourceId:
+        type: integer
+    type: object
+  github_com_data-preservation-programs_singularity_handler_datasource.Entry:
+    properties:
+      isDir:
+        type: boolean
+      path:
+        type: string
+      size:
+        type: integer
+    type: object
   handler.HTTPError:
     properties:
       err:
@@ -123,15 +2324,11 @@ definitions:
     type: object
   model.Car:
     properties:
-      chunk:
-        $ref: '#/definitions/model.Chunk'
-      chunkID:
+      chunkId:
         type: integer
       createdAt:
         type: string
-      dataset:
-        $ref: '#/definitions/model.Dataset'
-      datasetID:
+      datasetId:
         type: integer
       filePath:
         type: string
@@ -143,34 +2340,30 @@ definitions:
         type: array
       id:
         type: integer
-      pieceCID:
+      pieceCid:
         type: string
       pieceSize:
         type: integer
-      rootCID:
+      rootCid:
         type: string
+      sourceId:
+        type: integer
     type: object
   model.Chunk:
     properties:
+      car:
+        $ref: '#/definitions/model.Car'
       createdAt:
         type: string
       errorMessage:
         type: string
       id:
         type: integer
-      items:
-        items:
-          $ref: '#/definitions/model.Item'
-        type: array
       packingState:
         $ref: '#/definitions/model.WorkState'
-      packingWorker:
-        $ref: '#/definitions/model.Worker'
-      packingWorkerID:
+      packingWorkerId:
         type: string
-      source:
-        $ref: '#/definitions/model.Source'
-      sourceID:
+      sourceId:
         type: integer
     type: object
   model.Dataset:
@@ -269,26 +2462,13 @@ definitions:
     - DealRejected
     - DealSlashed
     - DealErrored
-  model.Directory:
-    properties:
-      cid:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      omitempty:
-        $ref: '#/definitions/model.Directory'
-      parentID:
-        type: integer
-    type: object
   model.Item:
     properties:
-      chunkID:
+      chunkId:
         type: integer
       cid:
         type: string
-      directoryID:
+      directoryId:
         type: integer
       errorMessage:
         type: string
@@ -300,33 +2480,18 @@ definitions:
         type: integer
       offset:
         type: integer
-      omitempty:
-        $ref: '#/definitions/model.Directory'
       path:
         type: string
       scannedAt:
         type: string
       size:
         type: integer
-      sourceID:
-        type: integer
-      type:
-        $ref: '#/definitions/model.ItemType'
-      version:
+      sourceId:
         type: integer
     type: object
-  model.ItemType:
-    enum:
-    - file
-    - url
-    - s3object
-    type: string
-    x-enum-varnames:
-    - File
-    - URL
-    - S3Object
   model.Metadata:
-    additionalProperties: true
+    additionalProperties:
+      type: string
     type: object
   model.Schedule:
     properties:
@@ -401,7 +2566,7 @@ definitions:
     properties:
       createdAt:
         type: string
-      datasetID:
+      datasetId:
         type: integer
       errorMessage:
         type: string
@@ -430,23 +2595,26 @@ definitions:
     type: object
   model.SourceType:
     enum:
-    - dir
-    - website
-    - s3path
+    - local
     - upload
     type: string
     x-enum-varnames:
-    - Dir
-    - Website
-    - S3Path
+    - Local
     - Upload
   model.Wallet:
     properties:
       address:
+        description: Address is the Filecoin full address of the wallet
         type: string
       id:
+        description: ID is the short ID of the wallet
         type: string
       privateKey:
+        description: PrivateKey is the private key of the wallet
+        type: string
+      remotePeer:
+        description: RemotePeer is the remote peer ID of the wallet, for remote signing
+          purpose
         type: string
     type: object
   model.WorkState:
@@ -463,29 +2631,6 @@ definitions:
     - Processing
     - Complete
     - Error
-  model.WorkType:
-    enum:
-    - scan
-    - deal_making
-    - packing
-    type: string
-    x-enum-varnames:
-    - Scan
-    - DealMaking
-    - Packing
-  model.Worker:
-    properties:
-      hostname:
-        type: string
-      id:
-        type: string
-      lastHeartbeat:
-        type: string
-      workType:
-        $ref: '#/definitions/model.WorkType'
-      workingOn:
-        type: string
-    type: object
   schedule.CreateRequest:
     properties:
       allowedPieceCIDs:
@@ -531,6 +2676,16 @@ definitions:
       verified:
         type: boolean
     type: object
+  status.ChunksByState:
+    properties:
+      count:
+        description: number of chunks in this state
+        type: integer
+      state:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: the state of the chunks
+    type: object
   store.PieceReader:
     properties:
       blocks:
@@ -561,9 +2716,20 @@ definitions:
     - Second
     - Minute
     - Hour
+  wallet.AddRemoteRequest:
+    properties:
+      address:
+        description: Address is the Filecoin full address of the wallet
+        type: string
+      remotePeer:
+        description: RemotePeer is the remote peer ID of the wallet, for remote signing
+          purpose
+        type: string
+    type: object
   wallet.ImportRequest:
     properties:
       privateKey:
+        description: This is the exported private key from lotus wallet export
         type: string
     type: object
 host: localhost:9090
@@ -574,10 +2740,44 @@ info:
   title: Singularity API
   version: beta
 paths:
+  /admin/init:
+    post:
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Initialize the database
+      tags:
+      - Admin
+  /admin/reset:
+    post:
+      description: This will drop all tables and recreate them.
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Reset the database
+      tags:
+      - Admin
   /dataset:
     post:
       consumes:
       - application/json
+      description: The dataset is a top level object to distinguish different dataset.
       parameters:
       - description: Request body
         in: body
@@ -605,10 +2805,12 @@ paths:
       - Dataset
   /dataset/{datasetName}:
     delete:
+      description: Important! If the dataset is large, this command will take some
+        time to remove all relevant data.
       parameters:
       - description: Dataset name
         in: path
-        name: name
+        name: datasetName
         required: true
         type: string
       responses:
@@ -622,17 +2824,50 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: Remove a dataset
+      summary: Remove a specific dataset. This will not remove the CAR files.
       tags:
       - Dataset
-  /dataset/{name}/piece:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataset.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Dataset'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Update a dataset
+      tags:
+      - Dataset
+  /dataset/{datasetName}/piece:
     post:
       consumes:
       - application/json
       parameters:
       - description: Dataset name
         in: path
-        name: name
+        name: datasetName
         required: true
         type: string
       - description: Request body
@@ -656,78 +2891,18 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: Register a CAR file piece with a dataset
+      summary: Manually register a piece (CAR file) with the dataset for deal making
+        purpose
       tags:
-      - Dataset
-  /dataset/{name}/source:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: name
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dataset.AddSourceRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Source'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Add a source to a dataset
-      tags:
-      - Dataset
-  /dataset/{name}/source/{sourcePath}:
-    delete:
-      parameters:
-      - description: Dataset name
-        in: path
-        name: name
-        required: true
-        type: string
-      - description: Source path
-        in: path
-        name: sourcePath
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Remove a source from a dataset
-      tags:
-      - Dataset
-  /dataset/{name}/sources:
+      - Dataset Piece
+  /dataset/{datasetName}/pieces:
     get:
       consumes:
       - application/json
       parameters:
       - description: Dataset name
         in: path
-        name: name
+        name: datasetName
         required: true
         type: string
       produces:
@@ -737,16 +2912,1252 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Source'
+              $ref: '#/definitions/model.Car'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: List all sources for a dataset
+      summary: List all pieces for the dataset that are available for deal making"
       tags:
-      - Dataset
-  /dataset/{name}/wallet/{wallet}:
+      - Dataset Piece
+  /dataset/{datasetName}/source/acd:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.AcdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add acd source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/azureblob:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.AzureblobRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add azureblob source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/b2:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.B2Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add b2 source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/box:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.BoxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add box source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/crypt:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.CryptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add crypt source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/drive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.DriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add drive source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/dropbox:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.DropboxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add dropbox source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/fichier:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.FichierRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add fichier source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/filefabric:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.FilefabricRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add filefabric source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/ftp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.FtpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add ftp source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/gcs:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.GcsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add gcs source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/gphotos:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.GphotosRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add gphotos source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/hdfs:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.HdfsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add hdfs source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/hidrive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.HidriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add hidrive source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/http:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.HttpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add http source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/internetarchive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.InternetarchiveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add internetarchive source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/jottacloud:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.JottacloudRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add jottacloud source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/koofr:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.KoofrRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add koofr source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/local:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.LocalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add local source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/mailru:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.MailruRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add mailru source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/mega:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.MegaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add mega source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/memory:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.MemoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add memory source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/netstorage:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.NetstorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add netstorage source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/onedrive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.OnedriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add onedrive source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/oos:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.OosRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add oos source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/opendrive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.OpendriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add opendrive source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/pcloud:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.PcloudRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add pcloud source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/premiumizeme:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.PremiumizemeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add premiumizeme source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/putio:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.PutioRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add putio source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/qingstor:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.QingstorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add qingstor source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/s3:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.S3Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add s3 source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/seafile:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SeafileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add seafile source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/sftp:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SftpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add sftp source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/sharefile:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SharefileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add sharefile source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/sia:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SiaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add sia source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/smb:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SmbRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add smb source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/storj:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.StorjRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add storj source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/sugarsync:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SugarsyncRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add sugarsync source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/swift:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SwiftRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add swift source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/tardigrade:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.TardigradeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add tardigrade source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/uptobox:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.UptoboxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add uptobox source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/webdav:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.WebdavRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add webdav source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/yandex:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.YandexRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add yandex source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/source/zoho:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.ZohoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+      summary: Add zoho source for a dataset
+      tags:
+      - New Data Source
+  /dataset/{datasetName}/wallet/{wallet}:
     delete:
       parameters:
       - description: Dataset name
@@ -772,7 +4183,7 @@ paths:
             $ref: '#/definitions/handler.HTTPError'
       summary: Remove an associated wallet from a dataset
       tags:
-      - Dataset
+      - Wallet
     post:
       consumes:
       - application/json
@@ -804,8 +4215,8 @@ paths:
             $ref: '#/definitions/handler.HTTPError'
       summary: Associate a new wallet with a dataset
       tags:
-      - Dataset
-  /dataset/{name}/wallets:
+      - Wallet
+  /dataset/{datasetName}/wallets:
     get:
       parameters:
       - description: Dataset name
@@ -832,7 +4243,7 @@ paths:
             $ref: '#/definitions/handler.HTTPError'
       summary: List all wallets of a dataset.
       tags:
-      - Dataset
+      - Wallet
   /dataset/push:
     post:
       consumes:
@@ -844,7 +4255,7 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/api.ItemInfo'
+          $ref: '#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo'
       produces:
       - application/json
       responses:
@@ -862,7 +4273,7 @@ paths:
             type: string
       summary: Push an item to the staging area
       tags:
-      - Dataset
+      - Data Source
   /dataset/upload:
     post:
       consumes:
@@ -896,7 +4307,7 @@ paths:
             type: string
       summary: Upload a file to a dataset
       tags:
-      - Dataset
+      - Data Source
   /datasets:
     get:
       produces:
@@ -1085,22 +4496,6 @@ paths:
       summary: Send a manual deal proposal
       tags:
       - Deal
-  /init:
-    post:
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Initialize the database
-      tags:
-      - Global
   /piece/metadata/{piece}:
     get:
       consumes:
@@ -1130,6 +4525,194 @@ paths:
       summary: Get metadata for a piece
       tags:
       - Piece
+  /source/{id}:
+    delete:
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Remove a source
+      tags:
+      - Data Source
+    patch:
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Config
+        in: body
+        name: config
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.Config'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Update the config options of a source
+      tags:
+      - Data Source
+  /source/{id}/check:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.CheckSourceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_data-preservation-programs_singularity_handler_datasource.Entry'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Check the connection of the data source by listing a path
+      tags:
+      - Data Source
+  /source/{id}/chunks:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Chunk'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Get all chunk details of a data source
+      tags:
+      - Data Source
+  /source/{id}/items:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Chunk ID
+        in: query
+        name: chunk_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Item'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Get all item details of a data source
+      tags:
+      - Data Source
+  /source/{id}/summary:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/status.ChunksByState'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Get the data preparation summary of a data source
+      tags:
+      - Data Source
+  /sources:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: query
+        name: dataset
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all sources for a dataset
+      tags:
+      - Data Source
   /wallet:
     post:
       consumes:
@@ -1153,6 +4736,53 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: Import a private key
+      tags:
+      - Wallet
+  /wallet/:address:
+    delete:
+      parameters:
+      - description: Address
+        in: path
+        name: address
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Remove a wallet
+      tags:
+      - Wallet
+  /wallet/remote:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/wallet.AddRemoteRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add a remote wallet
       tags:
       - Wallet
   /wallets:

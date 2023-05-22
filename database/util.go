@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -110,6 +110,6 @@ func DropAll(db *gorm.DB) error {
 
 func FindDatasetByName(db *gorm.DB, name string) (model.Dataset, error) {
 	var dataset model.Dataset
-	err := db.Where(&model.Dataset{Name: name}).First(&dataset).Error
+	err := db.Where("name = ?", name).First(&dataset).Error
 	return dataset, err
 }

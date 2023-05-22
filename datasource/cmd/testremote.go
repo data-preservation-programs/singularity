@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/data-preservation-programs/go-singularity/datasource"
+	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/rclone/rclone/fs"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -9,7 +10,7 @@ import (
 
 func main() {
 	var commands []*cli.Command
-	for _, r := range datasource.Registry {
+	for _, r := range fs.Registry {
 		cmd := datasource.OptionsToCLIFlags(r)
 		commands = append(commands, cmd)
 	}

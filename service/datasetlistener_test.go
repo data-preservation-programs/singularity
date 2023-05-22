@@ -3,8 +3,8 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"io"

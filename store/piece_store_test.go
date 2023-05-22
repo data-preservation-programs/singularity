@@ -1,8 +1,8 @@
 package store
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/multiformats/go-varint"
 	"github.com/stretchr/testify/assert"

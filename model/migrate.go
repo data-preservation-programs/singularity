@@ -66,6 +66,7 @@ func AutoMigrate(db *gorm.DB) error {
 }
 
 func DropAll(db *gorm.DB) error {
+	logger.Info("Dropping all tables")
 	for _, table := range Tables {
 		err := db.Migrator().DropTable(table)
 		if err != nil {

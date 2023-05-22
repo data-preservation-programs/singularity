@@ -5,6 +5,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/data-preservation-programs/singularity/handler/admin"
+	"github.com/data-preservation-programs/singularity/handler/dataset"
+	"github.com/data-preservation-programs/singularity/handler/datasource/status"
+	"github.com/data-preservation-programs/singularity/handler/deal"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
+	fs2 "github.com/rclone/rclone/fs"
 	"io"
 	"io/fs"
 	"net/http"
@@ -16,18 +23,16 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
-	_ "github.com/data-preservation-programs/go-singularity/api/docs"
-	"github.com/data-preservation-programs/go-singularity/cmd/embed"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/handler/dataset"
-	"github.com/data-preservation-programs/go-singularity/handler/deal"
-	"github.com/data-preservation-programs/go-singularity/handler/deal/schedule"
-	"github.com/data-preservation-programs/go-singularity/handler/wallet"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/service"
+	_ "github.com/data-preservation-programs/singularity/api/docs"
+	"github.com/data-preservation-programs/singularity/cmd/embed"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/data-preservation-programs/singularity/handler"
+	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
@@ -57,7 +62,7 @@ type Server struct {
 // UploadFile godoc
 // @Summary Upload a file to a dataset
 // @Description Upload a file to a dataset
-// @Tags Dataset
+// @Tags Data Source
 // @Accept mpfd
 // @Produce text/plain
 // @Param dataset query string true "Dataset name"
@@ -127,15 +132,14 @@ func (s Server) UploadFile(c echo.Context) error {
 	}
 
 	s.db.WithContext(c.Request().Context()).Create(&model.Item{
-		ScannedAt:    now,
-		SourceID:     source.ID,
-		Type:         model.File,
+		ScannedAt: now,
+		SourceID:  source.ID,
+		//TODO Type:         model.File,
 		Path:         dstPath,
-		Size:         uint64(written),
+		Size:         written,
 		Offset:       0,
-		Length:       uint64(written),
-		LastModified: &lastModified,
-		Version:      0,
+		Length:       written,
+		LastModified: lastModified,
 	})
 
 	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))
@@ -200,7 +204,7 @@ func (s Server) getSource(ctx context.Context, datasetName string) (model.Source
 }
 
 type ItemInfo struct {
-	Type     model.ItemType `json:"type"`
+	//TODO Type     model.ItemType `json:"type"`
 	Path     string         `json:"path"`
 	SourceID uint32         `json:"sourceId"`
 }
@@ -208,7 +212,7 @@ type ItemInfo struct {
 // PushItem godoc
 // @Summary Push an item to the staging area
 // @Description Push an item to the staging area
-// @Tags Dataset
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param item body ItemInfo true "Item"
@@ -262,22 +266,19 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	handler, err := s.datasourceHandlerResolver.GetHandler(source)
+	handler, err := s.datasourceHandlerResolver.Resolve(c.Request().Context(), source)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	// source and item does not match
-	if source.Type.GetSupportedItemType() != itemInfo.Type {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d does not support item type %s", itemInfo.SourceID, itemInfo.Type))
-	}
+	// TODO: source and item does not match
 
 	// item is not a subpath of source path
 	if !strings.HasPrefix(itemInfo.Path, source.Path) {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: item path %s is not a subpath of source path %s", itemInfo.Path, source.Path))
 	}
 
-	size, lastModified, err := handler.Check(c.Request().Context(), itemInfo.Path)
+	entry, err := handler.Check(c.Request().Context(), itemInfo.Path)
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
@@ -285,11 +286,10 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 	err = s.db.WithContext(c.Request().Context()).Create(&model.Item{
 		ScannedAt:    time.Now().UTC(),
 		SourceID:     source.ID,
-		Type:         itemInfo.Type,
 		Path:         itemInfo.Path,
-		Size:         size,
-		Length:       size,
-		LastModified: lastModified,
+		Size:         entry.Size(),
+		Length:       entry.Size(),
+		LastModified: entry.ModTime(c.Request().Context()),
 	}).Error
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
@@ -300,16 +300,12 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 
 func Run(c *cli.Context) error {
 	db := database.MustOpenFromCLI(c)
-	err := model.InitializeEncryption(c.String("password"), db)
-	if err != nil {
-		return err
-	}
 	bind := c.String("bind")
 	stagingDir := c.String("staging-dir")
 	return Server{db: db, bind: bind, stagingDir: stagingDir,
-		datasourceHandlerResolver: datasource.NewDefaultHandlerResolver(),
+		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 		datasets:                  make(map[string]model.Source),
-		contentProvider:           &service.ContentProviderService{DB: db, Resolver: datasource.NewDefaultHandlerResolver()},
+		contentProvider:           &service.ContentProviderService{DB: db, Resolver: &datasource.DefaultHandlerResolver{}},
 	}.Run(c)
 }
 
@@ -330,6 +326,10 @@ func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 		// Get path parameters
 		for i := 1; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
+			if paramType == reflect.TypeOf(c.Request().Context()) {
+				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
+				continue
+			}
 			if paramType.Kind() == reflect.String {
 				if len(c.ParamValues()) < i {
 					logger.Error("Invalid handler function signature.")
@@ -377,52 +377,159 @@ func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 	}
 }
 
+func lowerCamelToSnake(s string) string {
+	var result []rune
+	for i, r := range s {
+		if i > 0 && unicode.IsUpper(r) {
+			result = append(result, '_')
+		}
+		result = append(result, unicode.ToLower(r))
+	}
+	return string(result)
+}
+
+func (d Server) HandlePostSource(c echo.Context) error {
+	t := c.Param("type")
+	datasetName := c.Param("datasetName")
+	dataset, err := database.FindDatasetByName(d.db.WithContext(c.Request().Context()), datasetName)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, "Dataset not found.")
+	}
+	if err != nil {
+		return errors.Wrap(err, "Failed to find dataset.")
+	}
+
+	r, err := fs2.Find(t)
+	if err != nil {
+		return c.String(http.StatusNotFound, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	body := map[string]string{}
+	err = c.Bind(&body)
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	path := body["sourcePath"]
+	if path == "" {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: sourcePath is required"))
+	}
+	if r.Prefix == "local" {
+		path, err = filepath.Abs(path)
+		if err != nil {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("failed to get absolute path: %s", err.Error()))
+		}
+	}
+	config := map[string]string{}
+	for k, v := range body {
+		if k != "sourcePath" {
+			config[lowerCamelToSnake(k)] = v
+		}
+	}
+
+	source := model.Source{
+		DatasetID:           dataset.ID,
+		Type:                r.Prefix,
+		Path:                path,
+		Metadata:            model.Metadata(config),
+		PushOnly:            false,
+		ScanIntervalSeconds: 0,
+		ScanningState:       model.Ready,
+	}
+
+	handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Request().Context(), source)
+	if err != nil {
+		return errors.Wrap(err, "failed to resolve handler")
+	}
+
+	_, err = handler.List(c.Request().Context(), "")
+	if err != nil {
+		return errors.Wrap(err, "failed to check source")
+	}
+
+	dir := model.Directory{
+		Name: path,
+	}
+	err = d.db.WithContext(c.Request().Context()).Create(&dir).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to create directory")
+	}
+
+	source.RootDirectoryID = dir.ID
+	err = d.db.WithContext(c.Request().Context()).Create(&source).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to create source")
+	}
+
+	return c.JSON(http.StatusOK, source)
+}
+
 func (d Server) setupRoutes(e *echo.Echo) {
-	e.GET("/admin/api/piece/metadata/:piece", d.GetMetadataHandler)
+	// Admin
+	e.POST("/api/admin/reset", d.toEchoHandler(admin.ResetHandler))
+	e.POST("/api/admin/init", d.toEchoHandler(admin.InitHandler))
 
-	e.POST("/admin/api/dataset/upload", d.UploadFile)
+	// Dataset
+	e.POST("/api/dataset", d.toEchoHandler(dataset.CreateHandler))
+	e.PATCH("/api/dataset/:datasetName", d.toEchoHandler(dataset.UpdateHandler))
+	e.DELETE("/api/dataset/:datasetName", d.toEchoHandler(dataset.RemoveHandler))
+	e.POST("/api/dataset/:datasetName/piece", d.toEchoHandler(dataset.AddPieceHandler))
+	e.GET("/api/datasets", d.toEchoHandler(dataset.ListHandler))
+	e.GET("/api/dataset/:datasetName/pieces", d.toEchoHandler(dataset.ListPiecesHandler))
 
-	e.POST("/admin/api/dataset/push", d.PushItem)
+	// Wallet
+	e.POST("/api/wallet", d.toEchoHandler(wallet.ImportHandler))
+	e.GET("/api/wallets", d.toEchoHandler(wallet.ListHandler))
+	e.POST("/api/wallet/remote", d.toEchoHandler(wallet.AddRemoteHandler))
+	e.DELETE("/api/wallet/:address", d.toEchoHandler(wallet.RemoveHandler))
 
-	e.POST("/admin/api/init", d.toEchoHandler(handler.InitHandler))
+	// Data source
+	e.POST("/api/dataset/:datasetName/source/:type", d.HandlePostSource)
+	e.GET("/api/sources", func(c echo.Context) error {
+		datasetName := c.QueryParam("dataset")
+		sources, err := datasource2.ListSourceHandler(d.db.WithContext(c.Request().Context()), datasetName)
+		if err != nil {
+			return err.HttpResponse(c)
+		}
+		return c.JSON(http.StatusOK, sources)
+	})
+	e.PATCH("/api/source/:id", d.toEchoHandler(datasource2.UpdateSourceHandler))
+	// Data source status
+	e.DELETE("/api/source/:id", d.toEchoHandler(datasource2.RemoveSourceHandler))
+	e.POST("/api/source/:id/check", d.toEchoHandler(datasource2.CheckSourceHandler))
+	e.GET("/api/source/:id/summary", d.toEchoHandler(status.GetSourceSummaryHandler))
+	e.GET("/api/source/:id/chunks", d.toEchoHandler(status.GetSourceChunksHandler))
+	e.GET("/api/source/:id/items", func(c echo.Context) error {
+		id := c.Param("id")
+		chunkID := c.QueryParam("chunk_id")
+		items, err := status.GetSourceItemsHandler(d.db.WithContext(c.Request().Context()), id, chunkID)
+		if err != nil {
+			return err.HttpResponse(c)
+		}
+		return c.JSON(http.StatusOK, items)
+	})
 
-	e.POST("/admin/api/dataset", d.toEchoHandler(dataset.CreateHandler))
+	e.POST("/api/deal/send_manual", d.toEchoHandler(deal.SendManualHandler))
 
-	e.GET("/admin/api/datasets", d.toEchoHandler(dataset.ListHandler))
+	e.POST("/api/deal/schedule", d.toEchoHandler(schedule.CreateHandler))
 
-	e.DELETE("/admin/api/dataset/:name", d.toEchoHandler(dataset.RemoveHandler))
+	e.GET("/api/deal/schedules", d.toEchoHandler(schedule.ListHandler))
 
-	e.POST("/admin/api/dataset/:name/source", d.toEchoHandler(dataset.AddSourceHandler))
+	e.POST("/api/deal/schedule/:id/pause", d.toEchoHandler(schedule.PauseHandler))
 
-	e.GET("/admin/api/dataset/:name/sources", d.toEchoHandler(dataset.ListSourceHandler))
+	e.POST("/api/deal/schedule/:id/resume", d.toEchoHandler(schedule.ResumeHandler))
 
-	e.DELETE("/admin/api/dataset/:name/source/:sourcepath", d.toEchoHandler(dataset.RemoveSourceHandler))
+	e.POST("/api/dataset/:name/wallet/:wallet", d.toEchoHandler(wallet.AddWalletHandler))
 
-	e.POST("/admin/api/dataset/:name/piece", d.toEchoHandler(dataset.AddPieceHandler))
+	e.GET("/api/dataset/:name/wallets", d.toEchoHandler(wallet.ListWalletHandler))
 
-	e.POST("/admin/api/deal/send_manual", d.toEchoHandler(deal.SendManualHandler))
+	e.DELETE("/api/dataset/:name/wallet/:wallet", d.toEchoHandler(wallet.RemoveWalletHandler))
 
-	e.POST("/admin/api/wallet", d.toEchoHandler(wallet.ImportHandler))
+	e.POST("/api/deal/list", d.toEchoHandler(deal.ListHandler))
 
-	e.GET("/admin/api/wallets", d.toEchoHandler(wallet.ListHandler))
+	e.GET("/api/piece/metadata/:piece", d.GetMetadataHandler)
 
-	e.POST("/admin/api/deal/schedule", d.toEchoHandler(schedule.CreateHandler))
+	e.POST("/api/dataset/upload", d.UploadFile)
 
-	e.GET("/admin/api/deal/schedules", d.toEchoHandler(schedule.ListHandler))
-
-	e.POST("/admin/api/deal/schedule/:id/pause", d.toEchoHandler(schedule.PauseHandler))
-
-	e.POST("/admin/api/deal/schedule/:id/resume", d.toEchoHandler(schedule.ResumeHandler))
-
-	e.POST("/admin/api/dataset/:name/wallet/:wallet", d.toEchoHandler(dataset.AddWalletHandler))
-
-	e.GET("/admin/api/dataset/:name/wallets", d.toEchoHandler(dataset.ListWalletHandler))
-
-	e.POST("/admin/api/wallet/remote", d.toEchoHandler(wallet.AddRemoteHandler))
-
-	e.DELETE("/admin/api/dataset/:name/wallet/:wallet", d.toEchoHandler(dataset.RemoveWalletHandler))
-
-	e.POST("/admin/api/deal/list", d.toEchoHandler(deal.ListHandler))
+	e.POST("/api/dataset/push", d.PushItem)
 }
 
 var logger = logging.Logger("api")
@@ -453,7 +560,7 @@ func (d Server) Run(c *cli.Context) error {
 	}))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 

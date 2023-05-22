@@ -1,9 +1,9 @@
-package dataset
+package wallet
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
@@ -11,7 +11,7 @@ import (
 
 // AddWalletHandler godoc
 // @Summary Associate a new wallet with a dataset
-// @Tags Dataset
+// @Tags Wallet
 // @Produce json
 // @Accept json
 // @Param name path string true "Dataset name"
@@ -19,14 +19,14 @@ import (
 // @Success 200 {object} string
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{name}/wallet/{wallet} [post]
+// @Router /dataset/{datasetName}/wallet/{wallet} [post]
 func AddWalletHandler(
 	db *gorm.DB,
-	name string,
+	datasetName string,
 	wallet string,
 ) (string, *handler.Error) {
 	log.SetAllLoggers(log.LevelInfo)
-	if name == "" {
+	if datasetName == "" {
 		return "", handler.NewBadRequestString("dataset name is required")
 	}
 
@@ -34,8 +34,7 @@ func AddWalletHandler(
 		return "", handler.NewBadRequestString("wallet address is required")
 	}
 
-
-	dataset, err := database.FindDatasetByName(db, name)
+	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return "", handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}

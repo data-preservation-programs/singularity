@@ -1,32 +1,39 @@
-package dataset
+package datasource
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
 // ListSourceHandler godoc
 // @Summary List all sources for a dataset
-// @Tags Dataset
-// @Param name path string true "Dataset name"
+// @Tags Data Source
 // @Accept json
 // @Produce json
+// @Param dataset query string false "Dataset name"
 // @Success 200 {array} model.Source
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{name}/sources [get]
+// @Router /sources [get]
 func ListSourceHandler(
 	db *gorm.DB,
-	name string,
+	datasetName string,
 ) ([]model.Source, *handler.Error) {
 	log.SetAllLoggers(log.LevelInfo)
-	dataset, err := database.FindDatasetByName(db, name)
+	var sources []model.Source
+	if datasetName == "" {
+		err := db.Find(&sources).Error
+		if err != nil {
+			return nil, handler.NewHandlerError(err)
+		}
+		return sources, nil
+	}
+	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}
-	var sources []model.Source
 	err = db.Where("dataset_id = ?", dataset.ID).Find(&sources).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)

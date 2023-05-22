@@ -2,7 +2,7 @@ package replication
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/model"
 )
 
 type WalletChooser struct {

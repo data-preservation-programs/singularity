@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/bcicen/jstream"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
 	"github.com/mitchellh/mapstructure"

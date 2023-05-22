@@ -1,16 +1,16 @@
 package dataset
 
 import (
-	"github.com/data-preservation-programs/go-singularity/cmd/cliutil"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler/dataset"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/urfave/cli/v2"
 )
 
 var AddPieceCmd = &cli.Command{
 	Name:      "add-piece",
 	Usage:     "Manually register a piece (CAR file) with the dataset for deal making purpose",
-	ArgsUsage: "DATASET_ID PIECE_CID PIECE_SIZE",
+	ArgsUsage: "<dataset_name> <piece_cid> <piece_size>",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "file-path",

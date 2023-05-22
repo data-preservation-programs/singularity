@@ -1,4 +1,4 @@
-module github.com/data-preservation-programs/go-singularity
+module github.com/data-preservation-programs/singularity
 
 go 1.19
 

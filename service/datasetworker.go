@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/pack"
+	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
@@ -23,10 +23,20 @@ type DatasetWorker struct {
 	db          *gorm.DB
 	concurrency int
 	threads     []DatasetWorkerThread
+	enableScan  bool
+	enablePack  bool
+	enableDag   bool
 }
 
-func NewDatasetWorker(db *gorm.DB, concurrency int) *DatasetWorker {
-	return &DatasetWorker{db: db, concurrency: concurrency, threads: make([]DatasetWorkerThread, concurrency)}
+func NewDatasetWorker(db *gorm.DB, concurrency int, enableScan bool, enablePack bool, enableDag bool) *DatasetWorker {
+	return &DatasetWorker{
+		db:          db,
+		concurrency: concurrency,
+		threads:     make([]DatasetWorkerThread, concurrency),
+		enableScan:  enableScan,
+		enablePack:  enablePack,
+		enableDag:   enableDag,
+	}
 }
 
 type DatasetWorkerThread struct {
@@ -37,6 +47,9 @@ type DatasetWorkerThread struct {
 	workType                  model.WorkType
 	workingOn                 string
 	datasourceHandlerResolver datasource.HandlerResolver
+	enableScan                bool
+	enablePack                bool
+	enableDag                 bool
 }
 
 func (w DatasetWorker) cleanup() error {
@@ -63,6 +76,9 @@ func (w DatasetWorker) Run(parent context.Context) error {
 			logger:                    log.Logger("worker").With("workerID", id.String()),
 			directoryCache:            map[string]model.Directory{},
 			datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+			enableScan:                w.enableScan,
+			enablePack:                w.enablePack,
+			enableDag:                 w.enableDag,
 		}
 		w.threads[i] = thread
 		go thread.run(ctx, errChan)
@@ -207,6 +223,9 @@ func (w *DatasetWorkerThread) updateInactive() error {
 }
 
 func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
+	if !w.enablePack {
+		return nil, nil
+	}
 	chunk := model.Chunk{}
 	err := w.db.Transaction(
 		func(db *gorm.DB) error {
@@ -248,6 +267,9 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 }
 
 func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
+	if !w.enableScan {
+		return nil, nil
+	}
 	var source model.Source
 	// Find all ready sources or sources that is being processed but does not have a worker id
 	err := w.db.Transaction(
@@ -507,15 +529,14 @@ func (w *DatasetWorkerThread) chunkOnce(
 			}
 			bigItem := remaining.items[si]
 			newItem := model.Item{
-				ScannedAt:    bigItem.ScannedAt,
-				ChunkID:      &chunk.ID,
+				ScannedAt: bigItem.ScannedAt,
+				ChunkID:   &chunk.ID,
 				//TODO Type:         bigItem.Type,
 				Path:         bigItem.Path,
 				Size:         bigItem.Size,
 				Offset:       bigItem.Offset,
 				Length:       remainingSize,
 				LastModified: bigItem.LastModified,
-				Version:      bigItem.Version,
 				SourceID:     source.ID,
 			}
 			err = db.Create(&newItem).Error
@@ -638,7 +659,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 		if err != nil {
 			return errors.Wrap(err, "failed to get source scanner")
 		}
-		entryChan := sourceScanner.Scan(ctx, source.Path, lastPath)
+		entryChan := sourceScanner.Scan(ctx, "", lastPath)
 		for entry := range entryChan {
 			if entry.Error != nil {
 				w.logger.Errorw("failed to scan", "error", entry.Error)
@@ -664,7 +685,6 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 				Offset:       0,
 				Length:       entry.Info.Size(),
 				LastModified: entry.Info.ModTime(ctx),
-				Version:      0,
 			}
 			w.logger.Debugw("found item", "item", item)
 			err = w.ensureParentDirectories(&item, root)

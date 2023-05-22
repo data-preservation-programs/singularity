@@ -1,9 +1,9 @@
 package deal
 
 import (
-	"github.com/data-preservation-programs/go-singularity/cmd/cliutil"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler/deal"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/urfave/cli/v2"
 )
 

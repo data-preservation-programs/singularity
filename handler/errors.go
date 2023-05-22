@@ -42,21 +42,28 @@ func (e *Error) CliError() error {
 
 func NewBadRequestError(err error) *Error {
 	return &Error{
-		Err: err,
+		Err:            err,
 		HTTPStatusCode: http.StatusBadRequest,
 	}
 }
 
 func NewBadRequestString(err string) *Error {
 	return &Error{
-		Err: errors.New(err),
+		Err:            errors.New(err),
 		HTTPStatusCode: http.StatusBadRequest,
+	}
+}
+
+func NewHttpError(code int, err string) *Error {
+	return &Error{
+		Err:            errors.New(err),
+		HTTPStatusCode: code,
 	}
 }
 
 func NewHandlerError(err error) *Error {
 	return &Error{
-		Err: err,
+		Err:            err,
 		HTTPStatusCode: http.StatusInternalServerError,
 	}
 }

@@ -2,8 +2,8 @@ package wallet
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/handler"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/filecoin-project/go-address"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/ybbus/jsonrpc/v3"
@@ -11,10 +11,10 @@ import (
 )
 
 type AddRemoteRequest struct {
-	WalletAddress string `json:"walletAddress"`
-	RemotePeer    string `json:"privateKey"`
-	LotusAPI      string `json:"lotusApi" swaggerignore:"true"`
-	LotusToken    string `json:"lotusToken" swaggerignore:"true"`
+	Address    string `json:"address"`    // Address is the Filecoin full address of the wallet
+	RemotePeer string `json:"remotePeer"` // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
+	LotusAPI   string `json:"lotusApi" swaggerignore:"true"`
+	LotusToken string `json:"lotusToken" swaggerignore:"true"`
 }
 
 // AddRemoteHandler godoc
@@ -31,7 +31,7 @@ func AddRemoteHandler(
 	request AddRemoteRequest,
 ) *handler.Error {
 	address.CurrentNetwork = address.Mainnet
-	addr, err := address.NewFromString(request.WalletAddress)
+	addr, err := address.NewFromString(request.Address)
 	if err != nil {
 		return handler.NewBadRequestString("invalid address")
 	}
@@ -59,7 +59,7 @@ func AddRemoteHandler(
 	var result string
 	err = lotusClient.CallFor(context.Background(), &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return handler.NewBadRequestString("invalid private key")
+		return handler.NewBadRequestString("invalid wallet")
 	}
 
 	wallet := model.Wallet{

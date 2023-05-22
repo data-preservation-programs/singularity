@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler/deal"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -111,11 +110,6 @@ var SendManualCmd = &cli.Command{
 			LotusToken:     cctx.String("lotus-token"),
 		}
 		db := database.MustOpenFromCLI(cctx)
-		err := model.InitializeEncryption(cctx.String("password"), db)
-		if err != nil {
-			return cli.Exit(err.Error(), 1)
-		}
-
 		proposalID, err2 := deal.SendManualHandler(db, proposal)
 		if err2 != nil {
 			return err2.CliError()

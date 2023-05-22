@@ -2,7 +2,7 @@ package datasource
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rclone/rclone/fs"
 	"io"
 	"time"
@@ -18,6 +18,9 @@ type Entry struct {
 
 // Handler is an interface for scanning, reading, opening, and checking items in a data source.
 type Handler interface {
+	// List lists the items at the given path.
+	List(ctx context.Context, path string) ([]fs.DirEntry, error)
+
 	// Scan scans the data source starting at the given path and returns a channel of entries.
 	// The `last` parameter is used to resume scanning from the last entry returned by a previous scan. It is exclusive.
 	// The returned entries must be sorted by path in ascending order.

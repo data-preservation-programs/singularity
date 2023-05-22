@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/store"
+	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/store"
 	"github.com/pkg/errors"
 	"io"
 	"net/http"

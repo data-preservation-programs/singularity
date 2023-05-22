@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/data-preservation-programs/go-singularity/model"
-	"github.com/data-preservation-programs/go-singularity/replication"
-	"github.com/data-preservation-programs/go-singularity/util"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/peer"

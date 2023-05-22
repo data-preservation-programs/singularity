@@ -1,8 +1,8 @@
 package dataset
 
 import (
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestCreateHandler_NoDatasetName(t *testing.T) {
 	db := database.OpenInMemory()
 	defer model.DropAll(db)
 	_, err := CreateHandler(db, CreateRequest{})
-	assert.ErrorContains(err, "dataset name is required")
+	assert.ErrorContains(err, "name is required")
 }
 
 func TestCreateHandler_MinSizeNotValid(t *testing.T) {
@@ -75,7 +75,7 @@ func TestCreateHandler_RecipientsScriptCannotBeUsedTogether(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer model.DropAll(db)
-	_, err := CreateHandler(db, CreateRequest{Name: "test", MinSizeStr: "1GB", MaxSizeStr: "2GB", Recipients: []string{"test"}, Script: "test"})
+	_, err := CreateHandler(db, CreateRequest{Name: "test", MinSizeStr: "1GB", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}, EncryptionScript: "test"})
 	assert.ErrorContains(err, "encryption recipients and script cannot be used together")
 }
 
@@ -83,7 +83,7 @@ func TestCreateHandler_EncryptionNeedsOutputDir(t *testing.T) {
 	assert := assert.New(t)
 	db := database.OpenInMemory()
 	defer model.DropAll(db)
-	_, err := CreateHandler(db, CreateRequest{Name: "test", MinSizeStr: "1GB", MaxSizeStr: "2GB", Recipients: []string{"test"}})
+	_, err := CreateHandler(db, CreateRequest{Name: "test", MinSizeStr: "1GB", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}})
 	assert.ErrorContains(err, "encryption is not compatible with inline preparation")
 }
 

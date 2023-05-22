@@ -1,9 +1,9 @@
 package dataset
 
 import (
-	"github.com/data-preservation-programs/go-singularity/cmd/cliutil"
-	"github.com/data-preservation-programs/go-singularity/database"
-	"github.com/data-preservation-programs/go-singularity/handler/dataset"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,7 +13,7 @@ var ListWalletCmd = &cli.Command{
 	ArgsUsage: "DATASET_NAME",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		wallets, err := dataset.ListWalletHandler(db, c.Args().Get(0))
+		wallets, err := wallet.ListWalletHandler(db, c.Args().Get(0))
 		if err != nil {
 			return err.CliError()
 		}

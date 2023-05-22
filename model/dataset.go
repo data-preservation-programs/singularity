@@ -3,91 +3,13 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 )
 
 type StringSlice []string
 type Metadata map[string]string
-
-func (m Metadata) GetS3Metadata() (S3Metadata, error) {
-	var out S3Metadata
-	err := mapstructure.Decode(m, &out)
-	if err != nil {
-		return S3Metadata{}, errors.Wrap(err, "failed to decode metadata")
-	}
-	if out.SecretAccessKey != "" {
-		secret, err := DecryptFromBase64String(out.SecretAccessKey)
-		if err != nil {
-			return S3Metadata{}, errors.Wrap(err, "failed to decrypt secret access key")
-		}
-		out.SecretAccessKey = string(secret)
-	}
-	return out, nil
-}
-
-func (m Metadata) GetHTTPMetadata() (HTTPMetadata, error) {
-	var out HTTPMetadata
-	err := mapstructure.Decode(m, &out)
-	if err != nil {
-		return HTTPMetadata{}, errors.Wrap(err, "failed to decode metadata")
-	}
-	for k, v := range out.Headers {
-		decrypted, err := DecryptFromBase64String(v)
-		if err != nil {
-			return HTTPMetadata{}, errors.Wrap(err, "failed to decrypt header")
-		}
-		out.Headers[k] = string(decrypted)
-	}
-	return out, nil
-}
-
-func (m S3Metadata) Encode() (Metadata, error) {
-	if m.SecretAccessKey != "" {
-		secret, err := EncryptToBase64String([]byte(m.SecretAccessKey))
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to encrypt secret access key")
-		}
-		m.SecretAccessKey = secret
-	}
-	var out Metadata
-	err := mapstructure.Decode(m, &out)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to encode metadata")
-	}
-	return out, nil
-}
-
-func (m HTTPMetadata) Encode() (Metadata, error) {
-	for k, v := range m.Headers {
-		encrypted, err := EncryptToBase64String([]byte(v))
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to encrypt header")
-		}
-		m.Headers[k] = encrypted
-	}
-	var out Metadata
-	err := mapstructure.Decode(m, &out)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to encode metadata")
-	}
-	return out, nil
-}
-
-type HTTPMetadata struct {
-	Headers map[string]string
-}
-
-type S3Metadata struct {
-	Region          string
-	Endpoint        string
-	AccessKeyID     string
-	SecretAccessKey string
-}
 
 func (ss StringSlice) Value() (driver.Value, error) {
 	return json.Marshal(ss)
@@ -186,11 +108,10 @@ type Source struct {
 	ID                   uint32     `gorm:"primaryKey" json:"id"`
 	CreatedAt            time.Time  `json:"createdAt"`
 	UpdatedAt            time.Time  `json:"updatedAt"`
-	DatasetID            uint32     `gorm:"uniqueIndex:dataset_name" json:"datasetID"`
+	DatasetID            uint32     `gorm:"uniqueIndex:dataset_type_path" json:"datasetId"`
 	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
-	Type                 SourceType `json:"type"`
-	Name                 string     `gorm:"uniqueIndex:dataset_name" json:"name"`
-	Path                 string     `json:"path"`
+	Type                 SourceType `gorm:"uniqueIndex:dataset_type_path" json:"type"`
+	Path                 string     `gorm:"uniqueIndex:dataset_type_path" json:"path"`
 	Metadata             Metadata   `gorm:"type:JSON" json:"metadata"`
 	PushOnly             bool       `json:"pushOnly"`
 	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
@@ -203,89 +124,66 @@ type Source struct {
 	RootDirectory        *Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:CASCADE" json:"rootDirectory,omitempty" swaggerignore:"true"`
 }
 
-func NewSource(source string) (*Source, error) { // Get the absolute path
-	absPath, err := filepath.Abs(source)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get absolute path")
-	}
-
-	// Check if the path exists and is a directory
-	fileInfo, err := os.Stat(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, errors.Wrap(err, "path does not exist")
-		}
-		return nil, errors.Wrap(err, "failed to get file info")
-	}
-
-	if !fileInfo.IsDir() {
-		return nil, errors.New("path is not a directory")
-	}
-
-	return &Source{
-		Type: Local,
-		Path: absPath,
-	}, nil
-}
-
 // Chunk is a grouping of items that are packed into a single CAR.
 type Chunk struct {
-	ID              uint32 `gorm:"primaryKey"`
-	CreatedAt       time.Time
-	SourceID        uint32
-	Source          *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"`
-	PackingState    WorkState
-	PackingWorkerID *string
-	PackingWorker   *Worker `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL"`
-	ErrorMessage    string
-	Items           []Item
+	ID              uint32    `gorm:"primaryKey" json:"id"`
+	CreatedAt       time.Time `json:"createdAt"`
+	SourceID        uint32    `json:"sourceId"`
+	Source          *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
+	PackingState    WorkState `json:"packingState"`
+	PackingWorkerID *string   `json:"packingWorkerId,omitempty"`
+	PackingWorker   *Worker   `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty" swaggerignore:"true"`
+	ErrorMessage    string    `json:"errorMessage"`
+	Items           []Item    `json:"items,omitempty" swaggerignore:"true"`
+	Car             *Car      `json:"car,omitempty"`
 }
 
 // Item makes a reference to the data source item, i.e. a local file.
 type Item struct {
-	ID           uint64 `gorm:"primaryKey"`
-	ScannedAt    time.Time
-	ChunkID      *uint32 `gorm:"index"`
-	Chunk        *Chunk  `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"omitempty"`
-	SourceID     uint32  `gorm:"index"`
-	Source       *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"omitempty"`
-	Path         string
-	Size         int64
-	Offset       int64
-	Length       int64
-	LastModified time.Time
-	Version      uint32
-	CID          string `gorm:"column:cid"`
-	ErrorMessage string
-	DirectoryID  *uint64    `gorm:"index"`
-	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"omitempty"`
+	ID           uint64     `gorm:"primaryKey" json:"id"`
+	ScannedAt    time.Time  `json:"scannedAt"`
+	ChunkID      *uint32    `gorm:"index" json:"chunkId"`
+	Chunk        *Chunk     `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"chunk,omitempty" swaggerignore:"true"`
+	SourceID     uint32     `gorm:"index" json:"sourceId"`
+	Source       *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
+	Path         string     `json:"path"`
+	Size         int64      `json:"size"`
+	Offset       int64      `json:"offset"`
+	Length       int64      `json:"length"`
+	LastModified time.Time  `json:"lastModified"`
+	CID          string     `gorm:"column:cid" json:"cid"`
+	ErrorMessage string     `json:"errorMessage"`
+	DirectoryID  *uint64    `gorm:"index" json:"directoryId"`
+	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"directory,omitempty" swaggerignore:"true"`
 }
 
 // Directory is a link between parent and child directories.
 type Directory struct {
-	ID       uint64 `gorm:"primaryKey"`
-	CID      string `gorm:"column:cid"`
-	Name     string
-	ParentID *uint64    `gorm:"index"`
-	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"omitempty"`
+	ID       uint64     `gorm:"primaryKey" json:"id"`
+	CID      string     `gorm:"column:cid" json:"cid"`
+	Name     string     `json:"name"`
+	ParentID *uint64    `gorm:"index" json:"parentId"`
+	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"parent,omitempty" swaggerignore:"true"`
 }
 
 // Car makes a reference to a CAR file that has been potentially exported to the disk.
 // In the case of inline preparation, the path may be empty so the Car should be constructed
 // on the fly using CarBlock, ItemBlock and RawBlock tables.
 type Car struct {
-	ID        uint32 `gorm:"primaryKey"`
-	CreatedAt time.Time
-	PieceCID  string `gorm:"column:piece_cid;index"`
-	PieceSize int64
-	RootCID   string `gorm:"column:root_cid"`
-	FileSize  int64
-	FilePath  string
-	DatasetID uint32   `gorm:"index"`
-	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"`
-	ChunkID   *uint32
-	Chunk     *Chunk `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"chunk,omitempty"`
-	Header    []byte `swaggerignore:"true"`
+	ID        uint32    `gorm:"primaryKey" json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	PieceCID  string    `gorm:"column:piece_cid;index" json:"pieceCid"`
+	PieceSize int64     `json:"pieceSize"`
+	RootCID   string    `gorm:"column:root_cid" json:"rootCid"`
+	FileSize  int64     `json:"fileSize"`
+	FilePath  string    `json:"filePath"`
+	DatasetID uint32    `gorm:"index" json:"datasetId"`
+	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
+	SourceID  *uint32   `gorm:"index" json:"sourceId"`
+	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
+	ChunkID   *uint32   `json:"chunkId"`
+	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"chunk,omitempty" swaggerignore:"true"`
+	Header    []byte    `json:"header"`
 }
 
 // CarBlock tells us the CIDs of all blocks inside a CAR file
@@ -294,22 +192,22 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
-	CarID uint32
-	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"`
-	CID   string `gorm:"index;column:cid"`
+	CarID uint32 `json:"carId"`
+	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
+	CID   string `gorm:"index;column:cid" json:"cid"`
 	// Offset of the varint inside the CAR
-	CarOffset      int64
-	CarBlockLength int64
+	CarOffset      int64 `json:"carOffset"`
+	CarBlockLength int64 `json:"carBlockLength"`
 	// Value of the varint
-	Varint uint64
+	Varint uint64 `json:"varint"`
 	// Raw block
-	RawBlock []byte
+	RawBlock []byte `json:"rawBlock"`
 	// If block is null, this block is a part of an item
-	SourceID   uint32
-	Source     *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"`
-	ItemID     *uint64
-	Item       *Item `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"`
-	ItemOffset int64
+	SourceID   uint32  `json:"sourceId"`
+	Source     *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
+	ItemID     *uint64 `json:"itemId"`
+	Item       *Item   `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE" json:"item,omitempty" swaggerignore:"true"`
+	ItemOffset int64   `json:"itemOffset"`
 	// Common
-	BlockLength int64
+	BlockLength int64 `json:"blockLength"`
 }

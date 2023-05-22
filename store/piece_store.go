@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/data-preservation-programs/go-singularity/datasource"
-	"github.com/data-preservation-programs/go-singularity/model"
+	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
