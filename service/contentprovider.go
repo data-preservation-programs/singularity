@@ -177,7 +177,7 @@ func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pie
 	}
 
 	var carBlocks []model.CarBlock
-	err = s.DB.WithContext(ctx).Preload("Source").Preload("Item").Where("car_id = ?", car.ID).
+	err = s.DB.WithContext(ctx).Preload("Item.Source").Where("car_id = ?", car.ID).
 		Find(&carBlocks).Error
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to query for CAR items: %w", err)

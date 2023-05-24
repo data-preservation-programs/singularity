@@ -492,6 +492,7 @@ func (d Server) setupRoutes(e *echo.Echo) {
 		return c.JSON(http.StatusOK, sources)
 	})
 	e.PATCH("/api/source/:id", d.toEchoHandler(datasource2.UpdateSourceHandler))
+	e.POST("/api/source/:id/rescan", d.toEchoHandler(datasource2.RescanSourceHandler))
 	// Data source status
 	e.DELETE("/api/source/:id", d.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/check", d.toEchoHandler(datasource2.CheckSourceHandler))

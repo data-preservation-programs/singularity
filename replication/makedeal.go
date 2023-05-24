@@ -139,7 +139,7 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 	transfer := proposal120.Transfer{
 		Size: uint64(car.FileSize),
 	}
-	url := strings.Replace(schedule.URLTemplate, "{PIECE_CID}", car.PieceCID, 1)
+	url := strings.Replace(schedule.URLTemplate, "{PIECE_CID}", cid.MustParse(car.PieceCID).String(), 1)
 	isOnline := url != ""
 	if isOnline {
 		transferParams := &proposal120.HttpRequest{URL: url}
@@ -264,7 +264,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse provider address")
 	}
-	label, err := proposal110.NewLabelFromString(car.RootCID)
+	label, err := proposal110.NewLabelFromString(cid.MustParse(car.RootCID).String())
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse label")
 	}

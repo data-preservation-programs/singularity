@@ -63,7 +63,7 @@ func ImportHandler(
 	}
 
 	err = db.Transaction(func(db *gorm.DB) error {
-		return db.Where("ID = ?", wallet.ID).Attrs(wallet).FirstOrCreate(&wallet).Error
+		return db.Create(&wallet).Error
 	})
 	if err != nil {
 		return handler.NewHandlerError(err)

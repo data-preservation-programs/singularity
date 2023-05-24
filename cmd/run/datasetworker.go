@@ -34,12 +34,19 @@ var DatasetWorkerCmd = &cli.Command{
 			EnvVars: []string{"DATASET_WORKER_ENABLE_DAG"},
 			Value:   true,
 		},
+		&cli.BoolFlag{
+			Name:    "exit-on-complete",
+			Usage:   "Exit the worker when there is no more work to do",
+			EnvVars: []string{"DATASET_WORKER_EXIT_ON_COMPLETE"},
+			Value:   false,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 		worker := service.NewDatasetWorker(
 			db,
 			c.Int("concurrency"),
+			c.Bool("exit-on-complete"),
 			c.Bool("enable-scan"),
 			c.Bool("enable-pack"),
 			c.Bool("enable-dag"))

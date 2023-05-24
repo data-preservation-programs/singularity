@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 // AddWalletHandler godoc
 // @Summary Associate a new wallet with a dataset
 // @Tags Wallet
@@ -45,10 +44,12 @@ func AddWalletHandler(
 		return "", handler.NewBadRequestString("failed to find wallet: " + err.Error())
 	}
 
-	err = db.Create(&model.WalletAssignment{
-		DatasetID: dataset.ID,
-		WalletID: w.ID,
-	}).Error
+	err = database.DoRetry(func() error {
+		return db.Create(&model.WalletAssignment{
+			DatasetID: dataset.ID,
+			WalletID:  w.ID,
+		}).Error
+	})
 
 	if err != nil {
 		return "", handler.NewBadRequestString("failed to create wallet assignment: " + err.Error())

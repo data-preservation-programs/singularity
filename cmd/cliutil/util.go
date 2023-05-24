@@ -3,9 +3,12 @@ package cliutil
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/fatih/color"
+	"github.com/ipfs/go-cid"
 	"github.com/rodaine/table"
 	"reflect"
+	"strings"
 )
 
 var fieldNamesToSkip = []string{
@@ -64,6 +67,13 @@ func printTable(objects interface{}) {
 			if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
 				continue
 			}
+			if strings.Contains(field.Name, "CID") && field.Type.Kind() == reflect.Slice {
+				c, err := cid.Parse([]byte(fieldValue.Interface().(model.CIDBytes)))
+				if err == nil {
+					row = append(row, c.String())
+					continue
+				}
+			}
 			row = append(row, fieldValue.Interface())
 		}
 		tbl.AddRow(row...)
@@ -96,6 +106,13 @@ func printSingleObject(obj interface{}) {
 		fieldValue := value.Field(i)
 		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
 			continue
+		}
+		if strings.Contains(field.Name, "CID") && field.Type.Kind() == reflect.Slice {
+			c, err := cid.Parse([]byte(fieldValue.Interface().(model.CIDBytes)))
+			if err == nil {
+				row = append(row, c.String())
+				continue
+			}
 		}
 		row = append(row, fieldValue.Interface())
 	}

@@ -134,6 +134,6 @@ func (s SpadeAPI) GetEligiblePieces(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	pieceCIDs := underscore.Map(cars, func(car model.Car) string { return car.PieceCID })
+	pieceCIDs := underscore.Map(cars, func(car model.Car) model.CIDBytes { return car.PieceCID })
 	return c.JSON(200, pieceCIDs)
 }

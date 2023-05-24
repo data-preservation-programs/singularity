@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"github.com/data-preservation-programs/singularity/database"
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -20,22 +22,24 @@ import (
 )
 
 type DatasetWorker struct {
-	db          *gorm.DB
-	concurrency int
-	threads     []DatasetWorkerThread
-	enableScan  bool
-	enablePack  bool
-	enableDag   bool
+	db             *gorm.DB
+	concurrency    int
+	threads        []DatasetWorkerThread
+	exitOnComplete bool
+	enableScan     bool
+	enablePack     bool
+	enableDag      bool
 }
 
-func NewDatasetWorker(db *gorm.DB, concurrency int, enableScan bool, enablePack bool, enableDag bool) *DatasetWorker {
+func NewDatasetWorker(db *gorm.DB, concurrency int, exitOnComplete bool, enableScan bool, enablePack bool, enableDag bool) *DatasetWorker {
 	return &DatasetWorker{
-		db:          db,
-		concurrency: concurrency,
-		threads:     make([]DatasetWorkerThread, concurrency),
-		enableScan:  enableScan,
-		enablePack:  enablePack,
-		enableDag:   enableDag,
+		db:             db,
+		concurrency:    concurrency,
+		threads:        make([]DatasetWorkerThread, concurrency),
+		exitOnComplete: exitOnComplete,
+		enableScan:     enableScan,
+		enablePack:     enablePack,
+		enableDag:      enableDag,
 	}
 }
 
@@ -47,6 +51,7 @@ type DatasetWorkerThread struct {
 	workType                  model.WorkType
 	workingOn                 string
 	datasourceHandlerResolver datasource.HandlerResolver
+	exitOnComplete            bool
 	enableScan                bool
 	enablePack                bool
 	enableDag                 bool
@@ -68,7 +73,15 @@ func (w DatasetWorker) Run(parent context.Context) error {
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP, os.Kill, os.Interrupt)
 	errChan := make(chan error)
 
+	if w.db.Dialector.Name() == "sqlite" {
+		healthCheckCleanup(w.db)
+	} else {
+		go StartHealthCheckCleanup(ctx, w.db)
+	}
+
+	var wg sync.WaitGroup
 	for i := 0; i < w.concurrency; i++ {
+		wg.Add(1)
 		id := uuid.New()
 		thread := DatasetWorkerThread{
 			id:                        id,
@@ -76,17 +89,27 @@ func (w DatasetWorker) Run(parent context.Context) error {
 			logger:                    log.Logger("worker").With("workerID", id.String()),
 			directoryCache:            map[string]model.Directory{},
 			datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+			exitOnComplete:            w.exitOnComplete,
 			enableScan:                w.enableScan,
 			enablePack:                w.enablePack,
 			enableDag:                 w.enableDag,
 		}
 		w.threads[i] = thread
-		go thread.run(ctx, errChan)
+		go thread.run(ctx, errChan, &wg)
 	}
 
-	go StartHealthCheckCleanup(ctx, w.db)
+	done := make(chan struct{})
+
+	go func() {
+		wg.Wait()
+		done <- struct{}{}
+	}()
 
 	select {
+	case <-done:
+		log.Logger("worker").Info("All work done, cleaning up")
+		w.cleanup()
+		return nil
 	case <-signalChan:
 		log.Logger("worker").Info("received signal, cleaning up")
 		w.cleanup()
@@ -105,18 +128,26 @@ func (w *DatasetWorkerThread) getState() State {
 	}
 }
 
-func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error) {
+func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
 	defer func() {
 		if err := recover(); err != nil {
 			errChan <- errors.Errorf("panic: %v", err)
 		}
 	}()
 	HealthCheck(w.db, w.id, w.getState)
-	go StartHealthCheck(ctx, w.db, w.id, w.getState)
+	if w.db.Dialector.Name() != "sqlite" {
+		go StartHealthCheck(ctx, w.db, w.id, w.getState)
+	}
 	for {
 		w.directoryCache = map[string]model.Directory{}
 		// 1st, find scanning work
-		source, err := w.findScanWork()
+		var source *model.Source
+		err := database.DoRetry(func() error {
+			var err error
+			source, err = w.findScanWork()
+			return err
+		})
 		if err != nil {
 			w.logger.Errorw("failed to scan", "error", err)
 			goto nextLoop
@@ -125,11 +156,20 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error) {
 			err = w.scan(ctx, *source)
 			if err != nil {
 				w.logger.Errorw("failed to scan", "error", err)
+				newState := model.Error
+				newErrorMessage := err.Error()
+				if errors.Is(err, context.Canceled) {
+					newState = model.Ready
+					newErrorMessage = ""
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+					w.db = w.db.WithContext(ctx)
+				}
 				err = w.db.Model(source).Updates(
 					map[string]interface{}{
-						"scanning_state":         model.Error,
+						"scanning_state":         newState,
 						"scanning_worker_id":     nil,
-						"error_message":          err.Error(),
+						"error_message":          newErrorMessage,
 						"last_scanned_timestamp": time.Now().UTC().Unix(),
 					},
 				).Error
@@ -155,7 +195,12 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error) {
 		// 2nd, find ipld work
 		// 3rd, find packing work
 		{
-			chunk, err := w.findPackWork()
+			var chunk *model.Chunk
+			err = database.DoRetry(func() error {
+				var err error
+				chunk, err = w.findPackWork()
+				return err
+			})
 			if err != nil {
 				w.logger.Errorw("failed to find pack work", "error", err)
 				goto nextLoop
@@ -171,11 +216,20 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error) {
 				)
 				if err != nil {
 					w.logger.Errorw("failed to pack", "error", err)
+					newState := model.Error
+					newErrorMessage := err.Error()
+					if errors.Is(err, context.Canceled) {
+						newState = model.Ready
+						newErrorMessage = ""
+						ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+						defer cancel()
+						w.db = w.db.WithContext(ctx)
+					}
 					err = w.db.Model(chunk).Updates(
 						map[string]interface{}{
-							"packing_state":     model.Error,
+							"packing_state":     newState,
 							"packing_worker_id": nil,
-							"error_message":     err.Error(),
+							"error_message":     newErrorMessage,
 						},
 					).Error
 					if err != nil {
@@ -198,6 +252,10 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error) {
 			}
 		}
 	nextLoop:
+		if w.exitOnComplete {
+			w.logger.Debug("exiting on complete")
+			return
+		}
 		w.logger.Debug("sleeping for a minute")
 		select {
 		case <-ctx.Done():
@@ -241,7 +299,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 			if err != nil {
 				return err
 			}
-			err = db.Model(&chunk).Updates(
+			err = db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
 				map[string]interface{}{
 					"packing_state":     model.Processing,
 					"packing_worker_id": w.id,
@@ -361,8 +419,10 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, root mod
 			Name:     segment,
 			ParentID: &last.ID,
 		}
-		err := w.db.Where("parent_id = ? AND name = ?", last.ID, segment).
-			FirstOrCreate(&newDir).Error
+		err := database.DoRetry(func() error {
+			return w.db.Where("parent_id = ? AND name = ?", last.ID, segment).
+				FirstOrCreate(&newDir).Error
+		})
 		if err != nil {
 			return errors.Wrap(err, "failed to create directory")
 		}
@@ -438,24 +498,26 @@ func (w *DatasetWorkerThread) chunkOnce(
 ) error {
 	// If everything fit, create a chunk. Usually this is the case for the last chunk
 	if remaining.carSize <= dataset.MaxSize {
-		err := w.db.Transaction(
-			func(db *gorm.DB) error {
-				chunk := model.Chunk{
-					SourceID:     source.ID,
-					PackingState: model.Ready,
-				}
-				err := w.db.Create(&chunk).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to create chunk")
-				}
-				err = w.db.Model(&model.Item{}).
-					Where("id IN (?)", remaining.itemIDs()).Update("chunk_id", chunk.ID).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to update items")
-				}
-				return nil
-			},
-		)
+		err := database.DoRetry(func() error {
+			return w.db.Transaction(
+				func(db *gorm.DB) error {
+					chunk := model.Chunk{
+						SourceID:     source.ID,
+						PackingState: model.Ready,
+					}
+					err := w.db.Create(&chunk).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to create chunk")
+					}
+					err = w.db.Model(&model.Item{}).
+						Where("id IN (?)", remaining.itemIDs()).Update("chunk_id", chunk.ID).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to update items")
+					}
+					return nil
+				},
+			)
+		})
 		if err != nil {
 			return errors.Wrap(err, "failed to create chunk")
 		}
@@ -478,27 +540,29 @@ func (w *DatasetWorkerThread) chunkOnce(
 	// s is the size of the chunk for [0:si)
 	if s >= dataset.MinSize || remainingSize <= 0 {
 		// we found a chunk that is between minSize and maxSize
-		err := w.db.Transaction(
-			func(db *gorm.DB) error {
-				chunk := model.Chunk{
-					SourceID:     source.ID,
-					PackingState: model.Ready,
-				}
-				err := w.db.Create(&chunk).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to create chunk")
-				}
-				itemIDs := make([]uint64, len(remaining.items[:si]))
-				for i, item := range remaining.items[:si] {
-					itemIDs[i] = item.ID
-				}
-				err = w.db.Model(&model.Item{}).Where("id IN (?)", itemIDs).Update("chunk_id", chunk.ID).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to update items")
-				}
-				return nil
-			},
-		)
+		err := database.DoRetry(func() error {
+			return w.db.Transaction(
+				func(db *gorm.DB) error {
+					chunk := model.Chunk{
+						SourceID:     source.ID,
+						PackingState: model.Ready,
+					}
+					err := w.db.Create(&chunk).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to create chunk")
+					}
+					itemIDs := make([]uint64, len(remaining.items[:si]))
+					for i, item := range remaining.items[:si] {
+						itemIDs[i] = item.ID
+					}
+					err = w.db.Model(&model.Item{}).Where("id IN (?)", itemIDs).Update("chunk_id", chunk.ID).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to update items")
+					}
+					return nil
+				},
+			)
+		})
 		if err != nil {
 			return errors.Wrap(err, "failed to create chunk")
 		}
@@ -509,56 +573,58 @@ func (w *DatasetWorkerThread) chunkOnce(
 
 	// then, we need to split the next item
 	newRemaining := newRemain()
-	err := w.db.Transaction(
-		func(db *gorm.DB) error {
-			chunk := model.Chunk{
-				SourceID:     source.ID,
-				PackingState: model.Ready,
-			}
-			err := db.Create(&chunk).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to create chunk")
-			}
-			itemIDs := make([]uint64, len(remaining.items[:si]))
-			for i, item := range remaining.items[:si] {
-				itemIDs[i] = item.ID
-			}
-			err = db.Model(&model.Item{}).Where("id IN (?)", itemIDs).Update("chunk_id", chunk.ID).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to update items")
-			}
-			bigItem := remaining.items[si]
-			newItem := model.Item{
-				ScannedAt: bigItem.ScannedAt,
-				ChunkID:   &chunk.ID,
-				//TODO Type:         bigItem.Type,
-				Path:         bigItem.Path,
-				Size:         bigItem.Size,
-				Offset:       bigItem.Offset,
-				Length:       remainingSize,
-				LastModified: bigItem.LastModified,
-				SourceID:     source.ID,
-			}
-			err = db.Create(&newItem).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to create item during chunking")
-			}
-			err = db.Model(&bigItem).Updates(
-				map[string]interface{}{
-					"offset": bigItem.Offset + remainingSize,
-					"length": bigItem.Length - remainingSize,
-				},
-			).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to update item")
-			}
-			newRemaining.add(bigItem)
-			for _, item := range remaining.items[si+1:] {
-				newRemaining.add(item)
-			}
-			return nil
-		},
-	)
+	err := database.DoRetry(func() error {
+		return w.db.Transaction(
+			func(db *gorm.DB) error {
+				chunk := model.Chunk{
+					SourceID:     source.ID,
+					PackingState: model.Ready,
+				}
+				err := db.Create(&chunk).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to create chunk")
+				}
+				itemIDs := make([]uint64, len(remaining.items[:si]))
+				for i, item := range remaining.items[:si] {
+					itemIDs[i] = item.ID
+				}
+				err = db.Model(&model.Item{}).Where("id IN (?)", itemIDs).Update("chunk_id", chunk.ID).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to update items")
+				}
+				bigItem := remaining.items[si]
+				newItem := model.Item{
+					ScannedAt:    bigItem.ScannedAt,
+					ChunkID:      &chunk.ID,
+					Path:         bigItem.Path,
+					Size:         bigItem.Size,
+					Offset:       bigItem.Offset,
+					Length:       remainingSize,
+					LastModified: bigItem.LastModified,
+					SourceID:     source.ID,
+					DirectoryID:  bigItem.DirectoryID,
+				}
+				err = db.Create(&newItem).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to create item during chunking")
+				}
+				err = db.Model(&bigItem).Updates(
+					map[string]interface{}{
+						"offset": bigItem.Offset + remainingSize,
+						"length": bigItem.Length - remainingSize,
+					},
+				).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to update item")
+				}
+				newRemaining.add(bigItem)
+				for _, item := range remaining.items[si+1:] {
+					newRemaining.add(item)
+				}
+				return nil
+			},
+		)
+	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create chunk")
 	}
@@ -587,43 +653,50 @@ func (w *DatasetWorkerThread) pack(
 	if err != nil {
 		return errors.Wrap(err, "failed to pack items")
 	}
-	err = w.db.Transaction(
-		func(db *gorm.DB) error {
-			for itemID, itemCID := range result.ItemCIDs {
-				err := db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", itemCID.String()).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to update cid of item")
+
+	for itemID, itemCID := range result.ItemCIDs {
+		err = database.DoRetry(func() error {
+			return w.db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", itemCID.String()).Error
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to update cid of item")
+		}
+	}
+
+	err = database.DoRetry(func() error {
+		return w.db.Transaction(
+			func(db *gorm.DB) error {
+				car := model.Car{
+					CreatedAt: time.Now().UTC(),
+					PieceCID:  result.PieceCID.Bytes(),
+					PieceSize: result.PieceSize,
+					RootCID:   result.RootCID.Bytes(),
+					FileSize:  result.CarFileSize,
+					FilePath:  result.CarFilePath,
+					ChunkID:   &chunkID,
+					DatasetID: source.DatasetID,
+					Header:    result.Header,
 				}
-			}
-			car := model.Car{
-				CreatedAt: time.Now().UTC(),
-				PieceCID:  result.PieceCID.String(),
-				PieceSize: result.PieceSize,
-				RootCID:   result.RootCID.String(),
-				FileSize:  result.CarFileSize,
-				FilePath:  result.CarFilePath,
-				ChunkID:   &chunkID,
-				DatasetID: source.DatasetID,
-				Header:    result.Header,
-			}
-			err := db.Create(&car).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to create car")
-			}
-			for i, _ := range result.CarBlocks {
-				result.CarBlocks[i].CarID = car.ID
-				result.CarBlocks[i].SourceID = source.ID
-			}
-			err = db.Create(&result.CarBlocks).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to create car blocks")
-			}
-			return nil
-		},
-	)
+				err := db.Create(&car).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to create car")
+				}
+				for i, _ := range result.CarBlocks {
+					result.CarBlocks[i].CarID = car.ID
+				}
+				err = db.CreateInBatches(&result.CarBlocks, 1000).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to create car blocks")
+				}
+				return nil
+			},
+		)
+	})
 	if err != nil {
 		return errors.Wrap(err, "failed to save car")
 	}
+
+	w.logger.With("source", source).Info("finished packing")
 	return nil
 }
 
@@ -677,9 +750,8 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 				continue
 			}
 			item := model.Item{
-				SourceID:  source.ID,
-				ScannedAt: entry.ScannedAt,
-				//TODO Type:         entry.Type,
+				SourceID:     source.ID,
+				ScannedAt:    entry.ScannedAt,
 				Path:         entry.Info.Remote(),
 				Size:         entry.Info.Size(),
 				Offset:       0,
@@ -691,7 +763,9 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 			if err != nil {
 				return errors.Wrap(err, "failed to ensure parent directories")
 			}
-			err = w.db.Create(&item).Error
+			err = database.DoRetry(func() error {
+				return w.db.Create(&item).Error
+			})
 			if err != nil {
 				return errors.Wrap(err, "failed to create item during scanning")
 			}
@@ -713,5 +787,6 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source) err
 		}
 	}
 
+	w.logger.With("source", source).Info("finished scanning")
 	return nil
 }

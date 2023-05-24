@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-log/v2"
@@ -34,7 +35,7 @@ func RemoveSourceHandler(
 	if err != nil {
 		return handler.NewHandlerError(err)
 	}
-	err = db.Delete(&source).Error
+	err = database.DoRetry(func() error { return db.Delete(&source).Error })
 	if err != nil {
 		return handler.NewHandlerError(err)
 	}

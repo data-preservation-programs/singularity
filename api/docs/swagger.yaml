@@ -113,6 +113,1904 @@ definitions:
           to see if it appears.
         type: string
     type: object
+  datasource.AllConfig:
+    properties:
+      acdAuthUrl:
+        description: Auth server URL.
+        type: string
+      acdCheckpoint:
+        description: Checkpoint for internal polling (debug).
+        type: string
+      acdClientId:
+        description: OAuth Client Id.
+        type: string
+      acdClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      acdEncoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      acdTemplinkThreshold:
+        default: 9Gi
+        description: Files >= this size will be downloaded via their tempLink.
+        type: string
+      acdToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      acdTokenUrl:
+        description: Token server url.
+        type: string
+      acdUploadWaitPerGb:
+        default: 3m0s
+        description: Additional time per GiB to wait after a failed complete upload
+          to see if it appears.
+        type: string
+      azureblobAccessTier:
+        description: 'Access tier of blob: hot, cool or archive.'
+        type: string
+      azureblobAccount:
+        description: Azure Storage Account Name.
+        type: string
+      azureblobArchiveTierDelete:
+        default: "false"
+        description: Delete archive tier blobs before overwriting.
+        type: string
+      azureblobChunkSize:
+        default: 4Mi
+        description: Upload chunk size.
+        type: string
+      azureblobClientCertificatePassword:
+        description: Password for the certificate file (optional).
+        type: string
+      azureblobClientCertificatePath:
+        description: Path to a PEM or PKCS12 certificate file including the private
+          key.
+        type: string
+      azureblobClientId:
+        description: The ID of the client in use.
+        type: string
+      azureblobClientSecret:
+        description: One of the service principal's client secrets
+        type: string
+      azureblobClientSendCertificateChain:
+        default: "false"
+        description: Send the certificate chain when using certificate auth.
+        type: string
+      azureblobDisableChecksum:
+        default: "false"
+        description: Don't store MD5 checksum with object metadata.
+        type: string
+      azureblobEncoding:
+        default: Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      azureblobEndpoint:
+        description: Endpoint for the service.
+        type: string
+      azureblobEnvAuth:
+        default: "false"
+        description: Read credentials from runtime (environment variables, CLI or
+          MSI).
+        type: string
+      azureblobKey:
+        description: Storage Account Shared Key.
+        type: string
+      azureblobListChunk:
+        default: "5000"
+        description: Size of blob list.
+        type: string
+      azureblobMemoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      azureblobMemoryPoolUseMmap:
+        default: "false"
+        description: Whether to use mmap buffers in internal memory pool.
+        type: string
+      azureblobMsiClientId:
+        description: Object ID of the user-assigned MSI to use, if any.
+        type: string
+      azureblobMsiMiResId:
+        description: Azure resource ID of the user-assigned MSI to use, if any.
+        type: string
+      azureblobMsiObjectId:
+        description: Object ID of the user-assigned MSI to use, if any.
+        type: string
+      azureblobNoCheckContainer:
+        default: "false"
+        description: If set, don't attempt to check the container exists or create
+          it.
+        type: string
+      azureblobNoHeadObject:
+        default: "false"
+        description: If set, do not do HEAD before GET when getting objects.
+        type: string
+      azureblobPassword:
+        description: The user's password
+        type: string
+      azureblobPublicAccess:
+        description: 'Public access level of a container: blob or container.'
+        type: string
+      azureblobSasUrl:
+        description: SAS URL for container level access only.
+        type: string
+      azureblobServicePrincipalFile:
+        description: Path to file containing credentials for use with a service principal.
+        type: string
+      azureblobTenant:
+        description: ID of the service principal's tenant. Also called its directory
+          ID.
+        type: string
+      azureblobUploadConcurrency:
+        default: "16"
+        description: Concurrency for multipart uploads.
+        type: string
+      azureblobUploadCutoff:
+        description: Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
+        type: string
+      azureblobUseEmulator:
+        default: "false"
+        description: Uses local storage emulator if provided as 'true'.
+        type: string
+      azureblobUseMsi:
+        default: "false"
+        description: Use a managed service identity to authenticate (only works in
+          Azure).
+        type: string
+      azureblobUsername:
+        description: User name (usually an email address)
+        type: string
+      b2Account:
+        description: Account ID or Application Key ID.
+        type: string
+      b2ChunkSize:
+        default: 96Mi
+        description: Upload chunk size.
+        type: string
+      b2CopyCutoff:
+        default: 4Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      b2DisableChecksum:
+        default: "false"
+        description: Disable checksums for large (> upload cutoff) files.
+        type: string
+      b2DownloadAuthDuration:
+        default: 1w
+        description: Time before the authorization token will expire in s or suffix
+          ms|s|m|h|d.
+        type: string
+      b2DownloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      b2Encoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      b2Endpoint:
+        description: Endpoint for the service.
+        type: string
+      b2HardDelete:
+        default: "false"
+        description: Permanently delete files on remote removal, otherwise hide files.
+        type: string
+      b2Key:
+        description: Application Key.
+        type: string
+      b2MemoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      b2MemoryPoolUseMmap:
+        default: "false"
+        description: Whether to use mmap buffers in internal memory pool.
+        type: string
+      b2TestMode:
+        description: A flag string for X-Bz-Test-Mode header for debugging.
+        type: string
+      b2UploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      b2VersionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      b2Versions:
+        default: "false"
+        description: Include old versions in directory listings.
+        type: string
+      boxAccessToken:
+        description: Box App Primary Access Token
+        type: string
+      boxAuthUrl:
+        description: Auth server URL.
+        type: string
+      boxBoxConfigFile:
+        description: Box App config.json location
+        type: string
+      boxBoxSubType:
+        default: user
+        type: string
+      boxClientId:
+        description: OAuth Client Id.
+        type: string
+      boxClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      boxCommitRetries:
+        default: "100"
+        description: Max number of times to try committing a multipart file.
+        type: string
+      boxEncoding:
+        default: Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      boxListChunk:
+        default: "1000"
+        description: Size of listing chunk 1-1000.
+        type: string
+      boxOwnedBy:
+        description: Only show items owned by the login (email address) passed in.
+        type: string
+      boxRootFolderId:
+        default: "0"
+        description: Fill in for rclone to use a non root folder as its starting point.
+        type: string
+      boxToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      boxTokenUrl:
+        description: Token server url.
+        type: string
+      boxUploadCutoff:
+        default: 50Mi
+        description: Cutoff for switching to multipart upload (>= 50 MiB).
+        type: string
+      cryptDirectoryNameEncryption:
+        default: "true"
+        description: Option to either encrypt directory names or leave them intact.
+        type: string
+      cryptFilenameEncoding:
+        default: base32
+        description: How to encode the encrypted filename to text string.
+        type: string
+      cryptFilenameEncryption:
+        default: standard
+        description: How to encrypt the filenames.
+        type: string
+      cryptNoDataEncryption:
+        default: "false"
+        description: Option to either encrypt file data or leave it unencrypted.
+        type: string
+      cryptPassword:
+        description: Password or pass phrase for encryption.
+        type: string
+      cryptPassword2:
+        description: Password or pass phrase for salt.
+        type: string
+      cryptRemote:
+        description: Remote to encrypt/decrypt.
+        type: string
+      cryptServerSideAcrossConfigs:
+        default: "false"
+        description: Allow server-side operations (e.g. copy) to work across different
+          crypt configs.
+        type: string
+      cryptShowMapping:
+        default: "false"
+        description: For all files listed show how the names encrypt.
+        type: string
+      driveAcknowledgeAbuse:
+        default: "false"
+        description: Set to allow files which return cannotDownloadAbusiveFile to
+          be downloaded.
+        type: string
+      driveAllowImportNameChange:
+        default: "false"
+        description: Allow the filetype to change when uploading Google docs.
+        type: string
+      driveAlternateExport:
+        default: "false"
+        description: 'Deprecated: No longer needed.'
+        type: string
+      driveAuthOwnerOnly:
+        default: "false"
+        description: Only consider files owned by the authenticated user.
+        type: string
+      driveAuthUrl:
+        description: Auth server URL.
+        type: string
+      driveChunkSize:
+        default: 8Mi
+        description: Upload chunk size.
+        type: string
+      driveClientId:
+        description: Google Application Client Id
+        type: string
+      driveClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      driveCopyShortcutContent:
+        default: "false"
+        description: Server side copy contents of shortcuts instead of the shortcut.
+        type: string
+      driveDisableHttp2:
+        default: "true"
+        description: Disable drive using http2.
+        type: string
+      driveEncoding:
+        default: InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      driveExportFormats:
+        default: docx,xlsx,pptx,svg
+        description: Comma separated list of preferred formats for downloading Google
+          docs.
+        type: string
+      driveFormats:
+        description: 'Deprecated: See export_formats.'
+        type: string
+      driveImpersonate:
+        description: Impersonate this user when using a service account.
+        type: string
+      driveImportFormats:
+        description: Comma separated list of preferred formats for uploading Google
+          docs.
+        type: string
+      driveKeepRevisionForever:
+        default: "false"
+        description: Keep new head revision of each file forever.
+        type: string
+      driveListChunk:
+        default: "1000"
+        description: Size of listing chunk 100-1000, 0 to disable.
+        type: string
+      drivePacerBurst:
+        default: "100"
+        description: Number of API calls to allow without sleeping.
+        type: string
+      drivePacerMinSleep:
+        default: 100ms
+        description: Minimum time to sleep between API calls.
+        type: string
+      driveResourceKey:
+        description: Resource key for accessing a link-shared file.
+        type: string
+      driveRootFolderId:
+        description: ID of the root folder.
+        type: string
+      driveScope:
+        description: Scope that rclone should use when requesting access from drive.
+        type: string
+      driveServerSideAcrossConfigs:
+        default: "false"
+        description: Allow server-side operations (e.g. copy) to work across different
+          drive configs.
+        type: string
+      driveServiceAccountCredentials:
+        description: Service Account Credentials JSON blob.
+        type: string
+      driveServiceAccountFile:
+        description: Service Account Credentials JSON file path.
+        type: string
+      driveSharedWithMe:
+        default: "false"
+        description: Only show files that are shared with me.
+        type: string
+      driveSizeAsQuota:
+        default: "false"
+        description: Show sizes as storage quota usage, not actual size.
+        type: string
+      driveSkipChecksumGphotos:
+        default: "false"
+        description: Skip MD5 checksum on Google photos and videos only.
+        type: string
+      driveSkipDanglingShortcuts:
+        default: "false"
+        description: If set skip dangling shortcut files.
+        type: string
+      driveSkipGdocs:
+        default: "false"
+        description: Skip google documents in all listings.
+        type: string
+      driveSkipShortcuts:
+        default: "false"
+        description: If set skip shortcut files.
+        type: string
+      driveStarredOnly:
+        default: "false"
+        description: Only show files that are starred.
+        type: string
+      driveStopOnDownloadLimit:
+        default: "false"
+        description: Make download limit errors be fatal.
+        type: string
+      driveStopOnUploadLimit:
+        default: "false"
+        description: Make upload limit errors be fatal.
+        type: string
+      driveTeamDrive:
+        description: ID of the Shared Drive (Team Drive).
+        type: string
+      driveToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      driveTokenUrl:
+        description: Token server url.
+        type: string
+      driveTrashedOnly:
+        default: "false"
+        description: Only show files that are in the trash.
+        type: string
+      driveUploadCutoff:
+        default: 8Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      driveUseCreatedDate:
+        default: "false"
+        description: Use file created date instead of modified date.
+        type: string
+      driveUseSharedDate:
+        default: "false"
+        description: Use date file was shared instead of modified date.
+        type: string
+      driveUseTrash:
+        default: "true"
+        description: Send files to the trash instead of deleting permanently.
+        type: string
+      driveV2DownloadMinSize:
+        default: "off"
+        description: If Object's are greater, use drive v2 API to download.
+        type: string
+      dropboxAuthUrl:
+        description: Auth server URL.
+        type: string
+      dropboxBatchCommitTimeout:
+        default: 10m0s
+        description: Max time to wait for a batch to finish committing
+        type: string
+      dropboxBatchMode:
+        default: sync
+        description: Upload file batching sync|async|off.
+        type: string
+      dropboxBatchSize:
+        default: "0"
+        description: Max number of files in upload batch.
+        type: string
+      dropboxBatchTimeout:
+        default: 0s
+        description: Max time to allow an idle upload batch before uploading.
+        type: string
+      dropboxChunkSize:
+        default: 48Mi
+        description: Upload chunk size (< 150Mi).
+        type: string
+      dropboxClientId:
+        description: OAuth Client Id.
+        type: string
+      dropboxClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      dropboxEncoding:
+        default: Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      dropboxImpersonate:
+        description: Impersonate this user when using a business account.
+        type: string
+      dropboxSharedFiles:
+        default: "false"
+        description: Instructs rclone to work on individual shared files.
+        type: string
+      dropboxSharedFolders:
+        default: "false"
+        description: Instructs rclone to work on shared folders.
+        type: string
+      dropboxToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      dropboxTokenUrl:
+        description: Token server url.
+        type: string
+      fichierApiKey:
+        description: Your API Key, get it from https://1fichier.com/console/params.pl.
+        type: string
+      fichierEncoding:
+        default: Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      fichierFilePassword:
+        description: If you want to download a shared file that is password protected,
+          add this parameter.
+        type: string
+      fichierFolderPassword:
+        description: If you want to list the files in a shared folder that is password
+          protected, add this parameter.
+        type: string
+      fichierSharedFolder:
+        description: If you want to download a shared folder, add this parameter.
+        type: string
+      filefabricEncoding:
+        default: Slash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      filefabricPermanentToken:
+        description: Permanent Authentication Token.
+        type: string
+      filefabricRootFolderId:
+        description: ID of the root folder.
+        type: string
+      filefabricToken:
+        description: Session Token.
+        type: string
+      filefabricTokenExpiry:
+        description: Token expiry time.
+        type: string
+      filefabricUrl:
+        description: URL of the Enterprise File Fabric to connect to.
+        type: string
+      filefabricVersion:
+        description: Version read from the file fabric.
+        type: string
+      ftpAskPassword:
+        default: "false"
+        description: Allow asking for FTP password when needed.
+        type: string
+      ftpCloseTimeout:
+        default: 1m0s
+        description: Maximum time to wait for a response to close.
+        type: string
+      ftpConcurrency:
+        default: "0"
+        description: Maximum number of FTP simultaneous connections, 0 for unlimited.
+        type: string
+      ftpDisableEpsv:
+        default: "false"
+        description: Disable using EPSV even if server advertises support.
+        type: string
+      ftpDisableMlsd:
+        default: "false"
+        description: Disable using MLSD even if server advertises support.
+        type: string
+      ftpDisableTls13:
+        default: "false"
+        description: Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+        type: string
+      ftpDisableUtf8:
+        default: "false"
+        description: Disable using UTF-8 even if server advertises support.
+        type: string
+      ftpEncoding:
+        default: Slash,Del,Ctl,RightSpace,Dot
+        description: The encoding for the backend.
+        type: string
+      ftpExplicitTls:
+        default: "false"
+        description: Use Explicit FTPS (FTP over TLS).
+        type: string
+      ftpForceListHidden:
+        default: "false"
+        description: Use LIST -a to force listing of hidden files and folders. This
+          will disable the use of MLSD.
+        type: string
+      ftpHost:
+        description: FTP host to connect to.
+        type: string
+      ftpIdleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      ftpNoCheckCertificate:
+        default: "false"
+        description: Do not verify the TLS certificate of the server.
+        type: string
+      ftpPass:
+        description: FTP password.
+        type: string
+      ftpPort:
+        default: "21"
+        description: FTP port number.
+        type: string
+      ftpShutTimeout:
+        default: 1m0s
+        description: Maximum time to wait for data connection closing status.
+        type: string
+      ftpTls:
+        default: "false"
+        description: Use Implicit FTPS (FTP over TLS).
+        type: string
+      ftpTlsCacheSize:
+        default: "32"
+        description: Size of TLS session cache for all control and data connections.
+        type: string
+      ftpUser:
+        default: shane
+        description: FTP username.
+        type: string
+      ftpWritingMdtm:
+        default: "false"
+        description: Use MDTM to set modification time (VsFtpd quirk)
+        type: string
+      gcsAnonymous:
+        default: "false"
+        description: Access public buckets and objects without credentials.
+        type: string
+      gcsAuthUrl:
+        description: Auth server URL.
+        type: string
+      gcsBucketAcl:
+        description: Access Control List for new buckets.
+        type: string
+      gcsBucketPolicyOnly:
+        default: "false"
+        description: Access checks should use bucket-level IAM policies.
+        type: string
+      gcsClientId:
+        description: OAuth Client Id.
+        type: string
+      gcsClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      gcsDecompress:
+        default: "false"
+        description: If set this will decompress gzip encoded objects.
+        type: string
+      gcsEncoding:
+        default: Slash,CrLf,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      gcsEndpoint:
+        description: Endpoint for the service.
+        type: string
+      gcsEnvAuth:
+        default: "false"
+        description: Get GCP IAM credentials from runtime (environment variables or
+          instance meta data if no env vars).
+        type: string
+      gcsLocation:
+        description: Location for the newly created buckets.
+        type: string
+      gcsNoCheckBucket:
+        default: "false"
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: string
+      gcsObjectAcl:
+        description: Access Control List for new objects.
+        type: string
+      gcsProjectNumber:
+        description: Project number.
+        type: string
+      gcsServiceAccountCredentials:
+        description: Service Account Credentials JSON blob.
+        type: string
+      gcsServiceAccountFile:
+        description: Service Account Credentials JSON file path.
+        type: string
+      gcsStorageClass:
+        description: The storage class to use when storing objects in Google Cloud
+          Storage.
+        type: string
+      gcsToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      gcsTokenUrl:
+        description: Token server url.
+        type: string
+      gphotosAuthUrl:
+        description: Auth server URL.
+        type: string
+      gphotosClientId:
+        description: OAuth Client Id.
+        type: string
+      gphotosClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      gphotosEncoding:
+        default: Slash,CrLf,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      gphotosIncludeArchived:
+        default: "false"
+        description: Also view and download archived media.
+        type: string
+      gphotosReadOnly:
+        default: "false"
+        description: Set to make the Google Photos backend read only.
+        type: string
+      gphotosReadSize:
+        default: "false"
+        description: Set to read the size of media items.
+        type: string
+      gphotosStartYear:
+        default: "2000"
+        description: Year limits the photos to be downloaded to those which are uploaded
+          after the given year.
+        type: string
+      gphotosToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      gphotosTokenUrl:
+        description: Token server url.
+        type: string
+      hdfsDataTransferProtection:
+        description: 'Kerberos data transfer protection: authentication|integrity|privacy.'
+        type: string
+      hdfsEncoding:
+        default: Slash,Colon,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hdfsNamenode:
+        description: Hadoop name node and port.
+        type: string
+      hdfsServicePrincipalName:
+        description: Kerberos service principal name for the namenode.
+        type: string
+      hdfsUsername:
+        description: Hadoop user name.
+        type: string
+      hidriveAuthUrl:
+        description: Auth server URL.
+        type: string
+      hidriveChunkSize:
+        default: 48Mi
+        description: Chunksize for chunked uploads.
+        type: string
+      hidriveClientId:
+        description: OAuth Client Id.
+        type: string
+      hidriveClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      hidriveDisableFetchingMemberCount:
+        default: "false"
+        description: Do not fetch number of objects in directories unless it is absolutely
+          necessary.
+        type: string
+      hidriveEncoding:
+        default: Slash,Dot
+        description: The encoding for the backend.
+        type: string
+      hidriveEndpoint:
+        default: https://api.hidrive.strato.com/2.1
+        description: Endpoint for the service.
+        type: string
+      hidriveRootPrefix:
+        default: /
+        description: The root/parent folder for all paths.
+        type: string
+      hidriveScopeAccess:
+        default: rw
+        description: Access permissions that rclone should use when requesting access
+          from HiDrive.
+        type: string
+      hidriveScopeRole:
+        default: user
+        description: User-level that rclone should use when requesting access from
+          HiDrive.
+        type: string
+      hidriveToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      hidriveTokenUrl:
+        description: Token server url.
+        type: string
+      hidriveUploadConcurrency:
+        default: "4"
+        description: Concurrency for chunked uploads.
+        type: string
+      hidriveUploadCutoff:
+        default: 96Mi
+        description: Cutoff/Threshold for chunked uploads.
+        type: string
+      httpHeaders:
+        description: Set HTTP headers for all transactions.
+        type: string
+      httpNoHead:
+        default: "false"
+        description: Don't use HEAD requests.
+        type: string
+      httpNoSlash:
+        default: "false"
+        description: Set this if the site doesn't end directories with /.
+        type: string
+      httpUrl:
+        description: URL of HTTP host to connect to.
+        type: string
+      internetarchiveAccessKeyId:
+        description: IAS3 Access Key.
+        type: string
+      internetarchiveDisableChecksum:
+        default: "true"
+        description: Don't ask the server to test against MD5 checksum calculated
+          by rclone.
+        type: string
+      internetarchiveEncoding:
+        default: Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      internetarchiveEndpoint:
+        default: https://s3.us.archive.org
+        description: IAS3 Endpoint.
+        type: string
+      internetarchiveFrontEndpoint:
+        default: https://archive.org
+        description: Host of InternetArchive Frontend.
+        type: string
+      internetarchiveSecretAccessKey:
+        description: IAS3 Secret Key (password).
+        type: string
+      internetarchiveWaitArchive:
+        default: 0s
+        description: Timeout for waiting the server's processing tasks (specifically
+          archive and book_op) to finish.
+        type: string
+      jottacloudEncoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      jottacloudHardDelete:
+        default: "false"
+        description: Delete files permanently rather than putting them into the trash.
+        type: string
+      jottacloudMd5MemoryLimit:
+        default: 10Mi
+        description: Files bigger than this will be cached on disk to calculate the
+          MD5 if required.
+        type: string
+      jottacloudNoVersions:
+        default: "false"
+        description: Avoid server side versioning by deleting files and recreating
+          files instead of overwriting them.
+        type: string
+      jottacloudTrashedOnly:
+        default: "false"
+        description: Only show files that are in the trash.
+        type: string
+      jottacloudUploadResumeLimit:
+        default: 10Mi
+        description: Files bigger than this can be resumed if the upload fail's.
+        type: string
+      koofrEncoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      koofrEndpoint:
+        description: The Koofr API endpoint to use.
+        type: string
+      koofrMountid:
+        description: Mount ID of the mount to use.
+        type: string
+      koofrPassword:
+        description: Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).
+        type: string
+      koofrProvider:
+        description: Choose your storage provider.
+        type: string
+      koofrSetmtime:
+        default: "true"
+        description: Does the backend support setting modification time.
+        type: string
+      koofrUser:
+        description: Your user name.
+        type: string
+      localCaseInsensitive:
+        default: "false"
+        description: Force the filesystem to report itself as case insensitive.
+        type: string
+      localCaseSensitive:
+        default: "false"
+        description: Force the filesystem to report itself as case sensitive.
+        type: string
+      localCopyLinks:
+        default: "false"
+        description: Follow symlinks and copy the pointed to item.
+        type: string
+      localEncoding:
+        default: Slash,Dot
+        description: The encoding for the backend.
+        type: string
+      localLinks:
+        default: "false"
+        description: Translate symlinks to/from regular files with a '.rclonelink'
+          extension.
+        type: string
+      localNoCheckUpdated:
+        default: "false"
+        description: Don't check to see if the files change during upload.
+        type: string
+      localNoPreallocate:
+        default: "false"
+        description: Disable preallocation of disk space for transferred files.
+        type: string
+      localNoSetModtime:
+        default: "false"
+        description: Disable setting modtime.
+        type: string
+      localNoSparse:
+        default: "false"
+        description: Disable sparse files for multi-thread downloads.
+        type: string
+      localNounc:
+        default: "false"
+        description: Disable UNC (long path names) conversion on Windows.
+        type: string
+      localOneFileSystem:
+        default: "false"
+        description: Don't cross filesystem boundaries (unix/macOS only).
+        type: string
+      localSkipLinks:
+        default: "false"
+        description: Don't warn about skipped symlinks.
+        type: string
+      localUnicodeNormalization:
+        default: "false"
+        description: Apply unicode NFC normalization to paths and filenames.
+        type: string
+      localZeroSizeLinks:
+        default: "false"
+        description: Assume the Stat size of links is zero (and read them instead)
+          (deprecated).
+        type: string
+      mailruCheckHash:
+        default: "true"
+        description: What should copy do if file checksum is mismatched or invalid.
+        type: string
+      mailruEncoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      mailruPass:
+        description: Password.
+        type: string
+      mailruQuirks:
+        description: Comma separated list of internal maintenance flags.
+        type: string
+      mailruSpeedupEnable:
+        default: "true"
+        description: Skip full upload if there is another file with same data hash.
+        type: string
+      mailruSpeedupFilePatterns:
+        default: '*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf'
+        description: Comma separated list of file name patterns eligible for speedup
+          (put by hash).
+        type: string
+      mailruSpeedupMaxDisk:
+        default: 3Gi
+        description: This option allows you to disable speedup (put by hash) for large
+          files.
+        type: string
+      mailruSpeedupMaxMemory:
+        default: 32Mi
+        description: Files larger than the size given below will always be hashed
+          on disk.
+        type: string
+      mailruUser:
+        description: User name (usually email).
+        type: string
+      mailruUserAgent:
+        description: HTTP user agent used internally by client.
+        type: string
+      megaDebug:
+        default: "false"
+        description: Output more debug from Mega.
+        type: string
+      megaEncoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      megaHardDelete:
+        default: "false"
+        description: Delete files permanently rather than putting them into the trash.
+        type: string
+      megaPass:
+        description: Password.
+        type: string
+      megaUseHttps:
+        default: "false"
+        description: Use HTTPS for transfers.
+        type: string
+      megaUser:
+        description: User name.
+        type: string
+      netstorageAccount:
+        description: Set the NetStorage account name
+        type: string
+      netstorageHost:
+        description: Domain+path of NetStorage host to connect to.
+        type: string
+      netstorageProtocol:
+        default: https
+        description: Select between HTTP or HTTPS protocol.
+        type: string
+      netstorageSecret:
+        description: Set the NetStorage account secret/G2O key for authentication.
+        type: string
+      onedriveAccessScopes:
+        default: Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All
+          offline_access
+        description: Set scopes to be requested by rclone.
+        type: string
+      onedriveAuthUrl:
+        description: Auth server URL.
+        type: string
+      onedriveChunkSize:
+        default: 10Mi
+        description: Chunk size to upload files with - must be multiple of 320k (327,680
+          bytes).
+        type: string
+      onedriveClientId:
+        description: OAuth Client Id.
+        type: string
+      onedriveClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      onedriveDisableSitePermission:
+        default: "false"
+        description: Disable the request for Sites.Read.All permission.
+        type: string
+      onedriveDriveId:
+        description: The ID of the drive to use.
+        type: string
+      onedriveDriveType:
+        description: The type of the drive (personal | business | documentLibrary).
+        type: string
+      onedriveEncoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      onedriveExposeOnenoteFiles:
+        default: "false"
+        description: Set to make OneNote files show up in directory listings.
+        type: string
+      onedriveHashType:
+        default: auto
+        description: Specify the hash in use for the backend.
+        type: string
+      onedriveLinkPassword:
+        description: Set the password for links created by the link command.
+        type: string
+      onedriveLinkScope:
+        default: anonymous
+        description: Set the scope of the links created by the link command.
+        type: string
+      onedriveLinkType:
+        default: view
+        description: Set the type of the links created by the link command.
+        type: string
+      onedriveListChunk:
+        default: "1000"
+        description: Size of listing chunk.
+        type: string
+      onedriveNoVersions:
+        default: "false"
+        description: Remove all versions on modifying operations.
+        type: string
+      onedriveRegion:
+        default: global
+        description: Choose national cloud region for OneDrive.
+        type: string
+      onedriveRootFolderId:
+        description: ID of the root folder.
+        type: string
+      onedriveServerSideAcrossConfigs:
+        default: "false"
+        description: Allow server-side operations (e.g. copy) to work across different
+          onedrive configs.
+        type: string
+      onedriveToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      onedriveTokenUrl:
+        description: Token server url.
+        type: string
+      oosChunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      oosCompartment:
+        description: Object storage compartment OCID
+        type: string
+      oosConfigFile:
+        default: ~/.oci/config
+        description: Path to OCI config file
+        type: string
+      oosConfigProfile:
+        default: Default
+        description: Profile name inside the oci config file
+        type: string
+      oosCopyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      oosCopyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      oosDisableChecksum:
+        default: "false"
+        description: Don't store MD5 checksum with object metadata.
+        type: string
+      oosEncoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      oosEndpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      oosLeavePartsOnError:
+        default: "false"
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: string
+      oosNamespace:
+        description: Object storage namespace
+        type: string
+      oosNoCheckBucket:
+        default: "false"
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: string
+      oosProvider:
+        default: env_auth
+        description: Choose your Auth Provider
+        type: string
+      oosRegion:
+        description: Object storage Region
+        type: string
+      oosSseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        type: string
+      oosSseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        type: string
+      oosSseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        type: string
+      oosSseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        type: string
+      oosSseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        type: string
+      oosStorageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        type: string
+      oosUploadConcurrency:
+        default: "10"
+        description: Concurrency for multipart uploads.
+        type: string
+      oosUploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      opendriveChunkSize:
+        default: 10Mi
+        description: Files will be uploaded in chunks this size.
+        type: string
+      opendriveEncoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      opendrivePassword:
+        description: Password.
+        type: string
+      opendriveUsername:
+        description: Username.
+        type: string
+      pcloudAuthUrl:
+        description: Auth server URL.
+        type: string
+      pcloudClientId:
+        description: OAuth Client Id.
+        type: string
+      pcloudClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      pcloudEncoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      pcloudHostname:
+        default: api.pcloud.com
+        description: Hostname to connect to.
+        type: string
+      pcloudPassword:
+        description: Your pcloud password.
+        type: string
+      pcloudRootFolderId:
+        default: d0
+        description: Fill in for rclone to use a non root folder as its starting point.
+        type: string
+      pcloudToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      pcloudTokenUrl:
+        description: Token server url.
+        type: string
+      pcloudUsername:
+        description: Your pcloud username.
+        type: string
+      premiumizemeApiKey:
+        description: API Key.
+        type: string
+      premiumizemeEncoding:
+        default: Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      putioEncoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      qingstorAccessKeyId:
+        description: QingStor Access Key ID.
+        type: string
+      qingstorChunkSize:
+        default: 4Mi
+        description: Chunk size to use for uploading.
+        type: string
+      qingstorConnectionRetries:
+        default: "3"
+        description: Number of connection retries.
+        type: string
+      qingstorEncoding:
+        default: Slash,Ctl,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      qingstorEndpoint:
+        description: Enter an endpoint URL to connection QingStor API.
+        type: string
+      qingstorEnvAuth:
+        default: "false"
+        description: Get QingStor credentials from runtime.
+        type: string
+      qingstorSecretAccessKey:
+        description: QingStor Secret Access Key (password).
+        type: string
+      qingstorUploadConcurrency:
+        default: "1"
+        description: Concurrency for multipart uploads.
+        type: string
+      qingstorUploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      qingstorZone:
+        description: Zone to connect to.
+        type: string
+      s3AccessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      s3Acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      s3BucketAcl:
+        description: Canned ACL used when creating buckets.
+        type: string
+      s3ChunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      s3CopyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      s3Decompress:
+        default: "false"
+        description: If set this will decompress gzip encoded objects.
+        type: string
+      s3DisableChecksum:
+        default: "false"
+        description: Don't store MD5 checksum with object metadata.
+        type: string
+      s3DisableHttp2:
+        default: "false"
+        description: Disable usage of http2 for S3 backends.
+        type: string
+      s3DownloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      s3Encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      s3Endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      s3EnvAuth:
+        default: "false"
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        type: string
+      s3ForcePathStyle:
+        default: "true"
+        description: If true use path style access if false use virtual hosted style.
+        type: string
+      s3LeavePartsOnError:
+        default: "false"
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: string
+      s3ListChunk:
+        default: "1000"
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: string
+      s3ListUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      s3ListVersion:
+        default: "0"
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: string
+      s3LocationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      s3MaxUploadParts:
+        default: "10000"
+        description: Maximum number of parts in a multipart upload.
+        type: string
+      s3MemoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      s3MemoryPoolUseMmap:
+        default: "false"
+        description: Whether to use mmap buffers in internal memory pool.
+        type: string
+      s3MightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      s3NoCheckBucket:
+        default: "false"
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: string
+      s3NoHead:
+        default: "false"
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: string
+      s3NoHeadObject:
+        default: "false"
+        description: If set, do not do HEAD before GET when getting objects.
+        type: string
+      s3NoSystemMetadata:
+        default: "false"
+        description: Suppress setting and reading of system metadata
+        type: string
+      s3Profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      s3Provider:
+        description: Choose your S3 provider.
+        type: string
+      s3Region:
+        description: Region to connect to.
+        type: string
+      s3RequesterPays:
+        default: "false"
+        description: Enables requester pays option when interacting with S3 bucket.
+        type: string
+      s3SecretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      s3ServerSideEncryption:
+        description: The server-side encryption algorithm used when storing this object
+          in S3.
+        type: string
+      s3SessionToken:
+        description: An AWS session token.
+        type: string
+      s3SharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      s3SseCustomerAlgorithm:
+        description: If using SSE-C, the server-side encryption algorithm used when
+          storing this object in S3.
+        type: string
+      s3SseCustomerKey:
+        description: To use SSE-C you may provide the secret encryption key used to
+          encrypt/decrypt your data.
+        type: string
+      s3SseCustomerKeyBase64:
+        description: If using SSE-C you must provide the secret encryption key encoded
+          in base64 format to encrypt/decrypt your data.
+        type: string
+      s3SseCustomerKeyMd5:
+        description: If using SSE-C you may provide the secret encryption key MD5
+          checksum (optional).
+        type: string
+      s3SseKmsKeyId:
+        description: If using KMS ID you must provide the ARN of Key.
+        type: string
+      s3StorageClass:
+        description: The storage class to use when storing new objects in S3.
+        type: string
+      s3StsEndpoint:
+        description: Endpoint for STS.
+        type: string
+      s3UploadConcurrency:
+        default: "4"
+        description: Concurrency for multipart uploads.
+        type: string
+      s3UploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      s3UseAccelerateEndpoint:
+        default: "false"
+        description: If true use the AWS S3 accelerated endpoint.
+        type: string
+      s3UseMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      s3UsePresignedRequest:
+        default: "false"
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: string
+      s3V2Auth:
+        default: "false"
+        description: If true use v2 authentication.
+        type: string
+      s3VersionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      s3Versions:
+        default: "false"
+        description: Include old versions in directory listings.
+        type: string
+      seafile2fa:
+        default: "false"
+        description: Two-factor authentication ('true' if the account has 2FA enabled).
+        type: string
+      seafileAuthToken:
+        description: Authentication token.
+        type: string
+      seafileCreateLibrary:
+        default: "false"
+        description: Should rclone create a library if it doesn't exist.
+        type: string
+      seafileEncoding:
+        default: Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      seafileLibrary:
+        description: Name of the library.
+        type: string
+      seafileLibraryKey:
+        description: Library password (for encrypted libraries only).
+        type: string
+      seafilePass:
+        description: Password.
+        type: string
+      seafileUrl:
+        description: URL of seafile host to connect to.
+        type: string
+      seafileUser:
+        description: User name (usually email address).
+        type: string
+      sftpAskPassword:
+        default: "false"
+        description: Allow asking for SFTP password when needed.
+        type: string
+      sftpChunkSize:
+        default: 32Ki
+        description: Upload and download chunk size.
+        type: string
+      sftpCiphers:
+        description: Space separated list of ciphers to be used for session encryption,
+          ordered by preference.
+        type: string
+      sftpConcurrency:
+        default: "64"
+        description: The maximum number of outstanding requests for one file
+        type: string
+      sftpDisableConcurrentReads:
+        default: "false"
+        description: If set don't use concurrent reads.
+        type: string
+      sftpDisableConcurrentWrites:
+        default: "false"
+        description: If set don't use concurrent writes.
+        type: string
+      sftpDisableHashcheck:
+        default: "false"
+        description: Disable the execution of SSH commands to determine if remote
+          file hashing is available.
+        type: string
+      sftpHost:
+        description: SSH host to connect to.
+        type: string
+      sftpIdleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      sftpKeyExchange:
+        description: Space separated list of key exchange algorithms, ordered by preference.
+        type: string
+      sftpKeyFile:
+        description: Path to PEM-encoded private key file.
+        type: string
+      sftpKeyFilePass:
+        description: The passphrase to decrypt the PEM-encoded private key file.
+        type: string
+      sftpKeyPem:
+        description: Raw PEM-encoded private key.
+        type: string
+      sftpKeyUseAgent:
+        default: "false"
+        description: When set forces the usage of the ssh-agent.
+        type: string
+      sftpKnownHostsFile:
+        description: Optional path to known_hosts file.
+        type: string
+      sftpMacs:
+        description: Space separated list of MACs (message authentication code) algorithms,
+          ordered by preference.
+        type: string
+      sftpMd5sumCommand:
+        description: The command used to read md5 hashes.
+        type: string
+      sftpPass:
+        description: SSH password, leave blank to use ssh-agent.
+        type: string
+      sftpPathOverride:
+        description: Override path used by SSH shell commands.
+        type: string
+      sftpPort:
+        default: "22"
+        description: SSH port number.
+        type: string
+      sftpPubkeyFile:
+        description: Optional path to public key file.
+        type: string
+      sftpServerCommand:
+        description: Specifies the path or command to run a sftp server on the remote
+          host.
+        type: string
+      sftpSetEnv:
+        description: Environment variables to pass to sftp and commands
+        type: string
+      sftpSetModtime:
+        default: "true"
+        description: Set the modified time on the remote if set.
+        type: string
+      sftpSha1sumCommand:
+        description: The command used to read sha1 hashes.
+        type: string
+      sftpShellType:
+        description: The type of SSH shell on remote server, if any.
+        type: string
+      sftpSkipLinks:
+        default: "false"
+        description: Set to skip any symlinks and any other non regular files.
+        type: string
+      sftpSubsystem:
+        default: sftp
+        description: Specifies the SSH2 subsystem on the remote host.
+        type: string
+      sftpUseFstat:
+        default: "false"
+        description: If set use fstat instead of stat.
+        type: string
+      sftpUseInsecureCipher:
+        default: "false"
+        description: Enable the use of insecure ciphers and key exchange methods.
+        type: string
+      sftpUser:
+        default: shane
+        description: SSH username.
+        type: string
+      sharefileChunkSize:
+        default: 64Mi
+        description: Upload chunk size.
+        type: string
+      sharefileEncoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sharefileEndpoint:
+        description: Endpoint for API calls.
+        type: string
+      sharefileRootFolderId:
+        description: ID of the root folder.
+        type: string
+      sharefileUploadCutoff:
+        default: 128Mi
+        description: Cutoff for switching to multipart upload.
+        type: string
+      siaApiPassword:
+        description: Sia Daemon API Password.
+        type: string
+      siaApiUrl:
+        default: http://127.0.0.1:9980
+        description: Sia daemon API URL, like http://sia.daemon.host:9980.
+        type: string
+      siaEncoding:
+        default: Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      siaUserAgent:
+        default: Sia-Agent
+        description: Siad User Agent
+        type: string
+      smbCaseInsensitive:
+        default: "true"
+        description: Whether the server is configured to be case-insensitive.
+        type: string
+      smbDomain:
+        default: WORKGROUP
+        description: Domain name for NTLM authentication.
+        type: string
+      smbEncoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      smbHideSpecialShare:
+        default: "true"
+        description: Hide special shares (e.g. print$) which users aren't supposed
+          to access.
+        type: string
+      smbHost:
+        description: SMB server hostname to connect to.
+        type: string
+      smbIdleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      smbPass:
+        description: SMB password.
+        type: string
+      smbPort:
+        default: "445"
+        description: SMB port number.
+        type: string
+      smbSpn:
+        description: Service principal name.
+        type: string
+      smbUser:
+        default: shane
+        description: SMB username.
+        type: string
+      storjAccessGrant:
+        description: Access grant.
+        type: string
+      storjApiKey:
+        description: API key.
+        type: string
+      storjPassphrase:
+        description: Encryption passphrase.
+        type: string
+      storjProvider:
+        default: existing
+        description: Choose an authentication method.
+        type: string
+      storjSatelliteAddress:
+        default: us1.storj.io
+        description: Satellite address.
+        type: string
+      sugarsyncAccessKeyId:
+        description: Sugarsync Access Key ID.
+        type: string
+      sugarsyncAppId:
+        description: Sugarsync App ID.
+        type: string
+      sugarsyncAuthorization:
+        description: Sugarsync authorization.
+        type: string
+      sugarsyncAuthorizationExpiry:
+        description: Sugarsync authorization expiry.
+        type: string
+      sugarsyncDeletedId:
+        description: Sugarsync deleted folder id.
+        type: string
+      sugarsyncEncoding:
+        default: Slash,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      sugarsyncHardDelete:
+        default: "false"
+        description: Permanently delete files if true
+        type: string
+      sugarsyncPrivateAccessKey:
+        description: Sugarsync Private Access Key.
+        type: string
+      sugarsyncRefreshToken:
+        description: Sugarsync refresh token.
+        type: string
+      sugarsyncRootId:
+        description: Sugarsync root id.
+        type: string
+      sugarsyncUser:
+        description: Sugarsync user.
+        type: string
+      swiftApplicationCredentialId:
+        description: Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).
+        type: string
+      swiftApplicationCredentialName:
+        description: Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).
+        type: string
+      swiftApplicationCredentialSecret:
+        description: Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).
+        type: string
+      swiftAuth:
+        description: Authentication URL for server (OS_AUTH_URL).
+        type: string
+      swiftAuthToken:
+        description: Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).
+        type: string
+      swiftAuthVersion:
+        default: "0"
+        description: AuthVersion - optional - set to (1,2,3) if your auth URL has
+          no version (ST_AUTH_VERSION).
+        type: string
+      swiftChunkSize:
+        default: 5Gi
+        description: Above this size files will be chunked into a _segments container.
+        type: string
+      swiftDomain:
+        description: User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
+        type: string
+      swiftEncoding:
+        default: Slash,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      swiftEndpointType:
+        default: public
+        description: Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
+        type: string
+      swiftEnvAuth:
+        default: "false"
+        description: Get swift credentials from environment variables in standard
+          OpenStack form.
+        type: string
+      swiftKey:
+        description: API key or password (OS_PASSWORD).
+        type: string
+      swiftLeavePartsOnError:
+        default: "false"
+        description: If true avoid calling abort upload on a failure.
+        type: string
+      swiftNoChunk:
+        default: "false"
+        description: Don't chunk files during streaming upload.
+        type: string
+      swiftNoLargeObjects:
+        default: "false"
+        description: Disable support for static and dynamic large objects
+        type: string
+      swiftRegion:
+        description: Region name - optional (OS_REGION_NAME).
+        type: string
+      swiftStoragePolicy:
+        description: The storage policy to use when creating a new container.
+        type: string
+      swiftStorageUrl:
+        description: Storage URL - optional (OS_STORAGE_URL).
+        type: string
+      swiftTenant:
+        description: Tenant name - optional for v1 auth, this or tenant_id required
+          otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).
+        type: string
+      swiftTenantDomain:
+        description: Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).
+        type: string
+      swiftTenantId:
+        description: Tenant ID - optional for v1 auth, this or tenant required otherwise
+          (OS_TENANT_ID).
+        type: string
+      swiftUser:
+        description: User name to log in (OS_USERNAME).
+        type: string
+      swiftUserId:
+        description: User ID to log in - optional - most swift systems use user and
+          leave this blank (v3 auth) (OS_USER_ID).
+        type: string
+      tardigradeAccessGrant:
+        description: Access grant.
+        type: string
+      tardigradeApiKey:
+        description: API key.
+        type: string
+      tardigradePassphrase:
+        description: Encryption passphrase.
+        type: string
+      tardigradeProvider:
+        default: existing
+        description: Choose an authentication method.
+        type: string
+      tardigradeSatelliteAddress:
+        default: us1.storj.io
+        description: Satellite address.
+        type: string
+      uptoboxAccessToken:
+        description: Your access token.
+        type: string
+      uptoboxEncoding:
+        default: Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      webdavBearerToken:
+        description: Bearer token instead of user/pass (e.g. a Macaroon).
+        type: string
+      webdavBearerTokenCommand:
+        description: Command to run to get a bearer token.
+        type: string
+      webdavEncoding:
+        description: The encoding for the backend.
+        type: string
+      webdavHeaders:
+        description: Set HTTP headers for all transactions.
+        type: string
+      webdavPass:
+        description: Password.
+        type: string
+      webdavUrl:
+        description: URL of http host to connect to.
+        type: string
+      webdavUser:
+        description: User name.
+        type: string
+      webdavVendor:
+        description: Name of the WebDAV site/service/software you are using.
+        type: string
+      yandexAuthUrl:
+        description: Auth server URL.
+        type: string
+      yandexClientId:
+        description: OAuth Client Id.
+        type: string
+      yandexClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      yandexEncoding:
+        default: Slash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      yandexHardDelete:
+        default: "false"
+        description: Delete files permanently rather than putting them into the trash.
+        type: string
+      yandexToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      yandexTokenUrl:
+        description: Token server url.
+        type: string
+      zohoAuthUrl:
+        description: Auth server URL.
+        type: string
+      zohoClientId:
+        description: OAuth Client Id.
+        type: string
+      zohoClientSecret:
+        description: OAuth Client Secret.
+        type: string
+      zohoEncoding:
+        default: Del,Ctl,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      zohoRegion:
+        description: Zoho region to connect to.
+        type: string
+      zohoToken:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      zohoTokenUrl:
+        description: Token server url.
+        type: string
+    type: object
   datasource.AzureblobRequest:
     properties:
       accessTier:
@@ -358,13 +2256,6 @@ definitions:
       path:
         description: Path relative to the data source root
         type: string
-    type: object
-  datasource.Config:
-    additionalProperties:
-      type: string
-    description: The field name can be using snake_case or lowerCamelCase This will
-      override the current config in the database To check what options are available,
-      check the request model of the corresponding data source type
     type: object
   datasource.CryptRequest:
     properties:
@@ -4559,7 +6450,7 @@ paths:
         name: config
         required: true
         schema:
-          $ref: '#/definitions/datasource.Config'
+          $ref: '#/definitions/datasource.AllConfig'
       responses:
         "200":
           description: OK

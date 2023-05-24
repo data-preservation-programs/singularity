@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"github.com/ipfs/go-cid"
 	"time"
 
 	"github.com/pkg/errors"
@@ -10,6 +11,26 @@ import (
 
 type StringSlice []string
 type Metadata map[string]string
+
+type CIDBytes []byte
+
+func (c CIDBytes) MarshalJSON() ([]byte, error) {
+	v, err := cid.Cast(c)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(v.String()), nil
+}
+
+func (c *CIDBytes) UnmarshalJSON(b []byte) error {
+	v, err := cid.Decode(string(b))
+	if err != nil {
+		return err
+	}
+
+	*c = v.Bytes()
+	return nil
+}
 
 func (ss StringSlice) Value() (driver.Value, error) {
 	return json.Marshal(ss)
@@ -151,8 +172,7 @@ type Item struct {
 	Offset       int64      `json:"offset"`
 	Length       int64      `json:"length"`
 	LastModified time.Time  `json:"lastModified"`
-	CID          string     `gorm:"column:cid" json:"cid"`
-	ErrorMessage string     `json:"errorMessage"`
+	CID          CIDBytes   `gorm:"column:cid" json:"cid"`
 	DirectoryID  *uint64    `gorm:"index" json:"directoryId"`
 	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"directory,omitempty" swaggerignore:"true"`
 }
@@ -172,9 +192,9 @@ type Directory struct {
 type Car struct {
 	ID        uint32    `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
-	PieceCID  string    `gorm:"column:piece_cid;index" json:"pieceCid"`
+	PieceCID  CIDBytes  `gorm:"column:piece_cid;index" json:"pieceCid"`
 	PieceSize int64     `json:"pieceSize"`
-	RootCID   string    `gorm:"column:root_cid" json:"rootCid"`
+	RootCID   CIDBytes  `gorm:"column:root_cid" json:"rootCid"`
 	FileSize  int64     `json:"fileSize"`
 	FilePath  string    `json:"filePath"`
 	DatasetID uint32    `gorm:"index" json:"datasetId"`
@@ -192,22 +212,25 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
-	CarID uint32 `json:"carId"`
-	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
-	CID   string `gorm:"index;column:cid" json:"cid"`
+	CarID uint32   `json:"carId"`
+	Car   *Car     `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
+	CID   CIDBytes `gorm:"index;column:cid" json:"cid"`
 	// Offset of the varint inside the CAR
 	CarOffset      int64 `json:"carOffset"`
-	CarBlockLength int64 `json:"carBlockLength"`
+	CarBlockLength int32 `json:"carBlockLength"`
 	// Value of the varint
-	Varint uint64 `json:"varint"`
+	Varint []byte `json:"varint"`
 	// Raw block
 	RawBlock []byte `json:"rawBlock"`
 	// If block is null, this block is a part of an item
-	SourceID   uint32  `json:"sourceId"`
-	Source     *Source `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
 	ItemID     *uint64 `json:"itemId"`
 	Item       *Item   `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE" json:"item,omitempty" swaggerignore:"true"`
 	ItemOffset int64   `json:"itemOffset"`
-	// Common
-	BlockLength int64 `json:"blockLength"`
+}
+
+func (c CarBlock) BlockLength() int32 {
+	if c.RawBlock != nil {
+		return int32(len(c.RawBlock))
+	}
+	return c.CarBlockLength - int32(len(c.CID)) - int32(len(c.Varint))
 }

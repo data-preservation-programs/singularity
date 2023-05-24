@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
@@ -115,7 +116,7 @@ func CreateHandler(
 		return nil, err
 	}
 
-	err2 := db.Create(dataset).Error
+	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) {
 		return nil, handler.NewBadRequestString("dataset with this name already exists")
 	}
