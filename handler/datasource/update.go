@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"context"
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -80,7 +81,7 @@ func UpdateSourceHandler(
 		return nil, handler.NewBadRequestError(err)
 	}
 
-	err = db.Model(&source).Update("metadata", source.Metadata).Error
+	err = database.DoRetry(func() error { return db.Model(&source).Update("metadata", source.Metadata).Error })
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}

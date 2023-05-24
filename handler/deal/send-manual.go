@@ -93,9 +93,9 @@ func SendManualHandler(
 		return "", handler.NewBadRequestString("invalid root CID")
 	}
 	car := model.Car{
-		PieceCID:  request.PieceCID,
+		PieceCID:  cid.MustParse(request.PieceCID).Bytes(),
 		PieceSize: pieceSize,
-		RootCID:   request.RootCID,
+		RootCID:   cid.MustParse(request.RootCID).Bytes(),
 		FileSize:  int64(request.FileSize),
 	}
 	schedule := model.Schedule{

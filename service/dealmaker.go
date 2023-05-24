@@ -6,6 +6,7 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/pkg/errors"
@@ -197,8 +198,8 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 			ClientID:   walletObj.ID,
 			Provider:   schedule.Provider,
 			ProposalID: proposalID,
-			Label:      car.RootCID,
-			PieceCID:   car.PieceCID,
+			Label:      cid.MustParse(car.RootCID).String(),
+			PieceCID:   cid.MustParse(car.PieceCID).String(),
 			PieceSize:  car.PieceSize,
 			Start:      now.Add(schedule.StartDelay),
 			Duration:   schedule.Duration,

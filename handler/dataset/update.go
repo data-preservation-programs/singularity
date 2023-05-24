@@ -13,12 +13,12 @@ import (
 )
 
 type UpdateRequest struct {
-	MinSizeStr           *string   `json:"minSize" default:"30GiB" validate:"optional"`   // Minimum size of the CAR files to be created
-	MaxSizeStr           *string   `json:"maxSize" default:"31.5GiB" validate:"optional"` // Maximum size of the CAR files to be created
-	PieceSizeStr         *string   `json:"pieceSize" default:"" validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
+	MinSizeStr           *string  `json:"minSize" default:"30GiB" validate:"optional"`   // Minimum size of the CAR files to be created
+	MaxSizeStr           *string  `json:"maxSize" default:"31.5GiB" validate:"optional"` // Maximum size of the CAR files to be created
+	PieceSizeStr         *string  `json:"pieceSize" default:"" validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
 	OutputDirs           []string `json:"outputDirs" validate:"optional"`                // Output directory for CAR files. Do not set if using inline preparation
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`      // Public key of the encryption recipient
-	EncryptionScript     *string   `json:"encryptionScript" validate:"optional"`          // EncryptionScript command to run for custom encryption
+	EncryptionScript     *string  `json:"encryptionScript" validate:"optional"`          // EncryptionScript command to run for custom encryption
 }
 
 // UpdateHandler godoc
@@ -53,7 +53,7 @@ func UpdateHandler(
 		return nil, err2
 	}
 
-	err = db.Save(&dataset).Error
+	err = database.DoRetry(func() error { return db.Save(&dataset).Error })
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
@@ -80,7 +80,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) *handler.
 	}
 
 	pieceSize := util.NextPowerOfTwo(uint64(dataset.MaxSize))
-	if request.PieceSizeStr != nil &&  *request.PieceSizeStr != "" {
+	if request.PieceSizeStr != nil && *request.PieceSizeStr != "" {
 		var err error
 		pieceSize, err = humanize.ParseBytes(*request.PieceSizeStr)
 		if err != nil {
@@ -98,7 +98,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) *handler.
 		return handler.NewBadRequestString("piece size cannot be larger than 64 GiB")
 	}
 
-	if dataset.MaxSize*128/127 >= dataset.PieceSize  {
+	if dataset.MaxSize*128/127 >= dataset.PieceSize {
 		return handler.NewBadRequestString("max size needs to be reduced to leave space for padding")
 	}
 

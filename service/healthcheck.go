@@ -40,7 +40,7 @@ func healthCheckCleanup(db *gorm.DB) {
 	}
 
 	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
-	err = db.Model(&model.Source{}).Where("scanning_worker_id NOT IN (?) OR (scanning_worker_id IS NULL AND scanning_state = ?)",
+	err = db.Model(&model.Source{}).Where("(scanning_worker_id NOT IN (?) OR scanning_worker_id IS NULL) AND scanning_state = ?",
 		db.Table("workers").Select("id"), model.Processing).
 		Updates(map[string]interface{}{
 			"scanning_worker_id": nil,
@@ -50,7 +50,7 @@ func healthCheckCleanup(db *gorm.DB) {
 		log.Logger("healthcheck").Errorw("failed to remove stale scanning worker", "error", err)
 	}
 
-	err = db.Model(&model.Chunk{}).Where("packing_worker_id NOT IN (?) OR (packing_worker_id IS NULL AND packing_state = ?)",
+	err = db.Model(&model.Chunk{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
 		db.Table("workers").Select("id"), model.Processing).
 		Updates(map[string]interface{}{
 			"packing_worker_id": nil,

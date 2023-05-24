@@ -44,7 +44,7 @@ func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.B
 		ctx,
 		carBlock.Item.Path,
 		carBlock.CarOffset+carBlock.Item.Offset,
-		carBlock.CarBlockLength)
+		int64(carBlock.CarBlockLength))
 	if err != nil {
 		return nil, err
 	}

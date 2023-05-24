@@ -2795,7 +2795,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.Config"
+                            "$ref": "#/definitions/datasource.AllConfig"
                         }
                     }
                 ],
@@ -3331,6 +3331,2368 @@
                 }
             }
         },
+        "datasource.AllConfig": {
+            "type": "object",
+            "properties": {
+                "acdAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "acdCheckpoint": {
+                    "description": "Checkpoint for internal polling (debug).",
+                    "type": "string"
+                },
+                "acdClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "acdClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "acdEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "acdTemplinkThreshold": {
+                    "description": "Files \u003e= this size will be downloaded via their tempLink.",
+                    "type": "string",
+                    "default": "9Gi"
+                },
+                "acdToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "acdTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "acdUploadWaitPerGb": {
+                    "description": "Additional time per GiB to wait after a failed complete upload to see if it appears.",
+                    "type": "string",
+                    "default": "3m0s"
+                },
+                "azureblobAccessTier": {
+                    "description": "Access tier of blob: hot, cool or archive.",
+                    "type": "string"
+                },
+                "azureblobAccount": {
+                    "description": "Azure Storage Account Name.",
+                    "type": "string"
+                },
+                "azureblobArchiveTierDelete": {
+                    "description": "Delete archive tier blobs before overwriting.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobChunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "4Mi"
+                },
+                "azureblobClientCertificatePassword": {
+                    "description": "Password for the certificate file (optional).",
+                    "type": "string"
+                },
+                "azureblobClientCertificatePath": {
+                    "description": "Path to a PEM or PKCS12 certificate file including the private key.",
+                    "type": "string"
+                },
+                "azureblobClientId": {
+                    "description": "The ID of the client in use.",
+                    "type": "string"
+                },
+                "azureblobClientSecret": {
+                    "description": "One of the service principal's client secrets",
+                    "type": "string"
+                },
+                "azureblobClientSendCertificateChain": {
+                    "description": "Send the certificate chain when using certificate auth.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobDisableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
+                },
+                "azureblobEndpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "azureblobEnvAuth": {
+                    "description": "Read credentials from runtime (environment variables, CLI or MSI).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobKey": {
+                    "description": "Storage Account Shared Key.",
+                    "type": "string"
+                },
+                "azureblobListChunk": {
+                    "description": "Size of blob list.",
+                    "type": "string",
+                    "default": "5000"
+                },
+                "azureblobMemoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "azureblobMemoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobMsiClientId": {
+                    "description": "Object ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "azureblobMsiMiResId": {
+                    "description": "Azure resource ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "azureblobMsiObjectId": {
+                    "description": "Object ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "azureblobNoCheckContainer": {
+                    "description": "If set, don't attempt to check the container exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobNoHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobPassword": {
+                    "description": "The user's password",
+                    "type": "string"
+                },
+                "azureblobPublicAccess": {
+                    "description": "Public access level of a container: blob or container.",
+                    "type": "string"
+                },
+                "azureblobSasUrl": {
+                    "description": "SAS URL for container level access only.",
+                    "type": "string"
+                },
+                "azureblobServicePrincipalFile": {
+                    "description": "Path to file containing credentials for use with a service principal.",
+                    "type": "string"
+                },
+                "azureblobTenant": {
+                    "description": "ID of the service principal's tenant. Also called its directory ID.",
+                    "type": "string"
+                },
+                "azureblobUploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "16"
+                },
+                "azureblobUploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload (\u003c= 256 MiB) (deprecated).",
+                    "type": "string"
+                },
+                "azureblobUseEmulator": {
+                    "description": "Uses local storage emulator if provided as 'true'.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobUseMsi": {
+                    "description": "Use a managed service identity to authenticate (only works in Azure).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "azureblobUsername": {
+                    "description": "User name (usually an email address)",
+                    "type": "string"
+                },
+                "b2Account": {
+                    "description": "Account ID or Application Key ID.",
+                    "type": "string"
+                },
+                "b2ChunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "96Mi"
+                },
+                "b2CopyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4Gi"
+                },
+                "b2DisableChecksum": {
+                    "description": "Disable checksums for large (\u003e upload cutoff) files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "b2DownloadAuthDuration": {
+                    "description": "Time before the authorization token will expire in s or suffix ms|s|m|h|d.",
+                    "type": "string",
+                    "default": "1w"
+                },
+                "b2DownloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "b2Encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "b2Endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "b2HardDelete": {
+                    "description": "Permanently delete files on remote removal, otherwise hide files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "b2Key": {
+                    "description": "Application Key.",
+                    "type": "string"
+                },
+                "b2MemoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "b2MemoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "b2TestMode": {
+                    "description": "A flag string for X-Bz-Test-Mode header for debugging.",
+                    "type": "string"
+                },
+                "b2UploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "b2VersionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "b2Versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "boxAccessToken": {
+                    "description": "Box App Primary Access Token",
+                    "type": "string"
+                },
+                "boxAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "boxBoxConfigFile": {
+                    "description": "Box App config.json location",
+                    "type": "string"
+                },
+                "boxBoxSubType": {
+                    "type": "string",
+                    "default": "user"
+                },
+                "boxClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "boxClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "boxCommitRetries": {
+                    "description": "Max number of times to try committing a multipart file.",
+                    "type": "string",
+                    "default": "100"
+                },
+                "boxEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
+                },
+                "boxListChunk": {
+                    "description": "Size of listing chunk 1-1000.",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "boxOwnedBy": {
+                    "description": "Only show items owned by the login (email address) passed in.",
+                    "type": "string"
+                },
+                "boxRootFolderId": {
+                    "description": "Fill in for rclone to use a non root folder as its starting point.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "boxToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "boxTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "boxUploadCutoff": {
+                    "description": "Cutoff for switching to multipart upload (\u003e= 50 MiB).",
+                    "type": "string",
+                    "default": "50Mi"
+                },
+                "cryptDirectoryNameEncryption": {
+                    "description": "Option to either encrypt directory names or leave them intact.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "cryptFilenameEncoding": {
+                    "description": "How to encode the encrypted filename to text string.",
+                    "type": "string",
+                    "default": "base32"
+                },
+                "cryptFilenameEncryption": {
+                    "description": "How to encrypt the filenames.",
+                    "type": "string",
+                    "default": "standard"
+                },
+                "cryptNoDataEncryption": {
+                    "description": "Option to either encrypt file data or leave it unencrypted.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "cryptPassword": {
+                    "description": "Password or pass phrase for encryption.",
+                    "type": "string"
+                },
+                "cryptPassword2": {
+                    "description": "Password or pass phrase for salt.",
+                    "type": "string"
+                },
+                "cryptRemote": {
+                    "description": "Remote to encrypt/decrypt.",
+                    "type": "string"
+                },
+                "cryptServerSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different crypt configs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "cryptShowMapping": {
+                    "description": "For all files listed show how the names encrypt.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveAcknowledgeAbuse": {
+                    "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveAllowImportNameChange": {
+                    "description": "Allow the filetype to change when uploading Google docs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveAlternateExport": {
+                    "description": "Deprecated: No longer needed.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveAuthOwnerOnly": {
+                    "description": "Only consider files owned by the authenticated user.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "driveChunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
+                "driveClientId": {
+                    "description": "Google Application Client Id",
+                    "type": "string"
+                },
+                "driveClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "driveCopyShortcutContent": {
+                    "description": "Server side copy contents of shortcuts instead of the shortcut.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveDisableHttp2": {
+                    "description": "Disable drive using http2.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "driveEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "InvalidUtf8"
+                },
+                "driveExportFormats": {
+                    "description": "Comma separated list of preferred formats for downloading Google docs.",
+                    "type": "string",
+                    "default": "docx,xlsx,pptx,svg"
+                },
+                "driveFormats": {
+                    "description": "Deprecated: See export_formats.",
+                    "type": "string"
+                },
+                "driveImpersonate": {
+                    "description": "Impersonate this user when using a service account.",
+                    "type": "string"
+                },
+                "driveImportFormats": {
+                    "description": "Comma separated list of preferred formats for uploading Google docs.",
+                    "type": "string"
+                },
+                "driveKeepRevisionForever": {
+                    "description": "Keep new head revision of each file forever.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveListChunk": {
+                    "description": "Size of listing chunk 100-1000, 0 to disable.",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "drivePacerBurst": {
+                    "description": "Number of API calls to allow without sleeping.",
+                    "type": "string",
+                    "default": "100"
+                },
+                "drivePacerMinSleep": {
+                    "description": "Minimum time to sleep between API calls.",
+                    "type": "string",
+                    "default": "100ms"
+                },
+                "driveResourceKey": {
+                    "description": "Resource key for accessing a link-shared file.",
+                    "type": "string"
+                },
+                "driveRootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "driveScope": {
+                    "description": "Scope that rclone should use when requesting access from drive.",
+                    "type": "string"
+                },
+                "driveServerSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different drive configs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveServiceAccountCredentials": {
+                    "description": "Service Account Credentials JSON blob.",
+                    "type": "string"
+                },
+                "driveServiceAccountFile": {
+                    "description": "Service Account Credentials JSON file path.",
+                    "type": "string"
+                },
+                "driveSharedWithMe": {
+                    "description": "Only show files that are shared with me.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveSizeAsQuota": {
+                    "description": "Show sizes as storage quota usage, not actual size.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveSkipChecksumGphotos": {
+                    "description": "Skip MD5 checksum on Google photos and videos only.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveSkipDanglingShortcuts": {
+                    "description": "If set skip dangling shortcut files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveSkipGdocs": {
+                    "description": "Skip google documents in all listings.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveSkipShortcuts": {
+                    "description": "If set skip shortcut files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveStarredOnly": {
+                    "description": "Only show files that are starred.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveStopOnDownloadLimit": {
+                    "description": "Make download limit errors be fatal.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveStopOnUploadLimit": {
+                    "description": "Make upload limit errors be fatal.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveTeamDrive": {
+                    "description": "ID of the Shared Drive (Team Drive).",
+                    "type": "string"
+                },
+                "driveToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "driveTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "driveTrashedOnly": {
+                    "description": "Only show files that are in the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveUploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
+                "driveUseCreatedDate": {
+                    "description": "Use file created date instead of modified date.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveUseSharedDate": {
+                    "description": "Use date file was shared instead of modified date.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "driveUseTrash": {
+                    "description": "Send files to the trash instead of deleting permanently.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "driveV2DownloadMinSize": {
+                    "description": "If Object's are greater, use drive v2 API to download.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "dropboxAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "dropboxBatchCommitTimeout": {
+                    "description": "Max time to wait for a batch to finish committing",
+                    "type": "string",
+                    "default": "10m0s"
+                },
+                "dropboxBatchMode": {
+                    "description": "Upload file batching sync|async|off.",
+                    "type": "string",
+                    "default": "sync"
+                },
+                "dropboxBatchSize": {
+                    "description": "Max number of files in upload batch.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "dropboxBatchTimeout": {
+                    "description": "Max time to allow an idle upload batch before uploading.",
+                    "type": "string",
+                    "default": "0s"
+                },
+                "dropboxChunkSize": {
+                    "description": "Upload chunk size (\u003c 150Mi).",
+                    "type": "string",
+                    "default": "48Mi"
+                },
+                "dropboxClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "dropboxClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "dropboxEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
+                },
+                "dropboxImpersonate": {
+                    "description": "Impersonate this user when using a business account.",
+                    "type": "string"
+                },
+                "dropboxSharedFiles": {
+                    "description": "Instructs rclone to work on individual shared files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "dropboxSharedFolders": {
+                    "description": "Instructs rclone to work on shared folders.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "dropboxToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "dropboxTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "fichierApiKey": {
+                    "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
+                    "type": "string"
+                },
+                "fichierEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
+                },
+                "fichierFilePassword": {
+                    "description": "If you want to download a shared file that is password protected, add this parameter.",
+                    "type": "string"
+                },
+                "fichierFolderPassword": {
+                    "description": "If you want to list the files in a shared folder that is password protected, add this parameter.",
+                    "type": "string"
+                },
+                "fichierSharedFolder": {
+                    "description": "If you want to download a shared folder, add this parameter.",
+                    "type": "string"
+                },
+                "filefabricEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "filefabricPermanentToken": {
+                    "description": "Permanent Authentication Token.",
+                    "type": "string"
+                },
+                "filefabricRootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "filefabricToken": {
+                    "description": "Session Token.",
+                    "type": "string"
+                },
+                "filefabricTokenExpiry": {
+                    "description": "Token expiry time.",
+                    "type": "string"
+                },
+                "filefabricUrl": {
+                    "description": "URL of the Enterprise File Fabric to connect to.",
+                    "type": "string"
+                },
+                "filefabricVersion": {
+                    "description": "Version read from the file fabric.",
+                    "type": "string"
+                },
+                "ftpAskPassword": {
+                    "description": "Allow asking for FTP password when needed.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpCloseTimeout": {
+                    "description": "Maximum time to wait for a response to close.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "ftpConcurrency": {
+                    "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "ftpDisableEpsv": {
+                    "description": "Disable using EPSV even if server advertises support.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpDisableMlsd": {
+                    "description": "Disable using MLSD even if server advertises support.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpDisableTls13": {
+                    "description": "Disable TLS 1.3 (workaround for FTP servers with buggy TLS)",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpDisableUtf8": {
+                    "description": "Disable using UTF-8 even if server advertises support.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,RightSpace,Dot"
+                },
+                "ftpExplicitTls": {
+                    "description": "Use Explicit FTPS (FTP over TLS).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpForceListHidden": {
+                    "description": "Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpHost": {
+                    "description": "FTP host to connect to.",
+                    "type": "string"
+                },
+                "ftpIdleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "ftpNoCheckCertificate": {
+                    "description": "Do not verify the TLS certificate of the server.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpPass": {
+                    "description": "FTP password.",
+                    "type": "string"
+                },
+                "ftpPort": {
+                    "description": "FTP port number.",
+                    "type": "string",
+                    "default": "21"
+                },
+                "ftpShutTimeout": {
+                    "description": "Maximum time to wait for data connection closing status.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "ftpTls": {
+                    "description": "Use Implicit FTPS (FTP over TLS).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "ftpTlsCacheSize": {
+                    "description": "Size of TLS session cache for all control and data connections.",
+                    "type": "string",
+                    "default": "32"
+                },
+                "ftpUser": {
+                    "description": "FTP username.",
+                    "type": "string",
+                    "default": "shane"
+                },
+                "ftpWritingMdtm": {
+                    "description": "Use MDTM to set modification time (VsFtpd quirk)",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gcsAnonymous": {
+                    "description": "Access public buckets and objects without credentials.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gcsAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "gcsBucketAcl": {
+                    "description": "Access Control List for new buckets.",
+                    "type": "string"
+                },
+                "gcsBucketPolicyOnly": {
+                    "description": "Access checks should use bucket-level IAM policies.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gcsClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "gcsClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "gcsDecompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gcsEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,CrLf,InvalidUtf8,Dot"
+                },
+                "gcsEndpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "gcsEnvAuth": {
+                    "description": "Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gcsLocation": {
+                    "description": "Location for the newly created buckets.",
+                    "type": "string"
+                },
+                "gcsNoCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gcsObjectAcl": {
+                    "description": "Access Control List for new objects.",
+                    "type": "string"
+                },
+                "gcsProjectNumber": {
+                    "description": "Project number.",
+                    "type": "string"
+                },
+                "gcsServiceAccountCredentials": {
+                    "description": "Service Account Credentials JSON blob.",
+                    "type": "string"
+                },
+                "gcsServiceAccountFile": {
+                    "description": "Service Account Credentials JSON file path.",
+                    "type": "string"
+                },
+                "gcsStorageClass": {
+                    "description": "The storage class to use when storing objects in Google Cloud Storage.",
+                    "type": "string"
+                },
+                "gcsToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "gcsTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "gphotosAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "gphotosClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "gphotosClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "gphotosEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,CrLf,InvalidUtf8,Dot"
+                },
+                "gphotosIncludeArchived": {
+                    "description": "Also view and download archived media.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gphotosReadOnly": {
+                    "description": "Set to make the Google Photos backend read only.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gphotosReadSize": {
+                    "description": "Set to read the size of media items.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "gphotosStartYear": {
+                    "description": "Year limits the photos to be downloaded to those which are uploaded after the given year.",
+                    "type": "string",
+                    "default": "2000"
+                },
+                "gphotosToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "gphotosTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "hdfsDataTransferProtection": {
+                    "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
+                    "type": "string"
+                },
+                "hdfsEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hdfsNamenode": {
+                    "description": "Hadoop name node and port.",
+                    "type": "string"
+                },
+                "hdfsServicePrincipalName": {
+                    "description": "Kerberos service principal name for the namenode.",
+                    "type": "string"
+                },
+                "hdfsUsername": {
+                    "description": "Hadoop user name.",
+                    "type": "string"
+                },
+                "hidriveAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "hidriveChunkSize": {
+                    "description": "Chunksize for chunked uploads.",
+                    "type": "string",
+                    "default": "48Mi"
+                },
+                "hidriveClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "hidriveClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "hidriveDisableFetchingMemberCount": {
+                    "description": "Do not fetch number of objects in directories unless it is absolutely necessary.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "hidriveEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Dot"
+                },
+                "hidriveEndpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string",
+                    "default": "https://api.hidrive.strato.com/2.1"
+                },
+                "hidriveRootPrefix": {
+                    "description": "The root/parent folder for all paths.",
+                    "type": "string",
+                    "default": "/"
+                },
+                "hidriveScopeAccess": {
+                    "description": "Access permissions that rclone should use when requesting access from HiDrive.",
+                    "type": "string",
+                    "default": "rw"
+                },
+                "hidriveScopeRole": {
+                    "description": "User-level that rclone should use when requesting access from HiDrive.",
+                    "type": "string",
+                    "default": "user"
+                },
+                "hidriveToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "hidriveTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "hidriveUploadConcurrency": {
+                    "description": "Concurrency for chunked uploads.",
+                    "type": "string",
+                    "default": "4"
+                },
+                "hidriveUploadCutoff": {
+                    "description": "Cutoff/Threshold for chunked uploads.",
+                    "type": "string",
+                    "default": "96Mi"
+                },
+                "httpHeaders": {
+                    "description": "Set HTTP headers for all transactions.",
+                    "type": "string"
+                },
+                "httpNoHead": {
+                    "description": "Don't use HEAD requests.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "httpNoSlash": {
+                    "description": "Set this if the site doesn't end directories with /.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "httpUrl": {
+                    "description": "URL of HTTP host to connect to.",
+                    "type": "string"
+                },
+                "internetarchiveAccessKeyId": {
+                    "description": "IAS3 Access Key.",
+                    "type": "string"
+                },
+                "internetarchiveDisableChecksum": {
+                    "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "internetarchiveEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "internetarchiveEndpoint": {
+                    "description": "IAS3 Endpoint.",
+                    "type": "string",
+                    "default": "https://s3.us.archive.org"
+                },
+                "internetarchiveFrontEndpoint": {
+                    "description": "Host of InternetArchive Frontend.",
+                    "type": "string",
+                    "default": "https://archive.org"
+                },
+                "internetarchiveSecretAccessKey": {
+                    "description": "IAS3 Secret Key (password).",
+                    "type": "string"
+                },
+                "internetarchiveWaitArchive": {
+                    "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
+                    "type": "string",
+                    "default": "0s"
+                },
+                "jottacloudEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "jottacloudHardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "jottacloudMd5MemoryLimit": {
+                    "description": "Files bigger than this will be cached on disk to calculate the MD5 if required.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "jottacloudNoVersions": {
+                    "description": "Avoid server side versioning by deleting files and recreating files instead of overwriting them.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "jottacloudTrashedOnly": {
+                    "description": "Only show files that are in the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "jottacloudUploadResumeLimit": {
+                    "description": "Files bigger than this can be resumed if the upload fail's.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "koofrEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "koofrEndpoint": {
+                    "description": "The Koofr API endpoint to use.",
+                    "type": "string"
+                },
+                "koofrMountid": {
+                    "description": "Mount ID of the mount to use.",
+                    "type": "string"
+                },
+                "koofrPassword": {
+                    "description": "Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).",
+                    "type": "string"
+                },
+                "koofrProvider": {
+                    "description": "Choose your storage provider.",
+                    "type": "string"
+                },
+                "koofrSetmtime": {
+                    "description": "Does the backend support setting modification time.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "koofrUser": {
+                    "description": "Your user name.",
+                    "type": "string"
+                },
+                "localCaseInsensitive": {
+                    "description": "Force the filesystem to report itself as case insensitive.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localCaseSensitive": {
+                    "description": "Force the filesystem to report itself as case sensitive.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localCopyLinks": {
+                    "description": "Follow symlinks and copy the pointed to item.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Dot"
+                },
+                "localLinks": {
+                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localNoCheckUpdated": {
+                    "description": "Don't check to see if the files change during upload.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localNoPreallocate": {
+                    "description": "Disable preallocation of disk space for transferred files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localNoSetModtime": {
+                    "description": "Disable setting modtime.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localNoSparse": {
+                    "description": "Disable sparse files for multi-thread downloads.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localNounc": {
+                    "description": "Disable UNC (long path names) conversion on Windows.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localOneFileSystem": {
+                    "description": "Don't cross filesystem boundaries (unix/macOS only).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localSkipLinks": {
+                    "description": "Don't warn about skipped symlinks.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localUnicodeNormalization": {
+                    "description": "Apply unicode NFC normalization to paths and filenames.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "localZeroSizeLinks": {
+                    "description": "Assume the Stat size of links is zero (and read them instead) (deprecated).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "mailruCheckHash": {
+                    "description": "What should copy do if file checksum is mismatched or invalid.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "mailruEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "mailruPass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "mailruQuirks": {
+                    "description": "Comma separated list of internal maintenance flags.",
+                    "type": "string"
+                },
+                "mailruSpeedupEnable": {
+                    "description": "Skip full upload if there is another file with same data hash.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "mailruSpeedupFilePatterns": {
+                    "description": "Comma separated list of file name patterns eligible for speedup (put by hash).",
+                    "type": "string",
+                    "default": "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
+                },
+                "mailruSpeedupMaxDisk": {
+                    "description": "This option allows you to disable speedup (put by hash) for large files.",
+                    "type": "string",
+                    "default": "3Gi"
+                },
+                "mailruSpeedupMaxMemory": {
+                    "description": "Files larger than the size given below will always be hashed on disk.",
+                    "type": "string",
+                    "default": "32Mi"
+                },
+                "mailruUser": {
+                    "description": "User name (usually email).",
+                    "type": "string"
+                },
+                "mailruUserAgent": {
+                    "description": "HTTP user agent used internally by client.",
+                    "type": "string"
+                },
+                "megaDebug": {
+                    "description": "Output more debug from Mega.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "megaEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "megaHardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "megaPass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "megaUseHttps": {
+                    "description": "Use HTTPS for transfers.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "megaUser": {
+                    "description": "User name.",
+                    "type": "string"
+                },
+                "netstorageAccount": {
+                    "description": "Set the NetStorage account name",
+                    "type": "string"
+                },
+                "netstorageHost": {
+                    "description": "Domain+path of NetStorage host to connect to.",
+                    "type": "string"
+                },
+                "netstorageProtocol": {
+                    "description": "Select between HTTP or HTTPS protocol.",
+                    "type": "string",
+                    "default": "https"
+                },
+                "netstorageSecret": {
+                    "description": "Set the NetStorage account secret/G2O key for authentication.",
+                    "type": "string"
+                },
+                "onedriveAccessScopes": {
+                    "description": "Set scopes to be requested by rclone.",
+                    "type": "string",
+                    "default": "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+                },
+                "onedriveAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "onedriveChunkSize": {
+                    "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "onedriveClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "onedriveClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "onedriveDisableSitePermission": {
+                    "description": "Disable the request for Sites.Read.All permission.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "onedriveDriveId": {
+                    "description": "The ID of the drive to use.",
+                    "type": "string"
+                },
+                "onedriveDriveType": {
+                    "description": "The type of the drive (personal | business | documentLibrary).",
+                    "type": "string"
+                },
+                "onedriveEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "onedriveExposeOnenoteFiles": {
+                    "description": "Set to make OneNote files show up in directory listings.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "onedriveHashType": {
+                    "description": "Specify the hash in use for the backend.",
+                    "type": "string",
+                    "default": "auto"
+                },
+                "onedriveLinkPassword": {
+                    "description": "Set the password for links created by the link command.",
+                    "type": "string"
+                },
+                "onedriveLinkScope": {
+                    "description": "Set the scope of the links created by the link command.",
+                    "type": "string",
+                    "default": "anonymous"
+                },
+                "onedriveLinkType": {
+                    "description": "Set the type of the links created by the link command.",
+                    "type": "string",
+                    "default": "view"
+                },
+                "onedriveListChunk": {
+                    "description": "Size of listing chunk.",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "onedriveNoVersions": {
+                    "description": "Remove all versions on modifying operations.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "onedriveRegion": {
+                    "description": "Choose national cloud region for OneDrive.",
+                    "type": "string",
+                    "default": "global"
+                },
+                "onedriveRootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "onedriveServerSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "onedriveToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "onedriveTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "oosChunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "oosCompartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "oosConfigFile": {
+                    "description": "Path to OCI config file",
+                    "type": "string",
+                    "default": "~/.oci/config"
+                },
+                "oosConfigProfile": {
+                    "description": "Profile name inside the oci config file",
+                    "type": "string",
+                    "default": "Default"
+                },
+                "oosCopyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "oosCopyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "oosDisableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "oosEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "oosEndpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "oosLeavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "oosNamespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "oosNoCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "oosProvider": {
+                    "description": "Choose your Auth Provider",
+                    "type": "string",
+                    "default": "env_auth"
+                },
+                "oosRegion": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "oosSseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string"
+                },
+                "oosSseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string"
+                },
+                "oosSseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string"
+                },
+                "oosSseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string"
+                },
+                "oosSseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string"
+                },
+                "oosStorageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard"
+                },
+                "oosUploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "10"
+                },
+                "oosUploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "opendriveChunkSize": {
+                    "description": "Files will be uploaded in chunks this size.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "opendriveEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
+                },
+                "opendrivePassword": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "opendriveUsername": {
+                    "description": "Username.",
+                    "type": "string"
+                },
+                "pcloudAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "pcloudClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "pcloudClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "pcloudEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "pcloudHostname": {
+                    "description": "Hostname to connect to.",
+                    "type": "string",
+                    "default": "api.pcloud.com"
+                },
+                "pcloudPassword": {
+                    "description": "Your pcloud password.",
+                    "type": "string"
+                },
+                "pcloudRootFolderId": {
+                    "description": "Fill in for rclone to use a non root folder as its starting point.",
+                    "type": "string",
+                    "default": "d0"
+                },
+                "pcloudToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "pcloudTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "pcloudUsername": {
+                    "description": "Your pcloud username.",
+                    "type": "string"
+                },
+                "premiumizemeApiKey": {
+                    "description": "API Key.",
+                    "type": "string"
+                },
+                "premiumizemeEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "putioEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "qingstorAccessKeyId": {
+                    "description": "QingStor Access Key ID.",
+                    "type": "string"
+                },
+                "qingstorChunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "4Mi"
+                },
+                "qingstorConnectionRetries": {
+                    "description": "Number of connection retries.",
+                    "type": "string",
+                    "default": "3"
+                },
+                "qingstorEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Ctl,InvalidUtf8"
+                },
+                "qingstorEndpoint": {
+                    "description": "Enter an endpoint URL to connection QingStor API.",
+                    "type": "string"
+                },
+                "qingstorEnvAuth": {
+                    "description": "Get QingStor credentials from runtime.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "qingstorSecretAccessKey": {
+                    "description": "QingStor Secret Access Key (password).",
+                    "type": "string"
+                },
+                "qingstorUploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "1"
+                },
+                "qingstorUploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "qingstorZone": {
+                    "description": "Zone to connect to.",
+                    "type": "string"
+                },
+                "s3AccessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "s3Acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "s3BucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string"
+                },
+                "s3ChunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "s3CopyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "s3Decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3DisableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3DisableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3DownloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "s3Encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "s3Endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "s3EnvAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3ForcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "s3LeavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3ListChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "string",
+                    "default": "1000"
+                },
+                "s3ListUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "s3ListVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "s3LocationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "s3MaxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "string",
+                    "default": "10000"
+                },
+                "s3MemoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "s3MemoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3MightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "s3NoCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3NoHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3NoHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3NoSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3Profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "s3Provider": {
+                    "description": "Choose your S3 provider.",
+                    "type": "string"
+                },
+                "s3Region": {
+                    "description": "Region to connect to.",
+                    "type": "string"
+                },
+                "s3RequesterPays": {
+                    "description": "Enables requester pays option when interacting with S3 bucket.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3SecretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "s3ServerSideEncryption": {
+                    "description": "The server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string"
+                },
+                "s3SessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "s3SharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "s3SseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string"
+                },
+                "s3SseCustomerKey": {
+                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
+                    "type": "string"
+                },
+                "s3SseCustomerKeyBase64": {
+                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
+                    "type": "string"
+                },
+                "s3SseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string"
+                },
+                "s3SseKmsKeyId": {
+                    "description": "If using KMS ID you must provide the ARN of Key.",
+                    "type": "string"
+                },
+                "s3StorageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string"
+                },
+                "s3StsEndpoint": {
+                    "description": "Endpoint for STS.",
+                    "type": "string"
+                },
+                "s3UploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "string",
+                    "default": "4"
+                },
+                "s3UploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "s3UseAccelerateEndpoint": {
+                    "description": "If true use the AWS S3 accelerated endpoint.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3UseMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "s3UsePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3V2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "s3VersionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "s3Versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "seafile2fa": {
+                    "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
+                    "type": "string",
+                    "default": "false"
+                },
+                "seafileAuthToken": {
+                    "description": "Authentication token.",
+                    "type": "string"
+                },
+                "seafileCreateLibrary": {
+                    "description": "Should rclone create a library if it doesn't exist.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "seafileEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
+                },
+                "seafileLibrary": {
+                    "description": "Name of the library.",
+                    "type": "string"
+                },
+                "seafileLibraryKey": {
+                    "description": "Library password (for encrypted libraries only).",
+                    "type": "string"
+                },
+                "seafilePass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "seafileUrl": {
+                    "description": "URL of seafile host to connect to.",
+                    "type": "string"
+                },
+                "seafileUser": {
+                    "description": "User name (usually email address).",
+                    "type": "string"
+                },
+                "sftpAskPassword": {
+                    "description": "Allow asking for SFTP password when needed.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpChunkSize": {
+                    "description": "Upload and download chunk size.",
+                    "type": "string",
+                    "default": "32Ki"
+                },
+                "sftpCiphers": {
+                    "description": "Space separated list of ciphers to be used for session encryption, ordered by preference.",
+                    "type": "string"
+                },
+                "sftpConcurrency": {
+                    "description": "The maximum number of outstanding requests for one file",
+                    "type": "string",
+                    "default": "64"
+                },
+                "sftpDisableConcurrentReads": {
+                    "description": "If set don't use concurrent reads.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpDisableConcurrentWrites": {
+                    "description": "If set don't use concurrent writes.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpDisableHashcheck": {
+                    "description": "Disable the execution of SSH commands to determine if remote file hashing is available.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpHost": {
+                    "description": "SSH host to connect to.",
+                    "type": "string"
+                },
+                "sftpIdleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "sftpKeyExchange": {
+                    "description": "Space separated list of key exchange algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "sftpKeyFile": {
+                    "description": "Path to PEM-encoded private key file.",
+                    "type": "string"
+                },
+                "sftpKeyFilePass": {
+                    "description": "The passphrase to decrypt the PEM-encoded private key file.",
+                    "type": "string"
+                },
+                "sftpKeyPem": {
+                    "description": "Raw PEM-encoded private key.",
+                    "type": "string"
+                },
+                "sftpKeyUseAgent": {
+                    "description": "When set forces the usage of the ssh-agent.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpKnownHostsFile": {
+                    "description": "Optional path to known_hosts file.",
+                    "type": "string"
+                },
+                "sftpMacs": {
+                    "description": "Space separated list of MACs (message authentication code) algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "sftpMd5sumCommand": {
+                    "description": "The command used to read md5 hashes.",
+                    "type": "string"
+                },
+                "sftpPass": {
+                    "description": "SSH password, leave blank to use ssh-agent.",
+                    "type": "string"
+                },
+                "sftpPathOverride": {
+                    "description": "Override path used by SSH shell commands.",
+                    "type": "string"
+                },
+                "sftpPort": {
+                    "description": "SSH port number.",
+                    "type": "string",
+                    "default": "22"
+                },
+                "sftpPubkeyFile": {
+                    "description": "Optional path to public key file.",
+                    "type": "string"
+                },
+                "sftpServerCommand": {
+                    "description": "Specifies the path or command to run a sftp server on the remote host.",
+                    "type": "string"
+                },
+                "sftpSetEnv": {
+                    "description": "Environment variables to pass to sftp and commands",
+                    "type": "string"
+                },
+                "sftpSetModtime": {
+                    "description": "Set the modified time on the remote if set.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "sftpSha1sumCommand": {
+                    "description": "The command used to read sha1 hashes.",
+                    "type": "string"
+                },
+                "sftpShellType": {
+                    "description": "The type of SSH shell on remote server, if any.",
+                    "type": "string"
+                },
+                "sftpSkipLinks": {
+                    "description": "Set to skip any symlinks and any other non regular files.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpSubsystem": {
+                    "description": "Specifies the SSH2 subsystem on the remote host.",
+                    "type": "string",
+                    "default": "sftp"
+                },
+                "sftpUseFstat": {
+                    "description": "If set use fstat instead of stat.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpUseInsecureCipher": {
+                    "description": "Enable the use of insecure ciphers and key exchange methods.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sftpUser": {
+                    "description": "SSH username.",
+                    "type": "string",
+                    "default": "shane"
+                },
+                "sharefileChunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "64Mi"
+                },
+                "sharefileEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "sharefileEndpoint": {
+                    "description": "Endpoint for API calls.",
+                    "type": "string"
+                },
+                "sharefileRootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "sharefileUploadCutoff": {
+                    "description": "Cutoff for switching to multipart upload.",
+                    "type": "string",
+                    "default": "128Mi"
+                },
+                "siaApiPassword": {
+                    "description": "Sia Daemon API Password.",
+                    "type": "string"
+                },
+                "siaApiUrl": {
+                    "description": "Sia daemon API URL, like http://sia.daemon.host:9980.",
+                    "type": "string",
+                    "default": "http://127.0.0.1:9980"
+                },
+                "siaEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "siaUserAgent": {
+                    "description": "Siad User Agent",
+                    "type": "string",
+                    "default": "Sia-Agent"
+                },
+                "smbCaseInsensitive": {
+                    "description": "Whether the server is configured to be case-insensitive.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "smbDomain": {
+                    "description": "Domain name for NTLM authentication.",
+                    "type": "string",
+                    "default": "WORKGROUP"
+                },
+                "smbEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "smbHideSpecialShare": {
+                    "description": "Hide special shares (e.g. print$) which users aren't supposed to access.",
+                    "type": "string",
+                    "default": "true"
+                },
+                "smbHost": {
+                    "description": "SMB server hostname to connect to.",
+                    "type": "string"
+                },
+                "smbIdleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "smbPass": {
+                    "description": "SMB password.",
+                    "type": "string"
+                },
+                "smbPort": {
+                    "description": "SMB port number.",
+                    "type": "string",
+                    "default": "445"
+                },
+                "smbSpn": {
+                    "description": "Service principal name.",
+                    "type": "string"
+                },
+                "smbUser": {
+                    "description": "SMB username.",
+                    "type": "string",
+                    "default": "shane"
+                },
+                "storjAccessGrant": {
+                    "description": "Access grant.",
+                    "type": "string"
+                },
+                "storjApiKey": {
+                    "description": "API key.",
+                    "type": "string"
+                },
+                "storjPassphrase": {
+                    "description": "Encryption passphrase.",
+                    "type": "string"
+                },
+                "storjProvider": {
+                    "description": "Choose an authentication method.",
+                    "type": "string",
+                    "default": "existing"
+                },
+                "storjSatelliteAddress": {
+                    "description": "Satellite address.",
+                    "type": "string",
+                    "default": "us1.storj.io"
+                },
+                "sugarsyncAccessKeyId": {
+                    "description": "Sugarsync Access Key ID.",
+                    "type": "string"
+                },
+                "sugarsyncAppId": {
+                    "description": "Sugarsync App ID.",
+                    "type": "string"
+                },
+                "sugarsyncAuthorization": {
+                    "description": "Sugarsync authorization.",
+                    "type": "string"
+                },
+                "sugarsyncAuthorizationExpiry": {
+                    "description": "Sugarsync authorization expiry.",
+                    "type": "string"
+                },
+                "sugarsyncDeletedId": {
+                    "description": "Sugarsync deleted folder id.",
+                    "type": "string"
+                },
+                "sugarsyncEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Ctl,InvalidUtf8,Dot"
+                },
+                "sugarsyncHardDelete": {
+                    "description": "Permanently delete files if true",
+                    "type": "string",
+                    "default": "false"
+                },
+                "sugarsyncPrivateAccessKey": {
+                    "description": "Sugarsync Private Access Key.",
+                    "type": "string"
+                },
+                "sugarsyncRefreshToken": {
+                    "description": "Sugarsync refresh token.",
+                    "type": "string"
+                },
+                "sugarsyncRootId": {
+                    "description": "Sugarsync root id.",
+                    "type": "string"
+                },
+                "sugarsyncUser": {
+                    "description": "Sugarsync user.",
+                    "type": "string"
+                },
+                "swiftApplicationCredentialId": {
+                    "description": "Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).",
+                    "type": "string"
+                },
+                "swiftApplicationCredentialName": {
+                    "description": "Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).",
+                    "type": "string"
+                },
+                "swiftApplicationCredentialSecret": {
+                    "description": "Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).",
+                    "type": "string"
+                },
+                "swiftAuth": {
+                    "description": "Authentication URL for server (OS_AUTH_URL).",
+                    "type": "string"
+                },
+                "swiftAuthToken": {
+                    "description": "Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).",
+                    "type": "string"
+                },
+                "swiftAuthVersion": {
+                    "description": "AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).",
+                    "type": "string",
+                    "default": "0"
+                },
+                "swiftChunkSize": {
+                    "description": "Above this size files will be chunked into a _segments container.",
+                    "type": "string",
+                    "default": "5Gi"
+                },
+                "swiftDomain": {
+                    "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
+                    "type": "string"
+                },
+                "swiftEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8"
+                },
+                "swiftEndpointType": {
+                    "description": "Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).",
+                    "type": "string",
+                    "default": "public"
+                },
+                "swiftEnvAuth": {
+                    "description": "Get swift credentials from environment variables in standard OpenStack form.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "swiftKey": {
+                    "description": "API key or password (OS_PASSWORD).",
+                    "type": "string"
+                },
+                "swiftLeavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "swiftNoChunk": {
+                    "description": "Don't chunk files during streaming upload.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "swiftNoLargeObjects": {
+                    "description": "Disable support for static and dynamic large objects",
+                    "type": "string",
+                    "default": "false"
+                },
+                "swiftRegion": {
+                    "description": "Region name - optional (OS_REGION_NAME).",
+                    "type": "string"
+                },
+                "swiftStoragePolicy": {
+                    "description": "The storage policy to use when creating a new container.",
+                    "type": "string"
+                },
+                "swiftStorageUrl": {
+                    "description": "Storage URL - optional (OS_STORAGE_URL).",
+                    "type": "string"
+                },
+                "swiftTenant": {
+                    "description": "Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).",
+                    "type": "string"
+                },
+                "swiftTenantDomain": {
+                    "description": "Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).",
+                    "type": "string"
+                },
+                "swiftTenantId": {
+                    "description": "Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).",
+                    "type": "string"
+                },
+                "swiftUser": {
+                    "description": "User name to log in (OS_USERNAME).",
+                    "type": "string"
+                },
+                "swiftUserId": {
+                    "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
+                    "type": "string"
+                },
+                "tardigradeAccessGrant": {
+                    "description": "Access grant.",
+                    "type": "string"
+                },
+                "tardigradeApiKey": {
+                    "description": "API key.",
+                    "type": "string"
+                },
+                "tardigradePassphrase": {
+                    "description": "Encryption passphrase.",
+                    "type": "string"
+                },
+                "tardigradeProvider": {
+                    "description": "Choose an authentication method.",
+                    "type": "string",
+                    "default": "existing"
+                },
+                "tardigradeSatelliteAddress": {
+                    "description": "Satellite address.",
+                    "type": "string",
+                    "default": "us1.storj.io"
+                },
+                "uptoboxAccessToken": {
+                    "description": "Your access token.",
+                    "type": "string"
+                },
+                "uptoboxEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
+                },
+                "webdavBearerToken": {
+                    "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
+                    "type": "string"
+                },
+                "webdavBearerTokenCommand": {
+                    "description": "Command to run to get a bearer token.",
+                    "type": "string"
+                },
+                "webdavEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string"
+                },
+                "webdavHeaders": {
+                    "description": "Set HTTP headers for all transactions.",
+                    "type": "string"
+                },
+                "webdavPass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "webdavUrl": {
+                    "description": "URL of http host to connect to.",
+                    "type": "string"
+                },
+                "webdavUser": {
+                    "description": "User name.",
+                    "type": "string"
+                },
+                "webdavVendor": {
+                    "description": "Name of the WebDAV site/service/software you are using.",
+                    "type": "string"
+                },
+                "yandexAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "yandexClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "yandexClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "yandexEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "yandexHardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "string",
+                    "default": "false"
+                },
+                "yandexToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "yandexTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "zohoAuthUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "zohoClientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "zohoClientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "zohoEncoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Del,Ctl,InvalidUtf8"
+                },
+                "zohoRegion": {
+                    "description": "Zoho region to connect to.",
+                    "type": "string"
+                },
+                "zohoToken": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "zohoTokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
         "datasource.AzureblobRequest": {
             "type": "object",
             "properties": {
@@ -3643,13 +6005,6 @@
                     "description": "Path relative to the data source root",
                     "type": "string"
                 }
-            }
-        },
-        "datasource.Config": {
-            "description": "The field name can be using snake_case or lowerCamelCase This will override the current config in the database To check what options are available, check the request model of the corresponding data source type",
-            "type": "object",
-            "additionalProperties": {
-                "type": "string"
             }
         },
         "datasource.CryptRequest": {

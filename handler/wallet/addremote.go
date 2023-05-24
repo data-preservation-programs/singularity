@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/filecoin-project/go-address"
@@ -68,9 +69,7 @@ func AddRemoteHandler(
 		RemotePeer: request.RemotePeer,
 	}
 
-	err = db.Transaction(func(db *gorm.DB) error {
-		return db.Where("ID = ?", wallet.ID).Attrs(wallet).FirstOrCreate(&wallet).Error
-	})
+	err = database.DoRetry(func() error { return db.Create(&wallet).Error })
 	if err != nil {
 		return handler.NewHandlerError(err)
 	}

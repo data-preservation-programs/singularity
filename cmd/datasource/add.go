@@ -21,7 +21,7 @@ var AddCmd = &cli.Command{
 		cmd := datasource.OptionsToCLIFlags(r)
 		cmd.Action = func(c *cli.Context) error {
 			datasetName := c.Args().Get(0)
-			path := c.Args().Get(2)
+			path := c.Args().Get(1)
 			db := database.MustOpenFromCLI(c)
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
@@ -77,13 +77,13 @@ var AddCmd = &cli.Command{
 			dir := model.Directory{
 				Name: path,
 			}
-			err = db.Create(&dir).Error
+			err = database.DoRetry(func() error { return db.Create(&dir).Error })
 			if err != nil {
 				return errors.Wrap(err, "failed to create directory")
 			}
 
 			source.RootDirectoryID = dir.ID
-			err = db.Create(&source).Error
+			err = database.DoRetry(func() error { return db.Create(&source).Error })
 			if err != nil {
 				return errors.Wrap(err, "failed to create source")
 			}

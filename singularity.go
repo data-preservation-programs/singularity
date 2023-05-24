@@ -132,6 +132,7 @@ func main() {
 					datasource.RemoveCmd,
 					datasource.CheckCmd,
 					datasource.UpdateCmd,
+					datasource.RescanCmd,
 					{
 						Name:  "status",
 						Usage: "Get preparation status of a data source",

@@ -7,7 +7,6 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
 	"golang.org/x/exp/slices"
 )
@@ -21,7 +20,7 @@ type ItemBlockMetadata struct {
 	Varint      []byte `json:"Varint"`
 	Cid         []byte `json:"Cid"`
 	ItemOffset  int64  `json:"itemOffset"`
-	ItemLength  int64  `json:"itemLength"`
+	ItemLength  int32  `json:"itemLength"`
 }
 
 func (i ItemBlockMetadata) GetPieceOffset() int64 {
@@ -140,15 +139,15 @@ func NewPieceReader(
 	}
 
 	lastBlock := carBlocks[len(carBlocks)-1]
-	if lastBlock.CarOffset+lastBlock.CarBlockLength != car.FileSize {
+	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
 		return nil, errors.New("last block must end at car footer")
 	}
 
 	for i := 0; i < len(carBlocks)-1; i++ {
-		if carBlocks[i].CarOffset+carBlocks[i].CarBlockLength != carBlocks[i+1].CarOffset {
+		if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
 			return nil, errors.New("Blocks must be contiguous")
 		}
-		if carBlocks[i].RawBlock == nil && (carBlocks[i].Item == nil || carBlocks[i].Source == nil) {
+		if carBlocks[i].RawBlock == nil && (carBlocks[i].Item == nil || carBlocks[i].Item.Source == nil) {
 			return nil, errors.New("block must be either raw or Item, and the Item/source needs to be preloaded")
 		}
 	}
@@ -165,15 +164,15 @@ func NewPieceReader(
 			blocks = append(
 				blocks, RawBlock{
 					PieceOffset: carBlock.CarOffset,
-					Varint:      varint.ToUvarint(carBlock.Varint),
-					Cid:         cid.MustParse(carBlock.CID).Bytes(),
+					Varint:      carBlock.Varint,
+					Cid:         carBlock.CID,
 					BlockData:   carBlock.RawBlock,
 				},
 			)
 			continue
 		}
 		if lastItemBlock == nil {
-			handler, err := resolver.Resolve(ctx, *carBlock.Source)
+			handler, err := resolver.Resolve(ctx, *carBlock.Item.Source)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to get handler")
 			}
@@ -184,10 +183,10 @@ func NewPieceReader(
 				Meta: []ItemBlockMetadata{
 					{
 						PieceOffset: carBlock.CarOffset,
-						Varint:      varint.ToUvarint(carBlock.Varint),
-						Cid:         cid.MustParse(carBlock.CID).Bytes(),
+						Varint:      carBlock.Varint,
+						Cid:         carBlock.CID,
 						ItemOffset:  carBlock.ItemOffset,
-						ItemLength:  carBlock.BlockLength,
+						ItemLength:  carBlock.BlockLength(),
 					},
 				},
 			}
@@ -197,10 +196,10 @@ func NewPieceReader(
 		lastItemBlock.Meta = append(
 			lastItemBlock.Meta, ItemBlockMetadata{
 				PieceOffset: carBlock.CarOffset,
-				Varint:      varint.ToUvarint(carBlock.Varint),
+				Varint:      carBlock.Varint,
 				Cid:         cid.MustParse(carBlock.CID).Bytes(),
 				ItemOffset:  carBlock.ItemOffset,
-				ItemLength:  carBlock.BlockLength,
+				ItemLength:  carBlock.BlockLength(),
 			},
 		)
 	}

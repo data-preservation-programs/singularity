@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"github.com/avast/retry-go"
 	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
@@ -10,8 +11,17 @@ import (
 	logger2 "gorm.io/gorm/logger"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
+
+func retryOn(err error) bool {
+	return strings.Contains(err.Error(), "database is locked")
+}
+
+func DoRetry(f func() error) error {
+	return retry.Do(f, retry.RetryIf(retryOn))
+}
 
 type databaseLogger struct {
 	level  logger2.LogLevel

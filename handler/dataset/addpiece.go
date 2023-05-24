@@ -108,15 +108,15 @@ func AddPieceHandler(
 	}
 
 	car := model.Car{
-		PieceCID:  request.PieceCID,
+		PieceCID:  cid.MustParse(request.PieceCID).Bytes(),
 		PieceSize: pieceSize,
-		RootCID:   rootCID,
+		RootCID:   cid.MustParse(rootCID).Bytes(),
 		FileSize:  fileSize,
 		FilePath:  request.FilePath,
 		DatasetID: dataset.ID,
 	}
 
-	err = db.Create(&car).Error
+	err = database.DoRetry(func() error { return db.Create(&car).Error })
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}

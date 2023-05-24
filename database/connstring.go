@@ -4,10 +4,10 @@ package database
 
 import (
 	"github.com/glebarez/sqlite"
+	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"strings"

@@ -25,7 +25,7 @@ func RemoveHandler(
 	if err != nil {
 		return handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}
-	err = db.Delete(&dataset).Error
+	err = database.DoRetry(func() error { return db.Delete(&dataset).Error })
 	if err != nil {
 		return handler.NewHandlerError(err)
 	}

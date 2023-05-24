@@ -29,7 +29,7 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 			return nil, err
 		}
 
-		err = db.Exec("PRAGMA busy_timeout = 5000").Error
+		err = db.Exec("PRAGMA busy_timeout = 50000").Error
 		if err != nil {
 			return nil, err
 		}
@@ -38,7 +38,7 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 		if err != nil {
 			return nil, err
 		}
-		
+
 		return db, nil
 	}
 

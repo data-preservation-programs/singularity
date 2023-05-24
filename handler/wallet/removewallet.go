@@ -42,7 +42,9 @@ func RemoveWalletHandler(
 		return handler.NewBadRequestString("failed to find wallet: " + err.Error())
 	}
 
-	err = db.Where("dataset_id = ? AND wallet_id = ?", dataset.ID, w.ID).Delete(&model.WalletAssignment{}).Error
+	err = database.DoRetry(func() error {
+		return db.Where("dataset_id = ? AND wallet_id = ?", dataset.ID, w.ID).Delete(&model.WalletAssignment{}).Error
+	})
 
 	if err != nil {
 		return handler.NewHandlerError(err)

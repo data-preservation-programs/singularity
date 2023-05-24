@@ -31,7 +31,6 @@ import (
 type BlockResult struct {
 	CID    cid.Cid
 	Offset int64
-	Length int64
 	Raw    []byte
 	Error  error
 }
@@ -88,19 +87,19 @@ func writeCarBlock(writer io.Writer, block blocks.BasicBlock) (int64, error) {
 	if err != nil {
 		return written, errors.Wrap(err, "failed to write varint")
 	}
-	written += int64(n)
+	written += n
 
 	n, err = io.Copy(writer, bytes.NewReader(block.Cid().Bytes()))
 	if err != nil {
 		return written, errors.Wrap(err, "failed to write cid")
 	}
-	written += int64(n)
+	written += n
 
 	n, err = io.Copy(writer, bytes.NewReader(block.RawData()))
 	if err != nil {
 		return written, errors.Wrap(err, "failed to write raw")
 	}
-	written += int64(n)
+	written += n
 	return written, nil
 }
 
@@ -141,19 +140,20 @@ func ProcessItems(
 		}
 
 		for block := range blockChan {
+			if block.Error != nil {
+				return nil, errors.Wrap(block.Error, "failed to stream block")
+			}
+
 			links = append(
 				links, Link{
 					Link: format.Link{
 						Name: "",
-						Size: uint64(block.Length),
+						Size: uint64(len(block.Raw)),
 						Cid:  block.CID,
 					},
-					ChunkSize: uint64(block.Length),
+					ChunkSize: uint64(len(block.Raw)),
 				},
 			)
-			if block.Error != nil {
-				return nil, errors.Wrap(block.Error, "failed to stream block")
-			}
 
 			if offset == 0 {
 				result.RootCID = block.CID
@@ -174,7 +174,7 @@ func ProcessItems(
 					return nil, errors.Wrap(err, "failed to write header")
 				}
 
-				offset += int64(n)
+				offset += n
 			}
 
 			basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
@@ -183,19 +183,17 @@ func ProcessItems(
 				return nil, errors.Wrap(err, "failed to write block")
 			}
 
-			offset += written
-
 			result.CarBlocks = append(
 				result.CarBlocks, model.CarBlock{
-					CID:            block.CID.String(),
+					CID:            block.CID.Bytes(),
 					CarOffset:      offset - written,
-					CarBlockLength: written,
-					Varint:         uint64(block.Length) + uint64(block.CID.ByteLen()),
+					CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
+					Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
 					ItemID:         &item.ID,
 					ItemOffset:     block.Offset,
-					BlockLength:    block.Length,
 				},
 			)
+			offset += written
 		}
 
 		for len(links) > 1 {
@@ -211,16 +209,15 @@ func ProcessItems(
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to write block")
 				}
-				offset += written
+				offset += int64(written)
 
 				result.CarBlocks = append(
 					result.CarBlocks, model.CarBlock{
-						CID:            basicBlock.Cid().String(),
+						CID:            basicBlock.Cid().Bytes(),
 						CarOffset:      offset - written,
-						CarBlockLength: written,
-						Varint:         uint64(len(basicBlock.RawData()) + basicBlock.Cid().ByteLen()),
+						CarBlockLength: int32(written),
+						Varint:         varint.ToUvarint(uint64(len(basicBlock.RawData()) + basicBlock.Cid().ByteLen())),
 						RawBlock:       basicBlock.RawData(),
-						BlockLength:    int64(len(basicBlock.RawData())),
 					},
 				)
 
@@ -340,7 +337,6 @@ func streamItem(ctx context.Context, handler datasource.Handler, item model.Item
 			blockChan <- BlockResult{
 				CID:    c,
 				Offset: offset,
-				Length: int64(len(chunkerBytes)),
 				Raw:    chunkerBytes,
 				Error:  nil,
 			}
