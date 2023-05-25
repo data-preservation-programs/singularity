@@ -143,3 +143,7 @@
   * [Piece](web-api-reference/api-reference/piece/README.md)
     * [Metadata](web-api-reference/api-reference/piece/metadata.md)
 * [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+
+## ❓ FAQ
+
+* [Database is locked](faq/database-is-locked.md)
