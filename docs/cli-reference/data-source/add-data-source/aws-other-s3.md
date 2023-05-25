@@ -1,5 +1,6 @@
 # AWS / other S3
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add s3 - Amazon S3 Compliant Storage Providers including AWS, Alibaba, Ceph, China Mobile, Cloudflare, ArvanCloud, DigitalOcean, Dreamhost, Huawei OBS, IBM COS, IDrive e2, IONOS Cloud, Liara, Lyve Cloud, Minio, Netease, RackCorp, Scaleway, SeaweedFS, StackPath, Storj, Tencent COS, Qiniu and Wasabi
@@ -1257,3 +1258,4 @@ OPTIONS:
    --delete-after-export  [Dangerous] Delete the files of the dataset after exporting it to CAR files.  (default: false)
 
 ```
+{% endcode %}
