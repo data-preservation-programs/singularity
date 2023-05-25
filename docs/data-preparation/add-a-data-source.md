@@ -12,6 +12,18 @@ The most command data source is the local file system. To add a folder as a data
 singularity datasource add local my_dataset /mnt/dataset/folder
 ```
 
+## Add a public S3 data source
+
+To demonstrate how you can add S3 data source to a dataset, let's use a public dataset called [Foldingathome COVID-19 Datasets](https://registry.opendata.aws/foldingathome-covid19/)
+
+```
+singularity datasource add s3 my_dataset fah-public-data-covid19-cryptic-pockets
+```
+
+For private S3 data source or other S3 compatible data source, checkout [aws-other-s3.md](../cli-reference/data-source/add-data-source/aws-other-s3.md "mention")
+
+
+
 Next, you would want to [start-dataset-worker.md](start-dataset-worker.md "mention") or checkout [#other-data-source-types](add-a-data-source.md#other-data-source-types "mention")
 
 ## Other Data source types
