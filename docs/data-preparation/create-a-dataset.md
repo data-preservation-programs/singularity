@@ -24,4 +24,6 @@ singularity dataset create my_dataset
 
 By default, singularity uses a technical called Inline Preparation which will not export to any CAR files. That's because for most data source, it does not change and the CAR file is essentially storing the same content as the original data source.&#x20;
 
-Next, you would want to [add-a-data-source.md](add-a-data-source.md "mention")
+## Next step
+
+[add-a-data-source.md](add-a-data-source.md "mention")
