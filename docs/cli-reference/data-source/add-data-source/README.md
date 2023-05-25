@@ -1,0 +1,60 @@
+# Add data source
+
+```sh
+NAME:
+   singularity datasource add - Add a new data source to the dataset
+
+USAGE:
+   singularity datasource add command [command options] [arguments...]
+
+COMMANDS:
+   acd                     Amazon Drive
+   azureblob               Microsoft Azure Blob Storage
+   b2                      Backblaze B2
+   box                     Box
+   crypt                   Encrypt/Decrypt a remote
+   drive                   Google Drive
+   dropbox                 Dropbox
+   fichier                 1Fichier
+   filefabric              Enterprise File Fabric
+   ftp                     FTP
+   gcs                     Google Cloud Storage (this is not Google Drive)
+   gphotos                 Google Photos
+   hdfs                    Hadoop distributed file system
+   hidrive                 HiDrive
+   http                    HTTP
+   internetarchive         Internet Archive
+   jottacloud              Jottacloud
+   koofr                   Koofr, Digi Storage and other Koofr-compatible storage providers
+   local                   Local Disk
+   mailru                  Mail.ru Cloud
+   mega                    Mega
+   memory                  In memory object storage system.
+   netstorage              Akamai NetStorage
+   onedrive                Microsoft OneDrive
+   opendrive               OpenDrive
+   oos                     Oracle Cloud Infrastructure Object Storage
+   pcloud                  Pcloud
+   premiumizeme            premiumize.me
+   putio                   Put.io
+   qingstor                QingCloud Object Storage
+   s3                      Amazon S3 Compliant Storage Providers including AWS, Alibaba, Ceph, China Mobile, Cloudflare, ArvanCloud, DigitalOcean, Dreamhost, Huawei OBS, IBM COS, IDrive e2, IONOS Cloud, Liara, Lyve Cloud, Minio, Netease, RackCorp, Scaleway, SeaweedFS, StackPath, Storj, Tencent COS, Qiniu and Wasabi
+   seafile                 seafile
+   sftp                    SSH/SFTP
+   sharefile               Citrix Sharefile
+   sia                     Sia Decentralized Cloud
+   smb                     SMB / CIFS
+   storj, tardigrade       Storj Decentralized Cloud Storage
+   tardigrade, tardigrade  Storj Decentralized Cloud Storage
+   sugarsync               Sugarsync
+   swift                   OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
+   uptobox                 Uptobox
+   webdav                  WebDAV
+   yandex                  Yandex Disk
+   zoho                    Zoho
+   help, h                 Shows a list of commands or help for one command
+
+OPTIONS:
+   --help, -h  show help
+
+```
