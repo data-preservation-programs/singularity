@@ -155,6 +155,5 @@ OPTIONS:
    Data Preparation Options
 
    --delete-after-export  [Dangerous] Delete the files of the dataset after exporting it to CAR files.  (default: false)
-cm
 ```
 {% endcode %}
