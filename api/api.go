@@ -205,8 +205,8 @@ func (s Server) getSource(ctx context.Context, datasetName string) (model.Source
 
 type ItemInfo struct {
 	//TODO Type     model.ItemType `json:"type"`
-	Path     string         `json:"path"`
-	SourceID uint32         `json:"sourceId"`
+	Path     string `json:"path"`
+	SourceID uint32 `json:"sourceId"`
 }
 
 // PushItem godoc
@@ -418,11 +418,19 @@ func (d Server) HandlePostSource(c echo.Context) error {
 			return c.String(http.StatusBadRequest, fmt.Sprintf("failed to get absolute path: %s", err.Error()))
 		}
 	}
+	deleteAfterExportStr := body["deleteAfterExport"]
+	deleteAfterExport := false
+	if deleteAfterExportStr != "" {
+		deleteAfterExport, err = strconv.ParseBool(deleteAfterExportStr)
+		if err != nil {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("failed to parse deleteAfterExport: %s", err.Error()))
+		}
+	}
+	delete(body, "sourcePath")
+	delete(body, "deleteAfterExport")
 	config := map[string]string{}
 	for k, v := range body {
-		if k != "sourcePath" {
-			config[lowerCamelToSnake(k)] = v
-		}
+		config[lowerCamelToSnake(k)] = v
 	}
 
 	source := model.Source{
@@ -433,6 +441,7 @@ func (d Server) HandlePostSource(c echo.Context) error {
 		PushOnly:            false,
 		ScanIntervalSeconds: 0,
 		ScanningState:       model.Ready,
+		DeleteAfterExport:   deleteAfterExport,
 	}
 
 	handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Request().Context(), source)

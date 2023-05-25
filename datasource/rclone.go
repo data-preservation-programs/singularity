@@ -105,7 +105,7 @@ func (h RCloneHandler) Check(ctx context.Context, path string) (fs.DirEntry, err
 	return h.Fs.NewObject(ctx, path)
 }
 
-func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.DirEntry, error) {
+func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	object, err := h.Fs.NewObject(ctx, path)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to open object")
@@ -221,6 +221,11 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		}
 	}
 
+	flags = append(flags, &cli.BoolFlag{
+		Name:     "delete-after-export",
+		Usage:    "[Dangerous] Delete the files of the dataset after exporting it to CAR files. ",
+		Category: "Data Preparation Options",
+	})
 	cmd.Flags = flags
 	cmd.Description = strings.Join(usageLines, "\n")
 	return cmd

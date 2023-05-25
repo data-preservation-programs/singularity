@@ -29,7 +29,7 @@ type Handler interface {
 	// Read reads data from the data source starting at the given path and offset, and returns a ReadCloser.
 	// The `length` parameter specifies the number of bytes to read.
 	// This method is most likely used for retrieving a single block of data.
-	Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.DirEntry, error)
+	Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error)
 
 	// Check checks the size and last modified time of the item at the given path.
 	Check(ctx context.Context, path string) (fs.DirEntry, error)

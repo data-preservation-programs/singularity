@@ -84,6 +84,7 @@ require (
 	github.com/a8m/tree v0.0.0-20230208161321-36ae24ddad15 // indirect
 	github.com/aalpar/deheap v0.0.0-20210914013432-0cc84d79dec3 // indirect
 	github.com/abbot/go-http-auth v0.4.0 // indirect
+	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/anacrolix/dms v1.5.0 // indirect
 	github.com/anacrolix/log v0.13.1 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
@@ -170,6 +171,7 @@ require (
 	github.com/iguanesolutions/go-systemd/v5 v5.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/ipfs/bbloom v0.0.4 // indirect
+	github.com/ipfs/go-bitfield v1.1.0 // indirect
 	github.com/ipfs/go-blockservice v0.5.0 // indirect
 	github.com/ipfs/go-datastore v0.6.0 // indirect
 	github.com/ipfs/go-ipfs-blockstore v1.3.0 // indirect

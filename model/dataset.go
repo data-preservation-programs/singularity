@@ -15,20 +15,48 @@ type Metadata map[string]string
 type CIDBytes []byte
 
 func (c CIDBytes) MarshalJSON() ([]byte, error) {
-	v, err := cid.Cast(c)
-	if err != nil {
-		return nil, err
+	s := ""
+	if len(c) > 0 {
+		v, err := cid.Parse(c)
+		if err != nil {
+			return nil, err
+		}
+		s = v.String()
 	}
-	return []byte(v.String()), nil
+	return json.Marshal(&s)
+}
+
+func (c CIDBytes) ToCid() cid.Cid {
+	return cid.MustParse([]byte(c))
+}
+
+func (c CIDBytes) String() string {
+	if len(c) > 0 {
+		v, err := cid.Parse(c)
+		if err != nil {
+			return ""
+		}
+		return v.String()
+	}
+	return ""
 }
 
 func (c *CIDBytes) UnmarshalJSON(b []byte) error {
-	v, err := cid.Decode(string(b))
+	if len(b) == 0 {
+		return nil
+	}
+	s := ""
+	err := json.Unmarshal(b, &s)
 	if err != nil {
 		return err
 	}
-
-	*c = v.Bytes()
+	if len(s) > 0 {
+		v, err := cid.Parse(s)
+		if err != nil {
+			return err
+		}
+		*c = v.Bytes()
+	}
 	return nil
 }
 
@@ -143,6 +171,7 @@ type Source struct {
 	ErrorMessage         string     `json:"errorMessage"`
 	RootDirectoryID      uint64     `json:"rootDirectoryId"`
 	RootDirectory        *Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:CASCADE" json:"rootDirectory,omitempty" swaggerignore:"true"`
+	DeleteAfterExport    bool       `json:"deleteAfterExport"`
 }
 
 // Chunk is a grouping of items that are packed into a single CAR.
@@ -212,6 +241,7 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
+	ID    uint64   `gorm:"primaryKey" json:"id"`
 	CarID uint32   `json:"carId"`
 	Car   *Car     `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
 	CID   CIDBytes `gorm:"index;column:cid" json:"cid"`
