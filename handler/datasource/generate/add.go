@@ -18,6 +18,7 @@ package datasource
 const structTemplate = `
 type {{.Name}} struct {
     SourcePath string ` + "`json:\"sourcePath\"`" + `// The path of the source to scan items
+    DeleteAfterExport string ` + "`json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
     {{- range .Fields }}
     {{.Name}} {{.Type}} {{.Tag}} // {{.Description}}
 	{{- end }}

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/rjNemo/underscore"
 	"os"
 	"os/signal"
 	"strings"
@@ -697,6 +698,47 @@ func (w *DatasetWorkerThread) pack(
 	}
 
 	w.logger.With("source", source).Info("finished packing")
+	if source.DeleteAfterExport && result.CarFilePath != "" {
+		w.logger.Info("Deleting original data source")
+		for i, item := range items {
+			object := result.Objects[i]
+			if item.Offset == 0 && item.Length == item.Size {
+				err = object.Remove(ctx)
+				if err != nil {
+					w.logger.Warnw("failed to remove object", "error", err)
+				}
+				continue
+			}
+			// Make sure all parts of this file has been exported before deleting
+			var allItems []model.Item
+			err = w.db.Model(&model.Item{}).Where("source_id = ? AND path = ? AND size = ? AND last_modified = ?",
+				item.SourceID,
+				item.Path,
+				item.Size,
+				item.LastModified).Find(&allItems).Error
+			if err != nil {
+				w.logger.Warnw("failed to get all items for file", "error", err)
+				continue
+			}
+			if underscore.Any(allItems, func(i model.Item) bool {
+				return i.CID == nil || i.ChunkID == nil
+			}) {
+				w.logger.Info("not all items have been exported yet, skipping delete")
+				continue
+			}
+			chunkIDs := underscore.Map(allItems, func(i model.Item) uint32 { return *i.ChunkID })
+			var exported int64
+			w.db.Model(&model.Car{}).Where("chunk_id in (?) AND file_path != ?", chunkIDs, "").Count(&exported)
+			if exported != int64(len(chunkIDs)) {
+				w.logger.Infow("not all items have been exported yet, skipping delete", "exported", exported)
+				continue
+			}
+			err = object.Remove(ctx)
+			if err != nil {
+				w.logger.Warnw("failed to remove object", "error", err)
+			}
+		}
+	}
 	return nil
 }
 

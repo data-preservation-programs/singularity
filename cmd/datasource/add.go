@@ -36,6 +36,7 @@ var AddCmd = &cli.Command{
 					return errors.Wrap(err, "failed to get absolute path")
 				}
 			}
+			deleteAfterExport := c.Bool("delete-after-export")
 			result := map[string]string{}
 			for _, flag := range c.Command.Flags {
 				flagName := flag.Names()[0]
@@ -62,6 +63,7 @@ var AddCmd = &cli.Command{
 				PushOnly:            false,
 				ScanIntervalSeconds: 0,
 				ScanningState:       model.Ready,
+				DeleteAfterExport:   deleteAfterExport,
 			}
 
 			handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Context, source)
