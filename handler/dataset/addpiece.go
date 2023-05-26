@@ -108,9 +108,9 @@ func AddPieceHandler(
 	}
 
 	car := model.Car{
-		PieceCID:  cid.MustParse(request.PieceCID).Bytes(),
+		PieceCID:  model.CID(cid.MustParse(request.PieceCID)),
 		PieceSize: pieceSize,
-		RootCID:   cid.MustParse(rootCID).Bytes(),
+		RootCID:   model.CID(cid.MustParse(rootCID)),
 		FileSize:  fileSize,
 		FilePath:  request.FilePath,
 		DatasetID: dataset.ID,

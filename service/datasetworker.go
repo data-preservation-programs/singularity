@@ -3,7 +3,18 @@ package service
 import (
 	"context"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/pack/daggen"
+	"github.com/fxamacker/cbor"
+	blocks "github.com/ipfs/go-block-format"
+	"github.com/ipfs/go-blockservice"
+	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-datastore"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	format "github.com/ipfs/go-ipld-format"
+	"github.com/ipfs/go-merkledag"
+	uio "github.com/ipfs/go-unixfs/io"
 	"github.com/rjNemo/underscore"
+	"gorm.io/gorm/clause"
 	"os"
 	"os/signal"
 	"strings"
@@ -226,7 +237,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 						defer cancel()
 						w.db = w.db.WithContext(ctx)
 					}
-					err = w.db.Model(chunk).Updates(
+					err = w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
 						map[string]interface{}{
 							"packing_state":     newState,
 							"packing_worker_id": nil,
@@ -238,7 +249,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 					}
 					goto nextLoop
 				} else {
-					err = w.db.Model(chunk).Updates(
+					err = w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
 						map[string]interface{}{
 							"packing_state":     model.Complete,
 							"packing_worker_id": nil,
@@ -314,7 +325,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 		},
 	)
 	if err == nil {
-		w.logger.With("chunk", chunk).Info("found chunk to pack")
+		w.logger.With("chunk_id", chunk.ID).Info("found chunk to pack")
 		return &chunk, nil
 	}
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -337,8 +348,7 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 				"scanning_state = ? OR (scanning_state = ? AND scanning_worker_id is null)",
 				model.Ready,
 				model.Processing,
-			).
-				Set("gorm:query_option", "FOR UPDATE").
+			).Clauses(clause.Locking{Strength: "UPDATE"}).
 				Order("id asc").
 				First(&source).Error
 			if err != nil {
@@ -372,7 +382,7 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 				"scanning_state = ? AND scan_interval_seconds > 0 AND last_scanned_timestamp + scan_interval_seconds < ?",
 				model.Complete, time.Now().UTC().Unix(),
 			).
-				Set("gorm:query_option", "FOR UPDATE").
+				Clauses(clause.Locking{Strength: "UPDATE"}).
 				Order("id asc").
 				First(&source).Error
 			if err != nil {
@@ -421,7 +431,8 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, root mod
 			ParentID: &last.ID,
 		}
 		err := database.DoRetry(func() error {
-			return w.db.Where("parent_id = ? AND name = ?", last.ID, segment).
+			return w.db.Select("id", "cid", "name", "parent_id").
+				Where("parent_id = ? AND name = ?", last.ID, segment).
 				FirstOrCreate(&newDir).Error
 		})
 		if err != nil {
@@ -657,21 +668,22 @@ func (w *DatasetWorkerThread) pack(
 
 	for itemID, itemCID := range result.ItemCIDs {
 		err = database.DoRetry(func() error {
-			return w.db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", itemCID.String()).Error
+			return w.db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", model.CID(itemCID)).Error
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to update cid of item")
 		}
 	}
 
+
 	err = database.DoRetry(func() error {
 		return w.db.Transaction(
 			func(db *gorm.DB) error {
 				car := model.Car{
 					CreatedAt: time.Now().UTC(),
-					PieceCID:  result.PieceCID.Bytes(),
+					PieceCID:  model.CID(result.PieceCID),
 					PieceSize: result.PieceSize,
-					RootCID:   result.RootCID.Bytes(),
+					RootCID:   model.CID(result.RootCID),
 					FileSize:  result.CarFileSize,
 					FilePath:  result.CarFilePath,
 					ChunkID:   &chunkID,
@@ -688,6 +700,150 @@ func (w *DatasetWorkerThread) pack(
 				err = db.CreateInBatches(&result.CarBlocks, 1000).Error
 				if err != nil {
 					return errors.Wrap(err, "failed to create car blocks")
+				}
+
+				type DirectoryData struct {
+					Directory  uio.Directory
+					Blockstore blockstore.Blockstore
+				}
+				dirs := map[uint64]DirectoryData{}
+				for _, item := range items {
+					item.CID = model.CID(result.ItemCIDs[item.ID])
+					dirID := item.DirectoryID
+					for dirID != nil {
+						if _, ok := dirs[*dirID]; !ok {
+							var dir model.Directory
+							err = db.Clauses(clause.Locking{Strength: "UPDATE"}).
+								Where("id = ?", *dirID).First(&dir).Error
+							if err != nil {
+								return errors.Wrap(err, "failed to get directory")
+							}
+							if len(dir.Data) == 0 {
+								ds := datastore.NewMapDatastore()
+								bs := blockstore.NewBlockstore(ds)
+								dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
+								dirs[dir.ID] = DirectoryData{
+									Directory:  uio.NewDirectory(dagServ),
+									Blockstore: bs,
+								}
+								dirs[dir.ID].Directory.SetCidBuilder(merkledag.V1CidPrefix())
+							} else {
+								ds := datastore.NewMapDatastore()
+								bs := blockstore.NewBlockstore(ds)
+								var m map[string][]byte
+								err = cbor.Unmarshal(dir.Data, &m)
+								if err != nil {
+									return errors.Wrap(err, "failed to unmarshal directory bytes")
+								}
+								for k, v := range m {
+									blk, _ := blocks.NewBlockWithCid(v, cid.MustParse(k))
+									_ = bs.Put(ctx, blk)
+								}
+								dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
+								dirNode, err := dagServ.Get(ctx, cid.Cid(dir.CID))
+								if err != nil {
+									return errors.Wrap(err, "failed to get directory node")
+								}
+								directory, err := uio.NewDirectoryFromNode(dagServ, dirNode)
+								directory.SetCidBuilder(merkledag.V1CidPrefix())
+								if err != nil {
+									return errors.Wrap(err, "failed to get directory")
+								}
+								dirs[dir.ID] = DirectoryData{
+									Directory:  directory,
+									Blockstore: bs,
+								}
+							}
+							dirID = dir.ParentID
+						} else {
+							break
+						}
+					}
+
+					dirID = item.DirectoryID
+					segments := strings.Split(item.Path, "/")
+					name := segments[len(segments)-1]
+					dirData := dirs[*dirID]
+					if item.Length == item.Size {
+						err = dirData.Directory.AddChild(ctx, name, daggen.NewDummyNode(uint64(item.Length), cid.Cid(item.CID)))
+						if err != nil {
+							return errors.Wrap(err, "failed to add child for full item")
+						}
+					} else {
+						// Find all parts of this file
+						var parts []model.Item
+						err = db.Where("scanned_at = ? AND source_id = ? AND path = ?", item.ScannedAt, item.SourceID, item.Path).Order("offset asc").Find(&parts).Error
+						if err != nil {
+							return errors.Wrap(err, "failed to find parts")
+						}
+						if !underscore.All(parts, func(part model.Item) bool {
+							return cid.Cid(part.CID) != cid.Undef
+						}) {
+							// This item is not ready to be added to the directory because some parts are not yet ready
+							break
+						}
+						// Sanitize all items are consecutive
+						var offset int64
+						for _, part := range parts {
+							if part.Offset != offset {
+								return errors.New("parts are not consecutive")
+							}
+							offset += part.Length
+						}
+						if offset != item.Size {
+							return errors.New("parts are not consecutive")
+						}
+						var links []pack.Link
+						for _, part := range parts {
+							links = append(links, pack.Link{
+								Link: format.Link{
+									Name: "",
+									Size: uint64(part.Length),
+									Cid:  cid.Cid(part.CID),
+								},
+								ChunkSize: uint64(part.Length),
+							})
+						}
+						blks, rootLink, _ := pack.AssembleItem(links)
+						err = dirData.Directory.AddChild(ctx, name, rootLink)
+						if err != nil {
+							return errors.Wrap(err, "failed to add child for item parts")
+						}
+						err = dirData.Blockstore.PutMany(ctx, blks)
+						if err != nil {
+							return errors.Wrap(err, "failed to put blocks")
+						}
+					}
+				}
+				for dirID, dirData := range dirs {
+					rootNode, err := dirData.Directory.GetNode()
+					if err != nil {
+						return errors.Wrap(err, "failed to get directory node")
+					}
+					keyChan, err := dirData.Blockstore.AllKeysChan(ctx)
+					if err != nil {
+						return errors.Wrap(err, "failed to get keys")
+					}
+					m := map[string][]byte{}
+					for key := range keyChan {
+						blk, err := dirData.Blockstore.Get(ctx, key)
+						if err != nil {
+							return errors.Wrap(err, "failed to get block")
+						}
+						m[key.String()] = blk.RawData()
+					}
+					m[rootNode.Cid().String()] = rootNode.RawData()
+					bytes, err := cbor.Marshal(&m, cbor.CanonicalEncOptions())
+					if err != nil {
+						return errors.Wrap(err, "failed to marshal directory")
+					}
+					err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]interface{}{
+						"cid":  model.CID(rootNode.Cid()),
+						"data": bytes,
+					}).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to update directory")
+					}
 				}
 				return nil
 			},
@@ -721,7 +877,7 @@ func (w *DatasetWorkerThread) pack(
 				continue
 			}
 			if underscore.Any(allItems, func(i model.Item) bool {
-				return i.CID == nil || i.ChunkID == nil
+				return cid.Cid(i.CID) == cid.Undef || i.ChunkID == nil
 			}) {
 				w.logger.Info("not all items have been exported yet, skipping delete")
 				continue

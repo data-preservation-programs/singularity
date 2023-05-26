@@ -60,6 +60,9 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 
 	switch lvl {
 	case logging.LevelDebug:
+		if len(sql) > 1000 {
+			sql = sql[:1000] + "...(trimmed)"
+		}
 		d.logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	case logging.LevelWarn:
 		d.logger.Warnw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
