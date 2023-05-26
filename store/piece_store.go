@@ -16,11 +16,11 @@ type PieceBlock interface {
 }
 
 type ItemBlockMetadata struct {
-	PieceOffset int64  `json:"PieceOffset"`
-	Varint      []byte `json:"Varint"`
-	Cid         []byte `json:"Cid"`
-	ItemOffset  int64  `json:"itemOffset"`
-	ItemLength  int32  `json:"itemLength"`
+	PieceOffset int64   `json:"PieceOffset"`
+	Varint      []byte  `json:"Varint"`
+	Cid         cid.Cid `json:"Cid"`
+	ItemOffset  int64   `json:"itemOffset"`
+	ItemLength  int32   `json:"itemLength"`
 }
 
 func (i ItemBlockMetadata) GetPieceOffset() int64 {
@@ -30,20 +30,20 @@ func (i ItemBlockMetadata) CidOffset() int64 {
 	return i.PieceOffset + int64(len(i.Varint))
 }
 func (i ItemBlockMetadata) BlockOffset() int64 {
-	return i.PieceOffset + int64(len(i.Varint)) + int64(len(i.Cid))
+	return i.PieceOffset + int64(len(i.Varint)) + int64(i.Cid.ByteLen())
 }
 func (i ItemBlockMetadata) EndOffset() int64 {
-	return i.PieceOffset + int64(len(i.Varint)) + int64(len(i.Cid)) + int64(i.ItemLength)
+	return i.PieceOffset + int64(len(i.Varint)) + int64(i.Cid.ByteLen()) + int64(i.ItemLength)
 }
 func (i ItemBlockMetadata) Length() int {
-	return len(i.Varint) + len(i.Cid) + int(i.ItemLength)
+	return len(i.Varint) + i.Cid.ByteLen() + int(i.ItemLength)
 }
 
 type RawBlock struct {
-	PieceOffset int64  `json:"pieceOffset"`
-	Varint      []byte `json:"varint"`
-	Cid         []byte `json:"cid"`
-	BlockData   []byte `json:"blockData"`
+	PieceOffset int64   `json:"pieceOffset"`
+	Varint      []byte  `json:"varint"`
+	Cid         cid.Cid `json:"cid"`
+	BlockData   []byte  `json:"blockData"`
 }
 
 func (r RawBlock) GetPieceOffset() int64 {
@@ -53,14 +53,14 @@ func (r RawBlock) CidOffset() int64 {
 	return r.PieceOffset + int64(len(r.Varint))
 }
 func (r RawBlock) BlockOffset() int64 {
-	return r.PieceOffset + int64(len(r.Varint)) + int64(len(r.Cid))
+	return r.PieceOffset + int64(len(r.Varint)) + int64(r.Cid.ByteLen())
 }
 func (r RawBlock) EndOffset() int64 {
-	return r.PieceOffset + int64(len(r.Varint)) + int64(len(r.Cid)) + int64(len(r.BlockData))
+	return r.PieceOffset + int64(len(r.Varint)) + int64(r.Cid.ByteLen()) + int64(len(r.BlockData))
 }
 
 func (r RawBlock) Length() int {
-	return len(r.Varint) + len(r.Cid) + len(r.BlockData)
+	return len(r.Varint) + r.Cid.ByteLen() + len(r.BlockData)
 }
 
 type ItemBlock struct {
@@ -165,7 +165,7 @@ func NewPieceReader(
 				blocks, RawBlock{
 					PieceOffset: carBlock.CarOffset,
 					Varint:      carBlock.Varint,
-					Cid:         carBlock.CID,
+					Cid:         cid.Cid(carBlock.CID),
 					BlockData:   carBlock.RawBlock,
 				},
 			)
@@ -184,7 +184,7 @@ func NewPieceReader(
 					{
 						PieceOffset: carBlock.CarOffset,
 						Varint:      carBlock.Varint,
-						Cid:         carBlock.CID,
+						Cid:         cid.Cid(carBlock.CID),
 						ItemOffset:  carBlock.ItemOffset,
 						ItemLength:  carBlock.BlockLength(),
 					},
@@ -197,7 +197,7 @@ func NewPieceReader(
 			lastItemBlock.Meta, ItemBlockMetadata{
 				PieceOffset: carBlock.CarOffset,
 				Varint:      carBlock.Varint,
-				Cid:         cid.MustParse(carBlock.CID).Bytes(),
+				Cid:         cid.Cid(carBlock.CID),
 				ItemOffset:  carBlock.ItemOffset,
 				ItemLength:  carBlock.BlockLength(),
 			},
@@ -241,7 +241,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 			}
 		}
 		if pr.pos < rawBlock.BlockOffset() {
-			copied := copy(p[n:], rawBlock.Cid[pr.pos-rawBlock.CidOffset():])
+			copied := copy(p[n:], rawBlock.Cid.Bytes()[pr.pos-rawBlock.CidOffset():])
 			pr.pos += int64(copied)
 			n += copied
 			if n == len(p) {
@@ -283,7 +283,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		}
 	}
 	if pr.pos < innerBlock.BlockOffset() {
-		copied := copy(p[n:], innerBlock.Cid[pr.pos-innerBlock.CidOffset():])
+		copied := copy(p[n:], innerBlock.Cid.Bytes()[pr.pos-innerBlock.CidOffset():])
 		pr.pos += int64(copied)
 		n += copied
 		if n == len(p) {

@@ -12,51 +12,72 @@ import (
 type StringSlice []string
 type Metadata map[string]string
 
-type CIDBytes []byte
+type CID cid.Cid
 
-func (c CIDBytes) MarshalJSON() ([]byte, error) {
-	s := ""
-	if len(c) > 0 {
-		v, err := cid.Parse(c)
-		if err != nil {
-			return nil, err
-		}
-		s = v.String()
+func (c CID) MarshalJSON() ([]byte, error) {
+	if cid.Cid(c) == cid.Undef {
+		return json.Marshal("")
 	}
-	return json.Marshal(&s)
+
+	return json.Marshal(cid.Cid(c).String())
 }
 
-func (c CIDBytes) ToCid() cid.Cid {
-	return cid.MustParse([]byte(c))
+func (c CID) String() string {
+	if cid.Cid(c) == cid.Undef {
+		return ""
+	}
+	return cid.Cid(c).String()
 }
 
-func (c CIDBytes) String() string {
-	if len(c) > 0 {
-		v, err := cid.Parse(c)
-		if err != nil {
-			return ""
-		}
-		return v.String()
-	}
-	return ""
-}
-
-func (c *CIDBytes) UnmarshalJSON(b []byte) error {
-	if len(b) == 0 {
-		return nil
-	}
-	s := ""
+func (c *CID) UnmarshalJSON(b []byte) error {
+	var s string
 	err := json.Unmarshal(b, &s)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to unmarshal CID")
 	}
-	if len(s) > 0 {
-		v, err := cid.Parse(s)
+
+	if s == "" {
+		*c = CID(cid.Undef)
+	} else {
+		cid, err := cid.Decode(s)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to decode CID")
 		}
-		*c = v.Bytes()
+		*c = CID(cid)
 	}
+
+	return nil
+}
+
+func (c CID) Value() (driver.Value, error) {
+	if cid.Cid(c) == cid.Undef {
+		return []byte(""), nil
+	}
+	return cid.Cid(c).Bytes(), nil
+}
+
+func (c *CID) Scan(src interface{}) error {
+	if src == nil {
+		*c = CID(cid.Undef)
+		return nil
+	}
+
+	source, ok := src.([]byte)
+	if !ok {
+		return errors.New("failed to scan CID")
+	}
+
+	if len(source) == 0 {
+		*c = CID(cid.Undef)
+		return nil
+	}
+
+	cid, err := cid.Cast(source)
+	if err != nil {
+		return errors.Wrap(err, "failed to cast CID")
+	}
+
+	*c = CID(cid)
 	return nil
 }
 
@@ -201,7 +222,7 @@ type Item struct {
 	Offset       int64      `json:"offset"`
 	Length       int64      `json:"length"`
 	LastModified time.Time  `json:"lastModified"`
-	CID          CIDBytes   `gorm:"column:cid" json:"cid"`
+	CID          CID        `gorm:"column:cid;type:bytes" json:"cid"`
 	DirectoryID  *uint64    `gorm:"index" json:"directoryId"`
 	Directory    *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"directory,omitempty" swaggerignore:"true"`
 }
@@ -209,7 +230,8 @@ type Item struct {
 // Directory is a link between parent and child directories.
 type Directory struct {
 	ID       uint64     `gorm:"primaryKey" json:"id"`
-	CID      string     `gorm:"column:cid" json:"cid"`
+	CID      CID        `gorm:"column:cid;type:bytes" json:"cid"`
+	Data     []byte     `gorm:"column:data" json:"-" swaggerignore:"true"`
 	Name     string     `json:"name"`
 	ParentID *uint64    `gorm:"index" json:"parentId"`
 	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"parent,omitempty" swaggerignore:"true"`
@@ -221,9 +243,9 @@ type Directory struct {
 type Car struct {
 	ID        uint32    `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
-	PieceCID  CIDBytes  `gorm:"column:piece_cid;index" json:"pieceCid"`
+	PieceCID  CID       `gorm:"column:piece_cid;index;type:bytes" json:"pieceCid"`
 	PieceSize int64     `json:"pieceSize"`
-	RootCID   CIDBytes  `gorm:"column:root_cid" json:"rootCid"`
+	RootCID   CID       `gorm:"column:root_cid;type:bytes" json:"rootCid"`
 	FileSize  int64     `json:"fileSize"`
 	FilePath  string    `json:"filePath"`
 	DatasetID uint32    `gorm:"index" json:"datasetId"`
@@ -241,10 +263,10 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
-	ID    uint64   `gorm:"primaryKey" json:"id"`
-	CarID uint32   `json:"carId"`
-	Car   *Car     `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
-	CID   CIDBytes `gorm:"index;column:cid" json:"cid"`
+	ID    uint64 `gorm:"primaryKey" json:"id"`
+	CarID uint32 `json:"carId"`
+	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
+	CID   CID    `gorm:"index;column:cid;type:bytes" json:"cid"`
 	// Offset of the varint inside the CAR
 	CarOffset      int64 `json:"carOffset"`
 	CarBlockLength int32 `json:"carBlockLength"`
@@ -262,5 +284,5 @@ func (c CarBlock) BlockLength() int32 {
 	if c.RawBlock != nil {
 		return int32(len(c.RawBlock))
 	}
-	return c.CarBlockLength - int32(len(c.CID)) - int32(len(c.Varint))
+	return c.CarBlockLength - int32(cid.Cid(c.CID).ByteLen()) - int32(len(c.Varint))
 }

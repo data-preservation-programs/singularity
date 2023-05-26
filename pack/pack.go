@@ -106,6 +106,9 @@ func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 }
 
 func AssembleItem(links []Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
+	if len(links) <= 1 {
+		return nil, nil, errors.New("links must be more than 1")
+	}
 	result := make([]blocks.Block, 0)
 	var rootNode *merkledag.ProtoNode
 	for len(links) > 1 {
@@ -183,18 +186,6 @@ func ProcessItems(
 			if block.Error != nil {
 				return nil, errors.Wrap(block.Error, "failed to stream block")
 			}
-
-			links = append(
-				links, Link{
-					Link: format.Link{
-						Name: "",
-						Size: uint64(len(block.Raw)),
-						Cid:  block.CID,
-					},
-					ChunkSize: uint64(len(block.Raw)),
-				},
-			)
-
 			if offset == 0 {
 				result.RootCID = block.CID
 				header := car.CarHeader{
@@ -216,7 +207,6 @@ func ProcessItems(
 
 				offset += n
 			}
-
 			basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
 			written, err := WriteCarBlock(writer, basicBlock)
 			if err != nil {
@@ -225,8 +215,8 @@ func ProcessItems(
 
 			result.CarBlocks = append(
 				result.CarBlocks, model.CarBlock{
-					CID:            block.CID.Bytes(),
-					CarOffset:      offset - written,
+					CID:            model.CID(block.CID),
+					CarOffset:      offset,
 					CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
 					Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
 					ItemID:         &item.ID,
@@ -234,6 +224,21 @@ func ProcessItems(
 				},
 			)
 			offset += written
+			links = append(
+				links, Link{
+					Link: format.Link{
+						Name: "",
+						Size: uint64(len(block.Raw)),
+						Cid:  block.CID,
+					},
+					ChunkSize: uint64(len(block.Raw)),
+				},
+			)
+		}
+
+		if len(links) == 1 {
+			result.ItemCIDs[item.ID] = links[0].Link.Cid
+			continue
 		}
 
 		blks, rootNode, err := AssembleItem(links)
@@ -245,17 +250,17 @@ func ProcessItems(
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to write block")
 			}
-			offset += int64(written)
 
 			result.CarBlocks = append(
 				result.CarBlocks, model.CarBlock{
-					CID:            blk.Cid().Bytes(),
-					CarOffset:      offset - written,
+					CID:            model.CID(blk.Cid()),
+					CarOffset:      offset,
 					CarBlockLength: int32(written),
 					Varint:         varint.ToUvarint(uint64(len(blk.RawData()) + blk.Cid().ByteLen())),
 					RawBlock:       blk.RawData(),
 				},
 			)
+			offset += written
 		}
 
 		result.ItemCIDs[item.ID] = rootNode.Cid()
