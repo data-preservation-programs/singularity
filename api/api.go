@@ -300,6 +300,10 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 
 func Run(c *cli.Context) error {
 	db := database.MustOpenFromCLI(c)
+	err := model.AutoMigrate(db)
+	if err != nil {
+		return handler.NewHandlerError(err)
+	}
 	bind := c.String("bind")
 	stagingDir := c.String("staging-dir")
 	return Server{db: db, bind: bind, stagingDir: stagingDir,
