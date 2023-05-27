@@ -2,6 +2,8 @@ package run
 
 import (
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/urfave/cli/v2"
 )
@@ -43,6 +45,10 @@ var DatasetWorkerCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
+		err := model.AutoMigrate(db)
+		if err != nil {
+			return handler.NewHandlerError(err)
+		}
 		worker := service.NewDatasetWorker(
 			db,
 			c.Int("concurrency"),
@@ -50,7 +56,7 @@ var DatasetWorkerCmd = &cli.Command{
 			c.Bool("enable-scan"),
 			c.Bool("enable-pack"),
 			c.Bool("enable-dag"))
-		err := worker.Run(c.Context)
+		err = worker.Run(c.Context)
 		if err != nil {
 			return err
 		}

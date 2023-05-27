@@ -2,6 +2,8 @@ package run
 
 import (
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/urfave/cli/v2"
 )
@@ -29,6 +31,10 @@ var ContentProviderCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
+		err := model.AutoMigrate(db)
+		if err != nil {
+			return handler.NewHandlerError(err)
+		}
 
 		s, err := service.NewContentProviderService(db, c.String("http-bind"),
 			c.String("identity-key"),
