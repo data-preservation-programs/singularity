@@ -1,13 +1,20 @@
-version: '3.8'
+version: "2.1"
 
 services:
   db:
-    image: postgres
+    image: postgres:15
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: singularity
+    volumes:
+      - singularity_db:/var/lib/postgresql/data
     ports:
       - 5432:5432
 
@@ -19,7 +26,8 @@ services:
     environment:
       DATABASE_CONNECTION_STRING: postgres://postgres:postgres@db:5432/singularity
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   singularity_dataset_worker:
     image: datapreservationprogram/singularity:latest
@@ -27,4 +35,7 @@ services:
     environment:
       DATABASE_CONNECTION_STRING: postgres://postgres:postgres@db:5432/singularity
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+volumes:
+  singularity_db:
