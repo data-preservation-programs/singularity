@@ -4,3 +4,12 @@ By default, singularity is using `sqlite3` as the database backend since it need
 
 * Postgres example: `postgres://user:pass@example.com:5432/dbname`
 * Mysql example: `mysql://user:pass@example.com:5432/dbname`
+
+You can also use below docker compose template as a start point. It starts up a postgres database service and runs all relevant singularity services.
+
+```bash
+wget https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docker-compose.yml
+docker compose up
+```
+
+This will setup a&#x20;
