@@ -4,7 +4,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
 )
 
@@ -49,7 +49,7 @@ var DatasetWorkerCmd = &cli.Command{
 		if err != nil {
 			return handler.NewHandlerError(err)
 		}
-		worker := service.NewDatasetWorker(
+		worker := datasetworker.NewDatasetWorker(
 			db,
 			c.Int("concurrency"),
 			c.Bool("exit-on-complete"),

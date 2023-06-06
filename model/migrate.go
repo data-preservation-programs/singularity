@@ -24,6 +24,7 @@ var Tables = []interface{}{
 	&Schedule{},
 	&Wallet{},
 	&WalletAssignment{},
+	&ItemPart{},
 }
 
 var logger = logging.Logger("model")

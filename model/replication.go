@@ -93,7 +93,7 @@ type Schedule struct {
 	Duration                time.Duration `json:"duration"`
 	State                   ScheduleState `json:"state"`
 	LastProcessedTimestamp  uint64        `json:"lastProcessedTimestamp"`
-	ScheduleWorkerID        *string       `json:"scheduleWorkerId"`
+	ScheduleWorkerID        *string       `gorm:"index:schedule_cleanup" json:"scheduleWorkerId"`
 	ScheduleWorker          *Worker       `gorm:"foreignKey:ScheduleWorkerID;constraint:OnDelete:NO ACTION" json:"scheduleWorker,omitempty" swaggerignore:"true"`
 	ScheduleIntervalSeconds uint64        `json:"scheduleIntervalSeconds"`
 	ScheduleDealNumber      int           `json:"scheduleDealNumber"`
