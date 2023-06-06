@@ -1,4 +1,4 @@
-package pack
+package device
 
 import (
 	logging "github.com/ipfs/go-log/v2"

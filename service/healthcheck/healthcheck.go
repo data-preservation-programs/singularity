@@ -1,4 +1,4 @@
-package service
+package healthcheck
 
 import (
 	"context"
@@ -19,20 +19,18 @@ type State struct {
 }
 
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
-	ticker := time.NewTicker(time.Minute)
-	defer ticker.Stop()
 	for {
-		healthCheckCleanup(db)
+		HealthCheckCleanup(db)
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
+		case <-time.After(time.Minute):
 			continue
 		}
 	}
 }
 
-func healthCheckCleanup(db *gorm.DB) {
+func HealthCheckCleanup(db *gorm.DB) {
 	// Remove all workers that haven't sent heartbeat for 5 minutes
 	err := db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Delete(&model.Worker{}).Error
 	if err != nil {
@@ -94,13 +92,11 @@ func HealthCheck(db *gorm.DB, workerID uuid.UUID, getState func() State) {
 }
 
 func StartHealthCheck(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
-	ticker := time.NewTicker(time.Minute)
-	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
+		case <-time.After(time.Minute):
 			HealthCheck(db, workerID, getState)
 			continue
 		}

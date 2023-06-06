@@ -1,4 +1,4 @@
-package service
+package healthcheck
 
 import (
 	"github.com/data-preservation-programs/singularity/database"
@@ -42,7 +42,7 @@ func TestHealthCheck(t *testing.T) {
 	assert.NotEmpty(worker.Hostname)
 	assert.NotEqual(lastHeatbeat, worker.LastHeartbeat)
 
-	healthCheckCleanup(db)
+	HealthCheckCleanup(db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	assert.Nil(err)
 
@@ -52,7 +52,7 @@ func TestHealthCheck(t *testing.T) {
 		staleThreshold = oldThreshold
 	}()
 
-	healthCheckCleanup(db)
+	HealthCheckCleanup(db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	assert.ErrorIs(err, gorm.ErrRecordNotFound)
 }
