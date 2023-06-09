@@ -1,9 +1,8 @@
-package status
+package datasource
 
 import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strconv"
@@ -37,7 +36,6 @@ func GetSourceSummaryHandler(
 	db *gorm.DB,
 	id string,
 ) (*SourceStatusSummary, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

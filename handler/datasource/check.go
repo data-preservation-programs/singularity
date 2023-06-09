@@ -5,12 +5,12 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 	"strconv"
+	"time"
 )
 
 type CheckSourceRequest struct {
@@ -18,9 +18,10 @@ type CheckSourceRequest struct {
 }
 
 type Entry struct {
-	Size  int64  `json:"size"`
-	IsDir bool   `json:"isDir"`
-	Path  string `json:"path"`
+	Size         int64     `json:"size"`
+	IsDir        bool      `json:"isDir"`
+	Path         string    `json:"path"`
+	LastModified time.Time `json:"lastModified"`
 }
 
 type CheckSourceResult struct {
@@ -42,7 +43,6 @@ func CheckSourceHandler(
 	id string,
 	request CheckSourceRequest,
 ) ([]Entry, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
@@ -70,9 +70,10 @@ func CheckSourceHandler(
 		return underscore.Map(entries, func(entry fs.DirEntry) Entry {
 			_, isDir := entry.(fs.Directory)
 			return Entry{
-				Size: entry.Size(),
-				Path: entry.Remote(),
-				IsDir: isDir,
+				Size:         entry.Size(),
+				Path:         entry.Remote(),
+				IsDir:        isDir,
+				LastModified: entry.ModTime(ctx),
 			}
 		}), nil
 	}
@@ -83,9 +84,10 @@ func CheckSourceHandler(
 
 	return []Entry{
 		{
-			Size: obj.Size(),
-			Path: obj.Remote(),
-			IsDir: false,
+			Size:         obj.Size(),
+			Path:         obj.Remote(),
+			IsDir:        false,
+			LastModified: obj.ModTime(ctx),
 		},
 	}, nil
 }

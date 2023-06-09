@@ -4,7 +4,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +20,6 @@ func ListSourceHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Source, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	var sources []model.Source
 	if datasetName == "" {
 		err := db.Find(&sources).Error

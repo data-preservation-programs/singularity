@@ -6,7 +6,7 @@ import (
 
 var MigrateCmd = &cli.Command{
 	Name:  "migrate",
-	Usage: "Migrate data from old singularity mongodb",
+	Usage: "[alpha] Migrate data from old singularity mongodb",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "mongo-connection-string",

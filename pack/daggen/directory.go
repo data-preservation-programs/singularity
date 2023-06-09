@@ -81,21 +81,21 @@ func (d *DirectoryData) AddItem(name string, c cid.Cid, length uint64) error {
 	return d.dir.AddChild(context.Background(), name, NewDummyNode(length, c))
 }
 
-func (d *DirectoryData) AddItemFromLinks(name string, links []format.Link) error {
+func (d *DirectoryData) AddItemFromLinks(name string, links []format.Link) (cid.Cid, error) {
 	ctx := context.Background()
 	blks, node, err := pack.AssembleItemFromLinks(links)
 	if err != nil {
-		return errors.Wrap(err, "failed to assemble item from links")
+		return cid.Undef, errors.Wrap(err, "failed to assemble item from links")
 	}
 	err = d.dir.AddChild(ctx, name, node)
 	if err != nil {
-		return errors.Wrap(err, "failed to add child to directory")
+		return cid.Undef, errors.Wrap(err, "failed to add child to directory")
 	}
 	err = d.bstore.PutMany(ctx, blks)
 	if err != nil {
-		return errors.Wrap(err, "failed to put blocks into blockstore")
+		return cid.Undef, errors.Wrap(err, "failed to put blocks into blockstore")
 	}
-	return nil
+	return node.Cid(), nil
 }
 
 func (d *DirectoryData) MarshalBinary() ([]byte, error) {
@@ -103,6 +103,7 @@ func (d *DirectoryData) MarshalBinary() ([]byte, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get root Node")
 	}
+
 	s := serialized{
 		Root: root.Cid().Bytes(),
 	}

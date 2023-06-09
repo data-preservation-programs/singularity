@@ -8,7 +8,7 @@ import (
 
 var RemoveWalletCmd = &cli.Command{
 	Name:      "remove-wallet",
-	Usage:     "Remove an associated wallet from the dataset",
+	Usage:     "[alpha] Remove an associated wallet from the dataset",
 	ArgsUsage: "DATASET_NAME WALLET_ADDRESS",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)

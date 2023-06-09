@@ -8,8 +8,8 @@ import (
 )
 
 var ListWalletCmd = &cli.Command{
-	Name:  "list-wallet",
-	Usage: "List all associated wallets with the dataset",
+	Name:      "list-wallet",
+	Usage:     "[alpha] List all associated wallets with the dataset",
 	ArgsUsage: "DATASET_NAME",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)

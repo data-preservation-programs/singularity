@@ -4,7 +4,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +21,6 @@ func ListPiecesHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Car, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}

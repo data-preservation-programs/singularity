@@ -51,11 +51,13 @@ var DatasetWorkerCmd = &cli.Command{
 		}
 		worker := datasetworker.NewDatasetWorker(
 			db,
-			c.Int("concurrency"),
-			c.Bool("exit-on-complete"),
-			c.Bool("enable-scan"),
-			c.Bool("enable-pack"),
-			c.Bool("enable-dag"))
+			datasetworker.DatasetWorkerConfig{
+				Concurrency:    c.Int("concurrency"),
+				EnableScan:     c.Bool("enable-scan"),
+				EnablePack:     c.Bool("enable-pack"),
+				EnableDag:      c.Bool("enable-dag"),
+				ExitOnComplete: c.Bool("exit-on-complete"),
+			})
 		err = worker.Run(c.Context)
 		if err != nil {
 			return err

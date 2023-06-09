@@ -124,7 +124,7 @@ func NewRCloneHandler(ctx context.Context, source model.Source) (*RCloneHandler,
 		return nil, errors.Wrap(err, "failed to find rclone backend")
 	}
 
-	f, err := registry.NewFs(ctx, strconv.Itoa(int(source.ID)), source.Path, configmap.Simple(source.Metadata))
+	f, err := registry.NewFs(ctx, source.Type, source.Path, configmap.Simple(source.Metadata))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create rclone backend")
 	}
@@ -225,6 +225,12 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		Name:     "delete-after-export",
 		Usage:    "[Dangerous] Delete the files of the dataset after exporting it to CAR files. ",
 		Category: "Data Preparation Options",
+	})
+	flags = append(flags, &cli.DurationFlag{
+		Name:        "rescan-interval",
+		Usage:       "Automatically rescan the source directory when this interval has passed from last successful scan",
+		Category:    "Data Preparation Options",
+		DefaultText: "disabled",
 	})
 	cmd.Flags = flags
 	cmd.Description = strings.Join(usageLines, "\n")

@@ -16,7 +16,6 @@ import (
 
 type CreateRequest struct {
 	Name                 string   `json:"name" validate:"required"`                      // Name must be a unique identifier for a dataset
-	MinSizeStr           string   `json:"minSize" default:"30GiB" validate:"required"`   // Minimum size of the CAR files to be created
 	MaxSizeStr           string   `json:"maxSize" default:"31.5GiB" validate:"required"` // Maximum size of the CAR files to be created
 	PieceSizeStr         string   `json:"pieceSize" default:"" validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
 	OutputDirs           []string `json:"outputDirs" validate:"optional"`                // Output directory for CAR files. Do not set if using inline preparation
@@ -25,11 +24,6 @@ type CreateRequest struct {
 }
 
 func parseCreateRequest(request CreateRequest) (*model.Dataset, *handler.Error) {
-	minSize, err := humanize.ParseBytes(request.MinSizeStr)
-	if err != nil {
-		return nil, handler.NewBadRequestString("invalid value for min-size: " + err.Error())
-	}
-
 	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid value for max-size: " + err.Error())
@@ -81,7 +75,6 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, *handler.Error) 
 
 	return &model.Dataset{
 		Name:                 request.Name,
-		MinSize:              int64(minSize),
 		MaxSize:              int64(maxSize),
 		PieceSize:            int64(pieceSize),
 		OutputDirs:           outDirs,
@@ -106,7 +99,6 @@ func CreateHandler(
 	request CreateRequest,
 ) (*model.Dataset, *handler.Error) {
 	logger := log.Logger("cli")
-	log.SetAllLoggers(log.LevelInfo)
 	if request.Name == "" {
 		return nil, handler.NewBadRequestString("name is required")
 	}

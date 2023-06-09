@@ -109,6 +109,10 @@ func OpenInMemory() *gorm.DB {
 		logger.Panic(err)
 	}
 
+	err = model.DropAll(db)
+	if err != nil {
+		logger.Panic(err)
+	}
 	err = model.AutoMigrate(db)
 	if err != nil {
 		logger.Panic(err)

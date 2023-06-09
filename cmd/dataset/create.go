@@ -15,13 +15,6 @@ var CreateCmd = &cli.Command{
 		"The dataset is a top level object to distinguish different dataset.\n",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:     "min-size",
-			Aliases:  []string{"m"},
-			Usage:    "Minimum size of the CAR files to be created",
-			Value:    "30GiB",
-			Category: "Preparation Parameters",
-		},
-		&cli.StringFlag{
 			Name:     "max-size",
 			Aliases:  []string{"M"},
 			Usage:    "Maximum size of the CAR files to be created",
@@ -44,12 +37,12 @@ var CreateCmd = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:     "encryption-recipient",
-			Usage:    "Public key of the encryption recipient",
+			Usage:    "[Alpha] Public key of the encryption recipient",
 			Category: "Encryption",
 		},
 		&cli.StringFlag{
 			Name:     "encryption-script",
-			Usage:    "EncryptionScript command to run for custom encryption",
+			Usage:    "[Alpha] EncryptionScript command to run for custom encryption",
 			Category: "Encryption",
 		},
 	},
@@ -59,7 +52,6 @@ var CreateCmd = &cli.Command{
 			db,
 			dataset.CreateRequest{
 				Name:                 c.Args().Get(0),
-				MinSizeStr:           c.String("min-size"),
 				MaxSizeStr:           c.String("max-size"),
 				PieceSizeStr:         c.String("piece-size"),
 				OutputDirs:           c.StringSlice("output-dir"),

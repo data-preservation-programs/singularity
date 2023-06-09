@@ -60,7 +60,6 @@ var AddCmd = &cli.Command{
 				Type:                r.Prefix,
 				Path:                path,
 				Metadata:            model.Metadata(result),
-				PushOnly:            false,
 				ScanIntervalSeconds: 0,
 				ScanningState:       model.Ready,
 				DeleteAfterExport:   deleteAfterExport,
