@@ -9,16 +9,9 @@ import (
 
 var UpdateCmd = &cli.Command{
 	Name:      "update",
-	Usage:     "Update a new dataset",
+	Usage:     "Update an existing dataset",
 	ArgsUsage: "<dataset_name>",
 	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:     "min-size",
-			Aliases:  []string{"m"},
-			Usage:    "Minimum size of the CAR files to be created",
-			Value:    "20GiB",
-			Category: "Preparation Parameters",
-		},
 		&cli.StringFlag{
 			Name:     "max-size",
 			Aliases:  []string{"M"},
@@ -42,27 +35,42 @@ var UpdateCmd = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:     "encryption-recipient",
-			Usage:    "Public key of the encryption recipient",
+			Usage:    "[Alpha] Public key of the encryption recipient",
 			Category: "Encryption",
 		},
 		&cli.StringFlag{
 			Name:     "encryption-script",
-			Usage:    "EncryptionScript command to run for custom encryption",
+			Usage:    "[Alpha] EncryptionScript command to run for custom encryption",
 			Category: "Encryption",
 		},
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		dataset, err := dataset.CreateHandler(
+		var maxSizeStr *string
+		if c.IsSet("max-size") {
+			s := c.String("max-size")
+			maxSizeStr = &s
+		}
+		var pieceSizeStr *string
+		if c.IsSet("piece-size") {
+			s := c.String("piece-size")
+			pieceSizeStr = &s
+		}
+		var encryptionScript *string
+		if c.IsSet("encryption-script") {
+			s := c.String("encryption-script")
+			encryptionScript = &s
+		}
+		dataset, err := dataset.UpdateHandler(
 			db,
-			dataset.CreateRequest{
-				Name:                 c.Args().Get(0),
-				MinSizeStr:           c.String("min-size"),
-				MaxSizeStr:           c.String("max-size"),
-				PieceSizeStr:         c.String("piece-size"),
+			c.Args().Get(0),
+			dataset.UpdateRequest{
+				MaxSizeStr:           maxSizeStr,
+				PieceSizeStr:         pieceSizeStr,
 				OutputDirs:           c.StringSlice("output-dir"),
 				EncryptionRecipients: c.StringSlice("encryption-recipients"),
-				EncryptionScript:     c.String("encryption-script")},
+				EncryptionScript:     encryptionScript,
+			},
 		)
 		if err != nil {
 			return err

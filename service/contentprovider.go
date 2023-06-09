@@ -118,10 +118,6 @@ func (s *ContentProviderService) Start() {
 	s.StartBitswap()
 	logger := logging.Logger("contentprovider")
 	e := echo.New()
-	current := logging.GetConfig().Level
-	if logging.LevelInfo < current {
-		logging.SetAllLoggers(logging.LevelInfo)
-	}
 
 	e.Use(
 		middleware.RequestLoggerWithConfig(
@@ -272,7 +268,7 @@ func (s *ContentProviderService) handleGetCid(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to get handler: "+err.Error())
 	}
 
-	handle, _, err := handler.Read(c.Request().Context(), item.Path, item.Offset, item.Length)
+	handle, _, err := handler.Read(c.Request().Context(), item.Path, 0, item.Size)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to open handler: "+err.Error())
 	}

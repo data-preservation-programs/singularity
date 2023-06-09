@@ -6,13 +6,13 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -31,9 +31,10 @@ func UpdateSourceHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	id string,
+	deleteAfterExport *bool,
+	rescanInterval *time.Duration,
 	config Config,
 ) (*model.Source, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
@@ -50,6 +51,12 @@ func UpdateSourceHandler(
 	reg, err := fs.Find(t)
 	if err != nil {
 		return nil, handler.NewHandlerError(errors.New("invalid source type"))
+	}
+	if deleteAfterExport != nil {
+		source.DeleteAfterExport = *deleteAfterExport
+	}
+	if rescanInterval != nil {
+		source.ScanIntervalSeconds = uint64(rescanInterval.Seconds())
 	}
 	for key, value := range config {
 		snake := lowerCamelToSnake(key)
@@ -81,7 +88,13 @@ func UpdateSourceHandler(
 		return nil, handler.NewBadRequestError(err)
 	}
 
-	err = database.DoRetry(func() error { return db.Model(&source).Update("metadata", source.Metadata).Error })
+	err = database.DoRetry(func() error {
+		return db.Model(&source).Updates(map[string]interface{}{
+			"metadata":              source.Metadata,
+			"scan_interval_seconds": source.ScanIntervalSeconds,
+			"delete_after_export":   source.DeleteAfterExport,
+		}).Error
+	})
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}

@@ -16,12 +16,5 @@ lint:
 swag:
 	swag init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./api/docs
 
-remote:
-	go build -o testremote ./datasource/cmd
-
 test:
-	make build
-	./singularity admin reset
-	./singularity dataset create -m 1.5GB -M 2GB test
-	./singularity datasource add local test ~/test/
-	GOLOG_LOG_LEVEL=debug ./singularity run dataset-worker --exit-on-complete=true
+	gotestsum --format testname ./...

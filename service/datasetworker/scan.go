@@ -26,24 +26,15 @@ func maxSizeToSplitSize(m int64) int64 {
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned item, which is useful for resuming a failed scan
 func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
-	var dataset model.Dataset
-	err := w.db.Model(&model.Dataset{}).Where("id = ?", source.DatasetID).First(&dataset).Error
+	dataset := *source.Dataset
 	splitSize := maxSizeToSplitSize(dataset.MaxSize)
-	if err != nil {
-		return errors.Wrap(err, "failed to get dataset")
-	}
-	var root model.Directory
-	err = w.db.Model(&model.Directory{}).Select("id", "cid", "name", "parent_id").
-		Where("id = ?", source.RootDirectoryID).First(&root).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to get root directory")
-	}
+	root := *source.RootDirectory
 
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
-	err = w.db.Preload("Item").
-		Where("source_id = ? AND chunk_id is null", source.ID, false).
-		Order("id asc").
+	err := w.db.Joins("Item").Preload("Item").
+		Where("source_id = ? AND chunk_id is null", source.ID).
+		Order("item_parts.id asc").
 		Find(&remainingParts).Error
 	if err != nil {
 		return err
@@ -92,9 +83,9 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 		err = w.db.Model(&model.Item{}).Where(
 			"source_id = ? AND path = ? AND "+
 				"(( hash = ? AND hash != '' ) "+
-				"OR (size = ? AND (? OR last_modified = ?))",
+				"OR (size = ? AND (? OR last_modified_timestamp_nano = ?)))",
 			source.ID, entry.Info.Remote(),
-			hashValue, entry.Info.Size(), !lastModifiedReliable, lastModified,
+			hashValue, entry.Info.Size(), !lastModifiedReliable, lastModified.UnixNano(),
 		).Count(&existing).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to check existing item")
@@ -103,12 +94,12 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			continue
 		}
 		item := model.Item{
-			SourceID:     source.ID,
-			ScannedAt:    entry.ScannedAt,
-			Path:         entry.Info.Remote(),
-			Size:         entry.Info.Size(),
-			LastModified: entry.Info.ModTime(ctx),
-			Hash:         hashValue,
+			SourceID:                  source.ID,
+			ScannedAt:                 entry.ScannedAt,
+			Path:                      entry.Info.Remote(),
+			Size:                      entry.Info.Size(),
+			LastModifiedTimestampNano: lastModified.UnixNano(),
+			Hash:                      hashValue,
 		}
 		w.logger.Debugw("found item", "item", item)
 		err = w.ensureParentDirectories(&item, root)
@@ -132,7 +123,6 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 						ItemID:   item.ID,
 						Offset:   offset,
 						Length:   length,
-						SourceID: source.ID,
 					})
 					offset += length
 					if offset >= item.Size {
@@ -229,10 +219,10 @@ func (w *DatasetWorkerThread) chunkOnce(
 				if err != nil {
 					return errors.Wrap(err, "failed to create chunk")
 				}
-				itemIDs := underscore.Map(remaining.itemParts[:si], func(item model.ItemPart) uint64 {
+				itemPartIDs := underscore.Map(remaining.itemParts[:si], func(item model.ItemPart) uint64 {
 					return item.ID
 				})
-				err = w.db.Model(&model.Item{}).Where("id IN ?", itemIDs).Update("chunk_id", chunk.ID).Error
+				err = w.db.Model(&model.ItemPart{}).Where("id IN ?", itemPartIDs).Update("chunk_id", chunk.ID).Error
 				if err != nil {
 					return errors.Wrap(err, "failed to update items")
 				}
@@ -266,9 +256,11 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, root mod
 			ParentID: &last.ID,
 		}
 		err := database.DoRetry(func() error {
-			return w.db.Select("id", "cid", "name", "parent_id").
-				Where("parent_id = ? AND name = ?", last.ID, segment).
-				FirstOrCreate(&newDir).Error
+			return w.db.Transaction(func(db *gorm.DB) error {
+				return db.Select("id", "cid", "name", "parent_id").
+					Where("parent_id = ? AND name = ?", last.ID, segment).
+					FirstOrCreate(&newDir).Error
+			})
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to create directory")

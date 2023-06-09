@@ -7,6 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
+	"time"
 )
 
 var UpdateCmd = &cli.Command{
@@ -26,13 +27,33 @@ var UpdateCmd = &cli.Command{
 			})
 			flags = append(flags, cmdFlags...)
 		}
-		return flags
+		keys := make(map[string]cli.Flag)
+		newFlags := make([]cli.Flag, 0)
+		for _, flag := range flags {
+			if _, ok := keys[flag.Names()[0]]; !ok {
+				keys[flag.Names()[0]] = flag
+				newFlags = append(newFlags, flag)
+			}
+		}
+		return newFlags
 	}(),
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 		config := map[string]string{}
+		var deleteAfterExport *bool
+		var rescanInterval *time.Duration
 		for _, name := range c.LocalFlagNames() {
 			if c.IsSet(name) {
+				if name == "delete-after-export" {
+					b := c.Bool(name)
+					deleteAfterExport = &b
+					continue
+				}
+				if name == "rescan-interval" {
+					d := c.Duration(name)
+					rescanInterval = &d
+					continue
+				}
 				value := c.String(name)
 				config[name] = value
 			}
@@ -42,6 +63,8 @@ var UpdateCmd = &cli.Command{
 			db,
 			context.Background(),
 			c.Args().Get(0),
+			deleteAfterExport,
+			rescanInterval,
 			config,
 		)
 		if err != nil {

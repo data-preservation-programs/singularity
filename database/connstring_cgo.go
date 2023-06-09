@@ -46,12 +46,12 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 		return gorm.Open(postgres.Open(connString), config)
 	}
 
-	if strings.HasPrefix(connString, "mysql:") {
-		return gorm.Open(mysql.Open(connString[6:]), config)
+	if strings.HasPrefix(connString, "mysql://") {
+		return gorm.Open(mysql.Open(connString[8:]), config)
 	}
 
-	if strings.HasPrefix(connString, "sqlserver:") {
-		return gorm.Open(sqlserver.Open(connString[10:]), config)
+	if strings.HasPrefix(connString, "sqlserver://") {
+		return gorm.Open(sqlserver.Open(connString), config)
 	}
 
 	return nil, ErrDatabaseNotSupported

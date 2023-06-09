@@ -162,10 +162,9 @@ func (s DatasetListenerService) pushItem(c echo.Context, itemInfo ItemInfo) erro
 		ScannedAt: time.Now().UTC(),
 		SourceID:  source.ID,
 		//TODO: Type:         itemInfo.Type,
-		Path:         itemInfo.Path,
-		Size:         entry.Size(),
-		Length:       entry.Size(),
-		LastModified: entry.ModTime(c.Request().Context()),
+		Path:                      itemInfo.Path,
+		Size:                      entry.Size(),
+		LastModifiedTimestampNano: entry.ModTime(c.Request().Context()).UnixNano(),
 	}).Error
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
@@ -246,11 +245,9 @@ func (s DatasetListenerService) uploadFile(c echo.Context) error {
 		ScannedAt: now,
 		SourceID:  source.ID,
 		//TODO: Type:         model.File,
-		Path:         dstPath,
-		Size:         written,
-		Offset:       0,
-		Length:       written,
-		LastModified: lastModified,
+		Path:                      dstPath,
+		Size:                      written,
+		LastModifiedTimestampNano: lastModified.UnixNano(),
 	})
 
 	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))

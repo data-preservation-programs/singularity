@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
-	"github.com/data-preservation-programs/singularity/handler/datasource/status"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
@@ -135,11 +135,9 @@ func (s Server) UploadFile(c echo.Context) error {
 		ScannedAt: now,
 		SourceID:  source.ID,
 		//TODO Type:         model.File,
-		Path:         dstPath,
-		Size:         written,
-		Offset:       0,
-		Length:       written,
-		LastModified: lastModified,
+		Path:                      dstPath,
+		Size:                      written,
+		LastModifiedTimestampNano: lastModified.UnixNano(),
 	})
 
 	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))
@@ -284,12 +282,11 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 	}
 
 	err = s.db.WithContext(c.Request().Context()).Create(&model.Item{
-		ScannedAt:    time.Now().UTC(),
-		SourceID:     source.ID,
-		Path:         itemInfo.Path,
-		Size:         entry.Size(),
-		Length:       entry.Size(),
-		LastModified: entry.ModTime(c.Request().Context()),
+		ScannedAt:                 time.Now().UTC(),
+		SourceID:                  source.ID,
+		Path:                      itemInfo.Path,
+		Size:                      entry.Size(),
+		LastModifiedTimestampNano: entry.ModTime(c.Request().Context()).UnixNano(),
 	}).Error
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
@@ -442,7 +439,6 @@ func (d Server) HandlePostSource(c echo.Context) error {
 		Type:                r.Prefix,
 		Path:                path,
 		Metadata:            model.Metadata(config),
-		PushOnly:            false,
 		ScanIntervalSeconds: 0,
 		ScanningState:       model.Ready,
 		DeleteAfterExport:   deleteAfterExport,
@@ -509,17 +505,9 @@ func (d Server) setupRoutes(e *echo.Echo) {
 	// Data source status
 	e.DELETE("/api/source/:id", d.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/check", d.toEchoHandler(datasource2.CheckSourceHandler))
-	e.GET("/api/source/:id/summary", d.toEchoHandler(status.GetSourceSummaryHandler))
-	e.GET("/api/source/:id/chunks", d.toEchoHandler(status.GetSourceChunksHandler))
-	e.GET("/api/source/:id/items", func(c echo.Context) error {
-		id := c.Param("id")
-		chunkID := c.QueryParam("chunk_id")
-		items, err := status.GetSourceItemsHandler(d.db.WithContext(c.Request().Context()), id, chunkID)
-		if err != nil {
-			return err.HttpResponse(c)
-		}
-		return c.JSON(http.StatusOK, items)
-	})
+	e.GET("/api/source/:id/summary", d.toEchoHandler(datasource2.GetSourceSummaryHandler))
+	e.GET("/api/source/:id/chunks", d.toEchoHandler(inspect.GetSourceChunksHandler))
+	e.GET("/api/source/:id/items", d.toEchoHandler(inspect.GetSourceItemsHandler))
 
 	e.POST("/api/deal/send_manual", d.toEchoHandler(deal.SendManualHandler))
 
@@ -550,10 +538,6 @@ var logger = logging.Logger("api")
 
 func (d Server) Run(c *cli.Context) error {
 	e := echo.New()
-	current := logging.GetConfig().Level
-	if logging.LevelInfo < current {
-		logging.SetAllLoggers(logging.LevelInfo)
-	}
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,

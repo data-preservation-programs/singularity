@@ -12,30 +12,30 @@ func TestDirectoryData(t *testing.T) {
 	d := NewDirectoryData()
 	binary, err := d.MarshalBinary()
 	assert.NoError(t, err)
-	assert.Len(t, binary, 96)
+	assert.Len(t, binary, 100)
 	err = d.UnmarshallBinary(binary)
 	assert.NoError(t, err)
 	err = d.AddItem("test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
 	assert.NoError(t, err)
-	err = d.AddItemFromLinks("test2", []format.Link{
+	_, err = d.AddItemFromLinks("test2", []format.Link{
 		{
-			Cid: cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))),
+			Cid:  cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))),
 			Size: 5,
 		},
 		{
-			Cid: cid.NewCidV1(cid.Raw, util.Hash([]byte("test3"))),
+			Cid:  cid.NewCidV1(cid.Raw, util.Hash([]byte("test3"))),
 			Size: 5,
 		},
 	})
 	binary, err = d.MarshalBinary()
 	assert.NoError(t, err)
-	assert.Len(t, binary, 377)
+	assert.Len(t, binary, 375)
 	err = d.UnmarshallBinary(binary)
 	assert.NoError(t, err)
 	err = d.AddItem("test4", cid.NewCidV1(cid.Raw, util.Hash([]byte("test4"))), 5)
 	binary, err = d.MarshalBinary()
 	assert.NoError(t, err)
-	assert.Len(t, binary, 568)
+	assert.Len(t, binary, 563)
 }
 
 func TestResolveDirectoryTree(t *testing.T) {

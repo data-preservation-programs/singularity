@@ -129,10 +129,12 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	item := model.Item{
+	item := model.ItemPart{
 		Offset: 0,
 		Length: 5,
-		Size: 5,
+		Item: &model.Item{
+			Size: 5,
+		},
 	}
 	blockResultChan, _, err := GetBlockStreamFromItem(ctx, handler, item, nil)
 	assert.NoError(t, err)

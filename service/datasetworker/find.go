@@ -3,7 +3,7 @@ package datasetworker
 import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
-	"gorm.io/gorm/clause"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -12,22 +12,33 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 		return nil, nil
 	}
 	var chunks []model.Chunk
+
 	err := database.DoRetry(func() error {
-		return w.db.Model(&chunks).
-			Where(
-				"packing_state = ? OR (packing_state = ? AND packing_worker_id is null)",
-				model.Ready,
-				model.Processing,
-			).
-			Order("id asc").
-			Limit(1).
-			Clauses(clause.Returning{}).
-			Updates(map[string]interface{}{
-				"packing_state":     model.Processing,
-				"packing_worker_id": w.id,
-				"error_message":     "",
-			}).Error
+		return w.db.Transaction(func(db *gorm.DB) error {
+			// First, find the id of the record to update
+			err := db.
+				Where("packing_state = ? OR (packing_state = ? AND packing_worker_id is null)", model.Ready, model.Processing).
+				Order("id asc").
+				Limit(1).
+				Find(&chunks).Error
+			if err != nil {
+				return err
+			}
+
+			if len(chunks) == 0 {
+				return nil
+			}
+
+			// Then, perform the update using the found id
+			return db.Model(&chunks[0]).
+				Updates(map[string]interface{}{
+					"packing_state":     model.Processing,
+					"packing_worker_id": w.id,
+					"error_message":     "",
+				}).Error
+		})
 	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -54,22 +65,36 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 	// Find all ready sources or sources that is being processed but does not have a worker id,
 	// or all source that is complete but needs rescanning
 	err := database.DoRetry(func() error {
-		return w.db.Model(&sources).
-			Where("(scanning_state = ? OR (scanning_state = ? AND scanning_worker_id is null)) OR "+
-				"(scanning_state = ? AND scan_interval_seconds > 0 AND last_scanned_timestamp + scan_interval_seconds < ?)",
-				model.Ready,
-				model.Processing,
-				model.Complete,
-				time.Now().UTC().Unix()).
-			Order("id asc").
-			Limit(1).
-			Clauses(clause.Returning{}).
-			Updates(map[string]interface{}{
-				"scanning_state":     model.Processing,
-				"scanning_worker_id": w.id,
-				"error_message":      "",
-			}).Error
+		return w.db.Transaction(func(db *gorm.DB) error {
+			err := w.db.
+				Where(
+					"(scanning_state = ? OR (scanning_state = ? AND scanning_worker_id is null)) OR "+
+						"(scanning_state = ? AND scan_interval_seconds > 0 AND last_scanned_timestamp + scan_interval_seconds < ?)",
+					model.Ready,
+					model.Processing,
+					model.Complete,
+					time.Now().UTC().Unix()).
+				Order("id asc").
+				Limit(1).Find(&sources).Error
+			if err != nil {
+				return err
+			}
+			if len(sources) == 0 {
+				return nil
+			}
+			err = db.Model(&sources[0]).
+				Updates(map[string]interface{}{
+					"scanning_state":     model.Processing,
+					"scanning_worker_id": w.id,
+					"error_message":      "",
+				}).Error
+			if err != nil {
+				return err
+			}
+			return nil
+		})
 	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -78,5 +103,14 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 		return nil, nil
 	}
 
+	err = w.db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	if err != nil {
+		return nil, err
+	}
+
+	err = w.db.Model(&sources[0]).Association("RootDirectory").Find(&sources[0].RootDirectory)
+	if err != nil {
+		return nil, err
+	}
 	return &sources[0], nil
 }

@@ -43,7 +43,7 @@ func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.B
 	reader, _, err := handler.Read(
 		ctx,
 		carBlock.Item.Path,
-		carBlock.CarOffset+carBlock.Item.Offset,
+		carBlock.CarOffset, //+carBlock.Item.Offset,
 		int64(carBlock.CarBlockLength))
 	if err != nil {
 		return nil, err
