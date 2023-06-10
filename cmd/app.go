@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
 	"github.com/data-preservation-programs/singularity/cmd/deal/spadepolicy"
+	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/data-preservation-programs/singularity/util/must"
@@ -39,12 +40,6 @@ var app = &cli.App{
 			Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
 			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 		},
-		&cli.StringFlag{
-			Name:    "password",
-			Usage:   "Password used to derive encryption key for credentials encryption",
-			EnvVars: []string{"PASSWORD"},
-			Value:   "1234",
-		},
 		&cli.BoolFlag{
 			Name:  "verbose",
 			Usage: "Enable verbose logging",
@@ -57,9 +52,11 @@ var app = &cli.App{
 		},
 	},
 	Commands: []*cli.Command{
+		ez.PrepCmd,
 		{
-			Name:  "admin",
-			Usage: "Admin commands",
+			Name:     "admin",
+			Usage:    "Admin commands",
+			Category: "Operations",
 			Subcommands: []*cli.Command{
 				admin.InitCmd,
 				admin.ResetCmd,
@@ -68,8 +65,9 @@ var app = &cli.App{
 		},
 		DownloadCmd,
 		{
-			Name:  "deal",
-			Usage: "Replication / Deal making management",
+			Name:     "deal",
+			Usage:    "Replication / Deal making management",
+			Category: "Operations",
 			Subcommands: []*cli.Command{
 				{
 					Name:  "schedule",
@@ -95,8 +93,9 @@ var app = &cli.App{
 			},
 		},
 		{
-			Name:  "run",
-			Usage: "Run different singularity components",
+			Name:     "run",
+			Category: "Daemons",
+			Usage:    "Run different singularity components",
 			Subcommands: []*cli.Command{
 				run.ApiCmd,
 				run.DatasetWorkerCmd,
@@ -106,8 +105,9 @@ var app = &cli.App{
 			},
 		},
 		{
-			Name:  "dataset",
-			Usage: "Dataset management",
+			Name:     "dataset",
+			Category: "Operations",
+			Usage:    "Dataset management",
 			Subcommands: []*cli.Command{
 				dataset.CreateCmd,
 				dataset.ListDatasetCmd,
@@ -121,8 +121,9 @@ var app = &cli.App{
 			},
 		},
 		{
-			Name:  "datasource",
-			Usage: "Data source management",
+			Name:     "datasource",
+			Category: "Operations",
+			Usage:    "Data source management",
 			Subcommands: []*cli.Command{
 				datasource.AddCmd,
 				datasource.ListCmd,
@@ -145,8 +146,9 @@ var app = &cli.App{
 			},
 		},
 		{
-			Name:  "wallet",
-			Usage: "Wallet management",
+			Name:     "wallet",
+			Category: "Operations",
+			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
 				wallet.ImportCmd,
 				wallet.ListCmd,

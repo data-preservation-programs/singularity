@@ -1,10 +1,11 @@
 package daggen
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
-	"github.com/fxamacker/cbor"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -13,8 +14,15 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	uio "github.com/ipfs/go-unixfs/io"
+	"github.com/ipld/go-car"
+	"github.com/ipld/go-car/util"
+	"github.com/klauspost/compress/zstd"
 	"github.com/pkg/errors"
+	"io"
 )
+
+var encoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
+var decoder, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(0))
 
 func ResolveDirectoryTree(currentID uint64,
 	dirCache map[uint64]*DirectoryData,
@@ -60,20 +68,18 @@ type DirectoryData struct {
 	bstore    blockstore.Blockstore
 }
 
-type serialized struct {
-	Root   []byte
-	Blocks [][2][]byte
-}
-
 func NewDirectoryData() DirectoryData {
 	ds := datastore.NewMapDatastore()
 	bs := blockstore.NewBlockstore(ds)
+	bs.HashOnRead(false)
 	dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
 	dir := uio.NewDirectory(dagServ)
 	dir.SetCidBuilder(merkledag.V1CidPrefix())
+	node, _ := dir.GetNode()
 	return DirectoryData{
 		dir:    dir,
 		bstore: bs,
+		Node:   node,
 	}
 }
 
@@ -99,20 +105,26 @@ func (d *DirectoryData) AddItemFromLinks(name string, links []format.Link) (cid.
 }
 
 func (d *DirectoryData) MarshalBinary() ([]byte, error) {
+	d.bstore.HashOnRead(false)
+	buf := &bytes.Buffer{}
 	root, err := d.dir.GetNode()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get root Node")
 	}
-
-	s := serialized{
-		Root: root.Cid().Bytes(),
+	_, err = pack.WriteCarHeader(buf, root.Cid())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to write CAR header")
 	}
 	ctx := context.Background()
+	err = d.bstore.DeleteBlock(ctx, d.Node.Cid())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to delete old Node from blockstore")
+	}
+	d.Node = root
 	err = d.bstore.Put(ctx, root)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to put root Node into blockstore")
 	}
-	d.bstore.HashOnRead(false)
 	ch, err := d.bstore.AllKeysChan(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get all keys from blockstore")
@@ -122,18 +134,18 @@ func (d *DirectoryData) MarshalBinary() ([]byte, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get data from blockstore")
 		}
-		s.Blocks = append(s.Blocks, [2][]byte{k.Bytes(), data.RawData()})
+		_, err = pack.WriteCarBlock(buf, data)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to write CAR block")
+		}
 	}
-	result, err := cbor.Marshal(s, cbor.CanonicalEncOptions())
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal data")
-	}
-	return result, nil
+	return encoder.EncodeAll(buf.Bytes(), make([]byte, 0, len(buf.Bytes()))), nil
 }
 
 func (d *DirectoryData) UnmarshallBinary(data []byte) error {
 	ds := datastore.NewMapDatastore()
 	bs := blockstore.NewBlockstore(ds)
+	bs.HashOnRead(false)
 	dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
 	if len(data) == 0 {
 		dir := uio.NewDirectory(dagServ)
@@ -151,17 +163,25 @@ func (d *DirectoryData) UnmarshallBinary(data []byte) error {
 	}
 
 	ctx := context.Background()
-	var s serialized
-	err := cbor.Unmarshal(data, &s)
+	decoded, err := decoder.DecodeAll(data, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal data")
+		return errors.Wrap(err, "failed to decode data")
 	}
-	dirCID := cid.MustParse(s.Root)
-	for _, b := range s.Blocks {
-		blk, err := blocks.NewBlockWithCid(b[1], cid.MustParse(b[0]))
-		if err != nil {
-			return errors.Wrap(err, "failed to create block")
+	reader := bufio.NewReader(bytes.NewReader(decoded))
+	ch, err := car.ReadHeader(reader)
+	if err != nil {
+		return errors.Wrap(err, "failed to read CAR header")
+	}
+	dirCID := ch.Roots[0]
+	for {
+		c, data, err := util.ReadNode(reader)
+		if err != nil && err != io.EOF {
+			return errors.Wrap(err, "failed to read CAR block")
 		}
+		if err == io.EOF {
+			break
+		}
+		blk, _ := blocks.NewBlockWithCid(data, c)
 		err = bs.Put(ctx, blk)
 		if err != nil {
 			return errors.Wrap(err, "failed to put data into blockstore")

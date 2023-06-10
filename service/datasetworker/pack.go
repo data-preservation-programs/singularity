@@ -207,9 +207,15 @@ func (w *DatasetWorkerThread) pack(
 	w.logger.With("chunk_id", chunk.ID).Info("finished packing")
 	if chunk.Source.DeleteAfterExport && result.CarFilePath != "" {
 		w.logger.Info("Deleting original data source")
+		handled := map[uint64]struct{}{}
 		for _, itemPart := range chunk.ItemParts {
+			if _, ok := handled[itemPart.ItemID]; ok {
+				continue
+			}
+			handled[itemPart.ItemID] = struct{}{}
 			object := result.Objects[itemPart.ItemID]
 			if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
+				w.logger.Debugw("removing object", "path", object.Remote())
 				err = object.Remove(ctx)
 				if err != nil {
 					w.logger.Warnw("failed to remove object", "error", err)
@@ -228,6 +234,7 @@ func (w *DatasetWorkerThread) pack(
 				w.logger.Info("not all items have been exported yet, skipping delete")
 				continue
 			}
+			w.logger.Debugw("removing object", "path", object.Remote())
 			err = object.Remove(ctx)
 			if err != nil {
 				w.logger.Warnw("failed to remove object", "error", err)

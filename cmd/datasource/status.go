@@ -32,8 +32,9 @@ var StatusCmd = &cli.Command{
 			return nil
 		}
 
-		cliutil.PrintToConsole(result.Source, c.Bool("json"))
+		fmt.Println("Chunks by state:")
 		cliutil.PrintToConsole(result.ChunkSummary, c.Bool("json"))
+		fmt.Println("Items by state:")
 		cliutil.PrintToConsole(result.ItemSummary, c.Bool("json"))
 		return nil
 	},

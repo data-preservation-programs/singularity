@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/data-preservation-programs/singularity/cmd"
+	log2 "github.com/ipfs/go-log/v2"
 	"log"
 	"os"
 
@@ -22,6 +23,9 @@ func init() {
 // @BasePath /api
 // @securityDefinitions none
 func main() {
+	if log2.GetConfig().Level > log2.LevelInfo && os.Getenv("GOLOG_LOG_LEVEL") == "info" {
+		log2.SetAllLoggers(log2.LevelInfo)
+	}
 	if err := cmd.RunApp(context.TODO(), os.Args); err != nil {
 		log.Fatal(err)
 	}

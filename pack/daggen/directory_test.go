@@ -5,8 +5,23 @@ import (
 	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 )
+
+func TestMarshalling(t *testing.T) {
+	var initial []byte
+	dirData := &DirectoryData{}
+	err := dirData.UnmarshallBinary(initial)
+	assert.NoError(t, err)
+	for i := 0; i < 10000; i++ {
+		err = dirData.AddItem(strconv.Itoa(i), cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i)))), 4)
+		assert.NoError(t, err)
+	}
+	initial, err = dirData.MarshalBinary()
+	assert.NoError(t, err)
+	t.Log(len(initial))
+}
 
 func TestDirectoryData(t *testing.T) {
 	d := NewDirectoryData()

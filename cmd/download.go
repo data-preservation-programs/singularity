@@ -9,6 +9,7 @@ import (
 var DownloadCmd = &cli.Command{
 	Name:      "download",
 	Usage:     "Download a CAR file from the metadata API",
+	Category:  "Utility",
 	ArgsUsage: "PIECE_CID",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
