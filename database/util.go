@@ -16,7 +16,7 @@ import (
 )
 
 func retryOn(err error) bool {
-	return strings.Contains(err.Error(), "database is locked")
+	return strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
 }
 
 func DoRetry(f func() error) error {

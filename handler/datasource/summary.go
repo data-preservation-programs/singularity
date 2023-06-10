@@ -14,13 +14,13 @@ type ChunksByState struct {
 }
 
 type ItemSummary struct {
-	NumOfItems int64 `json:"numOfItems"` // number of items in the source
+	Total    int64 `json:"total"`    // number of items in the source
+	Prepared int64 `json:"prepared"` // number of items prepared
 }
 
 type SourceStatusSummary struct {
 	ChunkSummary []ChunksByState `json:"chunkSummary"` // summary of the chunks
 	ItemSummary  ItemSummary     `json:"itemSummary"`  // summary of the items
-	Source       model.Source    `json:"source"`       // the source
 }
 
 // GetSourceSummaryHandler godoc
@@ -49,9 +49,7 @@ func GetSourceSummaryHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	summary := SourceStatusSummary{
-		Source: source,
-	}
+	summary := SourceStatusSummary{}
 	err = db.Model(&model.Chunk{}).
 		Select("count(*) as count, packing_state as state").
 		Where("source_id = ?", sourceID).
@@ -60,7 +58,12 @@ func GetSourceSummaryHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	err = db.Model(&model.Item{}).Where("source_id = ?", sourceID).Count(&summary.ItemSummary.NumOfItems).Error
+	err = db.Model(&model.Item{}).Where("source_id = ?", sourceID).Count(&summary.ItemSummary.Total).Error
+	if err != nil {
+		return nil, handler.NewHandlerError(err)
+	}
+
+	err = db.Model(&model.Item{}).Where("source_id = ? AND cid IS NOT NULL", sourceID).Count(&summary.ItemSummary.Prepared).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}

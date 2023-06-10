@@ -23,6 +23,7 @@ var UpdateCmd = &cli.Command{
 					return flag
 				}
 				stringFlag.Required = false
+				stringFlag.Category = "Options for " + cmd.Name
 				return stringFlag
 			})
 			flags = append(flags, cmdFlags...)
