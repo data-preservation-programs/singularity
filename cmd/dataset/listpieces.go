@@ -9,7 +9,7 @@ import (
 
 var ListPiecesCmd = &cli.Command{
 	Name:      "list-pieces",
-	Usage:     "[alpha] List all pieces for the dataset that are available for deal making",
+	Usage:     "List all pieces for the dataset that are available for deal making",
 	ArgsUsage: "<dataset_name>",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)

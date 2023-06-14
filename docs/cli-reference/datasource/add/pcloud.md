@@ -8,18 +8,32 @@ USAGE:
    singularity datasource add pcloud [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --pcloud-username
+      Your pcloud username.
+            
+      This is only required when you want to use the cleanup command. Due to a bug
+      in the pcloud API the required API does not support OAuth authentication so
+      we have to rely on user password authentication for it.
+
    --pcloud-client-id
       OAuth Client Id.
       
       Leave blank normally.
 
-   --pcloud-token-url
-      Token server url.
+   --pcloud-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --pcloud-auth-url
+      Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --pcloud-root-folder-id
-      Fill in for rclone to use a non root folder as its starting point.
+   --pcloud-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --pcloud-hostname
       Hostname to connect to.
@@ -33,33 +47,19 @@ DESCRIPTION:
          | api.pcloud.com  | Original/US region
          | eapi.pcloud.com | EU region
 
-   --pcloud-password
-      Your pcloud password.
-
-   --pcloud-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
    --pcloud-token
       OAuth Access Token as a JSON blob.
 
-   --pcloud-auth-url
-      Auth server URL.
+   --pcloud-token-url
+      Token server url.
       
       Leave blank to use the provider defaults.
 
-   --pcloud-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --pcloud-root-folder-id
+      Fill in for rclone to use a non root folder as its starting point.
 
-   --pcloud-username
-      Your pcloud username.
-            
-      This is only required when you want to use the cleanup command. Due to a bug
-      in the pcloud API the required API does not support OAuth authentication so
-      we have to rely on user password authentication for it.
+   --pcloud-password
+      Your pcloud password.
 
 
 OPTIONS:

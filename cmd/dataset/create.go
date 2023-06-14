@@ -37,7 +37,7 @@ var CreateCmd = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:     "encryption-recipient",
-			Usage:    "[Alpha] Public key of the encryption recipient",
+			Usage:    "Public key of the encryption recipient",
 			Category: "Encryption",
 		},
 		&cli.StringFlag{

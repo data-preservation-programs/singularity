@@ -8,26 +8,6 @@ USAGE:
    singularity datasource add zoho [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --zoho-region
-      Zoho region to connect to.
-      
-      You'll have to use the region your organization is registered in. If
-      not sure use the same top level domain as you connect to in your
-      browser.
-
-      Examples:
-         | com    | United states / Global
-         | eu     | Europe
-         | in     | India
-         | jp     | Japan
-         | com.cn | China
-         | com.au | Australia
-
-   --zoho-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --zoho-client-id
       OAuth Client Id.
       
@@ -50,6 +30,26 @@ DESCRIPTION:
       Token server url.
       
       Leave blank to use the provider defaults.
+
+   --zoho-region
+      Zoho region to connect to.
+      
+      You'll have to use the region your organization is registered in. If
+      not sure use the same top level domain as you connect to in your
+      browser.
+
+      Examples:
+         | com    | United states / Global
+         | eu     | Europe
+         | in     | India
+         | jp     | Japan
+         | com.cn | China
+         | com.au | Australia
+
+   --zoho-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

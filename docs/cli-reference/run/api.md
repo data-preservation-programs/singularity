@@ -1,4 +1,4 @@
-# [Alpha] Run the singularity API
+# Run the singularity API
 
 ```
 NAME:

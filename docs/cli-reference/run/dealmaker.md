@@ -1,4 +1,4 @@
-# [Alpha] Start a deal making/tracking worker to process deal making
+# Start a deal making/tracking worker to process deal making
 
 ```
 NAME:

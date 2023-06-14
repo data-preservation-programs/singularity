@@ -8,40 +8,14 @@ USAGE:
    singularity datasource add ftp [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --ftp-writing-mdtm
-      Use MDTM to set modification time (VsFtpd quirk)
+   --ftp-no-check-certificate
+      Do not verify the TLS certificate of the server.
 
    --ftp-force-list-hidden
       Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
 
-   --ftp-idle-timeout
-      Max time before closing idle connections.
-      
-      If no connections have been returned to the connection pool in the time
-      given, rclone will empty the connection pool.
-      
-      Set to 0 to keep connections indefinitely.
-      
-
-   --ftp-user
-      FTP username.
-
-   --ftp-concurrency
-      Maximum number of FTP simultaneous connections, 0 for unlimited.
-      
-      Note that setting this is very likely to cause deadlocks so it should
-      be used with care.
-      
-      If you are doing a sync or copy then make sure concurrency is one more
-      than the sum of `--transfers` and `--checkers`.
-      
-      If you use `--check-first` then it just needs to be one more than the
-      maximum of `--checkers` and `--transfers`.
-      
-      So for `concurrency 3` you'd use `--checkers 2 --transfers 2
-      --check-first` or `--checkers 1 --transfers 1`.
-      
-      
+   --ftp-close-timeout
+      Maximum time to wait for a response to close.
 
    --ftp-tls-cache-size
       Size of TLS session cache for all control and data connections.
@@ -49,6 +23,30 @@ DESCRIPTION:
       TLS cache allows to resume TLS sessions and reuse PSK between connections.
       Increase if default size is not enough resulting in TLS resumption errors.
       Enabled by default. Use 0 to disable.
+
+   --ftp-ask-password
+      Allow asking for FTP password when needed.
+      
+      If this is set and no password is supplied then rclone will ask for a password
+      
+
+   --ftp-pass
+      FTP password.
+
+   --ftp-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+      Examples:
+         | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
+         | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
+         | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
+
+   --ftp-host
+      FTP host to connect to.
+      
+      E.g. "ftp.example.com".
 
    --ftp-port
       FTP port number.
@@ -68,50 +66,52 @@ DESCRIPTION:
       security from the server in order to upgrade a plain text connection
       to an encrypted one. Cannot be used in combination with implicit FTPS.
 
-   --ftp-no-check-certificate
-      Do not verify the TLS certificate of the server.
-
-   --ftp-disable-mlsd
-      Disable using MLSD even if server advertises support.
-
-   --ftp-close-timeout
-      Maximum time to wait for a response to close.
-
-   --ftp-disable-tls13
-      Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
-
-   --ftp-ask-password
-      Allow asking for FTP password when needed.
+   --ftp-concurrency
+      Maximum number of FTP simultaneous connections, 0 for unlimited.
       
-      If this is set and no password is supplied then rclone will ask for a password
+      Note that setting this is very likely to cause deadlocks so it should
+      be used with care.
       
-
-   --ftp-host
-      FTP host to connect to.
+      If you are doing a sync or copy then make sure concurrency is one more
+      than the sum of `--transfers` and `--checkers`.
       
-      E.g. "ftp.example.com".
-
-   --ftp-encoding
-      The encoding for the backend.
+      If you use `--check-first` then it just needs to be one more than the
+      maximum of `--checkers` and `--transfers`.
       
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-      Examples:
-         | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
-         | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
-         | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
+      So for `concurrency 3` you'd use `--checkers 2 --transfers 2
+      --check-first` or `--checkers 1 --transfers 1`.
+      
+      
 
    --ftp-disable-epsv
       Disable using EPSV even if server advertises support.
 
+   --ftp-idle-timeout
+      Max time before closing idle connections.
+      
+      If no connections have been returned to the connection pool in the time
+      given, rclone will empty the connection pool.
+      
+      Set to 0 to keep connections indefinitely.
+      
+
+   --ftp-user
+      FTP username.
+
+   --ftp-disable-mlsd
+      Disable using MLSD even if server advertises support.
+
    --ftp-disable-utf8
       Disable using UTF-8 even if server advertises support.
 
+   --ftp-writing-mdtm
+      Use MDTM to set modification time (VsFtpd quirk)
+
+   --ftp-disable-tls13
+      Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+
    --ftp-shut-timeout
       Maximum time to wait for data connection closing status.
-
-   --ftp-pass
-      FTP password.
 
 
 OPTIONS:

@@ -8,20 +8,90 @@ USAGE:
    singularity datasource add oos [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --oos-compartment
-      [Provider] - user_principal_auth
-         Object storage compartment OCID
+   --oos-namespace
+      Object storage namespace
 
    --oos-endpoint
       Endpoint for Object storage API.
       
       Leave blank to use the default endpoint for the region.
 
-   --oos-upload-cutoff
-      Cutoff for switching to chunked upload.
+   --oos-no-check-bucket
+      If set, don't attempt to check the bucket exists or create it.
       
-      Any files larger than this will be uploaded in chunks of chunk_size.
-      The minimum is 0 and the maximum is 5 GiB.
+      This can be useful when trying to minimise the number of transactions
+      rclone does if you know the bucket exists already.
+      
+      It can also be needed if the user you are using does not have bucket
+      creation permissions.
+      
+
+   --oos-provider
+      Choose your Auth Provider
+
+      Examples:
+         | env_auth                | automatically pickup the credentials from runtime(env), first one to provide auth wins
+         | user_principal_auth     | use an OCI user and an API key for authentication.
+                                   | you’ll need to put in a config file your tenancy OCID, user OCID, region, the path, fingerprint to an API key.
+                                   | https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
+         | instance_principal_auth | use instance principals to authorize an instance to make API calls. 
+                                   | each instance has its own identity, and authenticates using the certificates that are read from instance metadata. 
+                                   | https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+         | resource_principal_auth | use resource principals to make API calls
+         | no_auth                 | no credentials needed, this is typically for reading public buckets
+
+   --oos-config-profile
+      [Provider] - user_principal_auth
+         Profile name inside the oci config file
+
+         Examples:
+            | Default | Use the default profile
+
+   --oos-copy-timeout
+      Timeout for copy.
+      
+      Copy is an asynchronous operation, specify timeout to wait for copy to succeed
+      
+
+   --oos-sse-customer-key-file
+      To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+      with the object. Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.'
+
+      Examples:
+         | <unset> | None
+
+   --oos-sse-customer-key
+      To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+      encrypt or  decrypt the data. Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is
+      needed. For more information, see Using Your Own Keys for Server-Side Encryption 
+      (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm)
+
+      Examples:
+         | <unset> | None
+
+   --oos-sse-customer-key-sha256
+      If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+      key. This value is used to check the integrity of the encryption key. see Using Your Own Keys for 
+      Server-Side Encryption (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm).
+
+      Examples:
+         | <unset> | None
+
+   --oos-sse-kms-key-id
+      if using using your own master key in vault, this header specifies the 
+      OCID (https://docs.cloud.oracle.com/Content/General/Concepts/identifiers.htm) of a master encryption key used to call
+      the Key Management service to generate a data encryption key or to encrypt or decrypt a data encryption key.
+      Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.
+
+      Examples:
+         | <unset> | None
+
+   --oos-config-file
+      [Provider] - user_principal_auth
+         Path to OCI config file
+
+         Examples:
+            | ~/.oci/config | oci configuration file location
 
    --oos-chunk-size
       Chunk size to use for uploading.
@@ -50,40 +120,6 @@ DESCRIPTION:
       statistics displayed with "-P" flag.
       
 
-   --oos-copy-cutoff
-      Cutoff for switching to multipart copy.
-      
-      Any files larger than this that need to be server-side copied will be
-      copied in chunks of this size.
-      
-      The minimum is 0 and the maximum is 5 GiB.
-
-   --oos-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --oos-sse-customer-key
-      To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
-      encrypt or  decrypt the data. Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is
-      needed. For more information, see Using Your Own Keys for Server-Side Encryption 
-      (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm)
-
-      Examples:
-         | <unset> | None
-
-   --oos-namespace
-      Object storage namespace
-
-   --oos-sse-customer-algorithm
-      If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
-      Object Storage supports "AES256" as the encryption algorithm. For more information, see
-      Using Your Own Keys for Server-Side Encryption (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm).
-
-      Examples:
-         | <unset> | None
-         | AES256  | AES256
-
    --oos-upload-concurrency
       Concurrency for multipart uploads.
       
@@ -93,27 +129,6 @@ DESCRIPTION:
       If you are uploading small numbers of large files over high-speed links
       and these uploads do not fully utilize your bandwidth, then increasing
       this may help to speed up the transfers.
-
-   --oos-config-profile
-      [Provider] - user_principal_auth
-         Profile name inside the oci config file
-
-         Examples:
-            | Default | Use the default profile
-
-   --oos-storage-tier
-      The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
-
-      Examples:
-         | Standard         | Standard storage tier, this is the default tier
-         | InfrequentAccess | InfrequentAccess storage tier
-         | Archive          | Archive storage tier
-
-   --oos-copy-timeout
-      Timeout for copy.
-      
-      Copy is an asynchronous operation, specify timeout to wait for copy to succeed
-      
 
    --oos-disable-checksum
       Don't store MD5 checksum with object metadata.
@@ -132,63 +147,48 @@ DESCRIPTION:
       additional costs if not cleaned up.
       
 
-   --oos-sse-customer-key-sha256
-      If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
-      key. This value is used to check the integrity of the encryption key. see Using Your Own Keys for 
-      Server-Side Encryption (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm).
+   --oos-sse-customer-algorithm
+      If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+      Object Storage supports "AES256" as the encryption algorithm. For more information, see
+      Using Your Own Keys for Server-Side Encryption (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm).
 
       Examples:
          | <unset> | None
+         | AES256  | AES256
 
-   --oos-sse-kms-key-id
-      if using using your own master key in vault, this header specifies the 
-      OCID (https://docs.cloud.oracle.com/Content/General/Concepts/identifiers.htm) of a master encryption key used to call
-      the Key Management service to generate a data encryption key or to encrypt or decrypt a data encryption key.
-      Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.
-
-      Examples:
-         | <unset> | None
-
-   --oos-config-file
+   --oos-compartment
       [Provider] - user_principal_auth
-         Path to OCI config file
+         Object storage compartment OCID
 
-         Examples:
-            | ~/.oci/config | oci configuration file location
+   --oos-storage-tier
+      The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+
+      Examples:
+         | Standard         | Standard storage tier, this is the default tier
+         | InfrequentAccess | InfrequentAccess storage tier
+         | Archive          | Archive storage tier
+
+   --oos-upload-cutoff
+      Cutoff for switching to chunked upload.
+      
+      Any files larger than this will be uploaded in chunks of chunk_size.
+      The minimum is 0 and the maximum is 5 GiB.
+
+   --oos-copy-cutoff
+      Cutoff for switching to multipart copy.
+      
+      Any files larger than this that need to be server-side copied will be
+      copied in chunks of this size.
+      
+      The minimum is 0 and the maximum is 5 GiB.
+
+   --oos-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --oos-region
       Object storage Region
-
-   --oos-no-check-bucket
-      If set, don't attempt to check the bucket exists or create it.
-      
-      This can be useful when trying to minimise the number of transactions
-      rclone does if you know the bucket exists already.
-      
-      It can also be needed if the user you are using does not have bucket
-      creation permissions.
-      
-
-   --oos-sse-customer-key-file
-      To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
-      with the object. Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.'
-
-      Examples:
-         | <unset> | None
-
-   --oos-provider
-      Choose your Auth Provider
-
-      Examples:
-         | env_auth                | automatically pickup the credentials from runtime(env), first one to provide auth wins
-         | user_principal_auth     | use an OCI user and an API key for authentication.
-                                   | you’ll need to put in a config file your tenancy OCID, user OCID, region, the path, fingerprint to an API key.
-                                   | https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
-         | instance_principal_auth | use instance principals to authorize an instance to make API calls. 
-                                   | each instance has its own identity, and authenticates using the certificates that are read from instance metadata. 
-                                   | https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
-         | resource_principal_auth | use resource principals to make API calls
-         | no_auth                 | no credentials needed, this is typically for reading public buckets
 
 
 OPTIONS:

@@ -1,4 +1,4 @@
-# [Alpha] Start a content provider that serves retrieval requests
+# Start a content provider that serves retrieval requests
 
 ```
 NAME:

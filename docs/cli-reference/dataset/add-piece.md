@@ -1,4 +1,4 @@
-# [alpha] Manually register a piece (CAR file) with the dataset for deal making purpose
+# Manually register a piece (CAR file) with the dataset for deal making purpose
 
 ```
 NAME:

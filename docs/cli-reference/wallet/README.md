@@ -1,4 +1,4 @@
-# [Alpha] Wallet management
+# Wallet management
 
 ```
 NAME:

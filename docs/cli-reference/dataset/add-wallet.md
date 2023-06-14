@@ -1,4 +1,4 @@
-# [alpha] Associate a wallet with the dataset. The wallet needs to be imported first using the `singularity wallet import` command.
+# Associate a wallet with the dataset. The wallet needs to be imported first using the `singularity wallet import` command.
 
 ```
 NAME:

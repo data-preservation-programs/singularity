@@ -1,4 +1,4 @@
-# [Alpha] Replication / Deal making management
+# Replication / Deal making management
 
 ```
 NAME:

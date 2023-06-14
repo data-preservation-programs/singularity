@@ -65,7 +65,7 @@ var App = &cli.App{
 		DownloadCmd,
 		{
 			Name:     "deal",
-			Usage:    "[Alpha] Replication / Deal making management",
+			Usage:    "Replication / Deal making management",
 			Category: "Operations",
 			Subcommands: []*cli.Command{
 				{
@@ -149,7 +149,7 @@ var App = &cli.App{
 		{
 			Name:     "wallet",
 			Category: "Operations",
-			Usage:    "[Alpha] Wallet management",
+			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
 				wallet.ImportCmd,
 				wallet.ListCmd,

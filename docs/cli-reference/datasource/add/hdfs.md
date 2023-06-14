@@ -8,6 +8,22 @@ USAGE:
    singularity datasource add hdfs [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --hdfs-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --hdfs-namenode
+      Hadoop name node and port.
+      
+      E.g. "namenode:8020" to connect to host namenode at port 8020.
+
+   --hdfs-username
+      Hadoop user name.
+
+      Examples:
+         | root | Connect to hdfs as root.
+
    --hdfs-service-principal-name
       Kerberos service principal name for the namenode.
       
@@ -25,22 +41,6 @@ DESCRIPTION:
 
       Examples:
          | privacy | Ensure authentication, integrity and encryption enabled.
-
-   --hdfs-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --hdfs-namenode
-      Hadoop name node and port.
-      
-      E.g. "namenode:8020" to connect to host namenode at port 8020.
-
-   --hdfs-username
-      Hadoop user name.
-
-      Examples:
-         | root | Connect to hdfs as root.
 
 
 OPTIONS:

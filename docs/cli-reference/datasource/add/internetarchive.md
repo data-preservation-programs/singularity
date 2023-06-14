@@ -8,6 +8,22 @@ USAGE:
    singularity datasource add internetarchive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --internetarchive-access-key-id
+      IAS3 Access Key.
+      
+      Leave blank for anonymous access.
+      You can find one here: https://archive.org/account/s3.php
+
+   --internetarchive-secret-access-key
+      IAS3 Secret Key (password).
+      
+      Leave blank for anonymous access.
+
+   --internetarchive-endpoint
+      IAS3 Endpoint.
+      
+      Leave blank for default value.
+
    --internetarchive-front-endpoint
       Host of InternetArchive Frontend.
       
@@ -29,22 +45,6 @@ DESCRIPTION:
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --internetarchive-access-key-id
-      IAS3 Access Key.
-      
-      Leave blank for anonymous access.
-      You can find one here: https://archive.org/account/s3.php
-
-   --internetarchive-secret-access-key
-      IAS3 Secret Key (password).
-      
-      Leave blank for anonymous access.
-
-   --internetarchive-endpoint
-      IAS3 Endpoint.
-      
-      Leave blank for default value.
 
 
 OPTIONS:
