@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -238,15 +239,15 @@ func (d DealMakerService) Run(parent context.Context) error {
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
 
-	getState := func() State {
-		return State{
+	getState := func() healthcheck.State {
+		return healthcheck.State{
 			WorkType:  model.DealMaking,
 			WorkingOn: "deals",
 		}
 	}
-	HealthCheck(d.db, d.workerID, getState)
-	go StartHealthCheck(ctx, d.db, d.workerID, getState)
-	go StartHealthCheckCleanup(ctx, d.db)
+	healthcheck.HealthCheck(d.db, d.workerID, getState)
+	go healthcheck.StartHealthCheck(ctx, d.db, d.workerID, getState)
+	go healthcheck.StartHealthCheckCleanup(ctx, d.db)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP, os.Kill, os.Interrupt)

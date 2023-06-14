@@ -4,7 +4,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
 )
 
@@ -42,6 +42,12 @@ var DatasetWorkerCmd = &cli.Command{
 			EnvVars: []string{"DATASET_WORKER_EXIT_ON_COMPLETE"},
 			Value:   false,
 		},
+		&cli.BoolFlag{
+			Name:    "exit-on-error",
+			Usage:   "Exit the worker when there is any error",
+			EnvVars: []string{"DATASET_WORKER_EXIT_ON_ERROR"},
+			Value:   false,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
@@ -49,13 +55,16 @@ var DatasetWorkerCmd = &cli.Command{
 		if err != nil {
 			return handler.NewHandlerError(err)
 		}
-		worker := service.NewDatasetWorker(
+		worker := datasetworker.NewDatasetWorker(
 			db,
-			c.Int("concurrency"),
-			c.Bool("exit-on-complete"),
-			c.Bool("enable-scan"),
-			c.Bool("enable-pack"),
-			c.Bool("enable-dag"))
+			datasetworker.DatasetWorkerConfig{
+				Concurrency:    c.Int("concurrency"),
+				EnableScan:     c.Bool("enable-scan"),
+				EnablePack:     c.Bool("enable-pack"),
+				EnableDag:      c.Bool("enable-dag"),
+				ExitOnComplete: c.Bool("exit-on-complete"),
+				ExitOnError:    c.Bool("exit-on-error"),
+			})
 		err = worker.Run(c.Context)
 		if err != nil {
 			return err

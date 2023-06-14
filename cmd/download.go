@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"github.com/data-preservation-programs/singularity/handler"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/urfave/cli/v2"
 )
 
 var DownloadCmd = &cli.Command{
 	Name:      "download",
 	Usage:     "Download a CAR file from the metadata API",
+	Category:  "Utility",
 	ArgsUsage: "PIECE_CID",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
@@ -49,7 +49,6 @@ var DownloadCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		model.DisableEncryption = true
 		piece := c.Args().First()
 		api := c.String("api")
 		return handler.DownloadHandler(piece, api, nil)

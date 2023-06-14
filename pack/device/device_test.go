@@ -1,4 +1,4 @@
-package pack
+package device
 
 import (
 	"github.com/stretchr/testify/assert"

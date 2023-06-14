@@ -33,10 +33,6 @@ func NewSpadeAPIService(db *gorm.DB, dealMaker *replication.DealMaker, walletCho
 
 func (s SpadeAPI) Start() error {
 	e := echo.New()
-	current := log.GetConfig().Level
-	if log.LevelInfo < current {
-		log.SetAllLoggers(log.LevelInfo)
-	}
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,

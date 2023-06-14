@@ -1,21 +1,21 @@
-package status
+package datasource
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/datasource/status"
+	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/urfave/cli/v2"
 )
 
-var SummaryCmd = &cli.Command{
-	Name:      "summary",
+var StatusCmd = &cli.Command{
+	Name:      "status",
 	Usage:     "Get the data preparation summary of a data source",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		result, err := status.GetSourceSummaryHandler(
+		result, err := datasource.GetSourceSummaryHandler(
 			db,
 			c.Args().Get(0),
 		)
@@ -32,8 +32,9 @@ var SummaryCmd = &cli.Command{
 			return nil
 		}
 
-		cliutil.PrintToConsole(result.Source, c.Bool("json"))
+		fmt.Println("Chunks by state:")
 		cliutil.PrintToConsole(result.ChunkSummary, c.Bool("json"))
+		fmt.Println("Items by state:")
 		cliutil.PrintToConsole(result.ItemSummary, c.Bool("json"))
 		return nil
 	},

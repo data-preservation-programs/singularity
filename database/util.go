@@ -16,7 +16,7 @@ import (
 )
 
 func retryOn(err error) bool {
-	return strings.Contains(err.Error(), "database is locked")
+	return strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
 }
 
 func DoRetry(f func() error) error {
@@ -98,7 +98,7 @@ func MustOpenFromCLI(c *cli.Context) *gorm.DB {
 func OpenInMemory() *gorm.DB {
 	gormLogger := logger2.New(log.New(os.Stderr, "\r\n", log.LstdFlags), logger2.Config{
 		SlowThreshold:             time.Second,
-		LogLevel:                  logger2.Error,
+		LogLevel:                  logger2.Info,
 		IgnoreRecordNotFoundError: false,
 		Colorful:                  true,
 	})
@@ -109,6 +109,10 @@ func OpenInMemory() *gorm.DB {
 		logger.Panic(err)
 	}
 
+	err = model.DropAll(db)
+	if err != nil {
+		logger.Panic(err)
+	}
 	err = model.AutoMigrate(db)
 	if err != nil {
 		logger.Panic(err)

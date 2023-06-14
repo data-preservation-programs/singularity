@@ -1,3 +1,4 @@
+//go:build exclude
 package migrate
 
 import (
@@ -228,16 +229,16 @@ func Migrate(cctx *cli.Context) error {
 						return cli.Exit("Failed to find directory of : "+filepath.Dir(file.Path), 1)
 					}
 					item := model.Item{
-						ScannedAt:    generation.CreatedAt,
-						ChunkID:      &chunk.ID,
-						Type:         fileType,
-						Path:         file.Path,
-						Size:         file.Size,
-						Offset:       file.Start,
-						Length:       file.End - file.Start,
-						LastModified: nil,
-						CID:          file.CID,
-						DirectoryID:  &directory.ID,
+						ScannedAt:                 generation.CreatedAt,
+						ChunkID:                   &chunk.ID,
+						Type:                      fileType,
+						Path:                      file.Path,
+						Size:                      file.Size,
+						Offset:                    file.Start,
+						Length:                    file.End - file.Start,
+						LastModifiedTimestampNano: nil,
+						CID:                       file.CID,
+						DirectoryID:               &directory.ID,
 					}
 					items = append(items, item)
 				}

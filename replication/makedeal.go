@@ -296,11 +296,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 		return "", errors.Wrap(err, "failed to serialize deal proposal")
 	}
 
-	exportedKey, err := walletObj.GetExportedKey()
-	if err != nil {
-		return "", errors.Wrap(err, "failed to get exported key")
-	}
-	signature, err := wallet.WalletSign(exportedKey, proposalBytes)
+	signature, err := wallet.WalletSign(walletObj.PrivateKey, proposalBytes)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to sign deal proposal")
 	}

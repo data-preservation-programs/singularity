@@ -1,30 +1,26 @@
-package status
+package inspect
 
 import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strconv"
 )
 
-// GetSourceItemsHandler godoc
-// @Summary Get all item details of a data source
+// GetDagsHandler godoc
+// @Summary Get all chunk details of a data source
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Param chunk_id query string false "Chunk ID"
-// @Success 200 {array} model.Item
+// @Success 200 {array} model.Chunk
 // @Failure 500 {object} handler.HTTPError
-// @Router /source/{id}/items [get]
-func GetSourceItemsHandler(
+// @Router /source/{id}/chunks [get]
+func GetDagsHandler(
 	db *gorm.DB,
 	id string,
-	chunkID string,
-) ([]model.Item, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
+) ([]model.Car, *handler.Error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
@@ -38,21 +34,11 @@ func GetSourceItemsHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	var items []model.Item
-	if chunkID == "" {
-		err = db.Where("source_id = ?", sourceID).Find(&items).Error
-	} else {
-		var c int
-		c, err = strconv.Atoi(chunkID)
-		if err != nil {
-			return nil, handler.NewBadRequestString("invalid chunk id")
-		}
-		err = db.Where("source_id = ? AND chunk_id = ?", sourceID, c).Find(&items).Error
-	}
-
+	var cars []model.Car
+	err = db.Where("source_id = ? AND chunk_id IS NULL", sourceID).Find(&cars).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
 
-	return items, nil
+	return cars, nil
 }

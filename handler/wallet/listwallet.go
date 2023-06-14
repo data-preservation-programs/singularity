@@ -3,7 +3,6 @@ package wallet
 import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -22,7 +21,6 @@ func ListWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Wallet, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}

@@ -40,7 +40,6 @@ func AddPieceHandler(
 	request AddPieceRequest,
 ) (*model.Car, *handler.Error) {
 	logger := log.Logger("cli")
-	log.SetAllLoggers(log.LevelInfo)
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}

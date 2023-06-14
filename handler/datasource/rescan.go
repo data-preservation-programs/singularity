@@ -4,7 +4,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strconv"
@@ -23,7 +22,6 @@ func RescanSourceHandler(
 	db *gorm.DB,
 	id string,
 ) (*model.Source, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

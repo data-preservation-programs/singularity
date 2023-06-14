@@ -10,6 +10,7 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
+	"gorm.io/gorm"
 	"path/filepath"
 	"strings"
 )
@@ -60,10 +61,10 @@ var AddCmd = &cli.Command{
 				Type:                r.Prefix,
 				Path:                path,
 				Metadata:            model.Metadata(result),
-				PushOnly:            false,
 				ScanIntervalSeconds: 0,
 				ScanningState:       model.Ready,
 				DeleteAfterExport:   deleteAfterExport,
+				DagGenState:         model.Created,
 			}
 
 			handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Context, source)
@@ -76,19 +77,23 @@ var AddCmd = &cli.Command{
 				return errors.Wrap(err, "failed to check source")
 			}
 
-			dir := model.Directory{
-				Name: path,
-			}
-			err = database.DoRetry(func() error { return db.Create(&dir).Error })
-			if err != nil {
-				return errors.Wrap(err, "failed to create directory")
-			}
-
-			source.RootDirectoryID = dir.ID
-			err = database.DoRetry(func() error { return db.Create(&source).Error })
-			if err != nil {
-				return errors.Wrap(err, "failed to create source")
-			}
+			err = database.DoRetry(func() error {
+				return db.Transaction(func(db *gorm.DB) error {
+					err := db.Create(&source).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to create source")
+					}
+					dir := model.Directory{
+						Name:     path,
+						SourceID: source.ID,
+					}
+					err = db.Create(&dir).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to create directory")
+					}
+					return nil
+				})
+			})
 
 			cliutil.PrintToConsole(source, c.Bool("json"))
 			return nil
