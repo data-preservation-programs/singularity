@@ -40,12 +40,11 @@ func TestAssembleCar_LargeItems(t *testing.T) {
 	result, err := AssembleCar(ctx, handler, model.Dataset{}, items, "", 1<<30)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "", result.CarFilePath)
-	assert.EqualValues(t, 10486756, result.CarFileSize)
-	assert.EqualValues(t, 1<<30, result.PieceSize)
-	assert.Len(t, result.Header, 59)
-	assert.Len(t, result.ItemEncryptionStates, 0)
-	assert.Len(t, result.CarBlocks, 11)
+	assert.Equal(t, "", result.CarResults[0].CarFilePath)
+	assert.EqualValues(t, 10486793, result.CarResults[0].CarFileSize)
+	assert.EqualValues(t, 1<<30, result.CarResults[0].PieceSize)
+	assert.Len(t, result.CarResults[0].Header, 59)
+	assert.Len(t, result.CarResults[0].CarBlocks, 12)
 }
 
 func TestAssembleCar_NoEncryption(t *testing.T) {
@@ -65,21 +64,19 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 	result, err := AssembleCar(ctx, handler, model.Dataset{}, items, "", 1<<20)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "", result.CarFilePath)
-	assert.EqualValues(t, 101, result.CarFileSize)
-	assert.Equal(t, "baga6ea4seaqddc4kqdxmnglxhmrfxkx2cd7hl6kounifgewgb2hdthmeddfe4hy", result.PieceCID.String())
-	assert.EqualValues(t, 1<<20, result.PieceSize)
-	assert.Len(t, result.Header, 59)
-	assert.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.RootCID.String())
-	assert.Len(t, result.ItemEncryptionStates, 0)
+	assert.Equal(t, "", result.CarResults[0].CarFilePath)
+	assert.EqualValues(t, 101, result.CarResults[0].CarFileSize)
+	assert.Equal(t, "baga6ea4seaqddc4kqdxmnglxhmrfxkx2cd7hl6kounifgewgb2hdthmeddfe4hy", result.CarResults[0].PieceCID.String())
+	assert.EqualValues(t, 1<<20, result.CarResults[0].PieceSize)
+	assert.Len(t, result.CarResults[0].Header, 59)
+	assert.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarResults[0].RootCID.String())
 	assert.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.ItemPartCIDs[0].String())
-	assert.Len(t, result.CarBlocks, 1)
-	assert.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarBlocks[0].CID.String())
-	assert.EqualValues(t, 59, result.CarBlocks[0].CarOffset)
-	v, _, _ := varint.FromUvarint(result.CarBlocks[0].Varint)
+	assert.Len(t, result.CarResults[0].CarBlocks, 1)
+	assert.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarResults[0].CarBlocks[0].CID.String())
+	assert.EqualValues(t, 59, result.CarResults[0].CarBlocks[0].CarOffset)
+	v, _, _ := varint.FromUvarint(result.CarResults[0].CarBlocks[0].Varint)
 	assert.EqualValues(t, 41, v)
-	assert.EqualValues(t, 1, result.CarBlocks[0].ItemOffset)
-	assert.False(t, result.CarBlocks[0].ItemEncrypted)
+	assert.EqualValues(t, 1, result.CarResults[0].CarBlocks[0].ItemOffset)
 }
 
 func TestAssembleCar_WithEncryption(t *testing.T) {
@@ -90,7 +87,7 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 	items := []model.ItemPart{
 		{
 			Offset: 0,
-			Length: 4,
+			Length: 5,
 			Item: &model.Item{
 				Size: 5,
 			},
@@ -101,16 +98,9 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 	}, items, t.TempDir(), 1<<20)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.NotEmpty(t, result.CarFilePath)
-	assert.EqualValues(t, 281, result.CarFileSize)
-	assert.EqualValues(t, 1<<20, result.PieceSize)
-	assert.Len(t, result.Header, 59)
-	assert.Len(t, result.ItemEncryptionStates, 1)
-	assert.Len(t, result.ItemEncryptionStates[0], 65631)
-	assert.Len(t, result.CarBlocks, 1)
-	assert.EqualValues(t, 59, result.CarBlocks[0].CarOffset)
-	v, _, _ := varint.FromUvarint(result.CarBlocks[0].Varint)
-	assert.EqualValues(t, 220, v)
-	assert.EqualValues(t, 0, result.CarBlocks[0].ItemOffset)
-	assert.True(t, result.CarBlocks[0].ItemEncrypted)
+	assert.NotEmpty(t, result.CarResults[0].CarFilePath)
+	assert.EqualValues(t, 302, result.CarResults[0].CarFileSize)
+	assert.EqualValues(t, 1<<20, result.CarResults[0].PieceSize)
+	assert.Len(t, result.CarResults[0].Header, 59)
+	assert.Len(t, result.CarResults[0].CarBlocks, 0)
 }

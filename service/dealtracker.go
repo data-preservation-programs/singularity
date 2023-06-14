@@ -182,13 +182,6 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get deals from database")
 	}
-	for i, _ := range wallets {
-		decrypted, err := model.DecryptFromBase64String(wallets[i].PrivateKey)
-		if err != nil {
-			return errors.Wrap(err, "failed to decrypt private key")
-		}
-		wallets[i].PrivateKey = string(decrypted)
-	}
 
 	dealsByDealID := make(map[uint64]model.Deal)
 	unPublishedDeals := make(map[string][]model.Deal)

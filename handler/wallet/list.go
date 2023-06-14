@@ -24,13 +24,5 @@ func ListHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	for i, _ := range wallets {
-		privateKey, err := model.DecryptFromBase64String(wallets[i].PrivateKey)
-		if err != nil {
-			return nil, handler.NewHandlerError(err)
-		}
-		wallets[i].PrivateKey = string(privateKey)
-	}
-
 	return wallets, nil
 }

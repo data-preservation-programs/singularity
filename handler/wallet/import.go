@@ -34,10 +34,6 @@ func ImportHandler(
 	if err != nil {
 		return handler.NewBadRequestString("invalid private key")
 	}
-	encryptedPrivateKey, err := model.EncryptToBase64String([]byte(request.PrivateKey))
-	if err != nil {
-		return handler.NewHandlerError(err)
-	}
 
 	var lotusClient jsonrpc.RPCClient
 	if request.LotusToken == "" {
@@ -59,7 +55,7 @@ func ImportHandler(
 	wallet := model.Wallet{
 		ID:         result,
 		Address:    addr.String(),
-		PrivateKey: encryptedPrivateKey,
+		PrivateKey: request.PrivateKey,
 	}
 
 	err = db.Transaction(func(db *gorm.DB) error {

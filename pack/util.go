@@ -194,8 +194,8 @@ func GetBlockStreamFromItem(ctx context.Context,
 				itemPart.Item.Path, itemPart.Item.Hash, hashValue)
 		case hashValue == "" && lastModifiedReliable && (lastModified.UnixNano() != itemPart.Item.LastModifiedTimestampNano || size != itemPart.Item.Size):
 			return nil, object, errors.Wrapf(ErrItemModified,
-				"itemPart has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %s, newLastModified: %s",
-				itemPart.Item.Path, itemPart.Item.Size, size, itemPart.Item.LastModifiedTimestampNano, lastModified)
+				"itemPart has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %d, newLastModified: %d",
+				itemPart.Item.Path, itemPart.Item.Size, size, itemPart.Item.LastModifiedTimestampNano, lastModified.UnixNano())
 		case hashValue == "" && !lastModifiedReliable && size != itemPart.Item.Size:
 			return nil, object, errors.Wrapf(ErrItemModified, "itemPart has been modified: %s, oldSize: %d, newSize: %d",
 				itemPart.Item.Path, itemPart.Item.Size, size)
