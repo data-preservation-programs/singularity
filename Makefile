@@ -18,3 +18,6 @@ swag:
 
 test:
 	gotestsum --format testname -- -coverprofile=coverage.out -coverpkg=./... ./...
+
+gendoc:
+	go run ./docgen/clireference/main.go

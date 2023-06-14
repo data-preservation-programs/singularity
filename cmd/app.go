@@ -20,7 +20,7 @@ import (
 	"os"
 )
 
-var app = &cli.App{
+var App = &cli.App{
 	Name:                 "singularity",
 	Usage:                "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
 	EnableBashCompletion: true,
@@ -161,7 +161,7 @@ var app = &cli.App{
 }
 
 func RunApp(ctx context.Context, args []string) error {
-	if err := app.RunContext(ctx, args); err != nil {
+	if err := App.RunContext(ctx, args); err != nil {
 		return err
 	}
 
@@ -169,7 +169,7 @@ func RunApp(ctx context.Context, args []string) error {
 }
 
 func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
-	app.ExitErrHandler = func(c *cli.Context, err error) {
+	App.ExitErrHandler = func(c *cli.Context, err error) {
 		return
 	}
 	parser := shellwords.NewParser()
