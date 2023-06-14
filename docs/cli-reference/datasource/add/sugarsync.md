@@ -8,6 +8,16 @@ USAGE:
    singularity datasource add sugarsync [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --sugarsync-app-id
+      Sugarsync App ID.
+      
+      Leave blank to use rclone's.
+
+   --sugarsync-access-key-id
+      Sugarsync Access Key ID.
+      
+      Leave blank to use rclone's.
+
    --sugarsync-refresh-token
       Sugarsync refresh token.
       
@@ -17,6 +27,25 @@ DESCRIPTION:
       Sugarsync authorization.
       
       Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-root-id
+      Sugarsync root id.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-deleted-id
+      Sugarsync deleted folder id.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-private-access-key
+      Sugarsync Private Access Key.
+      
+      Leave blank to use rclone's.
+
+   --sugarsync-hard-delete
+      Permanently delete files if true
+      otherwise put them in the deleted files.
 
    --sugarsync-authorization-expiry
       Sugarsync authorization expiry.
@@ -28,39 +57,10 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
-   --sugarsync-deleted-id
-      Sugarsync deleted folder id.
-      
-      Leave blank normally, will be auto configured by rclone.
-
    --sugarsync-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --sugarsync-access-key-id
-      Sugarsync Access Key ID.
-      
-      Leave blank to use rclone's.
-
-   --sugarsync-hard-delete
-      Permanently delete files if true
-      otherwise put them in the deleted files.
-
-   --sugarsync-root-id
-      Sugarsync root id.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-app-id
-      Sugarsync App ID.
-      
-      Leave blank to use rclone's.
-
-   --sugarsync-private-access-key
-      Sugarsync Private Access Key.
-      
-      Leave blank to use rclone's.
 
 
 OPTIONS:

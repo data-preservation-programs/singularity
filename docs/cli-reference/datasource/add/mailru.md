@@ -8,6 +8,22 @@ USAGE:
    singularity datasource add mailru [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --mailru-speedup-file-patterns
+      Comma separated list of file name patterns eligible for speedup (put by hash).
+      
+      Patterns are case insensitive and can contain '*' or '?' meta characters.
+
+      Examples:
+         | <unset>                 | Empty list completely disables speedup (put by hash).
+         | *                       | All files will be attempted for speedup.
+         | *.mkv,*.avi,*.mp4,*.mp3 | Only common audio/video files will be tried for put by hash.
+         | *.zip,*.gz,*.rar,*.pdf  | Only common archives or PDF books will be tried for speedup.
+
+   --mailru-user-agent
+      HTTP user agent used internally by client.
+      
+      Defaults to "rclone/VERSION" or "--user-agent" provided on command line.
+
    --mailru-quirks
       Comma separated list of internal maintenance flags.
       
@@ -20,16 +36,13 @@ DESCRIPTION:
    --mailru-user
       User name (usually email).
 
-   --mailru-speedup-file-patterns
-      Comma separated list of file name patterns eligible for speedup (put by hash).
+   --mailru-pass
+      Password.
       
-      Patterns are case insensitive and can contain '*' or '?' meta characters.
-
-      Examples:
-         | <unset>                 | Empty list completely disables speedup (put by hash).
-         | *                       | All files will be attempted for speedup.
-         | *.mkv,*.avi,*.mp4,*.mp3 | Only common audio/video files will be tried for put by hash.
-         | *.zip,*.gz,*.rar,*.pdf  | Only common archives or PDF books will be tried for speedup.
+      This must be an app password - rclone will not work with your normal
+      password. See the Configuration section in the docs for how to make an
+      app password.
+      
 
    --mailru-speedup-max-memory
       Files larger than the size given below will always be hashed on disk.
@@ -39,23 +52,17 @@ DESCRIPTION:
          | 32M  | Do not dedicate more than 32Mb RAM for preliminary hashing.
          | 256M | You have at most 256Mb RAM free for hash calculations.
 
-   --mailru-user-agent
-      HTTP user agent used internally by client.
-      
-      Defaults to "rclone/VERSION" or "--user-agent" provided on command line.
+   --mailru-check-hash
+      What should copy do if file checksum is mismatched or invalid.
+
+      Examples:
+         | true  | Fail with error.
+         | false | Ignore and continue.
 
    --mailru-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --mailru-pass
-      Password.
-      
-      This must be an app password - rclone will not work with your normal
-      password. See the Configuration section in the docs for how to make an
-      app password.
-      
 
    --mailru-speedup-enable
       Skip full upload if there is another file with same data hash.
@@ -82,13 +89,6 @@ DESCRIPTION:
          | 0  | Completely disable speedup (put by hash).
          | 1G | Files larger than 1Gb will be uploaded directly.
          | 3G | Choose this option if you have less than 3Gb free on local disk.
-
-   --mailru-check-hash
-      What should copy do if file checksum is mismatched or invalid.
-
-      Examples:
-         | true  | Fail with error.
-         | false | Ignore and continue.
 
 
 OPTIONS:

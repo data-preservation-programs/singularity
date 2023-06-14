@@ -97,10 +97,10 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 	}
 
 	var margin string
-	for i := 0; i < len(args); i++ {
+	for i := 0; i < len(args)-1; i++ {
 		margin += "  "
 	}
-	summary.WriteString(fmt.Sprintf("* %s[%s](%s)\n", margin, name, outFile[5:]))
+	summary.WriteString(fmt.Sprintf("%s* [%s](%s)\n", margin, name, outFile[5:]))
 	for _, subcommand := range command.Subcommands {
 		saveMarkdown(subcommand, path.Join(outDir, command.Name), append(args, subcommand.Name))
 	}

@@ -8,32 +8,6 @@ USAGE:
    singularity datasource add crypt [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --crypt-remote
-      Remote to encrypt/decrypt.
-      
-      Normally should contain a ':' and a path, e.g. "myremote:path/to/dir",
-      "myremote:bucket" or maybe "myremote:" (not recommended).
-
-   --crypt-password
-      Password or pass phrase for encryption.
-
-   --crypt-password2
-      Password or pass phrase for salt.
-      
-      Optional but recommended.
-      Should be different to the previous password.
-
-   --crypt-show-mapping
-      For all files listed show how the names encrypt.
-      
-      If this flag is set then for each file that the remote is asked to
-      list, it will log (at level INFO) a line stating the decrypted file
-      name and the encrypted file name.
-      
-      This is so you can work out which encrypted names are which decrypted
-      names just in case you need to do something with the encrypted file
-      names, or for debugging purposes.
-
    --crypt-filename-encryption
       How to encrypt the filenames.
 
@@ -53,6 +27,45 @@ DESCRIPTION:
          | true  | Encrypt directory names.
          | false | Don't encrypt directory names, leave them intact.
 
+   --crypt-password2
+      Password or pass phrase for salt.
+      
+      Optional but recommended.
+      Should be different to the previous password.
+
+   --crypt-show-mapping
+      For all files listed show how the names encrypt.
+      
+      If this flag is set then for each file that the remote is asked to
+      list, it will log (at level INFO) a line stating the decrypted file
+      name and the encrypted file name.
+      
+      This is so you can work out which encrypted names are which decrypted
+      names just in case you need to do something with the encrypted file
+      names, or for debugging purposes.
+
+   --crypt-filename-encoding
+      How to encode the encrypted filename to text string.
+      
+      This option could help with shortening the encrypted filename. The 
+      suitable option would depend on the way your remote count the filename
+      length and if it's case sensitive.
+
+      Examples:
+         | base32    | Encode using base32. Suitable for all remote.
+         | base64    | Encode using base64. Suitable for case sensitive remote.
+         | base32768 | Encode using base32768. Suitable if your remote counts UTF-16 or
+                     | Unicode codepoint instead of UTF-8 byte length. (Eg. Onedrive)
+
+   --crypt-remote
+      Remote to encrypt/decrypt.
+      
+      Normally should contain a ':' and a path, e.g. "myremote:path/to/dir",
+      "myremote:bucket" or maybe "myremote:" (not recommended).
+
+   --crypt-password
+      Password or pass phrase for encryption.
+
    --crypt-server-side-across-configs
       Allow server-side operations (e.g. copy) to work across different crypt configs.
       
@@ -71,19 +84,6 @@ DESCRIPTION:
       Examples:
          | true  | Don't encrypt file data, leave it unencrypted.
          | false | Encrypt file data.
-
-   --crypt-filename-encoding
-      How to encode the encrypted filename to text string.
-      
-      This option could help with shortening the encrypted filename. The 
-      suitable option would depend on the way your remote count the filename
-      length and if it's case sensitive.
-
-      Examples:
-         | base32    | Encode using base32. Suitable for all remote.
-         | base64    | Encode using base64. Suitable for case sensitive remote.
-         | base32768 | Encode using base32768. Suitable if your remote counts UTF-16 or
-                     | Unicode codepoint instead of UTF-8 byte length. (Eg. Onedrive)
 
 
 OPTIONS:

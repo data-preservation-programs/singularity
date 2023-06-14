@@ -8,17 +8,6 @@ USAGE:
    singularity datasource add storj [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --storj-provider
-      Choose an authentication method.
-
-      Examples:
-         | existing | Use an existing access grant.
-         | new      | Create a new access grant from satellite address, API key, and passphrase.
-
-   --storj-access-grant
-      [Provider] - existing
-         Access grant.
-
    --storj-satellite-address
       [Provider] - new
          Satellite address.
@@ -39,6 +28,17 @@ DESCRIPTION:
          Encryption passphrase.
          
          To access existing objects enter passphrase used for uploading.
+
+   --storj-provider
+      Choose an authentication method.
+
+      Examples:
+         | existing | Use an existing access grant.
+         | new      | Create a new access grant from satellite address, API key, and passphrase.
+
+   --storj-access-grant
+      [Provider] - existing
+         Access grant.
 
 
 OPTIONS:
