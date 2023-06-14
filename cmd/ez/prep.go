@@ -6,6 +6,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
+	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/pkg/errors"
@@ -13,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -108,22 +110,26 @@ var PrepCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrap(err, "failed to get absolute path")
 		}
-		root := model.Directory{}
-		err = db.Create(&root).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to create root directory")
-		}
 		source := model.Source{
-			DatasetID:       ds.ID,
-			Type:            "local",
-			Path:            path,
-			Metadata:        model.Metadata(nil),
-			ScanningState:   model.Ready,
-			RootDirectoryID: root.ID,
+			DatasetID:     ds.ID,
+			Type:          "local",
+			Path:          path,
+			Metadata:      model.Metadata(nil),
+			ScanningState: model.Ready,
+			DagGenState:   model.Created,
 		}
 		err = db.Create(&source).Error
 		if err != nil {
 			return errors.Wrap(err, "failed to create source")
+		}
+
+		root := model.Directory{
+			SourceID: source.ID,
+			Name:     path,
+		}
+		err = db.Create(&root).Error
+		if err != nil {
+			return errors.Wrap(err, "failed to create root directory")
 		}
 
 		// Step 3, start dataset worker
@@ -141,7 +147,19 @@ var PrepCmd = &cli.Command{
 			return err
 		}
 
-		// Step 4, print all information
+		// Step 4, Initiate dag gen
+		_, err2 = datasource.DagGenHandler(db, strconv.Itoa(int(source.ID)))
+		if err2 != nil {
+			return err2.CliError()
+		}
+
+		// Step 5, start dataset worker again
+		err = worker.Run(c.Context)
+		if err != nil {
+			return err
+		}
+
+		// Step 6, print all information
 		cars, err2 := dataset.ListPiecesHandler(
 			db, ds.Name,
 		)

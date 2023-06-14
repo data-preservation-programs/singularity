@@ -10,7 +10,7 @@ import (
 
 var DealMakerCmd = &cli.Command{
 	Name:  "dealmaker",
-	Usage: "Start a deal making/tracking worker to process deal making",
+	Usage: "[Alpha] Start a deal making/tracking worker to process deal making",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "lotus-api",

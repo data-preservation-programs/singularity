@@ -1,4 +1,4 @@
-package inspect
+package datasource
 
 import (
 	"github.com/data-preservation-programs/singularity/handler"
@@ -8,19 +8,10 @@ import (
 	"strconv"
 )
 
-// GetSourceChunksHandler godoc
-// @Summary Get all chunk details of a data source
-// @Tags Data Source
-// @Accept json
-// @Produce json
-// @Param id path string true "Source ID"
-// @Success 200 {array} model.Chunk
-// @Failure 500 {object} handler.HTTPError
-// @Router /source/{id}/chunks [get]
-func GetSourceChunksHandler(
+func DagGenHandler(
 	db *gorm.DB,
 	id string,
-) ([]model.Chunk, *handler.Error) {
+) (*model.Source, *handler.Error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
@@ -34,11 +25,10 @@ func GetSourceChunksHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	var chunks []model.Chunk
-	err = db.Preload("Cars").Where("source_id = ?", sourceID).Find(&chunks).Error
+	err = db.Model(&source).Update("dag_gen_state", model.Ready).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
-
-	return chunks, nil
+	source.DagGenState = model.Ready
+	return &source, nil
 }

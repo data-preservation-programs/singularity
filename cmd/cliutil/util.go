@@ -32,8 +32,10 @@ func PrintToConsole(obj interface{}, jsonOutput bool) {
 	}
 }
 
-func isEligibleType(field reflect.StructField) bool {
-	return (field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) || field.Type.Kind() == reflect.Slice || field.Name == "CreatedAt" || field.Name == "UpdatedAt"
+func isNotEligibleType(field reflect.StructField) bool {
+	return (field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) ||
+		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8) ||
+		field.Name == "CreatedAt" || field.Name == "UpdatedAt"
 }
 
 func getValue(fieldValue reflect.Value) interface{} {
@@ -66,7 +68,7 @@ func printTable(objects interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if isEligibleType(field) {
+		if isNotEligibleType(field) {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -81,7 +83,7 @@ func printTable(objects interface{}) {
 		for j := 0; j < objType.NumField(); j++ {
 			field := objType.Field(j)
 			fieldValue := objValue.Field(j)
-			if isEligibleType(field) {
+			if isNotEligibleType(field) {
 				continue
 			}
 			row = append(row, getValue(fieldValue))
@@ -102,7 +104,7 @@ func printSingleObject(obj interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if isEligibleType(field) {
+		if isNotEligibleType(field) {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -115,7 +117,7 @@ func printSingleObject(obj interface{}) {
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		fieldValue := value.Field(i)
-		if isEligibleType(field) {
+		if isNotEligibleType(field) {
 			continue
 		}
 		row = append(row, getValue(fieldValue))

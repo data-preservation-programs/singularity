@@ -28,12 +28,11 @@ var app = &cli.App{
 		&cli.StringFlag{
 			Name: "database-connection-string",
 			Usage: "Connection string to the database.\n" +
-				"Supported database: sqlite3, postgres, mysql, sqlserver\n" +
+				"Supported database: sqlite3, postgres, mysql\n" +
 				"Example for postgres  - postgres://user:pass@example.com:5432/dbname\n" +
 				"Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true\n" +
 				"                          Note: the database needs to be created using ascii Character Set:" +
 				"                                `CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii`\n" +
-				"Example for sqlserver - sqlserver://user:pass@example.com:9930?database=dbname\"\n" +
 				"Example for sqlite3   - sqlite:/absolute/path/to/database.db\n" +
 				"            or        - sqlite:relative/path/to/database.db\n",
 			DefaultText: "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
@@ -66,7 +65,7 @@ var app = &cli.App{
 		DownloadCmd,
 		{
 			Name:     "deal",
-			Usage:    "Replication / Deal making management",
+			Usage:    "[Alpha] Replication / Deal making management",
 			Category: "Operations",
 			Subcommands: []*cli.Command{
 				{
@@ -132,12 +131,14 @@ var app = &cli.App{
 				datasource.CheckCmd,
 				datasource.UpdateCmd,
 				datasource.RescanCmd,
+				datasource.DagGenCmd,
 				{
 					Name:  "inspect",
 					Usage: "Get preparation status of a data source",
 					Subcommands: []*cli.Command{
 						inspect.ChunksCmd,
 						inspect.ItemsCmd,
+						inspect.DagsCmd,
 						inspect.ChunkDetailCmd,
 						inspect.ItemDetailCmd,
 						inspect.DirCmd,
@@ -148,7 +149,7 @@ var app = &cli.App{
 		{
 			Name:     "wallet",
 			Category: "Operations",
-			Usage:    "Wallet management",
+			Usage:    "[Alpha] Wallet management",
 			Subcommands: []*cli.Command{
 				wallet.ImportCmd,
 				wallet.ListCmd,

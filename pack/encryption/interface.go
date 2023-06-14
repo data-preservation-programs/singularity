@@ -15,14 +15,7 @@ type Encryptor interface {
 	// this is the last piece of data to be encrypted. This function is expected to be called only once.
 	// To resume previous encryption, use LoadState before calling Encrypt. To save the encryption state
 	// for later resumption, use GetState after calling Encrypt.
-	Encrypt(in io.Reader, last bool) (io.ReadCloser, error)
-
-	// GetState returns the current state of the Encryptor as a byte slice.
-	// This state can be used to resume encryption at a later time.
-	GetState() ([]byte, error)
-
-	// LoadState loads the state of the Encryptor from a byte slice.
-	LoadState([]byte) error
+	Encrypt(in io.Reader) (io.ReadCloser, error)
 }
 
 func GetEncryptor(dataset model.Dataset) (Encryptor, error){

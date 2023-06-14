@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"github.com/ipfs/go-cid"
+	"gorm.io/gorm"
 	"time"
 
 	"github.com/pkg/errors"
@@ -134,7 +135,7 @@ const (
 
 const (
 	// Created means the item has been created is not ready for processing.
-	Created WorkState = "created"
+	Created WorkState = ""
 	// Ready means the item is ready to be processed.
 	Ready WorkState = "ready"
 	// Processing means the work is currently being processed.
@@ -146,7 +147,7 @@ const (
 )
 
 type Worker struct {
-	ID            string `gorm:"primaryKey"`
+	ID            string `gorm:"primaryKey;size:64"`
 	WorkType      WorkType
 	WorkingOn     string
 	LastHeartbeat time.Time
@@ -172,6 +173,10 @@ type Dataset struct {
 	Wallets              []Wallet    `gorm:"many2many:wallet_assignments" json:"wallets,omitempty" swaggerignore:"true"`
 }
 
+func (d Dataset) UseEncryption() bool {
+	return len(d.EncryptionRecipients) > 0 || d.EncryptionScript != ""
+}
+
 // Source represents a source of data, i.e. a local file system directory.
 type Source struct {
 	ID                   uint32     `gorm:"primaryKey" json:"id"`
@@ -184,14 +189,17 @@ type Source struct {
 	Metadata             Metadata   `gorm:"type:JSON" json:"metadata"`
 	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
 	ScanningState        WorkState  `gorm:"index:source_cleanup;size:16" json:"scanningState"`
-	ScanningWorkerID     *string    `gorm:"index:source_cleanup" json:"scanningWorkerId,omitempty"`
+	ScanningWorkerID     *string    `gorm:"index:source_cleanup;size:64" json:"scanningWorkerId,omitempty"`
 	ScanningWorker       *Worker    `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"scanningWorker,omitempty" swaggerignore:"true"`
 	LastScannedTimestamp int64      `json:"lastScannedTimestamp"`
 	LastScannedPath      string     `json:"lastScannedPath"`
 	ErrorMessage         string     `json:"errorMessage"`
-	RootDirectoryID      uint64     `json:"rootDirectoryId"`
-	RootDirectory        *Directory `gorm:"foreignKey:RootDirectoryID;constraint:OnDelete:SET NULL" json:"rootDirectory,omitempty" swaggerignore:"true"`
 	DeleteAfterExport    bool       `json:"deleteAfterExport"`
+	DagGenState          WorkState  `json:"dagGenState"`
+	DagGenWorkerID       *string    `gorm:"index;size:64" json:"dagGenWorkerId,omitempty"`
+	DagGenWorker         *Worker    `gorm:"foreignKey:DagGenWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"dagGenWorker,omitempty" swaggerignore:"true"`
+	DagGenErrorMessage   string     `json:"dagGenErrorMessage"`
+	rootDirectory        *Directory
 }
 
 // Chunk is a grouping of items that are packed into a single CAR.
@@ -205,7 +213,7 @@ type Chunk struct {
 	PackingWorker   *Worker    `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty" swaggerignore:"true"`
 	ErrorMessage    string     `json:"errorMessage"`
 	ItemParts       []ItemPart `gorm:"constraint:OnDelete:SET NULL" json:"itemParts,omitempty"`
-	Car             *Car       `gorm:"constraint:OnDelete:CASCADE" json:"car,omitempty"`
+	Cars            []Car      `gorm:"constraint:OnDelete:CASCADE" json:"cars,omitempty"`
 }
 
 // Item makes a reference to the data source item, i.e. a local file.
@@ -221,7 +229,6 @@ type Item struct {
 	CID                       CID        `gorm:"column:cid;type:bytes;size:256" json:"cid"`
 	DirectoryID               *uint64    `gorm:"index" json:"directoryId"`
 	Directory                 *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"directory,omitempty" swaggerignore:"true"`
-	LastEncryptorState        []byte     `json:"-" swaggerignore:"true"`
 	ItemParts                 []ItemPart `gorm:"constraint:OnDelete:CASCADE" json:"itemParts,omitempty"`
 }
 
@@ -238,12 +245,43 @@ type ItemPart struct {
 
 // Directory is a link between parent and child directories.
 type Directory struct {
-	ID       uint64     `gorm:"primaryKey" json:"id"`
-	CID      CID        `gorm:"column:cid;type:bytes;size:256" json:"cid"`
-	Data     []byte     `gorm:"column:data" json:"-" swaggerignore:"true"`
-	Name     string     `gorm:"size:256" json:"name"`
-	ParentID *uint64    `gorm:"index" json:"parentId"`
-	Parent   *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"parent,omitempty" swaggerignore:"true"`
+	ID        uint64     `gorm:"primaryKey" json:"id"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	CID       CID        `gorm:"column:cid;type:bytes;size:256" json:"cid"`
+	SourceID  uint32     `gorm:"index" json:"sourceId"`
+	Source    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
+	Data      []byte     `gorm:"column:data" json:"-" swaggerignore:"true"`
+	Name      string     `gorm:"size:256" json:"name"`
+	ParentID  *uint64    `gorm:"index" json:"parentId"`
+	Parent    *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"parent,omitempty" swaggerignore:"true"`
+	Exported  bool       `json:"exported"`
+}
+
+func (s *Source) LoadRootDirectory(db *gorm.DB) error {
+	var rootDir Directory
+	err := db.Where("parent_id IS NULL AND source_id = ?", s.ID).First(&rootDir).Error
+	if err != nil {
+		return err
+	}
+	s.rootDirectory = &rootDir
+	return nil
+}
+
+func (s *Source) RootDirectory() *Directory {
+	return s.rootDirectory
+}
+
+func (s *Source) RootDirectoryID(db *gorm.DB) (uint64, error) {
+	if s.rootDirectory != nil {
+		return s.rootDirectory.ID, nil
+	}
+
+	var rootDir Directory
+	err := db.Where("parent_id IS NULL AND source_id = ?", s.ID).First(&rootDir).Error
+	if err != nil {
+		return 0, err
+	}
+	return rootDir.ID, nil
 }
 
 // Car makes a reference to a CAR file that has been potentially exported to the disk.
@@ -259,6 +297,8 @@ type Car struct {
 	FilePath  string    `gorm:"size:1024" json:"filePath"`
 	DatasetID uint32    `gorm:"index" json:"datasetId"`
 	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
+	SourceID  *uint32   `gorm:"index" json:"sourceId"`
+	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
 	ChunkID   *uint32   `json:"chunkId"`
 	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE" json:"chunk,omitempty" swaggerignore:"true"`
 	Header    []byte    `gorm:"size:256" json:"header"`

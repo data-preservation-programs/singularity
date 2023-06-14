@@ -183,7 +183,7 @@ func (s Server) getSource(ctx context.Context, datasetName string) (model.Source
 				ScanIntervalSeconds:  0,
 				ScanningState:        "",
 				LastScannedTimestamp: time.Now().Unix(),
-				RootDirectoryID:      root.ID,
+				// TODO RootDirectoryID:      root.ID,
 			}
 			err = db.Create(&source).Error
 			if err != nil {
@@ -442,6 +442,7 @@ func (d Server) HandlePostSource(c echo.Context) error {
 		ScanIntervalSeconds: 0,
 		ScanningState:       model.Ready,
 		DeleteAfterExport:   deleteAfterExport,
+		DagGenState:         model.Created,
 	}
 
 	handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Request().Context(), source)
@@ -462,7 +463,7 @@ func (d Server) HandlePostSource(c echo.Context) error {
 		return errors.Wrap(err, "failed to create directory")
 	}
 
-	source.RootDirectoryID = dir.ID
+	// TODO source.RootDirectoryID = dir.ID
 	err = d.db.WithContext(c.Request().Context()).Create(&source).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create source")

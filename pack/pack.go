@@ -23,16 +23,19 @@ import (
 )
 
 type Result struct {
-	CarFilePath          string
-	CarFileSize          int64
-	PieceCID             cid.Cid
-	PieceSize            int64
-	RootCID              cid.Cid
-	Header               []byte
-	CarBlocks            []model.CarBlock
-	ItemPartCIDs         map[uint64]cid.Cid
-	ItemEncryptionStates map[uint64][]byte
-	Objects              map[uint64]fs.Object
+	ItemPartCIDs map[uint64]cid.Cid
+	Objects      map[uint64]fs.Object
+	CarResults   []CarResult
+}
+
+type CarResult struct {
+	CarFilePath string
+	CarFileSize int64
+	PieceCID    cid.Cid
+	PieceSize   int64
+	RootCID     cid.Cid
+	Header      []byte
+	CarBlocks   []model.CarBlock
 }
 
 type nopCloser struct {
@@ -51,7 +54,7 @@ var emptyItemCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
 
 var logger = log.Logger("pack")
 
-func getMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) {
+func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) {
 	calc := &commp.Calc{}
 	if outDir == "" {
 		return WriteCloser{Writer: calc, Closer: &nopCloser{}}, calc, "", nil
@@ -75,18 +78,72 @@ func AssembleCar(
 	outDir string,
 	pieceSize int64,
 ) (*Result, error) {
-	writeCloser, calc, filepath, err := getMultiWriter(outDir)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get multi writer")
-	}
-	defer writeCloser.Close()
+	var writeCloser io.WriteCloser
+	var calc *commp.Calc
+	var filepath string
+	var err error
+	defer func() {
+		if writeCloser != nil {
+			writeCloser.Close()
+		}
+	}()
 
 	result := &Result{
-		ItemPartCIDs:         make(map[uint64]cid.Cid),
-		ItemEncryptionStates: make(map[uint64][]byte),
-		Objects:              make(map[uint64]fs.Object),
+		ItemPartCIDs: make(map[uint64]cid.Cid),
+		Objects:      make(map[uint64]fs.Object),
 	}
 	offset := int64(0)
+	current := CarResult{}
+	addHeaderIfNeeded := func(c cid.Cid) error {
+		if offset == 0 {
+			writeCloser, calc, filepath, err = GetMultiWriter(outDir)
+			if err != nil {
+				return errors.Wrap(err, "failed to get multi writer")
+			}
+			current.RootCID = c
+			headerBytes, err := WriteCarHeader(writeCloser, c)
+			if err != nil {
+				return errors.Wrap(err, "failed to write header")
+			}
+
+			offset += int64(len(headerBytes))
+			current.Header = headerBytes
+		}
+		return nil
+	}
+	checkResult := func(force bool) error {
+		if !force && offset < pieceSize {
+			return nil
+		}
+		if offset == 0 {
+			return nil
+		}
+		pieceCid, finalPieceSize, err := GetCommp(calc, uint64(pieceSize))
+		if err != nil {
+			return errors.Wrap(err, "failed to get commp")
+		}
+		current.PieceCID = pieceCid
+		current.PieceSize = int64(finalPieceSize)
+		current.CarFileSize = offset
+
+		if outDir != "" {
+			current.CarFilePath = path.Join(outDir, pieceCid.String()+".car")
+		}
+		if filepath != "" {
+			err = os.Rename(filepath, current.CarFilePath)
+			if err != nil {
+				return errors.Wrap(err, "failed to create symlink")
+			}
+		}
+		result.CarResults = append(result.CarResults, current)
+		current = CarResult{}
+		offset = 0
+		writeCloser.Close()
+		writeCloser = nil
+		calc = nil
+		filepath = ""
+		return nil
+	}
 
 	for _, itemPart := range itemParts {
 		links := make([]format.Link, 0)
@@ -116,33 +173,29 @@ func AssembleCar(
 				if block.Error != nil {
 					return nil, errors.Wrap(block.Error, "failed to stream block")
 				}
-				if offset == 0 {
-					result.RootCID = block.CID
-					headerBytes, err := WriteCarHeader(writeCloser, block.CID)
-					if err != nil {
-						return nil, errors.Wrap(err, "failed to write header")
-					}
-
-					offset += int64(len(headerBytes))
-					result.Header = headerBytes
-				}
 				basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
+				err = addHeaderIfNeeded(basicBlock.Cid())
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to add header")
+				}
 				written, err := WriteCarBlock(writeCloser, basicBlock)
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to write block")
 				}
 
-				result.CarBlocks = append(
-					result.CarBlocks, model.CarBlock{
-						CID:            model.CID(block.CID),
-						CarOffset:      offset,
-						CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
-						Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
-						ItemID:         &itemPart.ItemID,
-						ItemOffset:     block.Offset,
-						ItemEncrypted:  encryptor != nil,
-					},
-				)
+				if !dataset.UseEncryption() {
+					current.CarBlocks = append(
+						current.CarBlocks, model.CarBlock{
+							CID:            model.CID(block.CID),
+							CarOffset:      offset,
+							CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
+							Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
+							ItemID:         &itemPart.ItemID,
+							ItemOffset:     block.Offset,
+							ItemEncrypted:  encryptor != nil,
+						},
+					)
+				}
 
 				offset += written
 				links = append(
@@ -152,15 +205,13 @@ func AssembleCar(
 						Cid:  block.CID,
 					},
 				)
+				err = checkResult(false)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to check result")
+				}
 			}
 		}
 
-		if encryptor != nil && itemPart.Offset+itemPart.Length < itemPart.Item.Size {
-			result.ItemEncryptionStates[itemPart.ID], err = encryptor.GetState()
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to get encryptor state")
-			}
-		}
 		if len(links) == 0 {
 			result.ItemPartCIDs[itemPart.ID] = emptyItemCid
 			continue
@@ -175,39 +226,39 @@ func AssembleCar(
 			return nil, errors.Wrap(err, "failed to assemble itemPart")
 		}
 		for _, blk := range blks {
+			err = addHeaderIfNeeded(blk.Cid())
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to add header")
+			}
 			written, err := WriteCarBlock(writeCloser, blk)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to write block")
 			}
 
-			result.CarBlocks = append(
-				result.CarBlocks, model.CarBlock{
-					CID:            model.CID(blk.Cid()),
-					CarOffset:      offset,
-					CarBlockLength: int32(written),
-					Varint:         varint.ToUvarint(uint64(len(blk.RawData()) + blk.Cid().ByteLen())),
-					RawBlock:       blk.RawData(),
-				},
-			)
+			if !dataset.UseEncryption() {
+				current.CarBlocks = append(
+					current.CarBlocks, model.CarBlock{
+						CID:            model.CID(blk.Cid()),
+						CarOffset:      offset,
+						CarBlockLength: int32(written),
+						Varint:         varint.ToUvarint(uint64(len(blk.RawData()) + blk.Cid().ByteLen())),
+						RawBlock:       blk.RawData(),
+					},
+				)
+			}
 			offset += written
+			err = checkResult(false)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to check result")
+			}
 		}
 
 		result.ItemPartCIDs[itemPart.ID] = rootNode.Cid()
 	}
 
-	pieceCid, finalPieceSize, err := GetCommp(calc, uint64(pieceSize))
-	result.PieceCID = pieceCid
-	result.PieceSize = int64(finalPieceSize)
-	result.CarFileSize = offset
-
-	if outDir != "" {
-		result.CarFilePath = path.Join(outDir, pieceCid.String()+".car")
-	}
-	if filepath != "" {
-		err = os.Rename(filepath, result.CarFilePath)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create symlink")
-		}
+	err = checkResult(true)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check result")
 	}
 	return result, nil
 }

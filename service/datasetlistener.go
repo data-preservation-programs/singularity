@@ -50,11 +50,6 @@ func (s DatasetListenerService) getSource(ctx context.Context, datasetName strin
 		}
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			root := model.Directory{}
-			err = db.Create(&root).Error
-			if err != nil {
-				return err
-			}
 			source = model.Source{
 				DatasetID:            dataset.ID,
 				Type:                 model.Upload,
@@ -62,9 +57,15 @@ func (s DatasetListenerService) getSource(ctx context.Context, datasetName strin
 				ScanIntervalSeconds:  0,
 				ScanningState:        "",
 				LastScannedTimestamp: time.Now().Unix(),
-				RootDirectoryID:      root.ID,
 			}
 			err = db.Create(&source).Error
+			if err != nil {
+				return err
+			}
+			root := model.Directory{
+				SourceID: source.ID,
+			}
+			err = db.Create(&root).Error
 			if err != nil {
 				return err
 			}

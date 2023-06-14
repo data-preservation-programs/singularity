@@ -46,8 +46,8 @@ var ChunkDetailCmd = &cli.Command{
 
 		fmt.Println("Chunk:")
 		cliutil.PrintToConsole(result, false)
-		fmt.Println("Piece:")
-		cliutil.PrintToConsole(result.Car, false)
+		fmt.Println("Pieces:")
+		cliutil.PrintToConsole(result.Cars, false)
 		fmt.Println("Item Parts:")
 		cliutil.PrintToConsole(underscore.Map(result.ItemParts, func(i model.ItemPart) ItemPartDetail {
 			return ItemPartDetail{

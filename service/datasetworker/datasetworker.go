@@ -35,6 +35,7 @@ type DatasetWorkerConfig struct {
 	EnableScan     bool
 	EnablePack     bool
 	EnableDag      bool
+	ExitOnError    bool
 }
 
 func NewDatasetWorker(db *gorm.DB, config DatasetWorkerConfig) *DatasetWorker {
@@ -130,8 +131,56 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 	go healthcheck.StartHealthCheck(ctx, w.db, w.id, w.getState)
 	for {
 		w.directoryCache = map[string]model.Directory{}
+		// 0, find dag work
+		source, err := w.findDagWork()
+		if err != nil {
+			w.logger.Errorw("failed to find dag work", "error", err)
+			goto errorLoop
+		}
+		if source != nil {
+			err = w.dag(ctx, *source)
+			if err != nil {
+				w.logger.Errorw("failed to generate dag", "error", err)
+				newState := model.Error
+				newErrorMessage := err.Error()
+				if errors.Is(err, context.Canceled) {
+					newState = model.Ready
+					newErrorMessage = ""
+					cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer cancel()
+					w.db = w.db.WithContext(cancelCtx)
+				}
+				err = database.DoRetry(func() error {
+					return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
+						map[string]interface{}{
+							"dag_gen_state":         newState,
+							"dag_gen_worker_id":     nil,
+							"dag_gen_error_message": newErrorMessage,
+						},
+					).Error
+				})
+				if err != nil {
+					w.logger.Errorw("failed to update source daggen with error", "error", err)
+				}
+				goto errorLoop
+			}
+
+			err = database.DoRetry(func() error {
+				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
+					map[string]interface{}{
+						"dag_gen_state":     model.Complete,
+						"dag_gen_worker_id": nil,
+					},
+				).Error
+			})
+			if err != nil {
+				w.logger.Errorw("failed to update source daggen to complete", "error", err)
+				goto errorLoop
+			}
+			continue
+		}
 		// 1st, find scanning work
-		source, err := w.findScanWork()
+		source, err = w.findScanWork()
 		if err != nil {
 			w.logger.Errorw("failed to scan", "error", err)
 			goto errorLoop
@@ -239,6 +288,10 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 			return
 		}
 	errorLoop:
+		if w.config.ExitOnError {
+			errChan <- err
+			return
+		}
 		w.logger.Debug("sleeping for a minute")
 		select {
 		case <-ctx.Done():

@@ -28,11 +28,14 @@ func maxSizeToSplitSize(m int64) int64 {
 func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
 	dataset := *source.Dataset
 	splitSize := maxSizeToSplitSize(dataset.MaxSize)
-	root := *source.RootDirectory
+	rootID, err := source.RootDirectoryID(w.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to get root directory id")
+	}
 
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
-	err := w.db.Joins("Item").Preload("Item").
+	err = w.db.Joins("Item").Preload("Item").
 		Where("source_id = ? AND chunk_id is null", source.ID).
 		Order("item_parts.id asc").
 		Find(&remainingParts).Error
@@ -102,7 +105,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			Hash:                      hashValue,
 		}
 		w.logger.Debugw("found item", "item", item)
-		err = w.ensureParentDirectories(&item, root)
+		err = w.ensureParentDirectories(&item, rootID)
 		if err != nil {
 			return errors.Wrap(err, "failed to ensure parent directories")
 		}
@@ -113,20 +116,28 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 				if err != nil {
 					return errors.Wrap(err, "failed to create item")
 				}
-				offset := int64(0)
-				for {
-					length := splitSize
-					if item.Size-offset < length {
-						length = item.Size - offset
-					}
+				if dataset.UseEncryption() {
 					itemParts = append(itemParts, model.ItemPart{
-						ItemID:   item.ID,
-						Offset:   offset,
-						Length:   length,
+						ItemID: item.ID,
+						Offset: 0,
+						Length: item.Size,
 					})
-					offset += length
-					if offset >= item.Size {
-						break
+				} else {
+					offset := int64(0)
+					for {
+						length := splitSize
+						if item.Size-offset < length {
+							length = item.Size - offset
+						}
+						itemParts = append(itemParts, model.ItemPart{
+							ItemID: item.ID,
+							Offset: offset,
+							Length: length,
+						})
+						offset += length
+						if offset >= item.Size {
+							break
+						}
 					}
 				}
 				err = db.Create(&itemParts).Error
@@ -207,6 +218,13 @@ func (w *DatasetWorkerThread) chunkOnce(
 		si--
 	}
 
+	// In case si == 0, this is the case where a single item is more than sector size for encryption
+	// We will allow a single item to be more than sector size and handle it later during packing
+	if si == 0 {
+		si = 1
+		s += toCarSize(remaining.itemParts[0].Length)
+	}
+
 	// create a chunk for [0:si)
 	err := database.DoRetry(func() error {
 		return w.db.Transaction(
@@ -238,27 +256,27 @@ func (w *DatasetWorkerThread) chunkOnce(
 	return nil
 }
 
-func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, root model.Directory) error {
+func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, rootDirID uint64) error {
 	if item.DirectoryID != nil {
 		return nil
 	}
-	last := root
-	relativePath := strings.TrimPrefix(item.Path, root.Name+"/")
-	segments := strings.Split(relativePath, "/")
+	last := rootDirID
+	segments := strings.Split(item.Path, "/")
 	for i, segment := range segments[:len(segments)-1] {
 		p := strings.Join(segments[:i+1], "/")
 		if dir, ok := w.directoryCache[p]; ok {
-			last = dir
+			last = dir.ID
 			continue
 		}
 		newDir := model.Directory{
+			SourceID: item.SourceID,
 			Name:     segment,
-			ParentID: &last.ID,
+			ParentID: &last,
 		}
 		err := database.DoRetry(func() error {
 			return w.db.Transaction(func(db *gorm.DB) error {
-				return db.Select("id", "cid", "name", "parent_id").
-					Where("parent_id = ? AND name = ?", last.ID, segment).
+				return db.
+					Where("parent_id = ? AND name = ?", last, segment).
 					FirstOrCreate(&newDir).Error
 			})
 		})
@@ -266,9 +284,9 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, root mod
 			return errors.Wrap(err, "failed to create directory")
 		}
 		w.directoryCache[p] = newDir
-		last = newDir
+		last = newDir.ID
 	}
 
-	item.DirectoryID = &last.ID
+	item.DirectoryID = &last
 	return nil
 }

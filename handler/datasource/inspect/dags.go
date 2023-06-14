@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// GetSourceChunksHandler godoc
+// GetDagsHandler godoc
 // @Summary Get all chunk details of a data source
 // @Tags Data Source
 // @Accept json
@@ -17,10 +17,10 @@ import (
 // @Success 200 {array} model.Chunk
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/chunks [get]
-func GetSourceChunksHandler(
+func GetDagsHandler(
 	db *gorm.DB,
 	id string,
-) ([]model.Chunk, *handler.Error) {
+) ([]model.Car, *handler.Error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
@@ -34,11 +34,11 @@ func GetSourceChunksHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	var chunks []model.Chunk
-	err = db.Preload("Cars").Where("source_id = ?", sourceID).Find(&chunks).Error
+	var cars []model.Car
+	err = db.Where("source_id = ? AND chunk_id IS NULL", sourceID).Find(&cars).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
 
-	return chunks, nil
+	return cars, nil
 }
