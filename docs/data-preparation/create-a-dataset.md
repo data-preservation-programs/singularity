@@ -11,7 +11,7 @@ By default, it will be using the `sqlite3` database backend and initialize the d
 To use a different database backend for Production use, check [deploy-to-production.md](../installation/deploy-to-production.md "mention")
 
 ```sh
-singularity init
+singularity admin init
 ```
 
 ## Create a new dataset
