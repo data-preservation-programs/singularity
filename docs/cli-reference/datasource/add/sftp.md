@@ -8,113 +8,8 @@ USAGE:
    singularity datasource add sftp [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sftp-port
-      SSH port number.
-
-   --sftp-key-file-pass
-      The passphrase to decrypt the PEM-encoded private key file.
-      
-      Only PEM encrypted key files (old OpenSSH format) are supported. Encrypted keys
-      in the new OpenSSH format can't be used.
-
-   --sftp-path-override
-      Override path used by SSH shell commands.
-      
-      This allows checksum calculation when SFTP and SSH paths are
-      different. This issue affects among others Synology NAS boxes.
-      
-      E.g. if shared folders can be found in directories representing volumes:
-      
-          rclone sync /home/local/directory remote:/directory --sftp-path-override /volume2/directory
-      
-      E.g. if home directory can be found in a shared folder called "home":
-      
-          rclone sync /home/local/directory remote:/home/directory --sftp-path-override /volume1/homes/USER/directory
-
-   --sftp-set-modtime
-      Set the modified time on the remote if set.
-
-   --sftp-set-env
-      Environment variables to pass to sftp and commands
-      
-      Set environment variables in the form:
-      
-          VAR=value
-      
-      to be passed to the sftp client and to any commands run (eg md5sum).
-      
-      Pass multiple variables space separated, eg
-      
-          VAR1=value VAR2=value
-      
-      and pass variables with spaces in in quotes, eg
-      
-          "VAR3=value with space" "VAR4=value with space" VAR5=nospacehere
-      
-      
-
-   --sftp-host
-      SSH host to connect to.
-      
-      E.g. "example.com".
-
-   --sftp-disable-hashcheck
-      Disable the execution of SSH commands to determine if remote file hashing is available.
-      
-      Leave blank or set to false to enable hashing (recommended), set to true to disable hashing.
-
-   --sftp-skip-links
-      Set to skip any symlinks and any other non regular files.
-
-   --sftp-idle-timeout
-      Max time before closing idle connections.
-      
-      If no connections have been returned to the connection pool in the time
-      given, rclone will empty the connection pool.
-      
-      Set to 0 to keep connections indefinitely.
-      
-
-   --sftp-use-insecure-cipher
-      Enable the use of insecure ciphers and key exchange methods.
-      
-      This enables the use of the following insecure ciphers and key exchange methods:
-      
-      - aes128-cbc
-      - aes192-cbc
-      - aes256-cbc
-      - 3des-cbc
-      - diffie-hellman-group-exchange-sha256
-      - diffie-hellman-group-exchange-sha1
-      
-      Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
-      
-      This must be false if you use either ciphers or key_exchange advanced options.
-      
-
-      Examples:
-         | false | Use default Cipher list.
-         | true  | Enables the use of the aes128-cbc cipher and diffie-hellman-group-exchange-sha256, diffie-hellman-group-exchange-sha1 key exchange.
-
-   --sftp-subsystem
-      Specifies the SSH2 subsystem on the remote host.
-
-   --sftp-macs
-      Space separated list of MACs (message authentication code) algorithms, ordered by preference.
-      
-      At least one must match with server configuration. This can be checked for example using ssh -Q mac.
-      
-      Example:
-      
-          umac-64-etm@openssh.com umac-128-etm@openssh.com hmac-sha2-256-etm@openssh.com
-      
-
-   --sftp-pubkey-file
-      Optional path to public key file.
-      
-      Set this if you have a signed certificate you want to use for authentication.
-      
-      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+   --sftp-user
+      SSH username.
 
    --sftp-disable-concurrent-writes
       If set don't use concurrent writes.
@@ -123,66 +18,6 @@ DESCRIPTION:
       the performance greatly, especially for distant servers.
       
       This option disables concurrent writes should that be necessary.
-      
-
-   --sftp-key-exchange
-      Space separated list of key exchange algorithms, ordered by preference.
-      
-      At least one must match with server configuration. This can be checked for example using ssh -Q kex.
-      
-      This must not be set if use_insecure_cipher is true.
-      
-      Example:
-      
-          sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org ecdh-sha2-nistp256
-      
-
-   --sftp-shell-type
-      The type of SSH shell on remote server, if any.
-      
-      Leave blank for autodetect.
-
-      Examples:
-         | none       | No shell access
-         | unix       | Unix shell
-         | powershell | PowerShell
-         | cmd        | Windows Command Prompt
-
-   --sftp-md5sum-command
-      The command used to read md5 hashes.
-      
-      Leave blank for autodetect.
-
-   --sftp-user
-      SSH username.
-
-   --sftp-key-use-agent
-      When set forces the usage of the ssh-agent.
-      
-      When key-file is also set, the ".pub" file of the specified key-file is read and only the associated key is
-      requested from the ssh-agent. This allows to avoid `Too many authentication failures for *username*` errors
-      when the ssh-agent contains many keys.
-
-   --sftp-sha1sum-command
-      The command used to read sha1 hashes.
-      
-      Leave blank for autodetect.
-
-   --sftp-server-command
-      Specifies the path or command to run a sftp server on the remote host.
-      
-      The subsystem option is ignored when server_command is defined.
-
-   --sftp-use-fstat
-      If set use fstat instead of stat.
-      
-      Some servers limit the amount of open files and calling Stat after opening
-      the file will throw an error from the server. Setting this flag will call
-      Fstat instead of Stat which is called on an already open file handle.
-      
-      It has been found that this helps with IBM Sterling SFTP servers which have
-      "extractability" level set to 1 which means only 1 file can be opened at
-      any given time.
       
 
    --sftp-chunk-size
@@ -208,6 +43,37 @@ DESCRIPTION:
       can be set as for the OpenSSH example above.
       
 
+   --sftp-macs
+      Space separated list of MACs (message authentication code) algorithms, ordered by preference.
+      
+      At least one must match with server configuration. This can be checked for example using ssh -Q mac.
+      
+      Example:
+      
+          umac-64-etm@openssh.com umac-128-etm@openssh.com hmac-sha2-256-etm@openssh.com
+      
+
+   --sftp-set-modtime
+      Set the modified time on the remote if set.
+
+   --sftp-md5sum-command
+      The command used to read md5 hashes.
+      
+      Leave blank for autodetect.
+
+   --sftp-server-command
+      Specifies the path or command to run a sftp server on the remote host.
+      
+      The subsystem option is ignored when server_command is defined.
+
+   --sftp-concurrency
+      The maximum number of outstanding requests for one file
+      
+      This controls the maximum number of outstanding requests for one file.
+      Increasing it will increase throughput on high latency links at the
+      cost of using more memory.
+      
+
    --sftp-ciphers
       Space separated list of ciphers to be used for session encryption, ordered by preference.
       
@@ -220,6 +86,78 @@ DESCRIPTION:
           aes128-ctr aes192-ctr aes256-ctr aes128-gcm@openssh.com aes256-gcm@openssh.com
       
 
+   --sftp-key-exchange
+      Space separated list of key exchange algorithms, ordered by preference.
+      
+      At least one must match with server configuration. This can be checked for example using ssh -Q kex.
+      
+      This must not be set if use_insecure_cipher is true.
+      
+      Example:
+      
+          sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org ecdh-sha2-nistp256
+      
+
+   --sftp-pass
+      SSH password, leave blank to use ssh-agent.
+
+   --sftp-key-pem
+      Raw PEM-encoded private key.
+      
+      If specified, will override key_file parameter.
+
+   --sftp-key-file
+      Path to PEM-encoded private key file.
+      
+      Leave blank or set key-use-agent to use ssh-agent.
+      
+      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+   --sftp-key-use-agent
+      When set forces the usage of the ssh-agent.
+      
+      When key-file is also set, the ".pub" file of the specified key-file is read and only the associated key is
+      requested from the ssh-agent. This allows to avoid `Too many authentication failures for *username*` errors
+      when the ssh-agent contains many keys.
+
+   --sftp-port
+      SSH port number.
+
+   --sftp-ask-password
+      Allow asking for SFTP password when needed.
+      
+      If this is set and no password is supplied then rclone will:
+      - ask for a password
+      - not contact the ssh agent
+      
+
+   --sftp-subsystem
+      Specifies the SSH2 subsystem on the remote host.
+
+   --sftp-set-env
+      Environment variables to pass to sftp and commands
+      
+      Set environment variables in the form:
+      
+          VAR=value
+      
+      to be passed to the sftp client and to any commands run (eg md5sum).
+      
+      Pass multiple variables space separated, eg
+      
+          VAR1=value VAR2=value
+      
+      and pass variables with spaces in in quotes, eg
+      
+          "VAR3=value with space" "VAR4=value with space" VAR5=nospacehere
+      
+      
+
+   --sftp-host
+      SSH host to connect to.
+      
+      E.g. "example.com".
+
    --sftp-known-hosts-file
       Optional path to known_hosts file.
       
@@ -230,33 +168,49 @@ DESCRIPTION:
       Examples:
          | ~/.ssh/known_hosts | Use OpenSSH's known_hosts file.
 
-   --sftp-ask-password
-      Allow asking for SFTP password when needed.
+   --sftp-path-override
+      Override path used by SSH shell commands.
       
-      If this is set and no password is supplied then rclone will:
-      - ask for a password
-      - not contact the ssh agent
+      This allows checksum calculation when SFTP and SSH paths are
+      different. This issue affects among others Synology NAS boxes.
+      
+      E.g. if shared folders can be found in directories representing volumes:
+      
+          rclone sync /home/local/directory remote:/directory --sftp-path-override /volume2/directory
+      
+      E.g. if home directory can be found in a shared folder called "home":
+      
+          rclone sync /home/local/directory remote:/home/directory --sftp-path-override /volume1/homes/USER/directory
+
+   --sftp-sha1sum-command
+      The command used to read sha1 hashes.
+      
+      Leave blank for autodetect.
+
+   --sftp-idle-timeout
+      Max time before closing idle connections.
+      
+      If no connections have been returned to the connection pool in the time
+      given, rclone will empty the connection pool.
+      
+      Set to 0 to keep connections indefinitely.
       
 
-   --sftp-concurrency
-      The maximum number of outstanding requests for one file
+   --sftp-key-file-pass
+      The passphrase to decrypt the PEM-encoded private key file.
       
-      This controls the maximum number of outstanding requests for one file.
-      Increasing it will increase throughput on high latency links at the
-      cost of using more memory.
-      
+      Only PEM encrypted key files (old OpenSSH format) are supported. Encrypted keys
+      in the new OpenSSH format can't be used.
 
-   --sftp-key-file
-      Path to PEM-encoded private key file.
+   --sftp-pubkey-file
+      Optional path to public key file.
       
-      Leave blank or set key-use-agent to use ssh-agent.
+      Set this if you have a signed certificate you want to use for authentication.
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
-   --sftp-key-pem
-      Raw PEM-encoded private key.
-      
-      If specified, will override key_file parameter.
+   --sftp-skip-links
+      Set to skip any symlinks and any other non regular files.
 
    --sftp-disable-concurrent-reads
       If set don't use concurrent reads.
@@ -275,8 +229,54 @@ DESCRIPTION:
       If concurrent reads are disabled, the use_fstat option is ignored.
       
 
-   --sftp-pass
-      SSH password, leave blank to use ssh-agent.
+   --sftp-use-insecure-cipher
+      Enable the use of insecure ciphers and key exchange methods.
+      
+      This enables the use of the following insecure ciphers and key exchange methods:
+      
+      - aes128-cbc
+      - aes192-cbc
+      - aes256-cbc
+      - 3des-cbc
+      - diffie-hellman-group-exchange-sha256
+      - diffie-hellman-group-exchange-sha1
+      
+      Those algorithms are insecure and may allow plaintext data to be recovered by an attacker.
+      
+      This must be false if you use either ciphers or key_exchange advanced options.
+      
+
+      Examples:
+         | false | Use default Cipher list.
+         | true  | Enables the use of the aes128-cbc cipher and diffie-hellman-group-exchange-sha256, diffie-hellman-group-exchange-sha1 key exchange.
+
+   --sftp-disable-hashcheck
+      Disable the execution of SSH commands to determine if remote file hashing is available.
+      
+      Leave blank or set to false to enable hashing (recommended), set to true to disable hashing.
+
+   --sftp-shell-type
+      The type of SSH shell on remote server, if any.
+      
+      Leave blank for autodetect.
+
+      Examples:
+         | none       | No shell access
+         | unix       | Unix shell
+         | powershell | PowerShell
+         | cmd        | Windows Command Prompt
+
+   --sftp-use-fstat
+      If set use fstat instead of stat.
+      
+      Some servers limit the amount of open files and calling Stat after opening
+      the file will throw an error from the server. Setting this flag will call
+      Fstat instead of Stat which is called on an already open file handle.
+      
+      It has been found that this helps with IBM Sterling SFTP servers which have
+      "extractability" level set to 1 which means only 1 file can be opened at
+      any given time.
+      
 
 
 OPTIONS:

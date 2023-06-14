@@ -8,6 +8,11 @@ USAGE:
    singularity datasource add opendrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --opendrive-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --opendrive-chunk-size
       Files will be uploaded in chunks this size.
       
@@ -19,11 +24,6 @@ DESCRIPTION:
 
    --opendrive-password
       Password.
-
-   --opendrive-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

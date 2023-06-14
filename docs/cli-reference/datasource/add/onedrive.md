@@ -8,11 +8,6 @@ USAGE:
    singularity datasource add onedrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --onedrive-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
    --onedrive-region
       Choose national cloud region for OneDrive.
 
@@ -22,17 +17,26 @@ DESCRIPTION:
          | de     | Microsoft Cloud Germany
          | cn     | Azure and Office 365 operated by Vnet Group in China
 
-   --onedrive-access-scopes
-      Set scopes to be requested by rclone.
-      
-      Choose or manually enter a custom space separated list with all scopes, that rclone should request.
-      
+   --onedrive-drive-id
+      The ID of the drive to use.
 
-      Examples:
-         | Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access | Read and write access to all resources
-         | Files.Read Files.Read.All Sites.Read.All offline_access                                     | Read only access to all resources
-         | Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All offline_access                | Read and write access to all resources, without the ability to browse SharePoint sites. 
-                                                                                                       | Same as if disable_site_permission was set to true
+   --onedrive-disable-site-permission
+      Disable the request for Sites.Read.All permission.
+      
+      If set to true, you will no longer be able to search for a SharePoint site when
+      configuring drive ID, because rclone will not request Sites.Read.All permission.
+      Set it to true if your organization didn't assign Sites.Read.All permission to the
+      application, and your organization disallows users to consent app permission
+      request on their own.
+
+   --onedrive-expose-onenote-files
+      Set to make OneNote files show up in directory listings.
+      
+      By default, rclone will hide OneNote files in directory listings because
+      operations like "Open" and "Update" won't work on them.  But this
+      behaviour may also prevent you from deleting them.  If you want to
+      delete OneNote files or otherwise want them to show up in directory
+      listing, set this option.
 
    --onedrive-no-versions
       Remove all versions on modifying operations.
@@ -48,6 +52,22 @@ DESCRIPTION:
       **NB** Onedrive personal can't currently delete versions so don't use
       this flag there.
       
+
+   --onedrive-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --onedrive-token
+      OAuth Access Token as a JSON blob.
+
+   --onedrive-link-type
+      Set the type of the links created by the link command.
+
+      Examples:
+         | view  | Creates a read-only link to the item.
+         | edit  | Creates a read-write link to the item.
+         | embed | Creates an embeddable link to the item.
 
    --onedrive-hash-type
       Specify the hash in use for the backend.
@@ -78,68 +98,10 @@ DESCRIPTION:
          | crc32    | CRC32
          | none     | None - don't use any hashes
 
-   --onedrive-client-id
-      OAuth Client Id.
+   --onedrive-encoding
+      The encoding for the backend.
       
-      Leave blank normally.
-
-   --onedrive-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --onedrive-drive-type
-      The type of the drive (personal | business | documentLibrary).
-
-   --onedrive-expose-onenote-files
-      Set to make OneNote files show up in directory listings.
-      
-      By default, rclone will hide OneNote files in directory listings because
-      operations like "Open" and "Update" won't work on them.  But this
-      behaviour may also prevent you from deleting them.  If you want to
-      delete OneNote files or otherwise want them to show up in directory
-      listing, set this option.
-
-   --onedrive-server-side-across-configs
-      Allow server-side operations (e.g. copy) to work across different onedrive configs.
-      
-      This will only work if you are copying between two OneDrive *Personal* drives AND
-      the files to copy are already shared between them.  In other cases, rclone will
-      fall back to normal copy (which will be slightly slower).
-
-   --onedrive-list-chunk
-      Size of listing chunk.
-
-   --onedrive-link-password
-      Set the password for links created by the link command.
-      
-      At the time of writing this only works with OneDrive personal paid accounts.
-      
-
-   --onedrive-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
-   --onedrive-drive-id
-      The ID of the drive to use.
-
-   --onedrive-root-folder-id
-      ID of the root folder.
-      
-      This isn't normally needed, but in special circumstances you might
-      know the folder ID that you wish to access but not be able to get
-      there through a path traversal.
-      
-
-   --onedrive-disable-site-permission
-      Disable the request for Sites.Read.All permission.
-      
-      If set to true, you will no longer be able to search for a SharePoint site when
-      configuring drive ID, because rclone will not request Sites.Read.All permission.
-      Set it to true if your organization didn't assign Sites.Read.All permission to the
-      application, and your organization disallows users to consent app permission
-      request on their own.
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --onedrive-link-scope
       Set the scope of the links created by the link command.
@@ -151,13 +113,41 @@ DESCRIPTION:
          | organization | Anyone signed into your organization (tenant) can use the link to get access.
                         | Only available in OneDrive for Business and SharePoint.
 
-   --onedrive-link-type
-      Set the type of the links created by the link command.
+   --onedrive-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
 
-      Examples:
-         | view  | Creates a read-only link to the item.
-         | edit  | Creates a read-write link to the item.
-         | embed | Creates an embeddable link to the item.
+   --onedrive-drive-type
+      The type of the drive (personal | business | documentLibrary).
+
+   --onedrive-root-folder-id
+      ID of the root folder.
+      
+      This isn't normally needed, but in special circumstances you might
+      know the folder ID that you wish to access but not be able to get
+      there through a path traversal.
+      
+
+   --onedrive-server-side-across-configs
+      Allow server-side operations (e.g. copy) to work across different onedrive configs.
+      
+      This will only work if you are copying between two OneDrive *Personal* drives AND
+      the files to copy are already shared between them.  In other cases, rclone will
+      fall back to normal copy (which will be slightly slower).
+
+   --onedrive-list-chunk
+      Size of listing chunk.
+
+   --onedrive-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --onedrive-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
 
    --onedrive-chunk-size
       Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
@@ -166,13 +156,23 @@ DESCRIPTION:
       should not exceed 250M (262,144,000 bytes) else you may encounter \"Microsoft.SharePoint.Client.InvalidClientQueryException: The request message is too big.\"
       Note that the chunks will be buffered into memory.
 
-   --onedrive-encoding
-      The encoding for the backend.
+   --onedrive-access-scopes
+      Set scopes to be requested by rclone.
       
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+      Choose or manually enter a custom space separated list with all scopes, that rclone should request.
+      
 
-   --onedrive-token
-      OAuth Access Token as a JSON blob.
+      Examples:
+         | Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access | Read and write access to all resources
+         | Files.Read Files.Read.All Sites.Read.All offline_access                                     | Read only access to all resources
+         | Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All offline_access                | Read and write access to all resources, without the ability to browse SharePoint sites. 
+                                                                                                       | Same as if disable_site_permission was set to true
+
+   --onedrive-link-password
+      Set the password for links created by the link command.
+      
+      At the time of writing this only works with OneDrive personal paid accounts.
+      
 
 
 OPTIONS:

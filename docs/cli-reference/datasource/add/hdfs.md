@@ -8,6 +8,17 @@ USAGE:
    singularity datasource add hdfs [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --hdfs-data-transfer-protection
+      Kerberos data transfer protection: authentication|integrity|privacy.
+      
+      Specifies whether or not authentication, data signature integrity
+      checks, and wire encryption is required when communicating the the
+      datanodes. Possible values are 'authentication', 'integrity' and
+      'privacy'. Used only with KERBEROS enabled.
+
+      Examples:
+         | privacy | Ensure authentication, integrity and encryption enabled.
+
    --hdfs-encoding
       The encoding for the backend.
       
@@ -30,17 +41,6 @@ DESCRIPTION:
       Enables KERBEROS authentication. Specifies the Service Principal Name
       (SERVICE/FQDN) for the namenode. E.g. \"hdfs/namenode.hadoop.docker\"
       for namenode running as service 'hdfs' with FQDN 'namenode.hadoop.docker'.
-
-   --hdfs-data-transfer-protection
-      Kerberos data transfer protection: authentication|integrity|privacy.
-      
-      Specifies whether or not authentication, data signature integrity
-      checks, and wire encryption is required when communicating the the
-      datanodes. Possible values are 'authentication', 'integrity' and
-      'privacy'. Used only with KERBEROS enabled.
-
-      Examples:
-         | privacy | Ensure authentication, integrity and encryption enabled.
 
 
 OPTIONS:

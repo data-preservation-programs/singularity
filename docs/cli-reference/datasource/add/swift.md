@@ -8,6 +8,17 @@ USAGE:
    singularity datasource add swift [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --swift-tenant
+      Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).
+
+   --swift-tenant-id
+      Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).
+
+   --swift-leave-parts-on-error
+      If true avoid calling abort upload on a failure.
+      
+      It should be set to true for resuming uploads across different sessions.
+
    --swift-no-chunk
       Don't chunk files during streaming upload.
       
@@ -28,14 +39,42 @@ DESCRIPTION:
          | true  | Get swift credentials from environment vars.
                  | Leave other fields blank if using this.
 
-   --swift-tenant-domain
-      Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).
+   --swift-key
+      API key or password (OS_PASSWORD).
+
+   --swift-region
+      Region name - optional (OS_REGION_NAME).
 
    --swift-storage-url
       Storage URL - optional (OS_STORAGE_URL).
 
+   --swift-application-credential-id
+      Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).
+
+   --swift-user
+      User name to log in (OS_USERNAME).
+
+   --swift-auth
+      Authentication URL for server (OS_AUTH_URL).
+
+      Examples:
+         | https://auth.api.rackspacecloud.com/v1.0     | Rackspace US
+         | https://lon.auth.api.rackspacecloud.com/v1.0 | Rackspace UK
+         | https://identity.api.rackspacecloud.com/v2.0 | Rackspace v2
+         | https://auth.storage.memset.com/v1.0         | Memset Memstore UK
+         | https://auth.storage.memset.com/v2.0         | Memset Memstore UK v2
+         | https://auth.cloud.ovh.net/v3                | OVH
+
    --swift-auth-version
       AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).
+
+   --swift-endpoint-type
+      Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
+
+      Examples:
+         | public   | Public (default, choose this if not sure)
+         | internal | Internal (use internal service net)
+         | admin    | Admin
 
    --swift-storage-policy
       The storage policy to use when creating a new container.
@@ -49,45 +88,6 @@ DESCRIPTION:
          | <unset> | Default
          | pcs     | OVH Public Cloud Storage
          | pca     | OVH Public Cloud Archive
-
-   --swift-chunk-size
-      Above this size files will be chunked into a _segments container.
-      
-      Above this size files will be chunked into a _segments container.  The
-      default for this is 5 GiB which is its maximum value.
-
-   --swift-auth
-      Authentication URL for server (OS_AUTH_URL).
-
-      Examples:
-         | https://auth.api.rackspacecloud.com/v1.0     | Rackspace US
-         | https://lon.auth.api.rackspacecloud.com/v1.0 | Rackspace UK
-         | https://identity.api.rackspacecloud.com/v2.0 | Rackspace v2
-         | https://auth.storage.memset.com/v1.0         | Memset Memstore UK
-         | https://auth.storage.memset.com/v2.0         | Memset Memstore UK v2
-         | https://auth.cloud.ovh.net/v3                | OVH
-
-   --swift-region
-      Region name - optional (OS_REGION_NAME).
-
-   --swift-endpoint-type
-      Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
-
-      Examples:
-         | public   | Public (default, choose this if not sure)
-         | internal | Internal (use internal service net)
-         | admin    | Admin
-
-   --swift-user
-      User name to log in (OS_USERNAME).
-
-   --swift-application-credential-name
-      Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).
-
-   --swift-leave-parts-on-error
-      If true avoid calling abort upload on a failure.
-      
-      It should be set to true for resuming uploads across different sessions.
 
    --swift-no-large-objects
       Disable support for static and dynamic large objects
@@ -113,14 +113,16 @@ DESCRIPTION:
       but other operations such as Remove and Copy will fail.
       
 
-   --swift-application-credential-id
-      Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).
+   --swift-chunk-size
+      Above this size files will be chunked into a _segments container.
+      
+      Above this size files will be chunked into a _segments container.  The
+      default for this is 5 GiB which is its maximum value.
 
-   --swift-application-credential-secret
-      Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).
-
-   --swift-key
-      API key or password (OS_PASSWORD).
+   --swift-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --swift-user-id
       User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).
@@ -128,19 +130,17 @@ DESCRIPTION:
    --swift-domain
       User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
 
-   --swift-tenant
-      Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).
-
-   --swift-tenant-id
-      Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).
+   --swift-tenant-domain
+      Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).
 
    --swift-auth-token
       Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).
 
-   --swift-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --swift-application-credential-name
+      Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).
+
+   --swift-application-credential-secret
+      Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).
 
 
 OPTIONS:

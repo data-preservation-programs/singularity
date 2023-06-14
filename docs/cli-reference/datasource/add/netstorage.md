@@ -8,6 +8,16 @@ USAGE:
    singularity datasource add netstorage [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --netstorage-protocol
+      Select between HTTP or HTTPS protocol.
+      
+      Most users should choose HTTPS, which is the default.
+      HTTP is provided primarily for debugging purposes.
+
+      Examples:
+         | http  | HTTP protocol
+         | https | HTTPS protocol
+
    --netstorage-host
       Domain+path of NetStorage host to connect to.
       
@@ -20,16 +30,6 @@ DESCRIPTION:
       Set the NetStorage account secret/G2O key for authentication.
       
       Please choose the 'y' option to set your own password then enter your secret.
-
-   --netstorage-protocol
-      Select between HTTP or HTTPS protocol.
-      
-      Most users should choose HTTPS, which is the default.
-      HTTP is provided primarily for debugging purposes.
-
-      Examples:
-         | http  | HTTP protocol
-         | https | HTTPS protocol
 
 
 OPTIONS:

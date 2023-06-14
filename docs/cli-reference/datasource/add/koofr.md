@@ -8,6 +8,11 @@ USAGE:
    singularity datasource add koofr [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --koofr-setmtime
+      Does the backend support setting modification time.
+      
+      Set this to false if you use a mount ID that points to a Dropbox or Amazon Drive backend.
+
    --koofr-user
       Your user name.
 
@@ -42,11 +47,6 @@ DESCRIPTION:
       Mount ID of the mount to use.
       
       If omitted, the primary mount is used.
-
-   --koofr-setmtime
-      Does the backend support setting modification time.
-      
-      Set this to false if you use a mount ID that points to a Dropbox or Amazon Drive backend.
 
 
 OPTIONS:

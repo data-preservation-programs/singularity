@@ -8,6 +8,33 @@ USAGE:
    singularity datasource add filefabric [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --filefabric-version
+      Version read from the file fabric.
+      
+      Don't set this value - rclone will set it automatically.
+      
+
+   --filefabric-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --filefabric-url
+      URL of the Enterprise File Fabric to connect to.
+
+      Examples:
+         | https://storagemadeeasy.com       | Storage Made Easy US
+         | https://eu.storagemadeeasy.com    | Storage Made Easy EU
+         | https://yourfabric.smestorage.com | Connect to your Enterprise File Fabric
+
+   --filefabric-root-folder-id
+      ID of the root folder.
+      
+      Leave blank normally.
+      
+      Fill in to make rclone start with directory of a given ID.
+      
+
    --filefabric-permanent-token
       Permanent Authentication Token.
       
@@ -34,33 +61,6 @@ DESCRIPTION:
       Token expiry time.
       
       Don't set this value - rclone will set it automatically.
-      
-
-   --filefabric-version
-      Version read from the file fabric.
-      
-      Don't set this value - rclone will set it automatically.
-      
-
-   --filefabric-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --filefabric-url
-      URL of the Enterprise File Fabric to connect to.
-
-      Examples:
-         | https://storagemadeeasy.com       | Storage Made Easy US
-         | https://eu.storagemadeeasy.com    | Storage Made Easy EU
-         | https://yourfabric.smestorage.com | Connect to your Enterprise File Fabric
-
-   --filefabric-root-folder-id
-      ID of the root folder.
-      
-      Leave blank normally.
-      
-      Fill in to make rclone start with directory of a given ID.
       
 
 

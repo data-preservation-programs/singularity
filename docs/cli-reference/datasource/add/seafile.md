@@ -14,6 +14,14 @@ DESCRIPTION:
       Examples:
          | https://cloud.seafile.com/ | Connect to cloud.seafile.com.
 
+   --seafile-2fa
+      Two-factor authentication ('true' if the account has 2FA enabled).
+
+   --seafile-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --seafile-user
       User name (usually email address).
 
@@ -25,24 +33,16 @@ DESCRIPTION:
       
       Leave blank to access all non-encrypted libraries.
 
-   --seafile-create-library
-      Should rclone create a library if it doesn't exist.
-
-   --seafile-2fa
-      Two-factor authentication ('true' if the account has 2FA enabled).
-
    --seafile-library-key
       Library password (for encrypted libraries only).
       
       Leave blank if you pass it through the command line.
 
+   --seafile-create-library
+      Should rclone create a library if it doesn't exist.
+
    --seafile-auth-token
       Authentication token.
-
-   --seafile-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:
