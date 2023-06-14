@@ -13,7 +13,7 @@ import (
 
 var SpadeAPICmd = &cli.Command{
 	Name:  "spade-api",
-	Usage: "Start a Spade compatible API for storage provider deal proposal self service",
+	Usage: "[Alpha] Start a Spade compatible API for storage provider deal proposal self service",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "bind",

@@ -13,7 +13,6 @@ import (
 )
 
 type UpdateRequest struct {
-	MinSizeStr           *string  `json:"minSize" default:"30GiB" validate:"optional"`   // Minimum size of the CAR files to be created
 	MaxSizeStr           *string  `json:"maxSize" default:"31.5GiB" validate:"optional"` // Maximum size of the CAR files to be created
 	PieceSizeStr         *string  `json:"pieceSize" default:"" validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
 	OutputDirs           []string `json:"outputDirs" validate:"optional"`                // Output directory for CAR files. Do not set if using inline preparation
@@ -38,7 +37,6 @@ func UpdateHandler(
 	request UpdateRequest,
 ) (*model.Dataset, *handler.Error) {
 	logger := log.Logger("cli")
-	log.SetAllLoggers(log.LevelInfo)
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("name is required")
 	}
@@ -63,14 +61,6 @@ func UpdateHandler(
 }
 
 func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) *handler.Error {
-	if request.MinSizeStr != nil {
-		minSize, err := humanize.ParseBytes(*request.MinSizeStr)
-		if err != nil {
-			return handler.NewBadRequestString("invalid value for min-size: " + err.Error())
-		}
-		dataset.MinSize = int64(minSize)
-	}
-
 	if request.MaxSizeStr != nil {
 		maxSize, err := humanize.ParseBytes(*request.MaxSizeStr)
 		if err != nil {

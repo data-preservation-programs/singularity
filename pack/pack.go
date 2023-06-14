@@ -1,9 +1,9 @@
 package pack
 
 import (
-	"bytes"
 	"context"
-	"filippo.io/age"
+	"github.com/data-preservation-programs/singularity/pack/encryption"
+	util "github.com/ipfs/go-ipfs-util"
 	"github.com/rclone/rclone/fs"
 	"io"
 	"os"
@@ -16,26 +16,19 @@ import (
 	"github.com/google/uuid"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	chunk "github.com/ipfs/go-ipfs-chunker"
-	util "github.com/ipfs/go-ipfs-util"
-	cbor "github.com/ipfs/go-ipld-cbor"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
-	"github.com/ipfs/go-merkledag"
-	"github.com/ipfs/go-unixfs"
-	unixfs_pb "github.com/ipfs/go-unixfs/pb"
-	"github.com/ipld/go-car"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
 )
 
-type BlockResult struct {
-	CID    cid.Cid
-	Offset int64
-	Raw    []byte
-	Error  error
-}
 type Result struct {
+	ItemPartCIDs map[uint64]cid.Cid
+	Objects      map[uint64]fs.Object
+	CarResults   []CarResult
+}
+
+type CarResult struct {
 	CarFilePath string
 	CarFileSize int64
 	PieceCID    cid.Cid
@@ -43,337 +36,254 @@ type Result struct {
 	RootCID     cid.Cid
 	Header      []byte
 	CarBlocks   []model.CarBlock
-	ItemCIDs    map[uint64]cid.Cid
-	Objects     []fs.Object
 }
 
-const ChunkSize int64 = 1 << 20
-const NumLinkPerNode = 1024
-
-var EmptyBlockCID = cid.NewCidV1(cid.Raw, util.Hash([]byte{}))
-
-type Link struct {
-	format.Link
-	ChunkSize uint64
+type nopCloser struct {
 }
 
-func createParentNode(links []Link) (*merkledag.ProtoNode, uint64, error) {
-	node := unixfs.NewFSNode(unixfs_pb.Data_File)
-	total := uint64(0)
-	for _, link := range links {
-		node.AddBlockSize(link.ChunkSize)
-		total += link.ChunkSize
-	}
-	nodeBytes, err := node.GetBytes()
-	if err != nil {
-		return nil, 0, errors.Wrap(err, "failed to get bytes from node")
-	}
-	pbNode := merkledag.NodeWithData(nodeBytes)
-	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
-	if err != nil {
-		return nil, 0, errors.Wrap(err, "failed to set cid builder")
-	}
-	for _, link := range links {
-		err = pbNode.AddRawLink("", &link.Link)
-		if err != nil {
-			return nil, 0, errors.Wrap(err, "failed to add link to node")
-		}
-	}
-	return pbNode, total, nil
+func (n nopCloser) Close() error {
+	return nil
 }
 
-func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
-	written := int64(0)
-	varintBytes := varint.ToUvarint(uint64(len(block.RawData()) + block.Cid().ByteLen()))
-	n, err := io.Copy(writer, bytes.NewReader(varintBytes))
-	if err != nil {
-		return written, errors.Wrap(err, "failed to write varint")
-	}
-	written += n
-
-	n, err = io.Copy(writer, bytes.NewReader(block.Cid().Bytes()))
-	if err != nil {
-		return written, errors.Wrap(err, "failed to write cid")
-	}
-	written += n
-
-	n, err = io.Copy(writer, bytes.NewReader(block.RawData()))
-	if err != nil {
-		return written, errors.Wrap(err, "failed to write raw")
-	}
-	written += n
-	return written, nil
+type WriteCloser struct {
+	io.Writer
+	io.Closer
 }
 
-func AssembleItem(links []Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
-	if len(links) <= 1 {
-		return nil, nil, errors.New("links must be more than 1")
-	}
-	result := make([]blocks.Block, 0)
-	var rootNode *merkledag.ProtoNode
-	for len(links) > 1 {
-		newLinks := make([]Link, 0)
-		for start := 0; start < len(links); start += NumLinkPerNode {
-			newNode, total, err := createParentNode(links[start:Min(start+NumLinkPerNode, len(links))])
-			if err != nil {
-				return nil, nil, errors.Wrap(err, "failed to create parent node")
-			}
+var emptyItemCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
 
-			basicBlock, err := blocks.NewBlockWithCid(newNode.RawData(), newNode.Cid())
-			if err != nil {
-				return nil, nil, errors.Wrap(err, "failed to create block")
-			}
-			result = append(result, basicBlock)
-			newLinks = append(
-				newLinks, Link{
-					ChunkSize: total,
-					Link: format.Link{
-						Name: "",
-						Size: total,
-						Cid:  newNode.Cid(),
-					},
-				},
-			)
-			rootNode = newNode
-		}
+var logger = log.Logger("pack")
 
-		links = newLinks
+func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) {
+	calc := &commp.Calc{}
+	if outDir == "" {
+		return WriteCloser{Writer: calc, Closer: &nopCloser{}}, calc, "", nil
 	}
-	return result, rootNode, nil
+	var filepath string
+	filename := uuid.NewString() + ".car"
+	filepath = path.Join(outDir, filename)
+	file, err := os.Create(filepath)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "failed to create file at "+filepath)
+	}
+	writer := io.MultiWriter(calc, file)
+	return WriteCloser{Writer: writer, Closer: file}, calc, filepath, nil
 }
 
-func ProcessItems(
+func AssembleCar(
 	ctx context.Context,
-	handler datasource.Handler,
-	items []model.Item,
+	handler datasource.ReadHandler,
+	dataset model.Dataset,
+	itemParts []model.ItemPart,
 	outDir string,
 	pieceSize int64,
-	recipients []string,
 ) (*Result, error) {
+	var writeCloser io.WriteCloser
+	var calc *commp.Calc
+	var filepath string
+	var err error
+	defer func() {
+		if writeCloser != nil {
+			writeCloser.Close()
+		}
+	}()
+
 	result := &Result{
-		ItemCIDs: make(map[uint64]cid.Cid),
+		ItemPartCIDs: make(map[uint64]cid.Cid),
+		Objects:      make(map[uint64]fs.Object),
 	}
 	offset := int64(0)
-	var headerBytes []byte
+	current := CarResult{}
+	addHeaderIfNeeded := func(c cid.Cid) error {
+		if offset == 0 {
+			writeCloser, calc, filepath, err = GetMultiWriter(outDir)
+			if err != nil {
+				return errors.Wrap(err, "failed to get multi writer")
+			}
+			current.RootCID = c
+			headerBytes, err := WriteCarHeader(writeCloser, c)
+			if err != nil {
+				return errors.Wrap(err, "failed to write header")
+			}
 
-	calc := &commp.Calc{}
-	var writer io.Writer = calc
-	var filepath string
-	if outDir != "" {
-		filename := uuid.NewString() + ".car"
-		filepath = path.Join(outDir, filename)
-		file, err := os.Create(filepath)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create file at "+filepath)
+			offset += int64(len(headerBytes))
+			current.Header = headerBytes
 		}
-		defer file.Close()
-		writer = io.MultiWriter(calc, file)
+		return nil
+	}
+	checkResult := func(force bool) error {
+		if !force && offset < pieceSize {
+			return nil
+		}
+		if offset == 0 {
+			return nil
+		}
+		pieceCid, finalPieceSize, err := GetCommp(calc, uint64(pieceSize))
+		if err != nil {
+			return errors.Wrap(err, "failed to get commp")
+		}
+		current.PieceCID = pieceCid
+		current.PieceSize = int64(finalPieceSize)
+		current.CarFileSize = offset
+
+		if outDir != "" {
+			current.CarFilePath = path.Join(outDir, pieceCid.String()+".car")
+		}
+		if filepath != "" {
+			err = os.Rename(filepath, current.CarFilePath)
+			if err != nil {
+				return errors.Wrap(err, "failed to create symlink")
+			}
+		}
+		result.CarResults = append(result.CarResults, current)
+		current = CarResult{}
+		offset = 0
+		writeCloser.Close()
+		writeCloser = nil
+		calc = nil
+		filepath = ""
+		return nil
 	}
 
-	var objects []fs.Object
-
-	for _, item := range items {
-		item := item
-		links := make([]Link, 0)
-		blockChan, object, err := streamItem(ctx, handler, item, recipients)
+	for _, itemPart := range itemParts {
+		links := make([]format.Link, 0)
+		encryptor, err := encryption.GetEncryptor(dataset)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to stream item")
+			return nil, errors.Wrap(err, "failed to get encryptor")
+		}
+		if encryptor != nil && outDir == "" {
+			return nil, errors.New("encryption is not supported without an output directory")
+		}
+		blockChan, object, err := GetBlockStreamFromItem(ctx, handler, itemPart, encryptor)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to stream itemPart")
 		}
 
-		objects = append(objects, object)
+		result.Objects[itemPart.ItemID] = object
 
-		for block := range blockChan {
-			if block.Error != nil {
-				return nil, errors.Wrap(block.Error, "failed to stream block")
-			}
-			if offset == 0 {
-				result.RootCID = block.CID
-				header := car.CarHeader{
-					Roots:   []cid.Cid{block.CID},
-					Version: 1,
+	blockChanLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case block, ok := <-blockChan:
+				if !ok {
+					break blockChanLoop
 				}
-
-				headerBytes, err = cbor.DumpObject(&header)
+				if block.Error != nil {
+					return nil, errors.Wrap(block.Error, "failed to stream block")
+				}
+				basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
+				err = addHeaderIfNeeded(basicBlock.Cid())
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to dump header")
+					return nil, errors.Wrap(err, "failed to add header")
 				}
-				headerBytesVarint := varint.ToUvarint(uint64(len(headerBytes)))
-
-				result.Header = append(headerBytesVarint, headerBytes...)
-				n, err := io.Copy(writer, bytes.NewReader(result.Header))
+				written, err := WriteCarBlock(writeCloser, basicBlock)
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to write header")
+					return nil, errors.Wrap(err, "failed to write block")
 				}
 
-				offset += n
-			}
-			basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
-			written, err := WriteCarBlock(writer, basicBlock)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to write block")
-			}
+				if !dataset.UseEncryption() {
+					current.CarBlocks = append(
+						current.CarBlocks, model.CarBlock{
+							CID:            model.CID(block.CID),
+							CarOffset:      offset,
+							CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
+							Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
+							ItemID:         &itemPart.ItemID,
+							ItemOffset:     block.Offset,
+							ItemEncrypted:  encryptor != nil,
+						},
+					)
+				}
 
-			result.CarBlocks = append(
-				result.CarBlocks, model.CarBlock{
-					CID:            model.CID(block.CID),
-					CarOffset:      offset,
-					CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
-					Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
-					ItemID:         &item.ID,
-					ItemOffset:     block.Offset,
-				},
-			)
-			offset += written
-			links = append(
-				links, Link{
-					Link: format.Link{
+				offset += written
+				links = append(
+					links, format.Link{
 						Name: "",
 						Size: uint64(len(block.Raw)),
 						Cid:  block.CID,
 					},
-					ChunkSize: uint64(len(block.Raw)),
-				},
-			)
+				)
+				err = checkResult(false)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to check result")
+				}
+			}
 		}
 
+		if len(links) == 0 {
+			result.ItemPartCIDs[itemPart.ID] = emptyItemCid
+			continue
+		}
 		if len(links) == 1 {
-			result.ItemCIDs[item.ID] = links[0].Link.Cid
+			result.ItemPartCIDs[itemPart.ID] = links[0].Cid
 			continue
 		}
 
-		blks, rootNode, err := AssembleItem(links)
+		blks, rootNode, err := AssembleItemFromLinks(links)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to assemble item")
+			return nil, errors.Wrap(err, "failed to assemble itemPart")
 		}
 		for _, blk := range blks {
-			written, err := WriteCarBlock(writer, blk)
+			err = addHeaderIfNeeded(blk.Cid())
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to add header")
+			}
+			written, err := WriteCarBlock(writeCloser, blk)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to write block")
 			}
 
-			result.CarBlocks = append(
-				result.CarBlocks, model.CarBlock{
-					CID:            model.CID(blk.Cid()),
-					CarOffset:      offset,
-					CarBlockLength: int32(written),
-					Varint:         varint.ToUvarint(uint64(len(blk.RawData()) + blk.Cid().ByteLen())),
-					RawBlock:       blk.RawData(),
-				},
-			)
+			if !dataset.UseEncryption() {
+				current.CarBlocks = append(
+					current.CarBlocks, model.CarBlock{
+						CID:            model.CID(blk.Cid()),
+						CarOffset:      offset,
+						CarBlockLength: int32(written),
+						Varint:         varint.ToUvarint(uint64(len(blk.RawData()) + blk.Cid().ByteLen())),
+						RawBlock:       blk.RawData(),
+					},
+				)
+			}
 			offset += written
+			err = checkResult(false)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to check result")
+			}
 		}
 
-		result.ItemCIDs[item.ID] = rootNode.Cid()
+		result.ItemPartCIDs[itemPart.ID] = rootNode.Cid()
 	}
 
-	rawCommp, rawPieceSize, err := calc.Digest()
+	err = checkResult(true)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to calculate commp")
-	}
-
-	if rawPieceSize < uint64(pieceSize) {
-		rawCommp, err = commp.PadCommP(rawCommp, rawPieceSize, uint64(pieceSize))
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to pad commp")
-		}
-
-		rawPieceSize = uint64(pieceSize)
-	} else if rawPieceSize > uint64(pieceSize) {
-		log.Logger("packing").Warn("piece size is larger than the target piece size")
-	}
-
-	commCid, err := commcid.DataCommitmentV1ToCID(rawCommp)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert commp to cid")
-	}
-
-	result.PieceCID = commCid
-	result.PieceSize = int64(rawPieceSize)
-	result.CarFileSize = offset
-	result.Objects = objects
-
-	if outDir != "" {
-		result.CarFilePath = path.Join(outDir, commCid.String()+".car")
-	}
-	if filepath != "" {
-		err = os.Rename(filepath, result.CarFilePath)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create symlink")
-		}
+		return nil, errors.Wrap(err, "failed to check result")
 	}
 	return result, nil
 }
 
-func Min(i int, i2 int) int {
-	if i < i2 {
-		return i
-	}
-	return i2
-}
-
-func streamItem(ctx context.Context, handler datasource.Handler, item model.Item, recipients []string) (<-chan BlockResult, fs.Object, error) {
-	readStream, object, err := handler.Read(ctx, item.Path, item.Offset, item.Length)
+func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error) {
+	rawCommp, rawPieceSize, err := calc.Digest()
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to open stream")
+		return cid.Undef, 0, errors.Wrap(err, "failed to calculate commp")
 	}
 
-	lastModified := object.ModTime(ctx).UTC()
-	size := object.Size()
-	if lastModified != item.LastModified.UTC() || size != item.Size {
-		return nil, object, errors.Errorf("file has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %s, newLastModified: %s",
-			item.Path, item.Size, size, item.LastModified, lastModified)
-	}
-
-	if len(recipients) > 0 {
-		var rs []age.Recipient
-		for _, recipient := range recipients {
-			r, err := age.ParseX25519Recipient(recipient)
-			if err != nil {
-				return nil, object, errors.Wrap(err, "failed to parse recipient")
-			}
-			rs = append(rs, r)
-		}
-		reader, writer := io.Pipe()
-		target, err := age.Encrypt(writer, rs...)
+	if rawPieceSize < targetPieceSize {
+		rawCommp, err = commp.PadCommP(rawCommp, rawPieceSize, targetPieceSize)
 		if err != nil {
-			return nil, object, errors.Wrap(err, "failed to create encrypt stream")
+			return cid.Undef, 0, errors.Wrap(err, "failed to pad commp")
 		}
-		readStream2 := readStream
-		go func() {
-			defer target.Close()
-			io.Copy(target, readStream2)
-		}()
-		readStream = reader
+
+		rawPieceSize = targetPieceSize
+	} else if rawPieceSize > targetPieceSize {
+		logger.Warn("piece size is larger than the target piece size")
 	}
 
-	blockChan := make(chan BlockResult)
-	chunker := chunk.NewSizeSplitter(readStream, ChunkSize)
-	go func() {
-		defer readStream.Close()
-		defer close(blockChan)
-		offset := item.Offset
-		for {
-			chunkerBytes, err := chunker.NextBytes()
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					return
-				}
-				blockChan <- BlockResult{Error: errors.Wrap(err, "failed to read chunk")}
-				return
-			}
+	commCid, err := commcid.DataCommitmentV1ToCID(rawCommp)
+	if err != nil {
+		return cid.Undef, 0, errors.Wrap(err, "failed to convert commp to cid")
+	}
 
-			hash := util.Hash(chunkerBytes)
-			c := cid.NewCidV1(cid.Raw, hash)
-			blockChan <- BlockResult{
-				CID:    c,
-				Offset: offset,
-				Raw:    chunkerBytes,
-				Error:  nil,
-			}
-
-			offset += int64(len(chunkerBytes))
-		}
-	}()
-
-	return blockChan, object, err
+	return commCid, rawPieceSize, nil
 }

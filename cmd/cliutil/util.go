@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
+	"os"
 	"reflect"
 )
 
 var fieldNamesToSkip = []string{
 	"CreatedAt", "UpdatedAt",
 }
+
 func PrintToConsole(obj interface{}, jsonOutput bool) {
 	if jsonOutput {
 		objJSON, err := json.MarshalIndent(obj, "", "  ")
@@ -30,6 +32,26 @@ func PrintToConsole(obj interface{}, jsonOutput bool) {
 	}
 }
 
+func isNotEligibleType(field reflect.StructField) bool {
+	return (field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) ||
+		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8) ||
+		field.Name == "CreatedAt" || field.Name == "UpdatedAt"
+}
+
+func getValue(fieldValue reflect.Value) interface{} {
+	var finalValue interface{}
+	if fieldValue.Kind() == reflect.Ptr {
+		if fieldValue.IsNil() {
+			finalValue = ""
+		} else {
+			finalValue = fieldValue.Elem().Interface()
+		}
+	} else {
+		finalValue = fieldValue.Interface()
+	}
+	return finalValue
+}
+
 func printTable(objects interface{}) {
 	value := reflect.ValueOf(objects)
 	if value.Len() == 0 {
@@ -46,13 +68,13 @@ func printTable(objects interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
+		if isNotEligibleType(field) {
 			continue
 		}
 		headers = append(headers, field.Name)
 	}
 
-	tbl := table.New(headers...)
+	tbl := table.New(headers...).WithWriter(os.Stdout)
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 	for i := 0; i < value.Len(); i++ {
@@ -61,15 +83,16 @@ func printTable(objects interface{}) {
 		for j := 0; j < objType.NumField(); j++ {
 			field := objType.Field(j)
 			fieldValue := objValue.Field(j)
-			if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
+			if isNotEligibleType(field) {
 				continue
 			}
-			row = append(row, fieldValue.Interface())
+			row = append(row, getValue(fieldValue))
 		}
 		tbl.AddRow(row...)
 	}
 
 	tbl.Print()
+	fmt.Println()
 }
 func printSingleObject(obj interface{}) {
 	value := reflect.Indirect(reflect.ValueOf(obj))
@@ -81,25 +104,26 @@ func printSingleObject(obj interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
+		if isNotEligibleType(field) {
 			continue
 		}
 		headers = append(headers, field.Name)
 	}
 
-	tbl := table.New(headers...)
+	tbl := table.New(headers...).WithWriter(os.Stdout)
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 	row := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		fieldValue := value.Field(i)
-		if field.Type.Kind() == reflect.Ptr || field.Name == "CreatedAt" || field.Name == "UpdatedAt" || field.Name == "Header" {
+		if isNotEligibleType(field) {
 			continue
 		}
-		row = append(row, fieldValue.Interface())
+		row = append(row, getValue(fieldValue))
 	}
 	tbl.AddRow(row...)
 
 	tbl.Print()
+	fmt.Println()
 }

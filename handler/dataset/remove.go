@@ -3,7 +3,6 @@ package dataset
 import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +19,6 @@ func RemoveHandler(
 	db *gorm.DB,
 	datasetName string,
 ) *handler.Error {
-	log.SetAllLoggers(log.LevelInfo)
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return handler.NewBadRequestString("failed to find dataset: " + err.Error())

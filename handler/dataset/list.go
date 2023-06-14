@@ -3,7 +3,6 @@ package dataset
 import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +18,6 @@ import (
 func ListHandler(
 	db *gorm.DB,
 ) ([]model.Dataset, *handler.Error) {
-	log.SetAllLoggers(log.LevelInfo)
 	var datasets []model.Dataset
 	err := db.Find(&datasets).Error
 	if err != nil {

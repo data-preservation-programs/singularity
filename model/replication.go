@@ -93,7 +93,7 @@ type Schedule struct {
 	Duration                time.Duration `json:"duration"`
 	State                   ScheduleState `json:"state"`
 	LastProcessedTimestamp  uint64        `json:"lastProcessedTimestamp"`
-	ScheduleWorkerID        *string       `json:"scheduleWorkerId"`
+	ScheduleWorkerID        *string       `gorm:"index:schedule_cleanup" json:"scheduleWorkerId"`
 	ScheduleWorker          *Worker       `gorm:"foreignKey:ScheduleWorkerID;constraint:OnDelete:NO ACTION" json:"scheduleWorker,omitempty" swaggerignore:"true"`
 	ScheduleIntervalSeconds uint64        `json:"scheduleIntervalSeconds"`
 	ScheduleDealNumber      int           `json:"scheduleDealNumber"`
@@ -124,18 +124,10 @@ func (s Schedule) Equal(other Schedule) bool {
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey" json:"id"`  // ID is the short ID of the wallet
-	Address    string `gorm:"unique" json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty"`  // PrivateKey is the private key of the wallet
-	RemotePeer string `json:"remotePeer,omitempty"`  // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
-}
-
-func (w Wallet) GetExportedKey() (string, error) {
-	decrypted, err := DecryptFromBase64String(w.PrivateKey)
-	if err != nil {
-		return "", err
-	}
-	return string(decrypted), nil
+	ID         string `gorm:"primaryKey;size:16" json:"id"`   // ID is the short ID of the wallet
+	Address    string `gorm:"unique;size:256" json:"address"` // Address is the Filecoin full address of the wallet
+	PrivateKey string `json:"privateKey,omitempty"`           // PrivateKey is the private key of the wallet
+	RemotePeer string `json:"remotePeer,omitempty"`           // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
 type WalletAssignment struct {

@@ -4,7 +4,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strconv"
@@ -22,7 +21,6 @@ func RemoveSourceHandler(
 	db *gorm.DB,
 	id string,
 ) *handler.Error {
-	log.SetAllLoggers(log.LevelInfo)
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {

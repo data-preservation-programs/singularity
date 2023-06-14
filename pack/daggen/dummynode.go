@@ -11,7 +11,7 @@ type DummyNode struct {
 	cid  cid.Cid
 }
 
-var ErrEmptyNode error = errors.New("fake fs node")
+var ErrEmptyNode error = errors.New("fake fs Node")
 
 func NewDummyNode(size uint64, cid cid.Cid) DummyNode {
 	return DummyNode{size: size, cid: cid}

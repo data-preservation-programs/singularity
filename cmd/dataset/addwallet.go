@@ -9,7 +9,7 @@ import (
 
 var AddWalletCmd = &cli.Command{
 	Name:      "add-wallet",
-	Usage:     "Associate a wallet with the dataset. The wallet needs to be imported first using the `singularity wallet import` command.",
+	Usage:     "[alpha] Associate a wallet with the dataset. The wallet needs to be imported first using the `singularity wallet import` command.",
 	ArgsUsage: "DATASET_NAME WALLET_ADDRESS",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)

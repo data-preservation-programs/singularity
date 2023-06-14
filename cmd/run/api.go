@@ -8,7 +8,7 @@ import (
 var (
 	ApiCmd = &cli.Command{
 		Name:  "api",
-		Usage: "Run the singularity API",
+		Usage: "[Alpha] Run the singularity API",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "bind",

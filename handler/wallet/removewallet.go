@@ -4,7 +4,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +21,6 @@ func RemoveWalletHandler(
 	datasetName string,
 	wallet string,
 ) *handler.Error {
-	log.SetAllLoggers(log.LevelInfo)
 	if datasetName == "" {
 		return handler.NewBadRequestString("dataset name is required")
 	}

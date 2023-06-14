@@ -50,11 +50,6 @@ func (s DatasetListenerService) getSource(ctx context.Context, datasetName strin
 		}
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			root := model.Directory{}
-			err = db.Create(&root).Error
-			if err != nil {
-				return err
-			}
 			source = model.Source{
 				DatasetID:            dataset.ID,
 				Type:                 model.Upload,
@@ -62,9 +57,15 @@ func (s DatasetListenerService) getSource(ctx context.Context, datasetName strin
 				ScanIntervalSeconds:  0,
 				ScanningState:        "",
 				LastScannedTimestamp: time.Now().Unix(),
-				RootDirectoryID:      root.ID,
 			}
 			err = db.Create(&source).Error
+			if err != nil {
+				return err
+			}
+			root := model.Directory{
+				SourceID: source.ID,
+			}
+			err = db.Create(&root).Error
 			if err != nil {
 				return err
 			}
@@ -162,10 +163,9 @@ func (s DatasetListenerService) pushItem(c echo.Context, itemInfo ItemInfo) erro
 		ScannedAt: time.Now().UTC(),
 		SourceID:  source.ID,
 		//TODO: Type:         itemInfo.Type,
-		Path:         itemInfo.Path,
-		Size:         entry.Size(),
-		Length:       entry.Size(),
-		LastModified: entry.ModTime(c.Request().Context()),
+		Path:                      itemInfo.Path,
+		Size:                      entry.Size(),
+		LastModifiedTimestampNano: entry.ModTime(c.Request().Context()).UnixNano(),
 	}).Error
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
@@ -246,11 +246,9 @@ func (s DatasetListenerService) uploadFile(c echo.Context) error {
 		ScannedAt: now,
 		SourceID:  source.ID,
 		//TODO: Type:         model.File,
-		Path:         dstPath,
-		Size:         written,
-		Offset:       0,
-		Length:       written,
-		LastModified: lastModified,
+		Path:                      dstPath,
+		Size:                      written,
+		LastModifiedTimestampNano: lastModified.UnixNano(),
 	})
 
 	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))
