@@ -32,9 +32,7 @@ var ChunksCmd = &cli.Command{
 		fmt.Println("Pieces:")
 		var cars []model.Car
 		for _, chunk := range result {
-			if chunk.Car != nil {
-				cars = append(cars, *chunk.Car)
-			}
+			cars = append(cars, chunk.Cars...)
 		}
 		cliutil.PrintToConsole(cars, false)
 

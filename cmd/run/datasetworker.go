@@ -42,6 +42,12 @@ var DatasetWorkerCmd = &cli.Command{
 			EnvVars: []string{"DATASET_WORKER_EXIT_ON_COMPLETE"},
 			Value:   false,
 		},
+		&cli.BoolFlag{
+			Name:    "exit-on-error",
+			Usage:   "Exit the worker when there is any error",
+			EnvVars: []string{"DATASET_WORKER_EXIT_ON_ERROR"},
+			Value:   false,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
@@ -57,6 +63,7 @@ var DatasetWorkerCmd = &cli.Command{
 				EnablePack:     c.Bool("enable-pack"),
 				EnableDag:      c.Bool("enable-dag"),
 				ExitOnComplete: c.Bool("exit-on-complete"),
+				ExitOnError:    c.Bool("exit-on-error"),
 			})
 		err = worker.Run(c.Context)
 		if err != nil {

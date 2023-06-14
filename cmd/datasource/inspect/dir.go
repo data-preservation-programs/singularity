@@ -28,6 +28,8 @@ var DirCmd = &cli.Command{
 			return nil
 		}
 
+		fmt.Println("Current:")
+		cliutil.PrintToConsole(result.Current, false)
 		fmt.Println("Dirs:")
 		cliutil.PrintToConsole(result.Dirs, false)
 		fmt.Println("Items:")

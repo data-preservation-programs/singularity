@@ -7,6 +7,55 @@ import (
 	"time"
 )
 
+func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
+	if !w.config.EnableDag {
+		return nil, nil
+	}
+	var sources []model.Source
+
+	err := database.DoRetry(func() error {
+		return w.db.Transaction(func(db *gorm.DB) error {
+			// First, find the id of the record to update
+			err := db.
+				Where("dag_gen_state = ? OR (dag_gen_state = ? AND dag_gen_worker_id is null)",
+					model.Ready, model.Processing).
+				Order("id asc").
+				Limit(1).
+				Find(&sources).Error
+			if err != nil {
+				return err
+			}
+
+			if len(sources) == 0 {
+				return nil
+			}
+
+			// Then, perform the update using the found id
+			return db.Model(&sources[0]).
+				Updates(map[string]interface{}{
+					"dag_gen_state":         model.Processing,
+					"dag_gen_worker_id":     w.id,
+					"dag_gen_error_message": "",
+				}).Error
+		})
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	if len(sources) == 0 {
+		//nolint: nilnil
+		return nil, nil
+	}
+
+	err = w.db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sources[0], nil
+}
+
 func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 	if !w.config.EnablePack {
 		return nil, nil
@@ -108,9 +157,5 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 		return nil, err
 	}
 
-	err = w.db.Model(&sources[0]).Association("RootDirectory").Find(&sources[0].RootDirectory)
-	if err != nil {
-		return nil, err
-	}
 	return &sources[0], nil
 }

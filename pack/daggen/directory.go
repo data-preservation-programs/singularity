@@ -142,6 +142,35 @@ func (d *DirectoryData) MarshalBinary() ([]byte, error) {
 	return encoder.EncodeAll(buf.Bytes(), make([]byte, 0, len(buf.Bytes()))), nil
 }
 
+func UnmarshallToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
+	if len(data) == 0 {
+		return cid.Undef, nil, nil
+	}
+	decoded, err := decoder.DecodeAll(data, nil)
+	if err != nil {
+		return cid.Undef, nil, errors.Wrap(err, "failed to decode data")
+	}
+	reader := bufio.NewReader(bytes.NewReader(decoded))
+	ch, err := car.ReadHeader(reader)
+	if err != nil {
+		return cid.Undef, nil, errors.Wrap(err, "failed to read CAR header")
+	}
+	dirCID := ch.Roots[0]
+	var blks []blocks.Block
+	for {
+		c, data, err := util.ReadNode(reader)
+		if err != nil && err != io.EOF {
+			return cid.Undef, nil, errors.Wrap(err, "failed to read CAR block")
+		}
+		if err == io.EOF {
+			break
+		}
+		blk, _ := blocks.NewBlockWithCid(data, c)
+		blks = append(blks, blk)
+	}
+	return dirCID, blks, nil
+}
+
 func (d *DirectoryData) UnmarshallBinary(data []byte) error {
 	ds := datastore.NewMapDatastore()
 	bs := blockstore.NewBlockstore(ds)
@@ -163,29 +192,10 @@ func (d *DirectoryData) UnmarshallBinary(data []byte) error {
 	}
 
 	ctx := context.Background()
-	decoded, err := decoder.DecodeAll(data, nil)
+	dirCID, blks, err := UnmarshallToBlocks(data)
+	err = bs.PutMany(ctx, blks)
 	if err != nil {
-		return errors.Wrap(err, "failed to decode data")
-	}
-	reader := bufio.NewReader(bytes.NewReader(decoded))
-	ch, err := car.ReadHeader(reader)
-	if err != nil {
-		return errors.Wrap(err, "failed to read CAR header")
-	}
-	dirCID := ch.Roots[0]
-	for {
-		c, data, err := util.ReadNode(reader)
-		if err != nil && err != io.EOF {
-			return errors.Wrap(err, "failed to read CAR block")
-		}
-		if err == io.EOF {
-			break
-		}
-		blk, _ := blocks.NewBlockWithCid(data, c)
-		err = bs.Put(ctx, blk)
-		if err != nil {
-			return errors.Wrap(err, "failed to put data into blockstore")
-		}
+		return errors.Wrap(err, "failed to put blocks into blockstore")
 	}
 	dirNode, err := dagServ.Get(ctx, dirCID)
 	if err != nil {

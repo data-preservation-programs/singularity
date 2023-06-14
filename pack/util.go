@@ -167,6 +167,9 @@ func GetBlockStreamFromItem(ctx context.Context,
 	handler datasource.ReadHandler,
 	itemPart model.ItemPart,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
+	if encryptor != nil && (itemPart.Offset != 0 || itemPart.Length != itemPart.Item.Size) {
+		return nil, nil, errors.New("encryption is not supported for partial reads")
+	}
 	readStream, object, err := handler.Read(ctx, itemPart.Item.Path, itemPart.Offset, itemPart.Length)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to open stream")
@@ -203,12 +206,7 @@ func GetBlockStreamFromItem(ctx context.Context,
 	if encryptor == nil {
 		readCloser = readStream
 	} else {
-		err = encryptor.LoadState(itemPart.Item.LastEncryptorState)
-		if err != nil {
-			return nil, object, errors.Wrap(err, "failed to load encryptor state")
-		}
-		last := itemPart.Offset+itemPart.Length == itemPart.Item.Size
-		readCloser, err = encryptor.Encrypt(readStream, last)
+		readCloser, err = encryptor.Encrypt(readStream)
 	}
 	if err != nil {
 		return nil, object, errors.Wrap(err, "failed to encrypt stream")
@@ -222,18 +220,20 @@ func GetBlockStreamFromItem(ctx context.Context,
 		defer readCloser.Close()
 		defer close(blockChan)
 		offset := itemPart.Offset
+		firstChunk := true
 		for {
 			if ctx.Err() != nil {
 				return
 			}
 			chunkerBytes, err := chunker.NextBytes()
 			var result BlockResult
-			if err != nil {
+			if err != nil && !(errors.Is(err, io.EOF) && firstChunk) {
 				if errors.Is(err, io.EOF) {
 					return
 				}
 				result = BlockResult{Error: errors.Wrap(err, "failed to read chunk")}
 			} else {
+				firstChunk = false
 				hash := util.Hash(chunkerBytes)
 				c := cid.NewCidV1(cid.Raw, hash)
 				result = BlockResult{

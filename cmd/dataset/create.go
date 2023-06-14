@@ -12,7 +12,7 @@ var CreateCmd = &cli.Command{
 	Usage:     "Create a new dataset",
 	ArgsUsage: "<dataset_name>",
 	Description: "<dataset_name> must be a unique identifier for a dataset\n" +
-		"The dataset is a top level object to distinguish different dataset.\n",
+		"The dataset is a top level object to distinguish different dataset.",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "max-size",
@@ -42,7 +42,7 @@ var CreateCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:     "encryption-script",
-			Usage:    "[Alpha] EncryptionScript command to run for custom encryption",
+			Usage:    "[WIP] EncryptionScript command to run for custom encryption",
 			Category: "Encryption",
 		},
 	},
@@ -55,7 +55,7 @@ var CreateCmd = &cli.Command{
 				MaxSizeStr:           c.String("max-size"),
 				PieceSizeStr:         c.String("piece-size"),
 				OutputDirs:           c.StringSlice("output-dir"),
-				EncryptionRecipients: c.StringSlice("encryption-recipients"),
+				EncryptionRecipients: c.StringSlice("encryption-recipient"),
 				EncryptionScript:     c.String("encryption-script")},
 		)
 		if err != nil {

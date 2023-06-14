@@ -26,7 +26,7 @@ func GetSourceChunkDetailHandler(
 		return nil, handler.NewBadRequestString("invalid chunk id")
 	}
 	var chunk model.Chunk
-	err = db.Preload("Car").Preload("ItemParts.Item").Where("id = ?", chunkID).First(&chunk).Error
+	err = db.Preload("Cars").Preload("ItemParts.Item").Where("id = ?", chunkID).First(&chunk).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewBadRequestString("chunk not found")
 	}

@@ -66,26 +66,29 @@ func (w *DatasetWorkerThread) pack(
 	err = database.DoRetry(func() error {
 		return w.db.Transaction(
 			func(db *gorm.DB) error {
-				car := model.Car{
-					PieceCID:  model.CID(result.PieceCID),
-					PieceSize: result.PieceSize,
-					RootCID:   model.CID(result.RootCID),
-					FileSize:  result.CarFileSize,
-					FilePath:  result.CarFilePath,
-					ChunkID:   &chunk.ID,
-					DatasetID: chunk.Source.DatasetID,
-					Header:    result.Header,
-				}
-				err := db.Create(&car).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to create car")
-				}
-				for i, _ := range result.CarBlocks {
-					result.CarBlocks[i].CarID = car.ID
-				}
-				err = db.CreateInBatches(&result.CarBlocks, 1000).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to create car blocks")
+				for _, result := range result.CarResults {
+					car := model.Car{
+						PieceCID:  model.CID(result.PieceCID),
+						PieceSize: result.PieceSize,
+						RootCID:   model.CID(result.RootCID),
+						FileSize:  result.CarFileSize,
+						FilePath:  result.CarFilePath,
+						ChunkID:   &chunk.ID,
+						DatasetID: chunk.Source.DatasetID,
+						SourceID:  &chunk.SourceID,
+						Header:    result.Header,
+					}
+					err := db.Create(&car).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to create car")
+					}
+					for i, _ := range result.CarBlocks {
+						result.CarBlocks[i].CarID = car.ID
+					}
+					err = db.CreateInBatches(&result.CarBlocks, 1000).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to create car blocks")
+					}
 				}
 				return nil
 			},
@@ -148,7 +151,7 @@ func (w *DatasetWorkerThread) pack(
 							}
 						} else {
 							var allParts []model.ItemPart
-							err = db.Where("item_id = ?", itemPart.ItemID).Order("offset asc").Find(&allParts).Error
+							err = db.Where("item_id = ?", itemPart.ItemID).Order("\"offset\" asc").Find(&allParts).Error
 							if err != nil {
 								return errors.Wrap(err, "failed to get all item parts")
 							}
@@ -179,7 +182,11 @@ func (w *DatasetWorkerThread) pack(
 
 			}
 			// Recursively update all directory internal structure
-			_, err := daggen.ResolveDirectoryTree(chunk.Source.RootDirectoryID, dirCache, childrenCache)
+			rootDirID, err := chunk.Source.RootDirectoryID(w.db)
+			if err != nil {
+				return errors.Wrap(err, "failed to get root directory id")
+			}
+			_, err = daggen.ResolveDirectoryTree(rootDirID, dirCache, childrenCache)
 			if err != nil {
 				return errors.Wrap(err, "failed to resolve directory tree")
 			}
@@ -190,8 +197,9 @@ func (w *DatasetWorkerThread) pack(
 					return errors.Wrap(err, "failed to marshall directory data")
 				}
 				err = db.Model(&model.Directory{}).Where("id = ?", dirId).Updates(map[string]interface{}{
-					"cid":  model.CID(dirData.Node.Cid()),
-					"data": bytes,
+					"cid":      model.CID(dirData.Node.Cid()),
+					"data":     bytes,
+					"exported": false,
 				}).Error
 				if err != nil {
 					return errors.Wrap(err, "failed to update directory")
@@ -205,7 +213,7 @@ func (w *DatasetWorkerThread) pack(
 	}
 
 	w.logger.With("chunk_id", chunk.ID).Info("finished packing")
-	if chunk.Source.DeleteAfterExport && result.CarFilePath != "" {
+	if chunk.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		w.logger.Info("Deleting original data source")
 		handled := map[uint64]struct{}{}
 		for _, itemPart := range chunk.ItemParts {

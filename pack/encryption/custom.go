@@ -2,7 +2,6 @@ package encryption
 
 import (
 	"github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"io"
 	"os/exec"
 	"sync"
@@ -36,10 +35,7 @@ func (rc *readCloserWithError) Close() error {
 	return rc.ReadCloser.Close()
 }
 
-func (c CustomEncryptor) Encrypt(in io.Reader, last bool) (io.ReadCloser, error) {
-	if last == false {
-		return nil, errors.New("CustomEncryptor does not support resumable encryption")
-	}
+func (c CustomEncryptor) Encrypt(in io.Reader) (io.ReadCloser, error) {
 	// Invoke the underlying command, use in as stdin, and return the stdout as a ReadCloser
 	// Set the input
 	c.cmd.Stdin = in
@@ -65,14 +61,6 @@ func (c CustomEncryptor) Encrypt(in io.Reader, last bool) (io.ReadCloser, error)
 	}()
 
 	return &readCloserWithError{stdout, waitErr, wg}, nil
-}
-
-func (c CustomEncryptor) GetState() ([]byte, error) {
-	return nil, nil
-}
-
-func (c CustomEncryptor) LoadState(bytes []byte) error {
-	return nil
 }
 
 func NewCustomEncryptor(cmd *exec.Cmd) Encryptor {

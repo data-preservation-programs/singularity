@@ -10,7 +10,7 @@ import (
 
 var ContentProviderCmd = &cli.Command{
 	Name:  "content-provider",
-	Usage: "Start a content provider that serves retrieval requests",
+	Usage: "[Alpha] Start a content provider that serves retrieval requests",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "http-bind",

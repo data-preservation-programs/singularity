@@ -41,7 +41,7 @@ func GetSourceSummaryHandler(
 		return nil, handler.NewBadRequestString("invalid source id")
 	}
 	var source model.Source
-	err = db.Preload("RootDirectory").Where("id = ?", sourceID).First(&source).Error
+	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewBadRequestString("source not found")
 	}

@@ -10,9 +10,10 @@ import (
 	"strings"
 )
 
-type DirEntries struct {
-	Dirs  []model.Directory
-	Items []model.Item
+type DirDetail struct {
+	Current model.Directory
+	Dirs    []model.Directory
+	Items   []model.Item
 }
 
 // GetDirectoryHandler godoc
@@ -28,7 +29,7 @@ func GetDirectoryHandler(
 	db *gorm.DB,
 	id string,
 	path string,
-) (*DirEntries, *handler.Error) {
+) (*DirDetail, *handler.Error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
@@ -43,7 +44,11 @@ func GetDirectoryHandler(
 	}
 
 	segments := underscore.Filter(strings.Split(path, "/"), func(s string) bool { return s != "" })
-	dirId := source.RootDirectoryID
+	err = source.LoadRootDirectory(db)
+	if err != nil {
+		return nil, handler.NewHandlerError(err)
+	}
+	dirId := source.RootDirectory().ID
 	for _, segment := range segments {
 		var subdir model.Directory
 		err = db.Where("parent_id = ? AND name = ?", dirId, segment).First(&subdir).Error
@@ -67,8 +72,9 @@ func GetDirectoryHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	return &DirEntries{
-		Dirs:  dirs,
-		Items: items,
+	return &DirDetail{
+		Current: *source.RootDirectory(),
+		Dirs:    dirs,
+		Items:   items,
 	}, nil
 }

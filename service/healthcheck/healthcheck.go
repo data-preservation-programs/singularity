@@ -42,6 +42,18 @@ func HealthCheckCleanup(db *gorm.DB) {
 
 	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
 	err = database.DoRetry(func() error {
+		return db.Model(&model.Source{}).Where("(dag_gen_worker_id NOT IN (?) OR dag_gen_worker_id IS NULL) AND dag_gen_state = ?",
+			db.Table("workers").Select("id"), model.Processing).
+			Updates(map[string]interface{}{
+				"dag_gen_worker_id": nil,
+				"dag_gen_state":     model.Ready,
+			}).Error
+	})
+	if err != nil {
+		log.Logger("healthcheck").Errorw("failed to remove stale daggen worker", "error", err)
+	}
+
+	err = database.DoRetry(func() error {
 		return db.Model(&model.Source{}).Where("(scanning_worker_id NOT IN (?) OR scanning_worker_id IS NULL) AND scanning_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
 			Updates(map[string]interface{}{
