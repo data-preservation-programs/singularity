@@ -1,5 +1,6 @@
 # List all deal making schedules
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal schedule list - List all deal making schedules
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

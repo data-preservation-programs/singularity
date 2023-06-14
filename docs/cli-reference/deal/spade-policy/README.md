@@ -1,5 +1,6 @@
 # Manage SPADE policies
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal spade-policy - Manage SPADE policies
@@ -16,3 +17,4 @@ COMMANDS:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

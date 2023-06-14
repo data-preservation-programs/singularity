@@ -1,5 +1,6 @@
 # OpenDrive
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add opendrive - OpenDrive
@@ -8,6 +9,12 @@ USAGE:
    singularity datasource add opendrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --opendrive-username
+      Username.
+
+   --opendrive-password
+      Password.
+
    --opendrive-encoding
       The encoding for the backend.
       
@@ -18,12 +25,6 @@ DESCRIPTION:
       
       Note that these chunks are buffered in memory so increasing them will
       increase memory use.
-
-   --opendrive-username
-      Username.
-
-   --opendrive-password
-      Password.
 
 
 OPTIONS:
@@ -42,3 +43,4 @@ OPTIONS:
    --opendrive-username value    Username. [$OPENDRIVE_USERNAME]
 
 ```
+{% endcode %}

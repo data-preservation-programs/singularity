@@ -1,5 +1,6 @@
 # Uptobox
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add uptobox - Uptobox
@@ -33,3 +34,4 @@ OPTIONS:
    --uptobox-encoding value      The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot") [$UPTOBOX_ENCODING]
 
 ```
+{% endcode %}

@@ -1,5 +1,6 @@
 # Get all item details within a directory of a data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource inspect dir - Get all item details within a directory of a data source
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

@@ -1,8 +1,9 @@
 # Start a Spade compatible API for storage provider deal proposal self service
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity run spade-api - [Alpha] Start a Spade compatible API for storage provider deal proposal self service
+   singularity run spade-api - Start a Spade compatible API for storage provider deal proposal self service
 
 USAGE:
    singularity run spade-api [command options] [arguments...]
@@ -17,3 +18,4 @@ OPTIONS:
    --lotus-token value  Lotus RPC API token, only used to get miner info
 
 ```
+{% endcode %}

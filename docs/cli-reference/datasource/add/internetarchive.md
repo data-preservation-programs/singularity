@@ -1,5 +1,6 @@
 # Internet Archive
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add internetarchive - Internet Archive
@@ -8,6 +9,11 @@ USAGE:
    singularity datasource add internetarchive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --internetarchive-endpoint
+      IAS3 Endpoint.
+      
+      Leave blank for default value.
+
    --internetarchive-front-endpoint
       Host of InternetArchive Frontend.
       
@@ -41,11 +47,6 @@ DESCRIPTION:
       
       Leave blank for anonymous access.
 
-   --internetarchive-endpoint
-      IAS3 Endpoint.
-      
-      Leave blank for default value.
-
 
 OPTIONS:
    --help, -h  show help
@@ -66,3 +67,4 @@ OPTIONS:
    --internetarchive-wait-archive value       Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish. (default: "0s") [$INTERNETARCHIVE_WAIT_ARCHIVE]
 
 ```
+{% endcode %}

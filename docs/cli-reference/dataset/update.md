@@ -1,5 +1,6 @@
 # Update an existing dataset
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity dataset update - Update an existing dataset
@@ -12,8 +13,8 @@ OPTIONS:
 
    Encryption
 
-   --encryption-recipient value [ --encryption-recipient value ]  [Alpha] Public key of the encryption recipient
-   --encryption-script value                                      [Alpha] EncryptionScript command to run for custom encryption
+   --encryption-recipient value [ --encryption-recipient value ]  Public key of the encryption recipient
+   --encryption-script value                                      EncryptionScript command to run for custom encryption
 
    Inline Preparation
 
@@ -25,3 +26,4 @@ OPTIONS:
    --piece-size value, -s value  Target piece size of the CAR files used for piece commitment calculation (default: inferred)
 
 ```
+{% endcode %}

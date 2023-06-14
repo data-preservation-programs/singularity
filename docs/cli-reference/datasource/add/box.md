@@ -1,5 +1,6 @@
 # Box
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add box - Box
@@ -13,20 +14,6 @@ DESCRIPTION:
       
       Leave blank normally.
 
-   --box-token
-      OAuth Access Token as a JSON blob.
-
-   --box-list-chunk
-      Size of listing chunk 1-1000.
-
-   --box-owned-by
-      Only show items owned by the login (email address) passed in.
-
-   --box-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --box-auth-url
       Auth server URL.
       
@@ -39,28 +26,27 @@ DESCRIPTION:
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
-   --box-access-token
-      Box App Primary Access Token
+   --box-encoding
+      The encoding for the backend.
       
-      Leave blank normally.
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --box-owned-by
+      Only show items owned by the login (email address) passed in.
 
    --box-upload-cutoff
       Cutoff for switching to multipart upload (>= 50 MiB).
 
-   --box-commit-retries
-      Max number of times to try committing a multipart file.
-
-   --box-box-sub-type
-      
-
-      Examples:
-         | user       | Rclone should act on behalf of a user.
-         | enterprise | Rclone should act on behalf of a service account.
+   --box-list-chunk
+      Size of listing chunk 1-1000.
 
    --box-client-secret
       OAuth Client Secret.
       
       Leave blank normally.
+
+   --box-token
+      OAuth Access Token as a JSON blob.
 
    --box-token-url
       Token server url.
@@ -69,6 +55,21 @@ DESCRIPTION:
 
    --box-root-folder-id
       Fill in for rclone to use a non root folder as its starting point.
+
+   --box-access-token
+      Box App Primary Access Token
+      
+      Leave blank normally.
+
+   --box-box-sub-type
+      
+
+      Examples:
+         | user       | Rclone should act on behalf of a user.
+         | enterprise | Rclone should act on behalf of a service account.
+
+   --box-commit-retries
+      Max number of times to try committing a multipart file.
 
 
 OPTIONS:
@@ -97,3 +98,4 @@ OPTIONS:
    --box-upload-cutoff value    Cutoff for switching to multipart upload (>= 50 MiB). (default: "50Mi") [$BOX_UPLOAD_CUTOFF]
 
 ```
+{% endcode %}

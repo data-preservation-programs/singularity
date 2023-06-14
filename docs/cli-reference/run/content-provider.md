@@ -1,8 +1,9 @@
 # Start a content provider that serves retrieval requests
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity run content-provider - [Alpha] Start a content provider that serves retrieval requests
+   singularity run content-provider - Start a content provider that serves retrieval requests
 
 USAGE:
    singularity run content-provider [command options] [arguments...]
@@ -13,3 +14,4 @@ OPTIONS:
    --libp2p-listen value [ --libp2p-listen value ]  Addresses to listen on for libp2p connections (default: AutoDetect)
    --help, -h                                       show help
 ```
+{% endcode %}

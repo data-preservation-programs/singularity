@@ -1,5 +1,6 @@
 # Send a manual deal proposal to boost or legacy market
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal send-manual - Send a manual deal proposal to boost or legacy market
@@ -32,3 +33,4 @@ OPTIONS:
    --lotus-token value  Lotus RPC API token, only used to get miner info
 
 ```
+{% endcode %}

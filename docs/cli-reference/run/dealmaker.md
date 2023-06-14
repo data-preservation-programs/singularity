@@ -1,8 +1,9 @@
 # Start a deal making/tracking worker to process deal making
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity run dealmaker - [Alpha] Start a deal making/tracking worker to process deal making
+   singularity run dealmaker - Start a deal making/tracking worker to process deal making
 
 USAGE:
    singularity run dealmaker [command options] [arguments...]
@@ -16,3 +17,4 @@ OPTIONS:
    --lotus-token value  Lotus RPC API token, only used to get miner info
 
 ```
+{% endcode %}

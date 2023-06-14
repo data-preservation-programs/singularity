@@ -1,8 +1,9 @@
 # List all associated wallets with the dataset
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity dataset list-wallet - [alpha] List all associated wallets with the dataset
+   singularity dataset list-wallet - List all associated wallets with the dataset
 
 USAGE:
    singularity dataset list-wallet [command options] DATASET_NAME
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

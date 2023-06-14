@@ -1,5 +1,6 @@
 # Sugarsync
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add sugarsync - Sugarsync
@@ -8,15 +9,24 @@ USAGE:
    singularity datasource add sugarsync [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sugarsync-app-id
-      Sugarsync App ID.
+   --sugarsync-user
+      Sugarsync user.
       
-      Leave blank to use rclone's.
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --sugarsync-access-key-id
       Sugarsync Access Key ID.
       
       Leave blank to use rclone's.
+
+   --sugarsync-hard-delete
+      Permanently delete files if true
+      otherwise put them in the deleted files.
 
    --sugarsync-refresh-token
       Sugarsync refresh token.
@@ -25,6 +35,11 @@ DESCRIPTION:
 
    --sugarsync-authorization
       Sugarsync authorization.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-authorization-expiry
+      Sugarsync authorization expiry.
       
       Leave blank normally, will be auto configured by rclone.
 
@@ -38,29 +53,15 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
+   --sugarsync-app-id
+      Sugarsync App ID.
+      
+      Leave blank to use rclone's.
+
    --sugarsync-private-access-key
       Sugarsync Private Access Key.
       
       Leave blank to use rclone's.
-
-   --sugarsync-hard-delete
-      Permanently delete files if true
-      otherwise put them in the deleted files.
-
-   --sugarsync-authorization-expiry
-      Sugarsync authorization expiry.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-user
-      Sugarsync user.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:
@@ -86,3 +87,4 @@ OPTIONS:
    --sugarsync-user value                  Sugarsync user. [$SUGARSYNC_USER]
 
 ```
+{% endcode %}

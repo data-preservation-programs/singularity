@@ -1,5 +1,6 @@
 # Create a SPADE policy for self deal proposal
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal spade-policy create - Create a SPADE policy for self deal proposal
@@ -16,3 +17,4 @@ OPTIONS:
    --price value         The price of the deal measured by per 32GiB over the whole duration (default: 0)
    --help, -h            show help
 ```
+{% endcode %}

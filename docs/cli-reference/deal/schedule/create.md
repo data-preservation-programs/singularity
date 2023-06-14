@@ -1,5 +1,6 @@
 # Create a schedule to send out deals to a storage provider
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal schedule create - Create a schedule to send out deals to a storage provider
@@ -44,3 +45,4 @@ OPTIONS:
    --notes value, -n value  Any notes or tag to store along with the request, for tracking purpose
 
 ```
+{% endcode %}

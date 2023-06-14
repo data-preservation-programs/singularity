@@ -1,5 +1,6 @@
 # List all datasets
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity dataset list - List all datasets
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

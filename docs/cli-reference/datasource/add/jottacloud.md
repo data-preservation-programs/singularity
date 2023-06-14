@@ -1,5 +1,6 @@
 # Jottacloud
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add jottacloud - Jottacloud
@@ -49,3 +50,4 @@ OPTIONS:
    --jottacloud-upload-resume-limit value  Files bigger than this can be resumed if the upload fail's. (default: "10Mi") [$JOTTACLOUD_UPLOAD_RESUME_LIMIT]
 
 ```
+{% endcode %}

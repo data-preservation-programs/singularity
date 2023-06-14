@@ -1,5 +1,6 @@
 # WebDAV
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add webdav - WebDAV
@@ -8,9 +9,6 @@ USAGE:
    singularity datasource add webdav [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --webdav-bearer-token
-      Bearer token instead of user/pass (e.g. a Macaroon).
-
    --webdav-bearer-token-command
       Command to run to get a bearer token.
 
@@ -57,6 +55,9 @@ DESCRIPTION:
    --webdav-pass
       Password.
 
+   --webdav-bearer-token
+      Bearer token instead of user/pass (e.g. a Macaroon).
+
 
 OPTIONS:
    --help, -h  show help
@@ -78,3 +79,4 @@ OPTIONS:
    --webdav-vendor value                Name of the WebDAV site/service/software you are using. [$WEBDAV_VENDOR]
 
 ```
+{% endcode %}

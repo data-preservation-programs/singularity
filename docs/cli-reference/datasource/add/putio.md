@@ -1,5 +1,6 @@
 # Put.io
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add putio - Put.io
@@ -27,3 +28,4 @@ OPTIONS:
    --putio-encoding value  The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$PUTIO_ENCODING]
 
 ```
+{% endcode %}

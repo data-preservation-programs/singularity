@@ -1,5 +1,6 @@
 # Mega
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add mega - Mega
@@ -8,6 +9,11 @@ USAGE:
    singularity datasource add mega [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --mega-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --mega-user
       User name.
 
@@ -36,11 +42,6 @@ DESCRIPTION:
       HTTPS is normally not necesary since all data is already encrypted anyway.
       Enabling it will increase CPU usage and add network overhead.
 
-   --mega-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
 
 OPTIONS:
    --help, -h  show help
@@ -60,3 +61,4 @@ OPTIONS:
    --mega-user value         User name. [$MEGA_USER]
 
 ```
+{% endcode %}

@@ -1,5 +1,6 @@
 # Citrix Sharefile
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add sharefile - Citrix Sharefile
@@ -64,3 +65,4 @@ OPTIONS:
    --sharefile-upload-cutoff value   Cutoff for switching to multipart upload. (default: "128Mi") [$SHAREFILE_UPLOAD_CUTOFF]
 
 ```
+{% endcode %}

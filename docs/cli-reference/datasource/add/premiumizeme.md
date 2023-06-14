@@ -1,5 +1,6 @@
 # premiumize.me
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add premiumizeme - premiumize.me
@@ -33,3 +34,4 @@ OPTIONS:
    --premiumizeme-encoding value  The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$PREMIUMIZEME_ENCODING]
 
 ```
+{% endcode %}

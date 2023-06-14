@@ -1,5 +1,6 @@
 # Storj Decentralized Cloud Storage
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add storj - Storj Decentralized Cloud Storage
@@ -8,6 +9,17 @@ USAGE:
    singularity datasource add storj [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --storj-provider
+      Choose an authentication method.
+
+      Examples:
+         | existing | Use an existing access grant.
+         | new      | Create a new access grant from satellite address, API key, and passphrase.
+
+   --storj-access-grant
+      [Provider] - existing
+         Access grant.
+
    --storj-satellite-address
       [Provider] - new
          Satellite address.
@@ -29,17 +41,6 @@ DESCRIPTION:
          
          To access existing objects enter passphrase used for uploading.
 
-   --storj-provider
-      Choose an authentication method.
-
-      Examples:
-         | existing | Use an existing access grant.
-         | new      | Create a new access grant from satellite address, API key, and passphrase.
-
-   --storj-access-grant
-      [Provider] - existing
-         Access grant.
-
 
 OPTIONS:
    --help, -h  show help
@@ -58,3 +59,4 @@ OPTIONS:
    --storj-satellite-address value  Satellite address. (default: "us1.storj.io") [$STORJ_SATELLITE_ADDRESS]
 
 ```
+{% endcode %}

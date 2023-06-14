@@ -13,7 +13,9 @@ import (
 )
 
 var overrides = map[string]string{
-	"s3": "AWS S3 and compliant",
+	"s3":    "AWS S3 and compliant",
+	"gcs":   "Google Cloud Storage",
+	"koofr": "Koofr / Digi Storage",
 }
 
 var summary strings.Builder
@@ -22,9 +24,11 @@ func main() {
 	app := cmd.App
 	var sb strings.Builder
 	sb.WriteString("# CLI Reference\n\n")
+	sb.WriteString("{% code fullWidth=\"true\" %}\n")
 	sb.WriteString("```\n")
 	sb.WriteString(getStdout([]string{}))
 	sb.WriteString("```\n")
+	sb.WriteString("{% endcode %}\n")
 	err := os.WriteFile("docs/cli-reference/README.md", []byte(sb.String()), 0644)
 	if err != nil {
 		panic(err)
@@ -82,15 +86,13 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 		}
 	}
 
-	name := convertHyphenatedString(command.Name)
-	if newName, ok := overrides[command.Name]; ok {
-		name = newName
-	}
-
 	sb.WriteString(fmt.Sprintf("# %s\n\n", command.Usage))
+	sb.WriteString("{% code fullWidth=\"true\" %}\n")
 	sb.WriteString("```\n")
-	sb.WriteString(getStdout(args))
+	stdout := getStdout(args)
+	sb.WriteString(stdout)
 	sb.WriteString("```\n")
+	sb.WriteString("{% endcode %}\n")
 	err = os.WriteFile(outFile, []byte(sb.String()), 0644)
 	if err != nil {
 		panic(err)
@@ -100,6 +102,15 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 	for i := 0; i < len(args)-1; i++ {
 		margin += "  "
 	}
+
+	name := convertHyphenatedString(command.Name)
+	if strings.Contains(stdout, "singularity datasource add") && len(command.Subcommands) == 0 {
+		name = command.Usage
+	}
+	if newName, ok := overrides[command.Name]; ok {
+		name = newName
+	}
+
 	summary.WriteString(fmt.Sprintf("%s* [%s](%s)\n", margin, name, outFile[5:]))
 	for _, subcommand := range command.Subcommands {
 		saveMarkdown(subcommand, path.Join(outDir, command.Name), append(args, subcommand.Name))

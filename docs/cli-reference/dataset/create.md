@@ -1,5 +1,6 @@
 # Create a new dataset
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity dataset create - Create a new dataset
@@ -16,7 +17,7 @@ OPTIONS:
 
    Encryption
 
-   --encryption-recipient value [ --encryption-recipient value ]  [Alpha] Public key of the encryption recipient
+   --encryption-recipient value [ --encryption-recipient value ]  Public key of the encryption recipient
    --encryption-script value                                      [WIP] EncryptionScript command to run for custom encryption
 
    Inline Preparation
@@ -29,3 +30,4 @@ OPTIONS:
    --piece-size value, -s value  Target piece size of the CAR files used for piece commitment calculation (default: inferred)
 
 ```
+{% endcode %}

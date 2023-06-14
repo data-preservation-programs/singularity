@@ -1,5 +1,6 @@
 # Enterprise File Fabric
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add filefabric - Enterprise File Fabric
@@ -8,6 +9,12 @@ USAGE:
    singularity datasource add filefabric [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --filefabric-token-expiry
+      Token expiry time.
+      
+      Don't set this value - rclone will set it automatically.
+      
+
    --filefabric-version
       Version read from the file fabric.
       
@@ -57,12 +64,6 @@ DESCRIPTION:
       Don't set this value - rclone will set it automatically.
       
 
-   --filefabric-token-expiry
-      Token expiry time.
-      
-      Don't set this value - rclone will set it automatically.
-      
-
 
 OPTIONS:
    --help, -h  show help
@@ -83,3 +84,4 @@ OPTIONS:
    --filefabric-version value          Version read from the file fabric. [$FILEFABRIC_VERSION]
 
 ```
+{% endcode %}

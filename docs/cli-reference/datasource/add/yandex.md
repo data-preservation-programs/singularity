@@ -1,5 +1,6 @@
 # Yandex Disk
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add yandex - Yandex Disk
@@ -59,3 +60,4 @@ OPTIONS:
    --yandex-token-url value      Token server url. [$YANDEX_TOKEN_URL]
 
 ```
+{% endcode %}

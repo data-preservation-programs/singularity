@@ -10,6 +10,7 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,9 @@ import (
 var AddCmd = &cli.Command{
 	Name:  "add",
 	Usage: "Add a new data source to the dataset",
-	Subcommands: underscore.Map(fs.Registry, func(r *fs.RegInfo) *cli.Command {
+	Subcommands: underscore.Map(underscore.Filter(fs.Registry, func(r *fs.RegInfo) bool {
+		return !slices.Contains([]string{"crypt", "memory", "tardigrade"}, r.Prefix)
+	}), func(r *fs.RegInfo) *cli.Command {
 		cmd := datasource.OptionsToCLIFlags(r)
 		cmd.Action = func(c *cli.Context) error {
 			datasetName := c.Args().Get(0)

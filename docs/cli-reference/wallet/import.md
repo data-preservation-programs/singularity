@@ -1,5 +1,6 @@
 # Import a wallet from exported private key
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity wallet import - Import a wallet from exported private key
@@ -16,3 +17,4 @@ OPTIONS:
    --lotus-token value  Lotus RPC API token
 
 ```
+{% endcode %}

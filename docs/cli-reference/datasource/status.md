@@ -1,5 +1,6 @@
 # Get the data preparation summary of a data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource status - Get the data preparation summary of a data source
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

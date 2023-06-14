@@ -1,5 +1,6 @@
 # CLI Reference
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity - A tool for large-scale clients with PB-scale data onboarding to Filecoin network
@@ -15,10 +16,10 @@ COMMANDS:
      ez-prep  Prepare a dataset from a local path
    Operations:
      admin       Admin commands
-     deal        [Alpha] Replication / Deal making management
+     deal        Replication / Deal making management
      dataset     Dataset management
      datasource  Data source management
-     wallet      [Alpha] Wallet management
+     wallet      Wallet management
    Utility:
      download  Download a CAR file from the metadata API
 
@@ -35,3 +36,4 @@ GLOBAL OPTIONS:
    --json      Enable JSON output (default: false)
    --help, -h  show help
 ```
+{% endcode %}

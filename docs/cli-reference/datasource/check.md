@@ -1,5 +1,6 @@
 # Check a data source by listing its entries. This is not to list prepared items but a direct listing of the data source to verify datasource connection
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource check - Check a data source by listing its entries. This is not to list prepared items but a direct listing of the data source to verify datasource connection
@@ -13,3 +14,4 @@ DESCRIPTION:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

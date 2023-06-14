@@ -1,5 +1,6 @@
 # List all SPADE policies for self deal proposal
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal spade-policy list - List all SPADE policies for self deal proposal
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

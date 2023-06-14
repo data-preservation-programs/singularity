@@ -1,5 +1,6 @@
 # Prepare a dataset from a local path
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity ez-prep - Prepare a dataset from a local path
@@ -25,3 +26,4 @@ OPTIONS:
    --database-file value          The database file to store the metadata. To use in memory database, use an empty string. (default: ./ezprep-<name>.db)
    --help, -h                     show help
 ```
+{% endcode %}
