@@ -1,5 +1,6 @@
 # Sia Decentralized Cloud
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add sia - Sia Decentralized Cloud
@@ -46,3 +47,4 @@ OPTIONS:
    --sia-user-agent value    Siad User Agent (default: "Sia-Agent") [$SIA_USER_AGENT]
 
 ```
+{% endcode %}

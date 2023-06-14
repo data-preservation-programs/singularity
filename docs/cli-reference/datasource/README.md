@@ -1,5 +1,6 @@
 # Data source management
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource - Data source management
@@ -22,3 +23,4 @@ COMMANDS:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

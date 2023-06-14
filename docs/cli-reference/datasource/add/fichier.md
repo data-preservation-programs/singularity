@@ -1,5 +1,6 @@
 # 1Fichier
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add fichier - 1Fichier
@@ -43,3 +44,4 @@ OPTIONS:
    --fichier-shared-folder value    If you want to download a shared folder, add this parameter. [$FICHIER_SHARED_FOLDER]
 
 ```
+{% endcode %}

@@ -1,5 +1,6 @@
 # Get all item details of a data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource inspect items - Get all item details of a data source
@@ -13,3 +14,4 @@ DESCRIPTION:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

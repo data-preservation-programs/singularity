@@ -1,5 +1,6 @@
 # Add remote wallet
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity wallet add-remote - Add remote wallet
@@ -16,3 +17,4 @@ OPTIONS:
    --lotus-token value  Lotus RPC API token
 
 ```
+{% endcode %}

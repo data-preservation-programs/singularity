@@ -1,5 +1,6 @@
 # Resume a specific schedule
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal schedule resume - Resume a specific schedule
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

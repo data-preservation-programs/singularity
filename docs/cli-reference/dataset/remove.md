@@ -1,5 +1,6 @@
 # Remove a specific dataset. This will not remove the CAR files.
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity dataset remove - Remove a specific dataset. This will not remove the CAR files.
@@ -13,3 +14,4 @@ DESCRIPTION:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

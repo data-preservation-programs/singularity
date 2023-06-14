@@ -1,5 +1,6 @@
 # Remove a wallet
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity wallet remove - Remove a wallet
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

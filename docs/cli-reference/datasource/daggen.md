@@ -1,5 +1,6 @@
 # Generate and export the DAG which represents the full folder structure of the data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource daggen - Generate and export the DAG which represents the full folder structure of the data source
@@ -15,3 +16,4 @@ DESCRIPTION:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

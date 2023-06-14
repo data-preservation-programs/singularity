@@ -1,5 +1,6 @@
 # Start a dataset preparation worker to process dataset scanning and preparation tasks
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity run dataset-worker - Start a dataset preparation worker to process dataset scanning and preparation tasks
@@ -16,3 +17,4 @@ OPTIONS:
    --exit-on-error      Exit the worker when there is any error (default: false) [$DATASET_WORKER_EXIT_ON_ERROR]
    --help, -h           show help
 ```
+{% endcode %}

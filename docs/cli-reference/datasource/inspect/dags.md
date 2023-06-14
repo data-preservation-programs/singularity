@@ -1,5 +1,6 @@
 # Get all piece details for generated dags
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource inspect dags - Get all piece details for generated dags
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

@@ -1,5 +1,6 @@
 # Update the config options of a source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource update - Update the config options of a source
@@ -96,18 +97,6 @@ OPTIONS:
    --box-token value            OAuth Access Token as a JSON blob. [$BOX_TOKEN]
    --box-token-url value        Token server url. [$BOX_TOKEN_URL]
    --box-upload-cutoff value    Cutoff for switching to multipart upload (>= 50 MiB). (default: "50Mi") [$BOX_UPLOAD_CUTOFF]
-
-   Options for crypt
-
-   --crypt-directory-name-encryption value   Option to either encrypt directory names or leave them intact. (default: "true") [$CRYPT_DIRECTORY_NAME_ENCRYPTION]
-   --crypt-filename-encoding value           How to encode the encrypted filename to text string. (default: "base32") [$CRYPT_FILENAME_ENCODING]
-   --crypt-filename-encryption value         How to encrypt the filenames. (default: "standard") [$CRYPT_FILENAME_ENCRYPTION]
-   --crypt-no-data-encryption value          Option to either encrypt file data or leave it unencrypted. (default: "false") [$CRYPT_NO_DATA_ENCRYPTION]
-   --crypt-password value                    Password or pass phrase for encryption. [$CRYPT_PASSWORD]
-   --crypt-password2 value                   Password or pass phrase for salt. [$CRYPT_PASSWORD2]
-   --crypt-remote value                      Remote to encrypt/decrypt. [$CRYPT_REMOTE]
-   --crypt-server-side-across-configs value  Allow server-side operations (e.g. copy) to work across different crypt configs. (default: "false") [$CRYPT_SERVER_SIDE_ACROSS_CONFIGS]
-   --crypt-show-mapping value                For all files listed show how the names encrypt. (default: "false") [$CRYPT_SHOW_MAPPING]
 
    Options for drive
 
@@ -613,9 +602,6 @@ OPTIONS:
    --swift-user value                           User name to log in (OS_USERNAME). [$SWIFT_USER]
    --swift-user-id value                        User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID). [$SWIFT_USER_ID]
 
-   Options for tardigrade
-
-   
    Options for uptobox
 
    --uptobox-access-token value  Your access token. [$UPTOBOX_ACCESS_TOKEN]
@@ -653,3 +639,4 @@ OPTIONS:
    --zoho-token-url value      Token server url. [$ZOHO_TOKEN_URL]
 
 ```
+{% endcode %}

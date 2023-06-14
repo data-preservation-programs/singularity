@@ -1,5 +1,6 @@
 # Koofr, Digi Storage and other Koofr-compatible storage providers
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add koofr - Koofr, Digi Storage and other Koofr-compatible storage providers
@@ -8,6 +9,11 @@ USAGE:
    singularity datasource add koofr [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --koofr-mountid
+      Mount ID of the mount to use.
+      
+      If omitted, the primary mount is used.
+
    --koofr-setmtime
       Does the backend support setting modification time.
       
@@ -43,11 +49,6 @@ DESCRIPTION:
       [Provider] - other
          The Koofr API endpoint to use.
 
-   --koofr-mountid
-      Mount ID of the mount to use.
-      
-      If omitted, the primary mount is used.
-
 
 OPTIONS:
    --help, -h  show help
@@ -68,3 +69,4 @@ OPTIONS:
    --koofr-user value      Your user name. [$KOOFR_USER]
 
 ```
+{% endcode %}

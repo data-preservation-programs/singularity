@@ -1,5 +1,6 @@
 # Hadoop distributed file system
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add hdfs - Hadoop distributed file system
@@ -60,3 +61,4 @@ OPTIONS:
    --hdfs-username value                  Hadoop user name. [$HDFS_USERNAME]
 
 ```
+{% endcode %}

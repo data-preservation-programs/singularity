@@ -1,5 +1,6 @@
 # Initialize the database
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity admin init - Initialize the database
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

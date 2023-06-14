@@ -1,5 +1,6 @@
 # QingCloud Object Storage
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add qingstor - QingCloud Object Storage
@@ -8,17 +9,15 @@ USAGE:
    singularity datasource add qingstor [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --qingstor-env-auth
-      Get QingStor credentials from runtime.
+   --qingstor-endpoint
+      Enter an endpoint URL to connection QingStor API.
       
-      Only applies if access_key_id and secret_access_key is blank.
+      Leave blank will use the default value "https://qingstor.com:443".
 
-      Examples:
-         | false | Enter QingStor credentials in the next step.
-         | true  | Get QingStor credentials from the environment (env vars or IAM).
-
-   --qingstor-connection-retries
-      Number of connection retries.
+   --qingstor-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --qingstor-upload-concurrency
       Concurrency for multipart uploads.
@@ -33,6 +32,15 @@ DESCRIPTION:
       and these uploads do not fully utilize your bandwidth, then increasing
       this may help to speed up the transfers.
 
+   --qingstor-env-auth
+      Get QingStor credentials from runtime.
+      
+      Only applies if access_key_id and secret_access_key is blank.
+
+      Examples:
+         | false | Enter QingStor credentials in the next step.
+         | true  | Get QingStor credentials from the environment (env vars or IAM).
+
    --qingstor-access-key-id
       QingStor Access Key ID.
       
@@ -42,11 +50,6 @@ DESCRIPTION:
       QingStor Secret Access Key (password).
       
       Leave blank for anonymous access or runtime credentials.
-
-   --qingstor-endpoint
-      Enter an endpoint URL to connection QingStor API.
-      
-      Leave blank will use the default value "https://qingstor.com:443".
 
    --qingstor-zone
       Zone to connect to.
@@ -60,6 +63,9 @@ DESCRIPTION:
                  | Needs location constraint sh1a.
          | gd2a  | The Guangdong (China) Second Zone.
                  | Needs location constraint gd2a.
+
+   --qingstor-connection-retries
+      Number of connection retries.
 
    --qingstor-upload-cutoff
       Cutoff for switching to chunked upload.
@@ -78,11 +84,6 @@ DESCRIPTION:
       
       If you are transferring large files over high-speed links and you have
       enough memory, then increasing this will speed up the transfers.
-
-   --qingstor-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:
@@ -107,3 +108,4 @@ OPTIONS:
    --qingstor-zone value                Zone to connect to. [$QINGSTOR_ZONE]
 
 ```
+{% endcode %}

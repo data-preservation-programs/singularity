@@ -1,5 +1,6 @@
 # Rescan a data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource rescan - Rescan a data source
@@ -13,3 +14,4 @@ DESCRIPTION:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

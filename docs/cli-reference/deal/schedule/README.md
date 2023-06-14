@@ -1,5 +1,6 @@
 # Schedule deals
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal schedule - Schedule deals
@@ -17,3 +18,4 @@ COMMANDS:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

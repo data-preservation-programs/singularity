@@ -1,8 +1,9 @@
 # Replication / Deal making management
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal - [Alpha] Replication / Deal making management
+   singularity deal - Replication / Deal making management
 
 USAGE:
    singularity deal command [command options] [arguments...]
@@ -17,3 +18,4 @@ COMMANDS:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

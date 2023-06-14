@@ -1,5 +1,6 @@
 # Get preparation status of a data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource inspect - Get preparation status of a data source
@@ -19,3 +20,4 @@ COMMANDS:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

@@ -1,5 +1,6 @@
 # Download a CAR file from the metadata API
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity download - Download a CAR file from the metadata API
@@ -25,3 +26,4 @@ OPTIONS:
    --s3-secret-access-key value  IAM secret access key [$AWS_SECRET_ACCESS_KEY]
 
 ```
+{% endcode %}

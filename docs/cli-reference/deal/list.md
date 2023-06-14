@@ -1,5 +1,6 @@
 # List all deals
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity deal list - List all deals
@@ -14,3 +15,4 @@ OPTIONS:
    --state value [ --state value ]        Filter deals by state: proposed, published, active, expired, proposal_expired, slashed
    --help, -h                             show help
 ```
+{% endcode %}

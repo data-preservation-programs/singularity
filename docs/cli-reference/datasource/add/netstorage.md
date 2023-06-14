@@ -1,5 +1,6 @@
 # Akamai NetStorage
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add netstorage - Akamai NetStorage
@@ -8,6 +9,11 @@ USAGE:
    singularity datasource add netstorage [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --netstorage-secret
+      Set the NetStorage account secret/G2O key for authentication.
+      
+      Please choose the 'y' option to set your own password then enter your secret.
+
    --netstorage-protocol
       Select between HTTP or HTTPS protocol.
       
@@ -26,11 +32,6 @@ DESCRIPTION:
    --netstorage-account
       Set the NetStorage account name
 
-   --netstorage-secret
-      Set the NetStorage account secret/G2O key for authentication.
-      
-      Please choose the 'y' option to set your own password then enter your secret.
-
 
 OPTIONS:
    --help, -h  show help
@@ -48,3 +49,4 @@ OPTIONS:
    --netstorage-secret value    Set the NetStorage account secret/G2O key for authentication. [$NETSTORAGE_SECRET]
 
 ```
+{% endcode %}

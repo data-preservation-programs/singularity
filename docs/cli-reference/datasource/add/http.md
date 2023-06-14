@@ -1,5 +1,6 @@
 # HTTP
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add http - HTTP
@@ -8,22 +9,6 @@ USAGE:
    singularity datasource add http [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --http-no-head
-      Don't use HEAD requests.
-      
-      HEAD requests are mainly used to find file sizes in dir listing.
-      If your site is being very slow to load then you can try this option.
-      Normally rclone does a HEAD request for each potential file in a
-      directory listing to:
-      
-      - find its size
-      - check it really exists
-      - check to see if it is a directory
-      
-      If you set this option, rclone will not do the HEAD request. This will mean
-      that directory listings are much quicker, but rclone won't have the times or
-      sizes of any files, and some files that don't exist may be in the listing.
-
    --http-url
       URL of HTTP host to connect to.
       
@@ -55,6 +40,22 @@ DESCRIPTION:
       Note that this may cause rclone to confuse genuine HTML files with
       directories.
 
+   --http-no-head
+      Don't use HEAD requests.
+      
+      HEAD requests are mainly used to find file sizes in dir listing.
+      If your site is being very slow to load then you can try this option.
+      Normally rclone does a HEAD request for each potential file in a
+      directory listing to:
+      
+      - find its size
+      - check it really exists
+      - check to see if it is a directory
+      
+      If you set this option, rclone will not do the HEAD request. This will mean
+      that directory listings are much quicker, but rclone won't have the times or
+      sizes of any files, and some files that don't exist may be in the listing.
+
 
 OPTIONS:
    --help, -h  show help
@@ -72,3 +73,4 @@ OPTIONS:
    --http-url value       URL of HTTP host to connect to. [$HTTP_URL]
 
 ```
+{% endcode %}

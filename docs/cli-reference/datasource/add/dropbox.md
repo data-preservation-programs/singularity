@@ -1,5 +1,6 @@
 # Dropbox
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add dropbox - Dropbox
@@ -8,22 +9,28 @@ USAGE:
    singularity datasource add dropbox [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --dropbox-token
+      OAuth Access Token as a JSON blob.
+
+   --dropbox-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
    --dropbox-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
-   --dropbox-client-secret
-      OAuth Client Secret.
+   --dropbox-chunk-size
+      Upload chunk size (< 150Mi).
       
-      Leave blank normally.
-
-   --dropbox-shared-files
-      Instructs rclone to work on individual shared files.
+      Any files larger than this will be uploaded in chunks of this size.
       
-      In this mode rclone's features are extremely limited - only list (ls, lsl, etc.) 
-      operations and read operations (e.g. downloading) are supported in this mode.
-      All other operations will be disabled.
+      Note that chunks are buffered in memory (one at a time) so rclone can
+      deal with retries.  Setting this larger will increase the speed
+      slightly (at most 10% for 128 MiB in tests) at the cost of using more
+      memory.  It can be set smaller if you are tight on memory.
 
    --dropbox-batch-mode
       Upload file batching sync|async|off.
@@ -42,8 +49,8 @@ DESCRIPTION:
       a delay on quit.
       
 
-   --dropbox-auth-url
-      Auth server URL.
+   --dropbox-token-url
+      Token server url.
       
       Leave blank to use the provider defaults.
 
@@ -60,64 +67,6 @@ DESCRIPTION:
       Note that we don't unmount the shared folder afterwards so the 
       --dropbox-shared-folders can be omitted after the first use of a particular 
       shared folder.
-
-   --dropbox-batch-timeout
-      Max time to allow an idle upload batch before uploading.
-      
-      If an upload batch is idle for more than this long then it will be
-      uploaded.
-      
-      The default for this is 0 which means rclone will choose a sensible
-      default based on the batch_mode in use.
-      
-      - batch_mode: async - default batch_timeout is 500ms
-      - batch_mode: sync - default batch_timeout is 10s
-      - batch_mode: off - not in use
-      
-
-   --dropbox-batch-commit-timeout
-      Max time to wait for a batch to finish committing
-
-   --dropbox-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
-   --dropbox-chunk-size
-      Upload chunk size (< 150Mi).
-      
-      Any files larger than this will be uploaded in chunks of this size.
-      
-      Note that chunks are buffered in memory (one at a time) so rclone can
-      deal with retries.  Setting this larger will increase the speed
-      slightly (at most 10% for 128 MiB in tests) at the cost of using more
-      memory.  It can be set smaller if you are tight on memory.
-
-   --dropbox-impersonate
-      Impersonate this user when using a business account.
-      
-      Note that if you want to use impersonate, you should make sure this
-      flag is set when running "rclone config" as this will cause rclone to
-      request the "members.read" scope which it won't normally. This is
-      needed to lookup a members email address into the internal ID that
-      dropbox uses in the API.
-      
-      Using the "members.read" scope will require a Dropbox Team Admin
-      to approve during the OAuth flow.
-      
-      You will have to use your own App (setting your own client_id and
-      client_secret) to use this option as currently rclone's default set of
-      permissions doesn't include "members.read". This can be added once
-      v1.55 or later is in use everywhere.
-      
-
-   --dropbox-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --dropbox-token
-      OAuth Access Token as a JSON blob.
 
    --dropbox-batch-size
       Max number of files in upload batch.
@@ -137,6 +86,58 @@ DESCRIPTION:
       Setting this is a great idea if you are uploading lots of small files
       as it will make them a lot quicker. You can use --transfers 32 to
       maximise throughput.
+      
+
+   --dropbox-batch-commit-timeout
+      Max time to wait for a batch to finish committing
+
+   --dropbox-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --dropbox-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --dropbox-impersonate
+      Impersonate this user when using a business account.
+      
+      Note that if you want to use impersonate, you should make sure this
+      flag is set when running "rclone config" as this will cause rclone to
+      request the "members.read" scope which it won't normally. This is
+      needed to lookup a members email address into the internal ID that
+      dropbox uses in the API.
+      
+      Using the "members.read" scope will require a Dropbox Team Admin
+      to approve during the OAuth flow.
+      
+      You will have to use your own App (setting your own client_id and
+      client_secret) to use this option as currently rclone's default set of
+      permissions doesn't include "members.read". This can be added once
+      v1.55 or later is in use everywhere.
+      
+
+   --dropbox-shared-files
+      Instructs rclone to work on individual shared files.
+      
+      In this mode rclone's features are extremely limited - only list (ls, lsl, etc.) 
+      operations and read operations (e.g. downloading) are supported in this mode.
+      All other operations will be disabled.
+
+   --dropbox-batch-timeout
+      Max time to allow an idle upload batch before uploading.
+      
+      If an upload batch is idle for more than this long then it will be
+      uploaded.
+      
+      The default for this is 0 which means rclone will choose a sensible
+      default based on the batch_mode in use.
+      
+      - batch_mode: async - default batch_timeout is 500ms
+      - batch_mode: sync - default batch_timeout is 10s
+      - batch_mode: off - not in use
       
 
 
@@ -166,3 +167,4 @@ OPTIONS:
    --dropbox-token-url value             Token server url. [$DROPBOX_TOKEN_URL]
 
 ```
+{% endcode %}

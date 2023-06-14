@@ -1,5 +1,6 @@
 # SMB / CIFS
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add smb - SMB / CIFS
@@ -8,11 +9,35 @@ USAGE:
    singularity datasource add smb [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --smb-pass
-      SMB password.
+   --smb-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --smb-user
+      SMB username.
+
+   --smb-port
+      SMB port number.
 
    --smb-domain
       Domain name for NTLM authentication.
+
+   --smb-hide-special-share
+      Hide special shares (e.g. print$) which users aren't supposed to access.
+
+   --smb-case-insensitive
+      Whether the server is configured to be case-insensitive.
+      
+      Always true on Windows shares.
+
+   --smb-host
+      SMB server hostname to connect to.
+      
+      E.g. "example.com".
+
+   --smb-pass
+      SMB password.
 
    --smb-spn
       Service principal name.
@@ -25,22 +50,6 @@ DESCRIPTION:
       Leave blank if not sure.
       
 
-   --smb-hide-special-share
-      Hide special shares (e.g. print$) which users aren't supposed to access.
-
-   --smb-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --smb-host
-      SMB server hostname to connect to.
-      
-      E.g. "example.com".
-
-   --smb-port
-      SMB port number.
-
    --smb-idle-timeout
       Max time before closing idle connections.
       
@@ -49,14 +58,6 @@ DESCRIPTION:
       
       Set to 0 to keep connections indefinitely.
       
-
-   --smb-case-insensitive
-      Whether the server is configured to be case-insensitive.
-      
-      Always true on Windows shares.
-
-   --smb-user
-      SMB username.
 
 
 OPTIONS:
@@ -81,3 +82,4 @@ OPTIONS:
    --smb-user value                SMB username. (default: "shane") [$SMB_USER]
 
 ```
+{% endcode %}

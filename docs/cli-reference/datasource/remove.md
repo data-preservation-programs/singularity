@@ -1,5 +1,6 @@
 # Remove a data source
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource remove - Remove a data source
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

@@ -1,8 +1,9 @@
 # Wallet management
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity wallet - [Alpha] Wallet management
+   singularity wallet - Wallet management
 
 USAGE:
    singularity wallet command [command options] [arguments...]
@@ -17,3 +18,4 @@ COMMANDS:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

@@ -1,8 +1,9 @@
 # Reset the database
 
+{% code fullWidth="true" %}
 ```
 NAME:
-   singularity admin reset - [Dangerous] Reset the database
+   singularity admin reset - Reset the database
 
 USAGE:
    singularity admin reset [command options] [arguments...]
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

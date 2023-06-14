@@ -1,5 +1,6 @@
 # Get details about a specific chunk
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource inspect chunkdetail - Get details about a specific chunk
@@ -10,3 +11,4 @@ USAGE:
 OPTIONS:
    --help, -h  show help
 ```
+{% endcode %}

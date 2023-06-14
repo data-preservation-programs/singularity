@@ -1,5 +1,6 @@
 # Zoho
 
+{% code fullWidth="true" %}
 ```
 NAME:
    singularity datasource add zoho - Zoho
@@ -71,3 +72,4 @@ OPTIONS:
    --zoho-token-url value      Token server url. [$ZOHO_TOKEN_URL]
 
 ```
+{% endcode %}
