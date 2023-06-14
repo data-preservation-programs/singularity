@@ -232,6 +232,7 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		Category:    "Data Preparation Options",
 		DefaultText: "disabled",
 	})
+	slices.SortFunc(flags, func(i, j cli.Flag) bool { return i.Names()[0] < j.Names()[0] })
 	cmd.Flags = flags
 	cmd.Description = strings.Join(usageLines, "\n")
 	return cmd

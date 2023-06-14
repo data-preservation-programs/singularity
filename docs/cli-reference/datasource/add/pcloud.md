@@ -8,10 +8,15 @@ USAGE:
    singularity datasource add pcloud [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --pcloud-client-secret
-      OAuth Client Secret.
+   --pcloud-client-id
+      OAuth Client Id.
       
       Leave blank normally.
+
+   --pcloud-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
 
    --pcloud-root-folder-id
       Fill in for rclone to use a non root folder as its starting point.
@@ -28,18 +33,19 @@ DESCRIPTION:
          | api.pcloud.com  | Original/US region
          | eapi.pcloud.com | EU region
 
-   --pcloud-client-id
-      OAuth Client Id.
+   --pcloud-password
+      Your pcloud password.
+
+   --pcloud-client-secret
+      OAuth Client Secret.
       
       Leave blank normally.
 
+   --pcloud-token
+      OAuth Access Token as a JSON blob.
+
    --pcloud-auth-url
       Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --pcloud-token-url
-      Token server url.
       
       Leave blank to use the provider defaults.
 
@@ -54,12 +60,6 @@ DESCRIPTION:
       This is only required when you want to use the cleanup command. Due to a bug
       in the pcloud API the required API does not support OAuth authentication so
       we have to rely on user password authentication for it.
-
-   --pcloud-password
-      Your pcloud password.
-
-   --pcloud-token
-      OAuth Access Token as a JSON blob.
 
 
 OPTIONS:

@@ -8,18 +8,6 @@ USAGE:
    singularity datasource add mega [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --mega-user
-      User name.
-
-   --mega-pass
-      Password.
-
-   --mega-debug
-      Output more debug from Mega.
-      
-      If this flag is set (along with -vv) it will print further debugging
-      information from the mega backend.
-
    --mega-hard-delete
       Delete files permanently rather than putting them into the trash.
       
@@ -40,6 +28,18 @@ DESCRIPTION:
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --mega-user
+      User name.
+
+   --mega-pass
+      Password.
+
+   --mega-debug
+      Output more debug from Mega.
+      
+      If this flag is set (along with -vv) it will print further debugging
+      information from the mega backend.
 
 
 OPTIONS:

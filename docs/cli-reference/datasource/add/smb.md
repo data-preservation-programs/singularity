@@ -8,19 +8,14 @@ USAGE:
    singularity datasource add smb [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --smb-domain
-      Domain name for NTLM authentication.
+   --smb-user
+      SMB username.
 
-   --smb-spn
-      Service principal name.
-      
-      Rclone presents this name to the server. Some servers use this as further
-      authentication, and it often needs to be set for clusters. For example:
-      
-          cifs/remotehost:1020
-      
-      Leave blank if not sure.
-      
+   --smb-port
+      SMB port number.
+
+   --smb-pass
+      SMB password.
 
    --smb-hide-special-share
       Hide special shares (e.g. print$) which users aren't supposed to access.
@@ -35,8 +30,19 @@ DESCRIPTION:
       
       E.g. "example.com".
 
-   --smb-user
-      SMB username.
+   --smb-domain
+      Domain name for NTLM authentication.
+
+   --smb-spn
+      Service principal name.
+      
+      Rclone presents this name to the server. Some servers use this as further
+      authentication, and it often needs to be set for clusters. For example:
+      
+          cifs/remotehost:1020
+      
+      Leave blank if not sure.
+      
 
    --smb-idle-timeout
       Max time before closing idle connections.
@@ -51,12 +57,6 @@ DESCRIPTION:
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --smb-port
-      SMB port number.
-
-   --smb-pass
-      SMB password.
 
 
 OPTIONS:

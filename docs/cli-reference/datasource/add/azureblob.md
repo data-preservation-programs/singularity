@@ -8,49 +8,59 @@ USAGE:
    singularity datasource add azureblob [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --azureblob-client-id
-      The ID of the client in use.
+   --azureblob-account
+      Azure Storage Account Name.
       
-      Set this if using
-      - Service principal with client secret
-      - Service principal with certificate
-      - User with username and password
+      Set this to the Azure Storage Account Name in use.
       
+      Leave blank to use SAS URL or Emulator, otherwise it needs to be set.
+      
+      If this is blank and if env_auth is set it will be read from the
+      environment variable `AZURE_STORAGE_ACCOUNT_NAME` if possible.
+      
+
+   --azureblob-msi-object-id
+      Object ID of the user-assigned MSI to use, if any.
+      
+      Leave blank if msi_client_id or msi_mi_res_id specified.
+
+   --azureblob-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --azureblob-public-access
+      Public access level of a container: blob or container.
+
+      Examples:
+         | <unset>   | The container and its blobs can be accessed only with an authorized request.
+                     | It's a default value.
+         | blob      | Blob data within this container can be read via anonymous request.
+         | container | Allow full public read access for container and blob data.
 
    --azureblob-msi-client-id
       Object ID of the user-assigned MSI to use, if any.
       
       Leave blank if msi_object_id or msi_mi_res_id specified.
 
-   --azureblob-use-emulator
-      Uses local storage emulator if provided as 'true'.
+   --azureblob-msi-mi-res-id
+      Azure resource ID of the user-assigned MSI to use, if any.
       
-      Leave blank if using real azure storage endpoint.
+      Leave blank if msi_client_id or msi_object_id specified.
 
-   --azureblob-list-chunk
-      Size of blob list.
+   --azureblob-memory-pool-flush-time
+      How often internal memory buffer pools will be flushed.
       
-      This sets the number of blobs requested in each listing chunk. Default
-      is the maximum, 5000. "List blobs" requests are permitted 2 minutes
-      per megabyte to complete. If an operation is taking longer than 2
-      minutes per megabyte on average, it will time out (
-      [source](https://docs.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-blob-service-operations#exceptions-to-default-timeout-interval)
-      ). This can be used to limit the number of blobs items to return, to
-      avoid the time out.
+      Uploads which requires additional buffers (f.e multipart) will use memory pool for allocations.
+      This option controls how often unused buffers will be removed from the pool.
+
+   --azureblob-memory-pool-use-mmap
+      Whether to use mmap buffers in internal memory pool.
 
    --azureblob-sas-url
       SAS URL for container level access only.
       
       Leave blank if using account/key or Emulator.
-
-   --azureblob-tenant
-      ID of the service principal's tenant. Also called its directory ID.
-      
-      Set this if using
-      - Service principal with client secret
-      - Service principal with certificate
-      - User with username and password
-      
 
    --azureblob-client-certificate-password
       Password for the certificate file (optional).
@@ -61,21 +71,19 @@ DESCRIPTION:
       And the certificate has a password.
       
 
-   --azureblob-client-send-certificate-chain
-      Send the certificate chain when using certificate auth.
+   --azureblob-access-tier
+      Access tier of blob: hot, cool or archive.
       
-      Specifies whether an authentication request will include an x5c header
-      to support subject name / issuer based authentication. When set to
-      true, authentication requests include the x5c header.
+      Archived blobs can be restored by setting access tier to hot or
+      cool. Leave blank if you intend to use default access tier, which is
+      set at account level
       
-      Optionally set this if using
-      - Service principal with certificate
-      
-
-   --azureblob-endpoint
-      Endpoint for the service.
-      
-      Leave blank normally.
+      If there is no "access tier" specified, rclone doesn't apply any tier.
+      rclone performs "Set Tier" operation on blobs while uploading, if objects
+      are not modified, specifying "access tier" to new one will have no effect.
+      If blobs are in "archive tier" at remote, trying to perform data transfer
+      operations from remote will not be allowed. User should first restore by
+      tiering blob to "Hot" or "Cool".
 
    --azureblob-upload-concurrency
       Concurrency for multipart uploads.
@@ -95,10 +103,33 @@ DESCRIPTION:
       "--transfers" * "--azureblob-upload-concurrency" chunks stored at once
       in memory.
 
+   --azureblob-archive-tier-delete
+      Delete archive tier blobs before overwriting.
+      
+      Archive tier blobs cannot be updated. So without this flag, if you
+      attempt to update an archive tier blob, then rclone will produce the
+      error:
+      
+          can't update archive tier blob without --azureblob-archive-tier-delete
+      
+      With this flag set then before rclone attempts to overwrite an archive
+      tier blob, it will delete the existing blob before uploading its
+      replacement.  This has the potential for data loss if the upload fails
+      (unlike updating a normal blob) and also may cost more since deleting
+      archive tier blobs early may be chargable.
+      
+
    --azureblob-env-auth
       Read credentials from runtime (environment variables, CLI or MSI).
       
       See the [authentication docs](/azureblob#authentication) for full info.
+
+   --azureblob-client-secret
+      One of the service principal's client secrets
+      
+      Set this if using
+      - Service principal with client secret
+      
 
    --azureblob-service-principal-file
       Path to file containing credentials for use with a service principal.
@@ -117,22 +148,10 @@ DESCRIPTION:
       keys instead of setting `service_principal_file`.
       
 
-   --azureblob-upload-cutoff
-      Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
-
-   --azureblob-access-tier
-      Access tier of blob: hot, cool or archive.
+   --azureblob-endpoint
+      Endpoint for the service.
       
-      Archived blobs can be restored by setting access tier to hot or
-      cool. Leave blank if you intend to use default access tier, which is
-      set at account level
-      
-      If there is no "access tier" specified, rclone doesn't apply any tier.
-      rclone performs "Set Tier" operation on blobs while uploading, if objects
-      are not modified, specifying "access tier" to new one will have no effect.
-      If blobs are in "archive tier" at remote, trying to perform data transfer
-      operations from remote will not be allowed. User should first restore by
-      tiering blob to "Hot" or "Cool".
+      Leave blank normally.
 
    --azureblob-disable-checksum
       Don't store MD5 checksum with object metadata.
@@ -142,25 +161,44 @@ DESCRIPTION:
       for data integrity checking but can cause long delays for large files
       to start uploading.
 
-   --azureblob-memory-pool-use-mmap
-      Whether to use mmap buffers in internal memory pool.
+   --azureblob-key
+      Storage Account Shared Key.
+      
+      Leave blank to use SAS URL or Emulator.
 
-   --azureblob-client-secret
-      One of the service principal's client secrets
+   --azureblob-client-certificate-path
+      Path to a PEM or PKCS12 certificate file including the private key.
       
       Set this if using
-      - Service principal with client secret
+      - Service principal with certificate
       
+
+   --azureblob-client-send-certificate-chain
+      Send the certificate chain when using certificate auth.
+      
+      Specifies whether an authentication request will include an x5c header
+      to support subject name / issuer based authentication. When set to
+      true, authentication requests include the x5c header.
+      
+      Optionally set this if using
+      - Service principal with certificate
+      
+
+   --azureblob-upload-cutoff
+      Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
+
+   --azureblob-no-check-container
+      If set, don't attempt to check the container exists or create it.
+      
+      This can be useful when trying to minimise the number of transactions
+      rclone does if you know the container exists already.
+      
+
+   --azureblob-no-head-object
+      If set, do not do HEAD before GET when getting objects.
 
    --azureblob-username
       User name (usually an email address)
-      
-      Set this if using
-      - User with username and password
-      
-
-   --azureblob-password
-      The user's password
       
       Set this if using
       - User with username and password
@@ -178,61 +216,10 @@ DESCRIPTION:
       identities, the identity to use must be explicitly specified using exactly one of the msi_object_id,
       msi_client_id, or msi_mi_res_id parameters.
 
-   --azureblob-msi-mi-res-id
-      Azure resource ID of the user-assigned MSI to use, if any.
+   --azureblob-use-emulator
+      Uses local storage emulator if provided as 'true'.
       
-      Leave blank if msi_client_id or msi_object_id specified.
-
-   --azureblob-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --azureblob-client-certificate-path
-      Path to a PEM or PKCS12 certificate file including the private key.
-      
-      Set this if using
-      - Service principal with certificate
-      
-
-   --azureblob-archive-tier-delete
-      Delete archive tier blobs before overwriting.
-      
-      Archive tier blobs cannot be updated. So without this flag, if you
-      attempt to update an archive tier blob, then rclone will produce the
-      error:
-      
-          can't update archive tier blob without --azureblob-archive-tier-delete
-      
-      With this flag set then before rclone attempts to overwrite an archive
-      tier blob, it will delete the existing blob before uploading its
-      replacement.  This has the potential for data loss if the upload fails
-      (unlike updating a normal blob) and also may cost more since deleting
-      archive tier blobs early may be chargable.
-      
-
-   --azureblob-public-access
-      Public access level of a container: blob or container.
-
-      Examples:
-         | <unset>   | The container and its blobs can be accessed only with an authorized request.
-                     | It's a default value.
-         | blob      | Blob data within this container can be read via anonymous request.
-         | container | Allow full public read access for container and blob data.
-
-   --azureblob-account
-      Azure Storage Account Name.
-      
-      Set this to the Azure Storage Account Name in use.
-      
-      Leave blank to use SAS URL or Emulator, otherwise it needs to be set.
-      
-      If this is blank and if env_auth is set it will be read from the
-      environment variable `AZURE_STORAGE_ACCOUNT_NAME` if possible.
-      
-
-   --azureblob-no-head-object
-      If set, do not do HEAD before GET when getting objects.
+      Leave blank if using real azure storage endpoint.
 
    --azureblob-chunk-size
       Upload chunk size.
@@ -241,28 +228,41 @@ DESCRIPTION:
       "--transfers" * "--azureblob-upload-concurrency" chunks stored at once
       in memory.
 
-   --azureblob-key
-      Storage Account Shared Key.
+   --azureblob-tenant
+      ID of the service principal's tenant. Also called its directory ID.
       
-      Leave blank to use SAS URL or Emulator.
+      Set this if using
+      - Service principal with client secret
+      - Service principal with certificate
+      - User with username and password
+      
 
-   --azureblob-msi-object-id
-      Object ID of the user-assigned MSI to use, if any.
+   --azureblob-client-id
+      The ID of the client in use.
       
-      Leave blank if msi_client_id or msi_mi_res_id specified.
+      Set this if using
+      - Service principal with client secret
+      - Service principal with certificate
+      - User with username and password
+      
 
-   --azureblob-memory-pool-flush-time
-      How often internal memory buffer pools will be flushed.
+   --azureblob-password
+      The user's password
       
-      Uploads which requires additional buffers (f.e multipart) will use memory pool for allocations.
-      This option controls how often unused buffers will be removed from the pool.
+      Set this if using
+      - User with username and password
+      
 
-   --azureblob-no-check-container
-      If set, don't attempt to check the container exists or create it.
+   --azureblob-list-chunk
+      Size of blob list.
       
-      This can be useful when trying to minimise the number of transactions
-      rclone does if you know the container exists already.
-      
+      This sets the number of blobs requested in each listing chunk. Default
+      is the maximum, 5000. "List blobs" requests are permitted 2 minutes
+      per megabyte to complete. If an operation is taking longer than 2
+      minutes per megabyte on average, it will time out (
+      [source](https://docs.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-blob-service-operations#exceptions-to-default-timeout-interval)
+      ). This can be used to limit the number of blobs items to return, to
+      avoid the time out.
 
 
 OPTIONS:

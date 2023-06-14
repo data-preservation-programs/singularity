@@ -8,11 +8,6 @@ USAGE:
    singularity datasource add filefabric [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --filefabric-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --filefabric-url
       URL of the Enterprise File Fabric to connect to.
 
@@ -62,6 +57,11 @@ DESCRIPTION:
       
       Don't set this value - rclone will set it automatically.
       
+
+   --filefabric-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

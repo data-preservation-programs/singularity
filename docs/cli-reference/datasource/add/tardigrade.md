@@ -8,16 +8,6 @@ USAGE:
    singularity datasource add storj [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --storj-api-key
-      [Provider] - new
-         API key.
-
-   --storj-passphrase
-      [Provider] - new
-         Encryption passphrase.
-         
-         To access existing objects enter passphrase used for uploading.
-
    --storj-provider
       Choose an authentication method.
 
@@ -39,6 +29,16 @@ DESCRIPTION:
             | us1.storj.io | US1
             | eu1.storj.io | EU1
             | ap1.storj.io | AP1
+
+   --storj-api-key
+      [Provider] - new
+         API key.
+
+   --storj-passphrase
+      [Provider] - new
+         Encryption passphrase.
+         
+         To access existing objects enter passphrase used for uploading.
 
 
 OPTIONS:
