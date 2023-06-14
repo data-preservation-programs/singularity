@@ -13,62 +13,16 @@ DESCRIPTION:
       
       Leave blank for anonymous access or runtime credentials.
 
-   --qingstor-connection-retries
-      Number of connection retries.
+   --qingstor-endpoint
+      Enter an endpoint URL to connection QingStor API.
+      
+      Leave blank will use the default value "https://qingstor.com:443".
 
    --qingstor-upload-cutoff
       Cutoff for switching to chunked upload.
       
       Any files larger than this will be uploaded in chunks of chunk_size.
       The minimum is 0 and the maximum is 5 GiB.
-
-   --qingstor-chunk-size
-      Chunk size to use for uploading.
-      
-      When uploading files larger than upload_cutoff they will be uploaded
-      as multipart uploads using this chunk size.
-      
-      Note that "--qingstor-upload-concurrency" chunks of this size are buffered
-      in memory per transfer.
-      
-      If you are transferring large files over high-speed links and you have
-      enough memory, then increasing this will speed up the transfers.
-
-   --qingstor-access-key-id
-      QingStor Access Key ID.
-      
-      Leave blank for anonymous access or runtime credentials.
-
-   --qingstor-endpoint
-      Enter an endpoint URL to connection QingStor API.
-      
-      Leave blank will use the default value "https://qingstor.com:443".
-
-   --qingstor-zone
-      Zone to connect to.
-      
-      Default is "pek3a".
-
-      Examples:
-         | pek3a | The Beijing (China) Three Zone.
-                 | Needs location constraint pek3a.
-         | sh1a  | The Shanghai (China) First Zone.
-                 | Needs location constraint sh1a.
-         | gd2a  | The Guangdong (China) Second Zone.
-                 | Needs location constraint gd2a.
-
-   --qingstor-upload-concurrency
-      Concurrency for multipart uploads.
-      
-      This is the number of chunks of the same file that are uploaded
-      concurrently.
-      
-      NB if you set this to > 1 then the checksums of multipart uploads
-      become corrupted (the uploads themselves are not corrupted though).
-      
-      If you are uploading small numbers of large files over high-speed links
-      and these uploads do not fully utilize your bandwidth, then increasing
-      this may help to speed up the transfers.
 
    --qingstor-encoding
       The encoding for the backend.
@@ -83,6 +37,52 @@ DESCRIPTION:
       Examples:
          | false | Enter QingStor credentials in the next step.
          | true  | Get QingStor credentials from the environment (env vars or IAM).
+
+   --qingstor-access-key-id
+      QingStor Access Key ID.
+      
+      Leave blank for anonymous access or runtime credentials.
+
+   --qingstor-zone
+      Zone to connect to.
+      
+      Default is "pek3a".
+
+      Examples:
+         | pek3a | The Beijing (China) Three Zone.
+                 | Needs location constraint pek3a.
+         | sh1a  | The Shanghai (China) First Zone.
+                 | Needs location constraint sh1a.
+         | gd2a  | The Guangdong (China) Second Zone.
+                 | Needs location constraint gd2a.
+
+   --qingstor-connection-retries
+      Number of connection retries.
+
+   --qingstor-chunk-size
+      Chunk size to use for uploading.
+      
+      When uploading files larger than upload_cutoff they will be uploaded
+      as multipart uploads using this chunk size.
+      
+      Note that "--qingstor-upload-concurrency" chunks of this size are buffered
+      in memory per transfer.
+      
+      If you are transferring large files over high-speed links and you have
+      enough memory, then increasing this will speed up the transfers.
+
+   --qingstor-upload-concurrency
+      Concurrency for multipart uploads.
+      
+      This is the number of chunks of the same file that are uploaded
+      concurrently.
+      
+      NB if you set this to > 1 then the checksums of multipart uploads
+      become corrupted (the uploads themselves are not corrupted though).
+      
+      If you are uploading small numbers of large files over high-speed links
+      and these uploads do not fully utilize your bandwidth, then increasing
+      this may help to speed up the transfers.
 
 
 OPTIONS:

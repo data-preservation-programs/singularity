@@ -1,4 +1,4 @@
-# [alpha] List all pieces for the dataset that are available for deal making
+# List all pieces for the dataset that are available for deal making
 
 ```
 NAME:

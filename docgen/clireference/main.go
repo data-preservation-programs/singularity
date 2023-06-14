@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/data-preservation-programs/singularity/cmd"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
 	"os"
 	"os/exec"
 	"path"
@@ -15,11 +16,10 @@ var overrides = map[string]string{
 	"s3": "AWS S3 and compliant",
 }
 
+var summary strings.Builder
+
 func main() {
 	app := cmd.App
-	for _, command := range app.Commands {
-		saveMarkdown(command, path.Join("docs/cli-reference"), []string{command.Name})
-	}
 	var sb strings.Builder
 	sb.WriteString("# CLI Reference\n\n")
 	sb.WriteString("```\n")
@@ -29,11 +29,49 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	for _, command := range app.Commands {
+		saveMarkdown(command, path.Join("docs/cli-reference"), []string{command.Name})
+	}
+
+	currentSummary, err := os.ReadFile("docs/SUMMARY.md")
+	if err != nil {
+		panic(err)
+	}
+
+	lines := strings.Split(string(currentSummary), "\n")
+	cliReferenceLineIndex := slices.IndexFunc(lines, func(line string) bool {
+		return strings.Contains(line, "CLI Reference")
+	})
+	webReferenceLineIndex := slices.IndexFunc(lines, func(line string) bool {
+		return strings.Contains(line, "Web API Reference")
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	lines = append(lines[:cliReferenceLineIndex+1], append([]string{"", summary.String()}, lines[webReferenceLineIndex:]...)...)
+	err = os.WriteFile("docs/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func convertHyphenatedString(input string) string {
+	words := strings.Split(input, "-")
+
+	for i, word := range words {
+		// Convert the first character to uppercase and concatenate it with the rest of the word.
+		words[i] = strings.ToUpper(string(word[0])) + word[1:]
+	}
+
+	return strings.Join(words, " ")
 }
 
 func saveMarkdown(command *cli.Command, outDir string, args []string) {
 	var err error
 	var outFile string
+	var sb strings.Builder
+
 	if len(command.Subcommands) == 0 {
 		outFile = path.Join(outDir, command.Name+".md")
 	} else {
@@ -42,24 +80,29 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 		if err != nil {
 			panic(err)
 		}
-		for _, subcommand := range command.Subcommands {
-			saveMarkdown(subcommand, path.Join(outDir, command.Name), append(args, subcommand.Name))
-		}
 	}
 
-	var sb strings.Builder
-
-	name := command.Usage
+	name := convertHyphenatedString(command.Name)
 	if newName, ok := overrides[command.Name]; ok {
 		name = newName
 	}
-	sb.WriteString(fmt.Sprintf("# %s\n\n", name))
+
+	sb.WriteString(fmt.Sprintf("# %s\n\n", command.Usage))
 	sb.WriteString("```\n")
 	sb.WriteString(getStdout(args))
 	sb.WriteString("```\n")
 	err = os.WriteFile(outFile, []byte(sb.String()), 0644)
 	if err != nil {
 		panic(err)
+	}
+
+	var margin string
+	for i := 0; i < len(args); i++ {
+		margin += "  "
+	}
+	summary.WriteString(fmt.Sprintf("* %s[%s](%s)\n", margin, name, outFile[5:]))
+	for _, subcommand := range command.Subcommands {
+		saveMarkdown(subcommand, path.Join(outDir, command.Name), append(args, subcommand.Name))
 	}
 }
 

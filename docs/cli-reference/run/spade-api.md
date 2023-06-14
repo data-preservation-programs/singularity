@@ -1,4 +1,4 @@
-# [Alpha] Start a Spade compatible API for storage provider deal proposal self service
+# Start a Spade compatible API for storage provider deal proposal self service
 
 ```
 NAME:

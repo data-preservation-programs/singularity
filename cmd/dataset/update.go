@@ -35,12 +35,12 @@ var UpdateCmd = &cli.Command{
 		},
 		&cli.StringSliceFlag{
 			Name:     "encryption-recipient",
-			Usage:    "[Alpha] Public key of the encryption recipient",
+			Usage:    "Public key of the encryption recipient",
 			Category: "Encryption",
 		},
 		&cli.StringFlag{
 			Name:     "encryption-script",
-			Usage:    "[Alpha] EncryptionScript command to run for custom encryption",
+			Usage:    "EncryptionScript command to run for custom encryption",
 			Category: "Encryption",
 		},
 	},

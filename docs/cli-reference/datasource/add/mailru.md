@@ -8,8 +8,46 @@ USAGE:
    singularity datasource add mailru [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --mailru-quirks
+      Comma separated list of internal maintenance flags.
+      
+      This option must not be used by an ordinary user. It is intended only to
+      facilitate remote troubleshooting of backend issues. Strict meaning of
+      flags is not documented and not guaranteed to persist between releases.
+      Quirks will be removed when the backend grows stable.
+      Supported quirks: atomicmkdir binlist unknowndirs
+
    --mailru-user
       User name (usually email).
+
+   --mailru-speedup-file-patterns
+      Comma separated list of file name patterns eligible for speedup (put by hash).
+      
+      Patterns are case insensitive and can contain '*' or '?' meta characters.
+
+      Examples:
+         | <unset>                 | Empty list completely disables speedup (put by hash).
+         | *                       | All files will be attempted for speedup.
+         | *.mkv,*.avi,*.mp4,*.mp3 | Only common audio/video files will be tried for put by hash.
+         | *.zip,*.gz,*.rar,*.pdf  | Only common archives or PDF books will be tried for speedup.
+
+   --mailru-speedup-max-memory
+      Files larger than the size given below will always be hashed on disk.
+
+      Examples:
+         | 0    | Preliminary hashing will always be done in a temporary disk location.
+         | 32M  | Do not dedicate more than 32Mb RAM for preliminary hashing.
+         | 256M | You have at most 256Mb RAM free for hash calculations.
+
+   --mailru-user-agent
+      HTTP user agent used internally by client.
+      
+      Defaults to "rclone/VERSION" or "--user-agent" provided on command line.
+
+   --mailru-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --mailru-pass
       Password.
@@ -35,17 +73,6 @@ DESCRIPTION:
          | true  | Enable
          | false | Disable
 
-   --mailru-speedup-file-patterns
-      Comma separated list of file name patterns eligible for speedup (put by hash).
-      
-      Patterns are case insensitive and can contain '*' or '?' meta characters.
-
-      Examples:
-         | <unset>                 | Empty list completely disables speedup (put by hash).
-         | *                       | All files will be attempted for speedup.
-         | *.mkv,*.avi,*.mp4,*.mp3 | Only common audio/video files will be tried for put by hash.
-         | *.zip,*.gz,*.rar,*.pdf  | Only common archives or PDF books will be tried for speedup.
-
    --mailru-speedup-max-disk
       This option allows you to disable speedup (put by hash) for large files.
       
@@ -56,39 +83,12 @@ DESCRIPTION:
          | 1G | Files larger than 1Gb will be uploaded directly.
          | 3G | Choose this option if you have less than 3Gb free on local disk.
 
-   --mailru-speedup-max-memory
-      Files larger than the size given below will always be hashed on disk.
-
-      Examples:
-         | 0    | Preliminary hashing will always be done in a temporary disk location.
-         | 32M  | Do not dedicate more than 32Mb RAM for preliminary hashing.
-         | 256M | You have at most 256Mb RAM free for hash calculations.
-
    --mailru-check-hash
       What should copy do if file checksum is mismatched or invalid.
 
       Examples:
          | true  | Fail with error.
          | false | Ignore and continue.
-
-   --mailru-user-agent
-      HTTP user agent used internally by client.
-      
-      Defaults to "rclone/VERSION" or "--user-agent" provided on command line.
-
-   --mailru-quirks
-      Comma separated list of internal maintenance flags.
-      
-      This option must not be used by an ordinary user. It is intended only to
-      facilitate remote troubleshooting of backend issues. Strict meaning of
-      flags is not documented and not guaranteed to persist between releases.
-      Quirks will be removed when the backend grows stable.
-      Supported quirks: atomicmkdir binlist unknowndirs
-
-   --mailru-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

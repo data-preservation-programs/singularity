@@ -1,4 +1,4 @@
-# [Dangerous] Reset the database
+# Reset the database
 
 ```
 NAME:

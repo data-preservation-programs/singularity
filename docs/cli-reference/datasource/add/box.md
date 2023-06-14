@@ -8,8 +8,45 @@ USAGE:
    singularity datasource add box [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --box-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --box-access-token
+      Box App Primary Access Token
+      
+      Leave blank normally.
+
+   --box-root-folder-id
+      Fill in for rclone to use a non root folder as its starting point.
+
+   --box-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --box-token
+      OAuth Access Token as a JSON blob.
+
    --box-token-url
       Token server url.
+      
+      Leave blank to use the provider defaults.
+
+   --box-list-chunk
+      Size of listing chunk 1-1000.
+
+   --box-owned-by
+      Only show items owned by the login (email address) passed in.
+
+   --box-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --box-auth-url
+      Auth server URL.
       
       Leave blank to use the provider defaults.
 
@@ -20,32 +57,6 @@ DESCRIPTION:
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
-   --box-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --box-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --box-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --box-owned-by
-      Only show items owned by the login (email address) passed in.
-
-   --box-access-token
-      Box App Primary Access Token
-      
-      Leave blank normally.
-
-   --box-list-chunk
-      Size of listing chunk 1-1000.
-
    --box-box-sub-type
       
 
@@ -55,17 +66,6 @@ DESCRIPTION:
 
    --box-upload-cutoff
       Cutoff for switching to multipart upload (>= 50 MiB).
-
-   --box-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
-   --box-root-folder-id
-      Fill in for rclone to use a non root folder as its starting point.
-
-   --box-token
-      OAuth Access Token as a JSON blob.
 
    --box-commit-retries
       Max number of times to try committing a multipart file.

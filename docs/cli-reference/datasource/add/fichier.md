@@ -8,11 +8,6 @@ USAGE:
    singularity datasource add fichier [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --fichier-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --fichier-api-key
       Your API Key, get it from https://1fichier.com/console/params.pl.
 
@@ -24,6 +19,11 @@ DESCRIPTION:
 
    --fichier-folder-password
       If you want to list the files in a shared folder that is password protected, add this parameter.
+
+   --fichier-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

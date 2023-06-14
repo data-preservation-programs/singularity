@@ -1,4 +1,4 @@
-# [alpha] Remove an associated wallet from the dataset
+# Remove an associated wallet from the dataset
 
 ```
 NAME:

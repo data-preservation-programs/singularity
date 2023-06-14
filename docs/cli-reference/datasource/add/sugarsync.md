@@ -8,8 +8,18 @@ USAGE:
    singularity datasource add sugarsync [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --sugarsync-refresh-token
+      Sugarsync refresh token.
+      
+      Leave blank normally, will be auto configured by rclone.
+
    --sugarsync-authorization
       Sugarsync authorization.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-authorization-expiry
+      Sugarsync authorization expiry.
       
       Leave blank normally, will be auto configured by rclone.
 
@@ -28,13 +38,8 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
-   --sugarsync-app-id
-      Sugarsync App ID.
-      
-      Leave blank to use rclone's.
-
-   --sugarsync-private-access-key
-      Sugarsync Private Access Key.
+   --sugarsync-access-key-id
+      Sugarsync Access Key ID.
       
       Leave blank to use rclone's.
 
@@ -47,20 +52,15 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
-   --sugarsync-access-key-id
-      Sugarsync Access Key ID.
+   --sugarsync-app-id
+      Sugarsync App ID.
       
       Leave blank to use rclone's.
 
-   --sugarsync-refresh-token
-      Sugarsync refresh token.
+   --sugarsync-private-access-key
+      Sugarsync Private Access Key.
       
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-authorization-expiry
-      Sugarsync authorization expiry.
-      
-      Leave blank normally, will be auto configured by rclone.
+      Leave blank to use rclone's.
 
 
 OPTIONS:

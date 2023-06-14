@@ -1,4 +1,4 @@
-# [alpha] List all associated wallets with the dataset
+# List all associated wallets with the dataset
 
 ```
 NAME:

@@ -1,4 +1,4 @@
-# [alpha] Migrate data from old singularity mongodb
+# Migrate data from old singularity mongodb
 
 ```
 NAME:

@@ -9,7 +9,7 @@ import (
 
 var AddPieceCmd = &cli.Command{
 	Name:      "add-piece",
-	Usage:     "[alpha] Manually register a piece (CAR file) with the dataset for deal making purpose",
+	Usage:     "Manually register a piece (CAR file) with the dataset for deal making purpose",
 	ArgsUsage: "<dataset_name> <piece_cid> <piece_size>",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
