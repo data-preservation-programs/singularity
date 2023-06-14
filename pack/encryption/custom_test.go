@@ -14,7 +14,7 @@ func TestCustomEncryptor_Encrypt(t *testing.T) {
 	encryptor := NewCustomEncryptor(cmd)
 
 	// Call Encrypt with an empty reader
-	rc, err := encryptor.Encrypt(strings.NewReader(""), true)
+	rc, err := encryptor.Encrypt(strings.NewReader(""))
 
 	// Assert that the call to Encrypt does not return an error
 	assert.NoError(t, err)
@@ -36,7 +36,7 @@ func TestCustomEncryptor_FailedCommand(t *testing.T) {
 	encryptor := NewCustomEncryptor(cmd)
 
 	// Call Encrypt with an empty reader
-	rc, err := encryptor.Encrypt(strings.NewReader(""), true)
+	rc, err := encryptor.Encrypt(strings.NewReader(""))
 
 	assert.NoError(t, err)
 	_, err = io.ReadFull(rc, make([]byte, 10))

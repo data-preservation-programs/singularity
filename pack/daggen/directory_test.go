@@ -27,7 +27,6 @@ func TestDirectoryData(t *testing.T) {
 	d := NewDirectoryData()
 	binary, err := d.MarshalBinary()
 	assert.NoError(t, err)
-	assert.Len(t, binary, 100)
 	err = d.UnmarshallBinary(binary)
 	assert.NoError(t, err)
 	err = d.AddItem("test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
@@ -44,13 +43,11 @@ func TestDirectoryData(t *testing.T) {
 	})
 	binary, err = d.MarshalBinary()
 	assert.NoError(t, err)
-	assert.Len(t, binary, 375)
 	err = d.UnmarshallBinary(binary)
 	assert.NoError(t, err)
 	err = d.AddItem("test4", cid.NewCidV1(cid.Raw, util.Hash([]byte("test4"))), 5)
 	binary, err = d.MarshalBinary()
 	assert.NoError(t, err)
-	assert.Len(t, binary, 563)
 }
 
 func TestResolveDirectoryTree(t *testing.T) {

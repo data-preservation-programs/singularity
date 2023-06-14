@@ -50,6 +50,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 			EnableScan:     true,
 			EnablePack:     true,
 			EnableDag:      true,
+			ExitOnError:    true,
 		},
 	}
 	dataset := model.Dataset{
@@ -59,12 +60,8 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	}
 	err = db.Create(&dataset).Error
 	assert.NoError(t, err)
-	root := model.Directory{}
-	err = db.Create(&root).Error
-	assert.NoError(t, err)
 	source := model.Source{
 		DatasetID:         dataset.ID,
-		RootDirectoryID:   root.ID,
 		ScanningState:     model.Complete,
 		Type:              "local",
 		Path:              temp,
@@ -73,7 +70,11 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	err = db.Create(&source).Error
 	assert.NoError(t, err)
 	source.Dataset = &dataset
-	source.RootDirectory = &root
+	root := model.Directory{
+		SourceID: source.ID,
+	}
+	err = db.Create(&root).Error
+	assert.NoError(t, err)
 	stat1, _ := os.Stat(temp + "/test.txt")
 	stat2, _ := os.Stat(temp + "/test2.txt")
 	item2 := &model.Item{
@@ -174,6 +175,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 			EnableScan:     true,
 			EnablePack:     true,
 			EnableDag:      true,
+			ExitOnError:    true,
 		},
 	}
 	dataset := model.Dataset{
@@ -182,21 +184,21 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 	}
 	err := db.Create(&dataset).Error
 	assert.NoError(t, err)
-	root := model.Directory{}
-	err = db.Create(&root).Error
-	assert.NoError(t, err)
 	cmd, _ := os.Getwd()
 	source := model.Source{
-		DatasetID:       dataset.ID,
-		RootDirectoryID: root.ID,
-		ScanningState:   model.Ready,
-		Type:            "local",
-		Path:            cmd,
+		DatasetID:     dataset.ID,
+		ScanningState: model.Ready,
+		Type:          "local",
+		Path:          cmd,
 	}
 	err = db.Create(&source).Error
 	assert.NoError(t, err)
 	source.Dataset = &dataset
-	source.RootDirectory = &root
+	root := model.Directory{
+		SourceID: source.ID,
+	}
+	err = db.Create(&root).Error
+	assert.NoError(t, err)
 	err = thread.scan(ctx, source, true)
 	assert.NoError(t, err)
 	var dirs []model.Directory
@@ -226,6 +228,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			EnableScan:     true,
 			EnablePack:     true,
 			EnableDag:      true,
+			ExitOnError:    true,
 		},
 	}
 	worker := model.Worker{
@@ -238,15 +241,16 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	err = db.Create(&dataset).Error
 	assert.NoError(t, err)
-	root := model.Directory{}
-	err = db.Create(&root).Error
-	assert.NoError(t, err)
 	source := model.Source{
-		DatasetID:       dataset.ID,
-		RootDirectoryID: root.ID,
-		ScanningState:   model.Complete,
+		DatasetID:     dataset.ID,
+		ScanningState: model.Complete,
 	}
 	err = db.Create(&source).Error
+	assert.NoError(t, err)
+	root := model.Directory{
+		SourceID: source.ID,
+	}
+	err = db.Create(&root).Error
 	assert.NoError(t, err)
 	items := []model.Item{
 		{
@@ -326,6 +330,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 			EnableScan:     true,
 			EnablePack:     true,
 			EnableDag:      true,
+			ExitOnError:    true,
 		},
 	}
 	worker := model.Worker{
@@ -337,9 +342,6 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		Name: "test",
 	}
 	err = db.Create(&dataset).Error
-	assert.NoError(t, err)
-	root := model.Directory{}
-	err = db.Create(&root).Error
 	assert.NoError(t, err)
 	sources := map[*model.Source]bool{
 		// data source that is ready to be scanned
@@ -383,8 +385,12 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		err := db.Where("1 = 1").Delete(&model.Source{}).Error
 		assert.NoError(t, err)
 		source.DatasetID = dataset.ID
-		source.RootDirectoryID = root.ID
 		err = db.Create(source).Error
+		assert.NoError(t, err)
+		root := model.Directory{
+			SourceID: source.ID,
+		}
+		err = db.Create(&root).Error
 		assert.NoError(t, err)
 		src, err := thread.findScanWork()
 		assert.NoError(t, err)

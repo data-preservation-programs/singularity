@@ -130,14 +130,6 @@ type Wallet struct {
 	RemotePeer string `json:"remotePeer,omitempty"`           // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
-func (w Wallet) GetExportedKey() (string, error) {
-	decrypted, err := DecryptFromBase64String(w.PrivateKey)
-	if err != nil {
-		return "", err
-	}
-	return string(decrypted), nil
-}
-
 type WalletAssignment struct {
 	ID        uint32 `gorm:"primaryKey"`
 	WalletID  string
