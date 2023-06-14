@@ -8,24 +8,6 @@ USAGE:
    singularity datasource add koofr [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --koofr-user
-      Your user name.
-
-   --koofr-password
-      [Provider] - koofr
-         Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).
-
-      [Provider] - digistorage
-         Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password).
-
-      [Provider] - other
-         Your password for rclone (generate one at your service's settings page).
-
-   --koofr-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --koofr-provider
       Choose your storage provider.
 
@@ -47,6 +29,24 @@ DESCRIPTION:
       Does the backend support setting modification time.
       
       Set this to false if you use a mount ID that points to a Dropbox or Amazon Drive backend.
+
+   --koofr-user
+      Your user name.
+
+   --koofr-password
+      [Provider] - koofr
+         Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).
+
+      [Provider] - digistorage
+         Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password).
+
+      [Provider] - other
+         Your password for rclone (generate one at your service's settings page).
+
+   --koofr-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

@@ -8,6 +8,77 @@ USAGE:
    singularity datasource add local [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --local-copy-links
+      Follow symlinks and copy the pointed to item.
+
+   --local-one-file-system
+      Don't cross filesystem boundaries (unix/macOS only).
+
+   --local-case-insensitive
+      Force the filesystem to report itself as case insensitive.
+      
+      Normally the local backend declares itself as case insensitive on
+      Windows/macOS and case sensitive for everything else.  Use this flag
+      to override the default choice.
+
+   --local-no-sparse
+      Disable sparse files for multi-thread downloads.
+      
+      On Windows platforms rclone will make sparse files when doing
+      multi-thread downloads. This avoids long pauses on large files where
+      the OS zeros the file. However sparse files may be undesirable as they
+      cause disk fragmentation and can be slow to work with.
+
+   --local-nounc
+      Disable UNC (long path names) conversion on Windows.
+
+      Examples:
+         | true | Disables long file names.
+
+   --local-zero-size-links
+      Assume the Stat size of links is zero (and read them instead) (deprecated).
+      
+      Rclone used to use the Stat size of links as the link size, but this fails in quite a few places:
+      
+      - Windows
+      - On some virtual filesystems (such ash LucidLink)
+      - Android
+      
+      So rclone now always reads the link.
+      
+
+   --local-unicode-normalization
+      Apply unicode NFC normalization to paths and filenames.
+      
+      This flag can be used to normalize file names into unicode NFC form
+      that are read from the local filesystem.
+      
+      Rclone does not normally touch the encoding of file names it reads from
+      the file system.
+      
+      This can be useful when using macOS as it normally provides decomposed (NFD)
+      unicode which in some language (eg Korean) doesn't display properly on
+      some OSes.
+      
+      Note that rclone compares filenames with unicode normalization in the sync
+      routine so this flag shouldn't normally be used.
+
+   --local-case-sensitive
+      Force the filesystem to report itself as case sensitive.
+      
+      Normally the local backend declares itself as case insensitive on
+      Windows/macOS and case sensitive for everything else.  Use this flag
+      to override the default choice.
+
+   --local-links
+      Translate symlinks to/from regular files with a '.rclonelink' extension.
+
+   --local-skip-links
+      Don't warn about skipped symlinks.
+      
+      This flag disables warning messages on skipped symlinks or junction
+      points, as you explicitly acknowledge that they should be skipped.
+
    --local-no-check-updated
       Don't check to see if the files change during upload.
       
@@ -36,64 +107,6 @@ DESCRIPTION:
       
       
 
-   --local-nounc
-      Disable UNC (long path names) conversion on Windows.
-
-      Examples:
-         | true | Disables long file names.
-
-   --local-links
-      Translate symlinks to/from regular files with a '.rclonelink' extension.
-
-   --local-unicode-normalization
-      Apply unicode NFC normalization to paths and filenames.
-      
-      This flag can be used to normalize file names into unicode NFC form
-      that are read from the local filesystem.
-      
-      Rclone does not normally touch the encoding of file names it reads from
-      the file system.
-      
-      This can be useful when using macOS as it normally provides decomposed (NFD)
-      unicode which in some language (eg Korean) doesn't display properly on
-      some OSes.
-      
-      Note that rclone compares filenames with unicode normalization in the sync
-      routine so this flag shouldn't normally be used.
-
-   --local-one-file-system
-      Don't cross filesystem boundaries (unix/macOS only).
-
-   --local-no-sparse
-      Disable sparse files for multi-thread downloads.
-      
-      On Windows platforms rclone will make sparse files when doing
-      multi-thread downloads. This avoids long pauses on large files where
-      the OS zeros the file. However sparse files may be undesirable as they
-      cause disk fragmentation and can be slow to work with.
-
-   --local-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --local-copy-links
-      Follow symlinks and copy the pointed to item.
-
-   --local-case-sensitive
-      Force the filesystem to report itself as case sensitive.
-      
-      Normally the local backend declares itself as case insensitive on
-      Windows/macOS and case sensitive for everything else.  Use this flag
-      to override the default choice.
-
-   --local-case-insensitive
-      Force the filesystem to report itself as case insensitive.
-      
-      Normally the local backend declares itself as case insensitive on
-      Windows/macOS and case sensitive for everything else.  Use this flag
-      to override the default choice.
-
    --local-no-preallocate
       Disable preallocation of disk space for transferred files.
       
@@ -103,24 +116,6 @@ DESCRIPTION:
       preallocated space, causing checksum and file size checks to fail.
       Use this flag to disable preallocation.
 
-   --local-skip-links
-      Don't warn about skipped symlinks.
-      
-      This flag disables warning messages on skipped symlinks or junction
-      points, as you explicitly acknowledge that they should be skipped.
-
-   --local-zero-size-links
-      Assume the Stat size of links is zero (and read them instead) (deprecated).
-      
-      Rclone used to use the Stat size of links as the link size, but this fails in quite a few places:
-      
-      - Windows
-      - On some virtual filesystems (such ash LucidLink)
-      - Android
-      
-      So rclone now always reads the link.
-      
-
    --local-no-set-modtime
       Disable setting modtime.
       
@@ -129,6 +124,11 @@ DESCRIPTION:
       the user rclone is running as does not own the file uploaded, such as
       when copying to a CIFS mount owned by another user. If this option is 
       enabled, rclone will no longer update the modtime after copying a file.
+
+   --local-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

@@ -8,38 +8,6 @@ USAGE:
    singularity datasource add hidrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --hidrive-chunk-size
-      Chunksize for chunked uploads.
-      
-      Any files larger than the configured cutoff (or files of unknown size) will be uploaded in chunks of this size.
-      
-      The upper limit for this is 2147483647 bytes (about 2.000Gi).
-      That is the maximum amount of bytes a single upload-operation will support.
-      Setting this above the upper limit or to a negative value will cause uploads to fail.
-      
-      Setting this to larger values may increase the upload speed at the cost of using more memory.
-      It can be set to smaller values smaller to save on memory.
-
-   --hidrive-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
-   --hidrive-endpoint
-      Endpoint for the service.
-      
-      This is the URL that API-calls will be made to.
-
-   --hidrive-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
-   --hidrive-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --hidrive-root-prefix
       The root/parent folder for all paths.
       
@@ -58,14 +26,27 @@ DESCRIPTION:
       
       Requests may be faster if the number of objects in subdirectories is not fetched.
 
-   --hidrive-upload-cutoff
-      Cutoff/Threshold for chunked uploads.
+   --hidrive-client-secret
+      OAuth Client Secret.
       
-      Any files larger than this will be uploaded in chunks of the configured chunksize.
+      Leave blank normally.
+
+   --hidrive-scope-access
+      Access permissions that rclone should use when requesting access from HiDrive.
+
+      Examples:
+         | rw | Read and write access to resources.
+         | ro | Read-only access to resources.
+
+   --hidrive-endpoint
+      Endpoint for the service.
       
-      The upper limit for this is 2147483647 bytes (about 2.000Gi).
-      That is the maximum amount of bytes a single upload-operation will support.
-      Setting this above the upper limit will cause uploads to fail.
+      This is the URL that API-calls will be made to.
+
+   --hidrive-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --hidrive-upload-concurrency
       Concurrency for chunked uploads.
@@ -85,6 +66,37 @@ DESCRIPTION:
    --hidrive-token
       OAuth Access Token as a JSON blob.
 
+   --hidrive-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --hidrive-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
+   --hidrive-chunk-size
+      Chunksize for chunked uploads.
+      
+      Any files larger than the configured cutoff (or files of unknown size) will be uploaded in chunks of this size.
+      
+      The upper limit for this is 2147483647 bytes (about 2.000Gi).
+      That is the maximum amount of bytes a single upload-operation will support.
+      Setting this above the upper limit or to a negative value will cause uploads to fail.
+      
+      Setting this to larger values may increase the upload speed at the cost of using more memory.
+      It can be set to smaller values smaller to save on memory.
+
+   --hidrive-upload-cutoff
+      Cutoff/Threshold for chunked uploads.
+      
+      Any files larger than this will be uploaded in chunks of the configured chunksize.
+      
+      The upper limit for this is 2147483647 bytes (about 2.000Gi).
+      That is the maximum amount of bytes a single upload-operation will support.
+      Setting this above the upper limit will cause uploads to fail.
+
    --hidrive-scope-role
       User-level that rclone should use when requesting access from HiDrive.
 
@@ -93,18 +105,6 @@ DESCRIPTION:
                  | This will be sufficient in most cases.
          | admin | Extensive access to management permissions.
          | owner | Full access to management permissions.
-
-   --hidrive-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --hidrive-scope-access
-      Access permissions that rclone should use when requesting access from HiDrive.
-
-      Examples:
-         | rw | Read and write access to resources.
-         | ro | Read-only access to resources.
 
 
 OPTIONS:

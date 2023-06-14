@@ -20,6 +20,15 @@ func main() {
 	for _, command := range app.Commands {
 		saveMarkdown(command, path.Join("docs/cli-reference"), []string{command.Name})
 	}
+	var sb strings.Builder
+	sb.WriteString("# CLI Reference\n\n")
+	sb.WriteString("```\n")
+	sb.WriteString(getStdout([]string{}))
+	sb.WriteString("```\n")
+	err := os.WriteFile("docs/cli-reference/README.md", []byte(sb.String()), 0644)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func saveMarkdown(command *cli.Command, outDir string, args []string) {

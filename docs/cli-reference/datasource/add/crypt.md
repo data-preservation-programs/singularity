@@ -8,6 +8,18 @@ USAGE:
    singularity datasource add crypt [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --crypt-directory-name-encryption
+      Option to either encrypt directory names or leave them intact.
+      
+      NB If filename_encryption is "off" then this option will do nothing.
+
+      Examples:
+         | true  | Encrypt directory names.
+         | false | Don't encrypt directory names, leave them intact.
+
+   --crypt-password
+      Password or pass phrase for encryption.
+
    --crypt-password2
       Password or pass phrase for salt.
       
@@ -26,12 +38,16 @@ DESCRIPTION:
       parameter and use rclone move to move the files between the crypt
       remotes.
 
-   --crypt-no-data-encryption
-      Option to either encrypt file data or leave it unencrypted.
-
-      Examples:
-         | true  | Don't encrypt file data, leave it unencrypted.
-         | false | Encrypt file data.
+   --crypt-show-mapping
+      For all files listed show how the names encrypt.
+      
+      If this flag is set then for each file that the remote is asked to
+      list, it will log (at level INFO) a line stating the decrypted file
+      name and the encrypted file name.
+      
+      This is so you can work out which encrypted names are which decrypted
+      names just in case you need to do something with the encrypted file
+      names, or for debugging purposes.
 
    --crypt-filename-encoding
       How to encode the encrypted filename to text string.
@@ -62,28 +78,12 @@ DESCRIPTION:
          | off       | Don't encrypt the file names.
                      | Adds a ".bin" extension only.
 
-   --crypt-directory-name-encryption
-      Option to either encrypt directory names or leave them intact.
-      
-      NB If filename_encryption is "off" then this option will do nothing.
+   --crypt-no-data-encryption
+      Option to either encrypt file data or leave it unencrypted.
 
       Examples:
-         | true  | Encrypt directory names.
-         | false | Don't encrypt directory names, leave them intact.
-
-   --crypt-password
-      Password or pass phrase for encryption.
-
-   --crypt-show-mapping
-      For all files listed show how the names encrypt.
-      
-      If this flag is set then for each file that the remote is asked to
-      list, it will log (at level INFO) a line stating the decrypted file
-      name and the encrypted file name.
-      
-      This is so you can work out which encrypted names are which decrypted
-      names just in case you need to do something with the encrypted file
-      names, or for debugging purposes.
+         | true  | Don't encrypt file data, leave it unencrypted.
+         | false | Encrypt file data.
 
 
 OPTIONS:

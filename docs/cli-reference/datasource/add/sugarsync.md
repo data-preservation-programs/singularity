@@ -8,32 +8,8 @@ USAGE:
    singularity datasource add sugarsync [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sugarsync-deleted-id
-      Sugarsync deleted folder id.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-private-access-key
-      Sugarsync Private Access Key.
-      
-      Leave blank to use rclone's.
-
-   --sugarsync-refresh-token
-      Sugarsync refresh token.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-hard-delete
-      Permanently delete files if true
-      otherwise put them in the deleted files.
-
    --sugarsync-authorization
       Sugarsync authorization.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-authorization-expiry
-      Sugarsync authorization expiry.
       
       Leave blank normally, will be auto configured by rclone.
 
@@ -42,8 +18,8 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
-   --sugarsync-root-id
-      Sugarsync root id.
+   --sugarsync-deleted-id
+      Sugarsync deleted folder id.
       
       Leave blank normally, will be auto configured by rclone.
 
@@ -57,10 +33,34 @@ DESCRIPTION:
       
       Leave blank to use rclone's.
 
+   --sugarsync-private-access-key
+      Sugarsync Private Access Key.
+      
+      Leave blank to use rclone's.
+
+   --sugarsync-hard-delete
+      Permanently delete files if true
+      otherwise put them in the deleted files.
+
+   --sugarsync-root-id
+      Sugarsync root id.
+      
+      Leave blank normally, will be auto configured by rclone.
+
    --sugarsync-access-key-id
       Sugarsync Access Key ID.
       
       Leave blank to use rclone's.
+
+   --sugarsync-refresh-token
+      Sugarsync refresh token.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-authorization-expiry
+      Sugarsync authorization expiry.
+      
+      Leave blank normally, will be auto configured by rclone.
 
 
 OPTIONS:

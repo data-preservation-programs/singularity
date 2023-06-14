@@ -8,16 +8,6 @@ USAGE:
    singularity datasource add zoho [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --zoho-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --zoho-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
    --zoho-region
       Zoho region to connect to.
       
@@ -50,6 +40,16 @@ DESCRIPTION:
 
    --zoho-token
       OAuth Access Token as a JSON blob.
+
+   --zoho-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --zoho-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
 
 
 OPTIONS:

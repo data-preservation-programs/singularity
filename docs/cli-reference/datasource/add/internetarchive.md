@@ -8,6 +8,18 @@ USAGE:
    singularity datasource add internetarchive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --internetarchive-front-endpoint
+      Host of InternetArchive Frontend.
+      
+      Leave blank for default value.
+
+   --internetarchive-disable-checksum
+      Don't ask the server to test against MD5 checksum calculated by rclone.
+      Normally rclone will calculate the MD5 checksum of the input before
+      uploading it so it can ask the server to check the object against checksum.
+      This is great for data integrity checking but can cause long delays for
+      large files to start uploading.
+
    --internetarchive-wait-archive
       Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
       Only enable if you need to be guaranteed to be reflected after write operations.
@@ -33,18 +45,6 @@ DESCRIPTION:
       IAS3 Endpoint.
       
       Leave blank for default value.
-
-   --internetarchive-front-endpoint
-      Host of InternetArchive Frontend.
-      
-      Leave blank for default value.
-
-   --internetarchive-disable-checksum
-      Don't ask the server to test against MD5 checksum calculated by rclone.
-      Normally rclone will calculate the MD5 checksum of the input before
-      uploading it so it can ask the server to check the object against checksum.
-      This is great for data integrity checking but can cause long delays for
-      large files to start uploading.
 
 
 OPTIONS:

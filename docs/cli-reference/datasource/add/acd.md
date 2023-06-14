@@ -8,26 +8,10 @@ USAGE:
    singularity datasource add acd [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --acd-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
-   --acd-token
-      OAuth Access Token as a JSON blob.
-
    --acd-auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
-
-   --acd-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
-   --acd-checkpoint
-      Checkpoint for internal polling (debug).
 
    --acd-upload-wait-per-gb
       Additional time per GiB to wait after a failed complete upload to see if it appears.
@@ -52,6 +36,27 @@ DESCRIPTION:
       Upload with the "-v" flag to see more info about what rclone is doing
       in this situation.
 
+   --acd-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --acd-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --acd-token
+      OAuth Access Token as a JSON blob.
+
+   --acd-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
+   --acd-checkpoint
+      Checkpoint for internal polling (debug).
+
    --acd-templink-threshold
       Files >= this size will be downloaded via their tempLink.
       
@@ -64,15 +69,10 @@ DESCRIPTION:
       which downloads the file through a temporary URL directly from the
       underlying S3 storage.
 
-   --acd-client-id
-      OAuth Client Id.
+   --acd-client-secret
+      OAuth Client Secret.
       
       Leave blank normally.
-
-   --acd-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

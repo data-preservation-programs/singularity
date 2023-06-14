@@ -8,17 +8,25 @@ USAGE:
    singularity datasource add seafile [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --seafile-user
+      User name (usually email address).
+
+   --seafile-create-library
+      Should rclone create a library if it doesn't exist.
+
    --seafile-auth-token
       Authentication token.
+
+   --seafile-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --seafile-url
       URL of seafile host to connect to.
 
       Examples:
          | https://cloud.seafile.com/ | Connect to cloud.seafile.com.
-
-   --seafile-user
-      User name (usually email address).
 
    --seafile-pass
       Password.
@@ -35,14 +43,6 @@ DESCRIPTION:
       Library password (for encrypted libraries only).
       
       Leave blank if you pass it through the command line.
-
-   --seafile-create-library
-      Should rclone create a library if it doesn't exist.
-
-   --seafile-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:
