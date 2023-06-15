@@ -3,6 +3,7 @@
 ## ✨ Overview
 
 * [What is Singularity](README.md)
+* [V1 or V2](overview/v1-or-v2.md)
 * [Current Status](<README (1).md>)
 * [Related Projects](overview/related-projects.md)
 
@@ -22,16 +23,25 @@
 ## Content Distribution
 
 * [Distribute CAR files](content-distribution/distribute-car-files.md)
-* [File Retrieval](content-distribution/file-retrieval.md)
+* [File Retrieval (Staging)](content-distribution/file-retrieval-staging.md)
 
 ## Deal Making
 
-* [WIP](deal-making/wip.md)
+* [Deal Making Prerequisite](deal-making/deal-making-prerequisite.md)
+* [Create a deal schedule](deal-making/create-a-deal-schedule.md)
+* [SP Self Service](deal-making/sp-self-service.md)
+
+## Retrieval
+
+* [Overview](retrieval/overview.md)
 
 ## Topics
 
 * [Inline Preparation](topics/inline-preparation.md)
+* [Datasource rescan](topics/datasource-rescan.md)
+* [Push and Upload](topics/push-and-upload.md)
 * [Benchmark](topics/benchmark.md)
+* [File versioning](topics/file-versioning.md)
 
 ## 💻 CLI Reference
 
@@ -148,3 +158,4 @@
 ## ❓ FAQ
 
 * [Database is locked](faq/database-is-locked.md)
+* [File deletion](faq/file-deletion.md)

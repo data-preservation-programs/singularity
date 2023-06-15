@@ -8,3 +8,7 @@ wget 127.0.0.1:8088/piece/bagaxxxx
 ```
 
 If you have previously specified an output directory for exporting the CAR (which disables inline preparation), the CAR file will be served directly from those CAR files. Otherwise, if you have been using inline preparation or have accidentally deleted those CAR files, it will be served from the original data source directly
+
+## Next step
+
+[deal-making-prerequisite.md](../deal-making/deal-making-prerequisite.md "mention")
