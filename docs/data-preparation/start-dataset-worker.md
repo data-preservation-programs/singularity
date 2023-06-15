@@ -31,7 +31,7 @@ singularity datasource inspect items
 
 ## Next step
 
-ss
+[create-dag-for-the-data-source.md](create-dag-for-the-data-source.md "mention")
 
 ## Related Resources
 

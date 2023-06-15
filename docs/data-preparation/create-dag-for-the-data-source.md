@@ -23,6 +23,10 @@ singularity datasource inspect dags 1
 
 The CAR file for the DAG will be automatically included for deal making
 
+## Next step
+
+[distribute-car-files.md](../content-distribution/distribute-car-files.md "mention")
+
 ## Related resources
 
 [Trigger a DAG generation](../cli-reference/datasource/daggen.md)

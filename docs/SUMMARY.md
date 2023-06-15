@@ -2,7 +2,8 @@
 
 ## ✨ Overview
 
-* [Current Status](README.md)
+* [What is Singularity](README.md)
+* [Current Status](<README (1).md>)
 * [Related Projects](overview/related-projects.md)
 
 ## Installation
@@ -17,6 +18,15 @@
 * [Add a data source](data-preparation/add-a-data-source.md)
 * [Start dataset worker](data-preparation/start-dataset-worker.md)
 * [Create DAG for the data source](data-preparation/create-dag-for-the-data-source.md)
+
+## Content Distribution
+
+* [Distribute CAR files](content-distribution/distribute-car-files.md)
+* [File Retrieval](content-distribution/file-retrieval.md)
+
+## Deal Making
+
+* [WIP](deal-making/wip.md)
 
 ## Topics
 
@@ -138,4 +148,3 @@
 ## ❓ FAQ
 
 * [Database is locked](faq/database-is-locked.md)
-* [Page 1](faq/page-1.md)
