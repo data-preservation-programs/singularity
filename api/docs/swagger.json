@@ -2929,12 +2929,6 @@
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Chunk ID",
-                        "name": "chunk_id",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2945,6 +2939,43 @@
                             "items": {
                                 "$ref": "#/definitions/model.Item"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/rescan": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Rescan a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
                         }
                     },
                     "500": {
@@ -2981,7 +3012,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/status.ChunksByState"
+                            "$ref": "#/definitions/datasource.ChunksByState"
                         }
                     },
                     "500": {
@@ -3071,19 +3102,24 @@
                 }
             }
         },
-        "/wallet/:address": {
-            "delete": {
+        "/wallet/remote": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
                 "tags": [
                     "Wallet"
                 ],
-                "summary": "Remove a wallet",
+                "summary": "Add a remote wallet",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Address",
-                        "name": "address",
-                        "in": "path",
-                        "required": true
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.AddRemoteRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -3105,24 +3141,19 @@
                 }
             }
         },
-        "/wallet/remote": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
+        "/wallet/{address}": {
+            "delete": {
                 "tags": [
                     "Wallet"
                 ],
-                "summary": "Add a remote wallet",
+                "summary": "Remove a wallet",
                 "parameters": [
                     {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/wallet.AddRemoteRequest"
-                        }
+                        "type": "string",
+                        "description": "Address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3204,7 +3235,6 @@
             "type": "object",
             "required": [
                 "maxSize",
-                "minSize",
                 "name"
             ],
             "properties": {
@@ -3223,11 +3253,6 @@
                     "description": "Maximum size of the CAR files to be created",
                     "type": "string",
                     "default": "31.5GiB"
-                },
-                "minSize": {
-                    "description": "Minimum size of the CAR files to be created",
-                    "type": "string",
-                    "default": "30GiB"
                 },
                 "name": {
                     "description": "Name must be a unique identifier for a dataset",
@@ -3265,11 +3290,6 @@
                     "type": "string",
                     "default": "31.5GiB"
                 },
-                "minSize": {
-                    "description": "Minimum size of the CAR files to be created",
-                    "type": "string",
-                    "default": "30GiB"
-                },
                 "outputDirs": {
                     "description": "Output directory for CAR files. Do not set if using inline preparation",
                     "type": "array",
@@ -3300,6 +3320,10 @@
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -5735,6 +5759,10 @@
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "string",
@@ -5861,6 +5889,10 @@
                     "type": "string",
                     "default": "4Gi"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Disable checksums for large (\u003e upload cutoff) files.",
                     "type": "string",
@@ -5960,6 +5992,10 @@
                     "type": "string",
                     "default": "100"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6007,9 +6043,30 @@
                 }
             }
         },
+        "datasource.ChunksByState": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "number of chunks in this state",
+                    "type": "integer"
+                },
+                "state": {
+                    "description": "the state of the chunks",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                }
+            }
+        },
         "datasource.CryptRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "directoryNameEncryption": {
                     "description": "Option to either encrypt directory names or leave them intact.",
                     "type": "string",
@@ -6102,6 +6159,10 @@
                     "description": "Server side copy contents of shortcuts instead of the shortcut.",
                     "type": "string",
                     "default": "false"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableHttp2": {
                     "description": "Disable drive using http2.",
@@ -6308,6 +6369,10 @@
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6348,6 +6413,10 @@
                     "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6374,6 +6443,10 @@
         "datasource.FilefabricRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6426,6 +6499,10 @@
                     "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
                     "type": "string",
                     "default": "0"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableEpsv": {
                     "description": "Disable using EPSV even if server advertises support.",
@@ -6550,6 +6627,10 @@
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6622,6 +6703,10 @@
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6668,6 +6753,10 @@
                     "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6709,6 +6798,10 @@
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "disableFetchingMemberCount": {
@@ -6768,6 +6861,10 @@
         "datasource.HttpRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "headers": {
                     "description": "Set HTTP headers for all transactions.",
                     "type": "string"
@@ -6797,6 +6894,10 @@
             "properties": {
                 "accessKeyId": {
                     "description": "IAS3 Access Key.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "disableChecksum": {
@@ -6837,6 +6938,10 @@
         "datasource.JottacloudRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6876,6 +6981,10 @@
         "datasource.KoofrRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6929,6 +7038,10 @@
                     "description": "Follow symlinks and copy the pointed to item.",
                     "type": "string",
                     "default": "false"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6999,6 +7112,10 @@
                     "type": "string",
                     "default": "true"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7054,6 +7171,10 @@
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7086,6 +7207,10 @@
         "datasource.MemoryRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7097,6 +7222,10 @@
             "properties": {
                 "account": {
                     "description": "Set the NetStorage account name",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "host": {
@@ -7141,6 +7270,10 @@
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "disableSitePermission": {
@@ -7255,6 +7388,10 @@
                     "type": "string",
                     "default": "1m0s"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "string",
@@ -7341,6 +7478,10 @@
                     "type": "string",
                     "default": "10Mi"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7373,6 +7514,10 @@
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -7419,6 +7564,10 @@
                     "description": "API Key.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7433,6 +7582,10 @@
         "datasource.PutioRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7460,6 +7613,10 @@
                     "description": "Number of connection retries.",
                     "type": "string",
                     "default": "3"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7528,6 +7685,10 @@
                     "description": "If set this will decompress gzip encoded objects.",
                     "type": "string",
                     "default": "false"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
@@ -7750,6 +7911,10 @@
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7802,6 +7967,10 @@
                     "description": "The maximum number of outstanding requests for one file",
                     "type": "string",
                     "default": "64"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableConcurrentReads": {
                     "description": "If set don't use concurrent reads.",
@@ -7937,6 +8106,10 @@
                     "type": "string",
                     "default": "64Mi"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7973,6 +8146,10 @@
                     "type": "string",
                     "default": "http://127.0.0.1:9980"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7996,6 +8173,10 @@
                     "description": "Whether the server is configured to be case-insensitive.",
                     "type": "string",
                     "default": "true"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "domain": {
                     "description": "Domain name for NTLM authentication.",
@@ -8056,6 +8237,10 @@
                     "description": "API key.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "passphrase": {
                     "description": "Encryption passphrase.",
                     "type": "string"
@@ -8093,6 +8278,10 @@
                 },
                 "authorizationExpiry": {
                     "description": "Sugarsync authorization expiry.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "deletedId": {
@@ -8163,6 +8352,10 @@
                     "description": "Above this size files will be chunked into a _segments container.",
                     "type": "string",
                     "default": "5Gi"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "domain": {
                     "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
@@ -8251,6 +8444,10 @@
                     "description": "API key.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "passphrase": {
                     "description": "Encryption passphrase.",
                     "type": "string"
@@ -8278,6 +8475,10 @@
                     "description": "Your access token.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -8298,6 +8499,10 @@
                 },
                 "bearerTokenCommand": {
                     "description": "Command to run to get a bearer token.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -8345,6 +8550,10 @@
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -8382,6 +8591,10 @@
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -8504,6 +8717,9 @@
                 "isDir": {
                     "type": "boolean"
                 },
+                "lastModified": {
+                    "type": "string"
+                },
                 "path": {
                     "type": "string"
                 },
@@ -8519,6 +8735,9 @@
                     "type": "string"
                 }
             }
+        },
+        "model.CID": {
+            "type": "object"
         },
         "model.Car": {
             "type": "object",
@@ -8548,13 +8767,13 @@
                     "type": "integer"
                 },
                 "pieceCid": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.CID"
                 },
                 "pieceSize": {
                     "type": "integer"
                 },
                 "rootCid": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.CID"
                 },
                 "sourceId": {
                     "type": "integer"
@@ -8564,8 +8783,11 @@
         "model.Chunk": {
             "type": "object",
             "properties": {
-                "car": {
-                    "$ref": "#/definitions/model.Car"
+                "cars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Car"
+                    }
                 },
                 "createdAt": {
                     "type": "string"
@@ -8575,6 +8797,12 @@
                 },
                 "id": {
                     "type": "integer"
+                },
+                "itemParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ItemPart"
+                    }
                 },
                 "packingState": {
                     "$ref": "#/definitions/model.WorkState"
@@ -8606,9 +8834,6 @@
                     "type": "integer"
                 },
                 "maxSize": {
-                    "type": "integer"
-                },
-                "minSize": {
                     "type": "integer"
                 },
                 "name": {
@@ -8728,28 +8953,25 @@
         "model.Item": {
             "type": "object",
             "properties": {
-                "chunkId": {
-                    "type": "integer"
-                },
                 "cid": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.CID"
                 },
                 "directoryId": {
                     "type": "integer"
                 },
-                "errorMessage": {
+                "hash": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
+                "itemParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ItemPart"
+                    }
+                },
                 "lastModified": {
-                    "type": "string"
-                },
-                "length": {
-                    "type": "integer"
-                },
-                "offset": {
                     "type": "integer"
                 },
                 "path": {
@@ -8762,6 +8984,32 @@
                     "type": "integer"
                 },
                 "sourceId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ItemPart": {
+            "type": "object",
+            "properties": {
+                "chunkId": {
+                    "type": "integer"
+                },
+                "cid": {
+                    "$ref": "#/definitions/model.CID"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "item": {
+                    "$ref": "#/definitions/model.Item"
+                },
+                "itemId": {
+                    "type": "integer"
+                },
+                "length": {
+                    "type": "integer"
+                },
+                "offset": {
                     "type": "integer"
                 }
             }
@@ -8880,14 +9128,29 @@
                 "createdAt": {
                     "type": "string"
                 },
+                "dagGenErrorMessage": {
+                    "type": "string"
+                },
+                "dagGenState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "dagGenWorkerId": {
+                    "type": "string"
+                },
                 "datasetId": {
                     "type": "integer"
+                },
+                "deleteAfterExport": {
+                    "type": "boolean"
                 },
                 "errorMessage": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "lastScannedPath": {
+                    "type": "string"
                 },
                 "lastScannedTimestamp": {
                     "type": "integer"
@@ -8897,12 +9160,6 @@
                 },
                 "path": {
                     "type": "string"
-                },
-                "pushOnly": {
-                    "type": "boolean"
-                },
-                "rootDirectoryId": {
-                    "type": "integer"
                 },
                 "scanIntervalSeconds": {
                     "type": "integer"
@@ -8956,7 +9213,7 @@
         "model.WorkState": {
             "type": "string",
             "enum": [
-                "created",
+                "",
                 "ready",
                 "processing",
                 "complete",
@@ -9035,23 +9292,6 @@
                 },
                 "verified": {
                     "type": "boolean"
-                }
-            }
-        },
-        "status.ChunksByState": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "description": "number of chunks in this state",
-                    "type": "integer"
-                },
-                "state": {
-                    "description": "the state of the chunks",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
                 }
             }
         },

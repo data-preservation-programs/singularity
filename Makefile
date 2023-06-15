@@ -21,3 +21,6 @@ test:
 
 gendoc:
 	go run ./docgen/clireference/main.go
+
+genwebdoc:
+	go run ./docgen/webapireference/main.go

@@ -2936,12 +2936,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Chunk ID",
-                        "name": "chunk_id",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2952,6 +2946,43 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/model.Item"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/rescan": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Rescan a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
                         }
                     },
                     "500": {
@@ -2988,7 +3019,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/status.ChunksByState"
+                            "$ref": "#/definitions/datasource.ChunksByState"
                         }
                     },
                     "500": {
@@ -3078,19 +3109,24 @@ const docTemplate = `{
                 }
             }
         },
-        "/wallet/:address": {
-            "delete": {
+        "/wallet/remote": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
                 "tags": [
                     "Wallet"
                 ],
-                "summary": "Remove a wallet",
+                "summary": "Add a remote wallet",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Address",
-                        "name": "address",
-                        "in": "path",
-                        "required": true
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallet.AddRemoteRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -3112,24 +3148,19 @@ const docTemplate = `{
                 }
             }
         },
-        "/wallet/remote": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
+        "/wallet/{address}": {
+            "delete": {
                 "tags": [
                     "Wallet"
                 ],
-                "summary": "Add a remote wallet",
+                "summary": "Remove a wallet",
                 "parameters": [
                     {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/wallet.AddRemoteRequest"
-                        }
+                        "type": "string",
+                        "description": "Address",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3211,7 +3242,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "maxSize",
-                "minSize",
                 "name"
             ],
             "properties": {
@@ -3230,11 +3260,6 @@ const docTemplate = `{
                     "description": "Maximum size of the CAR files to be created",
                     "type": "string",
                     "default": "31.5GiB"
-                },
-                "minSize": {
-                    "description": "Minimum size of the CAR files to be created",
-                    "type": "string",
-                    "default": "30GiB"
                 },
                 "name": {
                     "description": "Name must be a unique identifier for a dataset",
@@ -3272,11 +3297,6 @@ const docTemplate = `{
                     "type": "string",
                     "default": "31.5GiB"
                 },
-                "minSize": {
-                    "description": "Minimum size of the CAR files to be created",
-                    "type": "string",
-                    "default": "30GiB"
-                },
                 "outputDirs": {
                     "description": "Output directory for CAR files. Do not set if using inline preparation",
                     "type": "array",
@@ -3307,6 +3327,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -5742,6 +5766,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "string",
@@ -5868,6 +5896,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "4Gi"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Disable checksums for large (\u003e upload cutoff) files.",
                     "type": "string",
@@ -5967,6 +5999,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "100"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6014,9 +6050,30 @@ const docTemplate = `{
                 }
             }
         },
+        "datasource.ChunksByState": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "number of chunks in this state",
+                    "type": "integer"
+                },
+                "state": {
+                    "description": "the state of the chunks",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                }
+            }
+        },
         "datasource.CryptRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "directoryNameEncryption": {
                     "description": "Option to either encrypt directory names or leave them intact.",
                     "type": "string",
@@ -6109,6 +6166,10 @@ const docTemplate = `{
                     "description": "Server side copy contents of shortcuts instead of the shortcut.",
                     "type": "string",
                     "default": "false"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableHttp2": {
                     "description": "Disable drive using http2.",
@@ -6315,6 +6376,10 @@ const docTemplate = `{
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6355,6 +6420,10 @@ const docTemplate = `{
                     "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6381,6 +6450,10 @@ const docTemplate = `{
         "datasource.FilefabricRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6433,6 +6506,10 @@ const docTemplate = `{
                     "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
                     "type": "string",
                     "default": "0"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableEpsv": {
                     "description": "Disable using EPSV even if server advertises support.",
@@ -6557,6 +6634,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6629,6 +6710,10 @@ const docTemplate = `{
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6675,6 +6760,10 @@ const docTemplate = `{
                     "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6716,6 +6805,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "disableFetchingMemberCount": {
@@ -6775,6 +6868,10 @@ const docTemplate = `{
         "datasource.HttpRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "headers": {
                     "description": "Set HTTP headers for all transactions.",
                     "type": "string"
@@ -6804,6 +6901,10 @@ const docTemplate = `{
             "properties": {
                 "accessKeyId": {
                     "description": "IAS3 Access Key.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "disableChecksum": {
@@ -6844,6 +6945,10 @@ const docTemplate = `{
         "datasource.JottacloudRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6883,6 +6988,10 @@ const docTemplate = `{
         "datasource.KoofrRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -6936,6 +7045,10 @@ const docTemplate = `{
                     "description": "Follow symlinks and copy the pointed to item.",
                     "type": "string",
                     "default": "false"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7006,6 +7119,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "true"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7061,6 +7178,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7093,6 +7214,10 @@ const docTemplate = `{
         "datasource.MemoryRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7104,6 +7229,10 @@ const docTemplate = `{
             "properties": {
                 "account": {
                     "description": "Set the NetStorage account name",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "host": {
@@ -7148,6 +7277,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "disableSitePermission": {
@@ -7262,6 +7395,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "1m0s"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
                     "type": "string",
@@ -7348,6 +7485,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "10Mi"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7380,6 +7521,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -7426,6 +7571,10 @@ const docTemplate = `{
                     "description": "API Key.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7440,6 +7589,10 @@ const docTemplate = `{
         "datasource.PutioRequest": {
             "type": "object",
             "properties": {
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7467,6 +7620,10 @@ const docTemplate = `{
                     "description": "Number of connection retries.",
                     "type": "string",
                     "default": "3"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7535,6 +7692,10 @@ const docTemplate = `{
                     "description": "If set this will decompress gzip encoded objects.",
                     "type": "string",
                     "default": "false"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
@@ -7757,6 +7918,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7809,6 +7974,10 @@ const docTemplate = `{
                     "description": "The maximum number of outstanding requests for one file",
                     "type": "string",
                     "default": "64"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "disableConcurrentReads": {
                     "description": "If set don't use concurrent reads.",
@@ -7944,6 +8113,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "64Mi"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -7980,6 +8153,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "http://127.0.0.1:9980"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -8003,6 +8180,10 @@ const docTemplate = `{
                     "description": "Whether the server is configured to be case-insensitive.",
                     "type": "string",
                     "default": "true"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "domain": {
                     "description": "Domain name for NTLM authentication.",
@@ -8063,6 +8244,10 @@ const docTemplate = `{
                     "description": "API key.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "passphrase": {
                     "description": "Encryption passphrase.",
                     "type": "string"
@@ -8100,6 +8285,10 @@ const docTemplate = `{
                 },
                 "authorizationExpiry": {
                     "description": "Sugarsync authorization expiry.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "deletedId": {
@@ -8170,6 +8359,10 @@ const docTemplate = `{
                     "description": "Above this size files will be chunked into a _segments container.",
                     "type": "string",
                     "default": "5Gi"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
                 },
                 "domain": {
                     "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
@@ -8258,6 +8451,10 @@ const docTemplate = `{
                     "description": "API key.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "passphrase": {
                     "description": "Encryption passphrase.",
                     "type": "string"
@@ -8285,6 +8482,10 @@ const docTemplate = `{
                     "description": "Your access token.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -8305,6 +8506,10 @@ const docTemplate = `{
                 },
                 "bearerTokenCommand": {
                     "description": "Command to run to get a bearer token.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -8352,6 +8557,10 @@ const docTemplate = `{
                     "description": "OAuth Client Secret.",
                     "type": "string"
                 },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "string"
+                },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
@@ -8389,6 +8598,10 @@ const docTemplate = `{
                 },
                 "clientSecret": {
                     "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
                     "type": "string"
                 },
                 "encoding": {
@@ -8511,6 +8724,9 @@ const docTemplate = `{
                 "isDir": {
                     "type": "boolean"
                 },
+                "lastModified": {
+                    "type": "string"
+                },
                 "path": {
                     "type": "string"
                 },
@@ -8526,6 +8742,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.CID": {
+            "type": "object"
         },
         "model.Car": {
             "type": "object",
@@ -8555,13 +8774,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "pieceCid": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.CID"
                 },
                 "pieceSize": {
                     "type": "integer"
                 },
                 "rootCid": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.CID"
                 },
                 "sourceId": {
                     "type": "integer"
@@ -8571,8 +8790,11 @@ const docTemplate = `{
         "model.Chunk": {
             "type": "object",
             "properties": {
-                "car": {
-                    "$ref": "#/definitions/model.Car"
+                "cars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Car"
+                    }
                 },
                 "createdAt": {
                     "type": "string"
@@ -8582,6 +8804,12 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "itemParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ItemPart"
+                    }
                 },
                 "packingState": {
                     "$ref": "#/definitions/model.WorkState"
@@ -8613,9 +8841,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "maxSize": {
-                    "type": "integer"
-                },
-                "minSize": {
                     "type": "integer"
                 },
                 "name": {
@@ -8735,28 +8960,25 @@ const docTemplate = `{
         "model.Item": {
             "type": "object",
             "properties": {
-                "chunkId": {
-                    "type": "integer"
-                },
                 "cid": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.CID"
                 },
                 "directoryId": {
                     "type": "integer"
                 },
-                "errorMessage": {
+                "hash": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
+                "itemParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ItemPart"
+                    }
+                },
                 "lastModified": {
-                    "type": "string"
-                },
-                "length": {
-                    "type": "integer"
-                },
-                "offset": {
                     "type": "integer"
                 },
                 "path": {
@@ -8769,6 +8991,32 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "sourceId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.ItemPart": {
+            "type": "object",
+            "properties": {
+                "chunkId": {
+                    "type": "integer"
+                },
+                "cid": {
+                    "$ref": "#/definitions/model.CID"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "item": {
+                    "$ref": "#/definitions/model.Item"
+                },
+                "itemId": {
+                    "type": "integer"
+                },
+                "length": {
+                    "type": "integer"
+                },
+                "offset": {
                     "type": "integer"
                 }
             }
@@ -8887,14 +9135,29 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "dagGenErrorMessage": {
+                    "type": "string"
+                },
+                "dagGenState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "dagGenWorkerId": {
+                    "type": "string"
+                },
                 "datasetId": {
                     "type": "integer"
+                },
+                "deleteAfterExport": {
+                    "type": "boolean"
                 },
                 "errorMessage": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "lastScannedPath": {
+                    "type": "string"
                 },
                 "lastScannedTimestamp": {
                     "type": "integer"
@@ -8904,12 +9167,6 @@ const docTemplate = `{
                 },
                 "path": {
                     "type": "string"
-                },
-                "pushOnly": {
-                    "type": "boolean"
-                },
-                "rootDirectoryId": {
-                    "type": "integer"
                 },
                 "scanIntervalSeconds": {
                     "type": "integer"
@@ -8963,7 +9220,7 @@ const docTemplate = `{
         "model.WorkState": {
             "type": "string",
             "enum": [
-                "created",
+                "",
                 "ready",
                 "processing",
                 "complete",
@@ -9042,23 +9299,6 @@ const docTemplate = `{
                 },
                 "verified": {
                     "type": "boolean"
-                }
-            }
-        },
-        "status.ChunksByState": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "description": "number of chunks in this state",
-                    "type": "integer"
-                },
-                "state": {
-                    "description": "the state of the chunks",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
                 }
             }
         },
