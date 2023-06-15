@@ -26,8 +26,4 @@ singularity datasource add s3 my_dataset fah-public-data-covid19-cryptic-pockets
 
 ## Related resources
 
-[local-file-system.md](../cli-reference/data-source/add-data-source/local-file-system.md "mention")
-
-[aws-other-s3.md](../cli-reference/data-source/add-data-source/aws-other-s3.md "mention")
-
-[add-data-source](../cli-reference/data-source/add-data-source/ "mention")
+[All data source types](../cli-reference/datasource/add/)
