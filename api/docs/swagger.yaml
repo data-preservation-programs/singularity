@@ -27,10 +27,6 @@ definitions:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
         type: string
-      minSize:
-        default: 30GiB
-        description: Minimum size of the CAR files to be created
-        type: string
       name:
         description: Name must be a unique identifier for a dataset
         type: string
@@ -45,7 +41,6 @@ definitions:
         type: string
     required:
     - maxSize
-    - minSize
     - name
     type: object
   dataset.UpdateRequest:
@@ -61,10 +56,6 @@ definitions:
       maxSize:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
-        type: string
-      minSize:
-        default: 30GiB
-        description: Minimum size of the CAR files to be created
         type: string
       outputDirs:
         description: Output directory for CAR files. Do not set if using inline preparation
@@ -89,6 +80,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       encoding:
         default: Slash,InvalidUtf8,Dot
@@ -2044,6 +2038,9 @@ definitions:
         default: "false"
         description: Send the certificate chain when using certificate auth.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       disableChecksum:
         default: "false"
         description: Don't store MD5 checksum with object metadata.
@@ -2145,6 +2142,9 @@ definitions:
         default: 4Gi
         description: Cutoff for switching to multipart copy.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       disableChecksum:
         default: "false"
         description: Disable checksums for large (> upload cutoff) files.
@@ -2222,6 +2222,9 @@ definitions:
         default: "100"
         description: Max number of times to try committing a multipart file.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2257,8 +2260,21 @@ definitions:
         description: Path relative to the data source root
         type: string
     type: object
+  datasource.ChunksByState:
+    properties:
+      count:
+        description: number of chunks in this state
+        type: integer
+      state:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: the state of the chunks
+    type: object
   datasource.CryptRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       directoryNameEncryption:
         default: "true"
         description: Option to either encrypt directory names or leave them intact.
@@ -2332,6 +2348,9 @@ definitions:
       copyShortcutContent:
         default: "false"
         description: Server side copy contents of shortcuts instead of the shortcut.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableHttp2:
         default: "true"
@@ -2496,6 +2515,9 @@ definitions:
       clientSecret:
         description: OAuth Client Secret.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2526,6 +2548,9 @@ definitions:
       apiKey:
         description: Your API Key, get it from https://1fichier.com/console/params.pl.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2547,6 +2572,9 @@ definitions:
     type: object
   datasource.FilefabricRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2586,6 +2614,9 @@ definitions:
       concurrency:
         default: "0"
         description: Maximum number of FTP simultaneous connections, 0 for unlimited.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableEpsv:
         default: "false"
@@ -2684,6 +2715,9 @@ definitions:
         default: "false"
         description: If set this will decompress gzip encoded objects.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,CrLf,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2740,6 +2774,9 @@ definitions:
       clientSecret:
         description: OAuth Client Secret.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,CrLf,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2776,6 +2813,9 @@ definitions:
       dataTransferProtection:
         description: 'Kerberos data transfer protection: authentication|integrity|privacy.'
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,Colon,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2807,6 +2847,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableFetchingMemberCount:
         default: "false"
@@ -2855,6 +2898,9 @@ definitions:
     type: object
   datasource.HttpRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       headers:
         description: Set HTTP headers for all transactions.
         type: string
@@ -2877,6 +2923,9 @@ definitions:
     properties:
       accessKeyId:
         description: IAS3 Access Key.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableChecksum:
         default: "true"
@@ -2909,6 +2958,9 @@ definitions:
     type: object
   datasource.JottacloudRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2941,6 +2993,9 @@ definitions:
     type: object
   datasource.KoofrRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2981,6 +3036,9 @@ definitions:
       copyLinks:
         default: "false"
         description: Follow symlinks and copy the pointed to item.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       encoding:
         default: Slash,Dot
@@ -3038,6 +3096,9 @@ definitions:
         default: "true"
         description: What should copy do if file checksum is mismatched or invalid.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3083,6 +3144,9 @@ definitions:
         default: "false"
         description: Output more debug from Mega.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3107,6 +3171,9 @@ definitions:
     type: object
   datasource.MemoryRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3115,6 +3182,9 @@ definitions:
     properties:
       account:
         description: Set the NetStorage account name
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       host:
         description: Domain+path of NetStorage host to connect to.
@@ -3150,6 +3220,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableSitePermission:
         default: "false"
@@ -3239,6 +3312,9 @@ definitions:
         default: 1m0s
         description: Timeout for copy.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       disableChecksum:
         default: "false"
         description: Don't store MD5 checksum with object metadata.
@@ -3312,6 +3388,9 @@ definitions:
         default: 10Mi
         description: Files will be uploaded in chunks this size.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3336,6 +3415,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
@@ -3370,6 +3452,9 @@ definitions:
       apiKey:
         description: API Key.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3380,6 +3465,9 @@ definitions:
     type: object
   datasource.PutioRequest:
     properties:
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3400,6 +3488,9 @@ definitions:
       connectionRetries:
         default: "3"
         description: Number of connection retries.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       encoding:
         default: Slash,Ctl,InvalidUtf8
@@ -3453,6 +3544,9 @@ definitions:
       decompress:
         default: "false"
         description: If set this will decompress gzip encoded objects.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableChecksum:
         default: "false"
@@ -3634,6 +3728,9 @@ definitions:
         default: "false"
         description: Should rclone create a library if it doesn't exist.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8
         description: The encoding for the backend.
@@ -3674,6 +3771,9 @@ definitions:
       concurrency:
         default: "64"
         description: The maximum number of outstanding requests for one file
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       disableConcurrentReads:
         default: "false"
@@ -3781,6 +3881,9 @@ definitions:
         default: 64Mi
         description: Upload chunk size.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3808,6 +3911,9 @@ definitions:
         default: http://127.0.0.1:9980
         description: Sia daemon API URL, like http://sia.daemon.host:9980.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3825,6 +3931,9 @@ definitions:
       caseInsensitive:
         default: "true"
         description: Whether the server is configured to be case-insensitive.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       domain:
         default: WORKGROUP
@@ -3872,6 +3981,9 @@ definitions:
       apiKey:
         description: API key.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       passphrase:
         description: Encryption passphrase.
         type: string
@@ -3900,6 +4012,9 @@ definitions:
         type: string
       authorizationExpiry:
         description: Sugarsync authorization expiry.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       deletedId:
         description: Sugarsync deleted folder id.
@@ -3953,6 +4068,9 @@ definitions:
       chunkSize:
         default: 5Gi
         description: Above this size files will be chunked into a _segments container.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       domain:
         description: User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
@@ -4024,6 +4142,9 @@ definitions:
       apiKey:
         description: API key.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       passphrase:
         description: Encryption passphrase.
         type: string
@@ -4044,6 +4165,9 @@ definitions:
       accessToken:
         description: Your access token.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -4059,6 +4183,9 @@ definitions:
         type: string
       bearerTokenCommand:
         description: Command to run to get a bearer token.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       encoding:
         description: The encoding for the backend.
@@ -4093,6 +4220,9 @@ definitions:
       clientSecret:
         description: OAuth Client Secret.
         type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: string
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -4121,6 +4251,9 @@ definitions:
         type: string
       clientSecret:
         description: OAuth Client Secret.
+        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
         type: string
       encoding:
         default: Del,Ctl,InvalidUtf8
@@ -4203,6 +4336,8 @@ definitions:
     properties:
       isDir:
         type: boolean
+      lastModified:
+        type: string
       path:
         type: string
       size:
@@ -4212,6 +4347,8 @@ definitions:
     properties:
       err:
         type: string
+    type: object
+  model.CID:
     type: object
   model.Car:
     properties:
@@ -4232,24 +4369,30 @@ definitions:
       id:
         type: integer
       pieceCid:
-        type: string
+        $ref: '#/definitions/model.CID'
       pieceSize:
         type: integer
       rootCid:
-        type: string
+        $ref: '#/definitions/model.CID'
       sourceId:
         type: integer
     type: object
   model.Chunk:
     properties:
-      car:
-        $ref: '#/definitions/model.Car'
+      cars:
+        items:
+          $ref: '#/definitions/model.Car'
+        type: array
       createdAt:
         type: string
       errorMessage:
         type: string
       id:
         type: integer
+      itemParts:
+        items:
+          $ref: '#/definitions/model.ItemPart'
+        type: array
       packingState:
         $ref: '#/definitions/model.WorkState'
       packingWorkerId:
@@ -4270,8 +4413,6 @@ definitions:
       id:
         type: integer
       maxSize:
-        type: integer
-      minSize:
         type: integer
       name:
         type: string
@@ -4355,21 +4496,19 @@ definitions:
     - DealErrored
   model.Item:
     properties:
-      chunkId:
-        type: integer
       cid:
-        type: string
+        $ref: '#/definitions/model.CID'
       directoryId:
         type: integer
-      errorMessage:
+      hash:
         type: string
       id:
         type: integer
+      itemParts:
+        items:
+          $ref: '#/definitions/model.ItemPart'
+        type: array
       lastModified:
-        type: string
-      length:
-        type: integer
-      offset:
         type: integer
       path:
         type: string
@@ -4378,6 +4517,23 @@ definitions:
       size:
         type: integer
       sourceId:
+        type: integer
+    type: object
+  model.ItemPart:
+    properties:
+      chunkId:
+        type: integer
+      cid:
+        $ref: '#/definitions/model.CID'
+      id:
+        type: integer
+      item:
+        $ref: '#/definitions/model.Item'
+      itemId:
+        type: integer
+      length:
+        type: integer
+      offset:
         type: integer
     type: object
   model.Metadata:
@@ -4457,22 +4613,28 @@ definitions:
     properties:
       createdAt:
         type: string
+      dagGenErrorMessage:
+        type: string
+      dagGenState:
+        $ref: '#/definitions/model.WorkState'
+      dagGenWorkerId:
+        type: string
       datasetId:
         type: integer
+      deleteAfterExport:
+        type: boolean
       errorMessage:
         type: string
       id:
         type: integer
+      lastScannedPath:
+        type: string
       lastScannedTimestamp:
         type: integer
       metadata:
         $ref: '#/definitions/model.Metadata'
       path:
         type: string
-      pushOnly:
-        type: boolean
-      rootDirectoryId:
-        type: integer
       scanIntervalSeconds:
         type: integer
       scanningState:
@@ -4510,7 +4672,7 @@ definitions:
     type: object
   model.WorkState:
     enum:
-    - created
+    - ""
     - ready
     - processing
     - complete
@@ -4566,16 +4728,6 @@ definitions:
         type: string
       verified:
         type: boolean
-    type: object
-  status.ChunksByState:
-    properties:
-      count:
-        description: number of chunks in this state
-        type: integer
-      state:
-        allOf:
-        - $ref: '#/definitions/model.WorkState'
-        description: the state of the chunks
     type: object
   store.PieceReader:
     properties:
@@ -6535,10 +6687,6 @@ paths:
         name: id
         required: true
         type: string
-      - description: Chunk ID
-        in: query
-        name: chunk_id
-        type: string
       produces:
       - application/json
       responses:
@@ -6553,6 +6701,30 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: Get all item details of a data source
+      tags:
+      - Data Source
+  /source/{id}/rescan:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Rescan a data source
       tags:
       - Data Source
   /source/{id}/summary:
@@ -6571,7 +6743,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/status.ChunksByState'
+            $ref: '#/definitions/datasource.ChunksByState'
         "500":
           description: Internal Server Error
           schema:
@@ -6629,7 +6801,7 @@ paths:
       summary: Import a private key
       tags:
       - Wallet
-  /wallet/:address:
+  /wallet/{address}:
     delete:
       parameters:
       - description: Address
