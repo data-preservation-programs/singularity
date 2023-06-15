@@ -1,49 +1,59 @@
----
-description: >-
-  This project is currently in active development. Below are the current feature
-  list and their status.
----
+# What is Singularity
 
-# Current Status
+Singularity is a end to end tool to accelerate dataset onboarding to Filecoin storage providers. It contains all you need to efficiently onboard PiB scale of data.
 
-This project is currently in active development. Below are the current feature list and their status.
+Singularity is modular and includes a few different to work with other data preparation or deal making tools and service.
 
-| Badge | Description |
-|---|---|
-| ![Stable](https://img.shields.io/badge/-Stable-brightgreen) | Feature is stable and ready for production use |
-| ![Beta](https://img.shields.io/badge/-Beta-blue) | Feature is in beta and may still contain bugs |
-| ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Feature is in alpha and should not be used in production |
-| ![WIP](https://img.shields.io/badge/-WIP-yellow) | Feature is currently being worked on and is not usable |
-| ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Feature is planned but not yet implemented |
+Users of Singularity has onboarded over 140 PiB of data to Filecoin storage providers and is current the top data preparation tool used by Filecoin clients.
 
-| Category | Feature            | Status                                                      | Description                                                                                                                  |
-| --- |--------------------|-------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| Data Source | File System        | ![Beta](https://img.shields.io/badge/-Beta-blue)        | Support for preparing data on local file system                                                                              |
-| Data Source | Al other Remote    | ![Beta](https://img.shields.io/badge/-Beta-blue)        | Support for preparing data from all other remote system backed by rclone                                                     |
-| Data Prep | Create Dataset     | ![Beta](https://img.shields.io/badge/-Beta-blue)            | CLI tool for creating dataset                                                                                                |
-| Data Prep | Add Data Source    | ![Beta](https://img.shields.io/badge/-Beta-blue)            | CLI tool for adding data sources to existing dataset                                                                         |
-| Data Prep | Inline Preparation | ![Beta](https://img.shields.io/badge/-Beta-blue)       | Support for inline preparation. No need to export CAR files                                                                  |
-| Data Prep | Upload API         | ![Alpha](https://img.shields.io/badge/-Alpha-orange)            | Support for manually upload files via API                                                                                    |
-| Data Prep | Push API           | ![Alpha](https://img.shields.io/badge/-Alpha-orange)            | Support for manually queue a new item with an item path via API                                                              |
-| Data Prep | Dag regen          | ![Beta](https://img.shields.io/badge/-Beta-blue) | Regenerate the unixfs dag to update the root CID of the whole dataset                                                        |
-| Data Prep | Basic Encryption   | ![Beta](https://img.shields.io/badge/-Beta-blue) | Support for basic encryption with asynmmtric keys                                                                            |
-| Data Prep | Custom Encryption  | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for custom encryption with user providing encryption tools                                                           |
-| Content Provider | HTTP piece         | ![Alpha](https://img.shields.io/badge/-Alpha-orange)            | Support for HTTP piece download (CAR file download)                                                                          |
-| Content Provider | IPFS gateway       | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for IPFS Gatway compliant retrieval                                                                                  |
-| Content Provider | Bitswap            | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for Bitswap retrieval (IPFS interop)                                                                                 |
-| Content Provider | Graphsync          | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for Graphsync retrieval                                                                                              |
-| Content Provider | Metadata API       | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Allow CAR file distribution from the original data owner                                                                     |
-| Content Provider | Donwload Client    | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support downloading CAR file from the original data owner with the help of Metadata API                                      |
-| Deal Making | Deal Tracking      | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Track deal status                                                                                                            |
-| Deal Making | Deal Scheduler     | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Feature parity with [js-singularity](https://github.com/tech-greedy/singularity/tree/main#deal-replication) deal replication |
-| Deal Making | Spade API          | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for compatible Spade API for storage provider to self proposal deals                                                 |
-| Deal Making | Wallet Management  | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for wallet management                                                                                                |
-| Deal Making | Remote Signer      | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for remote signer                                                                                                    |
-| Utilities | Benchmark          | ![Beta](https://img.shields.io/badge/-Beta-blue)  | Support for benchmarking data preparation                                                                                    |
-| Utilities | Metrics Collection | ![Planned](https://img.shields.io/badge/-Planned-lightgrey)  | Support for collecting metrics                                                                                               |
-| Utilities | Monitoring         | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for monitoring data preparation and deal making                                                                      |
-| Dashboard | Dataset Explorer   | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for exploring dataset, folder by folder                                                                              |
-| Dashboard | Dataset Download   | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for downloading dataset directly on the browser                                                                      |
-| Dashboard | Deal Explorer      | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for exploring deal proposals                                                                                         |
-| Dashboard | Piece Explorer     | ![Alpha](https://img.shields.io/badge/-Alpha-orange) | Support for exploring by piece CIDs and check distribution                                                                   |
-| Dashboard | Provider View      | ![Planned](https://img.shields.io/badge/-Planned-lightgrey) | Support for checking how fast providers are consuming the deals                                                              |
+## Data Preparation
+
+Singularity ships with a data preparation module which prepares the data either on local file system or remote storage service. Preparation tasks are distributed across data preparation workers achieving horizontal scalability.
+
+### Integration with 40+ storage types
+
+Singularity is the first tool that allows connection to 40+ different types of remote storage services, from consumer products such as Dropbox, Google Drive to enterprise cloud storage solutions such as AWS S3, Azure blob storage, FTP, HDFS, etc. This allows seamless integration with any existing storage solution the users have today.
+
+### Inline Preparation
+
+Singularity is the first tool that supports inline preparation which eliminates need for extra disk spaces to store CAR files. Instead, Singularity maintains a metadata database that maps the CAR files to the original data source so storage providers may import the content from original data source directly.
+
+### Maintain Dataset hierarchy
+
+Singularity maintains the folder structures and file versions of a dataset so that the users can explore the dataset folder by folder and retrieve files using paths.
+
+### Encryption
+
+Singularity supports a built-in encryption solution which encrypts the files with provided recipients (public keys), or even a hardware PIV tokens such as YubiKeys. You may also supply a custom encryption script which allows you to integrate with any external encryption solution \[Need testing].
+
+## Content Distribution
+
+Singularity itself can be used as a lightweight storage provider without involving any storage provider operations, i.e. sealing and proving. Users can download CAR files or original files from Singualrity service using multiple protocols (Graphsync, HTTP and Bitswap)
+
+### CAR distribution
+
+Storage providers can download CAR files from Singularity server as Singularity streams the CAR file from original data source on the fly with minimal overhead if inline preparation is used. This download process can also be part of Boost market deals and supports multi-threading.
+
+### Content Retrieval
+
+Singularity can serve Graphsync/HTTP/Bitswap retrieval for all files that have already been prepared so it can be used as a substitution of a storage provider without storage proofs.
+
+## Deal Making
+
+Singularity currently needs you to bring your own list of storage providers who are willing to accept your deals. There are two modes for deal making, a push mode where Singularity clients define how to send out deals - whether it's an one-off batch or a scheduled cron. And a pull mode where Storage providers can ask for deal proposals themselves as long as it satisfy the policies set by Singualrity clients
+
+### Push Mode
+
+Singularity clients can setup a schedule with storage providers to send out a set number of deals for each interval time. They can also configured the maximum deals or deal size for each schedule as well as how many in-flight deals are allowed. Singularity handles deal renewal when deal is slashed, expires or it disappears on chain for any reason.
+
+### Pull Mode
+
+Singularity allows storage providers to query for list of PieceCIDs that they can propose deals to themselves as long as those storage providers are allowlisted in the deal making self service policy. This way, storage providers have ultimate flexibility to control the deal flow within their sealing pipelines.
+
+### Wallet Management
+
+Singualrity allows clients to import Filecoin wallet using private keys and associate multiple wallets with dataset. It regularly checks datacap of each wallet to load balance between different wallets.
+
+Singualrity also supports remote signer so the client can keep their wallet private key to their own.
+
+###
