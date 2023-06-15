@@ -6,7 +6,7 @@ name: Go
 on:
   push:
     branches: [ "main" ]
-    tags: [ "v*.*.*" ]
+    #tags: [ "v*.*.*" ]
   pull_request:
     branches: [ "main" ]
 
@@ -35,6 +35,13 @@ jobs:
             echo "Code coverage is below 80%, failing..."
             exit 1
           fi
+
+      - name: Bump version and push tag
+        if: github.event_name != 'pull_request'
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
