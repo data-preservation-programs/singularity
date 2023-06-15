@@ -28,8 +28,8 @@ var PrepCmd = &cli.Command{
 		"For more advanced usage, please use the subcommands under `dataset` and `datasource`.\n" +
 		"You can also use this command for benchmarking with in-memory database and inline preparation, i.e.\n" +
 		"  mkdir dataset\n" +
-		"  truncate -s 1024G test.img\n" +
-		"  singularity ez-prep --output-dir '' --database-file '' -j $(nproc) ./dataset",
+		"  truncate -s 1024G dataset/1T.bin\n" +
+		"  singularity ez-prep --output-dir '' --database-file '' -j $(($(nproc) / 4 + 1)) ./dataset",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "max-size",
