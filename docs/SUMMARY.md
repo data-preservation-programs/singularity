@@ -16,6 +16,12 @@
 * [Create a dataset](data-preparation/create-a-dataset.md)
 * [Add a data source](data-preparation/add-a-data-source.md)
 * [Start dataset worker](data-preparation/start-dataset-worker.md)
+* [Create DAG for the data source](data-preparation/create-dag-for-the-data-source.md)
+
+## Topics
+
+* [Inline Preparation](topics/inline-preparation.md)
+* [Benchmark](topics/benchmark.md)
 
 ## 💻 CLI Reference
 
@@ -89,7 +95,7 @@
     * [Citrix Sharefile](cli-reference/datasource/add/sharefile.md)
     * [Sia Decentralized Cloud](cli-reference/datasource/add/sia.md)
     * [SMB / CIFS](cli-reference/datasource/add/smb.md)
-    * [Storj Decentralized Cloud Storage](cli-reference/datasource/add/storjgo install github.com/anjor/go-fil-dataprep/cmd/data-prep@latest.md)
+    * [\[Storj Decentralized Cloud Storage\](cli-reference/datasource/add/storjgo install github.com/anjor/go-fil-dataprep/cmd/data-prep@latest.md)](cli-reference/datasource/add/storj-decentralized-cloud-storage-cli-reference-datasource-add-storjgo-install-github.com-anjor-go-f.md)
     * [Sugarsync](cli-reference/datasource/add/sugarsync.md)
     * [OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)](cli-reference/datasource/add/swift.md)
     * [Uptobox](cli-reference/datasource/add/uptobox.md)
@@ -132,3 +138,4 @@
 ## ❓ FAQ
 
 * [Database is locked](faq/database-is-locked.md)
+* [Page 1](faq/page-1.md)
