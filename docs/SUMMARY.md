@@ -37,6 +37,7 @@
 
 ## Topics
 
+* [Encryption](topics/encryption.md)
 * [Inline Preparation](topics/inline-preparation.md)
 * [Datasource rescan](topics/datasource-rescan.md)
 * [Push and Upload](topics/push-and-upload.md)
