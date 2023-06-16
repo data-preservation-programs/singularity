@@ -1,6 +1,10 @@
 # Create a deal schedule
 
-Time to make some deals with storage providers
+Time to make some deals with storage providers. Start with running the deal making service
+
+```
+singularity run dealmaker
+```
 
 ## Send all deals at once
 
