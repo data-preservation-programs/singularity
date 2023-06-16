@@ -42,7 +42,6 @@
 * [Datasource rescan](topics/datasource-rescan.md)
 * [Push and Upload](topics/push-and-upload.md)
 * [Benchmark](topics/benchmark.md)
-* [File versioning](topics/file-versioning.md)
 
 ## 💻 CLI Reference
 
