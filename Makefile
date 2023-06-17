@@ -24,3 +24,6 @@ gendoc:
 
 genwebdoc:
 	go run ./docgen/webapireference/main.go
+
+translate:
+	go run ./docgen/translate/main.go

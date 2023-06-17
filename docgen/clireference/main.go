@@ -29,15 +29,15 @@ func main() {
 	sb.WriteString(getStdout([]string{}))
 	sb.WriteString("```\n")
 	sb.WriteString("{% endcode %}\n")
-	err := os.WriteFile("docs/cli-reference/README.md", []byte(sb.String()), 0644)
+	err := os.WriteFile("docs/en/cli-reference/README.md", []byte(sb.String()), 0644)
 	if err != nil {
 		panic(err)
 	}
 	for _, command := range app.Commands {
-		saveMarkdown(command, path.Join("docs/cli-reference"), []string{command.Name})
+		saveMarkdown(command, path.Join("docs/en/cli-reference"), []string{command.Name})
 	}
 
-	currentSummary, err := os.ReadFile("docs/SUMMARY.md")
+	currentSummary, err := os.ReadFile("docs/en/SUMMARY.md")
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +54,7 @@ func main() {
 	}
 
 	lines = append(lines[:cliReferenceLineIndex+1], append([]string{"", summary.String()}, lines[webReferenceLineIndex:]...)...)
-	err = os.WriteFile("docs/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
 	if err != nil {
 		panic(err)
 	}

@@ -285,6 +285,7 @@ require (
 	github.com/rfjakob/eme v1.1.2 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/sashabaranov/go-openai v1.11.2 // indirect
 	github.com/shoenig/go-m1cpu v0.1.4 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect

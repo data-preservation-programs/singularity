@@ -20,7 +20,7 @@ type Operation struct {
 }
 
 func main() {
-	content, err := os.ReadFile("./api/docs/swagger.json")
+	content, err := os.ReadFile("./api/docs/en/swagger.json")
 	if err != nil {
 		panic(err)
 	}
@@ -41,21 +41,21 @@ func main() {
 				contentMap[tag] = &strings.Builder{}
 				contentMap[tag].WriteString("# " + tag + "\n\n")
 			}
-			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
-			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)\n")
+			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/en/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
+			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/en/swagger.yaml)\n")
 			contentMap[tag].WriteString("{% endswagger %}\n\n")
 		}
 	}
 
 	for tag, builder := range contentMap {
-		err := os.WriteFile("./docs/web-api-reference/" + convertStringToHyphenated(tag) + ".md", []byte(builder.String()), 0644)
+		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644)
 		if err != nil {
 			panic(err)
 		}
 		summaries = append(summaries, fmt.Sprintf("* [%s](web-api-reference/%s.md)", tag, convertStringToHyphenated(tag)))
 	}
 
-	currentSummary, err := os.ReadFile("docs/SUMMARY.md")
+	currentSummary, err := os.ReadFile("docs/en/SUMMARY.md")
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +71,7 @@ func main() {
 	slices.Sort(summaries)
 	summaries = append(summaries, "* [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)", "")
 	lines = append(lines[:webReferenceLineIndex+1], append([]string{"", strings.Join(summaries, "\n")}, lines[faqIndex:]...)...)
-	err = os.WriteFile("docs/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
 	if err != nil {
 		panic(err)
 	}
