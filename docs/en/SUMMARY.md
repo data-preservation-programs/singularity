@@ -1,6 +1,6 @@
 # Table of contents
 
-## ✨ Overview
+## Overview
 
 * [What is Singularity](README.md)
 * [V1 or V2](overview/v1-or-v2.md)

@@ -19,3 +19,4 @@
 /.idea
 /Makefile
 /testremote
+/.env
