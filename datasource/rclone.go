@@ -216,6 +216,7 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 			} else if option.Provider != "" {
 				providers = strings.Split(option.Provider, ",")
 			}
+			sort.Strings(providers)
 			if option.Provider != "" {
 				usageLines = append(usageLines, "   [Provider] - "+strings.Join(providers, ", "))
 			}
