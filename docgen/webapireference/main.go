@@ -41,7 +41,13 @@ func main() {
 	slices.Sort(pathsSorted)
 	for _, pathName := range pathsSorted {
 		pathObj := spec.Paths[pathName]
-		for method, operation := range pathObj {
+		var methodsSorted []string
+		for method := range pathObj {
+			methodsSorted = append(methodsSorted, method)
+		}
+		slices.Sort(methodsSorted)
+		for _, method := range methodsSorted {
+			operation := pathObj[method]
 			tag := operation.Tags[0]
 			if contentMap[tag] == nil {
 				contentMap[tag] = &strings.Builder{}
