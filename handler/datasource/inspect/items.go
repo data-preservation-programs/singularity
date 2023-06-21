@@ -36,6 +36,9 @@ func GetSourceItemsHandler(
 
 	var items []model.Item
 	err = db.Where("source_id = ?", sourceID).Find(&items).Error
+	if err != nil {
+		return nil, handler.NewHandlerError(err)
+	}
 
 	return items, nil
 }

@@ -134,7 +134,7 @@ func (s Server) UploadFile(c echo.Context) error {
 	s.db.WithContext(c.Request().Context()).Create(&model.Item{
 		ScannedAt: now,
 		SourceID:  source.ID,
-		//TODO Type:         model.File,
+		// TODO Type:         model.File,
 		Path:                      dstPath,
 		Size:                      written,
 		LastModifiedTimestampNano: lastModified.UnixNano(),
@@ -202,7 +202,7 @@ func (s Server) getSource(ctx context.Context, datasetName string) (model.Source
 }
 
 type ItemInfo struct {
-	//TODO Type     model.ItemType `json:"type"`
+	// TODO Type     model.ItemType `json:"type"`
 	Path     string `json:"path"`
 	SourceID uint32 `json:"sourceId"`
 }
@@ -310,19 +310,19 @@ func Run(c *cli.Context) error {
 	}.Run(c)
 }
 
-func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
+func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		handlerFuncValue := reflect.ValueOf(handlerFunc)
 		handlerFuncType := handlerFuncValue.Type()
 
 		// Check the number of input parameters
-		if handlerFuncType.NumIn() == 0 || handlerFuncType.In(0) != reflect.TypeOf(d.db) {
+		if handlerFuncType.NumIn() == 0 || handlerFuncType.In(0) != reflect.TypeOf(s.db) {
 			logger.Error("Invalid handler function signature.")
 			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 		}
 
 		// Prepare input parameters
-		inputParams := []reflect.Value{reflect.ValueOf(d.db.WithContext(c.Request().Context()))}
+		inputParams := []reflect.Value{reflect.ValueOf(s.db.WithContext(c.Request().Context()))}
 
 		// Get path parameters
 		for i := 1; i < handlerFuncType.NumIn(); i++ {
@@ -359,14 +359,14 @@ func (d Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 		if len(results) == 1 {
 			// Handle the returned error
 			if err, ok := results[0].Interface().(*handler.Error); ok && err != nil {
-				return err.HttpResponse(c)
+				return err.HTTPResponse(c)
 			}
 			return c.NoContent(http.StatusNoContent)
 		}
 
 		// Handle the returned error
 		if err, ok := results[1].Interface().(*handler.Error); ok && err != nil {
-			return err.HttpResponse(c)
+			return err.HTTPResponse(c)
 		}
 
 		// Handle the returned data
@@ -389,10 +389,10 @@ func lowerCamelToSnake(s string) string {
 	return string(result)
 }
 
-func (d Server) HandlePostSource(c echo.Context) error {
+func (s Server) HandlePostSource(c echo.Context) error {
 	t := c.Param("type")
 	datasetName := c.Param("datasetName")
-	dataset, err := database.FindDatasetByName(d.db.WithContext(c.Request().Context()), datasetName)
+	dataset, err := database.FindDatasetByName(s.db.WithContext(c.Request().Context()), datasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return echo.NewHTTPError(http.StatusNotFound, "Dataset not found.")
 	}
@@ -411,7 +411,7 @@ func (d Server) HandlePostSource(c echo.Context) error {
 	}
 	path := body["sourcePath"]
 	if path == "" {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: sourcePath is required"))
+		return c.String(http.StatusBadRequest, "Error: sourcePath is required")
 	}
 	if r.Prefix == "local" {
 		path, err = filepath.Abs(path)
@@ -458,13 +458,13 @@ func (d Server) HandlePostSource(c echo.Context) error {
 	dir := model.Directory{
 		Name: path,
 	}
-	err = d.db.WithContext(c.Request().Context()).Create(&dir).Error
+	err = s.db.WithContext(c.Request().Context()).Create(&dir).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create directory")
 	}
 
 	// TODO source.RootDirectoryID = dir.ID
-	err = d.db.WithContext(c.Request().Context()).Create(&source).Error
+	err = s.db.WithContext(c.Request().Context()).Create(&source).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create source")
 	}
@@ -472,72 +472,72 @@ func (d Server) HandlePostSource(c echo.Context) error {
 	return c.JSON(http.StatusOK, source)
 }
 
-func (d Server) setupRoutes(e *echo.Echo) {
+func (s Server) setupRoutes(e *echo.Echo) {
 	// Admin
-	e.POST("/api/admin/reset", d.toEchoHandler(admin.ResetHandler))
-	e.POST("/api/admin/init", d.toEchoHandler(admin.InitHandler))
+	e.POST("/api/admin/reset", s.toEchoHandler(admin.ResetHandler))
+	e.POST("/api/admin/init", s.toEchoHandler(admin.InitHandler))
 
 	// Dataset
-	e.POST("/api/dataset", d.toEchoHandler(dataset.CreateHandler))
-	e.PATCH("/api/dataset/:datasetName", d.toEchoHandler(dataset.UpdateHandler))
-	e.DELETE("/api/dataset/:datasetName", d.toEchoHandler(dataset.RemoveHandler))
-	e.POST("/api/dataset/:datasetName/piece", d.toEchoHandler(dataset.AddPieceHandler))
-	e.GET("/api/datasets", d.toEchoHandler(dataset.ListHandler))
-	e.GET("/api/dataset/:datasetName/pieces", d.toEchoHandler(dataset.ListPiecesHandler))
+	e.POST("/api/dataset", s.toEchoHandler(dataset.CreateHandler))
+	e.PATCH("/api/dataset/:datasetName", s.toEchoHandler(dataset.UpdateHandler))
+	e.DELETE("/api/dataset/:datasetName", s.toEchoHandler(dataset.RemoveHandler))
+	e.POST("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.AddPieceHandler))
+	e.GET("/api/datasets", s.toEchoHandler(dataset.ListHandler))
+	e.GET("/api/dataset/:datasetName/pieces", s.toEchoHandler(dataset.ListPiecesHandler))
 
 	// Wallet
-	e.POST("/api/wallet", d.toEchoHandler(wallet.ImportHandler))
-	e.GET("/api/wallets", d.toEchoHandler(wallet.ListHandler))
-	e.POST("/api/wallet/remote", d.toEchoHandler(wallet.AddRemoteHandler))
-	e.DELETE("/api/wallet/:address", d.toEchoHandler(wallet.RemoveHandler))
+	e.POST("/api/wallet", s.toEchoHandler(wallet.ImportHandler))
+	e.GET("/api/wallets", s.toEchoHandler(wallet.ListHandler))
+	e.POST("/api/wallet/remote", s.toEchoHandler(wallet.AddRemoteHandler))
+	e.DELETE("/api/wallet/:address", s.toEchoHandler(wallet.RemoveHandler))
 
 	// Data source
-	e.POST("/api/dataset/:datasetName/source/:type", d.HandlePostSource)
+	e.POST("/api/dataset/:datasetName/source/:type", s.HandlePostSource)
 	e.GET("/api/sources", func(c echo.Context) error {
 		datasetName := c.QueryParam("dataset")
-		sources, err := datasource2.ListSourceHandler(d.db.WithContext(c.Request().Context()), datasetName)
+		sources, err := datasource2.ListSourceHandler(s.db.WithContext(c.Request().Context()), datasetName)
 		if err != nil {
-			return err.HttpResponse(c)
+			return err.HTTPResponse(c)
 		}
 		return c.JSON(http.StatusOK, sources)
 	})
-	e.PATCH("/api/source/:id", d.toEchoHandler(datasource2.UpdateSourceHandler))
-	e.POST("/api/source/:id/rescan", d.toEchoHandler(datasource2.RescanSourceHandler))
+	e.PATCH("/api/source/:id", s.toEchoHandler(datasource2.UpdateSourceHandler))
+	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
 	// Data source status
-	e.DELETE("/api/source/:id", d.toEchoHandler(datasource2.RemoveSourceHandler))
-	e.POST("/api/source/:id/check", d.toEchoHandler(datasource2.CheckSourceHandler))
-	e.GET("/api/source/:id/summary", d.toEchoHandler(datasource2.GetSourceSummaryHandler))
-	e.GET("/api/source/:id/chunks", d.toEchoHandler(inspect.GetSourceChunksHandler))
-	e.GET("/api/source/:id/items", d.toEchoHandler(inspect.GetSourceItemsHandler))
+	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
+	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))
+	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
+	e.GET("/api/source/:id/chunks", s.toEchoHandler(inspect.GetSourceChunksHandler))
+	e.GET("/api/source/:id/items", s.toEchoHandler(inspect.GetSourceItemsHandler))
 
-	e.POST("/api/deal/send_manual", d.toEchoHandler(deal.SendManualHandler))
+	e.POST("/api/deal/send_manual", s.toEchoHandler(deal.SendManualHandler))
 
-	e.POST("/api/deal/schedule", d.toEchoHandler(schedule.CreateHandler))
+	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
 
-	e.GET("/api/deal/schedules", d.toEchoHandler(schedule.ListHandler))
+	e.GET("/api/deal/schedules", s.toEchoHandler(schedule.ListHandler))
 
-	e.POST("/api/deal/schedule/:id/pause", d.toEchoHandler(schedule.PauseHandler))
+	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
 
-	e.POST("/api/deal/schedule/:id/resume", d.toEchoHandler(schedule.ResumeHandler))
+	e.POST("/api/deal/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))
 
-	e.POST("/api/dataset/:name/wallet/:wallet", d.toEchoHandler(wallet.AddWalletHandler))
+	e.POST("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
 
-	e.GET("/api/dataset/:name/wallets", d.toEchoHandler(wallet.ListWalletHandler))
+	e.GET("/api/dataset/:name/wallets", s.toEchoHandler(wallet.ListWalletHandler))
 
-	e.DELETE("/api/dataset/:name/wallet/:wallet", d.toEchoHandler(wallet.RemoveWalletHandler))
+	e.DELETE("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
 
-	e.POST("/api/deal/list", d.toEchoHandler(deal.ListHandler))
+	e.POST("/api/deal/list", s.toEchoHandler(deal.ListHandler))
 
-	e.GET("/api/piece/metadata/:piece", d.GetMetadataHandler)
+	e.GET("/api/piece/metadata/:piece", s.GetMetadataHandler)
 
-	e.POST("/api/dataset/upload", d.UploadFile)
+	e.POST("/api/dataset/upload", s.UploadFile)
 
-	e.POST("/api/dataset/push", d.PushItem)
+	e.POST("/api/dataset/push", s.PushItem)
 }
 
 var logger = logging.Logger("api")
 
-func (d Server) Run(c *cli.Context) error {
+func (s Server) Run(c *cli.Context) error {
 	e := echo.New()
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -546,7 +546,7 @@ func (d Server) Run(c *cli.Context) error {
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			uri := v.URI
 			status := v.Status
-			latency := time.Now().Sub(v.StartTime)
+			latency := time.Since(v.StartTime)
 			err := v.Error
 			method := c.Request().Method
 			if err != nil {
@@ -563,29 +563,29 @@ func (d Server) Run(c *cli.Context) error {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	d.setupRoutes(e)
+	s.setupRoutes(e)
 	efs, err := fs.Sub(embed.DashboardStaticFiles, "build")
 	if err != nil {
 		return err
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.GET("/api/datasets", d.GetDatasets)
-	e.GET("/api/dataset/:id/sources", d.GetSources)
-	e.GET("/api/source/:id/cars", d.GetCars)
-	e.GET("/api/car/:id/items", d.GetItems)
-	e.GET("/api/car/:id/deals", d.GetDealsForCar)
-	e.GET("/api/item/:id/deals", d.GetDealsForItem)
-	e.GET("/api/directory/:id/entries", d.GetDirectoryEntries)
-	e.GET("/api/dataset/:id/deal_stats", d.GetDealStats)
-	e.GET("/api/deal_stats", d.GetOverallDealStats)
+	e.GET("/api/datasets", s.GetDatasets)
+	e.GET("/api/dataset/:id/sources", s.GetSources)
+	e.GET("/api/source/:id/cars", s.GetCars)
+	e.GET("/api/car/:id/items", s.GetItems)
+	e.GET("/api/car/:id/deals", s.GetDealsForCar)
+	e.GET("/api/item/:id/deals", s.GetDealsForItem)
+	e.GET("/api/directory/:id/entries", s.GetDirectoryEntries)
+	e.GET("/api/dataset/:id/deal_stats", s.GetDealStats)
+	e.GET("/api/deal_stats", s.GetOverallDealStats)
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
-	return e.Start(d.bind)
+	return e.Start(s.bind)
 }
 
-func (d Server) GetOverallDealStats(c echo.Context) error {
+func (s Server) GetOverallDealStats(c echo.Context) error {
 	var stats []DealStats
-	err := d.db.Table("deals").
+	err := s.db.Table("deals").
 		Select("provider, state, DATE(sector_start) as day, SUM(piece_size) as deal_size").
 		Group("provider, state, day").
 		Find(&stats).Error
@@ -596,14 +596,14 @@ func (d Server) GetOverallDealStats(c echo.Context) error {
 	return c.JSON(200, stats)
 }
 
-func (d Server) GetDealStats(c echo.Context) error {
+func (s Server) GetDealStats(c echo.Context) error {
 	datasetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var stats []DealStats
 
-	err = d.db.Table("deals").
+	err = s.db.Table("deals").
 		Select("provider, state, DATE(sector_start) as day, SUM(deals.piece_size) as deal_size").
 		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
 		Where("cars.dataset_id = ?", datasetID).
@@ -616,9 +616,9 @@ func (d Server) GetDealStats(c echo.Context) error {
 	return c.JSON(200, stats)
 }
 
-func (d Server) GetDatasets(c echo.Context) error {
+func (s Server) GetDatasets(c echo.Context) error {
 	var datasets []model.Dataset
-	err := d.db.Find(&datasets).Error
+	err := s.db.Find(&datasets).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -626,13 +626,13 @@ func (d Server) GetDatasets(c echo.Context) error {
 	return c.JSON(200, datasets)
 }
 
-func (d Server) GetSources(c echo.Context) error {
+func (s Server) GetSources(c echo.Context) error {
 	datasetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var sources []model.Source
-	err = d.db.Where("dataset_id = ?", datasetID).Find(&sources).Error
+	err = s.db.Where("dataset_id = ?", datasetID).Find(&sources).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -640,14 +640,14 @@ func (d Server) GetSources(c echo.Context) error {
 	return c.JSON(200, sources)
 }
 
-func (d Server) GetCars(c echo.Context) error {
+func (s Server) GetCars(c echo.Context) error {
 	sourceID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var cars []model.Car
-	err = d.db.Where("chunk_id in (?)",
-		d.db.Table("chunks").Where("source_id", sourceID).Select("id"),
+	err = s.db.Where("chunk_id in (?)",
+		s.db.Table("chunks").Where("source_id", sourceID).Select("id"),
 	).Find(&cars).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
@@ -656,14 +656,14 @@ func (d Server) GetCars(c echo.Context) error {
 	return c.JSON(200, cars)
 }
 
-func (d Server) GetItems(c echo.Context) error {
+func (s Server) GetItems(c echo.Context) error {
 	carID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var items []model.Item
-	err = d.db.Where("chunk_id in (?)",
-		d.db.Table("cars").Where("id = ?", carID).Select("chunk_id")).Find(&items).Error
+	err = s.db.Where("chunk_id in (?)",
+		s.db.Table("cars").Where("id = ?", carID).Select("chunk_id")).Find(&items).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -671,14 +671,14 @@ func (d Server) GetItems(c echo.Context) error {
 	return c.JSON(200, items)
 }
 
-func (d Server) GetDealsForCar(c echo.Context) error {
+func (s Server) GetDealsForCar(c echo.Context) error {
 	carID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var deals []model.Deal
-	err = d.db.Where("piece_cid in (?)",
-		d.db.Table("cars").Where("id = ?", carID).Select("piece_cid")).Find(&deals).Error
+	err = s.db.Where("piece_cid in (?)",
+		s.db.Table("cars").Where("id = ?", carID).Select("piece_cid")).Find(&deals).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
@@ -686,15 +686,15 @@ func (d Server) GetDealsForCar(c echo.Context) error {
 	return c.JSON(200, deals)
 }
 
-func (d Server) GetDealsForItem(c echo.Context) error {
+func (s Server) GetDealsForItem(c echo.Context) error {
 	itemID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var deals []model.Deal
-	err = d.db.Where("piece_cid in (?)",
-		d.db.Table("cars").Where("chunk_id in (?)",
-			d.db.Table("items").Where("id = ?", itemID).Select("chunk_id")).
+	err = s.db.Where("piece_cid in (?)",
+		s.db.Table("cars").Where("chunk_id in (?)",
+			s.db.Table("items").Where("id = ?", itemID).Select("chunk_id")).
 			Select("piece_cid")).Find(&deals).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
@@ -703,19 +703,19 @@ func (d Server) GetDealsForItem(c echo.Context) error {
 	return c.JSON(200, deals)
 }
 
-func (d Server) GetDirectoryEntries(c echo.Context) error {
+func (s Server) GetDirectoryEntries(c echo.Context) error {
 	directoryID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(400, err.Error())
 	}
 	var dirs []model.Directory
-	err = d.db.Where("parent_id = ?", directoryID).Find(&dirs).Error
+	err = s.db.Where("parent_id = ?", directoryID).Find(&dirs).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}
 
 	var items []model.Item
-	err = d.db.Where("directory_id = ?", directoryID).Find(&items).Error
+	err = s.db.Where("directory_id = ?", directoryID).Find(&items).Error
 	if err != nil {
 		return echo.NewHTTPError(500, err.Error())
 	}

@@ -9,28 +9,13 @@ USAGE:
    singularity datasource add dropbox [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --dropbox-token
-      OAuth Access Token as a JSON blob.
-
    --dropbox-auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --dropbox-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --dropbox-chunk-size
-      Upload chunk size (< 150Mi).
-      
-      Any files larger than this will be uploaded in chunks of this size.
-      
-      Note that chunks are buffered in memory (one at a time) so rclone can
-      deal with retries.  Setting this larger will increase the speed
-      slightly (at most 10% for 128 MiB in tests) at the cost of using more
-      memory.  It can be set smaller if you are tight on memory.
+   --dropbox-batch-commit-timeout
+      Max time to wait for a batch to finish committing
 
    --dropbox-batch-mode
       Upload file batching sync|async|off.
@@ -48,25 +33,6 @@ DESCRIPTION:
       Rclone will close any outstanding batches when it exits which may make
       a delay on quit.
       
-
-   --dropbox-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
-   --dropbox-shared-folders
-      Instructs rclone to work on shared folders.
-            
-      When this flag is used with no path only the List operation is supported and 
-      all available shared folders will be listed. If you specify a path the first part 
-      will be interpreted as the name of shared folder. Rclone will then try to mount this 
-      shared to the root namespace. On success shared folder rclone proceeds normally. 
-      The shared folder is now pretty much a normal folder and all normal operations 
-      are supported. 
-      
-      Note that we don't unmount the shared folder afterwards so the 
-      --dropbox-shared-folders can be omitted after the first use of a particular 
-      shared folder.
 
    --dropbox-batch-size
       Max number of files in upload batch.
@@ -88,8 +54,29 @@ DESCRIPTION:
       maximise throughput.
       
 
-   --dropbox-batch-commit-timeout
-      Max time to wait for a batch to finish committing
+   --dropbox-batch-timeout
+      Max time to allow an idle upload batch before uploading.
+      
+      If an upload batch is idle for more than this long then it will be
+      uploaded.
+      
+      The default for this is 0 which means rclone will choose a sensible
+      default based on the batch_mode in use.
+      
+      - batch_mode: async - default batch_timeout is 500ms
+      - batch_mode: sync - default batch_timeout is 10s
+      - batch_mode: off - not in use
+      
+
+   --dropbox-chunk-size
+      Upload chunk size (< 150Mi).
+      
+      Any files larger than this will be uploaded in chunks of this size.
+      
+      Note that chunks are buffered in memory (one at a time) so rclone can
+      deal with retries.  Setting this larger will increase the speed
+      slightly (at most 10% for 128 MiB in tests) at the cost of using more
+      memory.  It can be set smaller if you are tight on memory.
 
    --dropbox-client-id
       OAuth Client Id.
@@ -100,6 +87,11 @@ DESCRIPTION:
       OAuth Client Secret.
       
       Leave blank normally.
+
+   --dropbox-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --dropbox-impersonate
       Impersonate this user when using a business account.
@@ -126,19 +118,27 @@ DESCRIPTION:
       operations and read operations (e.g. downloading) are supported in this mode.
       All other operations will be disabled.
 
-   --dropbox-batch-timeout
-      Max time to allow an idle upload batch before uploading.
+   --dropbox-shared-folders
+      Instructs rclone to work on shared folders.
+            
+      When this flag is used with no path only the List operation is supported and 
+      all available shared folders will be listed. If you specify a path the first part 
+      will be interpreted as the name of shared folder. Rclone will then try to mount this 
+      shared to the root namespace. On success shared folder rclone proceeds normally. 
+      The shared folder is now pretty much a normal folder and all normal operations 
+      are supported. 
       
-      If an upload batch is idle for more than this long then it will be
-      uploaded.
+      Note that we don't unmount the shared folder afterwards so the 
+      --dropbox-shared-folders can be omitted after the first use of a particular 
+      shared folder.
+
+   --dropbox-token
+      OAuth Access Token as a JSON blob.
+
+   --dropbox-token-url
+      Token server url.
       
-      The default for this is 0 which means rclone will choose a sensible
-      default based on the batch_mode in use.
-      
-      - batch_mode: async - default batch_timeout is 500ms
-      - batch_mode: sync - default batch_timeout is 10s
-      - batch_mode: off - not in use
-      
+      Leave blank to use the provider defaults.
 
 
 OPTIONS:

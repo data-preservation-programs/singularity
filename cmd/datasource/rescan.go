@@ -8,13 +8,13 @@ import (
 )
 
 var RescanCmd = &cli.Command{
-	Name:      "rescan",
-	Usage:     "Rescan a data source",
-	ArgsUsage: "<source_id>",
+	Name:        "rescan",
+	Usage:       "Rescan a data source",
+	ArgsUsage:   "<source_id>",
 	Description: "This command will clear any error of a data source and rescan it",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		entries, err := datasource.RescanSourceHandler(
+		source, err := datasource.RescanSourceHandler(
 			db,
 			c.Args().Get(0),
 		)
@@ -22,7 +22,7 @@ var RescanCmd = &cli.Command{
 			return err.CliError()
 		}
 
-		cliutil.PrintToConsole(entries, c.Bool("json"))
+		cliutil.PrintToConsole(source, c.Bool("json"), exclude)
 		return nil
 	},
 }

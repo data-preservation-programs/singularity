@@ -9,18 +9,25 @@ USAGE:
    singularity datasource add zoho [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --zoho-token
-      OAuth Access Token as a JSON blob.
-
    --zoho-auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --zoho-token-url
-      Token server url.
+   --zoho-client-id
+      OAuth Client Id.
       
-      Leave blank to use the provider defaults.
+      Leave blank normally.
+
+   --zoho-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --zoho-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --zoho-region
       Zoho region to connect to.
@@ -37,20 +44,13 @@ DESCRIPTION:
          | com.cn | China
          | com.au | Australia
 
-   --zoho-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --zoho-token
+      OAuth Access Token as a JSON blob.
 
-   --zoho-client-id
-      OAuth Client Id.
+   --zoho-token-url
+      Token server url.
       
-      Leave blank normally.
-
-   --zoho-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
+      Leave blank to use the provider defaults.
 
 
 OPTIONS:

@@ -16,9 +16,9 @@ type PieceBlock interface {
 }
 
 type ItemBlockMetadata struct {
-	PieceOffset int64   `json:"PieceOffset"`
-	Varint      []byte  `json:"Varint"`
-	Cid         cid.Cid `json:"Cid"`
+	PieceOffset int64   `json:"pieceOffset"`
+	Varint      []byte  `json:"varint"`
+	Cid         cid.Cid `json:"cid"`
 	ItemOffset  int64   `json:"itemOffset"`
 	ItemLength  int32   `json:"itemLength"`
 }
@@ -295,7 +295,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		read, err := pr.reader.Read(p[n:readTill])
 		n += read
 		pr.pos += int64(read)
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return n, errors.Wrap(err, "failed to read Item")
 		}
 		if pr.pos == innerBlock.EndOffset() {

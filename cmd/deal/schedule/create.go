@@ -187,7 +187,7 @@ var CreateCmd = &cli.Command{
 			return err.CliError()
 		}
 
-		cliutil.PrintToConsole(schedule, c.Bool("json"))
+		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
 		return nil
 	},
 }
@@ -206,9 +206,7 @@ func readCIDsFromFile(f string) ([]string, error) {
 		line := scanner.Text()
 
 		matches := re.FindAllString(line, -1)
-		for _, match := range matches {
-			result = append(result, match)
-		}
+		result = append(result, matches...)
 	}
 
 	if err := scanner.Err(); err != nil {

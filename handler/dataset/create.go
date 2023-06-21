@@ -15,12 +15,12 @@ import (
 )
 
 type CreateRequest struct {
-	Name                 string   `json:"name" validate:"required"`                      // Name must be a unique identifier for a dataset
-	MaxSizeStr           string   `json:"maxSize" default:"31.5GiB" validate:"required"` // Maximum size of the CAR files to be created
-	PieceSizeStr         string   `json:"pieceSize" default:"" validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
-	OutputDirs           []string `json:"outputDirs" validate:"optional"`                // Output directory for CAR files. Do not set if using inline preparation
-	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`      // Public key of the encryption recipient
-	EncryptionScript     string   `json:"encryptionScript" validate:"optional"`          // EncryptionScript command to run for custom encryption
+	Name                 string   `json:"name"                 validate:"required"`                     // Name must be a unique identifier for a dataset
+	MaxSizeStr           string   `default:"31.5GiB"           json:"maxSize"      validate:"required"` // Maximum size of the CAR files to be created
+	PieceSizeStr         string   `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
+	OutputDirs           []string `json:"outputDirs"           validate:"optional"`                     // Output directory for CAR files. Do not set if using inline preparation
+	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
+	EncryptionScript     string   `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
 
 func parseCreateRequest(request CreateRequest) (*model.Dataset, *handler.Error) {

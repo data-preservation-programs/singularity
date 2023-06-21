@@ -70,7 +70,6 @@ func TestAssembleItemFromLinks(t *testing.T) {
 	assert.Equal(t, "bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma", blocks[0].Cid().String())
 }
 
-
 func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
 	links := []format.Link{}
 	for i := 0; i < 2_000_000; i++ {
@@ -98,7 +97,7 @@ func TestGenerateCarHeader(t *testing.T) {
 	assert.Len(t, header, 59)
 }
 
-func TestWriteCarHeader(t *testing.T ) {
+func TestWriteCarHeader(t *testing.T) {
 	buf := new(bytes.Buffer)
 	header, err := WriteCarHeader(buf, cid.NewCidV1(cid.Raw, util.Hash([]byte("hello"))))
 	assert.NoError(t, err)

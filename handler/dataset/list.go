@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 // ListHandler godoc
 // @Summary List all datasets
 // @Tags Dataset

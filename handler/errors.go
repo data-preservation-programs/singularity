@@ -8,7 +8,7 @@ import (
 )
 
 type Error struct {
-	Err error
+	Err            error
 	HTTPStatusCode int
 }
 
@@ -16,7 +16,7 @@ type HTTPError struct {
 	Err string `json:"err"`
 }
 
-func (e *Error) HttpResponse(c echo.Context) error {
+func (e *Error) HTTPResponse(c echo.Context) error {
 	if e == nil {
 		return c.String(http.StatusOK, "OK")
 	}
@@ -54,7 +54,7 @@ func NewBadRequestString(err string) *Error {
 	}
 }
 
-func NewHttpError(code int, err string) *Error {
+func NewHTTPError(code int, err string) *Error {
 	return &Error{
 		Err:            errors.New(err),
 		HTTPStatusCode: code,

@@ -16,11 +16,11 @@ import (
 )
 
 type AddPieceRequest struct {
-	PieceCID  string `json:"pieceCID"`
+	PieceCID  string `json:"pieceCid"`
 	PieceSize string `json:"pieceSize"`
 	FilePath  string `json:"filePath"`
 	FileSize  uint64 `json:"fileSize"`
-	RootCID   string `json:"rootCID"`
+	RootCID   string `json:"rootCid"`
 }
 
 // AddPieceHandler godoc

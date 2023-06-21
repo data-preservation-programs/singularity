@@ -9,37 +9,29 @@ USAGE:
    singularity datasource add gcs [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --gcs-endpoint
-      Endpoint for the service.
+   --gcs-anonymous
+      Access public buckets and objects without credentials.
       
-      Leave blank normally.
+      Set to 'true' if you just want to download files and don't configure credentials.
 
-   --gcs-encoding
-      The encoding for the backend.
+   --gcs-auth-url
+      Auth server URL.
       
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+      Leave blank to use the provider defaults.
 
-   --gcs-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
-   --gcs-object-acl
-      Access Control List for new objects.
+   --gcs-bucket-acl
+      Access Control List for new buckets.
 
       Examples:
-         | authenticatedRead      | Object owner gets OWNER access.
-                                  | All Authenticated Users get READER access.
-         | bucketOwnerFullControl | Object owner gets OWNER access.
-                                  | Project team owners get OWNER access.
-         | bucketOwnerRead        | Object owner gets OWNER access.
-                                  | Project team owners get READER access.
-         | private                | Object owner gets OWNER access.
-                                  | Default if left blank.
-         | projectPrivate         | Object owner gets OWNER access.
-                                  | Project team members get access according to their roles.
-         | publicRead             | Object owner gets OWNER access.
-                                  | All Users get READER access.
+         | authenticatedRead | Project team owners get OWNER access.
+                             | All Authenticated Users get READER access.
+         | private           | Project team owners get OWNER access.
+                             | Default if left blank.
+         | projectPrivate    | Project team members get access according to their roles.
+         | publicRead        | Project team owners get OWNER access.
+                             | All Users get READER access.
+         | publicReadWrite   | Project team owners get OWNER access.
+                             | All Users get WRITER access.
 
    --gcs-bucket-policy-only
       Access checks should use bucket-level IAM policies.
@@ -56,25 +48,45 @@ DESCRIPTION:
       Docs: https://cloud.google.com/storage/docs/bucket-policy-only
       
 
-   --gcs-storage-class
-      The storage class to use when storing objects in Google Cloud Storage.
-
-      Examples:
-         | <unset>                      | Default
-         | MULTI_REGIONAL               | Multi-regional storage class
-         | REGIONAL                     | Regional storage class
-         | NEARLINE                     | Nearline storage class
-         | COLDLINE                     | Coldline storage class
-         | ARCHIVE                      | Archive storage class
-         | DURABLE_REDUCED_AVAILABILITY | Durable reduced availability storage class
-
-   --gcs-service-account-file
-      Service Account Credentials JSON file path.
+   --gcs-client-id
+      OAuth Client Id.
       
       Leave blank normally.
-      Needed only if you want use SA instead of interactive login.
+
+   --gcs-client-secret
+      OAuth Client Secret.
       
-      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+      Leave blank normally.
+
+   --gcs-decompress
+      If set this will decompress gzip encoded objects.
+      
+      It is possible to upload objects to GCS with "Content-Encoding: gzip"
+      set. Normally rclone will download these files as compressed objects.
+      
+      If this flag is set then rclone will decompress these files with
+      "Content-Encoding: gzip" as they are received. This means that rclone
+      can't check the size and hash but the file contents will be decompressed.
+      
+
+   --gcs-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --gcs-endpoint
+      Endpoint for the service.
+      
+      Leave blank normally.
+
+   --gcs-env-auth
+      Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
+      
+      Only applies if service_account_file and service_account_credentials is blank.
+
+      Examples:
+         | false | Enter credentials in the next step.
+         | true  | Get GCP IAM credentials from the environment (env vars or IAM).
 
    --gcs-location
       Location for the newly created buckets.
@@ -117,44 +129,6 @@ DESCRIPTION:
          | eur4                    | Dual region: europe-north1 and europe-west4.
          | nam4                    | Dual region: us-central1 and us-east1.
 
-   --gcs-env-auth
-      Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
-      
-      Only applies if service_account_file and service_account_credentials is blank.
-
-      Examples:
-         | false | Enter credentials in the next step.
-         | true  | Get GCP IAM credentials from the environment (env vars or IAM).
-
-   --gcs-token
-      OAuth Access Token as a JSON blob.
-
-   --gcs-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --gcs-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
-   --gcs-project-number
-      Project number.
-      
-      Optional - needed only for list/create/delete buckets - see your developer console.
-
-   --gcs-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --gcs-service-account-credentials
-      Service Account Credentials JSON blob.
-      
-      Leave blank normally.
-      Needed only if you want use SA instead of interactive login.
-
    --gcs-no-check-bucket
       If set, don't attempt to check the bucket exists or create it.
       
@@ -162,35 +136,61 @@ DESCRIPTION:
       rclone does if you know the bucket exists already.
       
 
-   --gcs-decompress
-      If set this will decompress gzip encoded objects.
-      
-      It is possible to upload objects to GCS with "Content-Encoding: gzip"
-      set. Normally rclone will download these files as compressed objects.
-      
-      If this flag is set then rclone will decompress these files with
-      "Content-Encoding: gzip" as they are received. This means that rclone
-      can't check the size and hash but the file contents will be decompressed.
-      
-
-   --gcs-anonymous
-      Access public buckets and objects without credentials.
-      
-      Set to 'true' if you just want to download files and don't configure credentials.
-
-   --gcs-bucket-acl
-      Access Control List for new buckets.
+   --gcs-object-acl
+      Access Control List for new objects.
 
       Examples:
-         | authenticatedRead | Project team owners get OWNER access.
-                             | All Authenticated Users get READER access.
-         | private           | Project team owners get OWNER access.
-                             | Default if left blank.
-         | projectPrivate    | Project team members get access according to their roles.
-         | publicRead        | Project team owners get OWNER access.
-                             | All Users get READER access.
-         | publicReadWrite   | Project team owners get OWNER access.
-                             | All Users get WRITER access.
+         | authenticatedRead      | Object owner gets OWNER access.
+                                  | All Authenticated Users get READER access.
+         | bucketOwnerFullControl | Object owner gets OWNER access.
+                                  | Project team owners get OWNER access.
+         | bucketOwnerRead        | Object owner gets OWNER access.
+                                  | Project team owners get READER access.
+         | private                | Object owner gets OWNER access.
+                                  | Default if left blank.
+         | projectPrivate         | Object owner gets OWNER access.
+                                  | Project team members get access according to their roles.
+         | publicRead             | Object owner gets OWNER access.
+                                  | All Users get READER access.
+
+   --gcs-project-number
+      Project number.
+      
+      Optional - needed only for list/create/delete buckets - see your developer console.
+
+   --gcs-service-account-credentials
+      Service Account Credentials JSON blob.
+      
+      Leave blank normally.
+      Needed only if you want use SA instead of interactive login.
+
+   --gcs-service-account-file
+      Service Account Credentials JSON file path.
+      
+      Leave blank normally.
+      Needed only if you want use SA instead of interactive login.
+      
+      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+   --gcs-storage-class
+      The storage class to use when storing objects in Google Cloud Storage.
+
+      Examples:
+         | <unset>                      | Default
+         | MULTI_REGIONAL               | Multi-regional storage class
+         | REGIONAL                     | Regional storage class
+         | NEARLINE                     | Nearline storage class
+         | COLDLINE                     | Coldline storage class
+         | ARCHIVE                      | Archive storage class
+         | DURABLE_REDUCED_AVAILABILITY | Durable reduced availability storage class
+
+   --gcs-token
+      OAuth Access Token as a JSON blob.
+
+   --gcs-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
 
 
 OPTIONS:

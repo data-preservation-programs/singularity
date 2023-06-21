@@ -8,8 +8,8 @@ import (
 )
 
 var ListDatasetCmd = &cli.Command{
-	Name:      "list",
-	Usage:     "List all datasets",
+	Name:  "list",
+	Usage: "List all datasets",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 		datasets, err := dataset.ListHandler(
@@ -18,7 +18,7 @@ var ListDatasetCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		cliutil.PrintToConsole(datasets, c.Bool("json"))
+		cliutil.PrintToConsole(datasets, c.Bool("json"), nil)
 		return nil
 	},
 }

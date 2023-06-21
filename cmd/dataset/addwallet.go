@@ -1,7 +1,7 @@
 package dataset
 
 import (
-	"fmt"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/urfave/cli/v2"
@@ -17,7 +17,7 @@ var AddWalletCmd = &cli.Command{
 		if err != nil {
 			return err.CliError()
 		}
-		fmt.Println(wallet)
+		cliutil.PrintToConsole(wallet, c.Bool("json"), nil)
 		return nil
 	},
 }

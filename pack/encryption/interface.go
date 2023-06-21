@@ -18,7 +18,7 @@ type Encryptor interface {
 	Encrypt(in io.Reader) (io.ReadCloser, error)
 }
 
-func GetEncryptor(dataset model.Dataset) (Encryptor, error){
+func GetEncryptor(dataset model.Dataset) (Encryptor, error) {
 	if len(dataset.EncryptionRecipients) > 0 {
 		return NewAgeEncryptor(dataset.EncryptionRecipients)
 	}
@@ -28,6 +28,7 @@ func GetEncryptor(dataset model.Dataset) (Encryptor, error){
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse encryption script")
 		}
+		//nolint:gosec
 		cmd := exec.Command(parts[0], parts[1:]...)
 		return NewCustomEncryptor(cmd), nil
 	}

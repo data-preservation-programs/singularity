@@ -9,13 +9,13 @@ USAGE:
    singularity datasource add sftp [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sftp-key-pem
-      Raw PEM-encoded private key.
+   --sftp-ask-password
+      Allow asking for SFTP password when needed.
       
-      If specified, will override key_file parameter.
-
-   --sftp-subsystem
-      Specifies the SSH2 subsystem on the remote host.
+      If this is set and no password is supplied then rclone will:
+      - ask for a password
+      - not contact the ssh agent
+      
 
    --sftp-chunk-size
       Upload and download chunk size.
@@ -40,6 +40,118 @@ DESCRIPTION:
       can be set as for the OpenSSH example above.
       
 
+   --sftp-ciphers
+      Space separated list of ciphers to be used for session encryption, ordered by preference.
+      
+      At least one must match with server configuration. This can be checked for example using ssh -Q cipher.
+      
+      This must not be set if use_insecure_cipher is true.
+      
+      Example:
+      
+          aes128-ctr aes192-ctr aes256-ctr aes128-gcm@openssh.com aes256-gcm@openssh.com
+      
+
+   --sftp-concurrency
+      The maximum number of outstanding requests for one file
+      
+      This controls the maximum number of outstanding requests for one file.
+      Increasing it will increase throughput on high latency links at the
+      cost of using more memory.
+      
+
+   --sftp-disable-concurrent-reads
+      If set don't use concurrent reads.
+      
+      Normally concurrent reads are safe to use and not using them will
+      degrade performance, so this option is disabled by default.
+      
+      Some servers limit the amount number of times a file can be
+      downloaded. Using concurrent reads can trigger this limit, so if you
+      have a server which returns
+      
+          Failed to copy: file does not exist
+      
+      Then you may need to enable this flag.
+      
+      If concurrent reads are disabled, the use_fstat option is ignored.
+      
+
+   --sftp-disable-concurrent-writes
+      If set don't use concurrent writes.
+      
+      Normally rclone uses concurrent writes to upload files. This improves
+      the performance greatly, especially for distant servers.
+      
+      This option disables concurrent writes should that be necessary.
+      
+
+   --sftp-disable-hashcheck
+      Disable the execution of SSH commands to determine if remote file hashing is available.
+      
+      Leave blank or set to false to enable hashing (recommended), set to true to disable hashing.
+
+   --sftp-host
+      SSH host to connect to.
+      
+      E.g. "example.com".
+
+   --sftp-idle-timeout
+      Max time before closing idle connections.
+      
+      If no connections have been returned to the connection pool in the time
+      given, rclone will empty the connection pool.
+      
+      Set to 0 to keep connections indefinitely.
+      
+
+   --sftp-key-exchange
+      Space separated list of key exchange algorithms, ordered by preference.
+      
+      At least one must match with server configuration. This can be checked for example using ssh -Q kex.
+      
+      This must not be set if use_insecure_cipher is true.
+      
+      Example:
+      
+          sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org ecdh-sha2-nistp256
+      
+
+   --sftp-key-file
+      Path to PEM-encoded private key file.
+      
+      Leave blank or set key-use-agent to use ssh-agent.
+      
+      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+   --sftp-key-file-pass
+      The passphrase to decrypt the PEM-encoded private key file.
+      
+      Only PEM encrypted key files (old OpenSSH format) are supported. Encrypted keys
+      in the new OpenSSH format can't be used.
+
+   --sftp-key-pem
+      Raw PEM-encoded private key.
+      
+      If specified, will override key_file parameter.
+
+   --sftp-key-use-agent
+      When set forces the usage of the ssh-agent.
+      
+      When key-file is also set, the ".pub" file of the specified key-file is read and only the associated key is
+      requested from the ssh-agent. This allows to avoid `Too many authentication failures for *username*` errors
+      when the ssh-agent contains many keys.
+
+   --sftp-known-hosts-file
+      Optional path to known_hosts file.
+      
+      Set this value to enable server host key validation.
+      
+      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+      Examples:
+         | ~/.ssh/known_hosts | Use OpenSSH's known_hosts file.
+
    --sftp-macs
       Space separated list of MACs (message authentication code) algorithms, ordered by preference.
       
@@ -50,11 +162,13 @@ DESCRIPTION:
           umac-64-etm@openssh.com umac-128-etm@openssh.com hmac-sha2-256-etm@openssh.com
       
 
-   --sftp-user
-      SSH username.
+   --sftp-md5sum-command
+      The command used to read md5 hashes.
+      
+      Leave blank for autodetect.
 
-   --sftp-port
-      SSH port number.
+   --sftp-pass
+      SSH password, leave blank to use ssh-agent.
 
    --sftp-path-override
       Override path used by SSH shell commands.
@@ -70,41 +184,20 @@ DESCRIPTION:
       
           rclone sync /home/local/directory remote:/home/directory --sftp-path-override /volume1/homes/USER/directory
 
-   --sftp-use-fstat
-      If set use fstat instead of stat.
-      
-      Some servers limit the amount of open files and calling Stat after opening
-      the file will throw an error from the server. Setting this flag will call
-      Fstat instead of Stat which is called on an already open file handle.
-      
-      It has been found that this helps with IBM Sterling SFTP servers which have
-      "extractability" level set to 1 which means only 1 file can be opened at
-      any given time.
-      
+   --sftp-port
+      SSH port number.
 
-   --sftp-host
-      SSH host to connect to.
+   --sftp-pubkey-file
+      Optional path to public key file.
       
-      E.g. "example.com".
+      Set this if you have a signed certificate you want to use for authentication.
+      
+      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
-   --sftp-key-use-agent
-      When set forces the usage of the ssh-agent.
+   --sftp-server-command
+      Specifies the path or command to run a sftp server on the remote host.
       
-      When key-file is also set, the ".pub" file of the specified key-file is read and only the associated key is
-      requested from the ssh-agent. This allows to avoid `Too many authentication failures for *username*` errors
-      when the ssh-agent contains many keys.
-
-   --sftp-skip-links
-      Set to skip any symlinks and any other non regular files.
-
-   --sftp-disable-concurrent-writes
-      If set don't use concurrent writes.
-      
-      Normally rclone uses concurrent writes to upload files. This improves
-      the performance greatly, especially for distant servers.
-      
-      This option disables concurrent writes should that be necessary.
-      
+      The subsystem option is ignored when server_command is defined.
 
    --sftp-set-env
       Environment variables to pass to sftp and commands
@@ -125,17 +218,13 @@ DESCRIPTION:
       
       
 
-   --sftp-ciphers
-      Space separated list of ciphers to be used for session encryption, ordered by preference.
+   --sftp-set-modtime
+      Set the modified time on the remote if set.
+
+   --sftp-sha1sum-command
+      The command used to read sha1 hashes.
       
-      At least one must match with server configuration. This can be checked for example using ssh -Q cipher.
-      
-      This must not be set if use_insecure_cipher is true.
-      
-      Example:
-      
-          aes128-ctr aes192-ctr aes256-ctr aes128-gcm@openssh.com aes256-gcm@openssh.com
-      
+      Leave blank for autodetect.
 
    --sftp-shell-type
       The type of SSH shell on remote server, if any.
@@ -148,33 +237,22 @@ DESCRIPTION:
          | powershell | PowerShell
          | cmd        | Windows Command Prompt
 
-   --sftp-key-exchange
-      Space separated list of key exchange algorithms, ordered by preference.
-      
-      At least one must match with server configuration. This can be checked for example using ssh -Q kex.
-      
-      This must not be set if use_insecure_cipher is true.
-      
-      Example:
-      
-          sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org ecdh-sha2-nistp256
-      
+   --sftp-skip-links
+      Set to skip any symlinks and any other non regular files.
 
-   --sftp-idle-timeout
-      Max time before closing idle connections.
-      
-      If no connections have been returned to the connection pool in the time
-      given, rclone will empty the connection pool.
-      
-      Set to 0 to keep connections indefinitely.
-      
+   --sftp-subsystem
+      Specifies the SSH2 subsystem on the remote host.
 
-   --sftp-concurrency
-      The maximum number of outstanding requests for one file
+   --sftp-use-fstat
+      If set use fstat instead of stat.
       
-      This controls the maximum number of outstanding requests for one file.
-      Increasing it will increase throughput on high latency links at the
-      cost of using more memory.
+      Some servers limit the amount of open files and calling Stat after opening
+      the file will throw an error from the server. Setting this flag will call
+      Fstat instead of Stat which is called on an already open file handle.
+      
+      It has been found that this helps with IBM Sterling SFTP servers which have
+      "extractability" level set to 1 which means only 1 file can be opened at
+      any given time.
       
 
    --sftp-use-insecure-cipher
@@ -198,86 +276,8 @@ DESCRIPTION:
          | false | Use default Cipher list.
          | true  | Enables the use of the aes128-cbc cipher and diffie-hellman-group-exchange-sha256, diffie-hellman-group-exchange-sha1 key exchange.
 
-   --sftp-disable-hashcheck
-      Disable the execution of SSH commands to determine if remote file hashing is available.
-      
-      Leave blank or set to false to enable hashing (recommended), set to true to disable hashing.
-
-   --sftp-sha1sum-command
-      The command used to read sha1 hashes.
-      
-      Leave blank for autodetect.
-
-   --sftp-disable-concurrent-reads
-      If set don't use concurrent reads.
-      
-      Normally concurrent reads are safe to use and not using them will
-      degrade performance, so this option is disabled by default.
-      
-      Some servers limit the amount number of times a file can be
-      downloaded. Using concurrent reads can trigger this limit, so if you
-      have a server which returns
-      
-          Failed to copy: file does not exist
-      
-      Then you may need to enable this flag.
-      
-      If concurrent reads are disabled, the use_fstat option is ignored.
-      
-
-   --sftp-set-modtime
-      Set the modified time on the remote if set.
-
-   --sftp-server-command
-      Specifies the path or command to run a sftp server on the remote host.
-      
-      The subsystem option is ignored when server_command is defined.
-
-   --sftp-key-file-pass
-      The passphrase to decrypt the PEM-encoded private key file.
-      
-      Only PEM encrypted key files (old OpenSSH format) are supported. Encrypted keys
-      in the new OpenSSH format can't be used.
-
-   --sftp-pubkey-file
-      Optional path to public key file.
-      
-      Set this if you have a signed certificate you want to use for authentication.
-      
-      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
-
-   --sftp-known-hosts-file
-      Optional path to known_hosts file.
-      
-      Set this value to enable server host key validation.
-      
-      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
-
-      Examples:
-         | ~/.ssh/known_hosts | Use OpenSSH's known_hosts file.
-
-   --sftp-ask-password
-      Allow asking for SFTP password when needed.
-      
-      If this is set and no password is supplied then rclone will:
-      - ask for a password
-      - not contact the ssh agent
-      
-
-   --sftp-pass
-      SSH password, leave blank to use ssh-agent.
-
-   --sftp-key-file
-      Path to PEM-encoded private key file.
-      
-      Leave blank or set key-use-agent to use ssh-agent.
-      
-      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
-
-   --sftp-md5sum-command
-      The command used to read md5 hashes.
-      
-      Leave blank for autodetect.
+   --sftp-user
+      SSH username.
 
 
 OPTIONS:

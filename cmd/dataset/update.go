@@ -75,7 +75,7 @@ var UpdateCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		cliutil.PrintToConsole(dataset, c.Bool("json"))
+		cliutil.PrintToConsole(dataset, c.Bool("json"), nil)
 		return nil
 	},
 }

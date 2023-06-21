@@ -94,14 +94,15 @@ func NewDealTracker(db *gorm.DB, interval time.Duration,
 	}
 }
 
-func (d *DealTracker) dealStateStreamFromHttpRequest(request *http.Request, depth int) (chan *jstream.MetaValue, io.Closer, error) {
+func (d *DealTracker) dealStateStreamFromHTTPRequest(request *http.Request, depth int) (chan *jstream.MetaValue, io.Closer, error) {
+	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to get deal state from lotus API")
 	}
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return nil, nil, fmt.Errorf("failed to get deal state zst file: %s", resp.Status)
+		return nil, nil, errors.New("failed to get deal state zst file: " + resp.Status)
 	}
 	decompressor, err := zstd.NewReader(resp.Body)
 	if err != nil {
@@ -123,7 +124,7 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "failed to create request to get deal state zst file")
 		}
-		return d.dealStateStreamFromHttpRequest(req, 1)
+		return d.dealStateStreamFromHTTPRequest(req, 1)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
@@ -135,7 +136,7 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Body = io.NopCloser(strings.NewReader(`{"jsonrpc":"2.0","method":"Filecoin.StateMarketDeals","params":[null],"id":0}`))
-	return d.dealStateStreamFromHttpRequest(req, 2)
+	return d.dealStateStreamFromHTTPRequest(req, 2)
 }
 
 func (d *DealTracker) Run(ctx context.Context) {

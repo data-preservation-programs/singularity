@@ -27,7 +27,7 @@ var CheckCmd = &cli.Command{
 			return err.CliError()
 		}
 
-		cliutil.PrintToConsole(entries, c.Bool("json"))
+		cliutil.PrintToConsole(entries, c.Bool("json"), nil)
 		return nil
 	},
 }

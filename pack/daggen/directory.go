@@ -32,7 +32,7 @@ func ResolveDirectoryTree(currentID uint64,
 	if !ok {
 		return nil, errors.Errorf("no directory data for current %d", currentID)
 	}
-	children, _ := childrenCache[currentID]
+	children := childrenCache[currentID]
 
 	for _, child := range children {
 		link, err := ResolveDirectoryTree(child, dirCache, childrenCache)
@@ -159,10 +159,10 @@ func UnmarshallToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
 	var blks []blocks.Block
 	for {
 		c, data, err := util.ReadNode(reader)
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return cid.Undef, nil, errors.Wrap(err, "failed to read CAR block")
 		}
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		blk, _ := blocks.NewBlockWithCid(data, c)
@@ -193,6 +193,9 @@ func (d *DirectoryData) UnmarshallBinary(data []byte) error {
 
 	ctx := context.Background()
 	dirCID, blks, err := UnmarshallToBlocks(data)
+	if err != nil {
+		return errors.Wrap(err, "failed to unmarshall data")
+	}
 	err = bs.PutMany(ctx, blks)
 	if err != nil {
 		return errors.Wrap(err, "failed to put blocks into blockstore")

@@ -8,8 +8,8 @@ import (
 )
 
 var ListCmd = &cli.Command{
-	Name:      "list",
-	Usage:     "List all imported wallets",
+	Name:  "list",
+	Usage: "List all imported wallets",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 		wallets, err2 := wallet.ListHandler(db)
@@ -17,7 +17,7 @@ var ListCmd = &cli.Command{
 			return err2.CliError()
 		}
 
-		cliutil.PrintToConsole(wallets, c.Bool("json"))
+		cliutil.PrintToConsole(wallets, c.Bool("json"), nil)
 		return nil
 	},
 }

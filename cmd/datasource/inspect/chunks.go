@@ -24,17 +24,17 @@ var ChunksCmd = &cli.Command{
 		}
 
 		if c.Bool("json") {
-			cliutil.PrintToConsole(result, true)
+			cliutil.PrintToConsole(result, true, nil)
 			return nil
 		}
 		fmt.Println("Chunks:")
-		cliutil.PrintToConsole(result, false)
+		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
 		fmt.Println("Pieces:")
 		var cars []model.Car
 		for _, chunk := range result {
 			cars = append(cars, chunk.Cars...)
 		}
-		cliutil.PrintToConsole(cars, false)
+		cliutil.PrintToConsole(cars, false, nil)
 
 		return nil
 	},

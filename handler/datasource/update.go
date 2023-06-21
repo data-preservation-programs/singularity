@@ -60,7 +60,7 @@ func UpdateSourceHandler(
 	}
 	for key, value := range config {
 		snake := lowerCamelToSnake(key)
-		snake = strings.Replace(snake, "-", "_", -1)
+		snake = strings.ReplaceAll(snake, "-", "_")
 		splitted := strings.SplitN(snake, "_", 2)
 		if len(splitted) != 2 {
 			return nil, handler.NewBadRequestString("invalid config key: " + key)

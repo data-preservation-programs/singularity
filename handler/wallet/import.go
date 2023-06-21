@@ -12,7 +12,7 @@ import (
 
 type ImportRequest struct {
 	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
-	LotusAPI   string `json:"lotusApi" swaggerignore:"true"`
+	LotusAPI   string `json:"lotusApi"   swaggerignore:"true"`
 	LotusToken string `json:"lotusToken" swaggerignore:"true"`
 }
 

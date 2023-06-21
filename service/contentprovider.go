@@ -115,7 +115,10 @@ func (s *ContentProviderService) StartBitswap() error {
 }
 
 func (s *ContentProviderService) Start() {
-	s.StartBitswap()
+	err := s.StartBitswap()
+	if err != nil {
+		logging.Logger("contentprovider").Fatal(err)
+	}
 	logger := logging.Logger("contentprovider")
 	e := echo.New()
 
@@ -127,7 +130,7 @@ func (s *ContentProviderService) Start() {
 				LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 					uri := v.URI
 					status := v.Status
-					latency := time.Now().Sub(v.StartTime)
+					latency := time.Since(v.StartTime)
 					err := v.Error
 					method := c.Request().Method
 					if err != nil {
@@ -152,7 +155,7 @@ func (s *ContentProviderService) Start() {
 	e.HEAD("/piece/:id", s.handleHeadPiece)
 	e.GET("/ipfs/:cid", s.handleGetCid)
 
-	err := e.Start(s.bind)
+	err = e.Start(s.bind)
 	if err != nil {
 		panic(err)
 	}
@@ -240,7 +243,7 @@ func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
 	_, car, err := s.FindPieceAsPieceReader(c.Request().Context(), pieceCid)
 	if err == nil {
 		s.setCommonHeaders(c, pieceCid.String())
-		c.Response().Header().Set("Content-Length", strconv.FormatInt(int64(car.FileSize), 10))
+		c.Response().Header().Set("Content-Length", strconv.FormatInt(car.FileSize, 10))
 		return c.NoContent(http.StatusOK)
 	}
 
@@ -299,7 +302,7 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 		switch {
 		case err == nil:
 			lastModified = car.CreatedAt
-			fileSize = int64(car.FileSize)
+			fileSize = car.FileSize
 		case os.IsNotExist(err):
 			return c.String(http.StatusNotFound, "piece not found")
 		default:

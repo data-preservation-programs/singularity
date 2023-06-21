@@ -61,7 +61,7 @@ func main() {
 							"For example, if you see code block (wrapped in ```), you should not translate the command name or the argument usage but only the comments or the description text.",
 					}, {
 						Role:    openai.ChatMessageRoleUser,
-						Content: string(content),
+						Content: content,
 					},
 				}
 
@@ -77,10 +77,7 @@ func main() {
 					}
 					return nil
 				}, retry.RetryIf(func(err error) bool {
-					if strings.Contains(err.Error(), "429") {
-						return true
-					}
-					return false
+					return strings.Contains(err.Error(), "429")
 				}))
 				if err != nil {
 					panic(err)

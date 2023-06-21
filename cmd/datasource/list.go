@@ -26,7 +26,7 @@ var ListCmd = &cli.Command{
 		if err != nil {
 			return err.CliError()
 		}
-		cliutil.PrintToConsole(sources, c.Bool("json"))
+		cliutil.PrintToConsole(sources, c.Bool("json"), exclude)
 		return nil
 	},
 }

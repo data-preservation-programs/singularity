@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 // PauseHandler godoc
 // @Summary Pause a specific schedule
 // @Tags Deal Schedule

@@ -9,6 +9,24 @@ USAGE:
    singularity datasource add internetarchive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --internetarchive-access-key-id
+      IAS3 Access Key.
+      
+      Leave blank for anonymous access.
+      You can find one here: https://archive.org/account/s3.php
+
+   --internetarchive-disable-checksum
+      Don't ask the server to test against MD5 checksum calculated by rclone.
+      Normally rclone will calculate the MD5 checksum of the input before
+      uploading it so it can ask the server to check the object against checksum.
+      This is great for data integrity checking but can cause long delays for
+      large files to start uploading.
+
+   --internetarchive-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --internetarchive-endpoint
       IAS3 Endpoint.
       
@@ -19,33 +37,15 @@ DESCRIPTION:
       
       Leave blank for default value.
 
-   --internetarchive-disable-checksum
-      Don't ask the server to test against MD5 checksum calculated by rclone.
-      Normally rclone will calculate the MD5 checksum of the input before
-      uploading it so it can ask the server to check the object against checksum.
-      This is great for data integrity checking but can cause long delays for
-      large files to start uploading.
+   --internetarchive-secret-access-key
+      IAS3 Secret Key (password).
+      
+      Leave blank for anonymous access.
 
    --internetarchive-wait-archive
       Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
       Only enable if you need to be guaranteed to be reflected after write operations.
       0 to disable waiting. No errors to be thrown in case of timeout.
-
-   --internetarchive-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --internetarchive-access-key-id
-      IAS3 Access Key.
-      
-      Leave blank for anonymous access.
-      You can find one here: https://archive.org/account/s3.php
-
-   --internetarchive-secret-access-key
-      IAS3 Secret Key (password).
-      
-      Leave blank for anonymous access.
 
 
 OPTIONS:

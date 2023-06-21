@@ -9,8 +9,27 @@ USAGE:
    singularity datasource add sharefile [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sharefile-upload-cutoff
-      Cutoff for switching to multipart upload.
+   --sharefile-chunk-size
+      Upload chunk size.
+      
+      Must a power of 2 >= 256k.
+      
+      Making this larger will improve performance, but note that each chunk
+      is buffered in memory one per transfer.
+      
+      Reducing this will reduce memory usage but decrease performance.
+
+   --sharefile-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --sharefile-endpoint
+      Endpoint for API calls.
+      
+      This is usually auto discovered as part of the oauth process, but can
+      be set manually to something like: https://XXX.sharefile.com
+      
 
    --sharefile-root-folder-id
       ID of the root folder.
@@ -25,27 +44,8 @@ DESCRIPTION:
          | connectors | Access all the individual connectors.
          | top        | Access the home, favorites, and shared folders as well as the connectors.
 
-   --sharefile-chunk-size
-      Upload chunk size.
-      
-      Must a power of 2 >= 256k.
-      
-      Making this larger will improve performance, but note that each chunk
-      is buffered in memory one per transfer.
-      
-      Reducing this will reduce memory usage but decrease performance.
-
-   --sharefile-endpoint
-      Endpoint for API calls.
-      
-      This is usually auto discovered as part of the oauth process, but can
-      be set manually to something like: https://XXX.sharefile.com
-      
-
-   --sharefile-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --sharefile-upload-cutoff
+      Cutoff for switching to multipart upload.
 
 
 OPTIONS:

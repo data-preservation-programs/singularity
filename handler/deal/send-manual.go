@@ -19,15 +19,15 @@ type Proposal struct {
 	HTTPHeaders    []string `json:"httpHeaders"`
 	URLTemplate    string   `json:"urlTemplate"`
 	Price          float64  `json:"price"`
-	RootCID        string   `json:"rootCID"`
+	RootCID        string   `json:"rootCid"`
 	Verified       bool     `json:"verified"`
 	IPNI           bool     `json:"ipni"`
 	KeepUnsealed   bool     `json:"keepUnsealed"`
 	StartDelayDays float64  `json:"startDelayDays"`
 	DurationDays   float64  `json:"durationDays"`
 	ClientAddress  string   `json:"clientAddress"`
-	ProviderID     string   `json:"providerID"`
-	PieceCID       string   `json:"pieceCID"`
+	ProviderID     string   `json:"providerId"`
+	PieceCID       string   `json:"pieceCid"`
 	PieceSize      string   `json:"pieceSize"`
 	FileSize       uint64   `json:"fileSize"`
 	LotusAPI       string   `swaggerignore:"true"`

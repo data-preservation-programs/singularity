@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 // ListHandler godoc
 // @Summary List all deal making schedules
 // @Tags Deal Schedule

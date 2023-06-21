@@ -30,18 +30,18 @@ DESCRIPTION:
       
       E.g. "namenode:8020" to connect to host namenode at port 8020.
 
-   --hdfs-username
-      Hadoop user name.
-
-      Examples:
-         | root | Connect to hdfs as root.
-
    --hdfs-service-principal-name
       Kerberos service principal name for the namenode.
       
       Enables KERBEROS authentication. Specifies the Service Principal Name
       (SERVICE/FQDN) for the namenode. E.g. \"hdfs/namenode.hadoop.docker\"
       for namenode running as service 'hdfs' with FQDN 'namenode.hadoop.docker'.
+
+   --hdfs-username
+      Hadoop user name.
+
+      Examples:
+         | root | Connect to hdfs as root.
 
 
 OPTIONS:

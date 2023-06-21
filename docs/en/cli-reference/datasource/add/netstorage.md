@@ -9,10 +9,13 @@ USAGE:
    singularity datasource add netstorage [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --netstorage-secret
-      Set the NetStorage account secret/G2O key for authentication.
+   --netstorage-account
+      Set the NetStorage account name
+
+   --netstorage-host
+      Domain+path of NetStorage host to connect to.
       
-      Please choose the 'y' option to set your own password then enter your secret.
+      Format should be `<domain>/<internal folders>`
 
    --netstorage-protocol
       Select between HTTP or HTTPS protocol.
@@ -24,13 +27,10 @@ DESCRIPTION:
          | http  | HTTP protocol
          | https | HTTPS protocol
 
-   --netstorage-host
-      Domain+path of NetStorage host to connect to.
+   --netstorage-secret
+      Set the NetStorage account secret/G2O key for authentication.
       
-      Format should be `<domain>/<internal folders>`
-
-   --netstorage-account
-      Set the NetStorage account name
+      Please choose the 'y' option to set your own password then enter your secret.
 
 
 OPTIONS:
