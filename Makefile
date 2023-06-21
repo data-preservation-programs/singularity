@@ -11,7 +11,7 @@ gen:
 
 lint:
 	gofmt -s -w .
-	golangci-lint run
+	golangci-lint run --fix
 
 swag:
 	swag init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./api/docs

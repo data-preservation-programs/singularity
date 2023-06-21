@@ -54,6 +54,7 @@ linters:
     - dupl
     - forbidigo
     - godot
+    - depguard
 
 linters-settings:
   lll:
