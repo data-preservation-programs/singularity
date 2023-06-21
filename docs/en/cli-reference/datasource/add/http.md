@@ -9,11 +9,6 @@ USAGE:
    singularity datasource add http [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --http-url
-      URL of HTTP host to connect to.
-      
-      E.g. "https://example.com", or "https://user:pass@example.com" to use a username and password.
-
    --http-headers
       Set HTTP headers for all transactions.
       
@@ -25,20 +20,6 @@ DESCRIPTION:
       For example, to set a Cookie use 'Cookie,name=value', or '"Cookie","name=value"'.
       
       You can set multiple headers, e.g. '"Cookie","name=value","Authorization","xxx"'.
-
-   --http-no-slash
-      Set this if the site doesn't end directories with /.
-      
-      Use this if your target website does not use / on the end of
-      directories.
-      
-      A / on the end of a path is how rclone normally tells the difference
-      between files and directories.  If this flag is set, then rclone will
-      treat all files with Content-Type: text/html as directories and read
-      URLs from them rather than downloading them.
-      
-      Note that this may cause rclone to confuse genuine HTML files with
-      directories.
 
    --http-no-head
       Don't use HEAD requests.
@@ -55,6 +36,25 @@ DESCRIPTION:
       If you set this option, rclone will not do the HEAD request. This will mean
       that directory listings are much quicker, but rclone won't have the times or
       sizes of any files, and some files that don't exist may be in the listing.
+
+   --http-no-slash
+      Set this if the site doesn't end directories with /.
+      
+      Use this if your target website does not use / on the end of
+      directories.
+      
+      A / on the end of a path is how rclone normally tells the difference
+      between files and directories.  If this flag is set, then rclone will
+      treat all files with Content-Type: text/html as directories and read
+      URLs from them rather than downloading them.
+      
+      Note that this may cause rclone to confuse genuine HTML files with
+      directories.
+
+   --http-url
+      URL of HTTP host to connect to.
+      
+      E.g. "https://example.com", or "https://user:pass@example.com" to use a username and password.
 
 
 OPTIONS:

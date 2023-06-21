@@ -17,7 +17,7 @@ var ListWalletCmd = &cli.Command{
 		if err != nil {
 			return err.CliError()
 		}
-		cliutil.PrintToConsole(wallets, c.Bool("json"))
+		cliutil.PrintToConsole(wallets, c.Bool("json"), nil)
 		return nil
 	},
 }

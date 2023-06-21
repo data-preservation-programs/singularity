@@ -8,8 +8,8 @@ import (
 )
 
 var ListCmd = &cli.Command{
-	Name:      "list",
-	Usage:     "List all deal making schedules",
+	Name:  "list",
+	Usage: "List all deal making schedules",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 		schedules, err := schedule.ListHandler(db)
@@ -17,7 +17,7 @@ var ListCmd = &cli.Command{
 			return err.CliError()
 		}
 
-		cliutil.PrintToConsole(schedules, c.Bool("json"))
+		cliutil.PrintToConsole(schedules, c.Bool("json"), nil)
 		return nil
 	},
 }

@@ -45,8 +45,8 @@ func createParentNode(links []format.Link) (*merkledag.ProtoNode, uint64, error)
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "failed to set cid builder")
 	}
-	for _, link := range links {
-		err = pbNode.AddRawLink("", &link)
+	for i := range links {
+		err = pbNode.AddRawLink("", &links[i])
 		if err != nil {
 			return nil, 0, errors.Wrap(err, "failed to add link to node")
 		}

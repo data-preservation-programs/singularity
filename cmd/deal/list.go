@@ -12,31 +12,29 @@ var ListCmd = &cli.Command{
 	Usage: "List all deals",
 	Flags: []cli.Flag{
 		&cli.StringSliceFlag{
-			Name: "dataset",
+			Name:  "dataset",
 			Usage: "Filter deals by dataset name",
 		},
 		&cli.UintSliceFlag{
-			Name: "schedule",
+			Name:  "schedule",
 			Usage: "Filter deals by schedule",
 		},
 		&cli.StringSliceFlag{
-			Name: "provider",
+			Name:  "provider",
 			Usage: "Filter deals by provider",
 		},
 		&cli.StringSliceFlag{
-			Name: "state",
+			Name:  "state",
 			Usage: "Filter deals by state: proposed, published, active, expired, proposal_expired, slashed",
 		},
 	},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		deals, err := deal.ListHandler(db, deal.ListDealRequest{
-
-		})
+		deals, err := deal.ListHandler(db, deal.ListDealRequest{})
 		if err != nil {
 			return err.CliError()
 		}
-		cliutil.PrintToConsole(deals, c.Bool("json"))
+		cliutil.PrintToConsole(deals, c.Bool("json"), nil)
 		return nil
 	},
 }

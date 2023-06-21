@@ -1,7 +1,6 @@
 package datasetworker
 
 import (
-	"context"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
@@ -16,7 +15,7 @@ import (
 	"time"
 )
 
-func (w *DatasetWorkerThread) dag(ctx context.Context, source model.Source) error {
+func (w *DatasetWorkerThread) dag(source model.Source) error {
 	var rootCID cid.Cid
 	var outDir string
 	var headerBytes []byte
@@ -90,6 +89,9 @@ func (w *DatasetWorkerThread) dag(ctx context.Context, source model.Source) erro
 	}
 
 	pieceCid, finalPieceSize, err := pack.GetCommp(calc, uint64(source.Dataset.PieceSize))
+	if err != nil {
+		return errors.Wrap(err, "failed to get commp")
+	}
 	if outDir != "" {
 		car.FilePath = path.Join(outDir, pieceCid.String()+".car")
 	}
@@ -112,7 +114,7 @@ func (w *DatasetWorkerThread) dag(ctx context.Context, source model.Source) erro
 			if err != nil {
 				return err
 			}
-			for i, _ := range carBlocks {
+			for i := range carBlocks {
 				carBlocks[i].CarID = car.ID
 			}
 			err = db.CreateInBatches(carBlocks, 100).Error

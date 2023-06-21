@@ -9,20 +9,60 @@ USAGE:
    singularity datasource add hidrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --hidrive-token-url
-      Token server url.
+   --hidrive-auth-url
+      Auth server URL.
       
       Leave blank to use the provider defaults.
+
+   --hidrive-chunk-size
+      Chunksize for chunked uploads.
+      
+      Any files larger than the configured cutoff (or files of unknown size) will be uploaded in chunks of this size.
+      
+      The upper limit for this is 2147483647 bytes (about 2.000Gi).
+      That is the maximum amount of bytes a single upload-operation will support.
+      Setting this above the upper limit or to a negative value will cause uploads to fail.
+      
+      Setting this to larger values may increase the upload speed at the cost of using more memory.
+      It can be set to smaller values smaller to save on memory.
+
+   --hidrive-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --hidrive-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --hidrive-disable-fetching-member-count
+      Do not fetch number of objects in directories unless it is absolutely necessary.
+      
+      Requests may be faster if the number of objects in subdirectories is not fetched.
+
+   --hidrive-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --hidrive-endpoint
       Endpoint for the service.
       
       This is the URL that API-calls will be made to.
 
-   --hidrive-auth-url
-      Auth server URL.
+   --hidrive-root-prefix
+      The root/parent folder for all paths.
       
-      Leave blank to use the provider defaults.
+      Fill in to use the specified folder as the parent for all paths given to the remote.
+      This way rclone can use any folder as its starting point.
+
+      Examples:
+         | /       | The topmost directory accessible by rclone.
+                   | This will be equivalent with "root" if rclone uses a regular HiDrive user account.
+         | root    | The topmost directory of the HiDrive user account
+         | <unset> | This specifies that there is no root-prefix for your paths.
+                   | When using this you will always need to specify paths to this remote with a valid parent e.g. "remote:/path/to/dir" or "remote:root/path/to/dir".
 
    --hidrive-scope-access
       Access permissions that rclone should use when requesting access from HiDrive.
@@ -40,6 +80,14 @@ DESCRIPTION:
          | admin | Extensive access to management permissions.
          | owner | Full access to management permissions.
 
+   --hidrive-token
+      OAuth Access Token as a JSON blob.
+
+   --hidrive-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
    --hidrive-upload-concurrency
       Concurrency for chunked uploads.
       
@@ -50,14 +98,6 @@ DESCRIPTION:
       and these uploads do not fully utilize your bandwidth, then increasing
       this may help to speed up the transfers.
 
-   --hidrive-token
-      OAuth Access Token as a JSON blob.
-
-   --hidrive-disable-fetching-member-count
-      Do not fetch number of objects in directories unless it is absolutely necessary.
-      
-      Requests may be faster if the number of objects in subdirectories is not fetched.
-
    --hidrive-upload-cutoff
       Cutoff/Threshold for chunked uploads.
       
@@ -66,46 +106,6 @@ DESCRIPTION:
       The upper limit for this is 2147483647 bytes (about 2.000Gi).
       That is the maximum amount of bytes a single upload-operation will support.
       Setting this above the upper limit will cause uploads to fail.
-
-   --hidrive-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --hidrive-root-prefix
-      The root/parent folder for all paths.
-      
-      Fill in to use the specified folder as the parent for all paths given to the remote.
-      This way rclone can use any folder as its starting point.
-
-      Examples:
-         | /       | The topmost directory accessible by rclone.
-                   | This will be equivalent with "root" if rclone uses a regular HiDrive user account.
-         | root    | The topmost directory of the HiDrive user account
-         | <unset> | This specifies that there is no root-prefix for your paths.
-                   | When using this you will always need to specify paths to this remote with a valid parent e.g. "remote:/path/to/dir" or "remote:root/path/to/dir".
-
-   --hidrive-chunk-size
-      Chunksize for chunked uploads.
-      
-      Any files larger than the configured cutoff (or files of unknown size) will be uploaded in chunks of this size.
-      
-      The upper limit for this is 2147483647 bytes (about 2.000Gi).
-      That is the maximum amount of bytes a single upload-operation will support.
-      Setting this above the upper limit or to a negative value will cause uploads to fail.
-      
-      Setting this to larger values may increase the upload speed at the cost of using more memory.
-      It can be set to smaller values smaller to save on memory.
-
-   --hidrive-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --hidrive-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
 
 
 OPTIONS:

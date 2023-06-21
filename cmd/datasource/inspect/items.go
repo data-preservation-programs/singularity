@@ -22,7 +22,7 @@ var ItemsCmd = &cli.Command{
 			return err.CliError()
 		}
 
-		cliutil.PrintToConsole(result, c.Bool("json"))
+		cliutil.PrintToConsole(result, c.Bool("json"), nil)
 		return nil
 	},
 }

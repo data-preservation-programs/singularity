@@ -14,7 +14,7 @@ import (
 type AddRemoteRequest struct {
 	Address    string `json:"address"`    // Address is the Filecoin full address of the wallet
 	RemotePeer string `json:"remotePeer"` // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
-	LotusAPI   string `json:"lotusApi" swaggerignore:"true"`
+	LotusAPI   string `json:"lotusApi"   swaggerignore:"true"`
 	LotusToken string `json:"lotusToken" swaggerignore:"true"`
 }
 

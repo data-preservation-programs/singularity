@@ -5,37 +5,39 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
+	"golang.org/x/exp/slices"
 	"os"
 	"reflect"
+	"time"
 )
 
-var fieldNamesToSkip = []string{
-	"CreatedAt", "UpdatedAt",
-}
-
-func PrintToConsole(obj interface{}, jsonOutput bool) {
-	if jsonOutput {
-		objJSON, err := json.MarshalIndent(obj, "", "  ")
-		if err != nil {
-			fmt.Println("Error: Unable to marshal object to JSON.")
-			return
-		}
-		fmt.Println(string(objJSON))
+func PrintAsJSON(obj interface{}) {
+	objJSON, err := json.MarshalIndent(obj, "", "  ")
+	if err != nil {
+		fmt.Println("Error: Unable to marshal object to JSON.")
 		return
 	}
+	fmt.Println(string(objJSON))
+}
 
+func PrintToConsole(obj interface{}, useJSON bool, except []string) {
+	if useJSON {
+		PrintAsJSON(obj)
+		return
+	}
 	value := reflect.ValueOf(obj)
 	if value.Kind() == reflect.Slice {
-		printTable(obj)
+		printTable(obj, except)
 	} else {
-		printSingleObject(obj)
+		printSingleObject(obj, except)
 	}
 }
 
-func isNotEligibleType(field reflect.StructField) bool {
-	return (field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) ||
-		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8) ||
-		field.Name == "CreatedAt" || field.Name == "UpdatedAt"
+func isNotEligibleType(field reflect.StructField, except []string) bool {
+	return slices.Contains(except, field.Name) ||
+		(field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) ||
+		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Struct) ||
+		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8)
 }
 
 func getValue(fieldValue reflect.Value) interface{} {
@@ -46,13 +48,15 @@ func getValue(fieldValue reflect.Value) interface{} {
 		} else {
 			finalValue = fieldValue.Elem().Interface()
 		}
+	} else if timeValue, ok := fieldValue.Interface().(time.Time); ok {
+		finalValue = timeValue.UTC().Format("2006-01-02 15:04:05Z")
 	} else {
 		finalValue = fieldValue.Interface()
 	}
 	return finalValue
 }
 
-func printTable(objects interface{}) {
+func printTable(objects interface{}, except []string) {
 	value := reflect.ValueOf(objects)
 	if value.Len() == 0 {
 		return
@@ -68,7 +72,7 @@ func printTable(objects interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if isNotEligibleType(field) {
+		if isNotEligibleType(field, except) {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -83,7 +87,7 @@ func printTable(objects interface{}) {
 		for j := 0; j < objType.NumField(); j++ {
 			field := objType.Field(j)
 			fieldValue := objValue.Field(j)
-			if isNotEligibleType(field) {
+			if isNotEligibleType(field, except) {
 				continue
 			}
 			row = append(row, getValue(fieldValue))
@@ -94,7 +98,7 @@ func printTable(objects interface{}) {
 	tbl.Print()
 	fmt.Println()
 }
-func printSingleObject(obj interface{}) {
+func printSingleObject(obj interface{}, except []string) {
 	value := reflect.Indirect(reflect.ValueOf(obj))
 	objType := value.Type()
 
@@ -104,7 +108,7 @@ func printSingleObject(obj interface{}) {
 	headers := make([]interface{}, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if isNotEligibleType(field) {
+		if isNotEligibleType(field, except) {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -117,7 +121,7 @@ func printSingleObject(obj interface{}) {
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		fieldValue := value.Field(i)
-		if isNotEligibleType(field) {
+		if isNotEligibleType(field, except) {
 			continue
 		}
 		row = append(row, getValue(fieldValue))

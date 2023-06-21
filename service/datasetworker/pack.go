@@ -58,8 +58,6 @@ func (w *DatasetWorkerThread) pack(
 			if err != nil {
 				return errors.Wrap(err, "failed to update cid of item")
 			}
-		} else {
-
 		}
 	}
 
@@ -82,7 +80,7 @@ func (w *DatasetWorkerThread) pack(
 					if err != nil {
 						return errors.Wrap(err, "failed to create car")
 					}
-					for i, _ := range result.CarBlocks {
+					for i := range result.CarBlocks {
 						result.CarBlocks[i].CarID = car.ID
 					}
 					err = db.CreateInBatches(&result.CarBlocks, 1000).Error
@@ -104,13 +102,13 @@ func (w *DatasetWorkerThread) pack(
 			dirCache := make(map[uint64]*daggen.DirectoryData)
 			childrenCache := make(map[uint64][]uint64)
 			for _, itemPart := range chunk.ItemParts {
-				dirId := itemPart.Item.DirectoryID
-				for dirId != nil {
-					dirData, ok := dirCache[*dirId]
+				dirID := itemPart.Item.DirectoryID
+				for dirID != nil {
+					dirData, ok := dirCache[*dirID]
 					if !ok {
 						dirData = &daggen.DirectoryData{}
 						var dir model.Directory
-						err := db.Where("id = ?", dirId).First(&dir).Error
+						err := db.Where("id = ?", dirID).First(&dir).Error
 						if err != nil {
 							return errors.Wrap(err, "failed to get directory")
 						}
@@ -120,14 +118,14 @@ func (w *DatasetWorkerThread) pack(
 							return errors.Wrap(err, "failed to unmarshall directory data")
 						}
 						dirData.Directory = dir
-						dirCache[*dirId] = dirData
+						dirCache[*dirID] = dirData
 						if dir.ParentID != nil {
-							childrenCache[*dir.ParentID] = append(childrenCache[*dir.ParentID], *dirId)
+							childrenCache[*dir.ParentID] = append(childrenCache[*dir.ParentID], *dirID)
 						}
 					}
 
 					// Update the directory for first iteration
-					if dirId == itemPart.Item.DirectoryID {
+					if dirID == itemPart.Item.DirectoryID {
 						itemPartID := itemPart.ID
 						itemPartCID, ok := result.ItemPartCIDs[itemPartID]
 						if !ok {
@@ -145,10 +143,12 @@ func (w *DatasetWorkerThread) pack(
 							if err != nil {
 								return errors.Wrap(err, "failed to add item to directory")
 							}
-							err = db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).Update("cid", model.CID(itemPartCID)).Error
-							if err != nil {
-								return errors.Wrap(err, "failed to update cid of item")
-							}
+							/*
+								err = db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).Update("cid", model.CID(itemPartCID)).Error
+								if err != nil {
+									return errors.Wrap(err, "failed to update cid of item")
+								}
+							*/
 						} else {
 							var allParts []model.ItemPart
 							err = db.Where("item_id = ?", itemPart.ItemID).Order("\"offset\" asc").Find(&allParts).Error
@@ -177,9 +177,8 @@ func (w *DatasetWorkerThread) pack(
 					}
 
 					// Next iteration
-					dirId = dirData.Directory.ParentID
+					dirID = dirData.Directory.ParentID
 				}
-
 			}
 			// Recursively update all directory internal structure
 			rootDirID, err := chunk.Source.RootDirectoryID(w.db)
@@ -191,12 +190,12 @@ func (w *DatasetWorkerThread) pack(
 				return errors.Wrap(err, "failed to resolve directory tree")
 			}
 			// Update all directories in the database
-			for dirId, dirData := range dirCache {
+			for dirID, dirData := range dirCache {
 				bytes, err := dirData.MarshalBinary()
 				if err != nil {
 					return errors.Wrap(err, "failed to marshall directory data")
 				}
-				err = db.Model(&model.Directory{}).Where("id = ?", dirId).Updates(map[string]interface{}{
+				err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]interface{}{
 					"cid":      model.CID(dirData.Node.Cid()),
 					"data":     bytes,
 					"exported": false,

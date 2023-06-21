@@ -190,9 +190,10 @@ func AssembleCar(
 							CarOffset:      offset,
 							CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
 							Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
-							ItemID:         &itemPart.ItemID,
-							ItemOffset:     block.Offset,
-							ItemEncrypted:  encryptor != nil,
+							// nolint:exportloopref
+							ItemID:        &itemPart.ItemID,
+							ItemOffset:    block.Offset,
+							ItemEncrypted: encryptor != nil,
 						},
 					)
 				}

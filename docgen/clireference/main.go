@@ -29,7 +29,11 @@ func main() {
 	sb.WriteString(getStdout([]string{}))
 	sb.WriteString("```\n")
 	sb.WriteString("{% endcode %}\n")
-	err := os.WriteFile("docs/en/cli-reference/README.md", []byte(sb.String()), 0644)
+	err := os.MkdirAll("docs/en/cli-reference", 0755)
+	if err != nil {
+		panic(err)
+	}
+	err = os.WriteFile("docs/en/cli-reference/README.md", []byte(sb.String()), 0644)
 	if err != nil {
 		panic(err)
 	}

@@ -22,24 +22,24 @@ func AddWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
-) (string, *handler.Error) {
+) (*model.Wallet, *handler.Error) {
 	if datasetName == "" {
-		return "", handler.NewBadRequestString("dataset name is required")
+		return nil, handler.NewBadRequestString("dataset name is required")
 	}
 
 	if wallet == "" {
-		return "", handler.NewBadRequestString("wallet address is required")
+		return nil, handler.NewBadRequestString("wallet address is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return "", handler.NewBadRequestString("failed to find dataset: " + err.Error())
+		return nil, handler.NewBadRequestString("failed to find dataset: " + err.Error())
 	}
 
 	var w model.Wallet
 	err = db.Where("address = ?", wallet).First(&w).Error
 	if err != nil {
-		return "", handler.NewBadRequestString("failed to find wallet: " + err.Error())
+		return nil, handler.NewBadRequestString("failed to find wallet: " + err.Error())
 	}
 
 	err = database.DoRetry(func() error {
@@ -50,8 +50,8 @@ func AddWalletHandler(
 	})
 
 	if err != nil {
-		return "", handler.NewBadRequestString("failed to create wallet assignment: " + err.Error())
+		return nil, handler.NewBadRequestString("failed to create wallet assignment: " + err.Error())
 	}
 
-	return wallet, nil
+	return &w, nil
 }

@@ -60,4 +60,3 @@ func (f DummyNode) Stat() (*ipld.NodeStat, error) {
 func (f DummyNode) Size() (uint64, error) {
 	return f.size, nil
 }
-

@@ -20,7 +20,7 @@ var DagGenCmd = &cli.Command{
 		if err != nil {
 			return err.CliError()
 		}
-		cliutil.PrintToConsole(source, c.Bool("json"))
+		cliutil.PrintToConsole(source, c.Bool("json"), exclude)
 		return nil
 	},
 }

@@ -9,51 +9,25 @@ USAGE:
    singularity datasource add gphotos [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --gphotos-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --gphotos-token
-      OAuth Access Token as a JSON blob.
-
    --gphotos-auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --gphotos-token-url
-      Token server url.
+   --gphotos-client-id
+      OAuth Client Id.
       
-      Leave blank to use the provider defaults.
-
-   --gphotos-read-only
-      Set to make the Google Photos backend read only.
-      
-      If you choose read only then rclone will only request read only access
-      to your photos, otherwise rclone will request full access.
-
-   --gphotos-start-year
-      Year limits the photos to be downloaded to those which are uploaded after the given year.
-
-   --gphotos-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+      Leave blank normally.
 
    --gphotos-client-secret
       OAuth Client Secret.
       
       Leave blank normally.
 
-   --gphotos-read-size
-      Set to read the size of media items.
+   --gphotos-encoding
+      The encoding for the backend.
       
-      Normally rclone does not read the size of media items since this takes
-      another transaction.  This isn't necessary for syncing.  However
-      rclone mount needs to know the size of files in advance of reading
-      them, so setting this flag when using rclone mount is recommended if
-      you want to read the media.
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --gphotos-include-archived
       Also view and download archived media.
@@ -69,6 +43,32 @@ DESCRIPTION:
       
       Without this flag, archived media will not be visible in directory
       listings and won't be transferred.
+
+   --gphotos-read-only
+      Set to make the Google Photos backend read only.
+      
+      If you choose read only then rclone will only request read only access
+      to your photos, otherwise rclone will request full access.
+
+   --gphotos-read-size
+      Set to read the size of media items.
+      
+      Normally rclone does not read the size of media items since this takes
+      another transaction.  This isn't necessary for syncing.  However
+      rclone mount needs to know the size of files in advance of reading
+      them, so setting this flag when using rclone mount is recommended if
+      you want to read the media.
+
+   --gphotos-start-year
+      Year limits the photos to be downloaded to those which are uploaded after the given year.
+
+   --gphotos-token
+      OAuth Access Token as a JSON blob.
+
+   --gphotos-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
 
 
 OPTIONS:

@@ -48,15 +48,15 @@ func {{.FuncName}}() {}
 `
 
 type Func struct {
-	FuncName string
-	Name string
+	FuncName   string
+	Name       string
 	StructName string
 }
 
 type Field struct {
-	Name string
-	Type string
-	Tag string
+	Name        string
+	Type        string
+	Tag         string
 	Description string
 }
 
@@ -93,7 +93,7 @@ func main() {
 	}
 
 	all := Type{
-		Name: "AllConfig",
+		Name:   "AllConfig",
 		Fields: []Field{},
 	}
 

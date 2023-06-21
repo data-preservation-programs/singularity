@@ -98,7 +98,7 @@ func (s DatasetListenerService) Start() {
 	e.Use(middleware.Recover())
 	e.POST("/upload", s.uploadFile)
 	e.GET("/push", func(c echo.Context) error {
-		//TODO _ := c.QueryParam("type")
+		// TODO _ := c.QueryParam("type")
 		path := c.QueryParam("path")
 		sourceIDStr := c.QueryParam("source_id")
 		sourceID, err := strconv.ParseUint(sourceIDStr, 10, 32)

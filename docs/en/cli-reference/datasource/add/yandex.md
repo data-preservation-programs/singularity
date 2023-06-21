@@ -9,6 +9,11 @@ USAGE:
    singularity datasource add yandex [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --yandex-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
    --yandex-client-id
       OAuth Client Id.
       
@@ -19,26 +24,21 @@ DESCRIPTION:
       
       Leave blank normally.
 
+   --yandex-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --yandex-hard-delete
+      Delete files permanently rather than putting them into the trash.
+
    --yandex-token
       OAuth Access Token as a JSON blob.
-
-   --yandex-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
 
    --yandex-token-url
       Token server url.
       
       Leave blank to use the provider defaults.
-
-   --yandex-hard-delete
-      Delete files permanently rather than putting them into the trash.
-
-   --yandex-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

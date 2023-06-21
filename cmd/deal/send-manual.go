@@ -116,7 +116,10 @@ var SendManualCmd = &cli.Command{
 		}
 
 		if cctx.Bool("json") {
-			content, _ := json.Marshal(map[string]string{"proposalId": proposalID})
+			content, err := json.Marshal(map[string]string{"proposalId": proposalID})
+			if err != nil {
+				return err
+			}
 			fmt.Println(string(content))
 			return nil
 		} else {

@@ -9,6 +9,9 @@ USAGE:
    singularity datasource add webdav [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --webdav-bearer-token
+      Bearer token instead of user/pass (e.g. a Macaroon).
+
    --webdav-bearer-token-command
       Command to run to get a bearer token.
 
@@ -32,10 +35,18 @@ DESCRIPTION:
       You can set multiple headers, e.g. '"Cookie","name=value","Authorization","xxx"'.
       
 
+   --webdav-pass
+      Password.
+
    --webdav-url
       URL of http host to connect to.
       
       E.g. https://example.com.
+
+   --webdav-user
+      User name.
+      
+      In case NTLM authentication is used, the username should be in the format 'Domain\User'.
 
    --webdav-vendor
       Name of the WebDAV site/service/software you are using.
@@ -46,17 +57,6 @@ DESCRIPTION:
          | sharepoint      | Sharepoint Online, authenticated by Microsoft account
          | sharepoint-ntlm | Sharepoint with NTLM authentication, usually self-hosted or on-premises
          | other           | Other site/service or software
-
-   --webdav-user
-      User name.
-      
-      In case NTLM authentication is used, the username should be in the format 'Domain\User'.
-
-   --webdav-pass
-      Password.
-
-   --webdav-bearer-token
-      Bearer token instead of user/pass (e.g. a Macaroon).
 
 
 OPTIONS:

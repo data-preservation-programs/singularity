@@ -9,29 +9,15 @@ USAGE:
    singularity datasource add sugarsync [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sugarsync-user
-      Sugarsync user.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --sugarsync-access-key-id
       Sugarsync Access Key ID.
       
       Leave blank to use rclone's.
 
-   --sugarsync-hard-delete
-      Permanently delete files if true
-      otherwise put them in the deleted files.
-
-   --sugarsync-refresh-token
-      Sugarsync refresh token.
+   --sugarsync-app-id
+      Sugarsync App ID.
       
-      Leave blank normally, will be auto configured by rclone.
+      Leave blank to use rclone's.
 
    --sugarsync-authorization
       Sugarsync authorization.
@@ -43,25 +29,39 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
-   --sugarsync-root-id
-      Sugarsync root id.
-      
-      Leave blank normally, will be auto configured by rclone.
-
    --sugarsync-deleted-id
       Sugarsync deleted folder id.
       
       Leave blank normally, will be auto configured by rclone.
 
-   --sugarsync-app-id
-      Sugarsync App ID.
+   --sugarsync-encoding
+      The encoding for the backend.
       
-      Leave blank to use rclone's.
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --sugarsync-hard-delete
+      Permanently delete files if true
+      otherwise put them in the deleted files.
 
    --sugarsync-private-access-key
       Sugarsync Private Access Key.
       
       Leave blank to use rclone's.
+
+   --sugarsync-refresh-token
+      Sugarsync refresh token.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-root-id
+      Sugarsync root id.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-user
+      Sugarsync user.
+      
+      Leave blank normally, will be auto configured by rclone.
 
 
 OPTIONS:

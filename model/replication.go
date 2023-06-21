@@ -75,25 +75,25 @@ func (d Deal) Key() string {
 }
 
 type Schedule struct {
-	ID                      uint32        `gorm:"primaryKey" json:"id"`
+	ID                      uint32        `gorm:"primaryKey"                                                json:"id"`
 	CreatedAt               time.Time     `json:"createdAt"`
 	UpdatedAt               time.Time     `json:"updatedAt"`
 	DatasetID               uint32        `json:"datasetId"`
-	Dataset                 *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
+	Dataset                 *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"          json:"dataset,omitempty"        swaggerignore:"true"`
 	URLTemplate             string        `json:"urlTemplate"`
-	HTTPHeaders             []string      `gorm:"type:JSON" json:"httpHeaders"`
+	HTTPHeaders             []string      `gorm:"type:JSON"                                                 json:"httpHeaders"`
 	Provider                string        `json:"provider"`
 	Price                   float64       `json:"price"`
 	TotalDealNumber         int           `json:"totalDealNumber"`
 	TotalDealSize           int64         `json:"totalDealSize"`
 	Verified                bool          `json:"verified"`
 	KeepUnsealed            bool          `json:"keepUnsealed"`
-	AnnounceToIPNI          bool          `json:"announceToIPNI"`
+	AnnounceToIPNI          bool          `json:"announceToIpni"`
 	StartDelay              time.Duration `json:"startDelay"`
 	Duration                time.Duration `json:"duration"`
 	State                   ScheduleState `json:"state"`
 	LastProcessedTimestamp  uint64        `json:"lastProcessedTimestamp"`
-	ScheduleWorkerID        *string       `gorm:"index:schedule_cleanup" json:"scheduleWorkerId"`
+	ScheduleWorkerID        *string       `gorm:"index:schedule_cleanup"                                    json:"scheduleWorkerId"`
 	ScheduleWorker          *Worker       `gorm:"foreignKey:ScheduleWorkerID;constraint:OnDelete:NO ACTION" json:"scheduleWorker,omitempty" swaggerignore:"true"`
 	ScheduleIntervalSeconds uint64        `json:"scheduleIntervalSeconds"`
 	ScheduleDealNumber      int           `json:"scheduleDealNumber"`
@@ -102,7 +102,7 @@ type Schedule struct {
 	MaxPendingDealSize      int64         `json:"maxPendingDealSize"`
 	Notes                   string        `json:"notes"`
 	ErrorMessage            string        `json:"errorMessage"`
-	AllowedPieceCIDs        StringSlice   `json:"AllowedPieceCIDs"`
+	AllowedPieceCIDs        StringSlice   `json:"allowedPieceCids"`
 }
 
 func (s Schedule) Equal(other Schedule) bool {
@@ -124,10 +124,10 @@ func (s Schedule) Equal(other Schedule) bool {
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey;size:16" json:"id"`   // ID is the short ID of the wallet
-	Address    string `gorm:"unique;size:256" json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty"`           // PrivateKey is the private key of the wallet
-	RemotePeer string `json:"remotePeer,omitempty"`           // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
+	ID         string `gorm:"primaryKey;size:16"   json:"id"`      // ID is the short ID of the wallet
+	Address    string `gorm:"unique;size:256"      json:"address"` // Address is the Filecoin full address of the wallet
+	PrivateKey string `json:"privateKey,omitempty"`                // PrivateKey is the private key of the wallet
+	RemotePeer string `json:"remotePeer,omitempty"`                // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
 type WalletAssignment struct {

@@ -19,6 +19,7 @@ func getRandomStringByWeight(pathMap map[string]uint64) string {
 	}
 
 	rand.Seed(time.Now().UnixNano())
+	//nolint:gosec
 	randWeight := rand.Intn(int(totalWeight))
 
 	var currentWeight uint64

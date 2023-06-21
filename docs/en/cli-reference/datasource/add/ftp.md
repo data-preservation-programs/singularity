@@ -9,93 +9,14 @@ USAGE:
    singularity datasource add ftp [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --ftp-tls-cache-size
-      Size of TLS session cache for all control and data connections.
-      
-      TLS cache allows to resume TLS sessions and reuse PSK between connections.
-      Increase if default size is not enough resulting in TLS resumption errors.
-      Enabled by default. Use 0 to disable.
-
-   --ftp-disable-tls13
-      Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
-
-   --ftp-port
-      FTP port number.
-
-   --ftp-tls
-      Use Implicit FTPS (FTP over TLS).
-      
-      When using implicit FTP over TLS the client connects using TLS
-      right from the start which breaks compatibility with
-      non-TLS-aware servers. This is usually served over port 990 rather
-      than port 21. Cannot be used in combination with explicit FTPS.
-
-   --ftp-disable-epsv
-      Disable using EPSV even if server advertises support.
-
-   --ftp-disable-utf8
-      Disable using UTF-8 even if server advertises support.
-
-   --ftp-writing-mdtm
-      Use MDTM to set modification time (VsFtpd quirk)
-
-   --ftp-force-list-hidden
-      Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
-
-   --ftp-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-      Examples:
-         | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
-         | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
-         | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
-
-   --ftp-host
-      FTP host to connect to.
-      
-      E.g. "ftp.example.com".
-
-   --ftp-user
-      FTP username.
-
-   --ftp-no-check-certificate
-      Do not verify the TLS certificate of the server.
-
-   --ftp-disable-mlsd
-      Disable using MLSD even if server advertises support.
-
-   --ftp-idle-timeout
-      Max time before closing idle connections.
-      
-      If no connections have been returned to the connection pool in the time
-      given, rclone will empty the connection pool.
-      
-      Set to 0 to keep connections indefinitely.
-      
-
-   --ftp-close-timeout
-      Maximum time to wait for a response to close.
-
-   --ftp-shut-timeout
-      Maximum time to wait for data connection closing status.
-
    --ftp-ask-password
       Allow asking for FTP password when needed.
       
       If this is set and no password is supplied then rclone will ask for a password
       
 
-   --ftp-pass
-      FTP password.
-
-   --ftp-explicit-tls
-      Use Explicit FTPS (FTP over TLS).
-      
-      When using explicit FTP over TLS the client explicitly requests
-      security from the server in order to upgrade a plain text connection
-      to an encrypted one. Cannot be used in combination with implicit FTPS.
+   --ftp-close-timeout
+      Maximum time to wait for a response to close.
 
    --ftp-concurrency
       Maximum number of FTP simultaneous connections, 0 for unlimited.
@@ -113,6 +34,85 @@ DESCRIPTION:
       --check-first` or `--checkers 1 --transfers 1`.
       
       
+
+   --ftp-disable-epsv
+      Disable using EPSV even if server advertises support.
+
+   --ftp-disable-mlsd
+      Disable using MLSD even if server advertises support.
+
+   --ftp-disable-tls13
+      Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+
+   --ftp-disable-utf8
+      Disable using UTF-8 even if server advertises support.
+
+   --ftp-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+      Examples:
+         | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
+         | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
+         | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
+
+   --ftp-explicit-tls
+      Use Explicit FTPS (FTP over TLS).
+      
+      When using explicit FTP over TLS the client explicitly requests
+      security from the server in order to upgrade a plain text connection
+      to an encrypted one. Cannot be used in combination with implicit FTPS.
+
+   --ftp-force-list-hidden
+      Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
+
+   --ftp-host
+      FTP host to connect to.
+      
+      E.g. "ftp.example.com".
+
+   --ftp-idle-timeout
+      Max time before closing idle connections.
+      
+      If no connections have been returned to the connection pool in the time
+      given, rclone will empty the connection pool.
+      
+      Set to 0 to keep connections indefinitely.
+      
+
+   --ftp-no-check-certificate
+      Do not verify the TLS certificate of the server.
+
+   --ftp-pass
+      FTP password.
+
+   --ftp-port
+      FTP port number.
+
+   --ftp-shut-timeout
+      Maximum time to wait for data connection closing status.
+
+   --ftp-tls
+      Use Implicit FTPS (FTP over TLS).
+      
+      When using implicit FTP over TLS the client connects using TLS
+      right from the start which breaks compatibility with
+      non-TLS-aware servers. This is usually served over port 990 rather
+      than port 21. Cannot be used in combination with explicit FTPS.
+
+   --ftp-tls-cache-size
+      Size of TLS session cache for all control and data connections.
+      
+      TLS cache allows to resume TLS sessions and reuse PSK between connections.
+      Increase if default size is not enough resulting in TLS resumption errors.
+      Enabled by default. Use 0 to disable.
+
+   --ftp-user
+      FTP username.
+
+   --ftp-writing-mdtm
+      Use MDTM to set modification time (VsFtpd quirk)
 
 
 OPTIONS:

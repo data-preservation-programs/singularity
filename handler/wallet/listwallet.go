@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 // ListWalletHandler godoc
 // @Summary List all wallets of a dataset.
 // @Tags Wallet

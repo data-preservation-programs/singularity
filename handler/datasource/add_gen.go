@@ -1,4 +1,3 @@
-
 // Code generated. DO NOT EDIT.
 package datasource
 
@@ -26,7 +25,6 @@ type AcdRequest struct {
 // @Param request body AcdRequest true "Request body"
 // @Router /dataset/{datasetName}/source/acd [post]
 func HandleAcd() {}
-
 
 type AzureblobRequest struct {
 	SourcePath                 string `json:"sourcePath"`                                                         // The path of the source to scan items
@@ -76,7 +74,6 @@ type AzureblobRequest struct {
 // @Router /dataset/{datasetName}/source/azureblob [post]
 func HandleAzureblob() {}
 
-
 type B2Request struct {
 	SourcePath           string `json:"sourcePath"`                                                 // The path of the source to scan items
 	DeleteAfterExport    string `json:"deleteAfterExport"`                                          // Delete the source after exporting to CAR files
@@ -109,7 +106,6 @@ type B2Request struct {
 // @Router /dataset/{datasetName}/source/b2 [post]
 func HandleB2() {}
 
-
 type BoxRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                            // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                     // Delete the source after exporting to CAR files
@@ -140,7 +136,6 @@ type BoxRequest struct {
 // @Router /dataset/{datasetName}/source/box [post]
 func HandleBox() {}
 
-
 type CryptRequest struct {
 	SourcePath              string `json:"sourcePath"`                              // The path of the source to scan items
 	DeleteAfterExport       string `json:"deleteAfterExport"`                       // Delete the source after exporting to CAR files
@@ -165,7 +160,6 @@ type CryptRequest struct {
 // @Param request body CryptRequest true "Request body"
 // @Router /dataset/{datasetName}/source/crypt [post]
 func HandleCrypt() {}
-
 
 type DriveRequest struct {
 	SourcePath                string `json:"sourcePath"`                                 // The path of the source to scan items
@@ -226,7 +220,6 @@ type DriveRequest struct {
 // @Router /dataset/{datasetName}/source/drive [post]
 func HandleDrive() {}
 
-
 type DropboxRequest struct {
 	SourcePath         string `json:"sourcePath"`                                                        // The path of the source to scan items
 	DeleteAfterExport  string `json:"deleteAfterExport"`                                                 // Delete the source after exporting to CAR files
@@ -257,7 +250,6 @@ type DropboxRequest struct {
 // @Router /dataset/{datasetName}/source/dropbox [post]
 func HandleDropbox() {}
 
-
 type FichierRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                                                                                    // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                                                                             // Delete the source after exporting to CAR files
@@ -278,7 +270,6 @@ type FichierRequest struct {
 // @Param request body FichierRequest true "Request body"
 // @Router /dataset/{datasetName}/source/fichier [post]
 func HandleFichier() {}
-
 
 type FilefabricRequest struct {
 	SourcePath        string `json:"sourcePath"`                                       // The path of the source to scan items
@@ -302,7 +293,6 @@ type FilefabricRequest struct {
 // @Param request body FilefabricRequest true "Request body"
 // @Router /dataset/{datasetName}/source/filefabric [post]
 func HandleFilefabric() {}
-
 
 type FtpRequest struct {
 	SourcePath         string `json:"sourcePath"`                                      // The path of the source to scan items
@@ -340,7 +330,6 @@ type FtpRequest struct {
 // @Router /dataset/{datasetName}/source/ftp [post]
 func HandleFtp() {}
 
-
 type GcsRequest struct {
 	SourcePath                string `json:"sourcePath"`                                    // The path of the source to scan items
 	DeleteAfterExport         string `json:"deleteAfterExport"`                             // Delete the source after exporting to CAR files
@@ -376,7 +365,6 @@ type GcsRequest struct {
 // @Router /dataset/{datasetName}/source/gcs [post]
 func HandleGcs() {}
 
-
 type GphotosRequest struct {
 	SourcePath        string `json:"sourcePath"`                                    // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                             // Delete the source after exporting to CAR files
@@ -403,7 +391,6 @@ type GphotosRequest struct {
 // @Router /dataset/{datasetName}/source/gphotos [post]
 func HandleGphotos() {}
 
-
 type HdfsRequest struct {
 	SourcePath             string `json:"sourcePath"`                                             // The path of the source to scan items
 	DeleteAfterExport      string `json:"deleteAfterExport"`                                      // Delete the source after exporting to CAR files
@@ -424,7 +411,6 @@ type HdfsRequest struct {
 // @Param request body HdfsRequest true "Request body"
 // @Router /dataset/{datasetName}/source/hdfs [post]
 func HandleHdfs() {}
-
 
 type HidriveRequest struct {
 	SourcePath                 string `json:"sourcePath"`                                            // The path of the source to scan items
@@ -456,7 +442,6 @@ type HidriveRequest struct {
 // @Router /dataset/{datasetName}/source/hidrive [post]
 func HandleHidrive() {}
 
-
 type HttpRequest struct {
 	SourcePath        string `json:"sourcePath"`              // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`       // Delete the source after exporting to CAR files
@@ -476,7 +461,6 @@ type HttpRequest struct {
 // @Param request body HttpRequest true "Request body"
 // @Router /dataset/{datasetName}/source/http [post]
 func HandleHttp() {}
-
 
 type InternetarchiveRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                 // The path of the source to scan items
@@ -501,7 +485,6 @@ type InternetarchiveRequest struct {
 // @Router /dataset/{datasetName}/source/internetarchive [post]
 func HandleInternetarchive() {}
 
-
 type JottacloudRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                                                     // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                                              // Delete the source after exporting to CAR files
@@ -523,7 +506,6 @@ type JottacloudRequest struct {
 // @Param request body JottacloudRequest true "Request body"
 // @Router /dataset/{datasetName}/source/jottacloud [post]
 func HandleJottacloud() {}
-
 
 type KoofrRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                 // The path of the source to scan items
@@ -547,7 +529,6 @@ type KoofrRequest struct {
 // @Param request body KoofrRequest true "Request body"
 // @Router /dataset/{datasetName}/source/koofr [post]
 func HandleKoofr() {}
-
 
 type LocalRequest struct {
 	SourcePath           string `json:"sourcePath"`                           // The path of the source to scan items
@@ -579,7 +560,6 @@ type LocalRequest struct {
 // @Router /dataset/{datasetName}/source/local [post]
 func HandleLocal() {}
 
-
 type MailruRequest struct {
 	SourcePath          string `json:"sourcePath"`                                                                                               // The path of the source to scan items
 	DeleteAfterExport   string `json:"deleteAfterExport"`                                                                                        // Delete the source after exporting to CAR files
@@ -606,7 +586,6 @@ type MailruRequest struct {
 // @Router /dataset/{datasetName}/source/mailru [post]
 func HandleMailru() {}
 
-
 type MegaRequest struct {
 	SourcePath        string `json:"sourcePath"`                               // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                        // Delete the source after exporting to CAR files
@@ -629,7 +608,6 @@ type MegaRequest struct {
 // @Router /dataset/{datasetName}/source/mega [post]
 func HandleMega() {}
 
-
 type MemoryRequest struct {
 	SourcePath        string `json:"sourcePath"`        // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"` // Delete the source after exporting to CAR files
@@ -645,7 +623,6 @@ type MemoryRequest struct {
 // @Param request body MemoryRequest true "Request body"
 // @Router /dataset/{datasetName}/source/memory [post]
 func HandleMemory() {}
-
 
 type NetstorageRequest struct {
 	SourcePath        string `json:"sourcePath"`               // The path of the source to scan items
@@ -666,7 +643,6 @@ type NetstorageRequest struct {
 // @Param request body NetstorageRequest true "Request body"
 // @Router /dataset/{datasetName}/source/netstorage [post]
 func HandleNetstorage() {}
-
 
 type OnedriveRequest struct {
 	SourcePath              string `json:"sourcePath"`                                                                                                                                          // The path of the source to scan items
@@ -705,7 +681,6 @@ type OnedriveRequest struct {
 // @Router /dataset/{datasetName}/source/onedrive [post]
 func HandleOnedrive() {}
 
-
 type OpendriveRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                                                                                                       // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                                                                                                // Delete the source after exporting to CAR files
@@ -725,7 +700,6 @@ type OpendriveRequest struct {
 // @Param request body OpendriveRequest true "Request body"
 // @Router /dataset/{datasetName}/source/opendrive [post]
 func HandleOpendrive() {}
-
 
 type OosRequest struct {
 	SourcePath           string `json:"sourcePath"`                               // The path of the source to scan items
@@ -765,7 +739,6 @@ type OosRequest struct {
 // @Router /dataset/{datasetName}/source/oos [post]
 func HandleOos() {}
 
-
 type PcloudRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                 // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                          // Delete the source after exporting to CAR files
@@ -792,7 +765,6 @@ type PcloudRequest struct {
 // @Router /dataset/{datasetName}/source/pcloud [post]
 func HandlePcloud() {}
 
-
 type PremiumizemeRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                             // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                      // Delete the source after exporting to CAR files
@@ -811,7 +783,6 @@ type PremiumizemeRequest struct {
 // @Router /dataset/{datasetName}/source/premiumizeme [post]
 func HandlePremiumizeme() {}
 
-
 type PutioRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                 // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                          // Delete the source after exporting to CAR files
@@ -828,7 +799,6 @@ type PutioRequest struct {
 // @Param request body PutioRequest true "Request body"
 // @Router /dataset/{datasetName}/source/putio [post]
 func HandlePutio() {}
-
 
 type QingstorRequest struct {
 	SourcePath        string `json:"sourcePath"`                               // The path of the source to scan items
@@ -855,7 +825,6 @@ type QingstorRequest struct {
 // @Param request body QingstorRequest true "Request body"
 // @Router /dataset/{datasetName}/source/qingstor [post]
 func HandleQingstor() {}
-
 
 type S3Request struct {
 	SourcePath            string `json:"sourcePath"`                               // The path of the source to scan items
@@ -922,7 +891,6 @@ type S3Request struct {
 // @Router /dataset/{datasetName}/source/s3 [post]
 func HandleS3() {}
 
-
 type SeafileRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                     // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                              // Delete the source after exporting to CAR files
@@ -947,7 +915,6 @@ type SeafileRequest struct {
 // @Param request body SeafileRequest true "Request body"
 // @Router /dataset/{datasetName}/source/seafile [post]
 func HandleSeafile() {}
-
 
 type SftpRequest struct {
 	SourcePath              string `json:"sourcePath"`                              // The path of the source to scan items
@@ -996,7 +963,6 @@ type SftpRequest struct {
 // @Router /dataset/{datasetName}/source/sftp [post]
 func HandleSftp() {}
 
-
 type SharefileRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                                                                                                       // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                                                                                                // Delete the source after exporting to CAR files
@@ -1018,7 +984,6 @@ type SharefileRequest struct {
 // @Router /dataset/{datasetName}/source/sharefile [post]
 func HandleSharefile() {}
 
-
 type SiaRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                             // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                      // Delete the source after exporting to CAR files
@@ -1038,7 +1003,6 @@ type SiaRequest struct {
 // @Param request body SiaRequest true "Request body"
 // @Router /dataset/{datasetName}/source/sia [post]
 func HandleSia() {}
-
 
 type SmbRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                                                                                  // The path of the source to scan items
@@ -1066,7 +1030,6 @@ type SmbRequest struct {
 // @Router /dataset/{datasetName}/source/smb [post]
 func HandleSmb() {}
 
-
 type StorjRequest struct {
 	SourcePath        string `json:"sourcePath"`                              // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                       // Delete the source after exporting to CAR files
@@ -1088,7 +1051,6 @@ type StorjRequest struct {
 // @Router /dataset/{datasetName}/source/storj [post]
 func HandleStorj() {}
 
-
 type TardigradeRequest struct {
 	SourcePath        string `json:"sourcePath"`                              // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                       // Delete the source after exporting to CAR files
@@ -1109,7 +1071,6 @@ type TardigradeRequest struct {
 // @Param request body TardigradeRequest true "Request body"
 // @Router /dataset/{datasetName}/source/tardigrade [post]
 func HandleTardigrade() {}
-
 
 type SugarsyncRequest struct {
 	SourcePath          string `json:"sourcePath"`                                   // The path of the source to scan items
@@ -1137,7 +1098,6 @@ type SugarsyncRequest struct {
 // @Param request body SugarsyncRequest true "Request body"
 // @Router /dataset/{datasetName}/source/sugarsync [post]
 func HandleSugarsync() {}
-
 
 type SwiftRequest struct {
 	SourcePath                  string `json:"sourcePath"`                           // The path of the source to scan items
@@ -1178,7 +1138,6 @@ type SwiftRequest struct {
 // @Router /dataset/{datasetName}/source/swift [post]
 func HandleSwift() {}
 
-
 type UptoboxRequest struct {
 	SourcePath        string `json:"sourcePath"`                                                                            // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                                                     // Delete the source after exporting to CAR files
@@ -1196,7 +1155,6 @@ type UptoboxRequest struct {
 // @Param request body UptoboxRequest true "Request body"
 // @Router /dataset/{datasetName}/source/uptobox [post]
 func HandleUptobox() {}
-
 
 type WebdavRequest struct {
 	SourcePath         string `json:"sourcePath"`         // The path of the source to scan items
@@ -1222,7 +1180,6 @@ type WebdavRequest struct {
 // @Router /dataset/{datasetName}/source/webdav [post]
 func HandleWebdav() {}
 
-
 type YandexRequest struct {
 	SourcePath        string `json:"sourcePath"`                                       // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                                // Delete the source after exporting to CAR files
@@ -1246,7 +1203,6 @@ type YandexRequest struct {
 // @Router /dataset/{datasetName}/source/yandex [post]
 func HandleYandex() {}
 
-
 type ZohoRequest struct {
 	SourcePath        string `json:"sourcePath"`                             // The path of the source to scan items
 	DeleteAfterExport string `json:"deleteAfterExport"`                      // Delete the source after exporting to CAR files
@@ -1269,7 +1225,6 @@ type ZohoRequest struct {
 // @Param request body ZohoRequest true "Request body"
 // @Router /dataset/{datasetName}/source/zoho [post]
 func HandleZoho() {}
-
 
 type AllConfig struct {
 	AcdClientId                         string `json:"acdClientId"`                                                                                                                                                 // OAuth Client Id.

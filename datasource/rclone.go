@@ -52,6 +52,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -76,15 +77,32 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 		return strings.Compare(i.Remote(), j.Remote()) < 0
 	})
 
+	startScanning := last == "" // Start scanning immediately if 'last' is empty.
 	for _, entry := range entries {
 		switch v := entry.(type) {
-		case fs.Object:
-			ch <- Entry{ScannedAt: time.Now(), Info: v}
 		case fs.Directory:
-			err = h.scan(ctx, v.Remote(), last, ch)
+			dirPath := v.Remote()
+			// If 'last' starts with directory path followed by a slash, scan inside the directory with the remaining path.
+			if strings.HasPrefix(last, dirPath+"/") {
+				err = h.scan(ctx, dirPath, last, ch)
+			} else if startScanning || strings.Compare(dirPath, last) > 0 {
+				// If we have started scanning or the directory is greater than 'last', scan inside without 'last' param.
+				err = h.scan(ctx, dirPath, "", ch)
+			}
 			if err != nil {
 				return err
 			}
+
+		case fs.Object:
+			// If 'last' is specified, skip entries until the first entry greater than 'last' is found.
+			if !startScanning {
+				if strings.Compare(entry.Remote(), last) > 0 {
+					startScanning = true // Found the first entry greater than 'last', start scanning.
+				} else {
+					continue
+				}
+			}
+			ch <- Entry{ScannedAt: time.Now(), Info: v}
 		}
 	}
 
@@ -153,7 +171,13 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		}
 	}
 
-	for name, options := range optionsByName {
+	var optionsByNameSorted []string
+	for name := range optionsByName {
+		optionsByNameSorted = append(optionsByNameSorted, name)
+	}
+	sort.Strings(optionsByNameSorted)
+	for _, name := range optionsByNameSorted {
+		options := optionsByName[name]
 		category := ""
 		if options[0].Advanced {
 			category = "Advanced Options"
@@ -192,6 +216,7 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 			} else if option.Provider != "" {
 				providers = strings.Split(option.Provider, ",")
 			}
+			sort.Strings(providers)
 			if option.Provider != "" {
 				usageLines = append(usageLines, "   [Provider] - "+strings.Join(providers, ", "))
 			}

@@ -16,7 +16,7 @@ type DirDetail struct {
 	Items   []model.Item
 }
 
-// GetDirectoryHandler godoc
+// InspectPathHandler godoc
 // @Summary Get all item details of a data source
 // @Tags Data Source
 // @Accept json
@@ -25,7 +25,7 @@ type DirDetail struct {
 // @Success 200 {array} model.Item
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/items [get]
-func GetDirectoryHandler(
+func InspectPathHandler(
 	db *gorm.DB,
 	id string,
 	path string,
@@ -48,32 +48,52 @@ func GetDirectoryHandler(
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
-	dirId := source.RootDirectory().ID
-	for _, segment := range segments {
-		var subdir model.Directory
-		err = db.Where("parent_id = ? AND name = ?", dirId, segment).First(&subdir).Error
+	dirID := source.RootDirectory().ID
+	var subdir model.Directory
+	for i, segment := range segments {
+		err = db.Where("parent_id = ? AND name = ?", dirID, segment).First(&subdir).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, handler.NewBadRequestString("dir not found with given path")
+			if i == len(segments)-1 {
+				var items []model.Item
+				err = db.Where("directory_id = ? AND path = ?", dirID, strings.Join(segments, "/")).Find(&items).Error
+				if err != nil {
+					return nil, handler.NewHandlerError(err)
+				}
+				if len(items) == 0 {
+					return nil, handler.NewBadRequestString("entry not found with given path")
+				}
+				return &DirDetail{
+					Current: subdir,
+					Dirs:    nil,
+					Items:   items,
+				}, nil
+			}
+			return nil, handler.NewBadRequestString("entry not found with given path")
 		}
 		if err != nil {
 			return nil, handler.NewHandlerError(err)
 		}
-		dirId = subdir.ID
+		dirID = subdir.ID
 	}
 
+	var current model.Directory
 	var dirs []model.Directory
 	var items []model.Item
-	err = db.Where("parent_id = ?", dirId).Find(&dirs).Error
+	err = db.Where("id = ?", dirID).First(&current).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
-	err = db.Where("directory_id = ?", dirId).Find(&items).Error
+	err = db.Where("parent_id = ?", dirID).Find(&dirs).Error
+	if err != nil {
+		return nil, handler.NewHandlerError(err)
+	}
+	err = db.Where("directory_id = ?", dirID).Find(&items).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
 
 	return &DirDetail{
-		Current: *source.RootDirectory(),
+		Current: current,
 		Dirs:    dirs,
 		Items:   items,
 	}, nil

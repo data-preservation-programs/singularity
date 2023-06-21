@@ -9,22 +9,22 @@ USAGE:
    singularity datasource add opendrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --opendrive-username
-      Username.
-
-   --opendrive-password
-      Password.
+   --opendrive-chunk-size
+      Files will be uploaded in chunks this size.
+      
+      Note that these chunks are buffered in memory so increasing them will
+      increase memory use.
 
    --opendrive-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
-   --opendrive-chunk-size
-      Files will be uploaded in chunks this size.
-      
-      Note that these chunks are buffered in memory so increasing them will
-      increase memory use.
+   --opendrive-password
+      Password.
+
+   --opendrive-username
+      Username.
 
 
 OPTIONS:

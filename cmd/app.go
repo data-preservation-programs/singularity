@@ -96,7 +96,7 @@ var App = &cli.App{
 			Category: "Daemons",
 			Usage:    "Run different singularity components",
 			Subcommands: []*cli.Command{
-				run.ApiCmd,
+				run.APICmd,
 				run.DatasetWorkerCmd,
 				run.ContentProviderCmd,
 				run.DealMakerCmd,
@@ -141,7 +141,7 @@ var App = &cli.App{
 						inspect.DagsCmd,
 						inspect.ChunkDetailCmd,
 						inspect.ItemDetailCmd,
-						inspect.DirCmd,
+						inspect.PathCmd,
 					},
 				},
 			},
@@ -170,7 +170,6 @@ func RunApp(ctx context.Context, args []string) error {
 
 func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
 	App.ExitErrHandler = func(c *cli.Context, err error) {
-		return
 	}
 	parser := shellwords.NewParser()
 	parser.ParseEnv = true // Enable environment variable parsing

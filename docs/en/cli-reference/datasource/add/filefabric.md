@@ -9,38 +9,10 @@ USAGE:
    singularity datasource add filefabric [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --filefabric-token-expiry
-      Token expiry time.
-      
-      Don't set this value - rclone will set it automatically.
-      
-
-   --filefabric-version
-      Version read from the file fabric.
-      
-      Don't set this value - rclone will set it automatically.
-      
-
    --filefabric-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --filefabric-url
-      URL of the Enterprise File Fabric to connect to.
-
-      Examples:
-         | https://storagemadeeasy.com       | Storage Made Easy US
-         | https://eu.storagemadeeasy.com    | Storage Made Easy EU
-         | https://yourfabric.smestorage.com | Connect to your Enterprise File Fabric
-
-   --filefabric-root-folder-id
-      ID of the root folder.
-      
-      Leave blank normally.
-      
-      Fill in to make rclone start with directory of a given ID.
-      
 
    --filefabric-permanent-token
       Permanent Authentication Token.
@@ -55,11 +27,39 @@ DESCRIPTION:
       For more info see: https://docs.storagemadeeasy.com/organisationcloud/api-tokens
       
 
+   --filefabric-root-folder-id
+      ID of the root folder.
+      
+      Leave blank normally.
+      
+      Fill in to make rclone start with directory of a given ID.
+      
+
    --filefabric-token
       Session Token.
       
       This is a session token which rclone caches in the config file. It is
       usually valid for 1 hour.
+      
+      Don't set this value - rclone will set it automatically.
+      
+
+   --filefabric-token-expiry
+      Token expiry time.
+      
+      Don't set this value - rclone will set it automatically.
+      
+
+   --filefabric-url
+      URL of the Enterprise File Fabric to connect to.
+
+      Examples:
+         | https://storagemadeeasy.com       | Storage Made Easy US
+         | https://eu.storagemadeeasy.com    | Storage Made Easy EU
+         | https://yourfabric.smestorage.com | Connect to your Enterprise File Fabric
+
+   --filefabric-version
+      Version read from the file fabric.
       
       Don't set this value - rclone will set it automatically.
       

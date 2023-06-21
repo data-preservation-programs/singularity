@@ -11,7 +11,7 @@ gen:
 
 lint:
 	gofmt -s -w .
-	golangci-lint run
+	golangci-lint run --fix
 
 swag:
 	swag init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./api/docs
@@ -19,10 +19,12 @@ swag:
 test:
 	gotestsum --format testname -- -coverprofile=coverage.out -coverpkg=./... ./...
 
-gendoc:
+gendoc: build
+	rm -rf ./docs/en/cli-reference
 	go run ./docgen/clireference/main.go
 
 genwebdoc:
+	rm -rf ./docs/en/web-api-reference
 	go run ./docgen/webapireference/main.go
 
 translate:

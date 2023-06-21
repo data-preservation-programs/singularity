@@ -100,14 +100,17 @@ func (w DatasetWorker) Run(parent context.Context) error {
 	select {
 	case <-done:
 		log.Logger("worker").Info("All work done, cleaning up")
+		//nolint:errcheck
 		w.cleanup()
 		return nil
 	case <-signalChan:
 		log.Logger("worker").Info("received signal, cleaning up")
+		//nolint:errcheck
 		w.cleanup()
 		return cli.Exit("received signal", 130)
 	case err := <-errChan:
 		log.Logger("worker").Errorw("one of the worker thread encountered unrecoverable error", "error", err)
+		//nolint:errcheck
 		w.cleanup()
 		return cli.Exit("worker thread failed", 1)
 	}
@@ -138,7 +141,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 			goto errorLoop
 		}
 		if source != nil {
-			err = w.dag(ctx, *source)
+			err = w.dag(*source)
 			if err != nil {
 				w.logger.Errorw("failed to generate dag", "error", err)
 				newState := model.Error
@@ -148,6 +151,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 					newErrorMessage = ""
 					cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 					defer cancel()
+					//nolint:contextcheck
 					w.db = w.db.WithContext(cancelCtx)
 				}
 				err = database.DoRetry(func() error {
@@ -196,6 +200,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 					newErrorMessage = ""
 					cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 					defer cancel()
+					//nolint:contextcheck
 					w.db = w.db.WithContext(cancelCtx)
 				}
 				err = database.DoRetry(func() error {
@@ -252,6 +257,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 						newErrorMessage = ""
 						cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 						defer cancel()
+						//nolint:contextcheck
 						w.db = w.db.WithContext(cancelCtx)
 					}
 					err = database.DoRetry(func() error {

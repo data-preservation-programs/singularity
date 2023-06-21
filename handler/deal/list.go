@@ -34,7 +34,7 @@ func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, *handler.E
 		if err != nil {
 			return nil, handler.NewHandlerError(err)
 		}
-		statement = statement.Where("dataset_id IN ?", underscore.Map(datasets, func(dataset model.Dataset) uint32 {return dataset.ID}))
+		statement = statement.Where("dataset_id IN ?", underscore.Map(datasets, func(dataset model.Dataset) uint32 { return dataset.ID }))
 	}
 
 	if len(request.Schedules) > 0 {
@@ -49,7 +49,7 @@ func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, *handler.E
 		statement = statement.Where("state IN ?", request.States)
 	}
 
-	err := db.Find(&deals).Error
+	err := db.Where(statement).Find(&deals).Error
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}

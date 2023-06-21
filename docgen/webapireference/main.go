@@ -20,7 +20,7 @@ type Operation struct {
 }
 
 func main() {
-	content, err := os.ReadFile("./api/docs/en/swagger.json")
+	content, err := os.ReadFile("./api/docs/swagger.json")
 	if err != nil {
 		panic(err)
 	}
@@ -34,20 +34,43 @@ func main() {
 	contentMap := map[string]*strings.Builder{}
 	var summaries []string
 
-	for pathName, pathObj := range spec.Paths {
-		for method, operation := range pathObj {
+	var pathsSorted []string
+	for path := range spec.Paths {
+		pathsSorted = append(pathsSorted, path)
+	}
+	slices.Sort(pathsSorted)
+	for _, pathName := range pathsSorted {
+		pathObj := spec.Paths[pathName]
+		var methodsSorted []string
+		for method := range pathObj {
+			methodsSorted = append(methodsSorted, method)
+		}
+		slices.Sort(methodsSorted)
+		for _, method := range methodsSorted {
+			operation := pathObj[method]
 			tag := operation.Tags[0]
 			if contentMap[tag] == nil {
 				contentMap[tag] = &strings.Builder{}
 				contentMap[tag].WriteString("# " + tag + "\n\n")
 			}
-			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/en/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
-			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/en/swagger.yaml)\n")
+			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
+			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)\n")
 			contentMap[tag].WriteString("{% endswagger %}\n\n")
 		}
 	}
 
-	for tag, builder := range contentMap {
+	err = os.MkdirAll("./docs/en/web-api-reference", 0755)
+	if err != nil {
+		panic(err)
+	}
+
+	var contentMapSorted []string
+	for tag := range contentMap {
+		contentMapSorted = append(contentMapSorted, tag)
+	}
+	slices.Sort(contentMapSorted)
+	for _, tag := range contentMapSorted {
+		builder := contentMap[tag]
 		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644)
 		if err != nil {
 			panic(err)
