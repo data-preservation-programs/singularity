@@ -51,6 +51,6 @@ var DownloadCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		piece := c.Args().First()
 		api := c.String("api")
-		return handler.DownloadHandler(piece, api, nil)
+		return handler.DownloadHandler(c.Context, piece, api, nil)
 	},
 }

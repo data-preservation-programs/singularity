@@ -8,8 +8,8 @@ import (
 
 // AgeEncryptor implements the Encryptor interface using age
 type AgeEncryptor struct {
-	rs        []age.Recipient
-	target    io.WriteCloser
+	rs     []age.Recipient
+	target io.WriteCloser
 }
 
 func NewAgeEncryptor(recipients []string) (Encryptor, error) {

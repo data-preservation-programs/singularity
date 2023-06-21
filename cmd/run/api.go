@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ApiCmd = &cli.Command{
+	APICmd = &cli.Command{
 		Name:  "api",
 		Usage: "Run the singularity API",
 		Flags: []cli.Flag{

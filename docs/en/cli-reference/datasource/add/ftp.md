@@ -9,18 +9,8 @@ USAGE:
    singularity datasource add ftp [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --ftp-tls-cache-size
-      Size of TLS session cache for all control and data connections.
-      
-      TLS cache allows to resume TLS sessions and reuse PSK between connections.
-      Increase if default size is not enough resulting in TLS resumption errors.
-      Enabled by default. Use 0 to disable.
-
-   --ftp-disable-tls13
-      Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
-
-   --ftp-port
-      FTP port number.
+   --ftp-user
+      FTP username.
 
    --ftp-tls
       Use Implicit FTPS (FTP over TLS).
@@ -30,50 +20,11 @@ DESCRIPTION:
       non-TLS-aware servers. This is usually served over port 990 rather
       than port 21. Cannot be used in combination with explicit FTPS.
 
-   --ftp-disable-epsv
-      Disable using EPSV even if server advertises support.
-
    --ftp-disable-utf8
       Disable using UTF-8 even if server advertises support.
 
    --ftp-writing-mdtm
       Use MDTM to set modification time (VsFtpd quirk)
-
-   --ftp-force-list-hidden
-      Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
-
-   --ftp-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-      Examples:
-         | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
-         | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
-         | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
-
-   --ftp-host
-      FTP host to connect to.
-      
-      E.g. "ftp.example.com".
-
-   --ftp-user
-      FTP username.
-
-   --ftp-no-check-certificate
-      Do not verify the TLS certificate of the server.
-
-   --ftp-disable-mlsd
-      Disable using MLSD even if server advertises support.
-
-   --ftp-idle-timeout
-      Max time before closing idle connections.
-      
-      If no connections have been returned to the connection pool in the time
-      given, rclone will empty the connection pool.
-      
-      Set to 0 to keep connections indefinitely.
-      
 
    --ftp-close-timeout
       Maximum time to wait for a response to close.
@@ -87,8 +38,18 @@ DESCRIPTION:
       If this is set and no password is supplied then rclone will ask for a password
       
 
-   --ftp-pass
-      FTP password.
+   --ftp-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+      Examples:
+         | Asterisk,Ctl,Dot,Slash                               | ProFTPd can't handle '*' in file names
+         | BackSlash,Ctl,Del,Dot,RightSpace,Slash,SquareBracket | PureFTPd can't handle '[]' or '*' in file names
+         | Ctl,LeftPeriod,Slash                                 | VsFTPd can't handle file names starting with dot
+
+   --ftp-port
+      FTP port number.
 
    --ftp-explicit-tls
       Use Explicit FTPS (FTP over TLS).
@@ -113,6 +74,45 @@ DESCRIPTION:
       --check-first` or `--checkers 1 --transfers 1`.
       
       
+
+   --ftp-no-check-certificate
+      Do not verify the TLS certificate of the server.
+
+   --ftp-disable-mlsd
+      Disable using MLSD even if server advertises support.
+
+   --ftp-force-list-hidden
+      Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
+
+   --ftp-disable-tls13
+      Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+
+   --ftp-host
+      FTP host to connect to.
+      
+      E.g. "ftp.example.com".
+
+   --ftp-pass
+      FTP password.
+
+   --ftp-disable-epsv
+      Disable using EPSV even if server advertises support.
+
+   --ftp-idle-timeout
+      Max time before closing idle connections.
+      
+      If no connections have been returned to the connection pool in the time
+      given, rclone will empty the connection pool.
+      
+      Set to 0 to keep connections indefinitely.
+      
+
+   --ftp-tls-cache-size
+      Size of TLS session cache for all control and data connections.
+      
+      TLS cache allows to resume TLS sessions and reuse PSK between connections.
+      Increase if default size is not enough resulting in TLS resumption errors.
+      Enabled by default. Use 0 to disable.
 
 
 OPTIONS:

@@ -9,12 +9,6 @@ USAGE:
    singularity datasource add jottacloud [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --jottacloud-upload-resume-limit
-      Files bigger than this can be resumed if the upload fail's.
-
-   --jottacloud-no-versions
-      Avoid server side versioning by deleting files and recreating files instead of overwriting them.
-
    --jottacloud-encoding
       The encoding for the backend.
       
@@ -30,6 +24,12 @@ DESCRIPTION:
 
    --jottacloud-hard-delete
       Delete files permanently rather than putting them into the trash.
+
+   --jottacloud-upload-resume-limit
+      Files bigger than this can be resumed if the upload fail's.
+
+   --jottacloud-no-versions
+      Avoid server side versioning by deleting files and recreating files instead of overwriting them.
 
 
 OPTIONS:

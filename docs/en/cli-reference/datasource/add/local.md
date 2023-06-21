@@ -9,8 +9,63 @@ USAGE:
    singularity datasource add local [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --local-links
-      Translate symlinks to/from regular files with a '.rclonelink' extension.
+   --local-one-file-system
+      Don't cross filesystem boundaries (unix/macOS only).
+
+   --local-case-insensitive
+      Force the filesystem to report itself as case insensitive.
+      
+      Normally the local backend declares itself as case insensitive on
+      Windows/macOS and case sensitive for everything else.  Use this flag
+      to override the default choice.
+
+   --local-no-sparse
+      Disable sparse files for multi-thread downloads.
+      
+      On Windows platforms rclone will make sparse files when doing
+      multi-thread downloads. This avoids long pauses on large files where
+      the OS zeros the file. However sparse files may be undesirable as they
+      cause disk fragmentation and can be slow to work with.
+
+   --local-no-check-updated
+      Don't check to see if the files change during upload.
+      
+      Normally rclone checks the size and modification time of files as they
+      are being uploaded and aborts with a message which starts "can't copy -
+      source file is being updated" if the file changes during upload.
+      
+      However on some file systems this modification time check may fail (e.g.
+      [Glusterfs #2206](https://github.com/rclone/rclone/issues/2206)) so this
+      check can be disabled with this flag.
+      
+      If this flag is set, rclone will use its best efforts to transfer a
+      file which is being updated. If the file is only having things
+      appended to it (e.g. a log) then rclone will transfer the log file with
+      the size it had the first time rclone saw it.
+      
+      If the file is being modified throughout (not just appended to) then
+      the transfer may fail with a hash check failure.
+      
+      In detail, once the file has had stat() called on it for the first
+      time we:
+      
+      - Only transfer the size that stat gave
+      - Only checksum the size that stat gave
+      - Don't update the stat info for the file
+      
+      
+
+   --local-zero-size-links
+      Assume the Stat size of links is zero (and read them instead) (deprecated).
+      
+      Rclone used to use the Stat size of links as the link size, but this fails in quite a few places:
+      
+      - Windows
+      - On some virtual filesystems (such ash LucidLink)
+      - Android
+      
+      So rclone now always reads the link.
+      
 
    --local-case-sensitive
       Force the filesystem to report itself as case sensitive.
@@ -46,52 +101,13 @@ DESCRIPTION:
       This flag disables warning messages on skipped symlinks or junction
       points, as you explicitly acknowledge that they should be skipped.
 
-   --local-no-check-updated
-      Don't check to see if the files change during upload.
-      
-      Normally rclone checks the size and modification time of files as they
-      are being uploaded and aborts with a message which starts "can't copy -
-      source file is being updated" if the file changes during upload.
-      
-      However on some file systems this modification time check may fail (e.g.
-      [Glusterfs #2206](https://github.com/rclone/rclone/issues/2206)) so this
-      check can be disabled with this flag.
-      
-      If this flag is set, rclone will use its best efforts to transfer a
-      file which is being updated. If the file is only having things
-      appended to it (e.g. a log) then rclone will transfer the log file with
-      the size it had the first time rclone saw it.
-      
-      If the file is being modified throughout (not just appended to) then
-      the transfer may fail with a hash check failure.
-      
-      In detail, once the file has had stat() called on it for the first
-      time we:
-      
-      - Only transfer the size that stat gave
-      - Only checksum the size that stat gave
-      - Don't update the stat info for the file
-      
-      
-
-   --local-no-sparse
-      Disable sparse files for multi-thread downloads.
-      
-      On Windows platforms rclone will make sparse files when doing
-      multi-thread downloads. This avoids long pauses on large files where
-      the OS zeros the file. However sparse files may be undesirable as they
-      cause disk fragmentation and can be slow to work with.
-
    --local-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
-   --local-nounc
-      Disable UNC (long path names) conversion on Windows.
-
-      Examples:
-         | true | Disables long file names.
+   --local-links
+      Translate symlinks to/from regular files with a '.rclonelink' extension.
 
    --local-unicode-normalization
       Apply unicode NFC normalization to paths and filenames.
@@ -109,27 +125,11 @@ DESCRIPTION:
       Note that rclone compares filenames with unicode normalization in the sync
       routine so this flag shouldn't normally be used.
 
-   --local-one-file-system
-      Don't cross filesystem boundaries (unix/macOS only).
+   --local-nounc
+      Disable UNC (long path names) conversion on Windows.
 
-   --local-zero-size-links
-      Assume the Stat size of links is zero (and read them instead) (deprecated).
-      
-      Rclone used to use the Stat size of links as the link size, but this fails in quite a few places:
-      
-      - Windows
-      - On some virtual filesystems (such ash LucidLink)
-      - Android
-      
-      So rclone now always reads the link.
-      
-
-   --local-case-insensitive
-      Force the filesystem to report itself as case insensitive.
-      
-      Normally the local backend declares itself as case insensitive on
-      Windows/macOS and case sensitive for everything else.  Use this flag
-      to override the default choice.
+      Examples:
+         | true | Disables long file names.
 
 
 OPTIONS:

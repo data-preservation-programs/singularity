@@ -1,10 +1,18 @@
 # Data Source
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}/rescan" method="post" %}
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}" method="delete" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}" method="patch" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/dataset/push" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}/check" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
 {% endswagger %}
 
@@ -16,23 +24,15 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
 {% endswagger %}
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}" method="delete" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
-{% endswagger %}
-
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}" method="patch" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
-{% endswagger %}
-
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/sources" method="get" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
-{% endswagger %}
-
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}/check" method="post" %}
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}/rescan" method="post" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
 {% endswagger %}
 
 {% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/source/{id}/summary" method="get" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% endswagger %}
+
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/sources" method="get" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
 {% endswagger %}
 

@@ -20,7 +20,7 @@ type Operation struct {
 }
 
 func main() {
-	content, err := os.ReadFile("./api/docs/en/swagger.json")
+	content, err := os.ReadFile("./api/docs/swagger.json")
 	if err != nil {
 		panic(err)
 	}
@@ -41,12 +41,16 @@ func main() {
 				contentMap[tag] = &strings.Builder{}
 				contentMap[tag].WriteString("# " + tag + "\n\n")
 			}
-			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/en/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
-			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/en/swagger.yaml)\n")
+			contentMap[tag].WriteString(fmt.Sprintf("{%% swagger src=\"https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml\" path=\"%s\" method=\"%s\" %%}\n", pathName, method))
+			contentMap[tag].WriteString("[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)\n")
 			contentMap[tag].WriteString("{% endswagger %}\n\n")
 		}
 	}
 
+	err = os.MkdirAll("./docs/en/web-api-reference", 0755)
+	if err != nil {
+		panic(err)
+	}
 	for tag, builder := range contentMap {
 		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644)
 		if err != nil {

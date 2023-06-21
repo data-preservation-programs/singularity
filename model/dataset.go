@@ -206,9 +206,9 @@ type Source struct {
 type Chunk struct {
 	ID              uint32     `gorm:"primaryKey" json:"id"`
 	CreatedAt       time.Time  `json:"createdAt"`
-	SourceID        uint32     `json:"sourceId"`
+	SourceID        uint32     `gorm:"index:source_summary_chunks" json:"sourceId"`
 	Source          *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
-	PackingState    WorkState  `gorm:"index:chunk_cleanup;size:16" json:"packingState"`
+	PackingState    WorkState  `gorm:"index:source_summary_chunks;index:chunk_cleanup;size:16" json:"packingState"`
 	PackingWorkerID *string    `gorm:"index:chunk_cleanup" json:"packingWorkerId,omitempty"`
 	PackingWorker   *Worker    `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty" swaggerignore:"true"`
 	ErrorMessage    string     `json:"errorMessage"`
@@ -220,13 +220,13 @@ type Chunk struct {
 type Item struct {
 	ID                        uint64     `gorm:"primaryKey" json:"id"`
 	ScannedAt                 time.Time  `json:"scannedAt"`
-	SourceID                  uint32     `gorm:"index:check_existence" json:"sourceId"`
+	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items" json:"sourceId"`
 	Source                    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
 	Path                      string     `gorm:"index:check_existence;size:1024" json:"path"`
 	Hash                      string     `gorm:"index:check_existence;size:256" json:"hash"`
 	Size                      int64      `gorm:"index:check_existence" json:"size"`
 	LastModifiedTimestampNano int64      `gorm:"index:check_existence" json:"lastModified"`
-	CID                       CID        `gorm:"column:cid;type:bytes;size:256" json:"cid"`
+	CID                       CID        `gorm:"index:source_summary_items;column:cid;type:bytes;size:256" json:"cid"`
 	DirectoryID               *uint64    `gorm:"index" json:"directoryId"`
 	Directory                 *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE" json:"directory,omitempty" swaggerignore:"true"`
 	ItemParts                 []ItemPart `gorm:"constraint:OnDelete:CASCADE" json:"itemParts,omitempty"`

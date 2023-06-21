@@ -8,15 +8,16 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ItemDetailCmd = &cli.Command{
-	Name:      "itemdetail",
-	Usage:     "Get details about a specific item",
-	ArgsUsage: "<item_id>",
+var PathCmd = &cli.Command{
+	Name:      "path",
+	Usage:     "Get details about a path within a data source",
+	ArgsUsage: "<source_id> <path>",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		result, err := inspect.GetSourceItemDetailHandler(
+		result, err := inspect.InspectPathHandler(
 			db,
 			c.Args().Get(0),
+			c.Args().Get(1),
 		)
 		if err != nil {
 			return err.CliError()
@@ -27,10 +28,16 @@ var ItemDetailCmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println("Item:")
-		cliutil.PrintToConsole(result, false, nil)
-		fmt.Println("Item Parts:")
-		cliutil.PrintToConsole(result.ItemParts, false, nil)
+		fmt.Println("Current Directory:")
+		cliutil.PrintToConsole(result.Current, false, nil)
+		if len(result.Dirs) > 0 {
+			fmt.Println("SubDirs:")
+			cliutil.PrintToConsole(result.Dirs, false, nil)
+		}
+		if len(result.Items) > 0 {
+			fmt.Println("SubItems:")
+			cliutil.PrintToConsole(result.Items, false, nil)
+		}
 		return nil
 	},
 }

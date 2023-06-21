@@ -14,7 +14,7 @@ COMMANDS:
    dags         Get all piece details for generated dags
    chunkdetail  Get details about a specific chunk
    itemdetail   Get details about a specific item
-   dir          Get all item details within a directory of a data source
+   path         Get details about a path within a data source
    help, h      Shows a list of commands or help for one command
 
 OPTIONS:

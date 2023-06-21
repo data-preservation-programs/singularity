@@ -9,6 +9,11 @@ USAGE:
    singularity datasource add internetarchive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --internetarchive-secret-access-key
+      IAS3 Secret Key (password).
+      
+      Leave blank for anonymous access.
+
    --internetarchive-endpoint
       IAS3 Endpoint.
       
@@ -41,11 +46,6 @@ DESCRIPTION:
       
       Leave blank for anonymous access.
       You can find one here: https://archive.org/account/s3.php
-
-   --internetarchive-secret-access-key
-      IAS3 Secret Key (password).
-      
-      Leave blank for anonymous access.
 
 
 OPTIONS:

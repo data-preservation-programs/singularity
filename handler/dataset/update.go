@@ -80,10 +80,9 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) *handler.
 		if pieceSize != util.NextPowerOfTwo(pieceSize) {
 			return handler.NewBadRequestString("piece size must be a power of two")
 		}
-
-		dataset.PieceSize = int64(pieceSize)
 	}
 
+	dataset.PieceSize = int64(pieceSize)
 	if dataset.PieceSize > 1<<36 {
 		return handler.NewBadRequestString("piece size cannot be larger than 64 GiB")
 	}

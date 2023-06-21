@@ -2,6 +2,10 @@ run:
   tests: false
   skip-dirs:
     - replication/internal
+    - cmd/embed
+    - docs
+    - handler/datasource/generate
+    - docgen
 
 linters:
   enable-all: true
@@ -44,10 +48,16 @@ linters:
     - containedctx
     - maintidx
     - nonamedreturns
+    - nilnil
+    - prealloc
+    - gochecknoinits
+    - dupl
+    - forbidigo
+    - godot
 
 linters-settings:
   lll:
-    line-length: 140
+    line-length: 180
   errcheck:
     exclude-functions:
       - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline
@@ -56,3 +66,4 @@ linters-settings:
     rules:
       - name: var-naming
         disabled: true
+

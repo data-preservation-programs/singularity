@@ -9,12 +9,6 @@ USAGE:
    singularity datasource add filefabric [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --filefabric-token-expiry
-      Token expiry time.
-      
-      Don't set this value - rclone will set it automatically.
-      
-
    --filefabric-version
       Version read from the file fabric.
       
@@ -60,6 +54,12 @@ DESCRIPTION:
       
       This is a session token which rclone caches in the config file. It is
       usually valid for 1 hour.
+      
+      Don't set this value - rclone will set it automatically.
+      
+
+   --filefabric-token-expiry
+      Token expiry time.
       
       Don't set this value - rclone will set it automatically.
       

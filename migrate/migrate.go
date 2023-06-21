@@ -1,4 +1,5 @@
 //go:build exclude
+
 package migrate
 
 import (

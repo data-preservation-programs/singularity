@@ -16,8 +16,8 @@ DESCRIPTION:
    For more advanced usage, please use the subcommands under `dataset` and `datasource`.
    You can also use this command for benchmarking with in-memory database and inline preparation, i.e.
      mkdir dataset
-     truncate -s 1024G test.img
-     singularity ez-prep --output-dir '' --database-file '' -j $(nproc) ./dataset
+     truncate -s 1024G dataset/1T.bin
+     singularity ez-prep --output-dir '' --database-file '' -j $(($(nproc) / 4 + 1)) ./dataset
 
 OPTIONS:
    --max-size value, -M value     Maximum size of the CAR files to be created (default: "31.5GiB")

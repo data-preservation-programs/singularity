@@ -88,7 +88,7 @@ type Schedule struct {
 	TotalDealSize           int64         `json:"totalDealSize"`
 	Verified                bool          `json:"verified"`
 	KeepUnsealed            bool          `json:"keepUnsealed"`
-	AnnounceToIPNI          bool          `json:"announceToIPNI"`
+	AnnounceToIPNI          bool          `json:"announceToIpni"`
 	StartDelay              time.Duration `json:"startDelay"`
 	Duration                time.Duration `json:"duration"`
 	State                   ScheduleState `json:"state"`
@@ -102,7 +102,7 @@ type Schedule struct {
 	MaxPendingDealSize      int64         `json:"maxPendingDealSize"`
 	Notes                   string        `json:"notes"`
 	ErrorMessage            string        `json:"errorMessage"`
-	AllowedPieceCIDs        StringSlice   `json:"AllowedPieceCIDs"`
+	AllowedPieceCIDs        StringSlice   `json:"allowedPieceCids"`
 }
 
 func (s Schedule) Equal(other Schedule) bool {

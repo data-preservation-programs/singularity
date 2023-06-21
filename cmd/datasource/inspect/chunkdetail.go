@@ -40,14 +40,14 @@ var ChunkDetailCmd = &cli.Command{
 		}
 
 		if c.Bool("json") {
-			cliutil.PrintToConsole(result, true)
+			cliutil.PrintToConsole(result, true, nil)
 			return nil
 		}
 
 		fmt.Println("Chunk:")
-		cliutil.PrintToConsole(result, false)
+		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
 		fmt.Println("Pieces:")
-		cliutil.PrintToConsole(result.Cars, false)
+		cliutil.PrintToConsole(result.Cars, false, nil)
 		fmt.Println("Item Parts:")
 		cliutil.PrintToConsole(underscore.Map(result.ItemParts, func(i model.ItemPart) ItemPartDetail {
 			return ItemPartDetail{
@@ -64,7 +64,7 @@ var ChunkDetailCmd = &cli.Command{
 				ItemCID:                   i.Item.CID,
 				DirectoryID:               *i.Item.DirectoryID,
 			}
-		}), false)
+		}), false, nil)
 		return nil
 	},
 }

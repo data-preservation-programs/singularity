@@ -85,7 +85,6 @@ func (w *DealMakerWorker) Run(ctx context.Context, schedule model.Schedule) {
 	if err != nil {
 		w.logger.Errorw("failed to update schedule", "schedule_id", schedule.ID, "error", err)
 	}
-	return
 }
 
 func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) (bool, error) {
@@ -250,7 +249,7 @@ func (d DealMakerService) Run(parent context.Context) error {
 	go healthcheck.StartHealthCheckCleanup(ctx, d.db)
 
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP, os.Kill, os.Interrupt)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP, os.Interrupt)
 
 	for {
 		var schedules []model.Schedule
@@ -290,9 +289,11 @@ func (d DealMakerService) Run(parent context.Context) error {
 			for _, cancel := range d.jobs {
 				cancel()
 			}
+			//nolint:errcheck
 			d.cleanup()
 			return cli.Exit("received signal", 130)
 		case <-ctx.Done():
+			//nolint:errcheck
 			d.cleanup()
 			return nil
 		case <-time.After(1 * time.Minute):

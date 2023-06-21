@@ -9,8 +9,28 @@ USAGE:
    singularity datasource add sugarsync [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --sugarsync-user
-      Sugarsync user.
+   --sugarsync-app-id
+      Sugarsync App ID.
+      
+      Leave blank to use rclone's.
+
+   --sugarsync-private-access-key
+      Sugarsync Private Access Key.
+      
+      Leave blank to use rclone's.
+
+   --sugarsync-refresh-token
+      Sugarsync refresh token.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-authorization-expiry
+      Sugarsync authorization expiry.
+      
+      Leave blank normally, will be auto configured by rclone.
+
+   --sugarsync-deleted-id
+      Sugarsync deleted folder id.
       
       Leave blank normally, will be auto configured by rclone.
 
@@ -28,18 +48,13 @@ DESCRIPTION:
       Permanently delete files if true
       otherwise put them in the deleted files.
 
-   --sugarsync-refresh-token
-      Sugarsync refresh token.
-      
-      Leave blank normally, will be auto configured by rclone.
-
    --sugarsync-authorization
       Sugarsync authorization.
       
       Leave blank normally, will be auto configured by rclone.
 
-   --sugarsync-authorization-expiry
-      Sugarsync authorization expiry.
+   --sugarsync-user
+      Sugarsync user.
       
       Leave blank normally, will be auto configured by rclone.
 
@@ -47,21 +62,6 @@ DESCRIPTION:
       Sugarsync root id.
       
       Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-deleted-id
-      Sugarsync deleted folder id.
-      
-      Leave blank normally, will be auto configured by rclone.
-
-   --sugarsync-app-id
-      Sugarsync App ID.
-      
-      Leave blank to use rclone's.
-
-   --sugarsync-private-access-key
-      Sugarsync Private Access Key.
-      
-      Leave blank to use rclone's.
 
 
 OPTIONS:

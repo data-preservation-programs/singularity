@@ -9,18 +9,21 @@ USAGE:
    singularity datasource add hidrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --hidrive-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
+   --hidrive-token
+      OAuth Access Token as a JSON blob.
 
-   --hidrive-endpoint
-      Endpoint for the service.
+   --hidrive-disable-fetching-member-count
+      Do not fetch number of objects in directories unless it is absolutely necessary.
       
-      This is the URL that API-calls will be made to.
+      Requests may be faster if the number of objects in subdirectories is not fetched.
 
    --hidrive-auth-url
       Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --hidrive-token-url
+      Token server url.
       
       Leave blank to use the provider defaults.
 
@@ -30,33 +33,6 @@ DESCRIPTION:
       Examples:
          | rw | Read and write access to resources.
          | ro | Read-only access to resources.
-
-   --hidrive-scope-role
-      User-level that rclone should use when requesting access from HiDrive.
-
-      Examples:
-         | user  | User-level access to management permissions.
-                 | This will be sufficient in most cases.
-         | admin | Extensive access to management permissions.
-         | owner | Full access to management permissions.
-
-   --hidrive-upload-concurrency
-      Concurrency for chunked uploads.
-      
-      This is the upper limit for how many transfers for the same file are running concurrently.
-      Setting this above to a value smaller than 1 will cause uploads to deadlock.
-      
-      If you are uploading small numbers of large files over high-speed links
-      and these uploads do not fully utilize your bandwidth, then increasing
-      this may help to speed up the transfers.
-
-   --hidrive-token
-      OAuth Access Token as a JSON blob.
-
-   --hidrive-disable-fetching-member-count
-      Do not fetch number of objects in directories unless it is absolutely necessary.
-      
-      Requests may be faster if the number of objects in subdirectories is not fetched.
 
    --hidrive-upload-cutoff
       Cutoff/Threshold for chunked uploads.
@@ -72,6 +48,20 @@ DESCRIPTION:
       
       Leave blank normally.
 
+   --hidrive-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --hidrive-scope-role
+      User-level that rclone should use when requesting access from HiDrive.
+
+      Examples:
+         | user  | User-level access to management permissions.
+                 | This will be sufficient in most cases.
+         | admin | Extensive access to management permissions.
+         | owner | Full access to management permissions.
+
    --hidrive-root-prefix
       The root/parent folder for all paths.
       
@@ -85,6 +75,26 @@ DESCRIPTION:
          | <unset> | This specifies that there is no root-prefix for your paths.
                    | When using this you will always need to specify paths to this remote with a valid parent e.g. "remote:/path/to/dir" or "remote:root/path/to/dir".
 
+   --hidrive-endpoint
+      Endpoint for the service.
+      
+      This is the URL that API-calls will be made to.
+
+   --hidrive-upload-concurrency
+      Concurrency for chunked uploads.
+      
+      This is the upper limit for how many transfers for the same file are running concurrently.
+      Setting this above to a value smaller than 1 will cause uploads to deadlock.
+      
+      If you are uploading small numbers of large files over high-speed links
+      and these uploads do not fully utilize your bandwidth, then increasing
+      this may help to speed up the transfers.
+
+   --hidrive-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --hidrive-chunk-size
       Chunksize for chunked uploads.
       
@@ -96,16 +106,6 @@ DESCRIPTION:
       
       Setting this to larger values may increase the upload speed at the cost of using more memory.
       It can be set to smaller values smaller to save on memory.
-
-   --hidrive-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --hidrive-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
 
 
 OPTIONS:

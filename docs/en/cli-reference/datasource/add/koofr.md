@@ -9,6 +9,23 @@ USAGE:
    singularity datasource add koofr [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --koofr-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --koofr-provider
+      Choose your storage provider.
+
+      Examples:
+         | koofr       | Koofr, https://app.koofr.net/
+         | digistorage | Digi Storage, https://storage.rcs-rds.ro/
+         | other       | Any other Koofr API compatible storage service
+
+   --koofr-endpoint
+      [Provider] - other
+         The Koofr API endpoint to use.
+
    --koofr-mountid
       Mount ID of the mount to use.
       
@@ -31,23 +48,6 @@ DESCRIPTION:
 
       [Provider] - other
          Your password for rclone (generate one at your service's settings page).
-
-   --koofr-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --koofr-provider
-      Choose your storage provider.
-
-      Examples:
-         | koofr       | Koofr, https://app.koofr.net/
-         | digistorage | Digi Storage, https://storage.rcs-rds.ro/
-         | other       | Any other Koofr API compatible storage service
-
-   --koofr-endpoint
-      [Provider] - other
-         The Koofr API endpoint to use.
 
 
 OPTIONS:

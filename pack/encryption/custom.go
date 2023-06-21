@@ -1,13 +1,11 @@
 package encryption
 
 import (
-	"github.com/ipfs/go-log/v2"
+	"github.com/pkg/errors"
 	"io"
 	"os/exec"
 	"sync"
 )
-
-var logger = log.Logger("encryptor")
 
 // CustomEncryptor is an implementation of Encryptor that uses a custom command to encrypt data.
 type CustomEncryptor struct {
@@ -22,7 +20,7 @@ type readCloserWithError struct {
 
 func (rc *readCloserWithError) Read(p []byte) (n int, err error) {
 	n, err = rc.ReadCloser.Read(p)
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		rc.wait.Wait()
 		if *rc.err != nil {
 			return 0, *rc.err

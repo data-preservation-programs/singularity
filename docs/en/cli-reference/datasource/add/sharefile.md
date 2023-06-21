@@ -9,6 +9,11 @@ USAGE:
    singularity datasource add sharefile [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --sharefile-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --sharefile-upload-cutoff
       Cutoff for switching to multipart upload.
 
@@ -41,11 +46,6 @@ DESCRIPTION:
       This is usually auto discovered as part of the oauth process, but can
       be set manually to something like: https://XXX.sharefile.com
       
-
-   --sharefile-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

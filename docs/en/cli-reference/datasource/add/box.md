@@ -14,28 +14,39 @@ DESCRIPTION:
       
       Leave blank normally.
 
+   --box-token-url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
    --box-auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --box-box-config-file
-      Box App config.json location
+   --box-box-sub-type
       
-      Leave blank normally.
-      
-      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+      Examples:
+         | user       | Rclone should act on behalf of a user.
+         | enterprise | Rclone should act on behalf of a service account.
+
+   --box-upload-cutoff
+      Cutoff for switching to multipart upload (>= 50 MiB).
+
+   --box-owned-by
+      Only show items owned by the login (email address) passed in.
 
    --box-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
-   --box-owned-by
-      Only show items owned by the login (email address) passed in.
+   --box-token
+      OAuth Access Token as a JSON blob.
 
-   --box-upload-cutoff
-      Cutoff for switching to multipart upload (>= 50 MiB).
+   --box-root-folder-id
+      Fill in for rclone to use a non root folder as its starting point.
 
    --box-list-chunk
       Size of listing chunk 1-1000.
@@ -45,28 +56,17 @@ DESCRIPTION:
       
       Leave blank normally.
 
-   --box-token
-      OAuth Access Token as a JSON blob.
-
-   --box-token-url
-      Token server url.
+   --box-box-config-file
+      Box App config.json location
       
-      Leave blank to use the provider defaults.
-
-   --box-root-folder-id
-      Fill in for rclone to use a non root folder as its starting point.
+      Leave blank normally.
+      
+      Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
    --box-access-token
       Box App Primary Access Token
       
       Leave blank normally.
-
-   --box-box-sub-type
-      
-
-      Examples:
-         | user       | Rclone should act on behalf of a user.
-         | enterprise | Rclone should act on behalf of a service account.
 
    --box-commit-retries
       Max number of times to try committing a multipart file.

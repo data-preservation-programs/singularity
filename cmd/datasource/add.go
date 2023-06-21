@@ -16,6 +16,10 @@ import (
 	"strings"
 )
 
+var exclude = []string{
+	"CreatedAt", "UpdatedAt", "ScanningWorkerID", "LastScannedTimestamp", "DagGenWorkerID", "Metadata",
+}
+
 var AddCmd = &cli.Command{
 	Name:  "add",
 	Usage: "Add a new data source to the dataset",
@@ -97,8 +101,11 @@ var AddCmd = &cli.Command{
 					return nil
 				})
 			})
+			if err != nil {
+				return cli.Exit(errors.Wrap(err, "failed to add source").Error(), 1)
+			}
 
-			cliutil.PrintToConsole(source, c.Bool("json"))
+			cliutil.PrintToConsole(source, c.Bool("json"), exclude)
 			return nil
 		}
 		return cmd

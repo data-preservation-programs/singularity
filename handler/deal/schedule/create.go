@@ -29,7 +29,8 @@ type CreateRequest struct {
 	Notes                string        `json:"notes"`
 	MaxPendingDealSize   string        `json:"maxPendingDealSize"`
 	MaxPendingDealNumber int           `json:"maxPendingDealNumber"`
-	AllowedPieceCIDs     []string      `json:"allowedPieceCIDs"`
+	//nolint:tagliatelle
+	AllowedPieceCIDs []string `json:"allowedPieceCids"`
 }
 
 // CreateHandler godoc

@@ -276,16 +276,16 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	err = db.Create(&itemParts).Error
 	assert.NoError(t, err)
 	chunks := map[*model.Chunk]bool{
-		&model.Chunk{
+		{
 			PackingState: model.Ready,
 		}: true,
-		&model.Chunk{
+		{
 			PackingState: model.Processing,
 		}: true,
-		&model.Chunk{
+		{
 			PackingState: model.Error,
 		}: false,
-		&model.Chunk{
+		{
 			PackingState:    model.Processing,
 			PackingWorkerID: &worker.ID,
 		}: false,
@@ -345,38 +345,38 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 	assert.NoError(t, err)
 	sources := map[*model.Source]bool{
 		// data source that is ready to be scanned
-		&model.Source{
+		{
 			ScanningState: model.Ready,
 		}: true,
 		// data source that is being scanned but does not have a worker id
-		&model.Source{
+		{
 			ScanningState:    model.Processing,
 			ScanningWorkerID: nil,
 		}: true,
 		// data source that has completed scanning and should be scanned again
-		&model.Source{
+		{
 			ScanningState:        model.Complete,
 			LastScannedTimestamp: 0,
 			ScanIntervalSeconds:  100,
 		}: true,
 		// data source that has completed scanning and should not be scanned again
-		&model.Source{
+		{
 			ScanningState:        model.Complete,
 			LastScannedTimestamp: 0,
 			ScanIntervalSeconds:  0,
 		}: false,
 		// data source that has completed scanning and should not be scanned again
-		&model.Source{
+		{
 			ScanningState:        model.Complete,
 			LastScannedTimestamp: time.Now().Unix(),
 			ScanIntervalSeconds:  100,
 		}: false,
 		// data source that has errored
-		&model.Source{
+		{
 			ScanningState: model.Error,
 		}: false,
 		// data source that has worker working on it
-		&model.Source{
+		{
 			ScanningState:    model.Processing,
 			ScanningWorkerID: &worker.ID,
 		}: false,

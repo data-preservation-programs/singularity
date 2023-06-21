@@ -15,7 +15,7 @@ var StatusCmd = &cli.Command{
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		result, err := datasource.GetSourceSummaryHandler(
+		result, err := datasource.GetSourceStatusHandler(
 			db,
 			c.Args().Get(0),
 		)
@@ -33,9 +33,9 @@ var StatusCmd = &cli.Command{
 		}
 
 		fmt.Println("Chunks by state:")
-		cliutil.PrintToConsole(result.ChunkSummary, c.Bool("json"))
+		cliutil.PrintToConsole(result.ChunkSummary, c.Bool("json"), nil)
 		fmt.Println("Items by state:")
-		cliutil.PrintToConsole(result.ItemSummary, c.Bool("json"))
+		cliutil.PrintToConsole(result.ItemSummary, c.Bool("json"), nil)
 		return nil
 	},
 }

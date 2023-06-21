@@ -167,7 +167,7 @@ var PrepCmd = &cli.Command{
 			return err2.CliError()
 		}
 
-		cliutil.PrintToConsole(cars, false)
+		cliutil.PrintToConsole(cars, false, nil)
 		return nil
 	},
 }

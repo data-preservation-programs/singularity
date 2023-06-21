@@ -18,12 +18,12 @@ type ItemSummary struct {
 	Prepared int64 `json:"prepared"` // number of items prepared
 }
 
-type SourceStatusSummary struct {
+type SourceStatus struct {
 	ChunkSummary []ChunksByState `json:"chunkSummary"` // summary of the chunks
 	ItemSummary  ItemSummary     `json:"itemSummary"`  // summary of the items
 }
 
-// GetSourceSummaryHandler godoc
+// GetSourceStatusHandler godoc
 // @Summary Get the data preparation summary of a data source
 // @Tags Data Source
 // @Accept json
@@ -32,10 +32,10 @@ type SourceStatusSummary struct {
 // @Success 200 {object} ChunksByState
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/summary [get]
-func GetSourceSummaryHandler(
+func GetSourceStatusHandler(
 	db *gorm.DB,
 	id string,
-) (*SourceStatusSummary, *handler.Error) {
+) (*SourceStatus, *handler.Error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
@@ -49,7 +49,7 @@ func GetSourceSummaryHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 
-	summary := SourceStatusSummary{}
+	summary := SourceStatus{}
 	err = db.Model(&model.Chunk{}).
 		Select("count(*) as count, packing_state as state").
 		Where("source_id = ?", sourceID).

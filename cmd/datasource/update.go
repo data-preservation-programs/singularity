@@ -72,7 +72,7 @@ var UpdateCmd = &cli.Command{
 			return err.CliError()
 		}
 
-		cliutil.PrintToConsole(source, c.Bool("json"))
+		cliutil.PrintToConsole(source, c.Bool("json"), nil)
 		return nil
 	},
 }

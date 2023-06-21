@@ -9,6 +9,13 @@ USAGE:
    singularity datasource add hdfs [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --hdfs-service-principal-name
+      Kerberos service principal name for the namenode.
+      
+      Enables KERBEROS authentication. Specifies the Service Principal Name
+      (SERVICE/FQDN) for the namenode. E.g. \"hdfs/namenode.hadoop.docker\"
+      for namenode running as service 'hdfs' with FQDN 'namenode.hadoop.docker'.
+
    --hdfs-data-transfer-protection
       Kerberos data transfer protection: authentication|integrity|privacy.
       
@@ -35,13 +42,6 @@ DESCRIPTION:
 
       Examples:
          | root | Connect to hdfs as root.
-
-   --hdfs-service-principal-name
-      Kerberos service principal name for the namenode.
-      
-      Enables KERBEROS authentication. Specifies the Service Principal Name
-      (SERVICE/FQDN) for the namenode. E.g. \"hdfs/namenode.hadoop.docker\"
-      for namenode running as service 'hdfs' with FQDN 'namenode.hadoop.docker'.
 
 
 OPTIONS:

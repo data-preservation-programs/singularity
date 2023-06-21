@@ -264,7 +264,7 @@ func TestEncryption(t *testing.T) {
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		assert.NoError(t, err)
 		// Get the root CID
-		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect dir 1")
+		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
 		assert.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
 		bs := loadCars(t, carDir)
@@ -319,7 +319,7 @@ func TestDatasourcePacking(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 132, len(files))
 		// Get the root CID
-		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect dir 1")
+		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
 		assert.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
 		// Now load all car files to a block store and check if the resolved directory is same as the original
@@ -389,10 +389,10 @@ func TestDatasourceRescan(t *testing.T) {
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect chunkdetail 1")
 		assert.Contains(t, out, "sub/test1.txt")
 		assert.Contains(t, out, "sub/test3.txt")
-		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect dir 1")
+		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect path 1")
 		assert.NoError(t, err)
 		assert.Contains(t, out, "sub")
-		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect dir 1 sub/")
+		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect path 1 sub/")
 		assert.NoError(t, err)
 		assert.Contains(t, out, "sub/test1.txt")
 		assert.Contains(t, out, "sub/test3.txt")

@@ -12,14 +12,18 @@ import (
 	"os"
 )
 
-func DownloadHandler(piece string, api string, meta model.Metadata) error {
+func DownloadHandler(ctx context.Context, piece string, api string, meta model.Metadata) error {
 	resolver := datasource.DefaultHandlerResolver{}
-	resp, err := http.Get(api + "/admin/api/piece/metadata/" + piece)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/admin/api/piece/metadata/"+piece, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to create request")
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "failed to get metadata")
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return errors.Errorf("failed to get metadata: %s", resp.Status)
 	}
 	body, err := io.ReadAll(resp.Body)
@@ -31,13 +35,16 @@ func DownloadHandler(piece string, api string, meta model.Metadata) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal metadata")
 	}
-	pieceReader, err = pieceReader.MakeCopy(context.TODO(), 0)
-	for i, _ := range pieceReader.Blocks {
+	pieceReader, err = pieceReader.MakeCopy(ctx, 0)
+	if err != nil {
+		return errors.Wrap(err, "failed to make copy")
+	}
+	for i := range pieceReader.Blocks {
 		if itemBlock, ok := pieceReader.Blocks[i].(store.ItemBlock); ok {
 			source := model.Source{}
 			// TODO source.Type = model.Local
 			source.Metadata = meta
-			handler, err := resolver.Resolve(context.TODO(), source)
+			handler, err := resolver.Resolve(ctx, source)
 			if err != nil {
 				return errors.Wrap(err, "failed to get handler")
 			}

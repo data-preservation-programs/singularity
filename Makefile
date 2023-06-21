@@ -20,9 +20,11 @@ test:
 	gotestsum --format testname -- -coverprofile=coverage.out -coverpkg=./... ./...
 
 gendoc:
+	rm -rf ./docs/en/cli-reference
 	go run ./docgen/clireference/main.go
 
 genwebdoc:
+	rm -rf ./docs/en/web-api-reference
 	go run ./docgen/webapireference/main.go
 
 translate:

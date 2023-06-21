@@ -40,7 +40,7 @@ func (s SpadeAPI) Start() error {
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			uri := v.URI
 			status := v.Status
-			latency := time.Now().Sub(v.StartTime)
+			latency := time.Since(v.StartTime)
 			err := v.Error
 			method := c.Request().Method
 			if err != nil {
@@ -83,19 +83,19 @@ func (s SpadeAPI) RequestPiece(c echo.Context) error {
 		return err
 	}
 	schedule := model.Schedule{
-		DatasetID:               dataset.ID,
-		URLTemplate:             "",
-		HTTPHeaders:             nil,
-		Provider:                provider,
-		Price:                   0,
-		TotalDealNumber:         0,
-		TotalDealSize:           0,
-		Verified:                true,
-		KeepUnsealed:            true,
-		AnnounceToIPNI:          true,
-		StartDelay:              72 * time.Hour,
-		Duration:                530 * 24 * time.Hour,
-		State:                   model.ScheduleActive,
+		DatasetID:       dataset.ID,
+		URLTemplate:     "",
+		HTTPHeaders:     nil,
+		Provider:        provider,
+		Price:           0,
+		TotalDealNumber: 0,
+		TotalDealSize:   0,
+		Verified:        true,
+		KeepUnsealed:    true,
+		AnnounceToIPNI:  true,
+		StartDelay:      72 * time.Hour,
+		Duration:        530 * 24 * time.Hour,
+		State:           model.ScheduleActive,
 	}
 	addrInfo := peer.AddrInfo{
 		ID:    providerInfo.PeerID,

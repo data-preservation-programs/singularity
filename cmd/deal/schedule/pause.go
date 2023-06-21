@@ -17,7 +17,7 @@ var PauseCmd = &cli.Command{
 		if err != nil {
 			return err.CliError()
 		}
-		cliutil.PrintToConsole(schedule, c.Bool("json"))
+		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
 		return nil
 	},
 }
