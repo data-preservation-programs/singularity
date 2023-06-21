@@ -9,6 +9,24 @@ USAGE:
    singularity datasource add webdav [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --webdav-vendor
+      Name of the WebDAV site/service/software you are using.
+
+      Examples:
+         | nextcloud       | Nextcloud
+         | owncloud        | Owncloud
+         | sharepoint      | Sharepoint Online, authenticated by Microsoft account
+         | sharepoint-ntlm | Sharepoint with NTLM authentication, usually self-hosted or on-premises
+         | other           | Other site/service or software
+
+   --webdav-user
+      User name.
+      
+      In case NTLM authentication is used, the username should be in the format 'Domain\User'.
+
+   --webdav-pass
+      Password.
+
    --webdav-bearer-token
       Bearer token instead of user/pass (e.g. a Macaroon).
 
@@ -39,24 +57,6 @@ DESCRIPTION:
       URL of http host to connect to.
       
       E.g. https://example.com.
-
-   --webdav-vendor
-      Name of the WebDAV site/service/software you are using.
-
-      Examples:
-         | nextcloud       | Nextcloud
-         | owncloud        | Owncloud
-         | sharepoint      | Sharepoint Online, authenticated by Microsoft account
-         | sharepoint-ntlm | Sharepoint with NTLM authentication, usually self-hosted or on-premises
-         | other           | Other site/service or software
-
-   --webdav-user
-      User name.
-      
-      In case NTLM authentication is used, the username should be in the format 'Domain\User'.
-
-   --webdav-pass
-      Password.
 
 
 OPTIONS:

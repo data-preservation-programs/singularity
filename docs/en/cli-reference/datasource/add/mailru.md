@@ -9,11 +9,6 @@ USAGE:
    singularity datasource add mailru [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --mailru-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --mailru-user
       User name (usually email).
 
@@ -54,14 +49,10 @@ DESCRIPTION:
          | 1G | Files larger than 1Gb will be uploaded directly.
          | 3G | Choose this option if you have less than 3Gb free on local disk.
 
-   --mailru-quirks
-      Comma separated list of internal maintenance flags.
+   --mailru-user-agent
+      HTTP user agent used internally by client.
       
-      This option must not be used by an ordinary user. It is intended only to
-      facilitate remote troubleshooting of backend issues. Strict meaning of
-      flags is not documented and not guaranteed to persist between releases.
-      Quirks will be removed when the backend grows stable.
-      Supported quirks: atomicmkdir binlist unknowndirs
+      Defaults to "rclone/VERSION" or "--user-agent" provided on command line.
 
    --mailru-pass
       Password.
@@ -86,10 +77,19 @@ DESCRIPTION:
          | true  | Fail with error.
          | false | Ignore and continue.
 
-   --mailru-user-agent
-      HTTP user agent used internally by client.
+   --mailru-quirks
+      Comma separated list of internal maintenance flags.
       
-      Defaults to "rclone/VERSION" or "--user-agent" provided on command line.
+      This option must not be used by an ordinary user. It is intended only to
+      facilitate remote troubleshooting of backend issues. Strict meaning of
+      flags is not documented and not guaranteed to persist between releases.
+      Quirks will be removed when the backend grows stable.
+      Supported quirks: atomicmkdir binlist unknowndirs
+
+   --mailru-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

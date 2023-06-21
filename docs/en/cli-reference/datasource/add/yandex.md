@@ -9,6 +9,14 @@ USAGE:
    singularity datasource add yandex [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --yandex-token
+      OAuth Access Token as a JSON blob.
+
+   --yandex-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
    --yandex-token-url
       Token server url.
       
@@ -31,14 +39,6 @@ DESCRIPTION:
       OAuth Client Secret.
       
       Leave blank normally.
-
-   --yandex-token
-      OAuth Access Token as a JSON blob.
-
-   --yandex-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
 
 
 OPTIONS:

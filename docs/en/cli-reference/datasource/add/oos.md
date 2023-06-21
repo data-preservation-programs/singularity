@@ -9,10 +9,44 @@ USAGE:
    singularity datasource add oos [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --oos-namespace
+      Object storage namespace
+
+   --oos-compartment
+      [Provider] - user_principal_auth
+         Object storage compartment OCID
+
+   --oos-config-profile
+      [Provider] - user_principal_auth
+         Profile name inside the oci config file
+
+         Examples:
+            | Default | Use the default profile
+
+   --oos-upload-cutoff
+      Cutoff for switching to chunked upload.
+      
+      Any files larger than this will be uploaded in chunks of chunk_size.
+      The minimum is 0 and the maximum is 5 GiB.
+
+   --oos-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --oos-sse-customer-key-sha256
       If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
       key. This value is used to check the integrity of the encryption key. see Using Your Own Keys for 
       Server-Side Encryption (https://docs.cloud.oracle.com/Content/Object/Tasks/usingyourencryptionkeys.htm).
+
+      Examples:
+         | <unset> | None
+
+   --oos-sse-kms-key-id
+      if using using your own master key in vault, this header specifies the 
+      OCID (https://docs.cloud.oracle.com/Content/General/Concepts/identifiers.htm) of a master encryption key used to call
+      the Key Management service to generate a data encryption key or to encrypt or decrypt a data encryption key.
+      Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.
 
       Examples:
          | <unset> | None
@@ -40,13 +74,55 @@ DESCRIPTION:
          | resource_principal_auth | use resource principals to make API calls
          | no_auth                 | no credentials needed, this is typically for reading public buckets
 
-   --oos-namespace
-      Object storage namespace
+   --oos-region
+      Object storage Region
+
+   --oos-storage-tier
+      The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+
+      Examples:
+         | Standard         | Standard storage tier, this is the default tier
+         | InfrequentAccess | InfrequentAccess storage tier
+         | Archive          | Archive storage tier
+
+   --oos-upload-concurrency
+      Concurrency for multipart uploads.
+      
+      This is the number of chunks of the same file that are uploaded
+      concurrently.
+      
+      If you are uploading small numbers of large files over high-speed links
+      and these uploads do not fully utilize your bandwidth, then increasing
+      this may help to speed up the transfers.
+
+   --oos-copy-cutoff
+      Cutoff for switching to multipart copy.
+      
+      Any files larger than this that need to be server-side copied will be
+      copied in chunks of this size.
+      
+      The minimum is 0 and the maximum is 5 GiB.
+
+   --oos-leave-parts-on-error
+      If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+      
+      It should be set to true for resuming uploads across different sessions.
+      
+      WARNING: Storing parts of an incomplete multipart upload counts towards space usage on object storage and will add
+      additional costs if not cleaned up.
+      
 
    --oos-endpoint
       Endpoint for Object storage API.
       
       Leave blank to use the default endpoint for the region.
+
+   --oos-config-file
+      [Provider] - user_principal_auth
+         Path to OCI config file
+
+         Examples:
+            | ~/.oci/config | oci configuration file location
 
    --oos-chunk-size
       Chunk size to use for uploading.
@@ -75,52 +151,19 @@ DESCRIPTION:
       statistics displayed with "-P" flag.
       
 
-   --oos-upload-concurrency
-      Concurrency for multipart uploads.
+   --oos-copy-timeout
+      Timeout for copy.
       
-      This is the number of chunks of the same file that are uploaded
-      concurrently.
+      Copy is an asynchronous operation, specify timeout to wait for copy to succeed
       
-      If you are uploading small numbers of large files over high-speed links
-      and these uploads do not fully utilize your bandwidth, then increasing
-      this may help to speed up the transfers.
 
-   --oos-sse-customer-key-file
-      To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
-      with the object. Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.'
-
-      Examples:
-         | <unset> | None
-
-   --oos-compartment
-      [Provider] - user_principal_auth
-         Object storage compartment OCID
-
-   --oos-copy-cutoff
-      Cutoff for switching to multipart copy.
+   --oos-disable-checksum
+      Don't store MD5 checksum with object metadata.
       
-      Any files larger than this that need to be server-side copied will be
-      copied in chunks of this size.
-      
-      The minimum is 0 and the maximum is 5 GiB.
-
-   --oos-sse-kms-key-id
-      if using using your own master key in vault, this header specifies the 
-      OCID (https://docs.cloud.oracle.com/Content/General/Concepts/identifiers.htm) of a master encryption key used to call
-      the Key Management service to generate a data encryption key or to encrypt or decrypt a data encryption key.
-      Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.
-
-      Examples:
-         | <unset> | None
-
-   --oos-leave-parts-on-error
-      If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
-      
-      It should be set to true for resuming uploads across different sessions.
-      
-      WARNING: Storing parts of an incomplete multipart upload counts towards space usage on object storage and will add
-      additional costs if not cleaned up.
-      
+      Normally rclone will calculate the MD5 checksum of the input before
+      uploading it so it can add it to metadata on the object. This is great
+      for data integrity checking but can cause long delays for large files
+      to start uploading.
 
    --oos-no-check-bucket
       If set, don't attempt to check the bucket exists or create it.
@@ -132,40 +175,12 @@ DESCRIPTION:
       creation permissions.
       
 
-   --oos-region
-      Object storage Region
-
-   --oos-config-file
-      [Provider] - user_principal_auth
-         Path to OCI config file
-
-         Examples:
-            | ~/.oci/config | oci configuration file location
-
-   --oos-storage-tier
-      The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   --oos-sse-customer-key-file
+      To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+      with the object. Please note only one of sse_customer_key_file|sse_customer_key|sse_kms_key_id is needed.'
 
       Examples:
-         | Standard         | Standard storage tier, this is the default tier
-         | InfrequentAccess | InfrequentAccess storage tier
-         | Archive          | Archive storage tier
-
-   --oos-upload-cutoff
-      Cutoff for switching to chunked upload.
-      
-      Any files larger than this will be uploaded in chunks of chunk_size.
-      The minimum is 0 and the maximum is 5 GiB.
-
-   --oos-copy-timeout
-      Timeout for copy.
-      
-      Copy is an asynchronous operation, specify timeout to wait for copy to succeed
-      
-
-   --oos-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+         | <unset> | None
 
    --oos-sse-customer-key
       To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
@@ -175,21 +190,6 @@ DESCRIPTION:
 
       Examples:
          | <unset> | None
-
-   --oos-config-profile
-      [Provider] - user_principal_auth
-         Profile name inside the oci config file
-
-         Examples:
-            | Default | Use the default profile
-
-   --oos-disable-checksum
-      Don't store MD5 checksum with object metadata.
-      
-      Normally rclone will calculate the MD5 checksum of the input before
-      uploading it so it can add it to metadata on the object. This is great
-      for data integrity checking but can cause long delays for large files
-      to start uploading.
 
 
 OPTIONS:

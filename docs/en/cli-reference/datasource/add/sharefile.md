@@ -9,6 +9,13 @@ USAGE:
    singularity datasource add sharefile [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --sharefile-endpoint
+      Endpoint for API calls.
+      
+      This is usually auto discovered as part of the oauth process, but can
+      be set manually to something like: https://XXX.sharefile.com
+      
+
    --sharefile-encoding
       The encoding for the backend.
       
@@ -39,13 +46,6 @@ DESCRIPTION:
       is buffered in memory one per transfer.
       
       Reducing this will reduce memory usage but decrease performance.
-
-   --sharefile-endpoint
-      Endpoint for API calls.
-      
-      This is usually auto discovered as part of the oauth process, but can
-      be set manually to something like: https://XXX.sharefile.com
-      
 
 
 OPTIONS:

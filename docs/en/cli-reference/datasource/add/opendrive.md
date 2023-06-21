@@ -9,6 +9,9 @@ USAGE:
    singularity datasource add opendrive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --opendrive-username
+      Username.
+
    --opendrive-password
       Password.
 
@@ -22,9 +25,6 @@ DESCRIPTION:
       
       Note that these chunks are buffered in memory so increasing them will
       increase memory use.
-
-   --opendrive-username
-      Username.
 
 
 OPTIONS:

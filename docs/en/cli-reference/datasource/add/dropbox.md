@@ -9,18 +9,28 @@ USAGE:
    singularity datasource add dropbox [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --dropbox-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --dropbox-batch-commit-timeout
+      Max time to wait for a batch to finish committing
 
    --dropbox-client-secret
       OAuth Client Secret.
       
       Leave blank normally.
 
-   --dropbox-token
-      OAuth Access Token as a JSON blob.
+   --dropbox-chunk-size
+      Upload chunk size (< 150Mi).
+      
+      Any files larger than this will be uploaded in chunks of this size.
+      
+      Note that chunks are buffered in memory (one at a time) so rclone can
+      deal with retries.  Setting this larger will increase the speed
+      slightly (at most 10% for 128 MiB in tests) at the cost of using more
+      memory.  It can be set smaller if you are tight on memory.
+
+   --dropbox-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --dropbox-impersonate
       Impersonate this user when using a business account.
@@ -54,6 +64,9 @@ DESCRIPTION:
       --dropbox-shared-folders can be omitted after the first use of a particular 
       shared folder.
 
+   --dropbox-token
+      OAuth Access Token as a JSON blob.
+
    --dropbox-batch-timeout
       Max time to allow an idle upload batch before uploading.
       
@@ -68,28 +81,10 @@ DESCRIPTION:
       - batch_mode: off - not in use
       
 
-   --dropbox-batch-commit-timeout
-      Max time to wait for a batch to finish committing
-
-   --dropbox-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
    --dropbox-token-url
       Token server url.
       
       Leave blank to use the provider defaults.
-
-   --dropbox-chunk-size
-      Upload chunk size (< 150Mi).
-      
-      Any files larger than this will be uploaded in chunks of this size.
-      
-      Note that chunks are buffered in memory (one at a time) so rclone can
-      deal with retries.  Setting this larger will increase the speed
-      slightly (at most 10% for 128 MiB in tests) at the cost of using more
-      memory.  It can be set smaller if you are tight on memory.
 
    --dropbox-shared-files
       Instructs rclone to work on individual shared files.
@@ -134,6 +129,11 @@ DESCRIPTION:
       as it will make them a lot quicker. You can use --transfers 32 to
       maximise throughput.
       
+
+   --dropbox-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
 
    --dropbox-auth-url
       Auth server URL.

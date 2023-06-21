@@ -12,6 +12,31 @@ DESCRIPTION:
    --smb-user
       SMB username.
 
+   --smb-port
+      SMB port number.
+
+   --smb-idle-timeout
+      Max time before closing idle connections.
+      
+      If no connections have been returned to the connection pool in the time
+      given, rclone will empty the connection pool.
+      
+      Set to 0 to keep connections indefinitely.
+      
+
+   --smb-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --smb-host
+      SMB server hostname to connect to.
+      
+      E.g. "example.com".
+
+   --smb-domain
+      Domain name for NTLM authentication.
+
    --smb-spn
       Service principal name.
       
@@ -31,33 +56,8 @@ DESCRIPTION:
       
       Always true on Windows shares.
 
-   --smb-host
-      SMB server hostname to connect to.
-      
-      E.g. "example.com".
-
-   --smb-port
-      SMB port number.
-
    --smb-pass
       SMB password.
-
-   --smb-domain
-      Domain name for NTLM authentication.
-
-   --smb-idle-timeout
-      Max time before closing idle connections.
-      
-      If no connections have been returned to the connection pool in the time
-      given, rclone will empty the connection pool.
-      
-      Set to 0 to keep connections indefinitely.
-      
-
-   --smb-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

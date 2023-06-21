@@ -9,6 +9,11 @@ USAGE:
    singularity datasource add mega [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --mega-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --mega-user
       User name.
 
@@ -36,11 +41,6 @@ DESCRIPTION:
       Enabling this will force MEGA to use HTTPS for all transfers.
       HTTPS is normally not necesary since all data is already encrypted anyway.
       Enabling it will increase CPU usage and add network overhead.
-
-   --mega-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

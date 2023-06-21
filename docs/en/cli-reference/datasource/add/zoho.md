@@ -9,16 +9,6 @@ USAGE:
    singularity datasource add zoho [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --zoho-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --zoho-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
    --zoho-token
       OAuth Access Token as a JSON blob.
 
@@ -51,6 +41,16 @@ DESCRIPTION:
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --zoho-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --zoho-client-secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
 
 
 OPTIONS:

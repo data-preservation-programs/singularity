@@ -51,7 +51,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	for tag, builder := range contentMap {
+
+	var contentMapSorted []string
+	for tag := range contentMap {
+		contentMapSorted = append(contentMapSorted, tag)
+	}
+	slices.Sort(contentMapSorted)
+	for _, tag := range contentMapSorted {
+		builder := contentMap[tag]
 		err := os.WriteFile("./docs/en/web-api-reference/"+convertStringToHyphenated(tag)+".md", []byte(builder.String()), 0644)
 		if err != nil {
 			panic(err)

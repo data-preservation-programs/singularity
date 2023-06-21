@@ -9,13 +9,11 @@ USAGE:
    singularity datasource add qingstor [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --qingstor-access-key-id
-      QingStor Access Key ID.
+   --qingstor-upload-cutoff
+      Cutoff for switching to chunked upload.
       
-      Leave blank for anonymous access or runtime credentials.
-
-   --qingstor-connection-retries
-      Number of connection retries.
+      Any files larger than this will be uploaded in chunks of chunk_size.
+      The minimum is 0 and the maximum is 5 GiB.
 
    --qingstor-chunk-size
       Chunk size to use for uploading.
@@ -42,6 +40,11 @@ DESCRIPTION:
       and these uploads do not fully utilize your bandwidth, then increasing
       this may help to speed up the transfers.
 
+   --qingstor-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
    --qingstor-env-auth
       Get QingStor credentials from runtime.
       
@@ -50,11 +53,6 @@ DESCRIPTION:
       Examples:
          | false | Enter QingStor credentials in the next step.
          | true  | Get QingStor credentials from the environment (env vars or IAM).
-
-   --qingstor-endpoint
-      Enter an endpoint URL to connection QingStor API.
-      
-      Leave blank will use the default value "https://qingstor.com:443".
 
    --qingstor-zone
       Zone to connect to.
@@ -69,21 +67,23 @@ DESCRIPTION:
          | gd2a  | The Guangdong (China) Second Zone.
                  | Needs location constraint gd2a.
 
-   --qingstor-upload-cutoff
-      Cutoff for switching to chunked upload.
-      
-      Any files larger than this will be uploaded in chunks of chunk_size.
-      The minimum is 0 and the maximum is 5 GiB.
+   --qingstor-connection-retries
+      Number of connection retries.
 
-   --qingstor-encoding
-      The encoding for the backend.
+   --qingstor-access-key-id
+      QingStor Access Key ID.
       
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+      Leave blank for anonymous access or runtime credentials.
 
    --qingstor-secret-access-key
       QingStor Secret Access Key (password).
       
       Leave blank for anonymous access or runtime credentials.
+
+   --qingstor-endpoint
+      Enter an endpoint URL to connection QingStor API.
+      
+      Leave blank will use the default value "https://qingstor.com:443".
 
 
 OPTIONS:

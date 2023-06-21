@@ -9,14 +9,6 @@ USAGE:
    singularity datasource add jottacloud [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --jottacloud-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --jottacloud-md5-memory-limit
-      Files bigger than this will be cached on disk to calculate the MD5 if required.
-
    --jottacloud-trashed-only
       Only show files that are in the trash.
       
@@ -30,6 +22,14 @@ DESCRIPTION:
 
    --jottacloud-no-versions
       Avoid server side versioning by deleting files and recreating files instead of overwriting them.
+
+   --jottacloud-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --jottacloud-md5-memory-limit
+      Files bigger than this will be cached on disk to calculate the MD5 if required.
 
 
 OPTIONS:
