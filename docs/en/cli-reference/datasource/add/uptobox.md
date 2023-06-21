@@ -9,15 +9,15 @@ USAGE:
    singularity datasource add uptobox [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --uptobox-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
    --uptobox-access-token
       Your access token.
       
       Get it from https://uptobox.com/my_account.
+
+   --uptobox-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

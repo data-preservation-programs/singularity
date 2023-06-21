@@ -9,11 +9,26 @@ USAGE:
    singularity datasource add smb [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --smb-user
-      SMB username.
+   --smb-case-insensitive
+      Whether the server is configured to be case-insensitive.
+      
+      Always true on Windows shares.
 
-   --smb-port
-      SMB port number.
+   --smb-domain
+      Domain name for NTLM authentication.
+
+   --smb-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --smb-hide-special-share
+      Hide special shares (e.g. print$) which users aren't supposed to access.
+
+   --smb-host
+      SMB server hostname to connect to.
+      
+      E.g. "example.com".
 
    --smb-idle-timeout
       Max time before closing idle connections.
@@ -24,18 +39,11 @@ DESCRIPTION:
       Set to 0 to keep connections indefinitely.
       
 
-   --smb-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
+   --smb-pass
+      SMB password.
 
-   --smb-host
-      SMB server hostname to connect to.
-      
-      E.g. "example.com".
-
-   --smb-domain
-      Domain name for NTLM authentication.
+   --smb-port
+      SMB port number.
 
    --smb-spn
       Service principal name.
@@ -48,16 +56,8 @@ DESCRIPTION:
       Leave blank if not sure.
       
 
-   --smb-hide-special-share
-      Hide special shares (e.g. print$) which users aren't supposed to access.
-
-   --smb-case-insensitive
-      Whether the server is configured to be case-insensitive.
-      
-      Always true on Windows shares.
-
-   --smb-pass
-      SMB password.
+   --smb-user
+      SMB username.
 
 
 OPTIONS:

@@ -9,10 +9,34 @@ USAGE:
    singularity datasource add drive [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --drive-acknowledge-abuse
+      Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
+      
+      If downloading a file returns the error "This file has been identified
+      as malware or spam and cannot be downloaded" with the error code
+      "cannotDownloadAbusiveFile" then supply this flag to rclone to
+      indicate you acknowledge the risks of downloading the file and rclone
+      will download it anyway.
+      
+      Note that if you are using service account it will need Manager
+      permission (not Content Manager) to for this flag to work. If the SA
+      does not have the right permission, Google will just ignore the flag.
+
    --drive-allow-import-name-change
       Allow the filetype to change when uploading Google docs.
       
       E.g. file.doc to file.docx. This will confuse sync and reupload every time.
+
+   --drive-alternate-export
+      Deprecated: No longer needed.
+
+   --drive-auth-owner-only
+      Only consider files owned by the authenticated user.
+
+   --drive-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
 
    --drive-chunk-size
       Upload chunk size.
@@ -24,11 +48,16 @@ DESCRIPTION:
       
       Reducing this will reduce memory usage but decrease performance.
 
-   --drive-service-account-credentials
-      Service Account Credentials JSON blob.
+   --drive-client-id
+      Google Application Client Id
+      Setting your own is recommended.
+      See https://rclone.org/drive/#making-your-own-client-id for how to create your own.
+      If you leave this blank, it will use an internal key which is low performance.
+
+   --drive-client-secret
+      OAuth Client Secret.
       
       Leave blank normally.
-      Needed only if you want use SA instead of interactive login.
 
    --drive-copy-shortcut-content
       Server side copy contents of shortcuts instead of the shortcut.
@@ -38,25 +67,6 @@ DESCRIPTION:
       
       If this flag is used then rclone will copy the contents of shortcuts
       rather than shortcuts themselves when doing server side copies.
-
-   --drive-shared-with-me
-      Only show files that are shared with me.
-      
-      Instructs rclone to operate on your "Shared with me" folder (where
-      Google Drive lets you access the files and folders others have shared
-      with you).
-      
-      This works both with the "list" (lsd, lsl, etc.) and the "copy"
-      commands (copy, sync, etc.), and with all other commands too.
-
-   --drive-pacer-min-sleep
-      Minimum time to sleep between API calls.
-
-   --drive-formats
-      Deprecated: See export_formats.
-
-   --drive-pacer-burst
-      Number of API calls to allow without sleeping.
 
    --drive-disable-http2
       Disable drive using http2.
@@ -69,6 +79,35 @@ DESCRIPTION:
       See: https://github.com/rclone/rclone/issues/3631
       
       
+
+   --drive-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --drive-export-formats
+      Comma separated list of preferred formats for downloading Google docs.
+
+   --drive-formats
+      Deprecated: See export_formats.
+
+   --drive-impersonate
+      Impersonate this user when using a service account.
+
+   --drive-import-formats
+      Comma separated list of preferred formats for uploading Google docs.
+
+   --drive-keep-revision-forever
+      Keep new head revision of each file forever.
+
+   --drive-list-chunk
+      Size of listing chunk 100-1000, 0 to disable.
+
+   --drive-pacer-burst
+      Number of API calls to allow without sleeping.
+
+   --drive-pacer-min-sleep
+      Minimum time to sleep between API calls.
 
    --drive-resource-key
       Resource key for accessing a link-shared file.
@@ -90,11 +129,6 @@ DESCRIPTION:
       resource key is no needed.
       
 
-   --drive-client-secret
-      OAuth Client Secret.
-      
-      Leave blank normally.
-
    --drive-root-folder-id
       ID of the root folder.
       Leave blank normally.
@@ -103,6 +137,34 @@ DESCRIPTION:
       a non root folder as its starting point.
       
 
+   --drive-scope
+      Scope that rclone should use when requesting access from drive.
+
+      Examples:
+         | drive                   | Full access all files, excluding Application Data Folder.
+         | drive.readonly          | Read-only access to file metadata and file contents.
+         | drive.file              | Access to files created by rclone only.
+                                   | These are visible in the drive website.
+                                   | File authorization is revoked when the user deauthorizes the app.
+         | drive.appfolder         | Allows read and write access to the Application Data folder.
+                                   | This is not visible in the drive website.
+         | drive.metadata.readonly | Allows read-only access to file metadata but
+                                   | does not allow any access to read or download file content.
+
+   --drive-server-side-across-configs
+      Allow server-side operations (e.g. copy) to work across different drive configs.
+      
+      This can be useful if you wish to do a server-side copy between two
+      different Google drives.  Note that this isn't enabled by default
+      because it isn't easy to tell if it will work between any two
+      configurations.
+
+   --drive-service-account-credentials
+      Service Account Credentials JSON blob.
+      
+      Leave blank normally.
+      Needed only if you want use SA instead of interactive login.
+
    --drive-service-account-file
       Service Account Credentials JSON file path.
       
@@ -110,6 +172,32 @@ DESCRIPTION:
       Needed only if you want use SA instead of interactive login.
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
+
+   --drive-shared-with-me
+      Only show files that are shared with me.
+      
+      Instructs rclone to operate on your "Shared with me" folder (where
+      Google Drive lets you access the files and folders others have shared
+      with you).
+      
+      This works both with the "list" (lsd, lsl, etc.) and the "copy"
+      commands (copy, sync, etc.), and with all other commands too.
+
+   --drive-size-as-quota
+      Show sizes as storage quota usage, not actual size.
+      
+      Show the size of a file as the storage quota used. This is the
+      current version plus any older versions that have been set to keep
+      forever.
+      
+      **WARNING**: This flag may have some unexpected consequences.
+      
+      It is not recommended to set this flag in your config - the
+      recommended usage is using the flag form --drive-size-as-quota when
+      doing rclone ls/lsl/lsf/lsjson/etc only.
+      
+      If you do use this flag for syncing (not recommended) then you will
+      need to use --ignore size also.
 
    --drive-skip-checksum-gphotos
       Skip MD5 checksum on Google photos and videos only.
@@ -125,8 +213,27 @@ DESCRIPTION:
       Corrupted checksums are caused by Google modifying the image/video but
       not updating the checksum.
 
-   --drive-list-chunk
-      Size of listing chunk 100-1000, 0 to disable.
+   --drive-skip-dangling-shortcuts
+      If set skip dangling shortcut files.
+      
+      If this is set then rclone will not show any dangling shortcuts in listings.
+      
+
+   --drive-skip-gdocs
+      Skip google documents in all listings.
+      
+      If given, gdocs practically become invisible to rclone.
+
+   --drive-skip-shortcuts
+      If set skip shortcut files.
+      
+      Normally rclone dereferences shortcut files making them appear as if
+      they are the original file (see [the shortcuts section](#shortcuts)).
+      If this flag is set then rclone will ignore shortcut files completely.
+      
+
+   --drive-starred-only
+      Only show files that are starred.
 
    --drive-stop-on-download-limit
       Make download limit errors be fatal.
@@ -140,52 +247,6 @@ DESCRIPTION:
       Note that this detection is relying on error message strings which
       Google don't document so it may break in the future.
       
-
-   --drive-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --drive-client-id
-      Google Application Client Id
-      Setting your own is recommended.
-      See https://rclone.org/drive/#making-your-own-client-id for how to create your own.
-      If you leave this blank, it will use an internal key which is low performance.
-
-   --drive-token-url
-      Token server url.
-      
-      Leave blank to use the provider defaults.
-
-   --drive-trashed-only
-      Only show files that are in the trash.
-      
-      This will show trashed files in their original directory structure.
-
-   --drive-export-formats
-      Comma separated list of preferred formats for downloading Google docs.
-
-   --drive-use-shared-date
-      Use date file was shared instead of modified date.
-      
-      Note that, as with "--drive-use-created-date", this flag may have
-      unexpected consequences when uploading/downloading files.
-      
-      If both this flag and "--drive-use-created-date" are set, the created
-      date is used.
-
-   --drive-acknowledge-abuse
-      Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
-      
-      If downloading a file returns the error "This file has been identified
-      as malware or spam and cannot be downloaded" with the error code
-      "cannotDownloadAbusiveFile" then supply this flag to rclone to
-      indicate you acknowledge the risks of downloading the file and rclone
-      will download it anyway.
-      
-      Note that if you are using service account it will need Manager
-      permission (not Content Manager) to for this flag to work. If the SA
-      does not have the right permission, Google will just ignore the flag.
 
    --drive-stop-on-upload-limit
       Make upload limit errors be fatal.
@@ -202,42 +263,24 @@ DESCRIPTION:
       See: https://github.com/rclone/rclone/issues/3857
       
 
-   --drive-skip-shortcuts
-      If set skip shortcut files.
-      
-      Normally rclone dereferences shortcut files making them appear as if
-      they are the original file (see [the shortcuts section](#shortcuts)).
-      If this flag is set then rclone will ignore shortcut files completely.
-      
+   --drive-team-drive
+      ID of the Shared Drive (Team Drive).
 
    --drive-token
       OAuth Access Token as a JSON blob.
 
-   --drive-auth-url
-      Auth server URL.
+   --drive-token-url
+      Token server url.
       
       Leave blank to use the provider defaults.
 
-   --drive-skip-dangling-shortcuts
-      If set skip dangling shortcut files.
+   --drive-trashed-only
+      Only show files that are in the trash.
       
-      If this is set then rclone will not show any dangling shortcuts in listings.
-      
-
-   --drive-impersonate
-      Impersonate this user when using a service account.
+      This will show trashed files in their original directory structure.
 
    --drive-upload-cutoff
       Cutoff for switching to chunked upload.
-
-   --drive-use-trash
-      Send files to the trash instead of deleting permanently.
-      
-      Defaults to true, namely sending files to the trash.
-      Use `--drive-use-trash=false` to delete files permanently instead.
-
-   --drive-import-formats
-      Comma separated list of preferred formats for uploading Google docs.
 
    --drive-use-created-date
       Use file created date instead of modified date.
@@ -258,66 +301,23 @@ DESCRIPTION:
       or move the photos locally and use the date the image was taken
       (created) set as the modification date.
 
-   --drive-keep-revision-forever
-      Keep new head revision of each file forever.
+   --drive-use-shared-date
+      Use date file was shared instead of modified date.
+      
+      Note that, as with "--drive-use-created-date", this flag may have
+      unexpected consequences when uploading/downloading files.
+      
+      If both this flag and "--drive-use-created-date" are set, the created
+      date is used.
+
+   --drive-use-trash
+      Send files to the trash instead of deleting permanently.
+      
+      Defaults to true, namely sending files to the trash.
+      Use `--drive-use-trash=false` to delete files permanently instead.
 
    --drive-v2-download-min-size
       If Object's are greater, use drive v2 API to download.
-
-   --drive-server-side-across-configs
-      Allow server-side operations (e.g. copy) to work across different drive configs.
-      
-      This can be useful if you wish to do a server-side copy between two
-      different Google drives.  Note that this isn't enabled by default
-      because it isn't easy to tell if it will work between any two
-      configurations.
-
-   --drive-team-drive
-      ID of the Shared Drive (Team Drive).
-
-   --drive-auth-owner-only
-      Only consider files owned by the authenticated user.
-
-   --drive-starred-only
-      Only show files that are starred.
-
-   --drive-alternate-export
-      Deprecated: No longer needed.
-
-   --drive-size-as-quota
-      Show sizes as storage quota usage, not actual size.
-      
-      Show the size of a file as the storage quota used. This is the
-      current version plus any older versions that have been set to keep
-      forever.
-      
-      **WARNING**: This flag may have some unexpected consequences.
-      
-      It is not recommended to set this flag in your config - the
-      recommended usage is using the flag form --drive-size-as-quota when
-      doing rclone ls/lsl/lsf/lsjson/etc only.
-      
-      If you do use this flag for syncing (not recommended) then you will
-      need to use --ignore size also.
-
-   --drive-scope
-      Scope that rclone should use when requesting access from drive.
-
-      Examples:
-         | drive                   | Full access all files, excluding Application Data Folder.
-         | drive.readonly          | Read-only access to file metadata and file contents.
-         | drive.file              | Access to files created by rclone only.
-                                   | These are visible in the drive website.
-                                   | File authorization is revoked when the user deauthorizes the app.
-         | drive.appfolder         | Allows read and write access to the Application Data folder.
-                                   | This is not visible in the drive website.
-         | drive.metadata.readonly | Allows read-only access to file metadata but
-                                   | does not allow any access to read or download file content.
-
-   --drive-skip-gdocs
-      Skip google documents in all listings.
-      
-      If given, gdocs practically become invisible to rclone.
 
 
 OPTIONS:

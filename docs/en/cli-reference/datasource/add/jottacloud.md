@@ -9,27 +9,27 @@ USAGE:
    singularity datasource add jottacloud [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --jottacloud-trashed-only
-      Only show files that are in the trash.
-      
-      This will show trashed files in their original directory structure.
-
-   --jottacloud-hard-delete
-      Delete files permanently rather than putting them into the trash.
-
-   --jottacloud-upload-resume-limit
-      Files bigger than this can be resumed if the upload fail's.
-
-   --jottacloud-no-versions
-      Avoid server side versioning by deleting files and recreating files instead of overwriting them.
-
    --jottacloud-encoding
       The encoding for the backend.
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
+   --jottacloud-hard-delete
+      Delete files permanently rather than putting them into the trash.
+
    --jottacloud-md5-memory-limit
       Files bigger than this will be cached on disk to calculate the MD5 if required.
+
+   --jottacloud-no-versions
+      Avoid server side versioning by deleting files and recreating files instead of overwriting them.
+
+   --jottacloud-trashed-only
+      Only show files that are in the trash.
+      
+      This will show trashed files in their original directory structure.
+
+   --jottacloud-upload-resume-limit
+      Files bigger than this can be resumed if the upload fail's.
 
 
 OPTIONS:

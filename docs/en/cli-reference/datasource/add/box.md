@@ -9,6 +9,16 @@ USAGE:
    singularity datasource add box [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --box-access-token
+      Box App Primary Access Token
+      
+      Leave blank normally.
+
+   --box-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
    --box-box-config-file
       Box App config.json location
       
@@ -23,13 +33,32 @@ DESCRIPTION:
          | user       | Rclone should act on behalf of a user.
          | enterprise | Rclone should act on behalf of a service account.
 
-   --box-list-chunk
-      Size of listing chunk 1-1000.
+   --box-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
 
    --box-client-secret
       OAuth Client Secret.
       
       Leave blank normally.
+
+   --box-commit-retries
+      Max number of times to try committing a multipart file.
+
+   --box-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --box-list-chunk
+      Size of listing chunk 1-1000.
+
+   --box-owned-by
+      Only show items owned by the login (email address) passed in.
+
+   --box-root-folder-id
+      Fill in for rclone to use a non root folder as its starting point.
 
    --box-token
       OAuth Access Token as a JSON blob.
@@ -39,37 +68,8 @@ DESCRIPTION:
       
       Leave blank to use the provider defaults.
 
-   --box-root-folder-id
-      Fill in for rclone to use a non root folder as its starting point.
-
-   --box-commit-retries
-      Max number of times to try committing a multipart file.
-
-   --box-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --box-access-token
-      Box App Primary Access Token
-      
-      Leave blank normally.
-
-   --box-owned-by
-      Only show items owned by the login (email address) passed in.
-
-   --box-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
    --box-upload-cutoff
       Cutoff for switching to multipart upload (>= 50 MiB).
-
-   --box-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:

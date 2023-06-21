@@ -9,22 +9,16 @@ USAGE:
    singularity datasource add mega [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --mega-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --mega-user
-      User name.
-
-   --mega-pass
-      Password.
-
    --mega-debug
       Output more debug from Mega.
       
       If this flag is set (along with -vv) it will print further debugging
       information from the mega backend.
+
+   --mega-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --mega-hard-delete
       Delete files permanently rather than putting them into the trash.
@@ -32,6 +26,9 @@ DESCRIPTION:
       Normally the mega backend will put all deletions into the trash rather
       than permanently deleting them.  If you specify this then rclone will
       permanently delete objects instead.
+
+   --mega-pass
+      Password.
 
    --mega-use-https
       Use HTTPS for transfers.
@@ -41,6 +38,9 @@ DESCRIPTION:
       Enabling this will force MEGA to use HTTPS for all transfers.
       HTTPS is normally not necesary since all data is already encrypted anyway.
       Enabling it will increase CPU usage and add network overhead.
+
+   --mega-user
+      User name.
 
 
 OPTIONS:

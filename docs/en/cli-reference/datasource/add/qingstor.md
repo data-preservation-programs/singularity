@@ -9,11 +9,10 @@ USAGE:
    singularity datasource add qingstor [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
-   --qingstor-upload-cutoff
-      Cutoff for switching to chunked upload.
+   --qingstor-access-key-id
+      QingStor Access Key ID.
       
-      Any files larger than this will be uploaded in chunks of chunk_size.
-      The minimum is 0 and the maximum is 5 GiB.
+      Leave blank for anonymous access or runtime credentials.
 
    --qingstor-chunk-size
       Chunk size to use for uploading.
@@ -26,6 +25,33 @@ DESCRIPTION:
       
       If you are transferring large files over high-speed links and you have
       enough memory, then increasing this will speed up the transfers.
+
+   --qingstor-connection-retries
+      Number of connection retries.
+
+   --qingstor-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --qingstor-endpoint
+      Enter an endpoint URL to connection QingStor API.
+      
+      Leave blank will use the default value "https://qingstor.com:443".
+
+   --qingstor-env-auth
+      Get QingStor credentials from runtime.
+      
+      Only applies if access_key_id and secret_access_key is blank.
+
+      Examples:
+         | false | Enter QingStor credentials in the next step.
+         | true  | Get QingStor credentials from the environment (env vars or IAM).
+
+   --qingstor-secret-access-key
+      QingStor Secret Access Key (password).
+      
+      Leave blank for anonymous access or runtime credentials.
 
    --qingstor-upload-concurrency
       Concurrency for multipart uploads.
@@ -40,19 +66,11 @@ DESCRIPTION:
       and these uploads do not fully utilize your bandwidth, then increasing
       this may help to speed up the transfers.
 
-   --qingstor-encoding
-      The encoding for the backend.
+   --qingstor-upload-cutoff
+      Cutoff for switching to chunked upload.
       
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --qingstor-env-auth
-      Get QingStor credentials from runtime.
-      
-      Only applies if access_key_id and secret_access_key is blank.
-
-      Examples:
-         | false | Enter QingStor credentials in the next step.
-         | true  | Get QingStor credentials from the environment (env vars or IAM).
+      Any files larger than this will be uploaded in chunks of chunk_size.
+      The minimum is 0 and the maximum is 5 GiB.
 
    --qingstor-zone
       Zone to connect to.
@@ -66,24 +84,6 @@ DESCRIPTION:
                  | Needs location constraint sh1a.
          | gd2a  | The Guangdong (China) Second Zone.
                  | Needs location constraint gd2a.
-
-   --qingstor-connection-retries
-      Number of connection retries.
-
-   --qingstor-access-key-id
-      QingStor Access Key ID.
-      
-      Leave blank for anonymous access or runtime credentials.
-
-   --qingstor-secret-access-key
-      QingStor Secret Access Key (password).
-      
-      Leave blank for anonymous access or runtime credentials.
-
-   --qingstor-endpoint
-      Enter an endpoint URL to connection QingStor API.
-      
-      Leave blank will use the default value "https://qingstor.com:443".
 
 
 OPTIONS:

@@ -9,10 +9,43 @@ USAGE:
    singularity datasource add acd [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --acd-auth-url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --acd-checkpoint
+      Checkpoint for internal polling (debug).
+
+   --acd-client-id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
    --acd-client-secret
       OAuth Client Secret.
       
       Leave blank normally.
+
+   --acd-encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --acd-templink-threshold
+      Files >= this size will be downloaded via their tempLink.
+      
+      Files this size or more will be downloaded via their "tempLink". This
+      is to work around a problem with Amazon Drive which blocks downloads
+      of files bigger than about 10 GiB. The default for this is 9 GiB which
+      shouldn't need to be changed.
+      
+      To download files above this threshold, rclone requests a "tempLink"
+      which downloads the file through a temporary URL directly from the
+      underlying S3 storage.
+
+   --acd-token
+      OAuth Access Token as a JSON blob.
 
    --acd-token-url
       Token server url.
@@ -41,39 +74,6 @@ DESCRIPTION:
       
       Upload with the "-v" flag to see more info about what rclone is doing
       in this situation.
-
-   --acd-templink-threshold
-      Files >= this size will be downloaded via their tempLink.
-      
-      Files this size or more will be downloaded via their "tempLink". This
-      is to work around a problem with Amazon Drive which blocks downloads
-      of files bigger than about 10 GiB. The default for this is 9 GiB which
-      shouldn't need to be changed.
-      
-      To download files above this threshold, rclone requests a "tempLink"
-      which downloads the file through a temporary URL directly from the
-      underlying S3 storage.
-
-   --acd-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
-
-   --acd-client-id
-      OAuth Client Id.
-      
-      Leave blank normally.
-
-   --acd-token
-      OAuth Access Token as a JSON blob.
-
-   --acd-auth-url
-      Auth server URL.
-      
-      Leave blank to use the provider defaults.
-
-   --acd-checkpoint
-      Checkpoint for internal polling (debug).
 
 
 OPTIONS:

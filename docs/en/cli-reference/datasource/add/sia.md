@@ -9,26 +9,26 @@ USAGE:
    singularity datasource add sia [command options] <dataset_name> <source_path>
 
 DESCRIPTION:
+   --sia-api-password
+      Sia Daemon API Password.
+      
+      Can be found in the apipassword file located in HOME/.sia/ or in the daemon directory.
+
    --sia-api-url
       Sia daemon API URL, like http://sia.daemon.host:9980.
       
       Note that siad must run with --disable-api-security to open API port for other hosts (not recommended).
       Keep default if Sia daemon runs on localhost.
 
-   --sia-api-password
-      Sia Daemon API Password.
+   --sia-encoding
+      The encoding for the backend.
       
-      Can be found in the apipassword file located in HOME/.sia/ or in the daemon directory.
+      See the [encoding section in the overview](/overview/#encoding) for more info.
 
    --sia-user-agent
       Siad User Agent
       
       Sia daemon requires the 'Sia-Agent' user agent by default for security
-
-   --sia-encoding
-      The encoding for the backend.
-      
-      See the [encoding section in the overview](/overview/#encoding) for more info.
 
 
 OPTIONS:
