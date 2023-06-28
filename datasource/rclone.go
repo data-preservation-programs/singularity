@@ -69,7 +69,11 @@ func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, er
 func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch chan<- Entry) error {
 	entries, err := h.Fs.List(ctx, path)
 	if err != nil {
-		ch <- Entry{Error: err}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case ch <- Entry{Error: err}:
+		}
 		return err
 	}
 
@@ -102,7 +106,11 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 					continue
 				}
 			}
-			ch <- Entry{ScannedAt: time.Now(), Info: v}
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case ch <- Entry{ScannedAt: time.Now(), Info: v}:
+			}
 		}
 	}
 

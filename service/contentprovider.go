@@ -62,46 +62,60 @@ type ContentProviderService struct {
 	host     host.Host
 }
 
-func NewContentProviderService(db *gorm.DB, bind string, identity string, listen []string) (*ContentProviderService, error) {
-	var private []byte
-	if identity == "" {
-		var err error
-		private, _, _, err = GenerateNewPeer()
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		var err error
-		private, err = base64.StdEncoding.DecodeString(identity)
-		if err != nil {
-			return nil, err
-		}
-	}
-	identityKey, err := crypto.UnmarshalPrivateKey(private)
-	if err != nil {
-		return nil, err
-	}
-	var listenAddrs []multiaddr.Multiaddr
-	for _, addr := range listen {
-		ma, err := multiaddr.NewMultiaddr(addr)
-		if err != nil {
-			return nil, err
-		}
-		listenAddrs = append(listenAddrs, ma)
-	}
-	h, err := util.InitHost(context.Background(), []libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
-	if err != nil {
-		return nil, err
-	}
-	for _, m := range h.Addrs() {
-		logging.Logger("contentprovider").Info("listening on " + m.String())
-	}
-	logging.Logger("contentprovider").Info("peerID: " + h.ID().String())
-	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}, host: h}, nil
+type ContentProviderConfig struct {
+	EnableHTTP        bool
+	HTTPBind          string
+	EnableBitswap     bool
+	Libp2pIdentityKey string
+	Libp2pListenAddrs []string
 }
 
-func (s *ContentProviderService) StartBitswap() error {
-	ctx := context.Background()
+func NewContentProviderService(db *gorm.DB, config ContentProviderConfig) (*ContentProviderService, error) {
+	bind := ""
+	if config.EnableHTTP {
+		bind = config.HTTPBind
+	}
+	if config.EnableBitswap {
+		var private []byte
+		if config.Libp2pIdentityKey == "" {
+			var err error
+			private, _, _, err = GenerateNewPeer()
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			var err error
+			private, err = base64.StdEncoding.DecodeString(config.Libp2pIdentityKey)
+			if err != nil {
+				return nil, err
+			}
+		}
+		identityKey, err := crypto.UnmarshalPrivateKey(private)
+		if err != nil {
+			return nil, err
+		}
+		var listenAddrs []multiaddr.Multiaddr
+		for _, addr := range config.Libp2pListenAddrs {
+			ma, err := multiaddr.NewMultiaddr(addr)
+			if err != nil {
+				return nil, err
+			}
+			listenAddrs = append(listenAddrs, ma)
+		}
+		h, err := util.InitHost(context.Background(), []libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
+		if err != nil {
+			return nil, err
+		}
+		for _, m := range h.Addrs() {
+			logging.Logger("contentprovider").Info("listening on " + m.String())
+		}
+		logging.Logger("contentprovider").Info("peerID: " + h.ID().String())
+		return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}, host: h}, nil
+	}
+	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}}, nil
+}
+
+func (s *ContentProviderService) StartBitswap(ctx context.Context) error {
 	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
 	if err != nil {
 		return err
@@ -114,89 +128,86 @@ func (s *ContentProviderService) StartBitswap() error {
 	return nil
 }
 
-func (s *ContentProviderService) Start() {
-	err := s.StartBitswap()
-	if err != nil {
-		logging.Logger("contentprovider").Fatal(err)
+func (s *ContentProviderService) Start(ctx context.Context) {
+	if s.host != nil {
+		err := s.StartBitswap(ctx)
+		if err != nil {
+			logging.Logger("contentprovider").Fatal(err)
+		}
 	}
 	logger := logging.Logger("contentprovider")
-	e := echo.New()
-
-	e.Use(
-		middleware.RequestLoggerWithConfig(
-			middleware.RequestLoggerConfig{
-				LogStatus: true,
-				LogURI:    true,
-				LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-					uri := v.URI
-					status := v.Status
-					latency := time.Since(v.StartTime)
-					err := v.Error
-					method := c.Request().Method
-					if err != nil {
-						logger.With(
-							"status",
-							status,
-							"latency_ms",
-							latency.Milliseconds(),
-							"err",
-							err,
-						).Error(method + " " + uri)
-					} else {
-						logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
-					}
-					return nil
+	if s.bind != "" {
+		e := echo.New()
+		e.Use(
+			middleware.RequestLoggerWithConfig(
+				middleware.RequestLoggerConfig{
+					LogStatus: true,
+					LogURI:    true,
+					LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+						uri := v.URI
+						status := v.Status
+						latency := time.Since(v.StartTime)
+						err := v.Error
+						method := c.Request().Method
+						if err != nil {
+							logger.With(
+								"status",
+								status,
+								"latency_ms",
+								latency.Milliseconds(),
+								"err",
+								err,
+							).Error(method + " " + uri)
+						} else {
+							logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
+						}
+						return nil
+					},
 				},
-			},
-		),
-	)
-	e.Use(middleware.Recover())
-	e.GET("/piece/:id", s.handleGetPiece)
-	e.HEAD("/piece/:id", s.handleHeadPiece)
-	e.GET("/ipfs/:cid", s.handleGetCid)
-
-	err = e.Start(s.bind)
-	if err != nil {
-		panic(err)
+			),
+		)
+		e.Use(middleware.Recover())
+		e.GET("/piece/:id", s.handleGetPiece)
+		e.HEAD("/piece/:id", s.handleHeadPiece)
+		e.GET("/ipfs/:cid", s.handleGetCid)
+		err := e.Start(s.bind)
+		if err != nil {
+			panic(err)
+		}
 	}
+
+	<-ctx.Done()
 }
 
-func (s *ContentProviderService) FindPieceAsPieceReader(ctx context.Context, pieceCid cid.Cid) (
+func (s *ContentProviderService) headPiece(ctx context.Context, pieceCid cid.Cid) (int64, error) {
+	var cars []model.Car
+	err := s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to query for CARs")
+	}
+
+	if len(cars) == 0 {
+		return 0, os.ErrNotExist
+	}
+
+	return cars[0].FileSize, nil
+}
+
+func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid) (
+	*os.File,
+	os.FileInfo,
 	*store.PieceReader,
 	*model.Car,
 	error,
 ) {
-	var car model.Car
-	err := s.DB.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).First(&car).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil, os.ErrNotExist
-	}
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
-	}
-
-	var carBlocks []model.CarBlock
-	err = s.DB.WithContext(ctx).Preload("Item.Source").Where("car_id = ?", car.ID).
-		Find(&carBlocks).Error
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to query for CAR items: %w", err)
-	}
-	reader, err := store.NewPieceReader(ctx, car, carBlocks, s.Resolver)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create piece reader: %w", err)
-	}
-	return reader, &car, nil
-}
-
-func (s *ContentProviderService) findPiece(ctx context.Context, pieceCid cid.Cid) (*os.File, os.FileInfo, error) {
 	var cars []model.Car
-	err := s.DB.WithContext(ctx).Where("piece_cid = ?", pieceCid.String()).Find(&cars).Error
+	err := s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
 	}
 
 	if len(cars) == 0 {
-		return nil, nil, os.ErrNotExist
+		return nil, nil, nil, nil, os.ErrNotExist
 	}
 
 	for _, car := range cars {
@@ -213,10 +224,21 @@ func (s *ContentProviderService) findPiece(ctx context.Context, pieceCid cid.Cid
 			file.Close()
 			continue
 		}
-		return file, fileInfo, nil
+		return file, fileInfo, nil, &car, nil
 	}
 
-	return nil, nil, os.ErrNotExist
+	car := cars[0]
+	var carBlocks []model.CarBlock
+	err = s.DB.WithContext(ctx).Preload("Item.Source").Where("car_id = ?", car.ID).
+		Find(&carBlocks).Error
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
+	}
+	reader, err := store.NewPieceReader(ctx, car, carBlocks, s.Resolver)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to create piece reader: %w", err)
+	}
+	return nil, nil, reader, &car, nil
 }
 
 func (s *ContentProviderService) setCommonHeaders(c echo.Context, pieceCid string) {
@@ -232,26 +254,17 @@ func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
 	}
 
-	file, fileInfo, err := s.findPiece(c.Request().Context(), pieceCid)
-	if err == nil {
-		defer file.Close()
-		s.setCommonHeaders(c, pieceCid.String())
-		c.Response().Header().Set("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
-		return c.NoContent(http.StatusOK)
+	size, err := s.headPiece(c.Request().Context(), pieceCid)
+	if os.IsNotExist(err) {
+		return c.String(http.StatusNotFound, "piece not found")
+	}
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
 	}
 
-	_, car, err := s.FindPieceAsPieceReader(c.Request().Context(), pieceCid)
-	if err == nil {
-		s.setCommonHeaders(c, pieceCid.String())
-		c.Response().Header().Set("Content-Length", strconv.FormatInt(car.FileSize, 10))
-		return c.NoContent(http.StatusOK)
-	}
-
-	if err != nil && !os.IsNotExist(err) {
-		return c.String(http.StatusInternalServerError, "failed to find CAR file: "+err.Error())
-	}
-
-	return c.String(http.StatusNotFound, "piece not found")
+	s.setCommonHeaders(c, pieceCid.String())
+	c.Response().Header().Set("Content-Length", strconv.FormatInt(size, 10))
+	return c.NoContent(http.StatusOK)
 }
 
 func (s *ContentProviderService) handleGetCid(c echo.Context) error {
@@ -290,29 +303,28 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 	var pieceReader *store.PieceReader
 	var lastModified time.Time
 	var fileSize int64
-	fil, fInfo, err := s.findPiece(c.Request().Context(), pieceCid)
-	if err == nil {
+	fil, fInfo, pieceReader, car, err := s.FindPiece(c.Request().Context(), pieceCid)
+	if os.IsNotExist(err) {
+		return c.String(http.StatusNotFound, "piece not found")
+	}
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
+	}
+	if fil != nil {
 		defer fil.Close()
 		reader = fil
 		lastModified = fInfo.ModTime()
 		fileSize = fInfo.Size()
 	} else {
-		var car *model.Car
-		pieceReader, car, err = s.FindPieceAsPieceReader(c.Request().Context(), pieceCid)
-		switch {
-		case err == nil:
-			lastModified = car.CreatedAt
-			fileSize = car.FileSize
-		case os.IsNotExist(err):
-			return c.String(http.StatusNotFound, "piece not found")
-		default:
-			return c.String(http.StatusInternalServerError, "failed to find CAR file: "+err.Error())
-		}
+		lastModified = car.CreatedAt
+		fileSize = car.FileSize
 	}
 
 	s.setCommonHeaders(c, pieceCid.String())
 	rangeHeader := c.Request().Header.Get("Range")
+	// No range retrieval
 	if rangeHeader == "" {
+		// Car file exists, just use the http servecontent helper
 		if reader != nil {
 			http.ServeContent(
 				c.Response(),
@@ -322,6 +334,7 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 				io.NewSectionReader(reader, 0, fileSize),
 			)
 		} else {
+			// Otherwise, we need to stream the piece reader
 			c.Response().Header().Set("Last-Modified", lastModified.UTC().Format(http.TimeFormat))
 			_, err := io.Copy(c.Response().Writer, pieceReader)
 			if err != nil {
@@ -331,34 +344,11 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 		return nil
 	}
 
-	// Parse Range header
-	rangeStr := strings.TrimPrefix(rangeHeader, "bytes=")
-	rangeParts := strings.Split(rangeStr, "-")
-	start, err := strconv.ParseInt(rangeParts[0], 10, 64)
-	if err != nil {
-		return c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range")
+	start, end, err, done := s.handleRangeHeader(c, rangeHeader, fileSize)
+	if done {
+		return err
 	}
-
-	var end int64
-	if len(rangeParts) > 1 && rangeParts[1] != "" {
-		end, err = strconv.ParseInt(rangeParts[1], 10, 64)
-		if err != nil {
-			return c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range")
-		}
-	} else {
-		end = fileSize - 1
-	}
-
-	if start > end || end >= fileSize {
-		return c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range")
-	}
-
-	// Set required headers for partial content
-	c.Response().Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
-	c.Response().Header().Set("Content-Length", strconv.FormatInt(end-start+1, 10))
-
-	// Send the specified range of bytes
-	c.Response().WriteHeader(http.StatusPartialContent)
+	// Partial retrieval backed by CAR file
 	if reader != nil {
 		http.ServeContent(
 			c.Response(),
@@ -368,10 +358,47 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 			io.NewSectionReader(reader, start, end-start+1),
 		)
 	} else {
-		_, err := io.CopyN(c.Response().Writer, pieceReader, end-start+1)
+		// Partial retrieval backed by piece reader
+		pieceReader, err = pieceReader.MakeCopy(c.Request().Context(), start)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to seek in piece reader: "+err.Error())
+		}
+		_, err = io.CopyN(c.Response().Writer, pieceReader, end-start+1)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "failed to copy piece reader: "+err.Error())
 		}
 	}
 	return nil
+}
+
+func (s *ContentProviderService) handleRangeHeader(c echo.Context, rangeHeader string, fileSize int64) (int64, int64, error, bool) {
+	// Parse Range header
+	rangeStr := strings.TrimPrefix(rangeHeader, "bytes=")
+	rangeParts := strings.Split(rangeStr, "-")
+	start, err := strconv.ParseInt(rangeParts[0], 10, 64)
+	if err != nil {
+		return 0, 0, c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range"), true
+	}
+
+	var end int64
+	if len(rangeParts) > 1 && rangeParts[1] != "" {
+		end, err = strconv.ParseInt(rangeParts[1], 10, 64)
+		if err != nil {
+			return 0, 0, c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range"), true
+		}
+	} else {
+		end = fileSize - 1
+	}
+
+	if start > end || end >= fileSize {
+		return 0, 0, c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range"), true
+	}
+
+	// Set required headers for partial content
+	c.Response().Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
+	c.Response().Header().Set("Content-Length", strconv.FormatInt(end-start+1, 10))
+
+	// Send the specified range of bytes
+	c.Response().WriteHeader(http.StatusPartialContent)
+	return start, end, nil, false
 }

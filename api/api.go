@@ -247,7 +247,8 @@ func (s Server) GetMetadataHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	pieceReader, _, err := s.contentProvider.FindPieceAsPieceReader(c.Request().Context(), pieceCID)
+	//nolint:dogsled
+	_, _, pieceReader, _, err := s.contentProvider.FindPiece(c.Request().Context(), pieceCID)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
