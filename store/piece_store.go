@@ -2,133 +2,83 @@ package store
 
 import (
 	"context"
+	"github.com/ipfs/go-log/v2"
+	"github.com/multiformats/go-varint"
 	"io"
+	"sort"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
 	"github.com/pkg/errors"
-	"golang.org/x/exp/slices"
 )
 
-type PieceBlock interface {
-	GetPieceOffset() int64
-}
-
-type ItemBlockMetadata struct {
-	PieceOffset int64   `json:"pieceOffset"`
-	Varint      []byte  `json:"varint"`
-	Cid         cid.Cid `json:"cid"`
-	ItemOffset  int64   `json:"itemOffset"`
-	ItemLength  int32   `json:"itemLength"`
-}
-
-func (i ItemBlockMetadata) GetPieceOffset() int64 {
-	return i.PieceOffset
-}
-func (i ItemBlockMetadata) CidOffset() int64 {
-	return i.PieceOffset + int64(len(i.Varint))
-}
-func (i ItemBlockMetadata) BlockOffset() int64 {
-	return i.PieceOffset + int64(len(i.Varint)) + int64(i.Cid.ByteLen())
-}
-func (i ItemBlockMetadata) EndOffset() int64 {
-	return i.PieceOffset + int64(len(i.Varint)) + int64(i.Cid.ByteLen()) + int64(i.ItemLength)
-}
-func (i ItemBlockMetadata) Length() int {
-	return len(i.Varint) + i.Cid.ByteLen() + int(i.ItemLength)
-}
-
-type RawBlock struct {
-	PieceOffset int64   `json:"pieceOffset"`
-	Varint      []byte  `json:"varint"`
-	Cid         cid.Cid `json:"cid"`
-	BlockData   []byte  `json:"blockData"`
-}
-
-func (r RawBlock) GetPieceOffset() int64 {
-	return r.PieceOffset
-}
-func (r RawBlock) CidOffset() int64 {
-	return r.PieceOffset + int64(len(r.Varint))
-}
-func (r RawBlock) BlockOffset() int64 {
-	return r.PieceOffset + int64(len(r.Varint)) + int64(r.Cid.ByteLen())
-}
-func (r RawBlock) EndOffset() int64 {
-	return r.PieceOffset + int64(len(r.Varint)) + int64(r.Cid.ByteLen()) + int64(len(r.BlockData))
-}
-
-func (r RawBlock) Length() int {
-	return len(r.Varint) + r.Cid.ByteLen() + len(r.BlockData)
-}
-
-type ItemBlock struct {
-	PieceOffset   int64               `json:"pieceOffset"`
-	SourceHandler datasource.Handler  `json:"-"`
-	Item          *model.Item         `json:"item"`
-	Meta          []ItemBlockMetadata `json:"meta"`
-}
-
-func (i ItemBlock) GetPieceOffset() int64 {
-	return i.PieceOffset
-}
+var logger = log.Logger("piece_store")
 
 type PieceReader struct {
-	ctx          context.Context
-	Blocks       []PieceBlock `json:"blocks"`
-	reader       io.ReadCloser
-	pos          int64
-	blockID      int
-	innerBlockID int
-	blockOffset  int64
-	Header       []byte `json:"header"`
+	ctx           context.Context
+	car           model.Car
+	sourceHandler datasource.Handler
+	carBlocks     []model.CarBlock
+	items         map[uint64]model.Item
+	reader        io.ReadCloser
+	readerFor     uint64
+	pos           int64
+	blockIndex    int
 }
 
-func (pr *PieceReader) MakeCopy(ctx context.Context, offset int64) (*PieceReader, error) {
-	newReader := &PieceReader{
-		ctx:    ctx,
-		Blocks: pr.Blocks,
-		reader: nil,
-		pos:    offset,
-		Header: pr.Header,
+func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
+	switch whence {
+	case io.SeekStart:
+		pr.pos = offset
+	case io.SeekCurrent:
+		pr.pos += offset
+	case io.SeekEnd:
+		pr.pos = pr.car.FileSize + offset
+	default:
+		return 0, errors.New("invalid whence")
+	}
+	if pr.pos < 0 {
+		return 0, errors.New("negative position")
+	}
+	if pr.pos > pr.car.FileSize {
+		return 0, errors.New("position past end of file")
+	}
+	if pr.reader != nil {
+		pr.reader.Close()
+		pr.reader = nil
 	}
 
-	if offset < int64(len(pr.Header)) {
-		return newReader, nil
+	if pr.pos < int64(len(pr.car.Header)) {
+		pr.blockIndex = -1
+	} else {
+		pr.blockIndex = sort.Search(len(pr.carBlocks), func(i int) bool {
+			return pr.carBlocks[i].CarOffset > pr.pos
+		}) - 1
 	}
 
-	index, _ := slices.BinarySearchFunc(
-		pr.Blocks, offset, func(b PieceBlock, o int64) int {
-			return int(b.GetPieceOffset() - o)
-		},
-	)
-	newReader.blockID = index
-	switch block := pr.Blocks[index].(type) {
-	case RawBlock:
-		newReader.blockOffset = offset - block.GetPieceOffset()
-	case ItemBlock:
-		innerIndex, _ := slices.BinarySearchFunc(
-			block.Meta, offset, func(b ItemBlockMetadata, o int64) int {
-				return int(b.GetPieceOffset() - o)
-			},
-		)
-		newReader.innerBlockID = innerIndex
-		newReader.blockOffset = offset - block.Meta[innerIndex].GetPieceOffset()
-	}
-
-	return newReader, nil
+	return pr.pos, nil
 }
 
 func NewPieceReader(
 	ctx context.Context,
 	car model.Car,
+	source model.Source,
 	carBlocks []model.CarBlock,
+	items []model.Item,
 	resolver datasource.HandlerResolver,
 ) (
 	*PieceReader,
 	error,
 ) {
+	itemsMap := make(map[uint64]model.Item)
+	for _, item := range items {
+		itemsMap[item.ID] = item
+		if item.SourceID != source.ID {
+			return nil, errors.New("item source does not match source")
+		}
+	}
+
 	// Sanitize carBlocks
 	if len(carBlocks) == 0 {
 		return nil, errors.New("no Blocks provided")
@@ -140,185 +90,124 @@ func NewPieceReader(
 
 	lastBlock := carBlocks[len(carBlocks)-1]
 	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
-		return nil, errors.New("last block must end at car footer")
+		return nil, errors.New("last block must end at car end")
 	}
 
-	for i := 0; i < len(carBlocks)-1; i++ {
-		if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
-			return nil, errors.New("Blocks must be contiguous")
+	for i := 0; i < len(carBlocks); i++ {
+		if i != len(carBlocks)-1 {
+			if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
+				return nil, errors.New("Blocks must be contiguous")
+			}
 		}
-		if carBlocks[i].RawBlock == nil && (carBlocks[i].Item == nil || carBlocks[i].Item.Source == nil) {
-			return nil, errors.New("block must be either raw or Item, and the Item/source needs to be preloaded")
+		vint, read, err := varint.FromUvarint(carBlocks[i].Varint)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse varint")
+		}
+		if read != len(carBlocks[i].Varint) {
+			return nil, errors.New("varint does not match byte array length")
+		}
+		if uint64(carBlocks[i].BlockLength()) != vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()) {
+			return nil, errors.New("varint does not match block length")
+		}
+		if carBlocks[i].RawBlock == nil {
+			_, ok := itemsMap[*carBlocks[i].ItemID]
+			if !ok {
+				return nil, errors.New("item not found")
+			}
 		}
 	}
 
-	// Combine nearby clocks with same Item
-	blocks := make([]PieceBlock, 0)
-	var lastItemBlock *ItemBlock
-	for _, carBlock := range carBlocks {
-		if lastItemBlock != nil && (carBlock.RawBlock != nil || lastItemBlock.Item.ID != carBlock.Item.ID) {
-			blocks = append(blocks, *lastItemBlock)
-			lastItemBlock = nil
-		}
-		if carBlock.RawBlock != nil {
-			blocks = append(
-				blocks, RawBlock{
-					PieceOffset: carBlock.CarOffset,
-					Varint:      carBlock.Varint,
-					Cid:         cid.Cid(carBlock.CID),
-					BlockData:   carBlock.RawBlock,
-				},
-			)
-			continue
-		}
-		if lastItemBlock == nil {
-			handler, err := resolver.Resolve(ctx, *carBlock.Item.Source)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to get handler")
-			}
-			lastItemBlock = &ItemBlock{
-				PieceOffset:   carBlock.CarOffset,
-				SourceHandler: handler,
-				Item:          carBlock.Item,
-				Meta: []ItemBlockMetadata{
-					{
-						PieceOffset: carBlock.CarOffset,
-						Varint:      carBlock.Varint,
-						Cid:         cid.Cid(carBlock.CID),
-						ItemOffset:  carBlock.ItemOffset,
-						ItemLength:  carBlock.BlockLength(),
-					},
-				},
-			}
-			continue
-		}
-		// merge last Item with the new Item
-		lastItemBlock.Meta = append(
-			lastItemBlock.Meta, ItemBlockMetadata{
-				PieceOffset: carBlock.CarOffset,
-				Varint:      carBlock.Varint,
-				Cid:         cid.Cid(carBlock.CID),
-				ItemOffset:  carBlock.ItemOffset,
-				ItemLength:  carBlock.BlockLength(),
-			},
-		)
-	}
-	if lastItemBlock != nil {
-		blocks = append(blocks, *lastItemBlock)
+	sourceHandler, err := resolver.Resolve(ctx, source)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to resolve source handler")
 	}
 
 	return &PieceReader{
-		ctx:          ctx,
-		Blocks:       blocks,
-		reader:       nil,
-		pos:          0,
-		blockID:      0,
-		innerBlockID: 0,
-		Header:       car.Header,
+		ctx:           ctx,
+		car:           car,
+		sourceHandler: sourceHandler,
+		carBlocks:     carBlocks,
+		items:         itemsMap,
+		blockIndex:    -1,
 	}, nil
 }
 
 func (pr *PieceReader) Read(p []byte) (n int, err error) {
-	if pr.blockID >= len(pr.Blocks) {
+	// Read car header
+	if pr.blockIndex == -1 {
+		n = copy(p, pr.car.Header[pr.pos:])
+		pr.pos += int64(n)
+		if pr.pos == int64(len(pr.car.Header)) {
+			pr.blockIndex = 0
+		}
+		return
+	}
+
+	if pr.pos >= pr.car.FileSize {
 		return 0, io.EOF
 	}
-	if pr.pos < int64(len(pr.Header)) {
-		copied := copy(p[n:], pr.Header[pr.pos:])
-		pr.pos += int64(copied)
-		n += copied
-		if n == len(p) {
-			return n, nil
-		}
-	}
-	currentBlock := pr.Blocks[pr.blockID]
-	if rawBlock, ok := currentBlock.(RawBlock); ok {
-		if pr.pos < rawBlock.CidOffset() {
-			copied := copy(p[n:], rawBlock.Varint[pr.pos-rawBlock.PieceOffset:])
-			pr.pos += int64(copied)
-			n += copied
-			if n == len(p) {
-				return n, nil
-			}
-		}
-		if pr.pos < rawBlock.BlockOffset() {
-			copied := copy(p[n:], rawBlock.Cid.Bytes()[pr.pos-rawBlock.CidOffset():])
-			pr.pos += int64(copied)
-			n += copied
-			if n == len(p) {
-				return n, nil
-			}
-		}
-		if pr.pos < rawBlock.EndOffset() {
-			copied := copy(p[n:], rawBlock.BlockData[pr.pos-rawBlock.BlockOffset():])
-			pr.pos += int64(copied)
-			n += copied
-			if n == len(p) {
-				return n, nil
-			}
-		}
-		pr.blockID++
-		pr.innerBlockID = 0
-		return n, nil
+
+	carBlock := pr.carBlocks[pr.blockIndex]
+	if pr.pos >= carBlock.CarOffset+int64(carBlock.CarBlockLength) {
+		pr.blockIndex++
+		carBlock = pr.carBlocks[pr.blockIndex]
 	}
 
-	itemBlock, _ := currentBlock.(ItemBlock)
-	innerBlock := itemBlock.Meta[pr.innerBlockID]
+	if pr.pos < carBlock.CarOffset+int64(len(carBlock.Varint)) {
+		n = copy(p, carBlock.Varint[pr.pos-carBlock.CarOffset:])
+		pr.pos += int64(n)
+		return
+	}
+
+	if pr.pos < carBlock.CarOffset+int64(len(carBlock.Varint))+int64(cid.Cid(carBlock.CID).ByteLen()) {
+		cidBytes := cid.Cid(carBlock.CID).Bytes()
+		n = copy(p, cidBytes[pr.pos-carBlock.CarOffset-int64(len(carBlock.Varint)):])
+		pr.pos += int64(n)
+		return
+	}
+
+	if carBlock.RawBlock != nil {
+		n = copy(p, carBlock.RawBlock[pr.pos-carBlock.CarOffset-int64(len(carBlock.Varint))-int64(cid.Cid(carBlock.CID).ByteLen()):])
+		pr.pos += int64(n)
+		return
+	}
+
+	if pr.reader != nil && pr.readerFor != *carBlock.ItemID {
+		if pr.reader != nil {
+			pr.reader.Close()
+			pr.reader = nil
+		}
+	}
+
 	if pr.reader == nil {
-		pr.reader, _, err = itemBlock.SourceHandler.Read(
-			pr.ctx,
-			itemBlock.Item.Path,
-			innerBlock.ItemOffset+pr.blockOffset,
-			itemBlock.Item.Size-(innerBlock.ItemOffset+pr.blockOffset),
-		)
+		item := pr.items[*carBlock.ItemID]
+		itemOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
+		itemOffset += carBlock.ItemOffset
+		logger.Infow("reading item", "sourceID", item.SourceID, "path", item.Path, "offset", itemOffset)
+		pr.reader, _, err = pr.sourceHandler.Read(pr.ctx, item.Path, itemOffset, item.Size-itemOffset)
 		if err != nil {
-			return 0, errors.Wrap(err, "failed to read Item")
+			return 0, errors.Wrap(err, "failed to get item")
 		}
+		pr.readerFor = item.ID
 	}
-	if pr.pos < innerBlock.CidOffset() {
-		copied := copy(p[n:], innerBlock.Varint[pr.pos-innerBlock.PieceOffset:])
-		pr.pos += int64(copied)
-		n += copied
-		if n == len(p) {
-			return n, nil
-		}
-	}
-	if pr.pos < innerBlock.BlockOffset() {
-		copied := copy(p[n:], innerBlock.Cid.Bytes()[pr.pos-innerBlock.CidOffset():])
-		pr.pos += int64(copied)
-		n += copied
-		if n == len(p) {
-			return n, nil
-		}
-	}
-	if pr.pos < innerBlock.EndOffset() {
-		readTill := min(len(p), n+int(innerBlock.EndOffset()-pr.pos))
-		read, err := pr.reader.Read(p[n:readTill])
-		n += read
-		pr.pos += int64(read)
-		if err != nil && !errors.Is(err, io.EOF) {
-			return n, errors.Wrap(err, "failed to read Item")
-		}
-		if pr.pos == innerBlock.EndOffset() {
-			pr.innerBlockID++
-			if pr.innerBlockID >= len(itemBlock.Meta) {
-				pr.blockID++
-				pr.innerBlockID = 0
-				pr.reader.Close()
-				pr.reader = nil
-			}
-		}
-		if n == len(p) {
-			return n, nil
-		}
-	}
-	return n, nil
-}
 
-func min(i int, i2 int) int {
-	if i < i2 {
-		return i
+	maxToRead := carBlock.CarOffset + int64(carBlock.CarBlockLength) - pr.pos
+	if maxToRead > int64(len(p)) {
+		maxToRead = int64(len(p))
 	}
-	return i2
+	limitReader := io.LimitReader(pr.reader, maxToRead)
+	n, err = limitReader.Read(p)
+	pr.pos += int64(n)
+	if errors.Is(err, io.EOF) {
+		err = nil
+		pr.reader.Close()
+		pr.reader = nil
+		if pr.pos != carBlock.CarOffset+int64(carBlock.CarBlockLength) {
+			// This can be caused by original data source truncation
+			err = errors.New("failed to read full block")
+		}
+	}
+	return
 }
 
 func (pr *PieceReader) Close() error {
