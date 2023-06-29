@@ -247,12 +247,11 @@ func (s Server) GetMetadataHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	//nolint:dogsled
-	_, _, pieceReader, _, err := s.contentProvider.FindPiece(c.Request().Context(), pieceCID)
+	reader, _, err := s.contentProvider.FindPiece(c.Request().Context(), pieceCID)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	return c.JSON(http.StatusOK, pieceReader)
+	return c.JSON(http.StatusOK, reader)
 }
 
 func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {

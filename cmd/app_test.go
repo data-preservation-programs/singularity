@@ -5,7 +5,10 @@ import (
 	"bytes"
 	"context"
 	"filippo.io/age"
+	"fmt"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/pack"
+	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -22,10 +25,13 @@ import (
 	"gorm.io/gorm"
 	"io"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -413,4 +419,149 @@ func TestDatasourceRescan(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, out3, out2)
 	})
+}
+
+func TestPieceDownload(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		temp1 := t.TempDir()
+		temp2 := t.TempDir()
+		os.WriteFile(temp1+"/test1.txt", generateRandomBytes(10), 0777)
+		os.WriteFile(temp1+"/test2.txt", generateRandomBytes(10), 0777)
+		os.WriteFile(temp1+"/test3.txt", generateRandomBytes(10_000_000), 0777)
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 4MB --output-dir "+temp2+" test")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp1)
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource daggen 1")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		assert.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		assert.NoError(t, err)
+		pieceCIDs := regexp.MustCompile("baga6ea4sea[0-9a-z]+").FindAllString(out, -1)
+		assert.Len(t, pieceCIDs, 8)
+		pieceCIDs = underscore.Unique(pieceCIDs)
+		assert.Len(t, pieceCIDs, 4)
+		ctx2, cancel := context.WithCancel(ctx)
+		defer cancel()
+		go func() {
+			_, _, err := RunArgsInTest(ctx2, "singularity run content-provider")
+			assert.NoError(t, err)
+			<-ctx2.Done()
+		}()
+		// Wait for HTTP service to be ready
+		time.Sleep(1 * time.Second)
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPiece(t, ctx, pieceCID)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
+		// Clean up temp2 and try again
+		os.RemoveAll(temp2)
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPiece(t, ctx, pieceCID)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
+		// multithread download
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPieceWithThreads(t, ctx, pieceCID, 10)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
+	})
+}
+
+func downloadPiece(t *testing.T, ctx context.Context, pieceCID string) []byte {
+	t.Log("Downloading piece", pieceCID)
+	url := "http://127.0.0.1:7777/piece/" + pieceCID
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	assert.NoError(t, err)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Less(t, resp.StatusCode, 300)
+	body, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+	return body
+}
+
+func downloadPieceWithThreads(t *testing.T, ctx context.Context, pieceCID string, nThreads int) []byte {
+	url := "http://127.0.0.1:7777/piece/" + pieceCID
+
+	// Make a HEAD request to get the size of the file
+	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+	assert.NoError(t, err)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Get the Content-Length header
+	contentLength := resp.ContentLength
+	if contentLength < 0 {
+		t.Error("Content-Length header not found")
+	}
+
+	// Calculate size of each part
+	partSize := contentLength / int64(nThreads)
+	var extraSize int64 = 0
+	if contentLength%int64(nThreads) != 0 {
+		extraSize = contentLength % int64(nThreads)
+	}
+
+	// Download each part concurrently
+	var wg sync.WaitGroup
+	parts := make([][]byte, nThreads)
+	for i := 0; i < nThreads; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+
+			start := int64(i) * partSize
+			end := start + partSize - 1
+			if i == nThreads-1 {
+				end += extraSize // add the remainder to the last part
+			}
+
+			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+			assert.NoError(t, err)
+
+			// Set the Range header to download a chunk
+			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
+			t.Log("Downloading piece", pieceCID, "part", i, "bytes", start, "-", end)
+			resp, err := client.Do(req)
+			assert.NoError(t, err)
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
+
+			// Save the part to the slice
+			parts[i] = body
+		}(i)
+	}
+
+	// Wait for all the downloads to finish
+	wg.Wait()
+
+	// Combine the parts
+	var result bytes.Buffer
+	for _, part := range parts {
+		result.Write(part)
+	}
+
+	return result.Bytes()
+}
+
+func calculateCommp(t *testing.T, content []byte, targetPieceSize uint64) string {
+	calc := &commp.Calc{}
+	_, err := bytes.NewBuffer(content).WriteTo(calc)
+	assert.NoError(t, err)
+	c, _, err := pack.GetCommp(calc, targetPieceSize)
+	assert.NoError(t, err)
+	return c.String()
 }

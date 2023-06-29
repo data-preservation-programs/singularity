@@ -17,7 +17,7 @@ swag:
 	swag init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./api/docs
 
 test:
-	gotestsum --format testname -- -coverprofile=coverage.out -coverpkg=./... ./...
+	go test -coverprofile=coverage.out -coverpkg=./... ./...
 
 gendoc: build
 	rm -rf ./docs/en/cli-reference

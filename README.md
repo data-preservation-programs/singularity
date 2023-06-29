@@ -6,11 +6,10 @@
 
 The new pure-go implementation of Singularity provides everything you need to onboard your, or your client's data to Filecoin network
 
-### Documentation
+## Documentation
 [Read the Doc](https://protocol-labs-2.gitbook.io/singularity/overview/readme)
 
-
-### Related projects
+## Related projects
 - [js-singularity](https://github.com/tech-greedy/singularity) -
 The predecessor that was implemented in NodeJS
 - [js-singularity-import-boost](https://github.com/tech-greedy/singularity-import) -
@@ -22,3 +21,5 @@ The internal tool used by `js-singularity` to generate car files as well as comm
 - [go-generate-ipld-car](https://github.com/tech-greedy/generate-car#generate-ipld-car) -
 The internal tool used by `js-singularity` to regenerate the CAR that captures the unixfs dag of the dataset.
 
+## License
+Dual-licensed under [MIT](https://github.com/filecoin-project/lotus/blob/master/LICENSE-MIT) + [Apache 2.0](https://github.com/filecoin-project/lotus/blob/master/LICENSE-APACHE)
