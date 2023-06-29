@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/ipfs/go-log"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,42 +15,31 @@ var DownloadCmd = &cli.Command{
 		&cli.StringFlag{
 			Name:  "api",
 			Usage: "URL of the metadata API",
-			Value: "http://127.0.0.1:9090",
-		},
-		&cli.StringSliceFlag{
-			Name:     "http-header",
-			Category: "HTTP data source",
-			Aliases:  []string{"H"},
-			EnvVars:  []string{"HTTP_HEADER"},
-			Usage:    "http headers to be passed with the request (i.e. key=value). The value shoud not be encoded",
+			Value: "http://127.0.0.1:7777",
 		},
 		&cli.StringFlag{
-			Name:     "s3-endpoint",
-			Usage:    "Custom S3 endpoint",
-			Category: "S3 data source",
-			EnvVars:  []string{"S3_ENDPOINT"},
+			Name:    "out-dir",
+			Usage:   "Directory to write CAR files to",
+			Value:   ".",
+			Aliases: []string{"o"},
 		},
-		&cli.StringFlag{
-			Name:     "s3-region",
-			Usage:    "S3 region to use with AWS S3",
-			Category: "S3 data source",
-			EnvVars:  []string{"S3_REGION"},
-		},
-		&cli.StringFlag{
-			Name:     "s3-access-key-id",
-			Usage:    "IAM access key ID",
-			Category: "S3 data source",
-			EnvVars:  []string{"AWS_ACCESS_KEY_ID"},
-		},
-		&cli.StringFlag{
-			Name:     "s3-secret-access-key",
-			Usage:    "IAM secret access key",
-			Category: "S3 data source",
-			EnvVars:  []string{"AWS_SECRET_ACCESS_KEY"},
+		&cli.IntFlag{
+			Name:    "concurrency",
+			Usage:   "Number of concurrent downloads",
+			Value:   10,
+			Aliases: []string{"j"},
 		},
 	},
 	Action: func(c *cli.Context) error {
-		return nil
-		// return handler.DownloadHandler(c.Context, piece, api, nil)
+		api := c.String("api")
+		outDir := c.String("out-dir")
+		concurrency := c.Int("concurrency")
+		piece := c.Args().First()
+		err := handler.DownloadHandler(c.Context, piece, api, nil, outDir, concurrency)
+		if err == nil {
+			log.Logger("download").Info("Download complete")
+			return nil
+		}
+		return cli.Exit(err.Error(), 1)
 	},
 }

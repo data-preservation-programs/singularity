@@ -1,25 +1,33 @@
-//go:build exclude
-
 package handler
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
+	"github.com/fxamacker/cbor/v2"
 	"github.com/pkg/errors"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"sync"
 )
 
-func DownloadHandler(ctx context.Context, piece string, api string, meta model.Metadata) error {
+func DownloadHandler(ctx context.Context,
+	piece string,
+	api string,
+	meta model.Metadata,
+	outDir string,
+	concurrency int,
+) error {
 	resolver := datasource.DefaultHandlerResolver{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/admin/api/piece/metadata/"+piece, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/piece/metadata/"+piece, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to create request")
 	}
+	req.Header.Add("Accept", "application/cbor")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "failed to get metadata")
@@ -28,89 +36,114 @@ func DownloadHandler(ctx context.Context, piece string, api string, meta model.M
 	if resp.StatusCode != http.StatusOK {
 		return errors.Errorf("failed to get metadata: %s", resp.Status)
 	}
-	body, err := io.ReadAll(resp.Body)
+
+	var pieceMetadata service.PieceMetadata
+	err = cbor.NewDecoder(resp.Body).Decode(&pieceMetadata)
 	if err != nil {
-		return errors.Wrap(err, "failed to read metadata")
+		return errors.Wrap(err, "failed to decode metadata")
 	}
 
-	pieceReader, err := UnmarshalPieceReader(body)
+	pieceMetadata.Source.Metadata = meta
+	pieceReader, err := store.NewPieceReader(ctx, pieceMetadata.Car, pieceMetadata.Source, pieceMetadata.CarBlocks, pieceMetadata.Items, resolver)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal metadata")
+		return errors.Wrap(err, "failed to create piece reader")
 	}
-	pieceReader, err = pieceReader.MakeCopy(ctx, 0)
-	if err != nil {
-		return errors.Wrap(err, "failed to make copy")
-	}
-	for i := range pieceReader.Blocks {
-		if itemBlock, ok := pieceReader.Blocks[i].(store.ItemBlock); ok {
-			source := model.Source{}
-			// TODO source.Type = model.Local
-			source.Metadata = meta
-			handler, err := resolver.Resolve(ctx, source)
-			if err != nil {
-				return errors.Wrap(err, "failed to get handler")
-			}
-			pieceReader.Blocks[i] = store.ItemBlock{
-				PieceOffset:   itemBlock.PieceOffset,
-				SourceHandler: handler,
-				Item:          itemBlock.Item,
-				Meta:          itemBlock.Meta,
-			}
-		}
-	}
-	_, err = io.Copy(os.Stdout, pieceReader)
-	if err != nil {
-		return errors.Wrap(err, "failed to copy data")
-	}
-	return nil
+	defer pieceReader.Close()
+
+	return download(ctx, pieceReader, filepath.Join(outDir, piece+".car"), concurrency)
 }
 
-type blockType struct {
-	Varint *[]byte `json:"varint"`
-}
-
-func UnmarshalPieceReader(data []byte) (*store.PieceReader, error) {
-	var rawBlocks []json.RawMessage
-	reader := store.PieceReader{
-		Blocks: make([]store.PieceBlock, 0),
-	}
-
-	// Unmarshal into temporary struct to get the raw JSON blocks
-	temp := struct {
-		Blocks []json.RawMessage `json:"blocks"`
-		*store.PieceReader
-	}{
-		PieceReader: &reader,
-		Blocks:      rawBlocks,
-	}
-
-	err := json.Unmarshal(data, &temp)
+func download(ctx context.Context, reader *store.PieceReader, outPath string, concurrency int) error {
+	size, err := reader.Seek(0, io.SeekEnd)
 	if err != nil {
-		return nil, err
+		return errors.New("failed to seek to end of piece")
+	}
+	_, err = reader.Seek(0, io.SeekStart)
+	if err != nil {
+		return errors.New("failed to seek to start of piece")
 	}
 
-	for _, rawBlock := range temp.Blocks {
-		var blockType blockType
-		err := json.Unmarshal(rawBlock, &blockType)
-		if err != nil {
-			return nil, err
-		}
-
-		if blockType.Varint != nil {
-			var b store.RawBlock
-			err := json.Unmarshal(rawBlock, &b)
-			if err != nil {
-				return nil, err
-			}
-			reader.Blocks = append(reader.Blocks, b)
-		} else {
-			var b store.ItemBlock
-			err := json.Unmarshal(rawBlock, &b)
-			if err != nil {
-				return nil, err
-			}
-			reader.Blocks = append(reader.Blocks, b)
-		}
+	file, err := os.Create(outPath)
+	if err != nil {
+		return err
 	}
-	return &reader, nil
+
+	var wg sync.WaitGroup
+	partSize := size / int64(concurrency)
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	errChan := make(chan error, 1)
+
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+
+			start := int64(i) * partSize
+			end := start + partSize
+
+			// Adjust for the last part
+			if i == concurrency-1 {
+				end = size
+			}
+
+			// Clone the reader
+			clonedReader := reader.Clone(ctx)
+			defer clonedReader.Close()
+
+			// Seek to the start position
+			_, err := clonedReader.Seek(start, io.SeekStart)
+			if err != nil {
+				select {
+				case <-ctx.Done():
+				case errChan <- err:
+				}
+				cancel()
+				return
+			}
+
+			// Read the part into a buffer
+			reader := io.LimitReader(clonedReader, end-start)
+			buffer := make([]byte, 4096)
+			for {
+				n, err := reader.Read(buffer)
+				if err != nil && !errors.Is(err, io.EOF) {
+					select {
+					case <-ctx.Done():
+					case errChan <- err:
+					}
+					cancel()
+					return
+				}
+				if n == 0 {
+					break
+				}
+				if _, err := file.WriteAt(buffer[:n], start); err != nil {
+					select {
+					case <-ctx.Done():
+					case errChan <- err:
+					}
+					cancel()
+					return
+				}
+				start += int64(n)
+			}
+		}(i)
+	}
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return file.Close()
+	case err := <-errChan:
+		file.Close()
+		return err
+	}
 }

@@ -3,6 +3,7 @@ package pack
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/encryption"
@@ -160,6 +161,40 @@ type BlockResult struct {
 }
 
 var ErrItemModified = errors.New("item has been modified")
+
+func IsSameEntry(ctx context.Context, item model.Item, object fs.Object) (bool, string) {
+	if item.Size != object.Size() {
+		return false, fmt.Sprintf("size mismatch: %d != %d", item.Size, object.Size())
+	}
+	var err error
+	// last modified can be time.Now() if fetch failed so it may not be reliable.
+	// This usually won't happen for most cloud provider i.e. S3
+	// Because during scanning, the modified time is already fetched.
+	lastModified := object.ModTime(ctx)
+	// If last modified is not reliable, we will skip using it as a way to determine if the file has already scanned
+	lastModifiedReliable := !lastModified.IsZero() && lastModified.Before(time.Now().Add(-time.Millisecond))
+	supportedHash := object.Fs().Hashes().GetOne()
+	// For local file system, rclone is actually hashing the file stream which is not efficient.
+	// So we skip hashing for local file system.
+	// For some of the remote storage, there may not have any supported hash type.
+	var hashValue string
+	if supportedHash != hash.None && object.Fs().Name() != "local" {
+		hashValue, err = object.Hash(ctx, supportedHash)
+		if err != nil {
+			logger.Errorw("failed to hash", "error", err)
+		}
+	}
+	if item.Hash != "" && hashValue != "" && item.Hash != hashValue {
+		return false, fmt.Sprintf("hash mismatch: %s != %s", item.Hash, hashValue)
+	}
+	if lastModifiedReliable {
+		return lastModified.UnixNano() == item.LastModifiedTimestampNano,
+			fmt.Sprintf("last modified mismatch: %d != %d",
+				lastModified.UnixNano(),
+				item.LastModifiedTimestampNano)
+	}
+	return true, ""
+}
 
 // GetBlockStreamFromItem streams an item from the handler and encrypts it.
 // It returns a channel of blocks, the object, and an error if any.

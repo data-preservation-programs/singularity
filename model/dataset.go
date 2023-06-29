@@ -15,6 +15,20 @@ type Metadata map[string]string
 
 type CID cid.Cid
 
+func (c CID) MarshalBinary() ([]byte, error) {
+	return cid.Cid(c).MarshalBinary()
+}
+
+func (c *CID) UnmarshalBinary(b []byte) error {
+	var c2 cid.Cid
+	err := c2.UnmarshalBinary(b)
+	if err != nil {
+		return err
+	}
+	*c = CID(c2)
+	return nil
+}
+
 func (c CID) MarshalJSON() ([]byte, error) {
 	if cid.Cid(c) == cid.Undef {
 		return json.Marshal("")
@@ -179,6 +193,7 @@ func (d Dataset) UseEncryption() bool {
 
 // Source represents a source of data, i.e. a local file system directory.
 type Source struct {
+	_                    struct{}   `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
 	ID                   uint32     `gorm:"primaryKey"                                                             json:"id"`
 	CreatedAt            time.Time  `json:"createdAt"`
 	UpdatedAt            time.Time  `json:"updatedAt"`
@@ -218,6 +233,7 @@ type Chunk struct {
 
 // Item makes a reference to the data source item, i.e. a local file.
 type Item struct {
+	_                         struct{}   `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
 	ID                        uint64     `gorm:"primaryKey"                                                json:"id"`
 	ScannedAt                 time.Time  `json:"scannedAt"`
 	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
@@ -288,6 +304,7 @@ func (s *Source) RootDirectoryID(db *gorm.DB) (uint64, error) {
 // In the case of inline preparation, the path may be empty so the Car should be constructed
 // on the fly using CarBlock, ItemBlock and RawBlock tables.
 type Car struct {
+	_         struct{}  `cbor:",toarray"                                         json:"-"                 swaggerignore:"true"`
 	ID        uint32    `gorm:"primaryKey"                                       json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	PieceCID  CID       `gorm:"column:piece_cid;index;type:bytes;size:256"       json:"pieceCid"`
@@ -310,10 +327,11 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
-	ID    uint64 `gorm:"primaryKey"                                   json:"id"`
-	CarID uint32 `json:"carId"`
-	Car   *Car   `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
-	CID   CID    `gorm:"index;column:cid;type:bytes;size:256"         json:"cid"`
+	_     struct{} `cbor:",toarray"                                     json:"-"             swaggerignore:"true"`
+	ID    uint64   `gorm:"primaryKey"                                   json:"id"`
+	CarID uint32   `json:"carId"`
+	Car   *Car     `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
+	CID   CID      `gorm:"index;column:cid;type:bytes;size:256"         json:"cid"`
 	// Offset of the varint inside the CAR
 	CarOffset      int64 `json:"carOffset"`
 	CarBlockLength int32 `json:"carBlockLength"`
