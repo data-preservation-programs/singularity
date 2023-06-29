@@ -193,18 +193,18 @@ func (d Dataset) UseEncryption() bool {
 
 // Source represents a source of data, i.e. a local file system directory.
 type Source struct {
-	_                   struct{}   `cbor:",toarray" json:"-" swaggerignore:"true"`
-	ID                  uint32     `gorm:"primaryKey"                                                             json:"id"`
-	CreatedAt           time.Time  `json:"createdAt"`
-	UpdatedAt           time.Time  `json:"updatedAt"`
-	DatasetID           uint32     `gorm:"uniqueIndex:dataset_type_path"                                          json:"datasetId"`
-	Dataset             *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"                       json:"dataset,omitempty"          swaggerignore:"true"`
-	Type                SourceType `gorm:"uniqueIndex:dataset_type_path;size:64"                                  json:"type"`
-	Path                string     `gorm:"uniqueIndex:dataset_type_path;size:1024"                                json:"path"`
-	Metadata            Metadata   `gorm:"type:JSON"                                                              json:"metadata"`
-	ScanIntervalSeconds uint64     `json:"scanIntervalSeconds"`
-	ScanningState       WorkState  `gorm:"index:source_cleanup;size:16"                                           json:"scanningState"`
-	ScanningWorkerID    *string    `gorm:"index:source_cleanup;size:64"                                           json:"scanningWorkerId,omitempty"`
+	_                    struct{}   `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
+	ID                   uint32     `gorm:"primaryKey"                                                             json:"id"`
+	CreatedAt            time.Time  `json:"createdAt"`
+	UpdatedAt            time.Time  `json:"updatedAt"`
+	DatasetID            uint32     `gorm:"uniqueIndex:dataset_type_path"                                          json:"datasetId"`
+	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"                       json:"dataset,omitempty"          swaggerignore:"true"`
+	Type                 SourceType `gorm:"uniqueIndex:dataset_type_path;size:64"                                  json:"type"`
+	Path                 string     `gorm:"uniqueIndex:dataset_type_path;size:1024"                                json:"path"`
+	Metadata             Metadata   `gorm:"type:JSON"                                                              json:"metadata"`
+	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
+	ScanningState        WorkState  `gorm:"index:source_cleanup;size:16"                                           json:"scanningState"`
+	ScanningWorkerID     *string    `gorm:"index:source_cleanup;size:64"                                           json:"scanningWorkerId,omitempty"`
 	ScanningWorker       *Worker    `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"scanningWorker,omitempty"   swaggerignore:"true"`
 	LastScannedTimestamp int64      `json:"lastScannedTimestamp"`
 	LastScannedPath      string     `json:"lastScannedPath"`
@@ -233,7 +233,7 @@ type Chunk struct {
 
 // Item makes a reference to the data source item, i.e. a local file.
 type Item struct {
-	_                         struct{}   `cbor:",toarray" json:"-" swaggerignore:"true"`
+	_                         struct{}   `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
 	ID                        uint64     `gorm:"primaryKey"                                                json:"id"`
 	ScannedAt                 time.Time  `json:"scannedAt"`
 	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
@@ -304,7 +304,7 @@ func (s *Source) RootDirectoryID(db *gorm.DB) (uint64, error) {
 // In the case of inline preparation, the path may be empty so the Car should be constructed
 // on the fly using CarBlock, ItemBlock and RawBlock tables.
 type Car struct {
-	_         struct{}  `cbor:",toarray" json:"-" swaggerignore:"true"`
+	_         struct{}  `cbor:",toarray"                                         json:"-"                 swaggerignore:"true"`
 	ID        uint32    `gorm:"primaryKey"                                       json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	PieceCID  CID       `gorm:"column:piece_cid;index;type:bytes;size:256"       json:"pieceCid"`
@@ -315,9 +315,9 @@ type Car struct {
 	DatasetID uint32    `gorm:"index"                                            json:"datasetId"`
 	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
 	SourceID  *uint32   `gorm:"index"                                            json:"sourceId"`
-	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"  json:"source,omitempty" swaggerignore:"true"`
+	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"  json:"source,omitempty"  swaggerignore:"true"`
 	ChunkID   *uint32   `json:"chunkId"`
-	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"   json:"chunk,omitempty" swaggerignore:"true"`
+	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"   json:"chunk,omitempty"   swaggerignore:"true"`
 	Header    []byte    `gorm:"size:256"                                         json:"header"`
 }
 
@@ -327,7 +327,7 @@ type Car struct {
 // or we can determine how to assemble a CAR file from blocks from
 // original file.
 type CarBlock struct {
-	_     struct{} `cbor:",toarray" json:"-" swaggerignore:"true"`
+	_     struct{} `cbor:",toarray"                                     json:"-"             swaggerignore:"true"`
 	ID    uint64   `gorm:"primaryKey"                                   json:"id"`
 	CarID uint32   `json:"carId"`
 	Car   *Car     `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
