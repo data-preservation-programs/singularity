@@ -34,7 +34,7 @@ func PrintToConsole(obj interface{}, useJSON bool, except []string) {
 }
 
 func isNotEligibleType(field reflect.StructField, except []string) bool {
-	return slices.Contains(except, field.Name) ||
+	return field.Name == "_" || slices.Contains(except, field.Name) ||
 		(field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) ||
 		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Struct) ||
 		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8)

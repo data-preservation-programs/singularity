@@ -2,8 +2,10 @@ package store
 
 import (
 	"context"
+	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-varint"
+	"github.com/rclone/rclone/fs"
 	"io"
 	"sort"
 
@@ -17,7 +19,8 @@ var logger = log.Logger("piece_store")
 
 type PieceReader struct {
 	ctx           context.Context
-	car           model.Car
+	fileSize      int64
+	header        []byte
 	sourceHandler datasource.Handler
 	carBlocks     []model.CarBlock
 	items         map[uint64]model.Item
@@ -34,14 +37,14 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 	case io.SeekCurrent:
 		pr.pos += offset
 	case io.SeekEnd:
-		pr.pos = pr.car.FileSize + offset
+		pr.pos = pr.fileSize + offset
 	default:
 		return 0, errors.New("invalid whence")
 	}
 	if pr.pos < 0 {
 		return 0, errors.New("negative position")
 	}
-	if pr.pos > pr.car.FileSize {
+	if pr.pos > pr.fileSize {
 		return 0, errors.New("position past end of file")
 	}
 	if pr.reader != nil {
@@ -49,7 +52,7 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 		pr.reader = nil
 	}
 
-	if pr.pos < int64(len(pr.car.Header)) {
+	if pr.pos < int64(len(pr.header)) {
 		pr.blockIndex = -1
 	} else {
 		pr.blockIndex = sort.Search(len(pr.carBlocks), func(i int) bool {
@@ -58,6 +61,21 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	return pr.pos, nil
+}
+
+func (pr *PieceReader) Clone(ctx context.Context) *PieceReader {
+	return &PieceReader{
+		ctx:           ctx,
+		fileSize:      pr.fileSize,
+		header:        pr.header,
+		sourceHandler: pr.sourceHandler,
+		carBlocks:     pr.carBlocks,
+		items:         pr.items,
+		reader:        pr.reader,
+		readerFor:     pr.readerFor,
+		pos:           pr.pos,
+		blockIndex:    pr.blockIndex,
+	}
 }
 
 func NewPieceReader(
@@ -124,7 +142,8 @@ func NewPieceReader(
 
 	return &PieceReader{
 		ctx:           ctx,
-		car:           car,
+		header:        car.Header,
+		fileSize:      car.FileSize,
 		sourceHandler: sourceHandler,
 		carBlocks:     carBlocks,
 		items:         itemsMap,
@@ -135,15 +154,15 @@ func NewPieceReader(
 func (pr *PieceReader) Read(p []byte) (n int, err error) {
 	// Read car header
 	if pr.blockIndex == -1 {
-		n = copy(p, pr.car.Header[pr.pos:])
+		n = copy(p, pr.header[pr.pos:])
 		pr.pos += int64(n)
-		if pr.pos == int64(len(pr.car.Header)) {
+		if pr.pos == int64(len(pr.header)) {
 			pr.blockIndex = 0
 		}
 		return
 	}
 
-	if pr.pos >= pr.car.FileSize {
+	if pr.pos >= pr.fileSize {
 		return 0, io.EOF
 	}
 
@@ -184,10 +203,16 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		itemOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
 		itemOffset += carBlock.ItemOffset
 		logger.Infow("reading item", "sourceID", item.SourceID, "path", item.Path, "offset", itemOffset)
-		pr.reader, _, err = pr.sourceHandler.Read(pr.ctx, item.Path, itemOffset, item.Size-itemOffset)
+		var obj fs.Object
+		pr.reader, obj, err = pr.sourceHandler.Read(pr.ctx, item.Path, itemOffset, item.Size-itemOffset)
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to get item")
 		}
+		isSameEntry, explanation := pack.IsSameEntry(pr.ctx, item, obj)
+		if !isSameEntry {
+			return 0, errors.New("item has changed: " + explanation)
+		}
+
 		pr.readerFor = item.ID
 	}
 

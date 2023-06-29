@@ -471,6 +471,16 @@ func TestPieceDownload(t *testing.T) {
 			commp := calculateCommp(t, content, 4*1024*1024)
 			assert.Equal(t, pieceCID, commp)
 		}
+		// download util
+		temp3 := t.TempDir()
+		for _, pieceCID := range pieceCIDs {
+			_, _, err = RunArgsInTest(ctx, "singularity download -o "+temp3+" "+pieceCID)
+			assert.NoError(t, err)
+			content, err := os.ReadFile(temp3 + "/" + pieceCID + ".car")
+			assert.NoError(t, err)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
 	})
 }
 

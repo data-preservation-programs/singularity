@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/fxamacker/cbor/v2"
 	nilrouting "github.com/ipfs/go-ipfs-routing/none"
 	bsnetwork "github.com/ipfs/go-libipfs/bitswap/network"
 	"github.com/ipfs/go-libipfs/bitswap/server"
@@ -137,6 +138,7 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 	}
 	if s.bind != "" {
 		e := echo.New()
+		e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
 		e.Use(
 			middleware.RequestLoggerWithConfig(
 				middleware.RequestLoggerConfig{
@@ -176,6 +178,8 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 				return nil
 			},
 		}))
+		e.GET("/piece/metadata/:id", s.GetMetadataHandler)
+		e.HEAD("/piece/metadata/:id", s.GetMetadataHandler)
 		e.GET("/piece/:id", s.handleGetPiece)
 		e.HEAD("/piece/:id", s.handleGetPiece)
 		e.GET("/ipfs/:cid", s.handleGetCid)
@@ -186,6 +190,82 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 	}
 
 	<-ctx.Done()
+}
+
+func (s *ContentProviderService) GetMetadataHandler(c echo.Context) error {
+	id := c.Param("id")
+	pieceCid, err := cid.Parse(id)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
+	}
+
+	var car model.Car
+	ctx := c.Request().Context()
+	err = s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).First(&car).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.String(http.StatusNotFound, "piece not found")
+	}
+
+	metadata, err := s.GetPieceMetadata(ctx, car)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+
+	// Remove all relevant credentials
+	metadata.Source.Metadata = nil
+
+	acceptHeader := c.Request().Header.Get("Accept")
+	switch acceptHeader {
+	case "application/cbor":
+		c.Response().WriteHeader(http.StatusOK)
+		c.Response().Header().Set("Content-Type", "application/cbor")
+		encoder := cbor.NewEncoder(c.Response().Writer)
+		return encoder.Encode(metadata)
+	default:
+		return c.JSON(http.StatusOK, metadata)
+	}
+}
+
+type PieceMetadata struct {
+	Car       model.Car        `json:"car"`
+	Source    model.Source     `json:"source"`
+	CarBlocks []model.CarBlock `json:"carBlocks"`
+	Items     []model.Item     `json:"items"`
+}
+
+func (s *ContentProviderService) GetPieceMetadata(ctx context.Context, car model.Car) (*PieceMetadata, error) {
+	var source model.Source
+	err := s.DB.WithContext(ctx).Where("id = ?", car.SourceID).Find(&source).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to query for source: %w", err)
+	}
+	var carBlocks []model.CarBlock
+	err = s.DB.WithContext(ctx).Where("car_id = ?", car.ID).
+		Find(&carBlocks).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
+	}
+	itemIDSet := make(map[uint64]struct{})
+	for _, carBlock := range carBlocks {
+		if carBlock.ItemID != nil {
+			itemIDSet[*carBlock.ItemID] = struct{}{}
+		}
+	}
+	var itemIDs []uint64
+	for itemID := range itemIDSet {
+		itemIDs = append(itemIDs, itemID)
+	}
+	var items []model.Item
+	err = s.DB.WithContext(ctx).Where("id IN ?", itemIDs).Find(&items).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to query for items: %w", err)
+	}
+	return &PieceMetadata{
+		Car:       car,
+		Source:    source,
+		CarBlocks: carBlocks,
+		Items:     items,
+	}, nil
 }
 
 func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid) (
@@ -221,33 +301,11 @@ func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid
 	}
 
 	car := cars[0]
-	var source model.Source
-	err = s.DB.WithContext(ctx).Where("id = ?", car.SourceID).Find(&source).Error
+	metadata, err := s.GetPieceMetadata(ctx, car)
 	if err != nil {
-		return nil, time.Time{}, fmt.Errorf("failed to query for source: %w", err)
+		return nil, time.Time{}, fmt.Errorf("failed to get piece metadata: %w", err)
 	}
-	var carBlocks []model.CarBlock
-	err = s.DB.WithContext(ctx).Where("car_id = ?", car.ID).
-		Find(&carBlocks).Error
-	if err != nil {
-		return nil, time.Time{}, fmt.Errorf("failed to query for CAR blocks: %w", err)
-	}
-	itemIDSet := make(map[uint64]struct{})
-	for _, carBlock := range carBlocks {
-		if carBlock.ItemID != nil {
-			itemIDSet[*carBlock.ItemID] = struct{}{}
-		}
-	}
-	var itemIDs []uint64
-	for itemID := range itemIDSet {
-		itemIDs = append(itemIDs, itemID)
-	}
-	var items []model.Item
-	err = s.DB.WithContext(ctx).Where("id IN ?", itemIDs).Find(&items).Error
-	if err != nil {
-		return nil, time.Time{}, fmt.Errorf("failed to query for items: %w", err)
-	}
-	reader, err := store.NewPieceReader(ctx, car, source, carBlocks, items, s.Resolver)
+	reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Items, s.Resolver)
 	if err != nil {
 		return nil, time.Time{}, fmt.Errorf("failed to create piece reader: %w", err)
 	}
