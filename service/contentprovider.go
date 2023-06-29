@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/datasource"
@@ -31,6 +30,8 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
+
+var logger = logging.Logger("contentprovider")
 
 func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
 	private, public, err := crypto.GenerateEd25519Key(rand.Reader)
@@ -166,7 +167,17 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 				},
 			),
 		)
-		e.Use(middleware.Recover())
+		e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+			Skipper:           middleware.DefaultSkipper,
+			StackSize:         4 << 10, // 4 KB
+			DisableStackAll:   false,
+			DisablePrintStack: false,
+			LogLevel:          0,
+			LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
+				logger.Errorw("panic", "err", err, "stack", string(stack))
+				return nil
+			},
+		}))
 		e.GET("/piece/:id", s.handleGetPiece)
 		e.HEAD("/piece/:id", s.handleHeadPiece)
 		e.GET("/ipfs/:cid", s.handleGetCid)
@@ -194,20 +205,18 @@ func (s *ContentProviderService) headPiece(ctx context.Context, pieceCid cid.Cid
 }
 
 func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid) (
-	*os.File,
-	os.FileInfo,
-	*store.PieceReader,
-	*model.Car,
+	io.ReadSeekCloser,
+	time.Time,
 	error,
 ) {
 	var cars []model.Car
 	err := s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to query for CARs: %w", err)
+		return nil, time.Time{}, fmt.Errorf("failed to query for CARs: %w", err)
 	}
 
 	if len(cars) == 0 {
-		return nil, nil, nil, nil, os.ErrNotExist
+		return nil, time.Time{}, os.ErrNotExist
 	}
 
 	for _, car := range cars {
@@ -224,27 +233,48 @@ func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid
 			file.Close()
 			continue
 		}
-		return file, fileInfo, nil, &car, nil
+		return file, fileInfo.ModTime(), nil
 	}
 
 	car := cars[0]
+	var source model.Source
+	err = s.DB.WithContext(ctx).Where("id = ?", car.SourceID).Find(&source).Error
+	if err != nil {
+		return nil, time.Time{}, fmt.Errorf("failed to query for source: %w", err)
+	}
 	var carBlocks []model.CarBlock
-	err = s.DB.WithContext(ctx).Preload("Item.Source").Where("car_id = ?", car.ID).
+	err = s.DB.WithContext(ctx).Where("car_id = ?", car.ID).
 		Find(&carBlocks).Error
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
+		return nil, time.Time{}, fmt.Errorf("failed to query for CAR blocks: %w", err)
 	}
-	reader, err := store.NewPieceReader(ctx, car, carBlocks, s.Resolver)
+	itemIDSet := make(map[uint64]struct{})
+	for _, carBlock := range carBlocks {
+		if carBlock.ItemID != nil {
+			itemIDSet[*carBlock.ItemID] = struct{}{}
+		}
+	}
+	var itemIDs []uint64
+	for itemID := range itemIDSet {
+		itemIDs = append(itemIDs, itemID)
+	}
+	var items []model.Item
+	err = s.DB.WithContext(ctx).Where("id IN ?", itemIDs).Find(&items).Error
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to create piece reader: %w", err)
+		return nil, time.Time{}, fmt.Errorf("failed to query for items: %w", err)
 	}
-	return nil, nil, reader, &car, nil
+	reader, err := store.NewPieceReader(ctx, car, source, carBlocks, items, s.Resolver)
+	if err != nil {
+		return nil, time.Time{}, fmt.Errorf("failed to create piece reader: %w", err)
+	}
+	return reader, car.CreatedAt, nil
 }
 
 func (s *ContentProviderService) setCommonHeaders(c echo.Context, pieceCid string) {
 	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", pieceCid+".car"))
-	c.Response().Header().Set("Content-Type", "application/piece")
+	c.Response().Header().Set("Content-Type", "application/vnd.ipld.car; version=1")
 	c.Response().Header().Set("Accept-Ranges", "bytes")
+	c.Response().Header().Set("Etag", "\""+pieceCid+"\"")
 }
 
 func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
@@ -259,6 +289,7 @@ func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
 		return c.String(http.StatusNotFound, "piece not found")
 	}
 	if err != nil {
+		logger.Errorw("failed to find piece", "pieceCid", pieceCid, "error", err)
 		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
 	}
 
@@ -299,106 +330,23 @@ func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
 	}
 
-	var reader io.ReaderAt
-	var pieceReader *store.PieceReader
-	var lastModified time.Time
-	var fileSize int64
-	fil, fInfo, pieceReader, car, err := s.FindPiece(c.Request().Context(), pieceCid)
+	reader, lastModified, err := s.FindPiece(c.Request().Context(), pieceCid)
 	if os.IsNotExist(err) {
 		return c.String(http.StatusNotFound, "piece not found")
 	}
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
 	}
-	if fil != nil {
-		defer fil.Close()
-		reader = fil
-		lastModified = fInfo.ModTime()
-		fileSize = fInfo.Size()
-	} else {
-		lastModified = car.CreatedAt
-		fileSize = car.FileSize
-	}
 
+	defer reader.Close()
 	s.setCommonHeaders(c, pieceCid.String())
-	rangeHeader := c.Request().Header.Get("Range")
-	// No range retrieval
-	if rangeHeader == "" {
-		// Car file exists, just use the http servecontent helper
-		if reader != nil {
-			http.ServeContent(
-				c.Response(),
-				c.Request(),
-				pieceCid.String()+".car",
-				lastModified,
-				io.NewSectionReader(reader, 0, fileSize),
-			)
-		} else {
-			// Otherwise, we need to stream the piece reader
-			c.Response().Header().Set("Last-Modified", lastModified.UTC().Format(http.TimeFormat))
-			_, err := io.Copy(c.Response().Writer, pieceReader)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "failed to copy piece reader: "+err.Error())
-			}
-		}
-		return nil
-	}
+	http.ServeContent(
+		c.Response(),
+		c.Request(),
+		pieceCid.String()+".car",
+		lastModified,
+		reader,
+	)
 
-	start, end, err, done := s.handleRangeHeader(c, rangeHeader, fileSize)
-	if done {
-		return err
-	}
-	// Partial retrieval backed by CAR file
-	if reader != nil {
-		http.ServeContent(
-			c.Response(),
-			c.Request(),
-			pieceCid.String()+".car",
-			lastModified,
-			io.NewSectionReader(reader, start, end-start+1),
-		)
-	} else {
-		// Partial retrieval backed by piece reader
-		pieceReader, err = pieceReader.MakeCopy(c.Request().Context(), start)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to seek in piece reader: "+err.Error())
-		}
-		_, err = io.CopyN(c.Response().Writer, pieceReader, end-start+1)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to copy piece reader: "+err.Error())
-		}
-	}
 	return nil
-}
-
-func (s *ContentProviderService) handleRangeHeader(c echo.Context, rangeHeader string, fileSize int64) (int64, int64, error, bool) {
-	// Parse Range header
-	rangeStr := strings.TrimPrefix(rangeHeader, "bytes=")
-	rangeParts := strings.Split(rangeStr, "-")
-	start, err := strconv.ParseInt(rangeParts[0], 10, 64)
-	if err != nil {
-		return 0, 0, c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range"), true
-	}
-
-	var end int64
-	if len(rangeParts) > 1 && rangeParts[1] != "" {
-		end, err = strconv.ParseInt(rangeParts[1], 10, 64)
-		if err != nil {
-			return 0, 0, c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range"), true
-		}
-	} else {
-		end = fileSize - 1
-	}
-
-	if start > end || end >= fileSize {
-		return 0, 0, c.String(http.StatusRequestedRangeNotSatisfiable, "invalid range"), true
-	}
-
-	// Set required headers for partial content
-	c.Response().Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
-	c.Response().Header().Set("Content-Length", strconv.FormatInt(end-start+1, 10))
-
-	// Send the specified range of bytes
-	c.Response().WriteHeader(http.StatusPartialContent)
-	return start, end, nil, false
 }

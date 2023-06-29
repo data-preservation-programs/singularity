@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/urfave/cli/v2"
 )
 
@@ -49,8 +48,7 @@ var DownloadCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		piece := c.Args().First()
-		api := c.String("api")
-		return handler.DownloadHandler(c.Context, piece, api, nil)
+		return nil
+		// return handler.DownloadHandler(c.Context, piece, api, nil)
 	},
 }

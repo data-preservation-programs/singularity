@@ -327,11 +327,20 @@ type CarBlock struct {
 	// A reference to the item with offset. Meaningless if item is encrypted since it's the offset of the encrypted object.
 	ItemOffset    int64 `json:"itemOffset"`
 	ItemEncrypted bool  `json:"itemEncrypted"`
+
+	blockLength int32
 }
 
 func (c CarBlock) BlockLength() int32 {
-	if c.RawBlock != nil {
-		return int32(len(c.RawBlock))
+	if c.blockLength != 0 {
+		return c.blockLength
 	}
-	return c.CarBlockLength - int32(cid.Cid(c.CID).ByteLen()) - int32(len(c.Varint))
+
+	if c.RawBlock != nil {
+		c.blockLength = int32(len(c.RawBlock))
+	} else {
+		c.blockLength = c.CarBlockLength - int32(cid.Cid(c.CID).ByteLen()) - int32(len(c.Varint))
+	}
+
+	return c.blockLength
 }

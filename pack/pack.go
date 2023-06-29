@@ -146,6 +146,7 @@ func AssembleCar(
 	}
 
 	for _, itemPart := range itemParts {
+		itemPart := itemPart
 		links := make([]format.Link, 0)
 		encryptor, err := encryption.GetEncryptor(dataset)
 		if err != nil {

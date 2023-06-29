@@ -55,6 +55,7 @@ linters:
     - forbidigo
     - godot
     - depguard
+    - nakedret
 
 linters-settings:
   lll:

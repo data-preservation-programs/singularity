@@ -6,6 +6,8 @@ import (
 	"context"
 	"filippo.io/age"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/pack"
+	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -22,8 +24,10 @@ import (
 	"gorm.io/gorm"
 	"io"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -413,4 +417,74 @@ func TestDatasourceRescan(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, out3, out2)
 	})
+}
+
+func TestPieceDownload(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		temp1 := t.TempDir()
+		temp2 := t.TempDir()
+		os.WriteFile(temp1+"/test1.txt", generateRandomBytes(10), 0777)
+		os.WriteFile(temp1+"/test2.txt", generateRandomBytes(10), 0777)
+		os.WriteFile(temp1+"/test3.txt", generateRandomBytes(10_000_000), 0777)
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 4MB --output-dir "+temp2+" test")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp1)
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource daggen 1")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		assert.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		assert.NoError(t, err)
+		pieceCIDs := regexp.MustCompile("baga6ea4sea[0-9a-z]+").FindAllString(out, -1)
+		assert.Len(t, pieceCIDs, 8)
+		pieceCIDs = underscore.Unique(pieceCIDs)
+		assert.Len(t, pieceCIDs, 4)
+		ctx2, cancel := context.WithCancel(ctx)
+		defer cancel()
+		go func() {
+			_, _, err := RunArgsInTest(ctx2, "singularity run content-provider")
+			assert.NoError(t, err)
+			<-ctx2.Done()
+		}()
+		// Wait for HTTP service to be ready
+		time.Sleep(1 * time.Second)
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPiece(t, ctx, pieceCID)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
+		// Clean up temp2 and try again
+		os.RemoveAll(temp2)
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPiece(t, ctx, pieceCID)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
+	})
+}
+
+func downloadPiece(t *testing.T, ctx context.Context, pieceCID string) []byte {
+	url := "http://127.0.0.1:7777/piece/" + pieceCID
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	assert.NoError(t, err)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, 200)
+	body, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+	return body
+}
+
+func calculateCommp(t *testing.T, content []byte, targetPieceSize uint64) string {
+	calc := &commp.Calc{}
+	_, err := bytes.NewBuffer(content).WriteTo(calc)
+	assert.NoError(t, err)
+	c, _, err := pack.GetCommp(calc, targetPieceSize)
+	assert.NoError(t, err)
+	return c.String()
 }
