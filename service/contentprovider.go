@@ -17,7 +17,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/datasource"
@@ -133,10 +132,9 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 	if s.host != nil {
 		err := s.StartBitswap(ctx)
 		if err != nil {
-			logging.Logger("contentprovider").Fatal(err)
+			logger.Fatal(err)
 		}
 	}
-	logger := logging.Logger("contentprovider")
 	if s.bind != "" {
 		e := echo.New()
 		e.Use(
@@ -179,7 +177,7 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 			},
 		}))
 		e.GET("/piece/:id", s.handleGetPiece)
-		e.HEAD("/piece/:id", s.handleHeadPiece)
+		e.HEAD("/piece/:id", s.handleGetPiece)
 		e.GET("/ipfs/:cid", s.handleGetCid)
 		err := e.Start(s.bind)
 		if err != nil {
@@ -188,20 +186,6 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 	}
 
 	<-ctx.Done()
-}
-
-func (s *ContentProviderService) headPiece(ctx context.Context, pieceCid cid.Cid) (int64, error) {
-	var cars []model.Car
-	err := s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to query for CARs")
-	}
-
-	if len(cars) == 0 {
-		return 0, os.ErrNotExist
-	}
-
-	return cars[0].FileSize, nil
 }
 
 func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid) (
@@ -275,27 +259,6 @@ func (s *ContentProviderService) setCommonHeaders(c echo.Context, pieceCid strin
 	c.Response().Header().Set("Content-Type", "application/vnd.ipld.car; version=1")
 	c.Response().Header().Set("Accept-Ranges", "bytes")
 	c.Response().Header().Set("Etag", "\""+pieceCid+"\"")
-}
-
-func (s *ContentProviderService) handleHeadPiece(c echo.Context) error {
-	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
-	}
-
-	size, err := s.headPiece(c.Request().Context(), pieceCid)
-	if os.IsNotExist(err) {
-		return c.String(http.StatusNotFound, "piece not found")
-	}
-	if err != nil {
-		logger.Errorw("failed to find piece", "pieceCid", pieceCid, "error", err)
-		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
-	}
-
-	s.setCommonHeaders(c, pieceCid.String())
-	c.Response().Header().Set("Content-Length", strconv.FormatInt(size, 10))
-	return c.NoContent(http.StatusOK)
 }
 
 func (s *ContentProviderService) handleGetCid(c echo.Context) error {

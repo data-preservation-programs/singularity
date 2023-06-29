@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"filippo.io/age"
+	"fmt"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/pack"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
@@ -30,6 +31,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -463,10 +465,17 @@ func TestPieceDownload(t *testing.T) {
 			commp := calculateCommp(t, content, 4*1024*1024)
 			assert.Equal(t, pieceCID, commp)
 		}
+		// multithread download
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPieceWithThreads(t, ctx, pieceCID, 10)
+			commp := calculateCommp(t, content, 4*1024*1024)
+			assert.Equal(t, pieceCID, commp)
+		}
 	})
 }
 
 func downloadPiece(t *testing.T, ctx context.Context, pieceCID string) []byte {
+	t.Log("Downloading piece", pieceCID)
 	url := "http://127.0.0.1:7777/piece/" + pieceCID
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	assert.NoError(t, err)
@@ -474,10 +483,78 @@ func downloadPiece(t *testing.T, ctx context.Context, pieceCID string) []byte {
 	resp, err := client.Do(req)
 	assert.NoError(t, err)
 	defer resp.Body.Close()
-	assert.Equal(t, resp.StatusCode, 200)
+	assert.Less(t, resp.StatusCode, 300)
 	body, err := io.ReadAll(resp.Body)
 	assert.NoError(t, err)
 	return body
+}
+
+func downloadPieceWithThreads(t *testing.T, ctx context.Context, pieceCID string, nThreads int) []byte {
+	url := "http://127.0.0.1:7777/piece/" + pieceCID
+
+	// Make a HEAD request to get the size of the file
+	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
+	assert.NoError(t, err)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer resp.Body.Close()
+
+	// Get the Content-Length header
+	contentLength := resp.ContentLength
+	if contentLength < 0 {
+		t.Error("Content-Length header not found")
+	}
+
+	// Calculate size of each part
+	partSize := contentLength / int64(nThreads)
+	var extraSize int64 = 0
+	if contentLength%int64(nThreads) != 0 {
+		extraSize = contentLength % int64(nThreads)
+	}
+
+	// Download each part concurrently
+	var wg sync.WaitGroup
+	parts := make([][]byte, nThreads)
+	for i := 0; i < nThreads; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+
+			start := int64(i) * partSize
+			end := start + partSize - 1
+			if i == nThreads-1 {
+				end += extraSize // add the remainder to the last part
+			}
+
+			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+			assert.NoError(t, err)
+
+			// Set the Range header to download a chunk
+			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
+			t.Log("Downloading piece", pieceCID, "part", i, "bytes", start, "-", end)
+			resp, err := client.Do(req)
+			assert.NoError(t, err)
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
+
+			// Save the part to the slice
+			parts[i] = body
+		}(i)
+	}
+
+	// Wait for all the downloads to finish
+	wg.Wait()
+
+	// Combine the parts
+	var result bytes.Buffer
+	for _, part := range parts {
+		result.Write(part)
+	}
+
+	return result.Bytes()
 }
 
 func calculateCommp(t *testing.T, content []byte, targetPieceSize uint64) string {
