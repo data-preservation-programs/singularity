@@ -3,22 +3,24 @@ package handler
 import (
 	"context"
 	"github.com/data-preservation-programs/singularity/datasource"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/pkg/errors"
+	"github.com/rclone/rclone/fs"
+	"github.com/rjNemo/underscore"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
 func DownloadHandler(ctx context.Context,
 	piece string,
 	api string,
-	meta model.Metadata,
+	config map[string]string,
 	outDir string,
 	concurrency int,
 ) error {
@@ -43,7 +45,31 @@ func DownloadHandler(ctx context.Context,
 		return errors.Wrap(err, "failed to decode metadata")
 	}
 
-	pieceMetadata.Source.Metadata = meta
+	t := pieceMetadata.Source.Type
+	reg, err := fs.Find(t)
+	if err != nil {
+		return errors.New("invalid source type")
+	}
+	pieceMetadata.Source.Metadata = map[string]string{}
+	for key, value := range config {
+		snake := strings.ReplaceAll(key, "-", "_")
+		splitted := strings.SplitN(snake, "_", 2)
+		if len(splitted) != 2 {
+			return errors.New("invalid config key: " + key)
+		}
+		if splitted[0] != t {
+			return errors.New("invalid config key for this data source: " + key)
+		}
+		name := splitted[1]
+		_, err := underscore.Find(reg.Options, func(option fs.Option) bool {
+			return option.Name == name
+		})
+		if err != nil {
+			return errors.New("config key cannot be found for the data source: " + key)
+		}
+		pieceMetadata.Source.Metadata[name] = value
+	}
+
 	pieceReader, err := store.NewPieceReader(ctx, pieceMetadata.Car, pieceMetadata.Source, pieceMetadata.CarBlocks, pieceMetadata.Items, resolver)
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")
