@@ -61,7 +61,17 @@ var DownloadCmd = &cli.Command{
 		outDir := c.String("out-dir")
 		concurrency := c.Int("concurrency")
 		piece := c.Args().First()
-		err := handler.DownloadHandler(c.Context, piece, api, nil, outDir, concurrency)
+		config := map[string]string{}
+		for _, key := range c.LocalFlagNames() {
+			if c.IsSet(key) {
+				if slices.Contains([]string{"api", "out-dir", "concurrency"}, key) {
+					continue
+				}
+				value := c.String(key)
+				config[key] = value
+			}
+		}
+		err := handler.DownloadHandler(c.Context, piece, api, config, outDir, concurrency)
 		if err == nil {
 			log.Logger("download").Info("Download complete")
 			return nil

@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"github.com/data-preservation-programs/singularity/datasource"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
@@ -18,7 +17,7 @@ import (
 func DownloadHandler(ctx context.Context,
 	piece string,
 	api string,
-	meta model.Metadata,
+	meta map[string]string,
 	outDir string,
 	concurrency int,
 ) error {
