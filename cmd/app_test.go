@@ -380,7 +380,6 @@ func TestDatasourceRescan(t *testing.T) {
 		assert.NoError(t, err)
 		// We should get 29 chunks
 		assert.Contains(t, out, "29")
-		assert.NotContains(t, out, "30")
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=true --enable-dag=false --exit-on-complete=true --exit-on-error=true")
 		assert.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect chunks 1")

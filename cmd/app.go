@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/data-preservation-programs/singularity/cmd/admin"
@@ -18,6 +19,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"io"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 var App = &cli.App{
@@ -161,6 +164,47 @@ var App = &cli.App{
 }
 
 func RunApp(ctx context.Context, args []string) error {
+	printer := cli.HelpPrinter
+	//nolint:errcheck
+	cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+		var helpText bytes.Buffer
+		printer(&helpText, templ, data)
+		numLines := strings.Count(helpText.String(), "\n")
+		const maxLinesWithoutPager = 40
+		if numLines <= maxLinesWithoutPager {
+			w.Write(helpText.Bytes())
+			return
+		}
+		pager := os.Getenv("PAGER")
+		if pager == "" {
+			pager = "less"
+		}
+
+		pagerPath, err := exec.LookPath(pager)
+		if err != nil {
+			w.Write(helpText.Bytes())
+			return
+		}
+		cmd := exec.Command(pagerPath)
+		pagerIn, err := cmd.StdinPipe()
+		cmd.Stdout = w
+		if err != nil {
+			w.Write(helpText.Bytes())
+			return
+		}
+
+		if err := cmd.Start(); err != nil {
+			w.Write(helpText.Bytes())
+			return
+		}
+
+		if _, err := io.Copy(pagerIn, &helpText); err != nil {
+			w.Write(helpText.Bytes())
+			return
+		}
+		pagerIn.Close()
+		cmd.Wait()
+	}
 	if err := App.RunContext(ctx, args); err != nil {
 		return err
 	}
