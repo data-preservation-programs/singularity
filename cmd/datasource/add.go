@@ -27,6 +27,16 @@ var AddCmd = &cli.Command{
 		return !slices.Contains([]string{"crypt", "memory", "tardigrade"}, r.Prefix)
 	}), func(r *fs.RegInfo) *cli.Command {
 		cmd := datasource.OptionsToCLIFlags(r)
+		cmd.Flags = append(cmd.Flags, &cli.BoolFlag{
+			Name:     "delete-after-export",
+			Usage:    "[Dangerous] Delete the files of the dataset after exporting it to CAR files. ",
+			Category: "Data Preparation Options",
+		}, &cli.DurationFlag{
+			Name:        "rescan-interval",
+			Usage:       "Automatically rescan the source directory when this interval has passed from last successful scan",
+			Category:    "Data Preparation Options",
+			DefaultText: "disabled",
+		})
 		cmd.Action = func(c *cli.Context) error {
 			datasetName := c.Args().Get(0)
 			path := c.Args().Get(1)

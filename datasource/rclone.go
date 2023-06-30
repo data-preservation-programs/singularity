@@ -253,17 +253,6 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		}
 	}
 
-	flags = append(flags, &cli.BoolFlag{
-		Name:     "delete-after-export",
-		Usage:    "[Dangerous] Delete the files of the dataset after exporting it to CAR files. ",
-		Category: "Data Preparation Options",
-	})
-	flags = append(flags, &cli.DurationFlag{
-		Name:        "rescan-interval",
-		Usage:       "Automatically rescan the source directory when this interval has passed from last successful scan",
-		Category:    "Data Preparation Options",
-		DefaultText: "disabled",
-	})
 	slices.SortFunc(flags, func(i, j cli.Flag) bool { return i.Names()[0] < j.Names()[0] })
 	cmd.Flags = flags
 	cmd.Description = strings.Join(usageLines, "\n")
