@@ -65,7 +65,7 @@ var DownloadCmd = &cli.Command{
 		config := map[string]string{}
 		for _, key := range c.LocalFlagNames() {
 			if c.IsSet(key) {
-				if slices.Contains([]string{"api", "out-dir", "concurrency"}, key) {
+				if slices.Contains([]string{"api", "out-dir", "concurrency", "o", "j"}, key) {
 					continue
 				}
 				value := c.String(key)
