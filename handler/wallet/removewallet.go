@@ -35,7 +35,7 @@ func RemoveWalletHandler(
 	}
 
 	var w model.Wallet
-	err = db.Where("address = ?", wallet).First(&w).Error
+	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
 	if err != nil {
 		return handler.NewBadRequestString("failed to find wallet: " + err.Error())
 	}
