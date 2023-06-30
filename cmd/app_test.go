@@ -19,6 +19,7 @@ import (
 	uio "github.com/ipfs/go-unixfs/io"
 	"github.com/ipld/go-car"
 	"github.com/ipld/go-car/util"
+	"github.com/joho/godotenv"
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
@@ -164,6 +165,8 @@ func TestHelpPage(t *testing.T) {
 	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, _, err := RunArgsInTest(ctx, "singularity help")
 		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity download -h")
+		assert.NoError(t, err)
 	})
 }
 
@@ -178,6 +181,36 @@ func TestInitDatabase(t *testing.T) {
 	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, _, err := RunArgsInTest(ctx, "singularity admin init")
 		assert.NoError(t, err)
+	})
+}
+
+func TestWalletCrud(t *testing.T) {
+	godotenv.Load("../.env", ".env")
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		key := os.Getenv("TEST_WALLET_KEY")
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity wallet import "+key)
+		assert.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity wallet list ")
+		assert.NoError(t, err)
+		assert.Contains(t, out, "f02187883")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f02187883")
+		assert.NoError(t, err)
+		assert.Contains(t, out, "f02187883")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
+		assert.NoError(t, err)
+		assert.Contains(t, out, "f02187883")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f02187883")
+		assert.NoError(t, err)
+		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
+		assert.NoError(t, err)
+		assert.NotContains(t, out, "f02187883")
+		_, _, err = RunArgsInTest(ctx, "singularity wallet remove f02187883")
+		assert.NoError(t, err)
+		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
+		assert.NoError(t, err)
+		assert.NotContains(t, out, "f02187883")
 	})
 }
 
@@ -473,7 +506,7 @@ func TestPieceDownload(t *testing.T) {
 		// download util
 		temp3 := t.TempDir()
 		for _, pieceCID := range pieceCIDs {
-			_, _, err = RunArgsInTest(ctx, "singularity download -o "+temp3+" "+pieceCID)
+			_, _, err = RunArgsInTest(ctx, "singularity download --local-links true -o "+temp3+" "+pieceCID)
 			assert.NoError(t, err)
 			content, err := os.ReadFile(temp3 + "/" + pieceCID + ".car")
 			assert.NoError(t, err)
