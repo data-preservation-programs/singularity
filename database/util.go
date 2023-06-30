@@ -9,8 +9,6 @@ import (
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
-	"log"
-	"os"
 	"strings"
 	"time"
 )
@@ -96,12 +94,10 @@ func MustOpenFromCLI(c *cli.Context) *gorm.DB {
 }
 
 func OpenInMemory() *gorm.DB {
-	gormLogger := logger2.New(log.New(os.Stderr, "\r\n", log.LstdFlags), logger2.Config{
-		SlowThreshold:             time.Second,
-		LogLevel:                  logger2.Info,
-		IgnoreRecordNotFoundError: false,
-		Colorful:                  true,
-	})
+	gormLogger := &databaseLogger{
+		level:  logger2.Warn,
+		logger: logging.Logger("database"),
+	}
 	db, err := Open("sqlite:file::memory:?cache=shared", &gorm.Config{
 		Logger: gormLogger,
 	})

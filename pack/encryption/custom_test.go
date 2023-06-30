@@ -40,5 +40,7 @@ func TestCustomEncryptor_FailedCommand(t *testing.T) {
 
 	assert.NoError(t, err)
 	_, err = io.ReadFull(rc, make([]byte, 10))
+	assert.Equal(t, "EOF", err.Error())
+	err = rc.Close()
 	assert.Equal(t, "exit status 1", err.Error())
 }
