@@ -42,6 +42,8 @@ jobs:
 
       - name: Test
         run: go test -coverprofile=coverage.out -coverpkg=./... ./...
+        env:
+          TEST_WALLET_KEY: ${{ secrets.TEST_WALLET_KEY }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
