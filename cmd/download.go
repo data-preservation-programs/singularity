@@ -51,6 +51,7 @@ var DownloadCmd = &cli.Command{
 				}
 				stringFlag.Required = false
 				stringFlag.Category = "Options for " + cmd.Name
+				stringFlag.Aliases = nil
 				flags = append(flags, stringFlag)
 			}
 		}
