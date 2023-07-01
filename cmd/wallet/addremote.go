@@ -10,20 +10,7 @@ var AddRemoteCmd = &cli.Command{
 	Name:      "add-remote",
 	Usage:     "Add remote wallet",
 	ArgsUsage: "<address> <remote_peer>",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:     "lotus-api",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API endpoint",
-			Value:    "https://api.node.glif.io/rpc/v1",
-		},
-		&cli.StringFlag{
-			Name:     "lotus-token",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API token",
-			Value:    "",
-		},
-	},
+	Flags:     []cli.Flag{},
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 

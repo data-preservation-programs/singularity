@@ -1,9 +1,6 @@
 package api
 
 import (
-	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
@@ -11,17 +8,14 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	fs2 "github.com/rclone/rclone/fs"
-	"io"
 	"io/fs"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"strconv"
-	"strings"
 	"time"
 	"unicode"
 
@@ -33,7 +27,6 @@ import (
 	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
-	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -43,222 +36,62 @@ import (
 	"gorm.io/gorm"
 )
 
-type DealStats struct {
-	Provider string
-	State    model.DealState
-	Day      string
-	DealSize int64
-}
-
 type Server struct {
 	db                        *gorm.DB
 	bind                      string
-	stagingDir                string
-	datasets                  map[string]model.Source
 	datasourceHandlerResolver datasource.HandlerResolver
-	contentProvider           *service.ContentProviderService
-}
-
-// UploadFile godoc
-// @Summary Upload a file to a dataset
-// @Description Upload a file to a dataset
-// @Tags Data Source
-// @Accept mpfd
-// @Produce text/plain
-// @Param dataset query string true "Dataset name"
-// @Param file formData file true "File to upload"
-// @Success 200 {string} string "File uploaded"
-// @Failure 400 {string} string "Error: dataset name is required."
-// @Failure 400 {string} string "Error: file is required."
-// @Failure 400 {string} string "Error: dataset not found."
-// @Failure 500 {string} string "Error: internal server error."
-// @Router /dataset/upload [post]
-func (s Server) UploadFile(c echo.Context) error {
-	datasetName := c.QueryParams().Get("dataset")
-	if datasetName == "" {
-		return c.String(http.StatusBadRequest, "Error: dataset name is required. Use &dataset=<dataset_name> in the query string.")
-	}
-
-	source, err := s.getSource(c.Request().Context(), datasetName)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: dataset %s not found.", datasetName))
-	}
-
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	file, err := c.FormFile("file")
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	filename := file.Filename
-	itemPath := filepath.Clean("/" + filename)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get the best staging directory: %s", err.Error()))
-	}
-	dstPath := filepath.Join(s.stagingDir, encodeDatasetName(datasetName), itemPath)
-	// ensure the directory exists
-	if err := os.MkdirAll(filepath.Dir(dstPath), 0755); err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	src, err := file.Open()
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	defer src.Close()
-
-	dst, err := os.Create(dstPath)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	defer dst.Close()
-
-	var written int64
-	if written, err = io.Copy(dst, src); err != nil {
-		os.Remove(dstPath)
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	now := time.Now().UTC()
-	lastModified := now
-	fileInfo, err := os.Stat(dstPath)
-	if err != nil {
-		logger.Errorw("Failed to get file info", "error", err.Error())
-	} else {
-		lastModified = fileInfo.ModTime().UTC()
-	}
-
-	s.db.WithContext(c.Request().Context()).Create(&model.Item{
-		ScannedAt: now,
-		SourceID:  source.ID,
-		// TODO Type:         model.File,
-		Path:                      dstPath,
-		Size:                      written,
-		LastModifiedTimestampNano: lastModified.UnixNano(),
-	})
-
-	return c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s.", file.Filename, dstPath))
-}
-
-func encodeDatasetName(str string) string {
-	reg := regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
-	encoded := reg.ReplaceAllString(str, "_")
-
-	hashBytes := sha256.Sum256([]byte(str))
-	hashStr := hex.EncodeToString(hashBytes[:])
-
-	return encoded + "-" + hashStr[:8]
-}
-
-func (s Server) getSource(ctx context.Context, datasetName string) (model.Source, error) {
-	if source, ok := s.datasets[datasetName]; ok {
-		return source, nil
-	}
-	var dataset model.Dataset
-	err := s.db.WithContext(ctx).Where("name = ?", datasetName).First(&dataset).Error
-	if err != nil {
-		return model.Source{}, err
-	}
-
-	var source model.Source
-	err = s.db.WithContext(ctx).Transaction(func(db *gorm.DB) error {
-		err := db.Where("dataset_id = ? AND type = ?", dataset.ID, model.Upload).First(&source).Error
-		if err == nil {
-			return nil
-		}
-
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			root := model.Directory{}
-			err = db.Create(&root).Error
-			if err != nil {
-				return err
-			}
-			source = model.Source{
-				DatasetID:            dataset.ID,
-				Type:                 model.Upload,
-				Path:                 filepath.Join(s.stagingDir, encodeDatasetName(datasetName)),
-				ScanIntervalSeconds:  0,
-				ScanningState:        "",
-				LastScannedTimestamp: time.Now().Unix(),
-				// TODO RootDirectoryID:      root.ID,
-			}
-			err = db.Create(&source).Error
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
-		return err
-	})
-	if err != nil {
-		return model.Source{}, err
-	}
-	s.datasets[datasetName] = source
-	return source, nil
 }
 
 type ItemInfo struct {
-	// TODO Type     model.ItemType `json:"type"`
-	Path     string `json:"path"`
-	SourceID uint32 `json:"sourceId"`
+	Path string `json:"path"` // Path to the new item, relative to the source
 }
 
 // PushItem godoc
-// @Summary Push an item to the staging area
-// @Description Push an item to the staging area
+// @Summary Push an item to be queued
+// @Description Tells Singularity that something is ready to be grabbed for data preparation
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param item body ItemInfo true "Item"
-// @Success 200 {string} string "OK"
+// @Success 201 {object} model.Item
 // @Failure 400 {string} string "Bad Request"
+// @Failure 409 {string} string "Item already exists"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /dataset/push [post]
+// @Router /source/{id}/push [post]
 func (s Server) PushItem(c echo.Context) error {
+	id := c.Param("id")
+	sourceID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid source ID")
+	}
+
 	var itemInfo ItemInfo
-	err := c.Bind(&itemInfo)
+	err = c.Bind(&itemInfo)
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	return s.pushItem(c, itemInfo)
+	return s.pushItem(c, uint32(sourceID), itemInfo)
 }
 
 // GetMetadataHandler godoc
 // @Summary Get metadata for a piece
-// @Description Get metadata for a piece
+// @Description Get metadata for a piece for how it may be reassembled from the data source
 // @Tags Piece
-// @Accept json
 // @Produce json
 // @Param piece path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /piece/metadata/{piece} [get]
+// @Router /piece/{id}/metadata [get]
 func (s Server) GetMetadataHandler(c echo.Context) error {
-	piece := c.Param("piece")
-	if piece == "" {
-		return c.String(http.StatusBadRequest, "Error: missing piece")
-	}
-	pieceCID, err := cid.Parse(piece)
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	reader, _, err := s.contentProvider.FindPiece(c.Request().Context(), pieceCID)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	return c.JSON(http.StatusOK, reader)
+	return service.GetMetadataHandler(c, s.db)
 }
 
-func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
+func (s Server) pushItem(c echo.Context, sourceID uint32, itemInfo ItemInfo) error {
 	var source model.Source
-	err := s.db.WithContext(c.Request().Context()).Where("id = ?", itemInfo.SourceID).First(&source).Error
+	err := s.db.WithContext(c.Request().Context()).Preload("Dataset").Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d not found.", itemInfo.SourceID))
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d not found.", sourceID))
 	}
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
@@ -269,30 +102,29 @@ func (s Server) pushItem(c echo.Context, itemInfo ItemInfo) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	// TODO: source and item does not match
-
-	// item is not a subpath of source path
-	if !strings.HasPrefix(itemInfo.Path, source.Path) {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: item path %s is not a subpath of source path %s", itemInfo.Path, source.Path))
-	}
-
 	entry, err := handler.Check(c.Request().Context(), itemInfo.Path)
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	err = s.db.WithContext(c.Request().Context()).Create(&model.Item{
-		ScannedAt:                 time.Now().UTC(),
-		SourceID:                  source.ID,
-		Path:                      itemInfo.Path,
-		Size:                      entry.Size(),
-		LastModifiedTimestampNano: entry.ModTime(c.Request().Context()).UnixNano(),
-	}).Error
+	obj, ok := entry.(fs2.ObjectInfo)
+	if !ok {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s is not an object", itemInfo.Path))
+	}
+
+	item, itemParts, err := datasetworker.PushItem(c.Request().Context(), s.db, obj, source, *source.Dataset, map[string]uint64{})
+
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	return c.String(http.StatusOK, "OK")
+	if item == nil {
+		return c.String(http.StatusConflict, fmt.Sprintf("Error: %s already exists", obj.Remote()))
+	}
+
+	item.ItemParts = itemParts
+
+	return c.JSON(http.StatusCreated, item)
 }
 
 func Run(c *cli.Context) error {
@@ -302,11 +134,8 @@ func Run(c *cli.Context) error {
 		return handler.NewHandlerError(err)
 	}
 	bind := c.String("bind")
-	stagingDir := c.String("staging-dir")
-	return Server{db: db, bind: bind, stagingDir: stagingDir,
+	return Server{db: db, bind: bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
-		datasets:                  make(map[string]model.Source),
-		contentProvider:           &service.ContentProviderService{DB: db, Resolver: &datasource.DefaultHandlerResolver{}},
 	}.Run(c)
 }
 
@@ -528,11 +357,9 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 	e.POST("/api/deal/list", s.toEchoHandler(deal.ListHandler))
 
-	e.GET("/api/piece/metadata/:piece", s.GetMetadataHandler)
+	e.GET("/api/piece/:id/metadata", s.GetMetadataHandler)
 
-	e.POST("/api/dataset/upload", s.UploadFile)
-
-	e.POST("/api/dataset/push", s.PushItem)
+	e.POST("/api/source/:id/push", s.PushItem)
 }
 
 var logger = logging.Logger("api")
@@ -577,43 +404,8 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/api/car/:id/deals", s.GetDealsForCar)
 	e.GET("/api/item/:id/deals", s.GetDealsForItem)
 	e.GET("/api/directory/:id/entries", s.GetDirectoryEntries)
-	e.GET("/api/dataset/:id/deal_stats", s.GetDealStats)
-	e.GET("/api/deal_stats", s.GetOverallDealStats)
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 	return e.Start(s.bind)
-}
-
-func (s Server) GetOverallDealStats(c echo.Context) error {
-	var stats []DealStats
-	err := s.db.Table("deals").
-		Select("provider, state, DATE(sector_start) as day, SUM(piece_size) as deal_size").
-		Group("provider, state, day").
-		Find(&stats).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, stats)
-}
-
-func (s Server) GetDealStats(c echo.Context) error {
-	datasetID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var stats []DealStats
-
-	err = s.db.Table("deals").
-		Select("provider, state, DATE(sector_start) as day, SUM(deals.piece_size) as deal_size").
-		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
-		Where("cars.dataset_id = ?", datasetID).
-		Group("provider, state, day").
-		Find(&stats).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, stats)
 }
 
 func (s Server) GetDatasets(c echo.Context) error {

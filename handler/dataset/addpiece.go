@@ -2,8 +2,8 @@ package dataset
 
 import (
 	"bufio"
+	util "github.com/ipfs/go-ipfs-util"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -19,7 +19,6 @@ type AddPieceRequest struct {
 	PieceCID  string `json:"pieceCid"`
 	PieceSize string `json:"pieceSize"`
 	FilePath  string `json:"filePath"`
-	FileSize  uint64 `json:"fileSize"`
 	RootCID   string `json:"rootCid"`
 }
 
@@ -63,8 +62,7 @@ func AddPieceHandler(
 	if (pieceSize & (pieceSize - 1)) != 0 {
 		return nil, handler.NewBadRequestString("piece size must be a power of 2")
 	}
-	rootCID := ""
-	fileSize := int64(0)
+	rootCID := cid.NewCidV1(cid.Raw, util.Hash([]byte(""))).String()
 	if request.FilePath != "" {
 		file, err := os.Open(request.FilePath)
 		if err != nil {
@@ -81,36 +79,15 @@ func AddPieceHandler(
 		if len(header.Roots) > 0 {
 			rootCID = header.Roots[0].String()
 		}
-		resolvedPath, err := filepath.EvalSymlinks(request.FilePath)
-		if err != nil {
-			return nil, handler.NewBadRequestString("failed to resolve symlinks: " + err.Error())
-		}
-		stat, err := os.Stat(resolvedPath)
-		if err != nil {
-			return nil, handler.NewBadRequestString("failed to stat file: " + err.Error())
-		}
-		fileSize = stat.Size()
-		request.FilePath, err = filepath.Abs(request.FilePath)
-		if err != nil {
-			return nil, handler.NewBadRequestString("failed to get absolute path: " + err.Error())
-		}
-	}
-	if request.FileSize != 0 {
-		fileSize = int64(request.FileSize)
 	}
 	if request.RootCID != "" {
 		rootCID = request.RootCID
-	}
-
-	if fileSize >= pieceSize {
-		return nil, handler.NewBadRequestString("piece size must be larger than file size")
 	}
 
 	car := model.Car{
 		PieceCID:  model.CID(cid.MustParse(request.PieceCID)),
 		PieceSize: pieceSize,
 		RootCID:   model.CID(cid.MustParse(rootCID)),
-		FileSize:  fileSize,
 		FilePath:  request.FilePath,
 		DatasetID: dataset.ID,
 	}

@@ -22,6 +22,12 @@ func init() {
 // @host localhost:9090
 // @BasePath /api
 // @securityDefinitions none
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
+// @contact.name   Xinan Xu
+// @contact.url    https://github.com/data-preservation-programs/singularity/issues
+// @license.name MIT + Apache 2.0
+// @license.url https://github.com/data-preservation-programs/singularity/blob/main/LICENSE
 func main() {
 	if log2.GetConfig().Level > log2.LevelInfo && os.Getenv("GOLOG_LOG_LEVEL") == "info" {
 		log2.SetAllLoggers(log2.LevelInfo)

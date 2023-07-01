@@ -43,14 +43,21 @@ var App = &cli.App{
 			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 		},
 		&cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "Enable verbose logging",
-			Value: false,
-		},
-		&cli.BoolFlag{
 			Name:  "json",
 			Usage: "Enable JSON output",
 			Value: false,
+		},
+		&cli.StringFlag{
+			Name:     "lotus-api",
+			Category: "Lotus",
+			Usage:    "Lotus RPC API endpoint",
+			Value:    "https://api.node.glif.io/rpc/v1",
+		},
+		&cli.StringFlag{
+			Name:     "lotus-token",
+			Category: "Lotus",
+			Usage:    "Lotus RPC API token",
+			Value:    "",
 		},
 	},
 	Commands: []*cli.Command{

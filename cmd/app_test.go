@@ -195,6 +195,11 @@ func TestWalletCrud(t *testing.T) {
 		out, _, err := RunArgsInTest(ctx, "singularity wallet list ")
 		assert.NoError(t, err)
 		assert.Contains(t, out, "f01074655")
+		_, _, err = RunArgsInTest(ctx, "singularity wallet add-remote f1l2cc5vuw5moppwsjd3b7cjtwa2exowqo36esklq 12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA")
+		assert.NoError(t, err)
+		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
+		assert.NoError(t, err)
+		assert.Contains(t, out, "f02170643")
 		out, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f01074655")
 		assert.NoError(t, err)
 		assert.Contains(t, out, "f01074655")
@@ -211,6 +216,45 @@ func TestWalletCrud(t *testing.T) {
 		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
 		assert.NoError(t, err)
 		assert.NotContains(t, out, "f01074655")
+	})
+}
+
+func TestDatasetAddPiece(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
+		assert.NoError(t, err)
+		temp := t.TempDir()
+		newFile, err := os.Create(temp + "/test.car")
+		assert.NoError(t, err)
+		blk := blocks.NewBlock([]byte("test"))
+		root := blk.Cid()
+		_, err = pack.WriteCarHeader(newFile, root)
+		assert.NoError(t, err)
+		_, err = pack.WriteCarBlock(newFile, blk)
+		assert.NoError(t, err)
+		newFile.Close()
+		content, err := os.ReadFile(temp + "/test.car")
+		assert.NoError(t, err)
+		commp := calculateCommp(t, content, 1048576)
+		// Add as path
+		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -p \"%s\" test %s %d",
+			temp+"/test.car", commp, 1048576))
+		assert.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		assert.NoError(t, err)
+		assert.Contains(t, out, commp)
+		// Add as known root
+		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -r %s test %s %d",
+			root.String(), commp, 1048576))
+		assert.NoError(t, err)
+		out, _, err = RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		assert.NoError(t, err)
+		// Add as unknown root
+		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece test %s %d",
+			commp, 1048576))
+		assert.NoError(t, err)
+		out, _, err = RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		assert.NoError(t, err)
 	})
 }
 

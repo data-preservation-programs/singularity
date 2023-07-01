@@ -43,7 +43,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		db:                        db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
-		directoryCache:            map[string]model.Directory{},
+		directoryCache:            map[string]uint64{},
 		config: DatasetWorkerConfig{
 			Concurrency:    1,
 			ExitOnComplete: true,
@@ -168,7 +168,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 		db:                        db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
-		directoryCache:            map[string]model.Directory{},
+		directoryCache:            map[string]uint64{},
 		config: DatasetWorkerConfig{
 			Concurrency:    1,
 			ExitOnComplete: true,

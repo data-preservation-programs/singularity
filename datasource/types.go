@@ -5,15 +5,12 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rclone/rclone/fs"
 	"io"
-	"time"
 )
 
 // Entry is a struct that represents a single item during a data source scan
 type Entry struct {
-	Error     error
-	IsDir     bool
-	Info      fs.Object
-	ScannedAt time.Time
+	Error error
+	Info  fs.Object
 }
 
 // Handler is an interface for scanning, reading, opening, and checking items in a data source.

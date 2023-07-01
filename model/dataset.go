@@ -235,7 +235,7 @@ type Chunk struct {
 type Item struct {
 	_                         struct{}   `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
 	ID                        uint64     `gorm:"primaryKey"                                                json:"id"`
-	ScannedAt                 time.Time  `json:"scannedAt"`
+	CreatedAt                 time.Time  `json:"createdAt"`
 	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
 	Source                    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"    swaggerignore:"true"`
 	Path                      string     `gorm:"index:check_existence;size:1024"                           json:"path"`

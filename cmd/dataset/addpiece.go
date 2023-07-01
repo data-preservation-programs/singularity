@@ -8,19 +8,21 @@ import (
 )
 
 var AddPieceCmd = &cli.Command{
-	Name:      "add-piece",
-	Usage:     "Manually register a piece (CAR file) with the dataset for deal making purpose",
+	Name:  "add-piece",
+	Usage: "Manually register a piece (CAR file) with the dataset for deal making purpose",
+	Description: "If you already have the CAR file:\n" +
+		"  singularity dataset add-piece -p <path_to_car_file> <dataset_name> <piece_cid> <piece_size>\n\n" +
+		"If you don't have the CAR file but you know the RootCID:\n" +
+		"  singularity dataset add-piece -r <root_cid> <dataset_name> <piece_cid> <piece_size>\n\n" +
+		"If you don't have either:\n" +
+		"  singularity dataset add-piece -r <root_cid> <dataset_name> <piece_cid> <piece_size>\n" +
+		"However in this case, deals made will not have rootCID set correctly so it may not work well with retrieval testing.",
 	ArgsUsage: "<dataset_name> <piece_cid> <piece_size>",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "file-path",
 			Usage:   "Path to the CAR file, used to determine the size of the file and root CID",
 			Aliases: []string{"p"},
-		},
-		&cli.Uint64Flag{
-			Name:    "file-size",
-			Usage:   "Size of the CAR file, if not provided, will be determined by the CAR file",
-			Aliases: []string{"s"},
 		},
 		&cli.StringFlag{
 			Name:    "root-cid",
@@ -36,7 +38,6 @@ var AddPieceCmd = &cli.Command{
 				PieceCID:  c.Args().Get(1),
 				PieceSize: c.Args().Get(2),
 				FilePath:  c.String("file-path"),
-				FileSize:  c.Uint64("file-size"),
 				RootCID:   c.String("root-cid"),
 			},
 		)

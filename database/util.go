@@ -73,11 +73,8 @@ func MustOpenFromCLI(c *cli.Context) *gorm.DB {
 	connString := c.String("database-connection-string")
 	logger.Debug("Opening database: ", connString)
 	gormLogger := databaseLogger{
-		level:  logger2.Warn,
-		logger: logging.Logger("database"),
-	}
-	if c.Bool("verbose") {
-		gormLogger.level = logger2.Info
+		level:  logger2.Info,
+		logger: logger,
 	}
 	db, err := Open(connString, &gorm.Config{
 		Logger: &gormLogger,
@@ -95,8 +92,8 @@ func MustOpenFromCLI(c *cli.Context) *gorm.DB {
 
 func OpenInMemory() *gorm.DB {
 	gormLogger := &databaseLogger{
-		level:  logger2.Warn,
-		logger: logging.Logger("database"),
+		level:  logger2.Info,
+		logger: logger,
 	}
 	db, err := Open("sqlite:file::memory:?cache=shared", &gorm.Config{
 		Logger: gormLogger,
