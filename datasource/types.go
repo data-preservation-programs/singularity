@@ -9,8 +9,8 @@ import (
 
 // Entry is a struct that represents a single item during a data source scan
 type Entry struct {
-	Error     error
-	Info      fs.Object
+	Error error
+	Info  fs.Object
 }
 
 // Handler is an interface for scanning, reading, opening, and checking items in a data source.

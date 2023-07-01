@@ -408,7 +408,6 @@ func (s Server) Run(c *cli.Context) error {
 	return e.Start(s.bind)
 }
 
-
 func (s Server) GetDatasets(c echo.Context) error {
 	var datasets []model.Dataset
 	err := s.db.Find(&datasets).Error

@@ -234,7 +234,7 @@ type Chunk struct {
 // Item makes a reference to the data source item, i.e. a local file.
 type Item struct {
 	_                         struct{}   `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
-	ID                        uint64     `gorm:"primaryKey"                                                        json:"id"`
+	ID                        uint64     `gorm:"primaryKey"                                                json:"id"`
 	CreatedAt                 time.Time  `json:"createdAt"`
 	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
 	Source                    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"    swaggerignore:"true"`
