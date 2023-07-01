@@ -192,7 +192,7 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 	<-ctx.Done()
 }
 
-func (s *ContentProviderService) GetMetadataHandler(c echo.Context) error {
+func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 	id := c.Param("id")
 	pieceCid, err := cid.Parse(id)
 	if err != nil {
@@ -201,12 +201,12 @@ func (s *ContentProviderService) GetMetadataHandler(c echo.Context) error {
 
 	var car model.Car
 	ctx := c.Request().Context()
-	err = s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).First(&car).Error
+	err = db.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).First(&car).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "piece not found")
 	}
 
-	metadata, err := s.GetPieceMetadata(ctx, car)
+	metadata, err := GetPieceMetadata(ctx, db, car)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
@@ -226,6 +226,10 @@ func (s *ContentProviderService) GetMetadataHandler(c echo.Context) error {
 	}
 }
 
+func (s *ContentProviderService) GetMetadataHandler(c echo.Context) error {
+	return GetMetadataHandler(c, s.DB)
+}
+
 type PieceMetadata struct {
 	Car       model.Car        `json:"car"`
 	Source    model.Source     `json:"source"`
@@ -233,14 +237,14 @@ type PieceMetadata struct {
 	Items     []model.Item     `json:"items"`
 }
 
-func (s *ContentProviderService) GetPieceMetadata(ctx context.Context, car model.Car) (*PieceMetadata, error) {
+func GetPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
 	var source model.Source
-	err := s.DB.WithContext(ctx).Where("id = ?", car.SourceID).Find(&source).Error
+	err := db.WithContext(ctx).Where("id = ?", car.SourceID).Find(&source).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for source: %w", err)
 	}
 	var carBlocks []model.CarBlock
-	err = s.DB.WithContext(ctx).Where("car_id = ?", car.ID).
+	err = db.WithContext(ctx).Where("car_id = ?", car.ID).
 		Find(&carBlocks).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
@@ -256,7 +260,7 @@ func (s *ContentProviderService) GetPieceMetadata(ctx context.Context, car model
 		itemIDs = append(itemIDs, itemID)
 	}
 	var items []model.Item
-	err = s.DB.WithContext(ctx).Where("id IN ?", itemIDs).Find(&items).Error
+	err = db.WithContext(ctx).Where("id IN ?", itemIDs).Find(&items).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for items: %w", err)
 	}
@@ -266,6 +270,10 @@ func (s *ContentProviderService) GetPieceMetadata(ctx context.Context, car model
 		CarBlocks: carBlocks,
 		Items:     items,
 	}, nil
+}
+
+func (s *ContentProviderService) GetPieceMetadata(ctx context.Context, car model.Car) (*PieceMetadata, error) {
+	return GetPieceMetadata(ctx, s.DB, car)
 }
 
 func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid) (

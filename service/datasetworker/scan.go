@@ -6,6 +6,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
+	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/hash"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ import (
 	"time"
 )
 
-func maxSizeToSplitSize(m int64) int64 {
+func MaxSizeToSplitSize(m int64) int64 {
 	r := util.NextPowerOfTwo(uint64(m)) / 4
 	if r > 1<<30 {
 		r = 1 << 30
@@ -22,20 +23,116 @@ func maxSizeToSplitSize(m int64) int64 {
 	return int64(r)
 }
 
+func ExtractFromFsObject(ctx context.Context, info fs.ObjectInfo) (size int64, hashValue string, lastModified time.Time, lastModifiedReliable bool) {
+	// last modified can be time.Now() if fetch failed so it may not be reliable.
+	// This usually won't happen for most cloud provider i.e. S3
+	// Because during scanning, the modified time is already fetched.
+	lastModified = info.ModTime(ctx)
+	// If last modified is not reliable, we will skip using it as a way to determine if the file has already scanned
+	lastModifiedReliable = !lastModified.IsZero() && lastModified.Before(time.Now().Add(-time.Millisecond))
+	supportedHash := info.Fs().Hashes().GetOne()
+	// For local file system, rclone is actually hashing the file stream which is not efficient.
+	// So we skip hashing for local file system.
+	// For some of the remote storage, there may not have any supported hash type.
+	if supportedHash != hash.None && info.Fs().Name() != "local" {
+		var err error
+		hashValue, err = info.Hash(ctx, supportedHash)
+		if err != nil {
+			logger.Errorw("failed to hash", "error", err)
+		}
+	}
+	size = info.Size()
+	return
+}
+
+func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
+	source model.Source, dataset model.Dataset,
+	directoryCache map[string]uint64) (*model.Item, []model.ItemPart, error) {
+	db = db.WithContext(ctx)
+	splitSize := MaxSizeToSplitSize(dataset.MaxSize)
+	rootID, err := source.RootDirectoryID(db)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to get root directory id")
+	}
+	size, hashValue, lastModified, lastModifiedReliable := ExtractFromFsObject(ctx, obj)
+	existing := int64(0)
+	err = db.Model(&model.Item{}).Where(
+		"source_id = ? AND path = ? AND "+
+			"(( hash = ? AND hash != '' ) "+
+			"OR (size = ? AND (? OR last_modified_timestamp_nano = ?)))",
+		source.ID, obj.Remote(),
+		hashValue, size, !lastModifiedReliable, lastModified.UnixNano(),
+	).Count(&existing).Error
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to check existing item")
+	}
+	if existing > 0 {
+		return nil, nil, nil
+	}
+	item := model.Item{
+		SourceID:                  source.ID,
+		Path:                      obj.Remote(),
+		Size:                      size,
+		LastModifiedTimestampNano: lastModified.UnixNano(),
+		Hash:                      hashValue,
+	}
+	logger.Debugw("found item", "item", item)
+	err = EnsureParentDirectories(db, &item, rootID, directoryCache)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to ensure parent directories")
+	}
+	var itemParts []model.ItemPart
+	err = database.DoRetry(func() error {
+		return db.Transaction(func(db *gorm.DB) error {
+			err := db.Create(&item).Error
+			if err != nil {
+				return errors.Wrap(err, "failed to create item")
+			}
+			if dataset.UseEncryption() {
+				itemParts = append(itemParts, model.ItemPart{
+					ItemID: item.ID,
+					Offset: 0,
+					Length: item.Size,
+				})
+			} else {
+				offset := int64(0)
+				for {
+					length := splitSize
+					if item.Size-offset < length {
+						length = item.Size - offset
+					}
+					itemParts = append(itemParts, model.ItemPart{
+						ItemID: item.ID,
+						Offset: offset,
+						Length: length,
+					})
+					offset += length
+					if offset >= item.Size {
+						break
+					}
+				}
+			}
+			err = db.Create(&itemParts).Error
+			if err != nil {
+				return errors.Wrap(err, "failed to create item parts")
+			}
+			return nil
+		})
+	})
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to create item")
+	}
+	return &item, itemParts, nil
+}
+
 // scan scans the data source and inserts the chunking strategy back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned item, which is useful for resuming a failed scan
 func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
 	dataset := *source.Dataset
-	splitSize := maxSizeToSplitSize(dataset.MaxSize)
-	rootID, err := source.RootDirectoryID(w.db)
-	if err != nil {
-		return errors.Wrap(err, "failed to get root directory id")
-	}
-
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
-	err = w.db.Joins("Item").Preload("Item").
+	err := w.db.Joins("Item").Preload("Item").
 		Where("source_id = ? AND chunk_id is null", source.ID).
 		Order("item_parts.id asc").
 		Find(&remainingParts).Error
@@ -65,95 +162,21 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			w.logger.Errorw("failed to scan", "error", entry.Error)
 			continue
 		}
-		// last modified can be time.Now() if fetch failed so it may not be reliable.
-		// This usually won't happen for most cloud provider i.e. S3
-		// Because during scanning, the modified time is already fetched.
-		lastModified := entry.Info.ModTime(ctx)
-		// If last modified is not reliable, we will skip using it as a way to determine if the file has already scanned
-		lastModifiedReliable := !lastModified.IsZero() && lastModified.Before(time.Now().Add(-time.Millisecond))
-		supportedHash := entry.Info.Fs().Hashes().GetOne()
-		// For local file system, rclone is actually hashing the file stream which is not efficient.
-		// So we skip hashing for local file system.
-		// For some of the remote storage, there may not have any supported hash type.
-		var hashValue string
-		if supportedHash != hash.None && entry.Info.Fs().Name() != "local" {
-			hashValue, err = entry.Info.Hash(ctx, supportedHash)
-			if err != nil {
-				w.logger.Errorw("failed to hash", "error", err)
-			}
-		}
-		existing := int64(0)
-		err = w.db.Model(&model.Item{}).Where(
-			"source_id = ? AND path = ? AND "+
-				"(( hash = ? AND hash != '' ) "+
-				"OR (size = ? AND (? OR last_modified_timestamp_nano = ?)))",
-			source.ID, entry.Info.Remote(),
-			hashValue, entry.Info.Size(), !lastModifiedReliable, lastModified.UnixNano(),
-		).Count(&existing).Error
+
+		item, itemParts, err := PushItem(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
 		if err != nil {
-			return errors.Wrap(err, "failed to check existing item")
+			return errors.Wrap(err, "failed to push item")
 		}
-		if existing > 0 {
+		if item == nil {
+			w.logger.Infow("item already exists", "path", entry.Info.Remote())
 			continue
 		}
-		item := model.Item{
-			SourceID:                  source.ID,
-			ScannedAt:                 entry.ScannedAt,
-			Path:                      entry.Info.Remote(),
-			Size:                      entry.Info.Size(),
-			LastModifiedTimestampNano: lastModified.UnixNano(),
-			Hash:                      hashValue,
-		}
-		w.logger.Debugw("found item", "item", item)
-		err = w.ensureParentDirectories(&item, rootID)
-		if err != nil {
-			return errors.Wrap(err, "failed to ensure parent directories")
-		}
-		var itemParts []model.ItemPart
 		err = database.DoRetry(func() error {
-			return w.db.Transaction(func(db *gorm.DB) error {
-				err := db.Create(&item).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to create item")
-				}
-				if dataset.UseEncryption() {
-					itemParts = append(itemParts, model.ItemPart{
-						ItemID: item.ID,
-						Offset: 0,
-						Length: item.Size,
-					})
-				} else {
-					offset := int64(0)
-					for {
-						length := splitSize
-						if item.Size-offset < length {
-							length = item.Size - offset
-						}
-						itemParts = append(itemParts, model.ItemPart{
-							ItemID: item.ID,
-							Offset: offset,
-							Length: length,
-						})
-						offset += length
-						if offset >= item.Size {
-							break
-						}
-					}
-				}
-				err = db.Create(&itemParts).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to create item parts")
-				}
-				err = db.Model(&model.Source{}).Where("id = ?", source.ID).
-					Update("last_scanned_path", item.Path).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to update last scanned path")
-				}
-				return nil
-			})
+			return w.db.Model(&model.Source{}).Where("id = ?", source.ID).
+				Update("last_scanned_path", item.Path).Error
 		})
 		if err != nil {
-			return errors.Wrap(err, "failed to create item and item parts during scanning")
+			return errors.Wrap(err, "failed to update last scanned path")
 		}
 
 		remaining.add(itemParts)
@@ -256,7 +279,9 @@ func (w *DatasetWorkerThread) chunkOnce(
 	return nil
 }
 
-func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, rootDirID uint64) error {
+func EnsureParentDirectories(db *gorm.DB,
+	item *model.Item, rootDirID uint64,
+	directoryCache map[string]uint64) error {
 	if item.DirectoryID != nil {
 		return nil
 	}
@@ -264,8 +289,8 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, rootDirI
 	segments := strings.Split(item.Path, "/")
 	for i, segment := range segments[:len(segments)-1] {
 		p := strings.Join(segments[:i+1], "/")
-		if dir, ok := w.directoryCache[p]; ok {
-			last = dir.ID
+		if dirID, ok := directoryCache[p]; ok {
+			last = dirID
 			continue
 		}
 		newDir := model.Directory{
@@ -274,7 +299,7 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, rootDirI
 			ParentID: &last,
 		}
 		err := database.DoRetry(func() error {
-			return w.db.Transaction(func(db *gorm.DB) error {
+			return db.Transaction(func(db *gorm.DB) error {
 				return db.
 					Where("parent_id = ? AND name = ?", last, segment).
 					FirstOrCreate(&newDir).Error
@@ -283,7 +308,7 @@ func (w *DatasetWorkerThread) ensureParentDirectories(item *model.Item, rootDirI
 		if err != nil {
 			return errors.Wrap(err, "failed to create directory")
 		}
-		w.directoryCache[p] = newDir
+		directoryCache[p] = newDir.ID
 		last = newDir.ID
 	}
 
