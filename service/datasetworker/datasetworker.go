@@ -50,7 +50,7 @@ type DatasetWorkerThread struct {
 	id                        uuid.UUID
 	db                        *gorm.DB
 	logger                    *zap.SugaredLogger
-	directoryCache            map[string]model.Directory
+	directoryCache            map[string]uint64
 	workType                  model.WorkType
 	workingOn                 string
 	datasourceHandlerResolver datasource.HandlerResolver
@@ -133,7 +133,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 	healthcheck.HealthCheck(w.db, w.id, w.getState)
 	go healthcheck.StartHealthCheck(ctx, w.db, w.id, w.getState)
 	for {
-		w.directoryCache = map[string]model.Directory{}
+		w.directoryCache = map[string]uint64{}
 		// 0, find dag work
 		source, err := w.findDagWork()
 		if err != nil {

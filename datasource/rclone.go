@@ -55,7 +55,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type RCloneHandler struct {
@@ -109,7 +108,7 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case ch <- Entry{ScannedAt: time.Now(), Info: v}:
+			case ch <- Entry{Info: v}:
 			}
 		}
 	}
