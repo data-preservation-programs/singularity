@@ -8,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	fs2 "github.com/rclone/rclone/fs"
 	"io/fs"
@@ -26,7 +27,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -84,7 +84,7 @@ func (s Server) PushItem(c echo.Context) error {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /piece/{id}/metadata [get]
 func (s Server) GetMetadataHandler(c echo.Context) error {
-	return service.GetMetadataHandler(c, s.db)
+	return contentprovider.GetMetadataHandler(c, s.db)
 }
 
 func (s Server) pushItem(c echo.Context, sourceID uint32, itemInfo ItemInfo) error {

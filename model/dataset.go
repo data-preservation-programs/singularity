@@ -169,7 +169,7 @@ type Worker struct {
 }
 
 type Global struct {
-	Key   string `gorm:"primaryKey"`
+	Key   string `gorm:"primaryKey;size:256"`
 	Value string
 }
 
