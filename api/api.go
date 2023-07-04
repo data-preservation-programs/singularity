@@ -415,6 +415,7 @@ func (s Server) Run(c *cli.Context) error {
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	/* deprecated API
 	e.GET("/api/datasets", s.GetDatasets)
 	e.GET("/api/dataset/:id/sources", s.GetSources)
 	e.GET("/api/source/:id/cars", s.GetCars)
@@ -422,6 +423,7 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/api/car/:id/deals", s.GetDealsForCar)
 	e.GET("/api/item/:id/deals", s.GetDealsForItem)
 	e.GET("/api/directory/:id/entries", s.GetDirectoryEntries)
+	*/
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
 	go func() {
@@ -437,6 +439,7 @@ func (s Server) Run(c *cli.Context) error {
 	return e.Start(s.bind)
 }
 
+/* deprecated API
 func (s Server) GetDatasets(c echo.Context) error {
 	var datasets []model.Dataset
 	err := s.db.Find(&datasets).Error
@@ -546,3 +549,4 @@ func (s Server) GetDirectoryEntries(c echo.Context) error {
 		"Items":       items,
 	})
 }
+*/
