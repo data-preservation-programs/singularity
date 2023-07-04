@@ -67,6 +67,7 @@
   * [Api](cli-reference/run/api.md)
   * [Dataset Worker](cli-reference/run/dataset-worker.md)
   * [Content Provider](cli-reference/run/content-provider.md)
+  * [Deal Tracker](cli-reference/run/deal-tracker.md)
   * [Dealmaker](cli-reference/run/dealmaker.md)
   * [Spade Api](cli-reference/run/spade-api.md)
 * [Dataset](cli-reference/dataset/README.md)

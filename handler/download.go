@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"github.com/data-preservation-programs/singularity/datasource"
-	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/pkg/errors"
@@ -39,7 +39,7 @@ func DownloadHandler(ctx context.Context,
 		return errors.Errorf("failed to get metadata: %s", resp.Status)
 	}
 
-	var pieceMetadata service.PieceMetadata
+	var pieceMetadata contentprovider.PieceMetadata
 	err = cbor.NewDecoder(resp.Body).Decode(&pieceMetadata)
 	if err != nil {
 		return errors.Wrap(err, "failed to decode metadata")

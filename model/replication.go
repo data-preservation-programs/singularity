@@ -10,7 +10,7 @@ type DealState string
 
 func EpochToTime(epoch int32) time.Time {
 	//nolint:gomnd
-	return time.Unix(int64(epoch*30+1598306400), 0)
+	return time.Unix(int64(epoch)*30+1598306400, 0)
 }
 func EpochToUnix(epoch int32) int32 {
 	return epoch*30 + 1598306400
@@ -45,33 +45,32 @@ func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEp
 }
 
 type Deal struct {
-	ID           uint64 `gorm:"primaryKey"`
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	DealID       *uint64 `gorm:"unique"`
-	DatasetID    *uint32
-	Dataset      *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:SET NULL"`
-	State        DealState `gorm:"index:idx_stat"`
-	ClientID     string
-	Wallet       *Wallet `gorm:"foreignKey:ClientID;constraint:OnDelete:NO ACTION"`
-	Provider     string  `gorm:"index:idx_stat"`
-	ProposalID   string
-	Label        string
-	PieceCID     string `gorm:"column:piece_cid;index"`
-	PieceSize    int64
-	Start        time.Time
-	Duration     time.Duration
-	End          time.Time
-	SectorStart  time.Time `gorm:"index:idx_stat"`
-	Price        float64
-	Verified     bool
-	ErrorMessage string
-	ScheduleID   *uint32
-	Schedule     *Schedule
+	ID               uint64    `gorm:"primaryKey"                                         json:"id"`
+	CreatedAt        time.Time `json:"createdAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
+	DealID           *uint64   `gorm:"unique"                                             json:"dealId"`
+	DatasetID        *uint32   `json:"datasetId"`
+	Dataset          *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:SET NULL"  json:"dataset,omitempty"  swaggerignore:"true"`
+	State            DealState `gorm:"index:idx_stat;size:16"                             json:"state"`
+	ClientID         string    `json:"clientId"`
+	Wallet           *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true"`
+	Provider         string    `gorm:"index:idx_stat;size:16"                             json:"provider"`
+	ProposalID       string    `json:"proposalId"`
+	Label            string    `json:"label"`
+	PieceCID         string    `gorm:"column:piece_cid;index"                             json:"pieceCid"`
+	PieceSize        int64     `json:"pieceSize"`
+	StartEpoch       int32     `json:"startEpoch"`
+	EndEpoch         int32     `json:"endEpoch"`
+	SectorStartEpoch int32     `json:"sectorStartEpoch"`
+	Price            string    `json:"price"`
+	Verified         bool      `json:"verified"`
+	ErrorMessage     string    `json:"errorMessage"`
+	ScheduleID       *uint32   `json:"scheduleId"`
+	Schedule         *Schedule `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true"`
 }
 
 func (d Deal) Key() string {
-	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID, d.Start.Unix(), d.End.Unix())
+	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID, d.StartEpoch, d.EndEpoch)
 }
 
 type Schedule struct {

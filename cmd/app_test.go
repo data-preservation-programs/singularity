@@ -170,6 +170,15 @@ func TestHelpPage(t *testing.T) {
 	})
 }
 
+func TestDealTracker(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		ctx2, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		_, _, err := RunArgsInTest(ctx2, "singularity run deal-tracker")
+		assert.NoError(t, err)
+	})
+}
+
 func TestResetDatabase(t *testing.T) {
 	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, _, err := RunArgsInTest(ctx, "singularity admin reset")

@@ -25,15 +25,20 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --database-connection-string CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii  Connection string to the database.
-      Supported database: sqlite3, postgres, mysql
-      Example for postgres  - postgres://user:pass@example.com:5432/dbname
-      Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true
-                                Note: the database needs to be created using ascii Character Set:                                CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii
-      Example for sqlite3   - sqlite:/absolute/path/to/database.db
-                  or        - sqlite:relative/path/to/database.db
-       (default: sqlite:/home/shane/.singularity/singularity.db) [$DATABASE_CONNECTION_STRING]
-   --verbose   Enable verbose logging (default: false)
-   --json      Enable JSON output (default: false)
+Supported database: sqlite3, postgres, mysql
+Example for postgres  - postgres://user:pass@example.com:5432/dbname
+Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true
+                          Note: the database needs to be created using ascii Character Set:                                CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii
+Example for sqlite3   - sqlite:/absolute/path/to/database.db
+            or        - sqlite:relative/path/to/database.db
+ (default: sqlite:/home/shane/.singularity/singularity.db) [$DATABASE_CONNECTION_STRING]
    --help, -h  show help
+   --json      Enable JSON output (default: false)
+
+   Lotus
+
+   --lotus-api value    Lotus RPC API endpoint (default: "https://api.node.glif.io/rpc/v1")
+   --lotus-token value  Lotus RPC API token
+
 ```
 {% endcode %}
