@@ -179,6 +179,15 @@ func TestDealTracker(t *testing.T) {
 	})
 }
 
+func TestRunAPI(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		ctx2, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		_, _, err := RunArgsInTest(ctx2, "singularity run api")
+		assert.ErrorContains(t, err, "Server closed")
+	})
+}
+
 func TestResetDatabase(t *testing.T) {
 	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, _, err := RunArgsInTest(ctx, "singularity admin reset")
@@ -532,8 +541,7 @@ func TestPieceDownload(t *testing.T) {
 		ctx2, cancel := context.WithCancel(ctx)
 		defer cancel()
 		go func() {
-			_, _, err := RunArgsInTest(ctx2, "singularity run content-provider")
-			assert.NoError(t, err)
+			_, _, _ = RunArgsInTest(ctx2, "singularity run content-provider")
 			<-ctx2.Done()
 		}()
 		// Wait for HTTP service to be ready
