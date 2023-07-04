@@ -17,8 +17,9 @@ package datasource
 
 const structTemplate = `
 type {{.Name}} struct {
-    SourcePath string ` + "`json:\"sourcePath\"`" + `// The path of the source to scan items
-    DeleteAfterExport string ` + "`json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
+    SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan items
+    DeleteAfterExport bool ` + "`validate:\"required\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
+    RescanInterval string ` + "`validate:\"required\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
     {{- range .Fields }}
     {{.Name}} {{.Type}} {{.Tag}} // {{.Description}}
 	{{- end }}
@@ -105,7 +106,10 @@ func main() {
 			allName := cmd.Name + name
 			snake := lowerFirst(name)
 			allSnake := lowerFirst(allName)
-			stringFlag := flag.(*cli.StringFlag)
+			stringFlag, ok := flag.(*cli.StringFlag)
+			if !ok {
+				continue
+			}
 			tag := fmt.Sprintf("`json:\"%s\"`", snake)
 			allTag := fmt.Sprintf("`json:\"%s\"`", allSnake)
 			if stringFlag.Value != "" {

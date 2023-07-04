@@ -62,7 +62,6 @@ var ContentProviderCmd = &cli.Command{
 		if err != nil {
 			return cli.Exit(err.Error(), 1)
 		}
-		s.Start(c.Context)
-		return nil
+		return s.Start(c.Context)
 	},
 }

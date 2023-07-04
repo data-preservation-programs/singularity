@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
@@ -233,12 +234,16 @@ func (s Server) HandlePostSource(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	body := map[string]string{}
+	body := map[string]interface{}{}
 	err = c.Bind(&body)
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	path := body["sourcePath"]
+	sourcePath := body["sourcePath"]
+	path, ok := sourcePath.(string)
+	if !ok {
+		return c.String(http.StatusBadRequest, "Error: sourcePath needs to be a string")
+	}
 	if path == "" {
 		return c.String(http.StatusBadRequest, "Error: sourcePath is required")
 	}
@@ -248,19 +253,32 @@ func (s Server) HandlePostSource(c echo.Context) error {
 			return c.String(http.StatusBadRequest, fmt.Sprintf("failed to get absolute path: %s", err.Error()))
 		}
 	}
-	deleteAfterExportStr := body["deleteAfterExport"]
-	deleteAfterExport := false
-	if deleteAfterExportStr != "" {
-		deleteAfterExport, err = strconv.ParseBool(deleteAfterExportStr)
-		if err != nil {
-			return c.String(http.StatusBadRequest, fmt.Sprintf("failed to parse deleteAfterExport: %s", err.Error()))
-		}
+	deleteAfterExportValue := body["deleteAfterExport"]
+	deleteAfterExport, ok := deleteAfterExportValue.(bool)
+	if !ok {
+		return c.String(http.StatusBadRequest, "Error: deleteAfterExport needs to be a boolean")
+	}
+	rescanIntervalValue := body["rescanInterval"]
+	rescanInterval, ok := rescanIntervalValue.(string)
+	if !ok {
+		return c.String(http.StatusBadRequest, "Error: rescanInterval needs to be a string")
+	}
+	rescan, err := time.ParseDuration(rescanInterval)
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: failed to parse rescanInterval: %s", err.Error()))
 	}
 	delete(body, "sourcePath")
 	delete(body, "deleteAfterExport")
+	delete(body, "rescanInterval")
+	delete(body, "type")
+	delete(body, "datasetName")
 	config := map[string]string{}
 	for k, v := range body {
-		config[lowerCamelToSnake(k)] = v
+		str, ok := v.(string)
+		if !ok {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s needs to be a string", k))
+		}
+		config[lowerCamelToSnake(k)] = str
 	}
 
 	source := model.Source{
@@ -268,7 +286,7 @@ func (s Server) HandlePostSource(c echo.Context) error {
 		Type:                r.Prefix,
 		Path:                path,
 		Metadata:            model.Metadata(config),
-		ScanIntervalSeconds: 0,
+		ScanIntervalSeconds: uint64(rescan.Seconds()),
 		ScanningState:       model.Ready,
 		DeleteAfterExport:   deleteAfterExport,
 		DagGenState:         model.Created,
@@ -284,18 +302,18 @@ func (s Server) HandlePostSource(c echo.Context) error {
 		return errors.Wrap(err, "failed to check source")
 	}
 
+	err = s.db.WithContext(c.Request().Context()).Create(&source).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to create source")
+	}
+
 	dir := model.Directory{
-		Name: path,
+		Name:     path,
+		SourceID: source.ID,
 	}
 	err = s.db.WithContext(c.Request().Context()).Create(&dir).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create directory")
-	}
-
-	// TODO source.RootDirectoryID = dir.ID
-	err = s.db.WithContext(c.Request().Context()).Create(&source).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to create source")
 	}
 
 	return c.JSON(http.StatusOK, source)
@@ -405,6 +423,17 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/api/item/:id/deals", s.GetDealsForItem)
 	e.GET("/api/directory/:id/entries", s.GetDirectoryEntries)
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
+
+	go func() {
+		<-c.Context.Done()
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+		//nolint:contextcheck
+		if err := e.Shutdown(shutdownCtx); err != nil {
+			fmt.Printf("Error shutting down the server: %v\n", err)
+		}
+	}()
+
 	return e.Start(s.bind)
 }
 
