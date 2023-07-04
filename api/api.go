@@ -428,6 +428,7 @@ func (s Server) Run(c *cli.Context) error {
 		<-c.Context.Done()
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
+		//nolint:contextcheck
 		if err := e.Shutdown(shutdownCtx); err != nil {
 			fmt.Printf("Error shutting down the server: %v\n", err)
 		}

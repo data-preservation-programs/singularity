@@ -188,6 +188,7 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 			<-ctx.Done()
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer shutdownCancel()
+			//nolint:contextcheck
 			if err := e.Shutdown(shutdownCtx); err != nil {
 				fmt.Printf("Error shutting down the server: %v\n", err)
 			}
