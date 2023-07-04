@@ -300,20 +300,20 @@ OPTIONS:
 
    Options for local
 
-   --local-case-insensitive value           Force the filesystem to report itself as case insensitive. (default: "false") [$LOCAL_CASE_INSENSITIVE]
-   --local-case-sensitive value             Force the filesystem to report itself as case sensitive. (default: "false") [$LOCAL_CASE_SENSITIVE]
-   --local-copy-links value, -L value       Follow symlinks and copy the pointed to item. (default: "false") [$LOCAL_COPY_LINKS]
-   --local-encoding value                   The encoding for the backend. (default: "Slash,Dot") [$LOCAL_ENCODING]
-   --local-links value, -l value            Translate symlinks to/from regular files with a '.rclonelink' extension. (default: "false") [$LOCAL_LINKS]
-   --local-no-check-updated value           Don't check to see if the files change during upload. (default: "false") [$LOCAL_NO_CHECK_UPDATED]
-   --local-no-preallocate value             Disable preallocation of disk space for transferred files. (default: "false") [$LOCAL_NO_PREALLOCATE]
-   --local-no-set-modtime value             Disable setting modtime. (default: "false") [$LOCAL_NO_SET_MODTIME]
-   --local-no-sparse value                  Disable sparse files for multi-thread downloads. (default: "false") [$LOCAL_NO_SPARSE]
-   --local-nounc value                      Disable UNC (long path names) conversion on Windows. (default: "false") [$LOCAL_NOUNC]
-   --local-one-file-system value, -x value  Don't cross filesystem boundaries (unix/macOS only). (default: "false") [$LOCAL_ONE_FILE_SYSTEM]
-   --local-skip-links value                 Don't warn about skipped symlinks. (default: "false") [$LOCAL_SKIP_LINKS]
-   --local-unicode-normalization value      Apply unicode NFC normalization to paths and filenames. (default: "false") [$LOCAL_UNICODE_NORMALIZATION]
-   --local-zero-size-links value            Assume the Stat size of links is zero (and read them instead) (deprecated). (default: "false") [$LOCAL_ZERO_SIZE_LINKS]
+   --local-case-insensitive value       Force the filesystem to report itself as case insensitive. (default: "false") [$LOCAL_CASE_INSENSITIVE]
+   --local-case-sensitive value         Force the filesystem to report itself as case sensitive. (default: "false") [$LOCAL_CASE_SENSITIVE]
+   --local-copy-links value             Follow symlinks and copy the pointed to item. (default: "false") [$LOCAL_COPY_LINKS]
+   --local-encoding value               The encoding for the backend. (default: "Slash,Dot") [$LOCAL_ENCODING]
+   --local-links value                  Translate symlinks to/from regular files with a '.rclonelink' extension. (default: "false") [$LOCAL_LINKS]
+   --local-no-check-updated value       Don't check to see if the files change during upload. (default: "false") [$LOCAL_NO_CHECK_UPDATED]
+   --local-no-preallocate value         Disable preallocation of disk space for transferred files. (default: "false") [$LOCAL_NO_PREALLOCATE]
+   --local-no-set-modtime value         Disable setting modtime. (default: "false") [$LOCAL_NO_SET_MODTIME]
+   --local-no-sparse value              Disable sparse files for multi-thread downloads. (default: "false") [$LOCAL_NO_SPARSE]
+   --local-nounc value                  Disable UNC (long path names) conversion on Windows. (default: "false") [$LOCAL_NOUNC]
+   --local-one-file-system value        Don't cross filesystem boundaries (unix/macOS only). (default: "false") [$LOCAL_ONE_FILE_SYSTEM]
+   --local-skip-links value             Don't warn about skipped symlinks. (default: "false") [$LOCAL_SKIP_LINKS]
+   --local-unicode-normalization value  Apply unicode NFC normalization to paths and filenames. (default: "false") [$LOCAL_UNICODE_NORMALIZATION]
+   --local-zero-size-links value        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: "false") [$LOCAL_ZERO_SIZE_LINKS]
 
    Options for mailru
 

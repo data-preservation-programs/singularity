@@ -4,7 +4,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/urfave/cli/v2"
 )
 
@@ -50,7 +50,7 @@ var ContentProviderCmd = &cli.Command{
 			return handler.NewHandlerError(err)
 		}
 
-		config := service.ContentProviderConfig{
+		config := contentprovider.ContentProviderConfig{
 			EnableHTTP:        c.Bool("enable-http"),
 			HTTPBind:          c.String("http-bind"),
 			EnableBitswap:     c.Bool("enable-bitswap"),
@@ -58,7 +58,7 @@ var ContentProviderCmd = &cli.Command{
 			Libp2pListenAddrs: c.StringSlice("libp2p-listen"),
 		}
 
-		s, err := service.NewContentProviderService(db, config)
+		s, err := contentprovider.NewContentProviderService(db, config)
 		if err != nil {
 			return cli.Exit(err.Error(), 1)
 		}

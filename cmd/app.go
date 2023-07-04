@@ -109,6 +109,7 @@ var App = &cli.App{
 				run.APICmd,
 				run.DatasetWorkerCmd,
 				run.ContentProviderCmd,
+				run.DealTrackerCmd,
 				run.DealMakerCmd,
 				run.SpadeAPICmd,
 			},
