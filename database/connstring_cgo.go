@@ -8,7 +8,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
-	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -48,10 +47,6 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
 
 	if strings.HasPrefix(connString, "mysql://") {
 		return gorm.Open(mysql.Open(connString[8:]), config)
-	}
-
-	if strings.HasPrefix(connString, "sqlserver://") {
-		return gorm.Open(sqlserver.Open(connString), config)
 	}
 
 	return nil, ErrDatabaseNotSupported

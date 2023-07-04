@@ -129,7 +129,7 @@ func (s *ContentProviderService) StartBitswap(ctx context.Context) error {
 	return nil
 }
 
-func (s *ContentProviderService) Start(ctx context.Context) {
+func (s *ContentProviderService) Start(ctx context.Context) error {
 	if s.host != nil {
 		err := s.StartBitswap(ctx)
 		if err != nil {
@@ -183,13 +183,24 @@ func (s *ContentProviderService) Start(ctx context.Context) {
 		e.GET("/piece/:id", s.handleGetPiece)
 		e.HEAD("/piece/:id", s.handleGetPiece)
 		e.GET("/ipfs/:cid", s.handleGetCid)
+
+		go func() {
+			<-ctx.Done()
+			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer shutdownCancel()
+			if err := e.Shutdown(shutdownCtx); err != nil {
+				fmt.Printf("Error shutting down the server: %v\n", err)
+			}
+		}()
+
 		err := e.Start(s.bind)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 
 	<-ctx.Done()
+	return nil
 }
 
 func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
