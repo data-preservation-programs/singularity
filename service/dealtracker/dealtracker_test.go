@@ -137,7 +137,6 @@ func TestRunOnce(t *testing.T) {
 			StartEpoch:       100,
 			EndEpoch:         999999999,
 			SectorStartEpoch: 0,
-			Price:            0,
 			Verified:         true,
 		},
 		{
@@ -152,7 +151,6 @@ func TestRunOnce(t *testing.T) {
 			StartEpoch:       100,
 			EndEpoch:         999999999,
 			SectorStartEpoch: 0,
-			Price:            0,
 			Verified:         true,
 		},
 		{
@@ -166,7 +164,6 @@ func TestRunOnce(t *testing.T) {
 			StartEpoch:       999999998,
 			EndEpoch:         999999999,
 			SectorStartEpoch: 0,
-			Price:            0,
 			Verified:         true,
 		},
 		{
@@ -181,7 +178,6 @@ func TestRunOnce(t *testing.T) {
 			StartEpoch:       100,
 			EndEpoch:         200,
 			SectorStartEpoch: 100,
-			Price:            0,
 			Verified:         true,
 		},
 		{
@@ -195,7 +191,6 @@ func TestRunOnce(t *testing.T) {
 			StartEpoch:       100,
 			EndEpoch:         200,
 			SectorStartEpoch: 0,
-			Price:            0,
 			Verified:         true,
 		},
 		{
@@ -210,7 +205,6 @@ func TestRunOnce(t *testing.T) {
 			StartEpoch:       100,
 			EndEpoch:         200,
 			SectorStartEpoch: 0,
-			Price:            0,
 			Verified:         true,
 		},
 	}).Error
