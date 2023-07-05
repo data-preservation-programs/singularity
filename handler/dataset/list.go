@@ -13,7 +13,7 @@ import (
 // @Success 200 {array} model.Dataset
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /datasets [get]
+// @Router /dataset [get]
 func ListHandler(
 	db *gorm.DB,
 ) ([]model.Dataset, *handler.Error) {

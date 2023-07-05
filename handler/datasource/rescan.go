@@ -10,9 +10,8 @@ import (
 )
 
 // RescanSourceHandler godoc
-// @Summary Rescan a data source
+// @Summary Trigger a rescan of a data source
 // @Tags Data Source
-// @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
 // @Success 200 {object} model.Source

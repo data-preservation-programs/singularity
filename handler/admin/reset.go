@@ -11,7 +11,6 @@ import (
 // @Description This will drop all tables and recreate them.
 // @Tags Admin
 // @Success 204
-// @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /admin/reset [post]
 func ResetHandler(db *gorm.DB) *handler.Error {

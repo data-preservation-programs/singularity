@@ -9,12 +9,12 @@ import (
 
 // AddWalletHandler godoc
 // @Summary Associate a new wallet with a dataset
-// @Tags Wallet
+// @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param name path string true "Dataset name"
+// @Param datasetName path string true "Dataset name"
 // @Param wallet path string true "Wallet Address"
-// @Success 200 {object} string
+// @Success 200 {object} model.WalletAssignment
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName}/wallet/{wallet} [post]
@@ -22,7 +22,7 @@ func AddWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
-) (*model.Wallet, *handler.Error) {
+) (*model.WalletAssignment, *handler.Error) {
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}
@@ -42,16 +42,18 @@ func AddWalletHandler(
 		return nil, handler.NewBadRequestString("failed to find wallet: " + err.Error())
 	}
 
+	a := model.WalletAssignment{
+		DatasetID: dataset.ID,
+		WalletID:  w.ID,
+	}
+
 	err = database.DoRetry(func() error {
-		return db.Create(&model.WalletAssignment{
-			DatasetID: dataset.ID,
-			WalletID:  w.ID,
-		}).Error
+		return db.Create(&a).Error
 	})
 
 	if err != nil {
 		return nil, handler.NewBadRequestString("failed to create wallet assignment: " + err.Error())
 	}
 
-	return &w, nil
+	return &a, nil
 }

@@ -16,15 +16,15 @@ import (
 )
 
 type AddPieceRequest struct {
-	PieceCID  string `json:"pieceCid"`
-	PieceSize string `json:"pieceSize"`
-	FilePath  string `json:"filePath"`
-	RootCID   string `json:"rootCid"`
+	PieceCID  string `json:"pieceCid"`  // CID of the piece
+	PieceSize string `json:"pieceSize"` // Size of the piece
+	FilePath  string `json:"filePath"`  // Path to the CAR file, used to determine the size of the file and root CID
+	RootCID   string `json:"rootCid"`   // Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
 }
 
 // AddPieceHandler godoc
 // @Summary Manually register a piece (CAR file) with the dataset for deal making purpose
-// @Tags Dataset Piece
+// @Tags Dataset
 // @Produce json
 // @Accept json
 // @Param datasetName path string true "Dataset name"

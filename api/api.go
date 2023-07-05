@@ -41,6 +41,8 @@ type Server struct {
 	db                        *gorm.DB
 	bind                      string
 	datasourceHandlerResolver datasource.HandlerResolver
+	lotusAPI                  string
+	lotusToken                string
 }
 
 type ItemInfo struct {
@@ -77,11 +79,12 @@ func (s Server) PushItem(c echo.Context) error {
 // GetMetadataHandler godoc
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Piece
+// @Tags Piece Metadata
 // @Produce json
 // @Param piece path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
 // @Failure 400 {string} string "Bad Request"
+// @Failure 404 {string} string "Not Found"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /piece/{id}/metadata [get]
 func (s Server) GetMetadataHandler(c echo.Context) error {
@@ -135,8 +138,14 @@ func Run(c *cli.Context) error {
 		return handler.NewHandlerError(err)
 	}
 	bind := c.String("bind")
+
+	lotusAPI := c.String("lotus-api")
+	lotusToken := c.String("lotus-token")
+
 	return Server{db: db, bind: bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		lotusAPI:                  lotusAPI,
+		lotusToken:                lotusToken,
 	}.Run(c)
 }
 
@@ -154,30 +163,45 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 		// Prepare input parameters
 		inputParams := []reflect.Value{reflect.ValueOf(s.db.WithContext(c.Request().Context()))}
 
+		var j int
 		// Get path parameters
 		for i := 1; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
-			if paramType == reflect.TypeOf(c.Request().Context()) {
+			if paramType.String() == "context.Context" {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
 				continue
 			}
 			if paramType.Kind() == reflect.String {
-				if len(c.ParamValues()) < i {
+				if j >= len(c.ParamValues()) {
 					logger.Error("Invalid handler function signature.")
 					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 				}
-				paramValue := c.ParamValues()[i-1]
+				paramValue := c.ParamValues()[j]
 				decoded, err := url.QueryUnescape(paramValue)
 				if err != nil {
 					return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
 				}
 				inputParams = append(inputParams, reflect.ValueOf(decoded))
+				j += 1
 				continue
 			}
 
 			bodyParam := reflect.New(paramType).Elem()
+			if bodyParam.Kind() == reflect.Map {
+				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
+			}
 			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Failed to bind request body.")
+			}
+			if bodyParam.Kind() == reflect.Struct {
+				lotusAPIField := bodyParam.FieldByName("LotusAPI")
+				if lotusAPIField.IsValid() {
+					lotusAPIField.SetString(s.lotusAPI)
+				}
+				lotusTokenField := bodyParam.FieldByName("LotusToken")
+				if lotusTokenField.IsValid() {
+					lotusTokenField.SetString(s.lotusToken)
+				}
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
@@ -188,22 +212,27 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 
 		if len(results) == 1 {
 			// Handle the returned error
-			if err, ok := results[0].Interface().(*handler.Error); ok && err != nil {
+			err, ok := results[0].Interface().(*handler.Error)
+			if !ok {
+				return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+			}
+			if err != nil {
 				return err.HTTPResponse(c)
 			}
 			return c.NoContent(http.StatusNoContent)
 		}
 
 		// Handle the returned error
-		if err, ok := results[1].Interface().(*handler.Error); ok && err != nil {
+		err, ok := results[1].Interface().(*handler.Error)
+		if !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+		}
+		if err != nil {
 			return err.HTTPResponse(c)
 		}
 
 		// Handle the returned data
 		data := results[0].Interface()
-		if data == nil {
-			return c.NoContent(http.StatusNoContent)
-		}
 		return c.JSON(http.StatusOK, data)
 	}
 }
@@ -329,61 +358,51 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.PATCH("/api/dataset/:datasetName", s.toEchoHandler(dataset.UpdateHandler))
 	e.DELETE("/api/dataset/:datasetName", s.toEchoHandler(dataset.RemoveHandler))
 	e.POST("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.AddPieceHandler))
-	e.GET("/api/datasets", s.toEchoHandler(dataset.ListHandler))
-	e.GET("/api/dataset/:datasetName/pieces", s.toEchoHandler(dataset.ListPiecesHandler))
+	e.GET("/api/dataset", s.toEchoHandler(dataset.ListHandler))
+	e.GET("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.ListPiecesHandler))
 
 	// Wallet
 	e.POST("/api/wallet", s.toEchoHandler(wallet.ImportHandler))
-	e.GET("/api/wallets", s.toEchoHandler(wallet.ListHandler))
+	e.GET("/api/wallet", s.toEchoHandler(wallet.ListHandler))
 	e.POST("/api/wallet/remote", s.toEchoHandler(wallet.AddRemoteHandler))
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(wallet.RemoveHandler))
 
+	// Wallet Association
+	e.POST("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
+	e.GET("/api/dataset/:datasetName/wallet", s.toEchoHandler(wallet.ListWalletHandler))
+	e.DELETE("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
+
 	// Data source
-	e.POST("/api/dataset/:datasetName/source/:type", s.HandlePostSource)
-	e.GET("/api/sources", func(c echo.Context) error {
-		datasetName := c.QueryParam("dataset")
-		sources, err := datasource2.ListSourceHandler(s.db.WithContext(c.Request().Context()), datasetName)
-		if err != nil {
-			return err.HTTPResponse(c)
-		}
-		return c.JSON(http.StatusOK, sources)
-	})
+	e.POST("/api/source/:type/dataset/:datasetName", s.HandlePostSource)
+	e.GET("/api/source", s.toEchoHandler(datasource2.ListSourceHandler))
 	e.PATCH("/api/source/:id", s.toEchoHandler(datasource2.UpdateSourceHandler))
-	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
-	// Data source status
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
+	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
+	e.POST("/api/source/:id/push", s.PushItem)
+
+	// Piece metadata
+	e.GET("/api/piece/:id/metadata", s.GetMetadataHandler)
+
+	// Data source status
 	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))
 	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
 	e.GET("/api/source/:id/chunks", s.toEchoHandler(inspect.GetSourceChunksHandler))
 	e.GET("/api/source/:id/items", s.toEchoHandler(inspect.GetSourceItemsHandler))
 
+	// Deal
 	e.POST("/api/deal/send_manual", s.toEchoHandler(deal.SendManualHandler))
-
 	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
-
 	e.GET("/api/deal/schedules", s.toEchoHandler(schedule.ListHandler))
-
 	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
-
 	e.POST("/api/deal/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))
-
-	e.POST("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
-
-	e.GET("/api/dataset/:name/wallets", s.toEchoHandler(wallet.ListWalletHandler))
-
-	e.DELETE("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
-
 	e.POST("/api/deal/list", s.toEchoHandler(deal.ListHandler))
-
-	e.GET("/api/piece/:id/metadata", s.GetMetadataHandler)
-
-	e.POST("/api/source/:id/push", s.PushItem)
 }
 
 var logger = logging.Logger("api")
 
 func (s Server) Run(c *cli.Context) error {
 	e := echo.New()
+	e.Debug = true
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,
@@ -415,6 +434,7 @@ func (s Server) Run(c *cli.Context) error {
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	/* deprecated API
 	e.GET("/api/datasets", s.GetDatasets)
 	e.GET("/api/dataset/:id/sources", s.GetSources)
 	e.GET("/api/source/:id/cars", s.GetCars)
@@ -422,6 +442,7 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/api/car/:id/deals", s.GetDealsForCar)
 	e.GET("/api/item/:id/deals", s.GetDealsForItem)
 	e.GET("/api/directory/:id/entries", s.GetDirectoryEntries)
+	*/
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
 	go func() {
@@ -437,6 +458,7 @@ func (s Server) Run(c *cli.Context) error {
 	return e.Start(s.bind)
 }
 
+/* deprecated API
 func (s Server) GetDatasets(c echo.Context) error {
 	var datasets []model.Dataset
 	err := s.db.Find(&datasets).Error
@@ -546,3 +568,4 @@ func (s Server) GetDirectoryEntries(c echo.Context) error {
 		"Items":       items,
 	})
 }
+*/

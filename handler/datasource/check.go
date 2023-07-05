@@ -24,9 +24,6 @@ type Entry struct {
 	LastModified time.Time `json:"lastModified"`
 }
 
-type CheckSourceResult struct {
-}
-
 // CheckSourceHandler godoc
 // @Summary Check the connection of the data source by listing a path
 // @Tags Data Source
@@ -35,6 +32,7 @@ type CheckSourceResult struct {
 // @Param id path string true "Source ID"
 // @Param request body CheckSourceRequest true "Request body"
 // @Success 200 {array} Entry
+// @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/check [post]
 func CheckSourceHandler(

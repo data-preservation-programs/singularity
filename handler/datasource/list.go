@@ -7,16 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ListSourceHandler godoc
-// @Summary List all sources for a dataset
-// @Tags Data Source
-// @Accept json
-// @Produce json
-// @Param dataset query string false "Dataset name"
-// @Success 200 {array} model.Source
-// @Failure 500 {object} handler.HTTPError
-// @Router /sources [get]
-func ListSourceHandler(
+func ListSourceByDatasetHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Source, *handler.Error) {
@@ -37,4 +28,19 @@ func ListSourceHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 	return sources, nil
+}
+
+// ListSourceHandler godoc
+// @Summary List all sources for a dataset
+// @Tags Data Source
+// @Produce json
+// @Param dataset query string false "Dataset name"
+// @Success 200 {array} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
+// @Router /source [get]
+func ListSourceHandler(
+	db *gorm.DB,
+) ([]model.Source, *handler.Error) {
+	return ListSourceByDatasetHandler(db, "")
 }
