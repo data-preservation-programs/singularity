@@ -50,6 +50,6 @@ var SpadeAPICmd = &cli.Command{
 			return err
 		}
 
-		return service.NewSpadeAPIService(db, dealMaker, &replication.WalletChooser{}, c.String("bind")).Start()
+		return service.NewSpadeAPIService(db, dealMaker, &replication.DefaultWalletChooser{}, c.String("bind")).Start()
 	},
 }

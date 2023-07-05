@@ -51,8 +51,8 @@ type Deal struct {
 	DealID           *uint64   `gorm:"unique"                                             json:"dealId"`
 	DatasetID        *uint32   `json:"datasetId"`
 	Dataset          *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:SET NULL"  json:"dataset,omitempty"  swaggerignore:"true"`
-	State            DealState `gorm:"index:idx_stat;size:16"                             json:"state"`
-	ClientID         string    `json:"clientId"`
+	State            DealState `gorm:"index:idx_stat;index:idx_pending;size:16"           json:"state"`
+	ClientID         string    `gorm:"index:idx_pending;size:16"                          json:"clientId"`
 	Wallet           *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true"`
 	Provider         string    `gorm:"index:idx_stat;size:16"                             json:"provider"`
 	ProposalID       string    `json:"proposalId"`
@@ -63,7 +63,7 @@ type Deal struct {
 	EndEpoch         int32     `json:"endEpoch"`
 	SectorStartEpoch int32     `json:"sectorStartEpoch"`
 	Price            string    `json:"price"`
-	Verified         bool      `json:"verified"`
+	Verified         bool      `gorm:"index:idx_pending"                                  json:"verified"`
 	ErrorMessage     string    `json:"errorMessage"`
 	ScheduleID       *uint32   `json:"scheduleId"`
 	Schedule         *Schedule `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true"`

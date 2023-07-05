@@ -7,6 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
 	"github.com/filecoin-project/go-state-types/abi"
@@ -60,16 +61,7 @@ type DealMaker struct {
 }
 
 func NewDealMaker(lotusURL string, lotusToken string, libp2p host.Host) (*DealMaker, error) {
-	var lotusClient jsonrpc.RPCClient
-	if lotusToken == "" {
-		lotusClient = jsonrpc.NewClient(lotusURL)
-	} else {
-		lotusClient = jsonrpc.NewClientWithOpts(lotusURL, &jsonrpc.RPCClientOpts{
-			CustomHeaders: map[string]string{
-				"Authorization": "Bearer " + lotusToken,
-			},
-		})
-	}
+	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
 
 	return &DealMaker{
 		lotusClient: lotusClient,
