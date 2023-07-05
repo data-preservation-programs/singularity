@@ -1,5 +1,7 @@
 package util
 
+import "github.com/ybbus/jsonrpc/v3"
+
 func NextPowerOfTwo(x uint64) uint64 {
 	if x == 0 {
 		return 1
@@ -18,4 +20,16 @@ func NextPowerOfTwo(x uint64) uint64 {
 
 	// Otherwise, return the next power of two
 	return 1 << pos
+}
+
+func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
+	if lotusToken == "" {
+		return jsonrpc.NewClient(lotusAPI)
+	} else {
+		return jsonrpc.NewClientWithOpts(lotusAPI, &jsonrpc.RPCClientOpts{
+			CustomHeaders: map[string]string{
+				"Authorization": "Bearer " + lotusToken,
+			},
+		})
+	}
 }

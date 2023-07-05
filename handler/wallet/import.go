@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
-	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
@@ -36,17 +36,7 @@ func ImportHandler(
 		return nil, handler.NewBadRequestString("invalid private key")
 	}
 
-	var lotusClient jsonrpc.RPCClient
-	if request.LotusToken == "" {
-		lotusClient = jsonrpc.NewClient(request.LotusAPI)
-	} else {
-		lotusClient = jsonrpc.NewClientWithOpts(request.LotusAPI, &jsonrpc.RPCClientOpts{
-			CustomHeaders: map[string]string{
-				"Authorization": "Bearer " + request.LotusToken,
-			},
-		})
-	}
-
+	lotusClient := util.NewLotusClient(request.LotusAPI, request.LotusToken)
 	var result string
 	err = lotusClient.CallFor(context.Background(), &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
