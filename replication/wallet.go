@@ -34,6 +34,7 @@ func (w DefaultWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 	}
 
 	rand.Seed(time.Now().UnixNano())
+	//nolint:gosec
 	randomIndex := rand.Intn(len(wallets))
 	chosenWallet := wallets[randomIndex]
 	return chosenWallet, nil
@@ -113,6 +114,7 @@ func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 	}
 
 	rand.Seed(time.Now().UnixNano())
+	//nolint:gosec
 	randomIndex := rand.Intn(len(wallets))
 	chosenWallet := wallets[randomIndex]
 	return chosenWallet, nil

@@ -17,11 +17,11 @@ type SpadeAPI struct {
 	db            *gorm.DB
 	logger        *log.ZapEventLogger
 	dealMaker     *replication.DealMaker
-	walletChooser *replication.WalletChooser
+	walletChooser replication.WalletChooser
 	bind          string
 }
 
-func NewSpadeAPIService(db *gorm.DB, dealMaker *replication.DealMaker, walletChooser *replication.WalletChooser, bind string) *SpadeAPI {
+func NewSpadeAPIService(db *gorm.DB, dealMaker *replication.DealMaker, walletChooser replication.WalletChooser, bind string) *SpadeAPI {
 	return &SpadeAPI{
 		db:            db,
 		logger:        log.Logger("spade-api"),
@@ -76,7 +76,10 @@ func (s SpadeAPI) RequestPiece(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	wallet := s.walletChooser.Choose(c.Request().Context(), dataset.Wallets)
+	wallet, err := s.walletChooser.Choose(c.Request().Context(), dataset.Wallets)
+	if err != nil {
+		return err
+	}
 
 	providerInfo, err := s.dealMaker.GetProviderInfo(c.Request().Context(), provider)
 	if err != nil {
