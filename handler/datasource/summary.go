@@ -30,6 +30,7 @@ type SourceStatus struct {
 // @Produce json
 // @Param id path string true "Source ID"
 // @Success 200 {object} ChunksByState
+// @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/summary [get]
 func GetSourceStatusHandler(

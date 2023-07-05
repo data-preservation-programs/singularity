@@ -10,7 +10,7 @@ import (
 // RemoveWalletHandler godoc
 // @Summary Remove an associated wallet from a dataset
 // @Tags Wallet
-// @Param name path string true "Dataset name"
+// @Param datasetName path string true "Dataset name"
 // @Param wallet path string true "Wallet Address"
 // @Success 204
 // @Failure 400 {object} handler.HTTPError

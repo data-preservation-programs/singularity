@@ -218,6 +218,7 @@ require (
 	github.com/opencontainers/runtime-spec v1.0.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/oracle/oci-go-sdk/v65 v65.32.0 // indirect
+	github.com/parnurzeal/gorequest v0.2.16 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
@@ -296,6 +297,7 @@ require (
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
 	modernc.org/sqlite v1.21.1 // indirect
+	moul.io/http2curl v1.0.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 	storj.io/common v0.0.0-20221123115229-fed3e6651b63 // indirect
 	storj.io/drpc v0.0.32 // indirect

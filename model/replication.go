@@ -130,9 +130,9 @@ type Wallet struct {
 }
 
 type WalletAssignment struct {
-	ID        uint32 `gorm:"primaryKey"`
-	WalletID  string
-	Wallet    Wallet `gorm:"foreignKey:WalletID;constraint:OnDelete:CASCADE"`
-	DatasetID uint32
-	Dataset   Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"`
+	ID        uint32   `gorm:"primaryKey"                                       json:"id"`
+	WalletID  string   `json:"walletId"`
+	Wallet    *Wallet  `gorm:"foreignKey:WalletID;constraint:OnDelete:CASCADE"  json:"wallet,omitempty"  swaggerignore:"true"`
+	DatasetID uint32   `json:"datasetId"`
+	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
 }

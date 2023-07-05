@@ -18,13 +18,15 @@ type AcdRequest struct {
 
 // HandleAcd godoc
 // @Summary Add acd source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body AcdRequest true "Request body"
-// @Router /dataset/{datasetName}/source/acd [post]
+// @Router /source/acd/dataset/{datasetName} [post]
 func HandleAcd() {}
 
 type AzureblobRequest struct {
@@ -67,13 +69,15 @@ type AzureblobRequest struct {
 
 // HandleAzureblob godoc
 // @Summary Add azureblob source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body AzureblobRequest true "Request body"
-// @Router /dataset/{datasetName}/source/azureblob [post]
+// @Router /source/azureblob/dataset/{datasetName} [post]
 func HandleAzureblob() {}
 
 type B2Request struct {
@@ -100,13 +104,15 @@ type B2Request struct {
 
 // HandleB2 godoc
 // @Summary Add b2 source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body B2Request true "Request body"
-// @Router /dataset/{datasetName}/source/b2 [post]
+// @Router /source/b2/dataset/{datasetName} [post]
 func HandleB2() {}
 
 type BoxRequest struct {
@@ -131,13 +137,15 @@ type BoxRequest struct {
 
 // HandleBox godoc
 // @Summary Add box source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body BoxRequest true "Request body"
-// @Router /dataset/{datasetName}/source/box [post]
+// @Router /source/box/dataset/{datasetName} [post]
 func HandleBox() {}
 
 type DriveRequest struct {
@@ -191,13 +199,15 @@ type DriveRequest struct {
 
 // HandleDrive godoc
 // @Summary Add drive source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body DriveRequest true "Request body"
-// @Router /dataset/{datasetName}/source/drive [post]
+// @Router /source/drive/dataset/{datasetName} [post]
 func HandleDrive() {}
 
 type DropboxRequest struct {
@@ -222,13 +232,15 @@ type DropboxRequest struct {
 
 // HandleDropbox godoc
 // @Summary Add dropbox source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body DropboxRequest true "Request body"
-// @Router /dataset/{datasetName}/source/dropbox [post]
+// @Router /source/dropbox/dataset/{datasetName} [post]
 func HandleDropbox() {}
 
 type FichierRequest struct {
@@ -244,13 +256,15 @@ type FichierRequest struct {
 
 // HandleFichier godoc
 // @Summary Add fichier source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body FichierRequest true "Request body"
-// @Router /dataset/{datasetName}/source/fichier [post]
+// @Router /source/fichier/dataset/{datasetName} [post]
 func HandleFichier() {}
 
 type FilefabricRequest struct {
@@ -268,13 +282,15 @@ type FilefabricRequest struct {
 
 // HandleFilefabric godoc
 // @Summary Add filefabric source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body FilefabricRequest true "Request body"
-// @Router /dataset/{datasetName}/source/filefabric [post]
+// @Router /source/filefabric/dataset/{datasetName} [post]
 func HandleFilefabric() {}
 
 type FtpRequest struct {
@@ -305,13 +321,15 @@ type FtpRequest struct {
 
 // HandleFtp godoc
 // @Summary Add ftp source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body FtpRequest true "Request body"
-// @Router /dataset/{datasetName}/source/ftp [post]
+// @Router /source/ftp/dataset/{datasetName} [post]
 func HandleFtp() {}
 
 type GcsRequest struct {
@@ -341,13 +359,15 @@ type GcsRequest struct {
 
 // HandleGcs godoc
 // @Summary Add gcs source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body GcsRequest true "Request body"
-// @Router /dataset/{datasetName}/source/gcs [post]
+// @Router /source/gcs/dataset/{datasetName} [post]
 func HandleGcs() {}
 
 type GphotosRequest struct {
@@ -368,13 +388,15 @@ type GphotosRequest struct {
 
 // HandleGphotos godoc
 // @Summary Add gphotos source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body GphotosRequest true "Request body"
-// @Router /dataset/{datasetName}/source/gphotos [post]
+// @Router /source/gphotos/dataset/{datasetName} [post]
 func HandleGphotos() {}
 
 type HdfsRequest struct {
@@ -390,13 +412,15 @@ type HdfsRequest struct {
 
 // HandleHdfs godoc
 // @Summary Add hdfs source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body HdfsRequest true "Request body"
-// @Router /dataset/{datasetName}/source/hdfs [post]
+// @Router /source/hdfs/dataset/{datasetName} [post]
 func HandleHdfs() {}
 
 type HidriveRequest struct {
@@ -421,13 +445,15 @@ type HidriveRequest struct {
 
 // HandleHidrive godoc
 // @Summary Add hidrive source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body HidriveRequest true "Request body"
-// @Router /dataset/{datasetName}/source/hidrive [post]
+// @Router /source/hidrive/dataset/{datasetName} [post]
 func HandleHidrive() {}
 
 type HttpRequest struct {
@@ -442,13 +468,15 @@ type HttpRequest struct {
 
 // HandleHttp godoc
 // @Summary Add http source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body HttpRequest true "Request body"
-// @Router /dataset/{datasetName}/source/http [post]
+// @Router /source/http/dataset/{datasetName} [post]
 func HandleHttp() {}
 
 type InternetarchiveRequest struct {
@@ -466,13 +494,15 @@ type InternetarchiveRequest struct {
 
 // HandleInternetarchive godoc
 // @Summary Add internetarchive source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body InternetarchiveRequest true "Request body"
-// @Router /dataset/{datasetName}/source/internetarchive [post]
+// @Router /source/internetarchive/dataset/{datasetName} [post]
 func HandleInternetarchive() {}
 
 type JottacloudRequest struct {
@@ -489,13 +519,15 @@ type JottacloudRequest struct {
 
 // HandleJottacloud godoc
 // @Summary Add jottacloud source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body JottacloudRequest true "Request body"
-// @Router /dataset/{datasetName}/source/jottacloud [post]
+// @Router /source/jottacloud/dataset/{datasetName} [post]
 func HandleJottacloud() {}
 
 type KoofrRequest struct {
@@ -513,13 +545,15 @@ type KoofrRequest struct {
 
 // HandleKoofr godoc
 // @Summary Add koofr source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body KoofrRequest true "Request body"
-// @Router /dataset/{datasetName}/source/koofr [post]
+// @Router /source/koofr/dataset/{datasetName} [post]
 func HandleKoofr() {}
 
 type LocalRequest struct {
@@ -544,13 +578,15 @@ type LocalRequest struct {
 
 // HandleLocal godoc
 // @Summary Add local source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body LocalRequest true "Request body"
-// @Router /dataset/{datasetName}/source/local [post]
+// @Router /source/local/dataset/{datasetName} [post]
 func HandleLocal() {}
 
 type MailruRequest struct {
@@ -571,13 +607,15 @@ type MailruRequest struct {
 
 // HandleMailru godoc
 // @Summary Add mailru source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body MailruRequest true "Request body"
-// @Router /dataset/{datasetName}/source/mailru [post]
+// @Router /source/mailru/dataset/{datasetName} [post]
 func HandleMailru() {}
 
 type MegaRequest struct {
@@ -594,13 +632,15 @@ type MegaRequest struct {
 
 // HandleMega godoc
 // @Summary Add mega source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body MegaRequest true "Request body"
-// @Router /dataset/{datasetName}/source/mega [post]
+// @Router /source/mega/dataset/{datasetName} [post]
 func HandleMega() {}
 
 type NetstorageRequest struct {
@@ -615,13 +655,15 @@ type NetstorageRequest struct {
 
 // HandleNetstorage godoc
 // @Summary Add netstorage source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body NetstorageRequest true "Request body"
-// @Router /dataset/{datasetName}/source/netstorage [post]
+// @Router /source/netstorage/dataset/{datasetName} [post]
 func HandleNetstorage() {}
 
 type OnedriveRequest struct {
@@ -653,13 +695,15 @@ type OnedriveRequest struct {
 
 // HandleOnedrive godoc
 // @Summary Add onedrive source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body OnedriveRequest true "Request body"
-// @Router /dataset/{datasetName}/source/onedrive [post]
+// @Router /source/onedrive/dataset/{datasetName} [post]
 func HandleOnedrive() {}
 
 type OpendriveRequest struct {
@@ -674,13 +718,15 @@ type OpendriveRequest struct {
 
 // HandleOpendrive godoc
 // @Summary Add opendrive source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body OpendriveRequest true "Request body"
-// @Router /dataset/{datasetName}/source/opendrive [post]
+// @Router /source/opendrive/dataset/{datasetName} [post]
 func HandleOpendrive() {}
 
 type OosRequest struct {
@@ -713,13 +759,15 @@ type OosRequest struct {
 
 // HandleOos godoc
 // @Summary Add oos source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body OosRequest true "Request body"
-// @Router /dataset/{datasetName}/source/oos [post]
+// @Router /source/oos/dataset/{datasetName} [post]
 func HandleOos() {}
 
 type PcloudRequest struct {
@@ -740,13 +788,15 @@ type PcloudRequest struct {
 
 // HandlePcloud godoc
 // @Summary Add pcloud source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body PcloudRequest true "Request body"
-// @Router /dataset/{datasetName}/source/pcloud [post]
+// @Router /source/pcloud/dataset/{datasetName} [post]
 func HandlePcloud() {}
 
 type PremiumizemeRequest struct {
@@ -759,13 +809,15 @@ type PremiumizemeRequest struct {
 
 // HandlePremiumizeme godoc
 // @Summary Add premiumizeme source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body PremiumizemeRequest true "Request body"
-// @Router /dataset/{datasetName}/source/premiumizeme [post]
+// @Router /source/premiumizeme/dataset/{datasetName} [post]
 func HandlePremiumizeme() {}
 
 type PutioRequest struct {
@@ -777,13 +829,15 @@ type PutioRequest struct {
 
 // HandlePutio godoc
 // @Summary Add putio source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body PutioRequest true "Request body"
-// @Router /dataset/{datasetName}/source/putio [post]
+// @Router /source/putio/dataset/{datasetName} [post]
 func HandlePutio() {}
 
 type QingstorRequest struct {
@@ -804,13 +858,15 @@ type QingstorRequest struct {
 
 // HandleQingstor godoc
 // @Summary Add qingstor source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body QingstorRequest true "Request body"
-// @Router /dataset/{datasetName}/source/qingstor [post]
+// @Router /source/qingstor/dataset/{datasetName} [post]
 func HandleQingstor() {}
 
 type S3Request struct {
@@ -870,13 +926,15 @@ type S3Request struct {
 
 // HandleS3 godoc
 // @Summary Add s3 source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body S3Request true "Request body"
-// @Router /dataset/{datasetName}/source/s3 [post]
+// @Router /source/s3/dataset/{datasetName} [post]
 func HandleS3() {}
 
 type SeafileRequest struct {
@@ -896,13 +954,15 @@ type SeafileRequest struct {
 
 // HandleSeafile godoc
 // @Summary Add seafile source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SeafileRequest true "Request body"
-// @Router /dataset/{datasetName}/source/seafile [post]
+// @Router /source/seafile/dataset/{datasetName} [post]
 func HandleSeafile() {}
 
 type SftpRequest struct {
@@ -944,13 +1004,15 @@ type SftpRequest struct {
 
 // HandleSftp godoc
 // @Summary Add sftp source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SftpRequest true "Request body"
-// @Router /dataset/{datasetName}/source/sftp [post]
+// @Router /source/sftp/dataset/{datasetName} [post]
 func HandleSftp() {}
 
 type SharefileRequest struct {
@@ -966,13 +1028,15 @@ type SharefileRequest struct {
 
 // HandleSharefile godoc
 // @Summary Add sharefile source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SharefileRequest true "Request body"
-// @Router /dataset/{datasetName}/source/sharefile [post]
+// @Router /source/sharefile/dataset/{datasetName} [post]
 func HandleSharefile() {}
 
 type SiaRequest struct {
@@ -987,13 +1051,15 @@ type SiaRequest struct {
 
 // HandleSia godoc
 // @Summary Add sia source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SiaRequest true "Request body"
-// @Router /dataset/{datasetName}/source/sia [post]
+// @Router /source/sia/dataset/{datasetName} [post]
 func HandleSia() {}
 
 type SmbRequest struct {
@@ -1014,13 +1080,15 @@ type SmbRequest struct {
 
 // HandleSmb godoc
 // @Summary Add smb source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SmbRequest true "Request body"
-// @Router /dataset/{datasetName}/source/smb [post]
+// @Router /source/smb/dataset/{datasetName} [post]
 func HandleSmb() {}
 
 type StorjRequest struct {
@@ -1036,13 +1104,15 @@ type StorjRequest struct {
 
 // HandleStorj godoc
 // @Summary Add storj source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body StorjRequest true "Request body"
-// @Router /dataset/{datasetName}/source/storj [post]
+// @Router /source/storj/dataset/{datasetName} [post]
 func HandleStorj() {}
 
 type SugarsyncRequest struct {
@@ -1064,13 +1134,15 @@ type SugarsyncRequest struct {
 
 // HandleSugarsync godoc
 // @Summary Add sugarsync source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SugarsyncRequest true "Request body"
-// @Router /dataset/{datasetName}/source/sugarsync [post]
+// @Router /source/sugarsync/dataset/{datasetName} [post]
 func HandleSugarsync() {}
 
 type SwiftRequest struct {
@@ -1104,13 +1176,15 @@ type SwiftRequest struct {
 
 // HandleSwift godoc
 // @Summary Add swift source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body SwiftRequest true "Request body"
-// @Router /dataset/{datasetName}/source/swift [post]
+// @Router /source/swift/dataset/{datasetName} [post]
 func HandleSwift() {}
 
 type UptoboxRequest struct {
@@ -1123,13 +1197,15 @@ type UptoboxRequest struct {
 
 // HandleUptobox godoc
 // @Summary Add uptobox source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body UptoboxRequest true "Request body"
-// @Router /dataset/{datasetName}/source/uptobox [post]
+// @Router /source/uptobox/dataset/{datasetName} [post]
 func HandleUptobox() {}
 
 type WebdavRequest struct {
@@ -1148,13 +1224,15 @@ type WebdavRequest struct {
 
 // HandleWebdav godoc
 // @Summary Add webdav source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body WebdavRequest true "Request body"
-// @Router /dataset/{datasetName}/source/webdav [post]
+// @Router /source/webdav/dataset/{datasetName} [post]
 func HandleWebdav() {}
 
 type YandexRequest struct {
@@ -1172,13 +1250,15 @@ type YandexRequest struct {
 
 // HandleYandex godoc
 // @Summary Add yandex source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body YandexRequest true "Request body"
-// @Router /dataset/{datasetName}/source/yandex [post]
+// @Router /source/yandex/dataset/{datasetName} [post]
 func HandleYandex() {}
 
 type ZohoRequest struct {
@@ -1196,16 +1276,20 @@ type ZohoRequest struct {
 
 // HandleZoho godoc
 // @Summary Add zoho source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body ZohoRequest true "Request body"
-// @Router /dataset/{datasetName}/source/zoho [post]
+// @Router /source/zoho/dataset/{datasetName} [post]
 func HandleZoho() {}
 
 type AllConfig struct {
+	DeleteAfterExport                   bool   `validate:"optional" json:"deleteAfterExport"`                                                                                                                       // Delete the source after exporting to CAR files
+	RescanInterval                      string `validate:"optional" json:"rescanInterval"`                                                                                                                          // Automatically rescan the source directory when this interval has passed from last successful scan
 	AcdAuthUrl                          string `json:"acdAuthUrl"`                                                                                                                                                  // Auth server URL.
 	AcdCheckpoint                       string `json:"acdCheckpoint"`                                                                                                                                               // Checkpoint for internal polling (debug).
 	AcdClientId                         string `json:"acdClientId"`                                                                                                                                                 // OAuth Client Id.

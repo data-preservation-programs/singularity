@@ -28,6 +28,8 @@ type {{.Name}} struct {
 
 const allStructTemplate = `
 type {{.Name}} struct {
+    DeleteAfterExport bool ` + "`validate:\"optional\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
+    RescanInterval string ` + "`validate:\"optional\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
     {{- range .Fields }}
     {{.Name}} {{.Type}} {{.Tag}} // {{.Description}}
 	{{- end }}
@@ -37,13 +39,15 @@ type {{.Name}} struct {
 const handlerTemplate = `
 // {{.FuncName}} godoc
 // @Summary Add {{.Name}} source for a dataset
-// @Tags New Data Source
+// @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param datasetName path string true "Dataset name"
-// @Success 200 {array} model.Source
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
 // @Param request body {{.StructName}} true "Request body"
-// @Router /dataset/{datasetName}/source/{{.Name}} [post]
+// @Router /source/{{.Name}}/dataset/{datasetName} [post]
 func {{.FuncName}}() {}
 
 `

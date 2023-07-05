@@ -11,11 +11,11 @@ import (
 // @Summary List all wallets of a dataset.
 // @Tags Wallet
 // @Produce json
-// @Param name path string true "Dataset name"
+// @Param datasetName path string true "Dataset name"
 // @Success 200 {array} model.Wallet
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /dataset/{datasetName}/wallets [get]
+// @Router /dataset/{datasetName}/wallet [get]
 func ListWalletHandler(
 	db *gorm.DB,
 	datasetName string,
