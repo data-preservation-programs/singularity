@@ -20,19 +20,20 @@ type ImportRequest struct {
 // @Summary Import a private key
 // @Tags Wallet
 // @Accept json
+// @Produce json
 // @Param request body ImportRequest true "Request body"
-// @Success 204
+// @Success 200 {object} model.Wallet
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /wallet [post]
 func ImportHandler(
 	db *gorm.DB,
 	request ImportRequest,
-) *handler.Error {
+) (*model.Wallet, *handler.Error) {
 	address.CurrentNetwork = address.Mainnet
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
-		return handler.NewBadRequestString("invalid private key")
+		return nil, handler.NewBadRequestString("invalid private key")
 	}
 
 	var lotusClient jsonrpc.RPCClient
@@ -49,7 +50,7 @@ func ImportHandler(
 	var result string
 	err = lotusClient.CallFor(context.Background(), &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return handler.NewBadRequestString("invalid private key")
+		return nil, handler.NewBadRequestString("invalid private key")
 	}
 
 	wallet := model.Wallet{
@@ -62,8 +63,8 @@ func ImportHandler(
 		return db.Create(&wallet).Error
 	})
 	if err != nil {
-		return handler.NewHandlerError(err)
+		return nil, handler.NewHandlerError(err)
 	}
 
-	return nil
+	return &wallet, nil
 }

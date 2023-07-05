@@ -245,6 +245,29 @@ func TestRunAPI(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Contains(t, body, `"pieceSize": 1024`)
 
+		godotenv.Load("../.env", ".env")
+		key := os.Getenv("TEST_WALLET_KEY")
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/wallet").
+			Send(`{"privateKey":"` + key + `"}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, key)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/wallet/remote").
+			Send(`{"remotePeer":"12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA","address":"f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy"}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, "12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA")
+
+		resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/wallet/f1ys5qqiciehcml3sp764ymbbytfn3qoar5fo3iwy").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+		assert.Equal(t, ``, body)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/wallet").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, key)
 	})
 }
 

@@ -22,28 +22,29 @@ type AddRemoteRequest struct {
 // @Summary Add a remote wallet
 // @Tags Wallet
 // @Accept json
+// @Produce json
 // @Param request body AddRemoteRequest true "Request body"
-// @Success 204
+// @Success 200 {object} model.Wallet
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /wallet/remote [post]
 func AddRemoteHandler(
 	db *gorm.DB,
 	request AddRemoteRequest,
-) *handler.Error {
+) (*model.Wallet, *handler.Error) {
 	address.CurrentNetwork = address.Mainnet
 	addr, err := address.NewFromString(request.Address)
 	if err != nil {
-		return handler.NewBadRequestString("invalid address")
+		return nil, handler.NewBadRequestString("invalid address")
 	}
 
 	_, err = peer.Decode(request.RemotePeer)
 	if err != nil {
-		return handler.NewBadRequestString("invalid peer")
+		return nil, handler.NewBadRequestString("invalid peer")
 	}
 
 	if addr.Protocol() == address.ID {
-		return handler.NewBadRequestString("invalid address")
+		return nil, handler.NewBadRequestString("invalid address")
 	}
 
 	var lotusClient jsonrpc.RPCClient
@@ -60,7 +61,7 @@ func AddRemoteHandler(
 	var result string
 	err = lotusClient.CallFor(context.Background(), &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return handler.NewBadRequestString("invalid wallet")
+		return nil, handler.NewBadRequestString("invalid wallet")
 	}
 
 	wallet := model.Wallet{
@@ -71,8 +72,8 @@ func AddRemoteHandler(
 
 	err = database.DoRetry(func() error { return db.Create(&wallet).Error })
 	if err != nil {
-		return handler.NewHandlerError(err)
+		return nil, handler.NewHandlerError(err)
 	}
 
-	return nil
+	return &wallet, nil
 }

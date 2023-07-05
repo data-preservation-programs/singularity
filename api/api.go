@@ -41,6 +41,8 @@ type Server struct {
 	db                        *gorm.DB
 	bind                      string
 	datasourceHandlerResolver datasource.HandlerResolver
+	lotusAPI                  string
+	lotusToken                string
 }
 
 type ItemInfo struct {
@@ -135,8 +137,14 @@ func Run(c *cli.Context) error {
 		return handler.NewHandlerError(err)
 	}
 	bind := c.String("bind")
+
+	lotusAPI := c.String("lotus-api")
+	lotusToken := c.String("lotus-token")
+
 	return Server{db: db, bind: bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		lotusAPI:                  lotusAPI,
+		lotusToken:                lotusToken,
 	}.Run(c)
 }
 
@@ -178,6 +186,14 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 			bodyParam := reflect.New(paramType).Elem()
 			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Failed to bind request body.")
+			}
+			lotusAPIField := bodyParam.FieldByName("LotusAPI")
+			if lotusAPIField.IsValid() {
+				lotusAPIField.SetString(s.lotusAPI)
+			}
+			lotusTokenField := bodyParam.FieldByName("LotusToken")
+			if lotusTokenField.IsValid() {
+				lotusTokenField.SetString(s.lotusToken)
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
@@ -339,9 +355,14 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 	// Wallet
 	e.POST("/api/wallet", s.toEchoHandler(wallet.ImportHandler))
-	e.GET("/api/wallets", s.toEchoHandler(wallet.ListHandler))
+	e.GET("/api/wallet", s.toEchoHandler(wallet.ListHandler))
 	e.POST("/api/wallet/remote", s.toEchoHandler(wallet.AddRemoteHandler))
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(wallet.RemoveHandler))
+
+	// Wallet Association
+	e.POST("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
+	e.GET("/api/dataset/:name/wallets", s.toEchoHandler(wallet.ListWalletHandler))
+	e.DELETE("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
 
 	// Data source
 	e.POST("/api/dataset/:datasetName/source/:type", s.HandlePostSource)
@@ -371,12 +392,6 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
 
 	e.POST("/api/deal/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))
-
-	e.POST("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
-
-	e.GET("/api/dataset/:name/wallets", s.toEchoHandler(wallet.ListWalletHandler))
-
-	e.DELETE("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
 
 	e.POST("/api/deal/list", s.toEchoHandler(deal.ListHandler))
 

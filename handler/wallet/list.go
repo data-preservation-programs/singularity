@@ -13,7 +13,7 @@ import (
 // @Success 200 {array} model.Wallet
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /wallets [get]
+// @Router /wallet [get]
 func ListHandler(
 	db *gorm.DB,
 ) ([]model.Wallet, *handler.Error) {
