@@ -26,7 +26,7 @@ type DealMakerService struct {
 	db            *gorm.DB
 	logger        *log.ZapEventLogger
 	jobs          map[uint32]context.CancelFunc
-	walletChooser *replication.WalletChooser
+	walletChooser replication.WalletChooser
 	dealMaker     *replication.DealMaker
 	workerID      uuid.UUID
 }
@@ -35,7 +35,7 @@ type DealMakerWorker struct {
 	db            *gorm.DB
 	logger        *zap.SugaredLogger
 	dealMaker     *replication.DealMaker
-	walletChooser *replication.WalletChooser
+	walletChooser replication.WalletChooser
 	workerID      uuid.UUID
 }
 
@@ -46,7 +46,7 @@ type sumResult struct {
 
 func NewDealMakerWorker(db *gorm.DB,
 	dealMaker *replication.DealMaker,
-	walletChooser *replication.WalletChooser,
+	walletChooser replication.WalletChooser,
 	workerID uuid.UUID) *DealMakerWorker {
 	return &DealMakerWorker{
 		db:            db,
@@ -181,7 +181,10 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 			return false, errors.Wrap(err, "failed to get provider info")
 		}
 
-		walletObj := w.walletChooser.Choose(ctx, schedule.Dataset.Wallets)
+		walletObj, err := w.walletChooser.Choose(ctx, schedule.Dataset.Wallets)
+		if err != nil {
+			return false, errors.Wrap(err, "failed to choose wallet")
+		}
 		now := time.Now().UTC()
 		proposalID, err := w.dealMaker.MakeDeal(ctx, now, walletObj, car, schedule, peer.AddrInfo{
 			ID:    providerInfo.PeerID,
@@ -228,7 +231,7 @@ func NewDealMakerService(db *gorm.DB, lotusURL string, lotusToken string) (*Deal
 		db:            db,
 		logger:        log.Logger("deal-maker"),
 		jobs:          make(map[uint32]context.CancelFunc),
-		walletChooser: &replication.WalletChooser{},
+		walletChooser: &replication.DefaultWalletChooser{},
 		dealMaker:     dealMaker,
 		workerID:      uuid.New(),
 	}, nil
