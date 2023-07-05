@@ -188,22 +188,27 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 
 		if len(results) == 1 {
 			// Handle the returned error
-			if err, ok := results[0].Interface().(*handler.Error); ok && err != nil {
+			err, ok := results[0].Interface().(*handler.Error)
+			if !ok {
+				return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+			}
+			if err != nil {
 				return err.HTTPResponse(c)
 			}
 			return c.NoContent(http.StatusNoContent)
 		}
 
 		// Handle the returned error
-		if err, ok := results[1].Interface().(*handler.Error); ok && err != nil {
+		err, ok := results[1].Interface().(*handler.Error)
+		if !ok {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+		}
+		if err != nil {
 			return err.HTTPResponse(c)
 		}
 
 		// Handle the returned data
 		data := results[0].Interface()
-		if data == nil {
-			return c.NoContent(http.StatusNoContent)
-		}
 		return c.JSON(http.StatusOK, data)
 	}
 }
@@ -329,8 +334,8 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.PATCH("/api/dataset/:datasetName", s.toEchoHandler(dataset.UpdateHandler))
 	e.DELETE("/api/dataset/:datasetName", s.toEchoHandler(dataset.RemoveHandler))
 	e.POST("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.AddPieceHandler))
-	e.GET("/api/datasets", s.toEchoHandler(dataset.ListHandler))
-	e.GET("/api/dataset/:datasetName/pieces", s.toEchoHandler(dataset.ListPiecesHandler))
+	e.GET("/api/dataset", s.toEchoHandler(dataset.ListHandler))
+	e.GET("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.ListPiecesHandler))
 
 	// Wallet
 	e.POST("/api/wallet", s.toEchoHandler(wallet.ImportHandler))
@@ -384,6 +389,7 @@ var logger = logging.Logger("api")
 
 func (s Server) Run(c *cli.Context) error {
 	e := echo.New()
+	e.Debug = true
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,

@@ -10,7 +10,6 @@ import (
 // @Summary Initialize the database
 // @Tags Admin
 // @Success 204
-// @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /admin/init [post]
 func InitHandler(db *gorm.DB) *handler.Error {
