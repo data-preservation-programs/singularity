@@ -1,13 +1,11 @@
 package datasource
 
 import (
-	"context"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
-	"time"
 )
 
 var UpdateCmd = &cli.Command{
@@ -41,19 +39,17 @@ var UpdateCmd = &cli.Command{
 	}(),
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		config := map[string]string{}
-		var deleteAfterExport *bool
-		var rescanInterval *time.Duration
+		config := map[string]interface{}{}
 		for _, name := range c.LocalFlagNames() {
 			if c.IsSet(name) {
 				if name == "delete-after-export" {
 					b := c.Bool(name)
-					deleteAfterExport = &b
+					config["deleteAfterExport"] = b
 					continue
 				}
 				if name == "rescan-interval" {
-					d := c.Duration(name)
-					rescanInterval = &d
+					d := c.String(name)
+					config["rescanInterval"] = d
 					continue
 				}
 				value := c.String(name)
@@ -63,10 +59,8 @@ var UpdateCmd = &cli.Command{
 
 		source, err := datasource.UpdateSourceHandler(
 			db,
-			context.Background(),
+			c.Context,
 			c.Args().Get(0),
-			deleteAfterExport,
-			rescanInterval,
 			config,
 		)
 		if err != nil {

@@ -15,6 +15,7 @@ import (
 // @Produce json
 // @Param id path string true "Source ID"
 // @Success 200 {array} model.Chunk
+// @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/chunks [get]
 func GetSourceChunksHandler(

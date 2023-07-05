@@ -79,11 +79,12 @@ func (s Server) PushItem(c echo.Context) error {
 // GetMetadataHandler godoc
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Piece
+// @Tags Piece Metadata
 // @Produce json
 // @Param piece path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
 // @Failure 400 {string} string "Bad Request"
+// @Failure 404 {string} string "Not Found"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /piece/{id}/metadata [get]
 func (s Server) GetMetadataHandler(c echo.Context) error {
@@ -162,38 +163,45 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 		// Prepare input parameters
 		inputParams := []reflect.Value{reflect.ValueOf(s.db.WithContext(c.Request().Context()))}
 
+		var j int
 		// Get path parameters
 		for i := 1; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
-			if paramType == reflect.TypeOf(c.Request().Context()) {
+			if paramType.String() == "context.Context" {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
 				continue
 			}
 			if paramType.Kind() == reflect.String {
-				if len(c.ParamValues()) < i {
+				if j >= len(c.ParamValues()) {
 					logger.Error("Invalid handler function signature.")
 					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 				}
-				paramValue := c.ParamValues()[i-1]
+				paramValue := c.ParamValues()[j]
 				decoded, err := url.QueryUnescape(paramValue)
 				if err != nil {
 					return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
 				}
 				inputParams = append(inputParams, reflect.ValueOf(decoded))
+				j += 1
 				continue
 			}
 
 			bodyParam := reflect.New(paramType).Elem()
+			if bodyParam.Kind() == reflect.Map {
+				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
+			}
 			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Failed to bind request body.")
 			}
-			lotusAPIField := bodyParam.FieldByName("LotusAPI")
-			if lotusAPIField.IsValid() {
-				lotusAPIField.SetString(s.lotusAPI)
-			}
-			lotusTokenField := bodyParam.FieldByName("LotusToken")
-			if lotusTokenField.IsValid() {
-				lotusTokenField.SetString(s.lotusToken)
+			if bodyParam.Kind() == reflect.Struct {
+				lotusAPIField := bodyParam.FieldByName("LotusAPI")
+				if lotusAPIField.IsValid() {
+					lotusAPIField.SetString(s.lotusAPI)
+				}
+				lotusTokenField := bodyParam.FieldByName("LotusToken")
+				if lotusTokenField.IsValid() {
+					lotusTokenField.SetString(s.lotusToken)
+				}
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
@@ -360,44 +368,34 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(wallet.RemoveHandler))
 
 	// Wallet Association
-	e.POST("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
-	e.GET("/api/dataset/:name/wallets", s.toEchoHandler(wallet.ListWalletHandler))
-	e.DELETE("/api/dataset/:name/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
+	e.POST("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
+	e.GET("/api/dataset/:datasetName/wallet", s.toEchoHandler(wallet.ListWalletHandler))
+	e.DELETE("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
 
 	// Data source
-	e.POST("/api/dataset/:datasetName/source/:type", s.HandlePostSource)
-	e.GET("/api/sources", func(c echo.Context) error {
-		datasetName := c.QueryParam("dataset")
-		sources, err := datasource2.ListSourceHandler(s.db.WithContext(c.Request().Context()), datasetName)
-		if err != nil {
-			return err.HTTPResponse(c)
-		}
-		return c.JSON(http.StatusOK, sources)
-	})
+	e.POST("/api/source/:type/dataset/:datasetName", s.HandlePostSource)
+	e.GET("/api/source", s.toEchoHandler(datasource2.ListSourceHandler))
 	e.PATCH("/api/source/:id", s.toEchoHandler(datasource2.UpdateSourceHandler))
-	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
-	// Data source status
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
+	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
+	e.POST("/api/source/:id/push", s.PushItem)
+
+	// Piece metadata
+	e.GET("/api/piece/:id/metadata", s.GetMetadataHandler)
+
+	// Data source status
 	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))
 	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
 	e.GET("/api/source/:id/chunks", s.toEchoHandler(inspect.GetSourceChunksHandler))
 	e.GET("/api/source/:id/items", s.toEchoHandler(inspect.GetSourceItemsHandler))
 
+	// Deal
 	e.POST("/api/deal/send_manual", s.toEchoHandler(deal.SendManualHandler))
-
 	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
-
 	e.GET("/api/deal/schedules", s.toEchoHandler(schedule.ListHandler))
-
 	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
-
 	e.POST("/api/deal/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))
-
 	e.POST("/api/deal/list", s.toEchoHandler(deal.ListHandler))
-
-	e.GET("/api/piece/:id/metadata", s.GetMetadataHandler)
-
-	e.POST("/api/source/:id/push", s.PushItem)
 }
 
 var logger = logging.Logger("api")

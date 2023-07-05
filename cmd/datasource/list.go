@@ -19,7 +19,7 @@ var ListCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 		datasetName := c.String("dataset")
-		sources, err := datasource.ListSourceHandler(
+		sources, err := datasource.ListSourceByDatasetHandler(
 			db,
 			datasetName,
 		)

@@ -268,6 +268,73 @@ func TestRunAPI(t *testing.T) {
 		assert.Len(t, errs, 0)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Contains(t, body, key)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/dataset/test/wallet/f01074655").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"datasetId": 1`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/dataset/test/wallet").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"address": "`)
+
+		defer func() {
+			resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/dataset/test/wallet/f01074655").End()
+			assert.Len(t, errs, 0)
+			assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+			assert.Equal(t, ``, body)
+		}()
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/local/dataset/test").
+			Send(`{"sourcePath":"/tmp","caseInsensitive":"false","deleteAfterExport":false,"rescanInterval":"1h"}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"id": 1`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"id": 1`)
+
+		resp, body, errs = gorequest.New().Patch("http://127.0.0.1:9090/api/source/1").
+			Send(`{"deleteAfterExport": true, "rescanInterval": "12h", "localCaseInsensitive":"true"}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"id": 1`)
+
+		defer func() {
+			resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/source/1").End()
+			assert.Len(t, errs, 0)
+			assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+			assert.Equal(t, ``, body)
+		}()
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/1/rescan").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"id": 1`)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/1/check").
+			Send(`{"path":""}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `[`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/summary").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `{`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/chunks").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `[`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/items").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `[`)
 	})
 }
 

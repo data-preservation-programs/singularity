@@ -16,11 +16,13 @@ import (
 	"unicode"
 )
 
-type Config map[string]string
+type Config map[string]interface{}
 
 // UpdateSourceHandler godoc
 // @Summary Update the config options of a source
 // @Tags Data Source
+// @Produce json
+// @Accept json
 // @Param id path string true "Source ID"
 // @Param config body AllConfig true "Config"
 // @Success 200 {object} model.Source
@@ -31,8 +33,6 @@ func UpdateSourceHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	id string,
-	deleteAfterExport *bool,
-	rescanInterval *time.Duration,
 	config Config,
 ) (*model.Source, *handler.Error) {
 	var source model.Source
@@ -52,13 +52,34 @@ func UpdateSourceHandler(
 	if err != nil {
 		return nil, handler.NewHandlerError(errors.New("invalid source type"))
 	}
-	if deleteAfterExport != nil {
-		source.DeleteAfterExport = *deleteAfterExport
+	value, ok := config["deleteAfterExport"]
+	if ok {
+		v, ok := value.(bool)
+		if !ok {
+			return nil, handler.NewBadRequestString("invalid deleteAfterExport value")
+		}
+		source.DeleteAfterExport = v
 	}
-	if rescanInterval != nil {
-		source.ScanIntervalSeconds = uint64(rescanInterval.Seconds())
+	value, ok = config["rescanInterval"]
+	if ok {
+		v, ok := value.(string)
+		if !ok {
+			return nil, handler.NewBadRequestString("invalid rescanInterval value")
+		}
+		d, err := time.ParseDuration(v)
+		if err != nil {
+			return nil, handler.NewBadRequestString("invalid rescanInterval value")
+		}
+		source.ScanIntervalSeconds = uint64(d.Seconds())
 	}
+	delete(config, "deleteAfterExport")
+	delete(config, "rescanInterval")
+	delete(config, "id")
 	for key, value := range config {
+		v, ok := value.(string)
+		if !ok {
+			return nil, handler.NewBadRequestString("invalid config value: " + key)
+		}
 		snake := lowerCamelToSnake(key)
 		snake = strings.ReplaceAll(snake, "-", "_")
 		splitted := strings.SplitN(snake, "_", 2)
@@ -75,7 +96,7 @@ func UpdateSourceHandler(
 		if err != nil {
 			return nil, handler.NewBadRequestString("config key cannot be found for the data source: " + key)
 		}
-		source.Metadata[name] = value
+		source.Metadata[name] = v
 	}
 
 	h, err := datasource.DefaultHandlerResolver{}.Resolve(ctx, source)
