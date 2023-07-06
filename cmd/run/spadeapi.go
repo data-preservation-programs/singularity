@@ -1,7 +1,6 @@
 package run
 
 import (
-	"context"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -9,6 +8,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
+	"time"
 )
 
 var SpadeAPICmd = &cli.Command{
@@ -40,12 +40,12 @@ var SpadeAPICmd = &cli.Command{
 			return handler.NewHandlerError(err)
 		}
 
-		h, err := util.InitHost(context.Background(), nil)
+		h, err := util.InitHost(nil)
 		if err != nil {
 			return err
 		}
 
-		dealMaker, err := replication.NewDealMaker(c.String("lotus-api"), c.String("lotus-token"), h)
+		dealMaker := replication.NewDealMaker(c.String("lotus-api"), c.String("lotus-token"), h, time.Hour, time.Minute)
 		if err != nil {
 			return err
 		}
