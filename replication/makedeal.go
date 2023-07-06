@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
@@ -14,7 +15,7 @@ import (
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-log/v2"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/jsign/go-filsigner/wallet"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -55,51 +56,78 @@ type DealProviderCollateralBound struct {
 }
 
 type DealMaker struct {
-	lotusClient jsonrpc.RPCClient
-	host        host.Host
-	logger      *log.ZapEventLogger
+	lotusClient     jsonrpc.RPCClient
+	host            host.Host
+	requestTimeout  time.Duration
+	minerInfoCache  *ttlcache.Cache[string, *MinerInfo]
+	protocolsCache  *ttlcache.Cache[peer.ID, []protocol.ID]
+	collateralCache *ttlcache.Cache[string, big.Int]
 }
 
-func NewDealMaker(lotusURL string, lotusToken string, libp2p host.Host) (*DealMaker, error) {
+func NewDealMaker(lotusURL string,
+	lotusToken string,
+	libp2p host.Host,
+	cacheTTL time.Duration,
+	requestTimeout time.Duration) DealMaker {
 	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
+	minerInfoCache := ttlcache.New[string, *MinerInfo](
+		ttlcache.WithTTL[string, *MinerInfo](cacheTTL),
+		ttlcache.WithDisableTouchOnHit[string, *MinerInfo]())
+	protocolsCache := ttlcache.New[peer.ID, []protocol.ID](
+		ttlcache.WithTTL[peer.ID, []protocol.ID](cacheTTL),
+		ttlcache.WithDisableTouchOnHit[peer.ID, []protocol.ID]())
+	collateralCache := ttlcache.New[string, big.Int](
+		ttlcache.WithTTL[string, big.Int](cacheTTL),
+		ttlcache.WithDisableTouchOnHit[string, big.Int]())
 
-	return &DealMaker{
-		lotusClient: lotusClient,
-		host:        libp2p,
-		logger:      log.Logger("deal_maker"),
-	}, nil
+	return DealMaker{
+		lotusClient:     lotusClient,
+		requestTimeout:  requestTimeout,
+		host:            libp2p,
+		minerInfoCache:  minerInfoCache,
+		protocolsCache:  protocolsCache,
+		collateralCache: collateralCache,
+	}
 }
 
-func (d DealMaker) GetProviderInfo(ctx context.Context, provider string) (MinerInfo, error) {
-	logger := log.Logger("deal_maker")
+func (d DealMaker) getProviderInfo(ctx context.Context, provider string) (*MinerInfo, error) {
+	item := d.minerInfoCache.Get(provider)
+	if item != nil && !item.IsExpired() {
+		return item.Value(), nil
+	}
 
-	logger.With("provider", provider).Debug("Getting miner info")
 	minerInfo := new(MinerInfo)
 	err := d.lotusClient.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
 	if err != nil {
-		return MinerInfo{}, errors.Wrap(err, "failed to get miner info")
+		return nil, errors.Wrap(err, "failed to get miner info")
 	}
 
-	logger.With("provider", provider, "minerinfo", minerInfo).Debug("Got miner info")
 	minerInfo.Multiaddrs = make([]multiaddr.Multiaddr, len(minerInfo.MultiaddrsBase64Encoded))
 	for i, addr := range minerInfo.MultiaddrsBase64Encoded {
 		decoded, err := base64.StdEncoding.DecodeString(addr)
 		if err != nil {
-			return MinerInfo{}, errors.Wrap(err, "failed to decode multiaddr")
+			return nil, errors.Wrap(err, "failed to decode multiaddr")
 		}
 		minerInfo.Multiaddrs[i], err = multiaddr.NewMultiaddrBytes(decoded)
 		if err != nil {
-			return MinerInfo{}, errors.Wrap(err, "failed to create multiaddr")
+			return nil, errors.Wrap(err, "failed to create multiaddr")
 		}
 	}
 	minerInfo.PeerID, err = peer.Decode(minerInfo.PeerIDEncoded)
 	if err != nil {
-		return MinerInfo{}, errors.Wrap(err, "failed to decode peer id")
+		return nil, errors.Wrap(err, "failed to decode peer id")
 	}
-	return *minerInfo, nil
+
+	d.minerInfoCache.Set(provider, minerInfo, ttlcache.DefaultTTL)
+	return minerInfo, nil
 }
 
-func (d DealMaker) GetProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([]protocol.ID, error) {
+func (d DealMaker) getProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([]protocol.ID, error) {
+	item := d.protocolsCache.Get(minerInfo.ID)
+	if item != nil && !item.IsExpired() {
+		return item.Value(), nil
+	}
+
 	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
 	if err := d.host.Connect(ctx, minerInfo); err != nil {
 		return nil, errors.Wrap(err, "failed to connect to miner")
@@ -110,34 +138,48 @@ func (d DealMaker) GetProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([
 		return nil, errors.Wrap(err, "failed to get protocols")
 	}
 
+	d.protocolsCache.Set(minerInfo.ID, protocols, ttlcache.DefaultTTL)
 	return protocols, nil
 }
 
 func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize int64, verified bool) (big.Int, error) {
+	item := d.collateralCache.Get(fmt.Sprintf("%d-%t", pieceSize, verified))
+	if item != nil && !item.IsExpired() {
+		return item.Value(), nil
+	}
+
 	bound := new(DealProviderCollateralBound)
 	err := d.lotusClient.CallFor(ctx, bound, "Filecoin.StateDealProviderCollateralBounds", pieceSize, verified, nil)
 	if err != nil {
 		return big.Int{}, errors.Wrap(err, "failed to get deal provider collateral bounds")
 	}
 
-	return big.FromString(bound.Min)
+	value, err := big.FromString(bound.Min)
+	if err != nil {
+		return big.Int{}, errors.Wrap(err, "failed to parse min collateral")
+	}
+	d.collateralCache.Set(fmt.Sprintf("%d-%t", pieceSize, verified), value, ttlcache.DefaultTTL)
+	return value, nil
 }
 
-func (d DealMaker) makeDeal120(ctx context.Context,
+func (d DealMaker) makeDeal120(
+	ctx context.Context,
 	deal proposal110.ClientDealProposal,
 	dealID uuid.UUID,
-	car model.Car, schedule model.Schedule,
+	dealConfig DealConfig,
+	fileSize int64,
+	rootCID cid.Cid,
 	minerInfo peer.AddrInfo) (*proposal120.DealResponse, error) {
 	transfer := proposal120.Transfer{
-		Size: uint64(car.FileSize),
+		Size: uint64(fileSize),
 	}
-	url := strings.Replace(schedule.URLTemplate, "{PIECE_CID}", cid.MustParse(car.PieceCID).String(), 1)
+	url := strings.Replace(dealConfig.URLTemplate, "{PIECE_CID}", deal.Proposal.PieceCID.String(), 1)
 	isOnline := url != ""
 	if isOnline {
 		transferParams := &proposal120.HttpRequest{URL: url}
-		if len(schedule.HTTPHeaders) > 0 {
+		if len(dealConfig.HTTPHeaders) > 0 {
 			transferParams.Headers = make(map[string]string)
-			for _, header := range schedule.HTTPHeaders {
+			for _, header := range dealConfig.HTTPHeaders {
 				sp := strings.Split(header, "=")
 				if len(sp) != 2 {
 					return nil, errors.Errorf("invalid http header %s", header)
@@ -156,11 +198,16 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 	dealParams := proposal120.DealParams{
 		DealUUID:           dealID,
 		ClientDealProposal: deal,
-		DealDataRoot:       cid.MustParse(car.RootCID),
+		DealDataRoot:       rootCID,
 		IsOffline:          !isOnline,
 		Transfer:           transfer,
-		RemoveUnsealedCopy: !schedule.KeepUnsealed,
-		SkipIPNIAnnounce:   !schedule.AnnounceToIPNI,
+		RemoveUnsealedCopy: !dealConfig.KeepUnsealed,
+		SkipIPNIAnnounce:   !dealConfig.AnnounceToIPNI,
+	}
+
+	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
+	if err := d.host.Connect(ctx, minerInfo); err != nil {
+		return nil, errors.Wrap(err, "failed to connect to miner")
 	}
 
 	stream, err := d.host.NewStream(ctx, minerInfo.ID, StorageProposalV120)
@@ -191,19 +238,26 @@ func (d DealMaker) makeDeal120(ctx context.Context,
 	return &resp, nil
 }
 
-func (d DealMaker) makeDeal111(ctx context.Context,
+func (d DealMaker) makeDeal111(
+	ctx context.Context,
 	deal proposal110.ClientDealProposal,
-	car model.Car, schedule model.Schedule,
+	dealConfig DealConfig,
+	rootCID cid.Cid,
 	minerInfo peer.AddrInfo) (*proposal110.SignedResponse, error) {
 	proposal := proposal110.Proposal{
-		FastRetrieval: schedule.KeepUnsealed,
+		FastRetrieval: dealConfig.KeepUnsealed,
 		DealProposal:  &deal,
 		Piece: &proposal110.DataRef{
 			TransferType: proposal110.TTManual,
-			Root:         cid.MustParse(car.RootCID),
+			Root:         rootCID,
 			PieceCid:     &deal.Proposal.PieceCID,
 			PieceSize:    deal.Proposal.PieceSize.Unpadded(),
 		},
+	}
+
+	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
+	if err := d.host.Connect(ctx, minerInfo); err != nil {
+		return nil, errors.Wrap(err, "failed to connect to miner")
 	}
 
 	stream, err := d.host.NewStream(ctx, minerInfo.ID, StorageProposalV111)
@@ -234,38 +288,68 @@ func (d DealMaker) makeDeal111(ctx context.Context,
 	return &resp, nil
 }
 
-func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.Wallet,
-	car model.Car, schedule model.Schedule, minerInfo peer.AddrInfo) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
-	if err := d.host.Connect(ctx, minerInfo); err != nil {
-		return "", errors.Wrap(err, "failed to connect to miner")
-	}
+type DealConfig struct {
+	Provider        string
+	StartDelay      time.Duration
+	Duration        time.Duration
+	Verified        bool
+	HTTPHeaders     []string
+	URLTemplate     string
+	KeepUnsealed    bool
+	AnnounceToIPNI  bool
+	PricePerDeal    float64
+	PricePerGB      float64
+	PricePerGBEpoch float64
+}
 
-	protocols, err := d.host.Peerstore().GetProtocols(minerInfo.ID)
-	if err != nil {
-		return "", errors.Wrap(err, "failed to get supported protocol")
-	}
+func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
+	gb := float64(pieceSize) / 1e9
+	epoch := duration.Minutes() * 2
+	p1 := big.NewIntUnsigned(uint64(d.PricePerDeal * 1e18 / gb / epoch))
+	p2 := big.NewIntUnsigned(uint64(d.PricePerGB * 1e18 / gb))
+	p3 := big.NewIntUnsigned(uint64(d.PricePerGBEpoch * 1e18))
+	return big.Max(big.Max(p1, p2), p3)
+}
 
+func (d DealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet,
+	car model.Car, dealConfig DealConfig) (string, error) {
+	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse wallet address")
 	}
-	pvd, err := address.NewFromString(schedule.Provider)
+
+	pvd, err := address.NewFromString(dealConfig.Provider)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse provider address")
 	}
-	label, err := proposal110.NewLabelFromString(cid.MustParse(car.RootCID).String())
+
+	label, err := proposal110.NewLabelFromString(cid.MustParse(cid.Cid(car.RootCID)).String())
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse label")
 	}
 
-	startEpoch := TimeToEpoch(now.Add(schedule.StartDelay))
-	endEpoch := TimeToEpoch(now.Add(schedule.StartDelay + schedule.Duration))
-	price := big.NewInt(int64(schedule.Price * 1e18 / schedule.Duration.Minutes() * 2 * float64(car.PieceSize) / (1 << 38)))
-	verified := schedule.Verified
-	pieceCID := cid.MustParse(car.PieceCID)
+	ctx, cancel := context.WithTimeout(ctx, d.requestTimeout)
+	defer cancel()
+
+	minerInfo, err := d.getProviderInfo(ctx, dealConfig.Provider)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get provider info")
+	}
+
+	d.host.Peerstore().AddAddrs(minerInfo.PeerID, minerInfo.Multiaddrs, peerstore.TempAddrTTL)
+	addrInfo := peer.AddrInfo{ID: minerInfo.PeerID, Addrs: minerInfo.Multiaddrs}
+
+	protocols, err := d.getProtocols(ctx, addrInfo)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get supported protocol")
+	}
+
+	startEpoch := TimeToEpoch(now.Add(dealConfig.StartDelay))
+	endEpoch := TimeToEpoch(now.Add(dealConfig.StartDelay + dealConfig.Duration))
+	price := dealConfig.GetPrice(car.PieceSize, dealConfig.Duration)
+	verified := dealConfig.Verified
+	pieceCID := cid.MustParse(cid.Cid(car.PieceCID))
 	pieceSize := abi.PaddedPieceSize(car.PieceSize)
 	collateral, err := d.getMinCollateral(ctx, car.PieceSize, verified)
 	if err != nil {
@@ -300,7 +384,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 
 	if slices.Contains(protocols, StorageProposalV120) {
 		dealID := uuid.New()
-		resp, err := d.makeDeal120(ctx, deal, dealID, car, schedule, minerInfo)
+		resp, err := d.makeDeal120(ctx, deal, dealID, dealConfig, car.FileSize, cid.MustParse(cid.Cid(car.RootCID)), addrInfo)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to make deal")
 		}
@@ -310,7 +394,7 @@ func (d DealMaker) MakeDeal(ctx context.Context, now time.Time, walletObj model.
 
 		return "", errors.Errorf("deal rejected: %s", resp.Message)
 	} else if slices.Contains(protocols, StorageProposalV111) {
-		resp, err := d.makeDeal111(ctx, deal, car, schedule, minerInfo)
+		resp, err := d.makeDeal111(ctx, deal, dealConfig, cid.MustParse(cid.Cid(car.RootCID)), addrInfo)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to make deal")
 		}

@@ -47,10 +47,10 @@ type DatacapWalletChooser struct {
 	min         uint64
 }
 
-func NewDatacapWalletChooser(db *gorm.DB, cacheDuration time.Duration,
+func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
 	lotusAPI string, lotusToken string, min uint64) DatacapWalletChooser {
 	cache := ttlcache.New[string, uint64](
-		ttlcache.WithTTL[string, uint64](cacheDuration),
+		ttlcache.WithTTL[string, uint64](cacheTTL),
 		ttlcache.WithDisableTouchOnHit[string, uint64]())
 
 	lotusClient := util.NewLotusClient(lotusAPI, lotusToken)

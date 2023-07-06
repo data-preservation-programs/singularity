@@ -10,7 +10,6 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -62,18 +61,11 @@ func SendManualHandler(
 		return "", handler.NewHandlerError(err)
 	}
 
-	host, err := util.InitHost(ctx, nil)
+	host, err := util.InitHost(nil)
 	if err != nil {
 		return "", handler.NewHandlerError(err)
 	}
-	dealMaker, err := replication.NewDealMaker(request.LotusAPI, request.LotusToken, host)
-	if err != nil {
-		return "", handler.NewHandlerError(err)
-	}
-	providerInfo, err := dealMaker.GetProviderInfo(ctx, request.ProviderID)
-	if err != nil {
-		return "", handler.NewHandlerError(err)
-	}
+	dealMaker := replication.NewDealMaker(request.LotusAPI, request.LotusToken, host, time.Minute, time.Hour)
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
 		return "", handler.NewBadRequestString("invalid piece CID")
@@ -98,22 +90,17 @@ func SendManualHandler(
 		RootCID:   model.CID(cid.MustParse(request.RootCID)),
 		FileSize:  int64(request.FileSize),
 	}
-	schedule := model.Schedule{
+	dealConfig := replication.DealConfig{
 		URLTemplate:    request.URLTemplate,
 		HTTPHeaders:    request.HTTPHeaders,
 		Provider:       request.ProviderID,
-		Price:          request.Price,
 		Verified:       request.Verified,
 		KeepUnsealed:   request.KeepUnsealed,
 		AnnounceToIPNI: request.IPNI,
 		StartDelay:     time.Duration(request.StartDelayDays * 24 * float64(time.Hour) / float64(time.Nanosecond)),
 		Duration:       time.Duration(request.DurationDays * 24 * float64(time.Hour) / float64(time.Nanosecond)),
 	}
-	addrInfo := peer.AddrInfo{
-		ID:    providerInfo.PeerID,
-		Addrs: providerInfo.Multiaddrs,
-	}
-	proposalID, err := dealMaker.MakeDeal(ctx, time.Now(), wallet, car, schedule, addrInfo)
+	proposalID, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
 	if err != nil {
 		return "", handler.NewHandlerError(err)
 	}
