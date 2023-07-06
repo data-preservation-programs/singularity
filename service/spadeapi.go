@@ -6,7 +6,6 @@ import (
 	"github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -16,12 +15,12 @@ import (
 type SpadeAPI struct {
 	db            *gorm.DB
 	logger        *log.ZapEventLogger
-	dealMaker     *replication.DealMaker
+	dealMaker     replication.DealMaker
 	walletChooser replication.WalletChooser
 	bind          string
 }
 
-func NewSpadeAPIService(db *gorm.DB, dealMaker *replication.DealMaker, walletChooser replication.WalletChooser, bind string) *SpadeAPI {
+func NewSpadeAPIService(db *gorm.DB, dealMaker replication.DealMaker, walletChooser replication.WalletChooser, bind string) *SpadeAPI {
 	return &SpadeAPI{
 		db:            db,
 		logger:        log.Logger("spade-api"),
@@ -52,10 +51,11 @@ func (s SpadeAPI) Start() error {
 		},
 	}))
 	e.GET("/eligible_pieces", s.GetEligiblePieces)
-	e.GET("/request_piece/:piece_cid", s.RequestPiece)
+	// e.GET("/request_piece/:piece_cid", s.RequestPiece)
 	return e.Start(s.bind)
 }
 
+/*
 func (s SpadeAPI) RequestPiece(c echo.Context) error {
 	provider := c.QueryParam("provider")
 	datasetName := c.QueryParam("dataset")
@@ -81,7 +81,7 @@ func (s SpadeAPI) RequestPiece(c echo.Context) error {
 		return err
 	}
 
-	providerInfo, err := s.dealMaker.GetProviderInfo(c.Request().Context(), provider)
+	providerInfo, err := s.dealMaker.getProviderInfo(c.Request().Context(), provider)
 	if err != nil {
 		return err
 	}
@@ -110,6 +110,7 @@ func (s SpadeAPI) RequestPiece(c echo.Context) error {
 	}
 	return c.JSON(200, proposal)
 }
+*/
 
 func (s SpadeAPI) GetEligiblePieces(c echo.Context) error {
 	provider := c.QueryParam("provider")

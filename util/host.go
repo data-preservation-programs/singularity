@@ -1,7 +1,6 @@
 package util
 
 import (
-	"context"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -19,7 +18,7 @@ import (
 const yamuxID = "/yamux/1.0.0"
 const mplexID = "/mplex/6.7.0"
 
-func InitHost(ctx context.Context, opts []libp2p.Option, listenAddrs ...multiaddr.Multiaddr) (host.Host, error) {
+func InitHost(opts []libp2p.Option, listenAddrs ...multiaddr.Multiaddr) (host.Host, error) {
 	opts = append([]libp2p.Option{
 		libp2p.Identity(nil),
 		libp2p.ResourceManager(&network.NullResourceManager{})},

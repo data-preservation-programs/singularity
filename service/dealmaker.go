@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
@@ -27,14 +26,14 @@ type DealMakerService struct {
 	logger        *log.ZapEventLogger
 	jobs          map[uint32]context.CancelFunc
 	walletChooser replication.WalletChooser
-	dealMaker     *replication.DealMaker
+	dealMaker     replication.DealMaker
 	workerID      uuid.UUID
 }
 
 type DealMakerWorker struct {
 	db            *gorm.DB
 	logger        *zap.SugaredLogger
-	dealMaker     *replication.DealMaker
+	dealMaker     replication.DealMaker
 	walletChooser replication.WalletChooser
 	workerID      uuid.UUID
 }
@@ -45,7 +44,7 @@ type sumResult struct {
 }
 
 func NewDealMakerWorker(db *gorm.DB,
-	dealMaker *replication.DealMaker,
+	dealMaker replication.DealMaker,
 	walletChooser replication.WalletChooser,
 	workerID uuid.UUID) *DealMakerWorker {
 	return &DealMakerWorker{
@@ -176,20 +175,27 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 		totalResult.DealSize += car.PieceSize
 		totalResult.DealNumber += 1
 
-		providerInfo, err := w.dealMaker.GetProviderInfo(ctx, schedule.Provider)
-		if err != nil {
-			return false, errors.Wrap(err, "failed to get provider info")
-		}
-
 		walletObj, err := w.walletChooser.Choose(ctx, schedule.Dataset.Wallets)
 		if err != nil {
 			return false, errors.Wrap(err, "failed to choose wallet")
 		}
-		now := time.Now().UTC()
-		proposalID, err := w.dealMaker.MakeDeal(ctx, now, walletObj, car, schedule, peer.AddrInfo{
-			ID:    providerInfo.PeerID,
-			Addrs: providerInfo.Multiaddrs,
-		})
+		proposalID, err := w.dealMaker.MakeDeal(
+			ctx,
+			walletObj,
+			car,
+			replication.DealConfig{
+				Provider:        schedule.Provider,
+				StartDelay:      schedule.StartDelay,
+				Duration:        schedule.Duration,
+				Verified:        schedule.Verified,
+				HTTPHeaders:     schedule.HTTPHeaders,
+				URLTemplate:     schedule.URLTemplate,
+				KeepUnsealed:    schedule.KeepUnsealed,
+				AnnounceToIPNI:  schedule.AnnounceToIPNI,
+				PricePerDeal:    schedule.Price,
+				PricePerGB:      schedule.Price,
+				PricePerGBEpoch: schedule.Price,
+			})
 		if err != nil {
 			w.logger.Errorw("failed to make deal", "error", err)
 			continue
@@ -201,8 +207,8 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 			ClientID:   walletObj.ID,
 			Provider:   schedule.Provider,
 			ProposalID: proposalID,
-			Label:      cid.MustParse(car.RootCID).String(),
-			PieceCID:   cid.MustParse(car.PieceCID).String(),
+			Label:      cid.MustParse(cid.Cid(car.RootCID)).String(),
+			PieceCID:   cid.MustParse(cid.Cid(car.PieceCID)).String(),
 			PieceSize:  car.PieceSize,
 			//Start:      now.Add(schedule.StartDelay),
 			//Duration:   schedule.Duration,
@@ -219,11 +225,11 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 }
 
 func NewDealMakerService(db *gorm.DB, lotusURL string, lotusToken string) (*DealMakerService, error) {
-	h, err := util.InitHost(context.Background(), nil)
+	h, err := util.InitHost(nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to init host")
 	}
-	dealMaker, err := replication.NewDealMaker(lotusURL, lotusToken, h)
+	dealMaker := replication.NewDealMaker(lotusURL, lotusToken, h, time.Hour, time.Minute)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to init deal maker")
 	}

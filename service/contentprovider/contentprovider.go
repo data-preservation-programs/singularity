@@ -103,7 +103,7 @@ func NewContentProviderService(db *gorm.DB, config ContentProviderConfig) (*Cont
 			}
 			listenAddrs = append(listenAddrs, ma)
 		}
-		h, err := util.InitHost(context.Background(), []libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
+		h, err := util.InitHost([]libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
 		if err != nil {
 			return nil, err
 		}
