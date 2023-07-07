@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/ipfs/go-log/v2"
@@ -9,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
-	"time"
 )
 
 type SpadeAPI struct {

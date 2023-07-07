@@ -3,6 +3,11 @@ package datasource
 import (
 	"context"
 	"fmt"
+	"io"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
@@ -51,10 +56,6 @@ import (
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
-	"io"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 type RCloneHandler struct {

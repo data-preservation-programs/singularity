@@ -1,6 +1,10 @@
 package datasetworker
 
 import (
+	"os"
+	"path"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
@@ -10,9 +14,6 @@ import (
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"os"
-	"path"
-	"time"
 )
 
 func (w *DatasetWorkerThread) dag(source model.Source) error {

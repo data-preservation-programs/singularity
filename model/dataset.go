@@ -3,9 +3,10 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"time"
+
 	"github.com/ipfs/go-cid"
 	"gorm.io/gorm"
-	"time"
 
 	"github.com/pkg/errors"
 )

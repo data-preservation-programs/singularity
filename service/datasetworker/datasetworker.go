@@ -2,14 +2,15 @@ package datasetworker
 
 import (
 	"context"
-	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/service/healthcheck"
-	"github.com/rjNemo/underscore"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/rjNemo/underscore"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"

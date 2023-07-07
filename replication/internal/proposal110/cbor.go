@@ -2,11 +2,12 @@ package proposal110
 
 import (
 	"fmt"
+	"io"
+	"unicode/utf8"
+
 	"github.com/filecoin-project/go-state-types/abi"
 	cbg "github.com/whyrusleeping/cbor-gen"
 	"golang.org/x/xerrors"
-	"io"
-	"unicode/utf8"
 )
 
 var lengthBufClientDealProposal = []byte{130}

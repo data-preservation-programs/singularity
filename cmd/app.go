@@ -4,6 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"strings"
+
 	"github.com/data-preservation-programs/singularity/cmd/admin"
 	"github.com/data-preservation-programs/singularity/cmd/dataset"
 	"github.com/data-preservation-programs/singularity/cmd/datasource"
@@ -17,10 +22,6 @@ import (
 	"github.com/data-preservation-programs/singularity/util/must"
 	"github.com/mattn/go-shellwords"
 	"github.com/urfave/cli/v2"
-	"io"
-	"os"
-	"os/exec"
-	"strings"
 )
 
 var App = &cli.App{

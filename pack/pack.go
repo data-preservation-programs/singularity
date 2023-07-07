@@ -2,12 +2,13 @@ package pack
 
 import (
 	"context"
-	"github.com/data-preservation-programs/singularity/pack/encryption"
-	util "github.com/ipfs/go-ipfs-util"
-	"github.com/rclone/rclone/fs"
 	"io"
 	"os"
 	"path"
+
+	"github.com/data-preservation-programs/singularity/pack/encryption"
+	util "github.com/ipfs/go-ipfs-util"
+	"github.com/rclone/rclone/fs"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"

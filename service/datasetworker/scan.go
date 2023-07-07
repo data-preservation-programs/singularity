@@ -2,6 +2,9 @@ package datasetworker
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
@@ -10,8 +13,6 @@ import (
 	"github.com/rclone/rclone/fs/hash"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 func MaxSizeToSplitSize(m int64) int64 {
