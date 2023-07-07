@@ -26,14 +26,14 @@ type DealMakerService struct {
 	logger        *log.ZapEventLogger
 	jobs          map[uint32]context.CancelFunc
 	walletChooser replication.WalletChooser
-	dealMaker     replication.DealMaker
+	dealMaker     replication.DealMakerImpl
 	workerID      uuid.UUID
 }
 
 type DealMakerWorker struct {
 	db            *gorm.DB
 	logger        *zap.SugaredLogger
-	dealMaker     replication.DealMaker
+	dealMaker     replication.DealMakerImpl
 	walletChooser replication.WalletChooser
 	workerID      uuid.UUID
 }
@@ -44,7 +44,7 @@ type sumResult struct {
 }
 
 func NewDealMakerWorker(db *gorm.DB,
-	dealMaker replication.DealMaker,
+	dealMaker replication.DealMakerImpl,
 	walletChooser replication.WalletChooser,
 	workerID uuid.UUID) *DealMakerWorker {
 	return &DealMakerWorker{

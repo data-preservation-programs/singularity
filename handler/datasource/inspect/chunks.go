@@ -21,7 +21,7 @@ import (
 func GetSourceChunksHandler(
 	db *gorm.DB,
 	id string,
-) ([]model.Chunk, *handler.Error) {
+) ([]model.Chunk, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

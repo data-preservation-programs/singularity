@@ -16,20 +16,27 @@ type DirDetail struct {
 	Items   []model.Item
 }
 
-// InspectPathHandler godoc
-// @Summary Get all item details of a data source
+type GetPathRequest struct {
+	Path string `json:"path"`
+}
+
+// GetPathHandler godoc
+// @Summary Get all item details inside a data source path
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Success 200 {array} model.Item
+// @Param request body GetPathRequest true "GetPathRequest"
+// @Success 200 {object} DirDetail
+// @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /source/{id}/items [get]
-func InspectPathHandler(
+// @Router /source/{id}/path [get]
+func GetPathHandler(
 	db *gorm.DB,
 	id string,
-	path string,
-) (*DirDetail, *handler.Error) {
+	request GetPathRequest,
+) (*DirDetail, error) {
+	path := request.Path
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

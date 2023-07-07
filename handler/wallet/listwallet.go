@@ -19,7 +19,7 @@ import (
 func ListWalletHandler(
 	db *gorm.DB,
 	datasetName string,
-) ([]model.Wallet, *handler.Error) {
+) ([]model.Wallet, error) {
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}

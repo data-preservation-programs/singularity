@@ -18,7 +18,7 @@ var ListPiecesCmd = &cli.Command{
 			db, c.Args().Get(0),
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(car, c.Bool("json"), nil)

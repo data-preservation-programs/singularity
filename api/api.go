@@ -9,8 +9,10 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
+	"github.com/data-preservation-programs/singularity/util"
 	fs2 "github.com/rclone/rclone/fs"
 	"io/fs"
 	"net/http"
@@ -43,6 +45,7 @@ type Server struct {
 	datasourceHandlerResolver datasource.HandlerResolver
 	lotusAPI                  string
 	lotusToken                string
+	dealMaker                 replication.DealMaker
 }
 
 type ItemInfo struct {
@@ -89,6 +92,25 @@ func (s Server) PushItem(c echo.Context) error {
 // @Router /piece/{id}/metadata [get]
 func (s Server) GetMetadataHandler(c echo.Context) error {
 	return contentprovider.GetMetadataHandler(c, s.db)
+}
+
+func (s Server) SendManualHandler(c echo.Context) error {
+	db := s.db.WithContext(c.Request().Context())
+	ctx := c.Request().Context()
+	var request deal.Proposal
+	err := c.Bind(&request)
+	if err != nil {
+		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	dealID, err := deal.SendManualHandler(db, ctx, request, s.dealMaker)
+	if err != nil {
+		var err2 *handler.Error
+		if errors.As(err, &err2) {
+			return err2.HTTPResponse(c)
+		}
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
+	}
+	return c.String(http.StatusOK, dealID)
 }
 
 func (s Server) pushItem(c echo.Context, sourceID uint32, itemInfo ItemInfo) error {
@@ -141,11 +163,22 @@ func Run(c *cli.Context) error {
 
 	lotusAPI := c.String("lotus-api")
 	lotusToken := c.String("lotus-token")
+	h, err := util.InitHost(nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to init host")
+	}
 
 	return Server{db: db, bind: bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 		lotusAPI:                  lotusAPI,
 		lotusToken:                lotusToken,
+		dealMaker: replication.NewDealMaker(
+			lotusAPI,
+			lotusToken,
+			h,
+			time.Minute*5,
+			time.Hour,
+		),
 	}.Run(c)
 }
 
@@ -213,8 +246,12 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 		if len(results) == 1 {
 			// Handle the returned error
 			err, ok := results[0].Interface().(*handler.Error)
-			if !ok {
-				return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+			if results[0].Interface() != nil && !ok {
+				err, ok := results[1].Interface().(error)
+				if !ok {
+					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+				}
+				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 			}
 			if err != nil {
 				return err.HTTPResponse(c)
@@ -224,8 +261,12 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 
 		// Handle the returned error
 		err, ok := results[1].Interface().(*handler.Error)
-		if !ok {
-			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+		if results[1].Interface() != nil && !ok {
+			err, ok := results[1].Interface().(error)
+			if !ok {
+				return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+			}
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 		if err != nil {
 			return err.HTTPResponse(c)
@@ -378,6 +419,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.PATCH("/api/source/:id", s.toEchoHandler(datasource2.UpdateSourceHandler))
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
+	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
 	e.POST("/api/source/:id/push", s.PushItem)
 
 	// Piece metadata
@@ -388,9 +430,15 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
 	e.GET("/api/source/:id/chunks", s.toEchoHandler(inspect.GetSourceChunksHandler))
 	e.GET("/api/source/:id/items", s.toEchoHandler(inspect.GetSourceItemsHandler))
+	e.GET("/api/source/:id/dags", s.toEchoHandler(inspect.GetDagsHandler))
+	e.GET("/api/source/:id/path", s.toEchoHandler(inspect.GetPathHandler))
+	e.GET("/api/chunk/:id", s.toEchoHandler(inspect.GetSourceChunkDetailHandler))
+	e.GET("/api/item/:id", s.toEchoHandler(inspect.GetSourceItemDetailHandler))
 
 	// Deal
-	e.POST("/api/deal/send_manual", s.toEchoHandler(deal.SendManualHandler))
+	e.POST("/api/deal/send_manual", s.SendManualHandler)
+
+	// Pending test
 	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
 	e.GET("/api/deal/schedules", s.toEchoHandler(schedule.ListHandler))
 	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))

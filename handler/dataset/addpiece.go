@@ -37,7 +37,7 @@ func AddPieceHandler(
 	db *gorm.DB,
 	datasetName string,
 	request AddPieceRequest,
-) (*model.Car, *handler.Error) {
+) (*model.Car, error) {
 	logger := log.Logger("cli")
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")

@@ -15,7 +15,7 @@ var PauseCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		schedule, err := schedule.PauseHandler(db, c.Args().Get(0))
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
 		return nil

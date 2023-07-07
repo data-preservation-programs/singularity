@@ -16,11 +16,11 @@ import (
 // @Param id path string true "Item ID"
 // @Success 200 {object} model.Item
 // @Failure 500 {object} handler.HTTPError
-// @Router /source/{id}/items [get]
+// @Router /item/{id} [get]
 func GetSourceItemDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Item, *handler.Error) {
+) (*model.Item, error) {
 	itemID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid item id")

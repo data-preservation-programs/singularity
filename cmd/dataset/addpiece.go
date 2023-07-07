@@ -42,7 +42,7 @@ var AddPieceCmd = &cli.Command{
 			},
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(car, c.Bool("json"), nil)

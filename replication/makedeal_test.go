@@ -109,7 +109,10 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 	defer cancel()
 	server := setupBasicHost(t, ctx, "10001")
 	client := setupBasicHost(t, ctx, "10002")
+	defer server.Close()
+	defer client.Close()
 	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	defer maker.Close()
 	wallet := model.Wallet{
 		ID:         "f01074655",
 		Address:    "f13vtwldyycj32sxhenrd7gmwj72hhatvuoydjxii",
@@ -160,7 +163,10 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 	defer cancel()
 	server := setupBasicHost(t, ctx, "10001")
 	client := setupBasicHost(t, ctx, "10002")
+	defer server.Close()
+	defer client.Close()
 	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	defer maker.Close()
 	rootCID := cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	proposal := testProposal(t)
 	resp, err := maker.makeDeal111(
@@ -184,12 +190,40 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 	assert.Equal(t, "accepted", resp.Response.Message)
 }
 
+func TestDealConfig_GetPrice(t *testing.T) {
+	config := DealConfig{
+		PricePerDeal:    1.0,
+		PricePerGB:      0,
+		PricePerGBEpoch: 0,
+	}
+	assert.Equal(t, *big.NewInt(1e18), *config.GetPrice(1000, time.Minute).Int)
+
+	config = DealConfig{
+		PricePerDeal:    0,
+		PricePerGB:      0.1,
+		PricePerGBEpoch: 0,
+	}
+
+	assert.Equal(t, *big.NewInt(1e11), *config.GetPrice(1000, time.Minute).Int)
+
+	config = DealConfig{
+		PricePerDeal:    0,
+		PricePerGB:      0,
+		PricePerGBEpoch: 0.1,
+	}
+
+	assert.Equal(t, *big.NewInt(2e11), *config.GetPrice(1000, time.Minute).Int)
+}
+
 func TestDealMaker_MakeDeal120(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	server := setupBasicHost(t, ctx, "10001")
 	client := setupBasicHost(t, ctx, "10002")
+	defer server.Close()
+	defer client.Close()
 	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	defer maker.Close()
 	rootCID := cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	proposal := testProposal(t)
 	resp, err := maker.makeDeal120(
@@ -239,7 +273,10 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	defer cancel()
 	server := setupBasicHost(t, ctx, "10001")
 	client := setupBasicHost(t, ctx, "10002")
+	defer server.Close()
+	defer client.Close()
 	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	defer maker.Close()
 	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
 		Addrs: server.Addrs(),

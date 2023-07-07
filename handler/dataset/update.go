@@ -35,7 +35,7 @@ func UpdateHandler(
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
-) (*model.Dataset, *handler.Error) {
+) (*model.Dataset, error) {
 	logger := log.Logger("cli")
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("name is required")
@@ -60,7 +60,7 @@ func UpdateHandler(
 	return &dataset, nil
 }
 
-func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) *handler.Error {
+func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 	if request.MaxSizeStr != nil {
 		maxSize, err := humanize.ParseBytes(*request.MaxSizeStr)
 		if err != nil {

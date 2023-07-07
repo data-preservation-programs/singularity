@@ -14,13 +14,15 @@ var PathCmd = &cli.Command{
 	ArgsUsage: "<source_id> <path>",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		result, err := inspect.InspectPathHandler(
+		result, err := inspect.GetPathHandler(
 			db,
 			c.Args().Get(0),
-			c.Args().Get(1),
+			inspect.GetPathRequest{
+				Path: c.Args().Get(1),
+			},
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		if c.Bool("json") {

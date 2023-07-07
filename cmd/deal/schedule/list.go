@@ -14,7 +14,7 @@ var ListCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		schedules, err := schedule.ListHandler(db)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(schedules, c.Bool("json"), nil)

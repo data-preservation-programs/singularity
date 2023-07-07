@@ -16,7 +16,7 @@ import (
 // @Router /wallet [get]
 func ListHandler(
 	db *gorm.DB,
-) ([]model.Wallet, *handler.Error) {
+) ([]model.Wallet, error) {
 	var wallets []model.Wallet
 
 	err := db.Find(&wallets).Error

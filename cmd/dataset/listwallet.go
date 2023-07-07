@@ -15,7 +15,7 @@ var ListWalletCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		wallets, err := wallet.ListWalletHandler(db, c.Args().Get(0))
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		cliutil.PrintToConsole(wallets, c.Bool("json"), nil)
 		return nil
