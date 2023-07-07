@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tab, Tabs } from 'react-bootstrap';
+import {Tab, Tabs} from 'react-bootstrap';
 import DatasetExplorer from "./DatasetExplorer";
 import CarExplorer from "./CarExplorer";
 

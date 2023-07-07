@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Container, Navbar, Row, Col } from 'react-bootstrap';
+import React, {useState} from 'react';
+import {Col, Container, Navbar, Row} from 'react-bootstrap';
 import DatasetList from './components/DatasetList';
 import OverallDealStats from './components/OverallDealStats';
 import DatasetDealStats from './components/DatasetDealStats';

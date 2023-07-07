@@ -1,6 +1,9 @@
 package dataset
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -8,8 +11,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
-	"os"
-	"path/filepath"
 )
 
 type UpdateRequest struct {

@@ -3,6 +3,8 @@
 package database
 
 import (
+	"strings"
+
 	"github.com/glebarez/sqlite"
 	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
@@ -10,7 +12,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
-	"strings"
 )
 
 var ErrDatabaseNotSupported = errors.New("database not supported")

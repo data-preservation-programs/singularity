@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/encryption"
@@ -21,8 +24,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/hash"
-	"io"
-	"time"
 )
 
 const ChunkSize int64 = 1 << 20

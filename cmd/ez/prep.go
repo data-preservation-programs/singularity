@@ -2,6 +2,12 @@ package ez
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
@@ -12,11 +18,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var PrepCmd = &cli.Command{

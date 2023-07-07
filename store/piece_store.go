@@ -2,12 +2,13 @@ package store
 
 import (
 	"context"
+	"io"
+	"sort"
+
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-varint"
 	"github.com/rclone/rclone/fs"
-	"io"
-	"sort"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"

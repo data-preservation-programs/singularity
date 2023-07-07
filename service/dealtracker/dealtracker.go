@@ -3,6 +3,12 @@ package dealtracker
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/bcicen/jstream"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -11,11 +17,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"io"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type Deal struct {

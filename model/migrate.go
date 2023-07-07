@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/rand"
 	"encoding/base64"
+
 	"github.com/google/uuid"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"

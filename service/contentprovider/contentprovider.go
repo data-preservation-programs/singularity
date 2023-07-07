@@ -5,6 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/fxamacker/cbor/v2"
 	nilrouting "github.com/ipfs/go-ipfs-routing/none"
@@ -15,10 +20,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
-	"io"
-	"net/http"
-	"os"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"

@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/data-preservation-programs/singularity/cmd/datasource"
-	"github.com/urfave/cli/v2"
 	"os"
 	"strings"
 	"text/template"
 	"unicode"
+
+	"github.com/data-preservation-programs/singularity/cmd/datasource"
+	"github.com/urfave/cli/v2"
 )
 
 const header = `

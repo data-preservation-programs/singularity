@@ -2,6 +2,9 @@ package datasource
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -9,8 +12,6 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
-	"strconv"
-	"time"
 )
 
 type CheckSourceRequest struct {

@@ -2,9 +2,10 @@ package deal
 
 import (
 	"context"
-	"github.com/dustin/go-humanize"
 	"strconv"
 	"time"
+
+	"github.com/dustin/go-humanize"
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"

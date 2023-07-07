@@ -1,11 +1,12 @@
 package inspect
 
 import (
+	"strconv"
+
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 // GetDagsHandler godoc

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import { Table, Offcanvas, Pagination } from 'react-bootstrap';
+import {Offcanvas, Pagination, Table} from 'react-bootstrap';
 import './DatasetExplorer.css';
 
 interface Car {

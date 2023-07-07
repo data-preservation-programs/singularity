@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import { Accordion, Card, Button } from 'react-bootstrap';
+import {Accordion, Button, Card} from 'react-bootstrap';
 import SourceList from './SourceList';
 import './DatasetList.css';
 
