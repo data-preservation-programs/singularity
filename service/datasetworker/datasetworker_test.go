@@ -2,14 +2,15 @@ package datasetworker
 
 import (
 	"context"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
-	"time"
 )
 
 func TestDatasetWorkerRun(t *testing.T) {
@@ -30,7 +31,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = file.WriteString("test")
 	assert.NoError(t, err)
-	err = file.Close()
+	assert.NoError(t, file.Close())
 	file, err = os.Create(temp + "/test2.txt")
 	assert.NoError(t, err)
 	_, err = file.WriteString("test2")

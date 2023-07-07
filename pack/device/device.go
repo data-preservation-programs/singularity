@@ -1,12 +1,13 @@
 package device
 
 import (
+	"math/rand"
+	"time"
+
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/pkg/errors"
 	"github.com/shirou/gopsutil/v3/disk"
-	"math/rand"
-	"time"
 )
 
 var deviceCache = ttlcache.New[string, *disk.UsageStat](
@@ -18,9 +19,9 @@ func getRandomStringByWeight(pathMap map[string]uint64) string {
 		totalWeight += weight
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	//nolint:gosec
-	randWeight := rand.Intn(int(totalWeight))
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randWeight := rng.Intn(int(totalWeight))
 
 	var currentWeight uint64
 	for path, weight := range pathMap {

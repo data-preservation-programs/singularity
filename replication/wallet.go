@@ -2,6 +2,10 @@ package replication
 
 import (
 	"context"
+	"math/rand"
+	"strconv"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	logging "github.com/ipfs/go-log/v2"
@@ -10,9 +14,6 @@ import (
 	"github.com/rjNemo/underscore"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
-	"math/rand"
-	"strconv"
-	"time"
 )
 
 var logger = logging.Logger("replication")
@@ -33,9 +34,9 @@ func (w DefaultWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 		return model.Wallet{}, ErrNoWallet
 	}
 
-	rand.Seed(time.Now().UnixNano())
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	//nolint:gosec
-	randomIndex := rand.Intn(len(wallets))
+	randomIndex := rng.Intn(len(wallets))
 	chosenWallet := wallets[randomIndex]
 	return chosenWallet, nil
 }
@@ -113,9 +114,9 @@ func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 		return model.Wallet{}, ErrNoDatacap
 	}
 
-	rand.Seed(time.Now().UnixNano())
 	//nolint:gosec
-	randomIndex := rand.Intn(len(wallets))
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomIndex := rng.Intn(len(wallets))
 	chosenWallet := wallets[randomIndex]
 	return chosenWallet, nil
 }
