@@ -64,7 +64,7 @@ var UpdateCmd = &cli.Command{
 			config,
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(source, c.Bool("json"), nil)

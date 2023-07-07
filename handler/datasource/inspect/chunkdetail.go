@@ -16,11 +16,11 @@ import (
 // @Param id path string true "Chunk ID"
 // @Success 200 {object} model.Chunk
 // @Failure 500 {object} handler.HTTPError
-// @Router /source/{id}/chunks [get]
+// @Router /chunk/{id} [get]
 func GetSourceChunkDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Chunk, *handler.Error) {
+) (*model.Chunk, error) {
 	chunkID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid chunk id")

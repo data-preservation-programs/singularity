@@ -82,7 +82,7 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 1, initialize the database
-		err = admin.InitHandler(db).CliError()
+		err = admin.InitHandler(db)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ var PrepCmd = &cli.Command{
 			OutputDirs: outputDirs,
 		})
 		if err2 != nil {
-			return err2.CliError()
+			return err2
 		}
 
 		// Step 3, add a local data source
@@ -150,7 +150,7 @@ var PrepCmd = &cli.Command{
 		// Step 4, Initiate dag gen
 		_, err2 = datasource.DagGenHandler(db, strconv.Itoa(int(source.ID)))
 		if err2 != nil {
-			return err2.CliError()
+			return err2
 		}
 
 		// Step 5, start dataset worker again
@@ -164,7 +164,7 @@ var PrepCmd = &cli.Command{
 			db, ds.Name,
 		)
 		if err2 != nil {
-			return err2.CliError()
+			return err2
 		}
 
 		cliutil.PrintToConsole(cars, false, nil)

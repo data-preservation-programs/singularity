@@ -24,7 +24,7 @@ var ListCmd = &cli.Command{
 			datasetName,
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		cliutil.PrintToConsole(sources, c.Bool("json"), exclude)
 		return nil

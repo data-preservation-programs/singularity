@@ -18,7 +18,7 @@ var DagsCmd = &cli.Command{
 			c.Args().Get(0),
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(cars, c.Bool("json"), nil)

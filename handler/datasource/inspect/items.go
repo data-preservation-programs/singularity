@@ -21,7 +21,7 @@ import (
 func GetSourceItemsHandler(
 	db *gorm.DB,
 	id string,
-) ([]model.Item, *handler.Error) {
+) ([]model.Item, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

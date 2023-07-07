@@ -20,7 +20,7 @@ func RemoveWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
-) *handler.Error {
+) error {
 	if datasetName == "" {
 		return handler.NewBadRequestString("dataset name is required")
 	}

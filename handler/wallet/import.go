@@ -29,7 +29,7 @@ type ImportRequest struct {
 func ImportHandler(
 	db *gorm.DB,
 	request ImportRequest,
-) (*model.Wallet, *handler.Error) {
+) (*model.Wallet, error) {
 	address.CurrentNetwork = address.Mainnet
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {

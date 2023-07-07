@@ -12,7 +12,7 @@ import (
 // @Success 204
 // @Failure 500 {object} handler.HTTPError
 // @Router /admin/init [post]
-func InitHandler(db *gorm.DB) *handler.Error {
+func InitHandler(db *gorm.DB) error {
 	err := model.AutoMigrate(db)
 	if err != nil {
 		return handler.NewHandlerError(err)

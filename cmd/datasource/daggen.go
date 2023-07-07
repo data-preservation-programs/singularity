@@ -18,7 +18,7 @@ var DagGenCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		source, err := datasource.DagGenHandler(db, c.Args().Get(0))
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		cliutil.PrintToConsole(source, c.Bool("json"), exclude)
 		return nil

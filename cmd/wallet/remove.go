@@ -15,7 +15,7 @@ var RemoveCmd = &cli.Command{
 		err := wallet.RemoveHandler(db, c.Args().Get(0))
 
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		return nil

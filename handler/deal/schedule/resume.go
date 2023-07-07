@@ -19,7 +19,7 @@ import (
 func ResumeHandler(
 	db *gorm.DB,
 	scheduleID string,
-) (*model.Schedule, *handler.Error) {
+) (*model.Schedule, error) {
 	var schedule model.Schedule
 	err := db.Transaction(func(db *gorm.DB) error {
 		err := db.First(&schedule, "id = ?", scheduleID).Error

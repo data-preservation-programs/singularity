@@ -335,6 +335,30 @@ func TestRunAPI(t *testing.T) {
 		assert.Len(t, errs, 0)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.Contains(t, body, `[`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/dags").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `[`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/path").
+			Send(`{"path":""}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `[`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/item/1").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/chunk/1").End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal/send_manual").Send(`{}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Contains(t, body, `client address not found`)
 	})
 }
 

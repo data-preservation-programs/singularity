@@ -19,7 +19,7 @@ var RescanCmd = &cli.Command{
 			c.Args().Get(0),
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(source, c.Bool("json"), exclude)

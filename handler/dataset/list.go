@@ -16,7 +16,7 @@ import (
 // @Router /dataset [get]
 func ListHandler(
 	db *gorm.DB,
-) ([]model.Dataset, *handler.Error) {
+) ([]model.Dataset, error) {
 	var datasets []model.Dataset
 	err := db.Find(&datasets).Error
 	if err != nil {

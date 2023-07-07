@@ -25,7 +25,7 @@ type ListDealRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/list [post]
-func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, *handler.Error) {
+func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	var deals []model.Deal
 	statement := db
 	if len(request.Datasets) > 0 {

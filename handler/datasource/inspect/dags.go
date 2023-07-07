@@ -9,18 +9,18 @@ import (
 )
 
 // GetDagsHandler godoc
-// @Summary Get all chunk details of a data source
+// @Summary Get all dag details of a data source
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Success 200 {array} model.Chunk
+// @Success 200 {array} model.Car
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/chunks [get]
 func GetDagsHandler(
 	db *gorm.DB,
 	id string,
-) ([]model.Car, *handler.Error) {
+) ([]model.Car, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")
