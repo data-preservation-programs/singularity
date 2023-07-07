@@ -2,14 +2,15 @@ package replication
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
-	"testing"
-	"time"
 )
 
 type MockRPCClient struct {
@@ -78,28 +79,28 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 	chooser.lotusClient = lotusClient
 
 	err := db.Create(&wallets).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = db.Create(&model.Deal{
 		ClientID:  "3",
 		Verified:  true,
 		State:     model.DealProposed,
 		PieceSize: 500000,
 	}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	t.Run("Choose wallet with empty wallet", func(t *testing.T) {
 		_, err := chooser.Choose(context.Background(), []model.Wallet{})
-		assert.ErrorAs(t, err, &ErrNoWallet)
+		require.ErrorAs(t, err, &ErrNoWallet)
 	})
 
 	t.Run("Choose wallet with sufficient datacap", func(t *testing.T) {
 		chosenWallet, err := chooser.Choose(context.Background(), []model.Wallet{wallets[0], wallets[1]})
-		assert.NoError(t, err)
-		assert.Equal(t, "address1", chosenWallet.Address)
+		require.NoError(t, err)
+		require.Equal(t, "address1", chosenWallet.Address)
 	})
 
 	t.Run("Choose wallet with insufficient datacap", func(t *testing.T) {
 		_, err := chooser.Choose(context.Background(), []model.Wallet{wallets[2], wallets[3]})
-		assert.ErrorAs(t, err, &ErrNoDatacap)
+		require.ErrorAs(t, err, &ErrNoDatacap)
 	})
 }

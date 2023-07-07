@@ -2,13 +2,14 @@ package schedule
 
 import (
 	"context"
+	"testing"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
-	"testing"
 )
 
 type MockRPCClient struct {
@@ -74,121 +75,121 @@ var createRequest = CreateRequest{
 func TestCreateHandler_DatasetNotFound(t *testing.T) {
 	db := database.OpenInMemory()
 	_, err := CreateHandler(db, context.Background(), getMockLotusClient(), createRequest)
-	assert.ErrorContains(t, err, "dataset not found")
+	require.ErrorContains(t, err, "dataset not found")
 }
 
 func TestCreateHandler_InvalidStartDelay(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.StartDelay = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "invalid start delay")
+	require.ErrorContains(t, err, "invalid start delay")
 }
 
 func TestCreateHandler_InvalidDuration(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.Duration = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "invalid duration")
+	require.ErrorContains(t, err, "invalid duration")
 }
 
 func TestCreateHandler_InvalidScheduleInterval(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.ScheduleInterval = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "invalid schedule interval")
+	require.ErrorContains(t, err, "invalid schedule interval")
 }
 
 func TestCreateHandler_InvalidScheduleDealSize(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.ScheduleDealSize = "One PB"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "invalid schedule deal size")
+	require.ErrorContains(t, err, "invalid schedule deal size")
 }
 
 func TestCreateHandler_InvalidTotalDealSize(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.TotalDealSize = "One PB"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "invalid total deal size")
+	require.ErrorContains(t, err, "invalid total deal size")
 }
 
 func TestCreateHandler_InvalidPendingDealSize(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.MaxPendingDealSize = "One PB"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "invalid pending deal size")
+	require.ErrorContains(t, err, "invalid pending deal size")
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCID(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.AllowedPieceCIDs = []string{"not a cid"}
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "it's not a CID")
+	require.ErrorContains(t, err, "it's not a CID")
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.AllowedPieceCIDs = []string{"bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma"}
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	assert.ErrorContains(t, err, "it's not a commp")
+	require.ErrorContains(t, err, "it's not a commp")
 }
 
 func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), createRequest)
-	assert.ErrorContains(t, err, "no wallet")
+	require.ErrorContains(t, err, "no wallet")
 }
 
 func TestCreateHandler_InvalidProvider(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = db.Create(&model.Wallet{ID: "f01"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = db.Create(&model.WalletAssignment{WalletID: "f01", DatasetID: 1}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	lotusClient := new(MockRPCClient)
 	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
 		Return(errors.New("Some provider error"))
 	_, err = CreateHandler(db, context.Background(), lotusClient, createRequest)
-	assert.ErrorContains(t, err, "Some provider error")
+	require.ErrorContains(t, err, "Some provider error")
 }
 
 func TestCreateHandler_Success(t *testing.T) {
 	db := database.OpenInMemory()
 	err := db.Create(&model.Dataset{Name: "test"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = db.Create(&model.Wallet{ID: "f01"}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = db.Create(&model.WalletAssignment{WalletID: "f01", DatasetID: 1}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	schedule, err := CreateHandler(db, context.Background(), getMockLotusClient(), createRequest)
-	assert.NoError(t, err)
-	assert.NotNil(t, schedule)
+	require.NoError(t, err)
+	require.NotNil(t, schedule)
 }

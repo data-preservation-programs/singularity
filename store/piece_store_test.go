@@ -3,13 +3,14 @@
 package store
 
 import (
+	"testing"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/multiformats/go-varint"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadAt2(t *testing.T) {
@@ -19,7 +20,7 @@ func TestReadAt2(t *testing.T) {
 	car := model.Car{
 		Header: []byte("car-Header"),
 	}
-	assert.NoError(t, db.Create(&car).Error)
+	require.NoError(t, db.Create(&car).Error)
 
 	block1 := blocks.NewBlock([]byte("block-data"))
 	varint1 := uint64(block1.Cid().ByteLen() + len(block1.RawData()))
@@ -30,7 +31,7 @@ func TestReadAt2(t *testing.T) {
 		CarBlockLength: varint1 + uint64(varint.UvarintSize(varint1)),
 		Varint:         varint1,
 	}
-	assert.NoError(t, db.Create(&carBlock1).Error)
+	require.NoError(t, db.Create(&carBlock1).Error)
 
 	// Create an instance of the PieceReader
 	pieceReader := NewPieceReader2(db, &car)
@@ -41,19 +42,19 @@ func TestReadAt2(t *testing.T) {
 	// Test the ReadAt method
 	buf := make([]byte, 10)
 	n, err := pieceReader.ReadAt(buf, 0)
-	assert.NoError(t, err)
-	assert.Equal(t, 10, n)
-	assert.Equal(t, "car-Header", string(buf))
+	require.NoError(t, err)
+	require.Equal(t, 10, n)
+	require.Equal(t, "car-Header", string(buf))
 
 	buf = make([]byte, 10)
 	n, err = pieceReader.ReadAt(buf, 5)
-	assert.NoError(t, err)
-	assert.Equal(t, 5, n)
-	assert.Equal(t, "eader", string(buf[:n]))
+	require.NoError(t, err)
+	require.Equal(t, 5, n)
+	require.Equal(t, "eader", string(buf[:n]))
 
 	buf = make([]byte, 100)
 	n, err = pieceReader.ReadAt(buf, 10)
-	assert.NoError(t, err)
-	assert.Equal(t, 45, n)
-	assert.Equal(t, "block-data", string(buf[35:45]))
+	require.NoError(t, err)
+	require.Equal(t, 45, n)
+	require.Equal(t, "block-data", string(buf[35:45]))
 }

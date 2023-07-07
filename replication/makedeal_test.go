@@ -2,6 +2,11 @@ package replication
 
 import (
 	"context"
+	"math/big"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
@@ -19,20 +24,17 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"math/big"
-	"os"
-	"testing"
-	"time"
+	"github.com/stretchr/testify/require"
 )
 
 func testProposal(t *testing.T) proposal110.ClientDealProposal {
-	pieceCID := cid.MustParse("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")
+	pieceCID, err := cid.Decode("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")
+	require.NoError(t, err)
 	clientAddr, err := address.NewFromString("f01000")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	provider, err := address.NewFromString("f01001")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	return proposal110.ClientDealProposal{
 		Proposal: proposal110.DealProposal{
 			PieceCID:     pieceCID,
@@ -62,29 +64,31 @@ func testProposal(t *testing.T) proposal110.ClientDealProposal {
 
 func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 	m, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/" + port)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h, err := util.InitHost(nil, m)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	h.SetStreamHandler(StorageProposalV120, func(s network.Stream) {
 		var deal proposal120.DealParams
 		err := cborutil.ReadCborRPC(s, &deal)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		resp := &proposal120.DealResponse{
 			Accepted: true,
 			Message:  "accepted",
 		}
 		err = cborutil.WriteCborRPC(s, resp)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 	h.SetStreamHandler(StorageProposalV111, func(s network.Stream) {
 		var deal proposal110.Proposal
 		err := cborutil.ReadCborRPC(s, &deal)
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		c, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+		require.NoError(t, err)
 		resp := &proposal110.SignedResponse{
 			Response: proposal110.Response{
 				State:          1,
 				Message:        "accepted",
-				Proposal:       cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay"),
+				Proposal:       c,
 				PublishMessage: nil,
 			},
 			Signature: &crypto.Signature{
@@ -93,7 +97,7 @@ func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 			},
 		}
 		err = cborutil.WriteCborRPC(s, resp)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 	go func() {
 		<-ctx.Done()
@@ -118,10 +122,13 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 		Address:    "f13vtwldyycj32sxhenrd7gmwj72hhatvuoydjxii",
 		PrivateKey: key,
 	}
-	rootCID := cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	require.NoError(t, err)
+	c, err := cid.Decode("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")
+	require.NoError(t, err)
 	car := model.Car{
 		RootCID:   model.CID(rootCID),
-		PieceCID:  model.CID(cid.MustParse("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")),
+		PieceCID:  model.CID(c),
 		PieceSize: 1024,
 		FileSize:  1000,
 	}
@@ -146,15 +153,15 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 		StorageProposalV120,
 	}, ttlcache.DefaultTTL)
 
-	_, err := maker.MakeDeal(ctx, wallet, car, dealConfig)
-	assert.NoError(t, err)
+	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
+	require.NoError(t, err)
 
 	maker.protocolsCache.Set(server.ID(), []protocol.ID{
 		StorageProposalV111,
 	}, ttlcache.DefaultTTL)
 
 	_, err = maker.MakeDeal(ctx, wallet, car, dealConfig)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 }
 
@@ -167,7 +174,8 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker("", "", client, time.Hour, time.Second)
 	defer maker.Close()
-	rootCID := cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	require.NoError(t, err)
 	proposal := testProposal(t)
 	resp, err := maker.makeDeal111(
 		ctx,
@@ -185,9 +193,9 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 			ID:    server.ID(),
 			Addrs: server.Addrs(),
 		})
-	assert.NoError(t, err)
-	assert.Equal(t, uint64(1), resp.Response.State)
-	assert.Equal(t, "accepted", resp.Response.Message)
+	require.NoError(t, err)
+	require.Equal(t, uint64(1), resp.Response.State)
+	require.Equal(t, "accepted", resp.Response.Message)
 }
 
 func TestDealConfig_GetPrice(t *testing.T) {
@@ -196,7 +204,7 @@ func TestDealConfig_GetPrice(t *testing.T) {
 		PricePerGB:      0,
 		PricePerGBEpoch: 0,
 	}
-	assert.Equal(t, *big.NewInt(1e18), *config.GetPrice(1000, time.Minute).Int)
+	require.Equal(t, *big.NewInt(1e18), *config.GetPrice(1000, time.Minute).Int)
 
 	config = DealConfig{
 		PricePerDeal:    0,
@@ -204,7 +212,7 @@ func TestDealConfig_GetPrice(t *testing.T) {
 		PricePerGBEpoch: 0,
 	}
 
-	assert.Equal(t, *big.NewInt(1e11), *config.GetPrice(1000, time.Minute).Int)
+	require.Equal(t, *big.NewInt(1e11), *config.GetPrice(1000, time.Minute).Int)
 
 	config = DealConfig{
 		PricePerDeal:    0,
@@ -212,7 +220,7 @@ func TestDealConfig_GetPrice(t *testing.T) {
 		PricePerGBEpoch: 0.1,
 	}
 
-	assert.Equal(t, *big.NewInt(2e11), *config.GetPrice(1000, time.Minute).Int)
+	require.Equal(t, *big.NewInt(2e11), *config.GetPrice(1000, time.Minute).Int)
 }
 
 func TestDealMaker_MakeDeal120(t *testing.T) {
@@ -224,7 +232,8 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker("", "", client, time.Hour, time.Second)
 	defer maker.Close()
-	rootCID := cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	require.NoError(t, err)
 	proposal := testProposal(t)
 	resp, err := maker.makeDeal120(
 		ctx,
@@ -246,9 +255,9 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 			ID:    server.ID(),
 			Addrs: server.Addrs(),
 		})
-	assert.NoError(t, err)
-	assert.True(t, resp.Accepted)
-	assert.Equal(t, "accepted", resp.Message)
+	require.NoError(t, err)
+	require.True(t, resp.Accepted)
+	require.Equal(t, "accepted", resp.Message)
 }
 
 func TestDealMaker_GetCollateral(t *testing.T) {
@@ -264,8 +273,8 @@ func TestDealMaker_GetCollateral(t *testing.T) {
 		}
 	})
 	result, err := maker.getMinCollateral(context.Background(), 34359738368, false)
-	assert.NoError(t, err)
-	assert.Equal(t, "8649874114492479", result.String())
+	require.NoError(t, err)
+	require.Equal(t, "8649874114492479", result.String())
 }
 
 func TestDealMaker_GetProtocols(t *testing.T) {
@@ -281,10 +290,10 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 		ID:    server.ID(),
 		Addrs: server.Addrs(),
 	})
-	assert.NoError(t, err)
-	assert.Contains(t, protocols, protocol.ID("/ipfs/ping/1.0.0"))
-	assert.Contains(t, protocols, protocol.ID(StorageProposalV120))
-	assert.Contains(t, protocols, protocol.ID(StorageProposalV111))
+	require.NoError(t, err)
+	require.Contains(t, protocols, protocol.ID("/ipfs/ping/1.0.0"))
+	require.Contains(t, protocols, protocol.ID(StorageProposalV120))
+	require.Contains(t, protocols, protocol.ID(StorageProposalV111))
 }
 
 func TestDealMaker_GetProviderInfo(t *testing.T) {
@@ -302,8 +311,8 @@ func TestDealMaker_GetProviderInfo(t *testing.T) {
 	})
 
 	info, err := maker.getProviderInfo(context.Background(), "address1")
-	assert.NoError(t, err)
-	assert.Len(t, info.Multiaddrs, 1)
-	assert.Contains(t, info.Multiaddrs[0].String(), "/tcp/24001")
-	assert.Equal(t, "12D3KooWRTsCNvyZr6zWvN2YtKuygfTyG5TqZfZ464472D4ZCqYd", info.PeerID.String())
+	require.NoError(t, err)
+	require.Len(t, info.Multiaddrs, 1)
+	require.Contains(t, info.Multiaddrs[0].String(), "/tcp/24001")
+	require.Equal(t, "12D3KooWRTsCNvyZr6zWvN2YtKuygfTyG5TqZfZ464472D4ZCqYd", info.PeerID.String())
 }

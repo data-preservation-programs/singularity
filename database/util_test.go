@@ -1,11 +1,12 @@
 package database
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestAutoMigrate(t *testing.T) {
 	db := OpenInMemory()
-	assert.NotNil(t, db)
+	require.NotNil(t, db)
 }
