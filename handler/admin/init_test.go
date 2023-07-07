@@ -9,8 +9,8 @@ import (
 )
 
 func TestInitHandler(t *testing.T) {
-	db := database.OpenInMemory()
-	defer model.DropAll(db)
-	err := InitHandler(db)
+	db, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer model.DropAll(db)
+	require.NoError(t, InitHandler(db))
 }

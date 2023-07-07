@@ -1,6 +1,9 @@
 package datasource
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
@@ -12,8 +15,6 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
-	"path/filepath"
-	"strings"
 )
 
 var exclude = []string{
@@ -40,7 +41,10 @@ var AddCmd = &cli.Command{
 		cmd.Action = func(c *cli.Context) error {
 			datasetName := c.Args().Get(0)
 			path := c.Args().Get(1)
-			db := database.MustOpenFromCLI(c)
+			db, err := database.OpenFromCLI(c)
+			if err != nil {
+				return err
+			}
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
 				return handler.NewBadRequestError(err)

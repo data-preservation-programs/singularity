@@ -11,13 +11,10 @@ var RemoveCmd = &cli.Command{
 	Usage:     "Remove a wallet",
 	ArgsUsage: "<address>",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
-		err := wallet.RemoveHandler(db, c.Args().Get(0))
-
+		db, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
-
-		return nil
+		return wallet.RemoveHandler(db, c.Args().Get(0))
 	},
 }

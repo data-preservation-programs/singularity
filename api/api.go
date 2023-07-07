@@ -3,6 +3,15 @@ package api
 import (
 	"context"
 	"fmt"
+	"io/fs"
+	"net/http"
+	"net/url"
+	"path/filepath"
+	"reflect"
+	"strconv"
+	"time"
+	"unicode"
+
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
@@ -15,14 +24,6 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	fs2 "github.com/rclone/rclone/fs"
 	"github.com/ybbus/jsonrpc/v3"
-	"io/fs"
-	"net/http"
-	"net/url"
-	"path/filepath"
-	"reflect"
-	"strconv"
-	"time"
-	"unicode"
 
 	_ "github.com/data-preservation-programs/singularity/api/docs"
 	"github.com/data-preservation-programs/singularity/cmd/embed"
@@ -154,9 +155,11 @@ func (s Server) pushItem(c echo.Context, sourceID uint32, itemInfo ItemInfo) err
 }
 
 func Run(c *cli.Context) error {
-	db := database.MustOpenFromCLI(c)
-	err := model.AutoMigrate(db)
+	db, err := database.OpenFromCLI(c)
 	if err != nil {
+		return err
+	}
+	if err := model.AutoMigrate(db); err != nil {
 		return handler.NewHandlerError(err)
 	}
 	bind := c.String("bind")

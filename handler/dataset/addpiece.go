@@ -2,9 +2,10 @@ package dataset
 
 import (
 	"bufio"
-	util "github.com/ipfs/go-ipfs-util"
 	"os"
 	"strconv"
+
+	util "github.com/ipfs/go-ipfs-util"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
@@ -84,17 +85,25 @@ func AddPieceHandler(
 		rootCID = request.RootCID
 	}
 
-	car := model.Car{
-		PieceCID:  model.CID(cid.MustParse(request.PieceCID)),
+	pCid, err := cid.Decode(request.PieceCID)
+	if err != nil {
+		return nil, err
+	}
+	rCid, err := cid.Decode(rootCID)
+	if err != nil {
+		return nil, err
+	}
+	mCar := model.Car{
+		PieceCID:  model.CID(pCid),
 		PieceSize: pieceSize,
-		RootCID:   model.CID(cid.MustParse(rootCID)),
+		RootCID:   model.CID(rCid),
 		FilePath:  request.FilePath,
 		DatasetID: dataset.ID,
 	}
 
-	err = database.DoRetry(func() error { return db.Create(&car).Error })
+	err = database.DoRetry(func() error { return db.Create(&mCar).Error })
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
-	return &car, nil
+	return &mCar, nil
 }

@@ -10,7 +10,10 @@ var ResetCmd = &cli.Command{
 	Name:  "reset",
 	Usage: "Reset the database",
 	Action: func(context *cli.Context) error {
-		db := database.MustOpenFromCLI(context)
+		db, err := database.OpenFromCLI(context)
+		if err != nil {
+			return err
+		}
 		return admin.ResetHandler(db)
 	},
 }

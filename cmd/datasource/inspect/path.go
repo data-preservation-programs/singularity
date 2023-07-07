@@ -2,6 +2,7 @@ package inspect
 
 import (
 	"fmt"
+
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
@@ -13,7 +14,10 @@ var PathCmd = &cli.Command{
 	Usage:     "Get details about a path within a data source",
 	ArgsUsage: "<source_id> <path>",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		result, err := inspect.GetPathHandler(
 			db,
 			c.Args().Get(0),

@@ -11,7 +11,10 @@ var ListCmd = &cli.Command{
 	Name:  "list",
 	Usage: "List all deal making schedules",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		schedules, err := schedule.ListHandler(db)
 		if err != nil {
 			return err

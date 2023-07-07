@@ -17,7 +17,10 @@ var ListCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		datasetName := c.String("dataset")
 		sources, err := datasource.ListSourceByDatasetHandler(
 			db,

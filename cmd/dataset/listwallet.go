@@ -12,7 +12,10 @@ var ListWalletCmd = &cli.Command{
 	Usage:     "List all associated wallets with the dataset",
 	ArgsUsage: "DATASET_NAME",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		wallets, err := wallet.ListWalletHandler(db, c.Args().Get(0))
 		if err != nil {
 			return err

@@ -13,7 +13,10 @@ var ImportCmd = &cli.Command{
 	Usage:     "Import a wallet from exported private key",
 	ArgsUsage: "PRIVATE_KEY",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
 		w, err := wallet.ImportHandler(db,

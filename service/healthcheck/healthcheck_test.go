@@ -12,7 +12,8 @@ import (
 
 func TestHealthCheck(t *testing.T) {
 	req := require.New(t)
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	defer database.DropAll(db)
 
 	id := uuid.New()
@@ -23,7 +24,7 @@ func TestHealthCheck(t *testing.T) {
 		}
 	})
 	var worker model.Worker
-	err := db.Where("id = ?", id.String()).First(&worker).Error
+	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
 	req.Equal(model.Packing, worker.WorkType)
 	req.Equal("something", worker.WorkingOn)
