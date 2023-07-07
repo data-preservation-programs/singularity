@@ -73,15 +73,16 @@ var createRequest = CreateRequest{
 }
 
 func TestCreateHandler_DatasetNotFound(t *testing.T) {
-	db := database.OpenInMemory()
-	_, err := CreateHandler(db, context.Background(), getMockLotusClient(), createRequest)
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), createRequest)
 	require.ErrorContains(t, err, "dataset not found")
 }
 
 func TestCreateHandler_InvalidStartDelay(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
 	require.NoError(t, err)
+	require.NoError(t, db.Create(&model.Dataset{Name: "test"}).Error)
 	badRequest := createRequest
 	badRequest.StartDelay = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
@@ -89,9 +90,9 @@ func TestCreateHandler_InvalidStartDelay(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidDuration(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
 	require.NoError(t, err)
+	require.NoError(t, db.Create(&model.Dataset{Name: "test"}).Error)
 	badRequest := createRequest
 	badRequest.Duration = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
@@ -99,9 +100,9 @@ func TestCreateHandler_InvalidDuration(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidScheduleInterval(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
 	require.NoError(t, err)
+	require.NoError(t, db.Create(&model.Dataset{Name: "test"}).Error)
 	badRequest := createRequest
 	badRequest.ScheduleInterval = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
@@ -109,8 +110,9 @@ func TestCreateHandler_InvalidScheduleInterval(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidScheduleDealSize(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.ScheduleDealSize = "One PB"
@@ -119,8 +121,9 @@ func TestCreateHandler_InvalidScheduleDealSize(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidTotalDealSize(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.TotalDealSize = "One PB"
@@ -129,8 +132,9 @@ func TestCreateHandler_InvalidTotalDealSize(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidPendingDealSize(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.MaxPendingDealSize = "One PB"
@@ -139,8 +143,9 @@ func TestCreateHandler_InvalidPendingDealSize(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCID(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.AllowedPieceCIDs = []string{"not a cid"}
@@ -149,8 +154,9 @@ func TestCreateHandler_InvalidAllowedPieceCID_NotCID(t *testing.T) {
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.AllowedPieceCIDs = []string{"bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma"}
@@ -159,16 +165,18 @@ func TestCreateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
 }
 
 func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), createRequest)
 	require.ErrorContains(t, err, "no wallet")
 }
 
 func TestCreateHandler_InvalidProvider(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	err = db.Create(&model.Wallet{ID: "f01"}).Error
 	require.NoError(t, err)
@@ -182,8 +190,9 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 }
 
 func TestCreateHandler_Success(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Dataset{Name: "test"}).Error
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Dataset{Name: "test"}).Error
 	require.NoError(t, err)
 	err = db.Create(&model.Wallet{ID: "f01"}).Error
 	require.NoError(t, err)

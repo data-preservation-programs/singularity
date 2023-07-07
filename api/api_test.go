@@ -16,7 +16,8 @@ import (
 )
 
 func TestHandlePostSource(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/dataset/test/source/local", bytes.NewBuffer([]byte(
 		`{"deleteAfterExport":true,"sourcePath":"/tmp","rescanInterval":"1h","caseInsensitive":"false"}`,
@@ -31,7 +32,7 @@ func TestHandlePostSource(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := db.Create(&model.Dataset{
+	err = db.Create(&model.Dataset{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,
@@ -51,7 +52,8 @@ func TestHandlePostSource(t *testing.T) {
 }
 
 func TestPushItem_InvalidID(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -64,14 +66,15 @@ func TestPushItem_InvalidID(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := server.PushItem(c)
+	err = server.PushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "Invalid source ID")
 }
 
 func TestPushItem_InvalidPayload(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`invalid payload`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -84,14 +87,15 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := server.PushItem(c)
+	err = server.PushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "Syntax error")
 }
 
 func TestPushItem_SourceNotFound(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -104,14 +108,15 @@ func TestPushItem_SourceNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := server.PushItem(c)
+	err = server.PushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "source 1 not found")
 }
 
 func TestPushItem_EntryNotFound(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -124,7 +129,7 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := db.Create(&model.Dataset{
+	err = db.Create(&model.Dataset{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,
@@ -146,7 +151,8 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 }
 
 func TestPushItem_DuplicateItem(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -159,7 +165,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := db.Create(&model.Dataset{
+	err = db.Create(&model.Dataset{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,
@@ -199,7 +205,8 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 }
 
 func TestPushItem(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -212,7 +219,7 @@ func TestPushItem(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err := db.Create(&model.Dataset{
+	err = db.Create(&model.Dataset{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,

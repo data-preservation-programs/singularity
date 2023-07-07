@@ -11,11 +11,13 @@ var RemoveCmd = &cli.Command{
 	Usage:     "Remove a data source",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
-		err := datasource.RemoveSourceHandler(
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
+		return datasource.RemoveSourceHandler(
 			db,
 			c.Args().Get(0),
 		)
-		return err
 	},
 }

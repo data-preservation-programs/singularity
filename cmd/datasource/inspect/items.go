@@ -13,7 +13,10 @@ var ItemsCmd = &cli.Command{
 	ArgsUsage:   "<source_id>",
 	Description: "This command will list all items in a data source. This may be very large list.",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		result, err := inspect.GetSourceItemsHandler(
 			db,
 			c.Args().Get(0),

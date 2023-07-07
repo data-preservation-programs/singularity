@@ -3,6 +3,7 @@ package datasource
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
@@ -14,7 +15,10 @@ var StatusCmd = &cli.Command{
 	Usage:     "Get the data preparation summary of a data source",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		result, err := datasource.GetSourceStatusHandler(
 			db,
 			c.Args().Get(0),

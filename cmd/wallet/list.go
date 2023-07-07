@@ -11,10 +11,13 @@ var ListCmd = &cli.Command{
 	Name:  "list",
 	Usage: "List all imported wallets",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
-		wallets, err2 := wallet.ListHandler(db)
-		if err2 != nil {
-			return err2
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
+		wallets, err := wallet.ListHandler(db)
+		if err != nil {
+			return err
 		}
 
 		cliutil.PrintToConsole(wallets, c.Bool("json"), nil)
