@@ -1,7 +1,8 @@
 package device
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"time"
 
 	logging "github.com/ipfs/go-log/v2"
@@ -13,25 +14,26 @@ import (
 var deviceCache = ttlcache.New[string, *disk.UsageStat](
 	ttlcache.WithTTL[string, *disk.UsageStat](time.Hour))
 
-func getRandomStringByWeight(pathMap map[string]uint64) string {
+func getRandomStringByWeight(pathMap map[string]uint64) (string, error) {
 	var totalWeight uint64
 	for _, weight := range pathMap {
 		totalWeight += weight
 	}
 
-	//nolint:gosec
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	randWeight := rng.Intn(int(totalWeight))
+	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(totalWeight)))
+	if err != nil {
+		return "", err
+	}
+	randWeight := int(randomPick.Int64())
 
 	var currentWeight uint64
 	for path, weight := range pathMap {
 		currentWeight += weight
 		if randWeight <= int(currentWeight) {
-			return path
+			return path, nil
 		}
 	}
-
-	return ""
+	return "", nil
 }
 
 func getUsage(path string) (*disk.UsageStat, error) {
@@ -68,5 +70,5 @@ func GetPathWithMostSpace(paths []string) (string, error) {
 	}
 
 	// Get a random path from the list of paths with the most space
-	return getRandomStringByWeight(pathMap), nil
+	return getRandomStringByWeight(pathMap)
 }

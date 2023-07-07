@@ -2,7 +2,8 @@ package replication
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -34,10 +35,11 @@ func (w DefaultWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 		return model.Wallet{}, ErrNoWallet
 	}
 
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	//nolint:gosec
-	randomIndex := rng.Intn(len(wallets))
-	chosenWallet := wallets[randomIndex]
+	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(wallets))))
+	if err != nil {
+		return model.Wallet{}, err
+	}
+	chosenWallet := wallets[randomPick.Int64()]
 	return chosenWallet, nil
 }
 
@@ -114,9 +116,10 @@ func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 		return model.Wallet{}, ErrNoDatacap
 	}
 
-	//nolint:gosec
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	randomIndex := rng.Intn(len(wallets))
-	chosenWallet := wallets[randomIndex]
+	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(wallets))))
+	if err != nil {
+		return model.Wallet{}, err
+	}
+	chosenWallet := wallets[randomPick.Int64()]
 	return chosenWallet, nil
 }
