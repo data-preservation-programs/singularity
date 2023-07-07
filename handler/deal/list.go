@@ -8,10 +8,10 @@ import (
 )
 
 type ListDealRequest struct {
-	Datasets  []string `json:"datasets"`
-	Schedules []uint32 `json:"schedules"`
-	Providers []string `json:"providers"`
-	States    []string `json:"states"`
+	Datasets  []string `json:"datasets"`  // dataset name filter
+	Schedules []uint32 `json:"schedules"` // schedule id filter
+	Providers []string `json:"providers"` // provider filter
+	States    []string `json:"states"`    // state filter
 }
 
 // ListHandler godoc
@@ -42,7 +42,7 @@ func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	}
 
 	if len(request.Providers) > 0 {
-		statement = statement.Where("provider_id IN ?", request.Providers)
+		statement = statement.Where("provider IN ?", request.Providers)
 	}
 
 	if len(request.States) > 0 {
