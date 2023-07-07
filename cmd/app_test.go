@@ -4,8 +4,20 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"filippo.io/age"
+	"crypto/rand"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"filippo.io/age"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/pack"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
@@ -25,17 +37,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
-	"io"
-	"math/rand"
-	"net/http"
-	"os"
-	"os/exec"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
-	"testing"
-	"time"
 )
 
 func generateRandomBytes(n int) []byte {
@@ -127,6 +128,7 @@ func listDirsFromRootNode(t *testing.T, dagServ format.DAGService, path string, 
 	rootDir, err := uio.NewDirectoryFromNode(dagServ, rootNode)
 	assert.NoError(t, err)
 	links, err := rootDir.Links(ctx)
+	assert.NoError(t, err)
 	return underscore.Map(links, func(link *format.Link) string {
 		return link.Name
 	})
@@ -410,7 +412,7 @@ func TestWalletCrud(t *testing.T) {
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		assert.NoError(t, err)
 		assert.Contains(t, out, "f01074655")
-		out, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f01074655")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f01074655")
 		assert.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		assert.NoError(t, err)
@@ -451,13 +453,13 @@ func TestDatasetAddPiece(t *testing.T) {
 		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -r %s test %s %d",
 			root.String(), commp, 1048576))
 		assert.NoError(t, err)
-		out, _, err = RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset list-pieces test")
 		assert.NoError(t, err)
 		// Add as unknown root
 		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece test %s %d",
 			commp, 1048576))
 		assert.NoError(t, err)
-		out, _, err = RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset list-pieces test")
 		assert.NoError(t, err)
 	})
 }
@@ -509,7 +511,7 @@ func TestDatasourceCrud(t *testing.T) {
 		out, _, err = RunArgsInTest(ctx, "singularity datasource list --dataset test")
 		assert.NoError(t, err)
 		assert.Contains(t, out, temp)
-		out, _, err = RunArgsInTest(ctx, "singularity datasource list --dataset notexist")
+		_, _, err = RunArgsInTest(ctx, "singularity datasource list --dataset notexist")
 		assert.Error(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity datasource check 1")
 		assert.NoError(t, err)
@@ -521,7 +523,7 @@ func TestDatasourceCrud(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Contains(t, out, "case_sensitive:true")
 		assert.Contains(t, out, "3600")
-		out, _, err = RunArgsInTest(ctx, "singularity datasource remove 1")
+		_, _, err = RunArgsInTest(ctx, "singularity datasource remove 1")
 		assert.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity datasource list")
 		assert.NoError(t, err)
@@ -623,12 +625,16 @@ func TestDatasourcePacking(t *testing.T) {
 		assert.True(t, slices.Contains(entries, "0"))
 		assert.True(t, slices.Contains(entries, "999"))
 		content, err = os.ReadFile(temp + "/2/test2.txt")
+		assert.NoError(t, err)
 		assert.Equal(t, content, getFileFromRootNode(t, dagServ, "2/test2.txt", rootCID))
 		content, err = os.ReadFile(temp + "/sub1/sub2/sub3/sub4/test2.txt")
+		assert.NoError(t, err)
 		assert.Equal(t, content, getFileFromRootNode(t, dagServ, "sub1/sub2/sub3/sub4/test2.txt", rootCID))
 		content, err = os.ReadFile(temp + "/test1.txt")
+		assert.NoError(t, err)
 		assert.Equal(t, content, getFileFromRootNode(t, dagServ, "test1.txt", rootCID))
 		content, err = os.ReadFile(temp + "/test2.txt")
+		assert.NoError(t, err)
 		assert.Equal(t, content, getFileFromRootNode(t, dagServ, "test2.txt", rootCID))
 	})
 }
@@ -670,9 +676,11 @@ func TestDatasourceRescan(t *testing.T) {
 		assert.Contains(t, out, "baf")
 		assert.Contains(t, out, "baga")
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect items 1")
+		assert.NoError(t, err)
 		assert.Contains(t, out, "baf")
 		assert.Contains(t, out, "test5.txt")
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect chunkdetail 1")
+		assert.NoError(t, err)
 		assert.Contains(t, out, "sub/test1.txt")
 		assert.Contains(t, out, "sub/test3.txt")
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect path 1")

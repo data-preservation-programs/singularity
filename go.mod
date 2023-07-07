@@ -44,6 +44,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiformats/go-multiaddr v0.9.0
 	github.com/multiformats/go-varint v0.0.7
+	github.com/parnurzeal/gorequest v0.2.16
 	github.com/pkg/errors v0.9.1
 	github.com/rclone/rclone v1.62.2
 	github.com/rjNemo/underscore v0.5.0
@@ -101,6 +102,7 @@ require (
 	github.com/drand/kyber-bls12381 v0.2.1 // indirect
 	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.5 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
+	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
@@ -218,7 +220,6 @@ require (
 	github.com/opencontainers/runtime-spec v1.0.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/oracle/oci-go-sdk/v65 v65.32.0 // indirect
-	github.com/parnurzeal/gorequest v0.2.16 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
