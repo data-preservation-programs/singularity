@@ -102,7 +102,7 @@ func CreateHandler(
 	}
 	pendingDealSize, err := humanize.ParseBytes(request.MaxPendingDealSize)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid max pending deal size")
+		return nil, handler.NewBadRequestString("invalid pending deal size")
 	}
 	for _, pieceCID := range request.AllowedPieceCIDs {
 		parsed, err := cid.Parse(pieceCID)
