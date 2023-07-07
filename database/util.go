@@ -2,6 +2,9 @@ package database
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/avast/retry-go"
 	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
@@ -9,8 +12,6 @@ import (
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
-	"strings"
-	"time"
 )
 
 func retryOn(err error) bool {
@@ -69,28 +70,19 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 	}
 }
 
-func MustOpenFromCLI(c *cli.Context) *gorm.DB {
+func OpenFromCLI(c *cli.Context) (*gorm.DB, error) {
 	connString := c.String("database-connection-string")
 	logger.Debug("Opening database: ", connString)
 	gormLogger := databaseLogger{
 		level:  logger2.Info,
 		logger: logger,
 	}
-	db, err := Open(connString, &gorm.Config{
+	return Open(connString, &gorm.Config{
 		Logger: &gormLogger,
 	})
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	if err != nil {
-		logger.Panic(err)
-	}
-
-	return db
 }
 
-func OpenInMemory() *gorm.DB {
+func OpenInMemory() (*gorm.DB, error) {
 	gormLogger := &databaseLogger{
 		level:  logger2.Info,
 		logger: logger,
@@ -99,19 +91,22 @@ func OpenInMemory() *gorm.DB {
 		Logger: gormLogger,
 	})
 	if err != nil {
-		logger.Panic(err)
+		logger.Error(err)
+		return nil, err
 	}
 
 	err = model.DropAll(db)
 	if err != nil {
-		logger.Panic(err)
+		logger.Error(err)
+		return nil, err
 	}
 	err = model.AutoMigrate(db)
 	if err != nil {
-		logger.Panic(err)
+		logger.Error(err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }
 
 func DropAll(db *gorm.DB) error {

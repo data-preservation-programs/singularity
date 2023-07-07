@@ -12,7 +12,10 @@ var PauseCmd = &cli.Command{
 	Usage:     "Pause a specific schedule",
 	ArgsUsage: "SCHEDULE_ID",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		schedule, err := schedule.PauseHandler(db, c.Args().Get(0))
 		if err != nil {
 			return err

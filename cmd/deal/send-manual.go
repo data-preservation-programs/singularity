@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal"
@@ -134,7 +135,10 @@ var SendManualCmd = &cli.Command{
 			FileSize:        cctx.Uint64("file-size"),
 		}
 		timeout := cctx.Duration("timeout")
-		db := database.MustOpenFromCLI(cctx)
+		db, err := database.OpenFromCLI(cctx)
+		if err != nil {
+			return err
+		}
 		ctx, cancel := context.WithTimeout(cctx.Context, timeout)
 		defer cancel()
 		h, err := util.InitHost(nil)

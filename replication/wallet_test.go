@@ -42,7 +42,8 @@ func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRe
 }
 
 func TestDatacapWalletChooser_Choose(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	lotusClient := new(MockRPCClient)
 
 	// Set up the test data
@@ -78,7 +79,7 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 	chooser := NewDatacapWalletChooser(db, time.Minute, "lotusAPI", "lotusToken", 900001)
 	chooser.lotusClient = lotusClient
 
-	err := db.Create(&wallets).Error
+	err = db.Create(&wallets).Error
 	require.NoError(t, err)
 	err = db.Create(&model.Deal{
 		ClientID:  "3",

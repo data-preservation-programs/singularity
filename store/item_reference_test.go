@@ -30,7 +30,8 @@ func TestItemReferenceBlockStore(t *testing.T) {
 	require.NoError(t, err)
 
 	// Initialize a new in-memory SQLite database for testing
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	defer database.DropAll(db)
 
 	// Create a new instance of the CarReferenceBlockStore

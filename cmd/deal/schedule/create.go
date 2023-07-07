@@ -2,15 +2,18 @@ package schedule
 
 import (
 	"bufio"
+	"os"
+	"regexp"
+
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
-	"os"
-	"regexp"
 )
+
+var re = regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
 
 var CreateCmd = &cli.Command{
 	Name:      "create",
@@ -155,7 +158,10 @@ var CreateCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		cids := map[string]struct{}{}
 		for _, f := range c.StringSlice("allowed-piece-cid-file") {
 			cidsFromFile, err := readCIDsFromFile(f)
@@ -214,7 +220,6 @@ func readCIDsFromFile(f string) ([]string, error) {
 		return nil, errors.Wrap(err, "failed to open file")
 	}
 	defer file.Close()
-	re := regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {

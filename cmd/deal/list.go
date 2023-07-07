@@ -29,7 +29,10 @@ var ListCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		deals, err := deal.ListHandler(db, deal.ListDealRequest{})
 		if err != nil {
 			return err

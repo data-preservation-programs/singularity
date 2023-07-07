@@ -2,6 +2,12 @@ package service
 
 import (
 	"context"
+	"math"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
@@ -14,11 +20,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
-	"math"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 type DealMakerService struct {
@@ -207,8 +208,8 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 			ClientID:   walletObj.ID,
 			Provider:   schedule.Provider,
 			ProposalID: proposalID,
-			Label:      cid.MustParse(cid.Cid(car.RootCID)).String(),
-			PieceCID:   cid.MustParse(cid.Cid(car.PieceCID)).String(),
+			Label:      cid.Cid(car.RootCID).String(),
+			PieceCID:   cid.Cid(car.PieceCID).String(),
 			PieceSize:  car.PieceSize,
 			//Start:      now.Add(schedule.StartDelay),
 			//Duration:   schedule.Duration,

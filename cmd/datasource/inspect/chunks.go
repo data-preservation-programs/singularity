@@ -2,6 +2,7 @@ package inspect
 
 import (
 	"fmt"
+
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
@@ -14,7 +15,10 @@ var ChunksCmd = &cli.Command{
 	Usage:     "Get all chunk details of a data source",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
+		db, err := database.OpenFromCLI(c)
+		if err != nil {
+			return err
+		}
 		result, err := inspect.GetSourceChunksHandler(
 			db,
 			c.Args().Get(0),

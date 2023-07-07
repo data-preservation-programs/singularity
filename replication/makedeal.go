@@ -5,6 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
@@ -25,8 +28,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"golang.org/x/exp/slices"
-	"strings"
-	"time"
 )
 
 const (
@@ -336,7 +337,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		return "", errors.Wrap(err, "failed to parse provider address")
 	}
 
-	label, err := proposal110.NewLabelFromString(cid.MustParse(cid.Cid(car.RootCID)).String())
+	label, err := proposal110.NewLabelFromString(cid.Cid(car.RootCID).String())
 	if err != nil {
 		return "", errors.Wrap(err, "failed to parse label")
 	}
@@ -361,7 +362,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	endEpoch := TimeToEpoch(now.Add(dealConfig.StartDelay + dealConfig.Duration))
 	price := dealConfig.GetPrice(car.PieceSize, dealConfig.Duration)
 	verified := dealConfig.Verified
-	pieceCID := cid.MustParse(cid.Cid(car.PieceCID))
+	pieceCID := cid.Cid(car.PieceCID)
 	pieceSize := abi.PaddedPieceSize(car.PieceSize)
 	collateral, err := d.getMinCollateral(ctx, car.PieceSize, verified)
 	if err != nil {
@@ -396,7 +397,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	if slices.Contains(protocols, StorageProposalV120) {
 		dealID := uuid.New()
-		resp, err := d.makeDeal120(ctx, deal, dealID, dealConfig, car.FileSize, cid.MustParse(cid.Cid(car.RootCID)), addrInfo)
+		resp, err := d.makeDeal120(ctx, deal, dealID, dealConfig, car.FileSize, cid.Cid(car.RootCID), addrInfo)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to make deal")
 		}
@@ -406,7 +407,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 		return "", errors.Errorf("deal rejected: %s", resp.Message)
 	} else if slices.Contains(protocols, StorageProposalV111) {
-		resp, err := d.makeDeal111(ctx, deal, dealConfig, cid.MustParse(cid.Cid(car.RootCID)), addrInfo)
+		resp, err := d.makeDeal111(ctx, deal, dealConfig, cid.Cid(car.RootCID), addrInfo)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to make deal")
 		}

@@ -1,12 +1,13 @@
 package run
 
 import (
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/dealtracker"
 	"github.com/urfave/cli/v2"
-	"time"
 )
 
 var DealTrackerCmd = &cli.Command{
@@ -27,9 +28,11 @@ var DealTrackerCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db := database.MustOpenFromCLI(c)
-		err := model.AutoMigrate(db)
+		db, err := database.OpenFromCLI(c)
 		if err != nil {
+			return err
+		}
+		if err := model.AutoMigrate(db); err != nil {
 			return handler.NewHandlerError(err)
 		}
 

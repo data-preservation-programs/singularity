@@ -23,7 +23,10 @@ import (
 
 func Migrate(cctx *cli.Context) error {
 	logger := log.Logger("cli")
-	db := database.MustOpenFromCLI(cctx)
+	db, err := database.OpenFromCLI(cctx)
+	if err != nil {
+		return err
+	}
 	ctx := context.TODO()
 	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(cctx.String("mongo-connection-string")))
 	if err != nil {

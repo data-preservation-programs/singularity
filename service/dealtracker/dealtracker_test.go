@@ -97,7 +97,8 @@ func TestTrackDeal(t *testing.T) {
 }
 
 func TestShouldTrackDeal(t *testing.T) {
-	db := database.OpenInMemory()
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
 	tracker := NewDealTracker(db, time.Second, "", "", "")
 	should, err := tracker.shouldTrackDeal(context.Background())
 	require.NoError(t, err)
@@ -115,8 +116,9 @@ func TestShouldTrackDeal(t *testing.T) {
 }
 
 func TestRunOnce(t *testing.T) {
-	db := database.OpenInMemory()
-	err := db.Create(&model.Wallet{
+	db, err := database.OpenInMemory()
+	require.NoError(t, err)
+	err = db.Create(&model.Wallet{
 		ID:      "t0100",
 		Address: "t3xxx",
 	}).Error
