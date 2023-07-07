@@ -1,16 +1,17 @@
 package healthcheck
 
 import (
+	"testing"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
-	"testing"
 )
 
 func TestHealthCheck(t *testing.T) {
-	assert := assert.New(t)
+	req := require.New(t)
 	db := database.OpenInMemory()
 	defer database.DropAll(db)
 
@@ -23,10 +24,10 @@ func TestHealthCheck(t *testing.T) {
 	})
 	var worker model.Worker
 	err := db.Where("id = ?", id.String()).First(&worker).Error
-	assert.Nil(err)
-	assert.Equal(model.Packing, worker.WorkType)
-	assert.Equal("something", worker.WorkingOn)
-	assert.NotEmpty(worker.Hostname)
+	req.Nil(err)
+	req.Equal(model.Packing, worker.WorkType)
+	req.Equal("something", worker.WorkingOn)
+	req.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
 	HealthCheck(db, id, func() State {
@@ -36,15 +37,15 @@ func TestHealthCheck(t *testing.T) {
 		}
 	})
 	err = db.Where("id = ?", id.String()).First(&worker).Error
-	assert.Nil(err)
-	assert.Equal(model.Packing, worker.WorkType)
-	assert.Equal("something else", worker.WorkingOn)
-	assert.NotEmpty(worker.Hostname)
-	assert.NotEqual(lastHeatbeat, worker.LastHeartbeat)
+	req.Nil(err)
+	req.Equal(model.Packing, worker.WorkType)
+	req.Equal("something else", worker.WorkingOn)
+	req.NotEmpty(worker.Hostname)
+	req.NotEqual(lastHeatbeat, worker.LastHeartbeat)
 
 	HealthCheckCleanup(db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
-	assert.Nil(err)
+	req.Nil(err)
 
 	oldThreshold := staleThreshold
 	staleThreshold = 0
@@ -54,5 +55,5 @@ func TestHealthCheck(t *testing.T) {
 
 	HealthCheckCleanup(db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
-	assert.ErrorIs(err, gorm.ErrRecordNotFound)
+	req.ErrorIs(err, gorm.ErrRecordNotFound)
 }

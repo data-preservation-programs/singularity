@@ -3,15 +3,16 @@ package dealtracker
 import (
 	"context"
 	"encoding/json"
-	"github.com/bcicen/jstream"
-	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
-	"github.com/klauspost/compress/zstd"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/bcicen/jstream"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/klauspost/compress/zstd"
+	"github.com/stretchr/testify/require"
 )
 
 type Closer interface {
@@ -25,7 +26,7 @@ func setupTestServer(t *testing.T) (string, Closer) {
 func setupTestServerWithBody(t *testing.T, b string) (string, Closer) {
 	body := []byte(b)
 	encoder, err := zstd.NewWriter(nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	compressed := encoder.EncodeAll(body, make([]byte, 0, len(body)))
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -39,20 +40,20 @@ func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	url, server := setupTestServer(t)
 	defer server.Close()
 	req, err := http.NewRequest("GET", url, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	depth := 1
 	stream, closer, err := DealStateStreamFromHTTPRequest(req, depth, true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer closer.Close()
 	var kvs []jstream.KV
 	for s := range stream {
 		pair, ok := s.Value.(jstream.KV)
-		assert.True(t, ok)
+		require.True(t, ok)
 		kvs = append(kvs, pair)
 	}
-	assert.Len(t, kvs, 1)
-	assert.Equal(t, "0", kvs[0].Key)
-	assert.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
+	require.Len(t, kvs, 1)
+	require.Equal(t, "0", kvs[0].Key)
+	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
 		kvs[0].Value.(map[string]interface{})["Proposal"].(map[string]interface{})["Label"].(string))
 }
 
@@ -64,20 +65,20 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 	}))
 	defer server.Close()
 	req, err := http.NewRequest("GET", server.URL, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	depth := 2
 	stream, closer, err := DealStateStreamFromHTTPRequest(req, depth, false)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer closer.Close()
 	var kvs []jstream.KV
 	for s := range stream {
 		pair, ok := s.Value.(jstream.KV)
-		assert.True(t, ok)
+		require.True(t, ok)
 		kvs = append(kvs, pair)
 	}
-	assert.Len(t, kvs, 1)
-	assert.Equal(t, "0", kvs[0].Key)
-	assert.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
+	require.Len(t, kvs, 1)
+	require.Equal(t, "0", kvs[0].Key)
+	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
 		kvs[0].Value.(map[string]interface{})["Proposal"].(map[string]interface{})["Label"].(string))
 }
 
@@ -91,26 +92,26 @@ func TestTrackDeal(t *testing.T) {
 		return nil
 	}
 	err := tracker.trackDeal(context.Background(), callback)
-	assert.NoError(t, err)
-	assert.Len(t, deals, 1)
+	require.NoError(t, err)
+	require.Len(t, deals, 1)
 }
 
 func TestShouldTrackDeal(t *testing.T) {
 	db := database.OpenInMemory()
 	tracker := NewDealTracker(db, time.Second, "", "", "")
 	should, err := tracker.shouldTrackDeal(context.Background())
-	assert.NoError(t, err)
-	assert.True(t, should)
+	require.NoError(t, err)
+	require.True(t, should)
 	should, err = tracker.shouldTrackDeal(context.Background())
-	assert.NoError(t, err)
-	assert.False(t, should)
+	require.NoError(t, err)
+	require.False(t, should)
 	time.Sleep(time.Second)
 	should, err = tracker.shouldTrackDeal(context.Background())
-	assert.NoError(t, err)
-	assert.True(t, should)
+	require.NoError(t, err)
+	require.True(t, should)
 	should, err = tracker.shouldTrackDeal(context.Background())
-	assert.NoError(t, err)
-	assert.False(t, should)
+	require.NoError(t, err)
+	require.False(t, should)
 }
 
 func TestRunOnce(t *testing.T) {
@@ -119,7 +120,7 @@ func TestRunOnce(t *testing.T) {
 		ID:      "t0100",
 		Address: "t3xxx",
 	}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	d1 := uint64(1)
 	d2 := uint64(2)
 	d4 := uint64(4)
@@ -208,7 +209,7 @@ func TestRunOnce(t *testing.T) {
 			Verified:         true,
 		},
 	}).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Deal 1 : Active -> Slashed
 	// Deal 2 : Published -> Active
@@ -293,19 +294,19 @@ func TestRunOnce(t *testing.T) {
 	body, err := json.Marshal(deals)
 	url, server := setupTestServerWithBody(t, string(body))
 	defer server.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tracker := NewDealTracker(db, time.Minute, url, "", "")
 	err = tracker.runOnce(context.Background())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var allDeals []model.Deal
 	err = db.Find(&allDeals).Error
-	assert.NoError(t, err)
-	assert.Len(t, allDeals, 7)
-	assert.Equal(t, model.DealSlashed, allDeals[0].State)
-	assert.Equal(t, model.DealActive, allDeals[1].State)
-	assert.Equal(t, model.DealPublished, allDeals[2].State)
-	assert.Equal(t, model.DealExpired, allDeals[3].State)
-	assert.Equal(t, model.DealExpired, allDeals[4].State)
-	assert.Equal(t, model.DealExpired, allDeals[5].State)
-	assert.Equal(t, model.DealActive, allDeals[6].State)
+	require.NoError(t, err)
+	require.Len(t, allDeals, 7)
+	require.Equal(t, model.DealSlashed, allDeals[0].State)
+	require.Equal(t, model.DealActive, allDeals[1].State)
+	require.Equal(t, model.DealPublished, allDeals[2].State)
+	require.Equal(t, model.DealExpired, allDeals[3].State)
+	require.Equal(t, model.DealExpired, allDeals[4].State)
+	require.Equal(t, model.DealExpired, allDeals[5].State)
+	require.Equal(t, model.DealActive, allDeals[6].State)
 }
