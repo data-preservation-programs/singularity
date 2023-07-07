@@ -22,7 +22,7 @@ var AddRemoteCmd = &cli.Command{
 			LotusToken: c.String("lotus-token"),
 		})
 		if err2 != nil {
-			return err2.CliError()
+			return err2
 		}
 
 		cliutil.PrintToConsole(w, c.Bool("json"), nil)

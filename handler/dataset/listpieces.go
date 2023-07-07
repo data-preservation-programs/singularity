@@ -20,7 +20,7 @@ import (
 func ListPiecesHandler(
 	db *gorm.DB,
 	datasetName string,
-) ([]model.Car, *handler.Error) {
+) ([]model.Car, error) {
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}

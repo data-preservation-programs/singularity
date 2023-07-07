@@ -18,7 +18,7 @@ import (
 func RemoveHandler(
 	db *gorm.DB,
 	address string,
-) *handler.Error {
+) error {
 	err := database.DoRetry(func() error { return db.Where("address = ? OR id = ?", address, address).Delete(&model.Wallet{}).Error })
 	if err != nil {
 		return handler.NewHandlerError(err)

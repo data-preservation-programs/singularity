@@ -47,7 +47,7 @@ type CreateRequest struct {
 func CreateHandler(
 	db *gorm.DB,
 	request CreateRequest,
-) (*model.Schedule, *handler.Error) {
+) (*model.Schedule, error) {
 	dataset, err := database.FindDatasetByName(db, request.DatasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewBadRequestString("dataset not found")

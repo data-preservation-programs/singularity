@@ -34,7 +34,7 @@ func UpdateSourceHandler(
 	ctx context.Context,
 	id string,
 	config Config,
-) (*model.Source, *handler.Error) {
+) (*model.Source, error) {
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {

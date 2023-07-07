@@ -14,7 +14,7 @@ var RemoveWalletCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		err := wallet.RemoveWalletHandler(db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		return nil
 	},

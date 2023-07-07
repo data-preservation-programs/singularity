@@ -22,7 +22,7 @@ func AddWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
-) (*model.WalletAssignment, *handler.Error) {
+) (*model.WalletAssignment, error) {
 	if datasetName == "" {
 		return nil, handler.NewBadRequestString("dataset name is required")
 	}

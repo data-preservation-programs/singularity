@@ -24,7 +24,7 @@ var CheckCmd = &cli.Command{
 			},
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(entries, c.Bool("json"), nil)

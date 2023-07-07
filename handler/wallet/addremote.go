@@ -31,7 +31,7 @@ type AddRemoteRequest struct {
 func AddRemoteHandler(
 	db *gorm.DB,
 	request AddRemoteRequest,
-) (*model.Wallet, *handler.Error) {
+) (*model.Wallet, error) {
 	address.CurrentNetwork = address.Mainnet
 	addr, err := address.NewFromString(request.Address)
 	if err != nil {

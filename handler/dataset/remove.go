@@ -18,7 +18,7 @@ import (
 func RemoveHandler(
 	db *gorm.DB,
 	datasetName string,
-) *handler.Error {
+) error {
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
 		return handler.NewBadRequestString("failed to find dataset: " + err.Error())

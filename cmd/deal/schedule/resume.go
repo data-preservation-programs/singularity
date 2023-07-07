@@ -15,7 +15,7 @@ var ResumeCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		schedule, err := schedule.ResumeHandler(db, c.Args().Get(0))
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
 		return nil

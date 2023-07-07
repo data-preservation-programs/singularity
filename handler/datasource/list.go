@@ -10,7 +10,7 @@ import (
 func ListSourceByDatasetHandler(
 	db *gorm.DB,
 	datasetName string,
-) ([]model.Source, *handler.Error) {
+) ([]model.Source, error) {
 	var sources []model.Source
 	if datasetName == "" {
 		err := db.Find(&sources).Error
@@ -41,6 +41,6 @@ func ListSourceByDatasetHandler(
 // @Router /source [get]
 func ListSourceHandler(
 	db *gorm.DB,
-) ([]model.Source, *handler.Error) {
+) ([]model.Source, error) {
 	return ListSourceByDatasetHandler(db, "")
 }

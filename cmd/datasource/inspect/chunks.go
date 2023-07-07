@@ -20,7 +20,7 @@ var ChunksCmd = &cli.Command{
 			c.Args().Get(0),
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		if c.Bool("json") {

@@ -20,7 +20,7 @@ import (
 func RescanSourceHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Source, *handler.Error) {
+) (*model.Source, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

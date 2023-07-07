@@ -184,7 +184,7 @@ var CreateCmd = &cli.Command{
 		}
 		schedule, err := schedule.CreateHandler(db, request)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)

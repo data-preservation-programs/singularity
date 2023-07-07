@@ -15,12 +15,12 @@ import (
 type SpadeAPI struct {
 	db            *gorm.DB
 	logger        *log.ZapEventLogger
-	dealMaker     replication.DealMaker
+	dealMaker     replication.DealMakerImpl
 	walletChooser replication.WalletChooser
 	bind          string
 }
 
-func NewSpadeAPIService(db *gorm.DB, dealMaker replication.DealMaker, walletChooser replication.WalletChooser, bind string) *SpadeAPI {
+func NewSpadeAPIService(db *gorm.DB, dealMaker replication.DealMakerImpl, walletChooser replication.WalletChooser, bind string) *SpadeAPI {
 	return &SpadeAPI{
 		db:            db,
 		logger:        log.Logger("spade-api"),

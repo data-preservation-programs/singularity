@@ -13,7 +13,7 @@ import (
 // @Success 204
 // @Failure 500 {object} handler.HTTPError
 // @Router /admin/reset [post]
-func ResetHandler(db *gorm.DB) *handler.Error {
+func ResetHandler(db *gorm.DB) error {
 	err := model.DropAll(db)
 	if err != nil {
 		return handler.NewHandlerError(err)

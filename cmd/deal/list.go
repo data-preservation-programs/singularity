@@ -32,7 +32,7 @@ var ListCmd = &cli.Command{
 		db := database.MustOpenFromCLI(c)
 		deals, err := deal.ListHandler(db, deal.ListDealRequest{})
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 		cliutil.PrintToConsole(deals, c.Bool("json"), nil)
 		return nil

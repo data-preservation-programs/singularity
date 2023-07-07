@@ -16,6 +16,6 @@ var RemoveCmd = &cli.Command{
 			db,
 			c.Args().Get(0),
 		)
-		return err.CliError()
+		return err
 	},
 }

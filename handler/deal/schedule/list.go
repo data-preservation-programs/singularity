@@ -16,7 +16,7 @@ import (
 // @Router /deal/schedules [get]
 func ListHandler(
 	db *gorm.DB,
-) ([]model.Schedule, *handler.Error) {
+) ([]model.Schedule, error) {
 	var schedules []model.Schedule
 	err := db.Find(&schedules).Error
 	if err != nil {

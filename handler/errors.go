@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
 	"net/http"
 )
 
@@ -30,14 +29,6 @@ func (e *Error) HTTPResponse(c echo.Context) error {
 
 func (e *Error) Error() string {
 	return e.Err.Error()
-}
-
-func (e *Error) CliError() error {
-	if e == nil {
-		return nil
-	}
-
-	return cli.Exit(e.Error(), 1)
 }
 
 func NewBadRequestError(err error) *Error {

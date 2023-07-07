@@ -40,7 +40,7 @@ func CheckSourceHandler(
 	ctx context.Context,
 	id string,
 	request CheckSourceRequest,
-) ([]Entry, *handler.Error) {
+) ([]Entry, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

@@ -19,7 +19,7 @@ var ItemsCmd = &cli.Command{
 			c.Args().Get(0),
 		)
 		if err != nil {
-			return err.CliError()
+			return err
 		}
 
 		cliutil.PrintToConsole(result, c.Bool("json"), nil)

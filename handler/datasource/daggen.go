@@ -8,10 +8,19 @@ import (
 	"strconv"
 )
 
+// DagGenHandler godoc
+// @Summary Mark a source as ready for DAG generation
+// @Tags Data Source
+// @Produce json
+// @Param id path string true "Source ID"
+// @Success 200 {object} model.Source
+// @Failure 400 {object} handler.HTTPError
+// @Failure 500 {object} handler.HTTPError
+// @Router /source/{id}/daggen [post]
 func DagGenHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Source, *handler.Error) {
+) (*model.Source, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

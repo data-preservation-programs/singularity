@@ -36,7 +36,7 @@ type SourceStatus struct {
 func GetSourceStatusHandler(
 	db *gorm.DB,
 	id string,
-) (*SourceStatus, *handler.Error) {
+) (*SourceStatus, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid source id")

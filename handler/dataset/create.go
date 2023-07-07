@@ -23,7 +23,7 @@ type CreateRequest struct {
 	EncryptionScript     string   `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
 
-func parseCreateRequest(request CreateRequest) (*model.Dataset, *handler.Error) {
+func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid value for max-size: " + err.Error())
@@ -97,7 +97,7 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, *handler.Error) 
 func CreateHandler(
 	db *gorm.DB,
 	request CreateRequest,
-) (*model.Dataset, *handler.Error) {
+) (*model.Dataset, error) {
 	logger := log.Logger("cli")
 	if request.Name == "" {
 		return nil, handler.NewBadRequestString("name is required")

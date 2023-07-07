@@ -55,7 +55,11 @@ type DealProviderCollateralBound struct {
 	Max string
 }
 
-type DealMaker struct {
+type DealMaker interface {
+	MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig DealConfig) (string, error)
+}
+
+type DealMakerImpl struct {
 	lotusClient     jsonrpc.RPCClient
 	host            host.Host
 	requestTimeout  time.Duration
@@ -64,11 +68,19 @@ type DealMaker struct {
 	collateralCache *ttlcache.Cache[string, big.Int]
 }
 
+func (d DealMakerImpl) Close() error {
+	if d.host != nil {
+		return d.host.Close()
+	}
+
+	return nil
+}
+
 func NewDealMaker(lotusURL string,
 	lotusToken string,
 	libp2p host.Host,
 	cacheTTL time.Duration,
-	requestTimeout time.Duration) DealMaker {
+	requestTimeout time.Duration) DealMakerImpl {
 	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
 	minerInfoCache := ttlcache.New[string, *MinerInfo](
 		ttlcache.WithTTL[string, *MinerInfo](cacheTTL),
@@ -80,7 +92,7 @@ func NewDealMaker(lotusURL string,
 		ttlcache.WithTTL[string, big.Int](cacheTTL),
 		ttlcache.WithDisableTouchOnHit[string, big.Int]())
 
-	return DealMaker{
+	return DealMakerImpl{
 		lotusClient:     lotusClient,
 		requestTimeout:  requestTimeout,
 		host:            libp2p,
@@ -90,7 +102,7 @@ func NewDealMaker(lotusURL string,
 	}
 }
 
-func (d DealMaker) getProviderInfo(ctx context.Context, provider string) (*MinerInfo, error) {
+func (d DealMakerImpl) getProviderInfo(ctx context.Context, provider string) (*MinerInfo, error) {
 	item := d.minerInfoCache.Get(provider)
 	if item != nil && !item.IsExpired() {
 		return item.Value(), nil
@@ -122,7 +134,7 @@ func (d DealMaker) getProviderInfo(ctx context.Context, provider string) (*Miner
 	return minerInfo, nil
 }
 
-func (d DealMaker) getProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([]protocol.ID, error) {
+func (d DealMakerImpl) getProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([]protocol.ID, error) {
 	item := d.protocolsCache.Get(minerInfo.ID)
 	if item != nil && !item.IsExpired() {
 		return item.Value(), nil
@@ -142,7 +154,7 @@ func (d DealMaker) getProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([
 	return protocols, nil
 }
 
-func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize int64, verified bool) (big.Int, error) {
+func (d DealMakerImpl) getMinCollateral(ctx context.Context, pieceSize int64, verified bool) (big.Int, error) {
 	item := d.collateralCache.Get(fmt.Sprintf("%d-%t", pieceSize, verified))
 	if item != nil && !item.IsExpired() {
 		return item.Value(), nil
@@ -162,7 +174,7 @@ func (d DealMaker) getMinCollateral(ctx context.Context, pieceSize int64, verifi
 	return value, nil
 }
 
-func (d DealMaker) makeDeal120(
+func (d DealMakerImpl) makeDeal120(
 	ctx context.Context,
 	deal proposal110.ClientDealProposal,
 	dealID uuid.UUID,
@@ -238,7 +250,7 @@ func (d DealMaker) makeDeal120(
 	return &resp, nil
 }
 
-func (d DealMaker) makeDeal111(
+func (d DealMakerImpl) makeDeal111(
 	ctx context.Context,
 	deal proposal110.ClientDealProposal,
 	dealConfig DealConfig,
@@ -305,13 +317,13 @@ type DealConfig struct {
 func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 	gb := float64(pieceSize) / 1e9
 	epoch := duration.Minutes() * 2
-	p1 := big.NewIntUnsigned(uint64(d.PricePerDeal * 1e18 / gb / epoch))
-	p2 := big.NewIntUnsigned(uint64(d.PricePerGB * 1e18 / gb))
-	p3 := big.NewIntUnsigned(uint64(d.PricePerGBEpoch * 1e18))
+	p1 := big.NewIntUnsigned(uint64(d.PricePerGBEpoch * 1e18 * gb * epoch))
+	p2 := big.NewIntUnsigned(uint64(d.PricePerGB * 1e18 * gb))
+	p3 := big.NewIntUnsigned(uint64(d.PricePerDeal * 1e18))
 	return big.Max(big.Max(p1, p2), p3)
 }
 
-func (d DealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet,
+func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	car model.Car, dealConfig DealConfig) (string, error) {
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)

@@ -20,7 +20,7 @@ import (
 func RemoveSourceHandler(
 	db *gorm.DB,
 	id string,
-) *handler.Error {
+) error {
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
