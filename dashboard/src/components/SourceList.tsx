@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import { Button } from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import './SourceList.css';
 
 interface Source {

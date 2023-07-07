@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"io"
+
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	blocks "github.com/ipfs/go-block-format"
@@ -9,7 +11,6 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"io"
 )
 
 type ItemReferenceBlockStore struct {

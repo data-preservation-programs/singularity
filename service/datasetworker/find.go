@@ -1,10 +1,11 @@
 package datasetworker
 
 import (
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
-	"time"
 )
 
 func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {

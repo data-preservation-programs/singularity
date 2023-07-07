@@ -2,9 +2,10 @@ package datasource
 
 import (
 	"context"
+	"io"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rclone/rclone/fs"
-	"io"
 )
 
 // Entry is a struct that represents a single item during a data source scan

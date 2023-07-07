@@ -1,9 +1,10 @@
 package encryption
 
 import (
+	"io"
+
 	"filippo.io/age"
 	"github.com/pkg/errors"
-	"io"
 )
 
 // AgeEncryptor implements the Encryptor interface using age

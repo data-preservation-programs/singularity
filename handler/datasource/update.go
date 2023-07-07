@@ -2,6 +2,11 @@ package datasource
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+	"unicode"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
@@ -10,10 +15,6 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
-	"strconv"
-	"strings"
-	"time"
-	"unicode"
 )
 
 type Config map[string]interface{}

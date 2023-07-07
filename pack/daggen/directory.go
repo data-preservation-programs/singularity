@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"io"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	blocks "github.com/ipfs/go-block-format"
@@ -18,7 +20,6 @@ import (
 	"github.com/ipld/go-car/util"
 	"github.com/klauspost/compress/zstd"
 	"github.com/pkg/errors"
-	"io"
 )
 
 var encoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))

@@ -2,14 +2,15 @@ package healthcheck
 
 import (
 	"context"
+	"os"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"os"
-	"time"
 )
 
 var staleThreshold = time.Minute * 5

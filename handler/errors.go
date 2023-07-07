@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 type Error struct {

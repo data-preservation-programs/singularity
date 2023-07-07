@@ -1,11 +1,12 @@
 package encryption
 
 import (
+	"io"
+	"os/exec"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/shlex"
 	"github.com/pkg/errors"
-	"io"
-	"os/exec"
 )
 
 // Encryptor is an interface that defines the methods required to encrypt data in a resumable way.

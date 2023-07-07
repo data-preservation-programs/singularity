@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/data-preservation-programs/singularity/cmd"
-	log2 "github.com/ipfs/go-log/v2"
 	"log"
 	"os"
+
+	"github.com/data-preservation-programs/singularity/cmd"
+	log2 "github.com/ipfs/go-log/v2"
 
 	_ "github.com/joho/godotenv/autoload"
 )

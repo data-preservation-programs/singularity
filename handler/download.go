@@ -2,6 +2,13 @@ package handler
 
 import (
 	"context"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/store"
@@ -9,12 +16,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-	"sync"
 )
 
 func DownloadHandler(ctx context.Context,

@@ -2,6 +2,8 @@ package datasetworker
 
 import (
 	"context"
+	"strings"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
@@ -12,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
-	"strings"
 )
 
 func (w *DatasetWorkerThread) pack(

@@ -1,10 +1,11 @@
 package dataset
 
 import (
-	"github.com/data-preservation-programs/singularity/database"
-	"github.com/pkg/errors"
 	"os"
 	"path/filepath"
+
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import {Breadcrumb, Table, Offcanvas, Button} from 'react-bootstrap';
+import {Breadcrumb, Button, Offcanvas, Table} from 'react-bootstrap';
 import './DatasetExplorer.css';
 
 

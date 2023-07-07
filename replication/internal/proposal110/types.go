@@ -1,11 +1,12 @@
 package proposal110
 
 import (
+	"unicode/utf8"
+
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/xerrors"
-	"unicode/utf8"
 
 	addr "github.com/filecoin-project/go-address"
 )

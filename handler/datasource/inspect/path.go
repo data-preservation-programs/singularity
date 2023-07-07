@@ -1,13 +1,14 @@
 package inspect
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
-	"strconv"
-	"strings"
 )
 
 type DirDetail struct {

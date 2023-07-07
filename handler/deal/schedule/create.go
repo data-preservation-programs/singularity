@@ -2,6 +2,9 @@ package schedule
 
 import (
 	"context"
+	"strconv"
+	"time"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -10,8 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
-	"strconv"
-	"time"
 )
 
 //nolint:lll

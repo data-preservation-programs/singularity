@@ -3,12 +3,13 @@ package cliutil
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/rodaine/table"
-	"golang.org/x/exp/slices"
 	"os"
 	"reflect"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
+	"golang.org/x/exp/slices"
 )
 
 func PrintAsJSON(obj interface{}) {
