@@ -359,6 +359,18 @@ func TestRunAPI(t *testing.T) {
 		assert.Len(t, errs, 0)
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		assert.Contains(t, body, `client address not found`)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal/list").Send(`{}`).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `[`)
+	})
+}
+
+func TestListDeals(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, _, err := RunArgsInTest(ctx, "singularity deal list --dataset test --schedule 1 --provider f01 --state active")
+		assert.NoError(t, err)
 	})
 }
 
