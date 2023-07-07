@@ -4,6 +4,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,13 +14,16 @@ var ImportCmd = &cli.Command{
 	ArgsUsage: "PRIVATE_KEY",
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
-		w, err2 := wallet.ImportHandler(db, wallet.ImportRequest{
-			PrivateKey: c.Args().Get(0),
-			LotusAPI:   c.String("lotus-api"),
-			LotusToken: c.String("lotus-token"),
-		})
-		if err2 != nil {
-			return err2
+
+		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
+		w, err := wallet.ImportHandler(db,
+			c.Context,
+			lotusClient,
+			wallet.ImportRequest{
+				PrivateKey: c.Args().Get(0),
+			})
+		if err != nil {
+			return err
 		}
 
 		cliutil.PrintToConsole(w, c.Bool("json"), nil)

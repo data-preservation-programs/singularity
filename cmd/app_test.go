@@ -5,7 +5,9 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"io"
 	"net/http"
 	"os"
@@ -288,6 +290,23 @@ func TestRunAPI(t *testing.T) {
 			assert.Equal(t, ``, body)
 		}()
 
+		createSchedule := schedule.CreateRequest{
+			DatasetName:        "test",
+			Provider:           "f022352",
+			StartDelay:         "24h",
+			Duration:           "2400h",
+			ScheduleInterval:   "1h",
+			ScheduleDealSize:   "1P",
+			TotalDealSize:      "1P",
+			MaxPendingDealSize: "1P",
+		}
+		createScheduleBody, err := json.Marshal(createSchedule)
+		assert.NoError(t, err)
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal/schedule").Send(string(createScheduleBody)).End()
+		assert.Len(t, errs, 0)
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Contains(t, body, `"id": 1`)
+
 		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/local/dataset/test").
 			Send(`{"sourcePath":"/tmp","caseInsensitive":"false","deleteAfterExport":false,"rescanInterval":"1h"}`).End()
 		assert.Len(t, errs, 0)
@@ -386,6 +405,19 @@ func TestResetDatabase(t *testing.T) {
 func TestInitDatabase(t *testing.T) {
 	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, _, err := RunArgsInTest(ctx, "singularity admin init")
+		assert.NoError(t, err)
+	})
+}
+
+func TestDealScheduleCrud(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity wallet add-remote f1l2cc5vuw5moppwsjd3b7cjtwa2exowqo36esklq 12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f02170643")
+		assert.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity deal schedule create test f022352")
 		assert.NoError(t, err)
 	})
 }

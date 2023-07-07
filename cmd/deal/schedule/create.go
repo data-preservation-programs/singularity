@@ -5,6 +5,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -30,10 +31,21 @@ var CreateCmd = &cli.Command{
 			Value:    "",
 		},
 		&cli.Float64Flag{
-			Name:     "price",
+			Name:     "price-per-gb-epoch",
 			Category: "Deal Proposal",
-			Aliases:  []string{"p"},
-			Usage:    "Price per 32GiB Deal over whole duration in Fil",
+			Usage:    "Price in FIL per GiB per epoch",
+			Value:    0,
+		},
+		&cli.Float64Flag{
+			Name:     "price-per-gb",
+			Category: "Deal Proposal",
+			Usage:    "Price in FIL  per GiB",
+			Value:    0,
+		},
+		&cli.Float64Flag{
+			Name:     "price-per-deal",
+			Category: "Deal Proposal",
+			Usage:    "Price in FIL per deal",
 			Value:    0,
 		},
 		&cli.BoolFlag{
@@ -166,13 +178,15 @@ var CreateCmd = &cli.Command{
 			Provider:             c.Args().Get(1),
 			HTTPHeaders:          c.StringSlice("http-header"),
 			URLTemplate:          c.String("url-template"),
-			Price:                c.Float64("price"),
+			PricePerGBEpoch:      c.Float64("price-per-gb-epoch"),
+			PricePerGB:           c.Float64("price-per-gb"),
+			PricePerDeal:         c.Float64("price-per-deal"),
 			Verified:             c.Bool("verified"),
 			IPNI:                 c.Bool("ipni"),
 			KeepUnsealed:         c.Bool("keep-unsealed"),
-			ScheduleInterval:     c.Duration("schedule-interval"),
-			StartDelayDays:       c.Float64("start-delay"),
-			DurationDays:         c.Float64("duration"),
+			ScheduleInterval:     c.String("schedule-interval"),
+			StartDelay:           c.String("start-delay"),
+			Duration:             c.String("duration"),
 			ScheduleDealNumber:   c.Int("schedule-deal-number"),
 			TotalDealNumber:      c.Int("total-deal-number"),
 			ScheduleDealSize:     c.String("schedule-deal-size"),
@@ -182,7 +196,8 @@ var CreateCmd = &cli.Command{
 			MaxPendingDealNumber: c.Int("max-pending-deal-number"),
 			AllowedPieceCIDs:     allowedPieceCIDs,
 		}
-		schedule, err := schedule.CreateHandler(db, request)
+		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
+		schedule, err := schedule.CreateHandler(db, c.Context, lotusClient, request)
 		if err != nil {
 			return err
 		}

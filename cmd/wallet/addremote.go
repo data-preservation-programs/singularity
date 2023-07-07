@@ -4,6 +4,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,12 +16,14 @@ var AddRemoteCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db := database.MustOpenFromCLI(c)
 
-		w, err2 := wallet.AddRemoteHandler(db, wallet.AddRemoteRequest{
-			Address:    c.Args().Get(0),
-			RemotePeer: c.Args().Get(1),
-			LotusAPI:   c.String("lotus-api"),
-			LotusToken: c.String("lotus-token"),
-		})
+		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
+		w, err2 := wallet.AddRemoteHandler(db,
+			c.Context,
+			lotusClient,
+			wallet.AddRemoteRequest{
+				Address:    c.Args().Get(0),
+				RemotePeer: c.Args().Get(1),
+			})
 		if err2 != nil {
 			return err2
 		}
