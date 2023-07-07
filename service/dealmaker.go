@@ -192,9 +192,9 @@ func (w *DealMakerWorker) runOnce(ctx context.Context, schedule model.Schedule) 
 				URLTemplate:     schedule.URLTemplate,
 				KeepUnsealed:    schedule.KeepUnsealed,
 				AnnounceToIPNI:  schedule.AnnounceToIPNI,
-				PricePerDeal:    schedule.Price,
-				PricePerGB:      schedule.Price,
-				PricePerGBEpoch: schedule.Price,
+				PricePerDeal:    schedule.PricePerDeal,
+				PricePerGB:      schedule.PricePerGB,
+				PricePerGBEpoch: schedule.PricePerGBEpoch,
 			})
 		if err != nil {
 			w.logger.Errorw("failed to make deal", "error", err)

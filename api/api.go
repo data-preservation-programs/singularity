@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/data-preservation-programs/singularity/util"
 	fs2 "github.com/rclone/rclone/fs"
+	"github.com/ybbus/jsonrpc/v3"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -43,8 +44,7 @@ type Server struct {
 	db                        *gorm.DB
 	bind                      string
 	datasourceHandlerResolver datasource.HandlerResolver
-	lotusAPI                  string
-	lotusToken                string
+	lotusClient               jsonrpc.RPCClient
 	dealMaker                 replication.DealMaker
 }
 
@@ -170,8 +170,7 @@ func Run(c *cli.Context) error {
 
 	return Server{db: db, bind: bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
-		lotusAPI:                  lotusAPI,
-		lotusToken:                lotusToken,
+		lotusClient:               util.NewLotusClient(lotusAPI, lotusToken),
 		dealMaker: replication.NewDealMaker(
 			lotusAPI,
 			lotusToken,
@@ -204,6 +203,10 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
 				continue
 			}
+			if paramType.String() == "jsonrpc.RPCClient" {
+				inputParams = append(inputParams, reflect.ValueOf(s.lotusClient))
+				continue
+			}
 			if paramType.Kind() == reflect.String {
 				if j >= len(c.ParamValues()) {
 					logger.Error("Invalid handler function signature.")
@@ -225,16 +228,6 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 			}
 			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Failed to bind request body.")
-			}
-			if bodyParam.Kind() == reflect.Struct {
-				lotusAPIField := bodyParam.FieldByName("LotusAPI")
-				if lotusAPIField.IsValid() {
-					lotusAPIField.SetString(s.lotusAPI)
-				}
-				lotusTokenField := bodyParam.FieldByName("LotusToken")
-				if lotusTokenField.IsValid() {
-					lotusTokenField.SetString(s.lotusToken)
-				}
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
@@ -437,9 +430,9 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 	// Deal
 	e.POST("/api/deal/send_manual", s.SendManualHandler)
+	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
 
 	// Pending test
-	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
 	e.GET("/api/deal/schedules", s.toEchoHandler(schedule.ListHandler))
 	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
 	e.POST("/api/deal/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))

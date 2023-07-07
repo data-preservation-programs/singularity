@@ -82,7 +82,9 @@ type Schedule struct {
 	URLTemplate             string        `json:"urlTemplate"`
 	HTTPHeaders             []string      `gorm:"type:JSON"                                                 json:"httpHeaders"`
 	Provider                string        `json:"provider"`
-	Price                   float64       `json:"price"`
+	PricePerGBEpoch         float64       `json:"pricePerGbEpoch"`
+	PricePerGB              float64       `json:"pricePerGb"`
+	PricePerDeal            float64       `json:"pricePerDeal"`
 	TotalDealNumber         int           `json:"totalDealNumber"`
 	TotalDealSize           int64         `json:"totalDealSize"`
 	Verified                bool          `json:"verified"`
@@ -102,24 +104,6 @@ type Schedule struct {
 	Notes                   string        `json:"notes"`
 	ErrorMessage            string        `json:"errorMessage"`
 	AllowedPieceCIDs        StringSlice   `json:"allowedPieceCids"`
-}
-
-func (s Schedule) Equal(other Schedule) bool {
-	return s.DatasetID == other.DatasetID &&
-		s.URLTemplate == other.URLTemplate &&
-		s.Provider == other.Provider &&
-		s.Price == other.Price &&
-		s.TotalDealNumber == other.TotalDealNumber &&
-		s.TotalDealSize == other.TotalDealSize &&
-		s.Verified == other.Verified &&
-		s.StartDelay == other.StartDelay &&
-		s.Duration == other.Duration &&
-		s.ScheduleIntervalSeconds == other.ScheduleIntervalSeconds &&
-		s.ScheduleDealNumber == other.ScheduleDealNumber &&
-		s.ScheduleDealSize == other.ScheduleDealSize &&
-		s.MaxPendingDealNumber == other.MaxPendingDealNumber &&
-		s.MaxPendingDealSize == other.MaxPendingDealSize &&
-		s.State == other.State
 }
 
 type Wallet struct {

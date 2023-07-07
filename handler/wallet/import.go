@@ -4,16 +4,14 @@ import (
 	"context"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
 type ImportRequest struct {
 	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
-	LotusAPI   string `json:"lotusApi"   swaggerignore:"true"`
-	LotusToken string `json:"lotusToken" swaggerignore:"true"`
 }
 
 // ImportHandler godoc
@@ -28,6 +26,8 @@ type ImportRequest struct {
 // @Router /wallet [post]
 func ImportHandler(
 	db *gorm.DB,
+	ctx context.Context,
+	lotusClient jsonrpc.RPCClient,
 	request ImportRequest,
 ) (*model.Wallet, error) {
 	address.CurrentNetwork = address.Mainnet
@@ -36,9 +36,8 @@ func ImportHandler(
 		return nil, handler.NewBadRequestString("invalid private key")
 	}
 
-	lotusClient := util.NewLotusClient(request.LotusAPI, request.LotusToken)
 	var result string
-	err = lotusClient.CallFor(context.Background(), &result, "Filecoin.StateLookupID", addr.String(), nil)
+	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid private key")
 	}
