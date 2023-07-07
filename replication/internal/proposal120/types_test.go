@@ -2,26 +2,29 @@ package proposal120
 
 import (
 	"bytes"
+	"math/big"
+	"testing"
+
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
-	"github.com/stretchr/testify/assert"
-	"math/big"
-	"testing"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProposalMarshalCBOR(t *testing.T) {
-	pieceCID := cid.MustParse("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")
+	pieceCID, err := cid.Decode("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")
+	require.NoError(t, err)
 	client, err := address.NewFromString("f01000")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	provider, err := address.NewFromString("f01001")
-	assert.NoError(t, err)
-	rootCID := cid.MustParse("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	require.NoError(t, err)
+	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	require.NoError(t, err)
 	label, err := proposal110.NewLabelFromString("hello")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	proposal_110 := proposal110.ClientDealProposal{
 		Proposal: proposal110.DealProposal{
 			PieceCID:     pieceCID,
@@ -63,9 +66,9 @@ func TestProposalMarshalCBOR(t *testing.T) {
 	}
 	buf := bytes.NewBuffer([]byte{})
 	err = proposal.MarshalCBOR(buf)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	unmarshalled := DealParams{}
 	err = unmarshalled.UnmarshalCBOR(buf)
-	assert.NoError(t, err)
-	assert.Equal(t, proposal, unmarshalled)
+	require.NoError(t, err)
+	require.Equal(t, proposal, unmarshalled)
 }

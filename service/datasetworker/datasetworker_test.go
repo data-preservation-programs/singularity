@@ -10,7 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDatasetWorkerRun(t *testing.T) {
@@ -22,22 +22,22 @@ func TestDatasetWorkerRun(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	err := worker.Run(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestDatasetWorkerThread_pack(t *testing.T) {
 	temp := t.TempDir()
 	file, err := os.Create(temp + "/test.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = file.WriteString("test")
-	assert.NoError(t, err)
-	assert.NoError(t, file.Close())
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
 	file, err = os.Create(temp + "/test2.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = file.WriteString("test2")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = file.Close()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	db := database.OpenInMemory()
 	thread := DatasetWorkerThread{
 		id:                        uuid.New(),
@@ -60,7 +60,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		OutputDirs: []string{temp},
 	}
 	err = db.Create(&dataset).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	source := model.Source{
 		DatasetID:         dataset.ID,
 		ScanningState:     model.Complete,
@@ -69,13 +69,13 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		DeleteAfterExport: true,
 	}
 	err = db.Create(&source).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	source.Dataset = &dataset
 	root := model.Directory{
 		SourceID: source.ID,
 	}
 	err = db.Create(&root).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	stat1, _ := os.Stat(temp + "/test.txt")
 	stat2, _ := os.Stat(temp + "/test2.txt")
 	item2 := &model.Item{
@@ -86,7 +86,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		LastModifiedTimestampNano: stat2.ModTime().UTC().UnixNano(),
 	}
 	err = db.Create(item2).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	chunk := model.Chunk{
 		SourceID: source.ID,
 		ItemParts: []model.ItemPart{
@@ -104,7 +104,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		},
 	}
 	err = db.Create(&chunk).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	parts := []model.ItemPart{{
 		ItemID:  item2.ID,
 		Offset:  0,
@@ -117,48 +117,48 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		ChunkID: &chunk.ID,
 	}}
 	err = db.Create(&parts).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	chunk.Source = &source
 	err = db.Preload("ItemParts.Item").Find(&chunk).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = thread.pack(context.TODO(), chunk)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var cars []model.Car
 	err = db.Find(&cars).Error
-	assert.NoError(t, err)
-	assert.Greater(t, cars[0].PieceSize, int64(0))
-	assert.Equal(t, *cars[0].ChunkID, chunk.ID)
-	assert.NotEmpty(t, cars[0].FilePath)
+	require.NoError(t, err)
+	require.Greater(t, cars[0].PieceSize, int64(0))
+	require.Equal(t, *cars[0].ChunkID, chunk.ID)
+	require.NotEmpty(t, cars[0].FilePath)
 	var chunks []model.Chunk
 	err = db.Find(&chunks).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var items []model.Item
 	err = db.Find(&items).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	for _, item := range items {
-		assert.NotEqual(t, item.CID.String(), "")
+		require.NotEqual(t, item.CID.String(), "")
 	}
 	var itemParts []model.ItemPart
 	err = db.Find(&itemParts).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	for _, itemPart := range itemParts {
-		assert.NotEqual(t, itemPart.CID.String(), "")
+		require.NotEqual(t, itemPart.CID.String(), "")
 	}
 	var dirs []model.Directory
 	err = db.Find(&dirs).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	for _, dir := range dirs {
-		assert.NotEqual(t, dir.CID.String(), "")
+		require.NotEqual(t, dir.CID.String(), "")
 	}
 	var carBlocks []model.CarBlock
 	err = db.Find(&carBlocks).Error
-	assert.NoError(t, err)
-	assert.Len(t, carBlocks, 3)
+	require.NoError(t, err)
+	require.Len(t, carBlocks, 3)
 
 	_, err = os.Stat(temp + "/test.txt")
-	assert.True(t, os.IsNotExist(err))
+	require.True(t, os.IsNotExist(err))
 	_, err = os.Stat(temp + "/test2.txt")
-	assert.True(t, os.IsNotExist(err))
+	require.True(t, os.IsNotExist(err))
 }
 
 func TestDatasetWorkerThread_scan(t *testing.T) {
@@ -184,7 +184,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 		MaxSize: 1024,
 	}
 	err := db.Create(&dataset).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	cmd, _ := os.Getwd()
 	source := model.Source{
 		DatasetID:     dataset.ID,
@@ -193,27 +193,27 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 		Path:          cmd,
 	}
 	err = db.Create(&source).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	source.Dataset = &dataset
 	root := model.Directory{
 		SourceID: source.ID,
 	}
 	err = db.Create(&root).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = thread.scan(ctx, source, true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dirs []model.Directory
 	err = db.Find(&dirs).Error
-	assert.NoError(t, err)
-	assert.Greater(t, len(dirs), 0)
+	require.NoError(t, err)
+	require.Greater(t, len(dirs), 0)
 	var items []model.Item
 	err = db.Find(&items).Error
-	assert.NoError(t, err)
-	assert.Greater(t, len(items), 0)
+	require.NoError(t, err)
+	require.Greater(t, len(items), 0)
 	var itemparts []model.ItemPart
 	err = db.Find(&itemparts).Error
-	assert.NoError(t, err)
-	assert.Greater(t, len(itemparts), 0)
+	require.NoError(t, err)
+	require.Greater(t, len(itemparts), 0)
 }
 
 func TestDatasetWorkerThread_findPackWork(t *testing.T) {
@@ -236,23 +236,23 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		ID: thread.id.String(),
 	}
 	err := db.Create(&worker).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	dataset := model.Dataset{
 		Name: "test",
 	}
 	err = db.Create(&dataset).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	source := model.Source{
 		DatasetID:     dataset.ID,
 		ScanningState: model.Complete,
 	}
 	err = db.Create(&source).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	root := model.Directory{
 		SourceID: source.ID,
 	}
 	err = db.Create(&root).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	items := []model.Item{
 		{
 			SourceID: source.ID,
@@ -262,7 +262,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		},
 	}
 	err = db.Create(&items).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	itemParts := []model.ItemPart{
 		{
 			ItemID: items[0].ID,
@@ -275,7 +275,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		},
 	}
 	err = db.Create(&itemParts).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	chunks := map[*model.Chunk]bool{
 		{
 			PackingState: model.Ready,
@@ -293,28 +293,28 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	for chunk, shouldBeFound := range chunks {
 		err := db.Where("1 = 1").Delete(&model.Chunk{}).Error
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		chunk.SourceID = source.ID
 		err = db.Create(chunk).Error
 		for _, itemPart := range itemParts {
 			itemPart.ChunkID = &chunk.ID
 			err = db.Save(&itemPart).Error
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		}
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		ck, err := thread.findPackWork()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		if shouldBeFound {
-			assert.NotNil(t, ck)
-			assert.NotNil(t, ck.Source)
-			assert.NotNil(t, ck.Source.Dataset)
-			assert.NotNil(t, ck.ItemParts)
-			assert.NotNil(t, ck.ItemParts[0].Item)
+			require.NotNil(t, ck)
+			require.NotNil(t, ck.Source)
+			require.NotNil(t, ck.Source.Dataset)
+			require.NotNil(t, ck.ItemParts)
+			require.NotNil(t, ck.ItemParts[0].Item)
 		} else {
-			assert.Nil(t, ck)
+			require.Nil(t, ck)
 		}
 		err = db.Where("1 = 1").Delete(&model.Chunk{}).Error
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 }
 
@@ -338,12 +338,12 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		ID: thread.id.String(),
 	}
 	err := db.Create(&worker).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	dataset := model.Dataset{
 		Name: "test",
 	}
 	err = db.Create(&dataset).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	sources := map[*model.Source]bool{
 		// data source that is ready to be scanned
 		{
@@ -384,23 +384,23 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 	}
 	for source, shouldBeFound := range sources {
 		err := db.Where("1 = 1").Delete(&model.Source{}).Error
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		source.DatasetID = dataset.ID
 		err = db.Create(source).Error
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		root := model.Directory{
 			SourceID: source.ID,
 		}
 		err = db.Create(&root).Error
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		src, err := thread.findScanWork()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		if shouldBeFound {
-			assert.NotNil(t, src)
-			assert.NotNil(t, src.Dataset)
-			assert.NotNil(t, src.RootDirectory)
+			require.NotNil(t, src)
+			require.NotNil(t, src.Dataset)
+			require.NotNil(t, src.RootDirectory)
 		} else {
-			assert.Nil(t, src)
+			require.Nil(t, src)
 		}
 	}
 }

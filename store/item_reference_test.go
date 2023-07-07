@@ -4,15 +4,15 @@ package store
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
+	"testing"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
-	"os"
-	"testing"
 )
 
 func TestItemReferenceBlockStore(t *testing.T) {
@@ -39,7 +39,7 @@ func TestItemReferenceBlockStore(t *testing.T) {
 	source := model.Source{
 		Type: model.Local,
 	}
-	assert.NoError(t, db.Create(&source).Error)
+	require.NoError(t, db.Create(&source).Error)
 
 	item := model.Item{
 		SourceID: source.ID,
@@ -49,23 +49,24 @@ func TestItemReferenceBlockStore(t *testing.T) {
 		Offset:   0,
 		Length:   11,
 	}
-	assert.NoError(t, db.Create(&item).Error)
+	require.NoError(t, db.Create(&item).Error)
 
-	c := cid.MustParse("bafy2bzaceajbdbdel5jjeehkborcsrub5cyrq4om3ee5umomqd323ynkpyjh4")
+	c := cid.Decode("bafy2bzaceajbdbdel5jjeehkborcsrub5cyrq4om3ee5umomqd323ynkpyjh4")
+	require.NoError(t, err)
 	// Test Has method with a non-existent CID
 	has, err := store.Has(context.Background(), c)
-	assert.NoError(t, err)
-	assert.False(t, has)
+	require.NoError(t, err)
+	require.False(t, has)
 
 	// Test Get method with a non-existent CID
 	_, err = store.Get(context.Background(), c)
-	assert.Error(t, err)
-	assert.ErrorContains(t, err, "could not find")
+	require.Error(t, err)
+	require.ErrorContains(t, err, "could not find")
 
 	// Test GetSize method with a non-existent CID
 	_, err = store.GetSize(context.Background(), c)
-	assert.Error(t, err)
-	assert.ErrorContains(t, err, "could not find")
+	require.Error(t, err)
+	require.ErrorContains(t, err, "could not find")
 
 	// Create a new CarBlock record in the database referencing the CID of the test data
 	cb := model.ItemBlock{
@@ -79,11 +80,11 @@ func TestItemReferenceBlockStore(t *testing.T) {
 
 	// Test GetSize method with an existing CID
 	size, err := store.GetSize(context.Background(), c)
-	assert.NoError(t, err)
-	assert.Equal(t, 5, size)
+	require.NoError(t, err)
+	require.Equal(t, 5, size)
 
 	// Test Get method with an existing CID
 	block, err := store.Get(context.Background(), c)
-	assert.NoError(t, err)
-	assert.Equal(t, " worl", string(block.RawData()))
+	require.NoError(t, err)
+	require.Equal(t, " worl", string(block.RawData()))
 }

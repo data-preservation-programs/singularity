@@ -1,15 +1,14 @@
 package device
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetPathWithMostSpace(t *testing.T) {
-	assert := assert.New(t)
-
 	paths := []string{"/", "/tmp", "/var"}
 	path, err := GetPathWithMostSpace(paths)
-	assert.NoError(err)
-	assert.NotEmpty(path)
+	require.NoError(t, err)
+	require.NotEmpty(t, path)
 }

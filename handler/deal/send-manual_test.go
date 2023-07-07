@@ -2,12 +2,13 @@ package deal
 
 import (
 	"context"
+	"testing"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
+	"github.com/stretchr/testify/require"
 )
 
 type MockDealMaker struct {
@@ -43,13 +44,13 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
 	_, err = SendManualHandler(db, ctx, proposal, mockDealMaker)
-	assert.ErrorContains(t, err, "client address not found")
+	require.ErrorContains(t, err, "client address not found")
 }
 
 func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
@@ -60,7 +61,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -68,7 +69,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceCID = "bad"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "invalid piece CID")
+	require.ErrorContains(t, err, "invalid piece CID")
 }
 
 func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
@@ -79,7 +80,7 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -87,7 +88,7 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceCID = proposal.RootCID
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "piece CID must be commp")
+	require.ErrorContains(t, err, "piece CID must be commp")
 }
 
 func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
@@ -98,7 +99,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -106,7 +107,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceSize = "aaa"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "invalid piece size")
+	require.ErrorContains(t, err, "invalid piece size")
 }
 
 func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
@@ -117,7 +118,7 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -125,7 +126,7 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceSize = "31GiB"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "piece size must be a power of 2")
+	require.ErrorContains(t, err, "piece size must be a power of 2")
 }
 
 func TestSendManualHandler_InvalidRootCID(t *testing.T) {
@@ -136,7 +137,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -144,7 +145,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 	badProposal := proposal
 	badProposal.RootCID = "xxxx"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "invalid root CID")
+	require.ErrorContains(t, err, "invalid root CID")
 }
 
 func TestSendManualHandler_InvalidDuration(t *testing.T) {
@@ -155,7 +156,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -163,7 +164,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 	badProposal := proposal
 	badProposal.Duration = "xxxx"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "invalid duration")
+	require.ErrorContains(t, err, "invalid duration")
 }
 
 func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
@@ -174,7 +175,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
@@ -182,7 +183,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 	badProposal := proposal
 	badProposal.StartDelay = "xxxx"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
-	assert.ErrorContains(t, err, "invalid start delay")
+	require.ErrorContains(t, err, "invalid start delay")
 }
 
 func TestSendManualHandler(t *testing.T) {
@@ -193,12 +194,12 @@ func TestSendManualHandler(t *testing.T) {
 
 	db := database.OpenInMemory()
 	err := db.Create(&wallet).Error
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
 	resp, err := SendManualHandler(db, ctx, proposal, mockDealMaker)
-	assert.NoError(t, err)
-	assert.Equal(t, "dealID", resp)
+	require.NoError(t, err)
+	require.Equal(t, "dealID", resp)
 }
