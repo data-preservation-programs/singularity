@@ -23,7 +23,14 @@ type AddPieceRequest struct {
 	RootCID   string `json:"rootCid"`   // Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
 }
 
-// AddPieceHandler godoc
+func AddPieceHandler(
+	db *gorm.DB,
+	datasetName string,
+	request AddPieceRequest,
+) (*model.Car, error) {
+	return addPieceHandler(db, datasetName, request)
+}
+
 // @Summary Manually register a piece (CAR file) with the dataset for deal making purpose
 // @Tags Dataset
 // @Produce json
@@ -34,7 +41,7 @@ type AddPieceRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName}/piece [post]
-func AddPieceHandler(
+func addPieceHandler(
 	db *gorm.DB,
 	datasetName string,
 	request AddPieceRequest,

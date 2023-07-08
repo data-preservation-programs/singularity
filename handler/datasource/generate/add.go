@@ -38,7 +38,6 @@ type {{.Name}} struct {
 `
 
 const handlerTemplate = `
-// {{.FuncName}} godoc
 // @Summary Add {{.Name}} source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -147,7 +146,7 @@ func main() {
 		}
 
 		fobj := Func{
-			FuncName:   "Handle" + capitalizeFirst(cmd.Name),
+			FuncName:   "handle" + capitalizeFirst(cmd.Name),
 			Name:       cmd.Name,
 			StructName: capitalizeFirst(cmd.Name) + "Request",
 		}

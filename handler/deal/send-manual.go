@@ -47,7 +47,15 @@ func argToDuration(s string) (time.Duration, error) {
 	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
-// SendManualHandler godoc
+func SendManualHandler(
+	db *gorm.DB,
+	ctx context.Context,
+	request Proposal,
+	dealMaker replication.DealMaker,
+) (string, error) {
+	return sendManualHandler(db, ctx, request, dealMaker)
+}
+
 // @Summary Send a manual deal proposal
 // @Description Send a manual deal proposal
 // @Tags Deal
@@ -58,7 +66,7 @@ func argToDuration(s string) (time.Duration, error) {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/send_manual [post]
-func SendManualHandler(
+func sendManualHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	request Proposal,

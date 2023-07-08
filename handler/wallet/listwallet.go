@@ -7,7 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// ListWalletHandler godoc
+func ListWalletHandler(
+	db *gorm.DB,
+	datasetName string,
+) ([]model.Wallet, error) {
+	return listWalletHandler(db, datasetName)
+}
+
 // @Summary List all wallets of a dataset.
 // @Tags Wallet
 // @Produce json
@@ -16,7 +22,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName}/wallet [get]
-func ListWalletHandler(
+func listWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Wallet, error) {

@@ -9,7 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// DagGenHandler godoc
+func DagGenHandler(
+	db *gorm.DB,
+	id string,
+) (*model.Source, error) {
+	return dagGenHandler(db, id)
+}
+
 // @Summary Mark a source as ready for DAG generation
 // @Tags Data Source
 // @Produce json
@@ -18,7 +24,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/daggen [post]
-func DagGenHandler(
+func dagGenHandler(
 	db *gorm.DB,
 	id string,
 ) (*model.Source, error) {

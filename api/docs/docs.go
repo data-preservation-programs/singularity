@@ -10,7 +10,14 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Xinan Xu",
+            "url": "https://github.com/data-preservation-programs/singularity/issues"
+        },
+        "license": {
+            "name": "MIT + Apache 2.0",
+            "url": "https://github.com/data-preservation-programs/singularity/blob/main/LICENSE"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -25,12 +32,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -52,6 +53,71 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/chunk/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get detail of a specific chunk",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chunk ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Chunk"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/dataset": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all datasets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Dataset"
+                            }
+                        }
+                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -65,9 +131,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/dataset": {
+            },
             "post": {
                 "description": "The dataset is a top level object to distinguish different dataset.",
                 "consumes": [
@@ -108,103 +172,6 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/push": {
-            "post": {
-                "description": "Push an item to the staging area",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Push an item to the staging area",
-                "parameters": [
-                    {
-                        "description": "Item",
-                        "name": "item",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/upload": {
-            "post": {
-                "description": "Upload a file to a dataset",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Upload a file to a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "dataset",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "File to upload",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "File uploaded",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Error: dataset not found.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Error: internal server error.",
-                        "schema": {
-                            "type": "string"
                         }
                     }
                 }
@@ -296,6 +263,50 @@ const docTemplate = `{
             }
         },
         "/dataset/{datasetName}/piece": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dataset"
+                ],
+                "summary": "List all pieces for the dataset that are available for deal making",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Car"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -304,7 +315,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Dataset Piece"
+                    "Dataset"
                 ],
                 "summary": "Manually register a piece (CAR file) with the dataset for deal making purpose",
                 "parameters": [
@@ -347,2034 +358,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/dataset/{datasetName}/pieces": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset Piece"
-                ],
-                "summary": "List all pieces for the dataset that are available for deal making\"",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/acd": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add acd source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.AcdRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/azureblob": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add azureblob source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.AzureblobRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/b2": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add b2 source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.B2Request"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/box": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add box source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.BoxRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/crypt": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add crypt source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.CryptRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/drive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add drive source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.DriveRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/dropbox": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add dropbox source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.DropboxRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/fichier": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add fichier source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.FichierRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/filefabric": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add filefabric source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.FilefabricRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/ftp": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add ftp source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.FtpRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/gcs": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add gcs source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.GcsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/gphotos": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add gphotos source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.GphotosRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/hdfs": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add hdfs source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.HdfsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/hidrive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add hidrive source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.HidriveRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/http": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add http source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.HttpRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/internetarchive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add internetarchive source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.InternetarchiveRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/jottacloud": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add jottacloud source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.JottacloudRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/koofr": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add koofr source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.KoofrRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/local": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add local source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.LocalRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/mailru": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add mailru source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.MailruRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/mega": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add mega source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.MegaRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/memory": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add memory source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.MemoryRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/netstorage": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add netstorage source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.NetstorageRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/onedrive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add onedrive source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.OnedriveRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/oos": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add oos source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.OosRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/opendrive": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add opendrive source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.OpendriveRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/pcloud": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add pcloud source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.PcloudRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/premiumizeme": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add premiumizeme source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.PremiumizemeRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/putio": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add putio source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.PutioRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/qingstor": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add qingstor source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.QingstorRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/s3": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add s3 source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.S3Request"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/seafile": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add seafile source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SeafileRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/sftp": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add sftp source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SftpRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/sharefile": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add sharefile source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SharefileRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/sia": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add sia source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SiaRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/smb": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add smb source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SmbRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/storj": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add storj source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.StorjRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/sugarsync": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add sugarsync source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SugarsyncRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/swift": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add swift source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.SwiftRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/tardigrade": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add tardigrade source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.TardigradeRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/uptobox": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add uptobox source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.UptoboxRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/webdav": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add webdav source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.WebdavRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/yandex": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add yandex source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.YandexRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/source/zoho": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "New Data Source"
-                ],
-                "summary": "Add zoho source for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.ZohoRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/wallet/{wallet}": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wallet"
-                ],
-                "summary": "Associate a new wallet with a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Wallet Address",
-                        "name": "wallet",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Wallet"
-                ],
-                "summary": "Remove an associated wallet from a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Wallet Address",
-                        "name": "wallet",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/wallets": {
+        "/dataset/{datasetName}/wallet": {
             "get": {
                 "produces": [
                     "application/json"
@@ -2387,7 +371,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Dataset name",
-                        "name": "name",
+                        "name": "datasetName",
                         "in": "path",
                         "required": true
                     }
@@ -2417,24 +401,79 @@ const docTemplate = `{
                 }
             }
         },
-        "/datasets": {
-            "get": {
+        "/dataset/{datasetName}/wallet/{wallet}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Dataset"
+                    "Wallet Association"
                 ],
-                "summary": "List all datasets",
+                "summary": "Associate a new wallet with a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Dataset"
-                            }
+                            "$ref": "#/definitions/model.WalletAssignment"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "Remove an associated wallet from a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -2706,9 +745,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/piece/metadata/{piece}": {
+        "/item/{id}": {
             "get": {
-                "description": "Get metadata for a piece",
                 "consumes": [
                     "application/json"
                 ],
@@ -2716,7 +754,42 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Piece"
+                    "Data Source"
+                ],
+                "summary": "Get details about an item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Item"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/piece/{id}/metadata": {
+            "get": {
+                "description": "Get metadata for a piece for how it may be reassembled from the data source",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Piece Metadata"
                 ],
                 "summary": "Get metadata for a piece",
                 "parameters": [
@@ -2741,10 +814,2190 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/source": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "List all sources for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "dataset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Source"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/acd/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add acd source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.AcdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/azureblob/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add azureblob source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.AzureblobRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/b2/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add b2 source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.B2Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/box/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add box source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.BoxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/drive/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add drive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.DriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/dropbox/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add dropbox source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.DropboxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/fichier/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add fichier source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.FichierRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/filefabric/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add filefabric source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.FilefabricRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/ftp/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add ftp source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.FtpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/gcs/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add gcs source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.GcsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/gphotos/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add gphotos source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.GphotosRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/hdfs/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add hdfs source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.HdfsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/hidrive/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add hidrive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.HidriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/http/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add http source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.HttpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/internetarchive/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add internetarchive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.InternetarchiveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/jottacloud/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add jottacloud source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.JottacloudRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/koofr/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add koofr source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.KoofrRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/local/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add local source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.LocalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/mailru/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add mailru source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.MailruRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/mega/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add mega source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.MegaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/netstorage/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add netstorage source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.NetstorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/onedrive/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add onedrive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.OnedriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/oos/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add oos source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.OosRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/opendrive/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add opendrive source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.OpendriveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/pcloud/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add pcloud source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.PcloudRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/premiumizeme/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add premiumizeme source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.PremiumizemeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/putio/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add putio source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.PutioRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/qingstor/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add qingstor source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.QingstorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/s3/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add s3 source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.S3Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/seafile/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add seafile source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SeafileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/sftp/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add sftp source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SftpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/sharefile/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add sharefile source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SharefileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/sia/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add sia source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SiaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/smb/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add smb source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SmbRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/storj/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add storj source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.StorjRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/sugarsync/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add sugarsync source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SugarsyncRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/swift/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add swift source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.SwiftRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/uptobox/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add uptobox source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.UptoboxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/webdav/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add webdav source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.WebdavRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/yandex/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add yandex source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.YandexRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/zoho/dataset/{datasetName}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Add zoho source for a dataset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dataset name",
+                        "name": "datasetName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.ZohoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
                         }
                     }
                 }
@@ -2784,6 +3037,12 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "Data Source"
                 ],
@@ -2868,6 +3127,12 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -2888,7 +3153,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get all chunk details of a data source",
+                "summary": "Get all dag details of a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -2904,8 +3169,48 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Chunk"
+                                "$ref": "#/definitions/model.Car"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/daggen": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Mark a source as ready for DAG generation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Source"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
                         }
                     },
                     "500": {
@@ -2948,6 +3253,12 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -2957,8 +3268,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/rescan": {
-            "post": {
+        "/source/{id}/path": {
+            "get": {
                 "consumes": [
                     "application/json"
                 ],
@@ -2968,7 +3279,108 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Rescan a data source",
+                "summary": "Get all item details inside a data source path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "GetPathRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/inspect.GetPathRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inspect.DirDetail"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/push": {
+            "post": {
+                "description": "Tells Singularity that something is ready to be grabbed for data preparation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Push an item to be queued",
+                "parameters": [
+                    {
+                        "description": "Item",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Item"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Item already exists",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/rescan": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Trigger a rescan of a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -3022,43 +3434,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/datasource.ChunksByState"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/sources": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "List all sources for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "dataset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Source"
-                            }
                         }
                     },
                     "500": {
@@ -3071,8 +3450,43 @@ const docTemplate = `{
             }
         },
         "/wallet": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet"
+                ],
+                "summary": "List all imported wallets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.HTTPError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
+                    "application/json"
+                ],
+                "produces": [
                     "application/json"
                 ],
                 "tags": [
@@ -3091,8 +3505,11 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -3114,6 +3531,9 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "Wallet"
                 ],
@@ -3130,8 +3550,11 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -3181,40 +3604,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/wallets": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wallet"
-                ],
-                "summary": "List all imported wallets",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wallet"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.HTTPError"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -3222,18 +3611,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "filePath": {
+                    "description": "Path to the CAR file, used to determine the size of the file and root CID",
                     "type": "string"
                 },
-                "fileSize": {
-                    "type": "integer"
-                },
-                "pieceCID": {
+                "pieceCid": {
+                    "description": "CID of the piece",
                     "type": "string"
                 },
                 "pieceSize": {
+                    "description": "Size of the piece",
                     "type": "string"
                 },
-                "rootCID": {
+                "rootCid": {
+                    "description": "Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal",
                     "type": "string"
                 }
             }
@@ -3312,6 +3702,11 @@ const docTemplate = `{
         },
         "datasource.AcdRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -3331,12 +3726,16 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,InvalidUtf8,Dot"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -3682,47 +4081,9 @@ const docTemplate = `{
                     "type": "string",
                     "default": "50Mi"
                 },
-                "cryptDirectoryNameEncryption": {
-                    "description": "Option to either encrypt directory names or leave them intact.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "cryptFilenameEncoding": {
-                    "description": "How to encode the encrypted filename to text string.",
-                    "type": "string",
-                    "default": "base32"
-                },
-                "cryptFilenameEncryption": {
-                    "description": "How to encrypt the filenames.",
-                    "type": "string",
-                    "default": "standard"
-                },
-                "cryptNoDataEncryption": {
-                    "description": "Option to either encrypt file data or leave it unencrypted.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "cryptPassword": {
-                    "description": "Password or pass phrase for encryption.",
-                    "type": "string"
-                },
-                "cryptPassword2": {
-                    "description": "Password or pass phrase for salt.",
-                    "type": "string"
-                },
-                "cryptRemote": {
-                    "description": "Remote to encrypt/decrypt.",
-                    "type": "string"
-                },
-                "cryptServerSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different crypt configs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "cryptShowMapping": {
-                    "description": "For all files listed show how the names encrypt.",
-                    "type": "string",
-                    "default": "false"
+                "deleteAfterExport": {
+                    "description": "Delete the source after exporting to CAR files",
+                    "type": "boolean"
                 },
                 "driveAcknowledgeAbuse": {
                     "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
@@ -4940,6 +5301,10 @@ const docTemplate = `{
                     "description": "Zone to connect to.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "s3AccessKeyId": {
                     "description": "AWS Access Key ID.",
                     "type": "string"
@@ -5600,28 +5965,6 @@ const docTemplate = `{
                     "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
                     "type": "string"
                 },
-                "tardigradeAccessGrant": {
-                    "description": "Access grant.",
-                    "type": "string"
-                },
-                "tardigradeApiKey": {
-                    "description": "API key.",
-                    "type": "string"
-                },
-                "tardigradePassphrase": {
-                    "description": "Encryption passphrase.",
-                    "type": "string"
-                },
-                "tardigradeProvider": {
-                    "description": "Choose an authentication method.",
-                    "type": "string",
-                    "default": "existing"
-                },
-                "tardigradeSatelliteAddress": {
-                    "description": "Satellite address.",
-                    "type": "string",
-                    "default": "us1.storj.io"
-                },
                 "uptoboxAccessToken": {
                     "description": "Your access token.",
                     "type": "string"
@@ -5726,6 +6069,11 @@ const docTemplate = `{
         },
         "datasource.AzureblobRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessTier": {
                     "description": "Access tier of blob: hot, cool or archive.",
@@ -5768,7 +6116,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
@@ -5838,6 +6186,10 @@ const docTemplate = `{
                     "description": "Public access level of a container: blob or container.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sasUrl": {
                     "description": "SAS URL for container level access only.",
                     "type": "string"
@@ -5881,6 +6233,11 @@ const docTemplate = `{
         },
         "datasource.B2Request": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "account": {
                     "description": "Account ID or Application Key ID.",
@@ -5898,7 +6255,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableChecksum": {
                     "description": "Disable checksums for large (\u003e upload cutoff) files.",
@@ -5942,6 +6299,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -5969,6 +6330,11 @@ const docTemplate = `{
         },
         "datasource.BoxRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessToken": {
                     "description": "Box App Primary Access Token",
@@ -6001,7 +6367,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6015,6 +6381,10 @@ const docTemplate = `{
                 },
                 "ownedBy": {
                     "description": "Only show items owned by the login (email address) passed in.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "rootFolderId": {
@@ -6067,63 +6437,13 @@ const docTemplate = `{
                 }
             }
         },
-        "datasource.CryptRequest": {
-            "type": "object",
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
-                },
-                "directoryNameEncryption": {
-                    "description": "Option to either encrypt directory names or leave them intact.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "filenameEncoding": {
-                    "description": "How to encode the encrypted filename to text string.",
-                    "type": "string",
-                    "default": "base32"
-                },
-                "filenameEncryption": {
-                    "description": "How to encrypt the filenames.",
-                    "type": "string",
-                    "default": "standard"
-                },
-                "noDataEncryption": {
-                    "description": "Option to either encrypt file data or leave it unencrypted.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "password": {
-                    "description": "Password or pass phrase for encryption.",
-                    "type": "string"
-                },
-                "password2": {
-                    "description": "Password or pass phrase for salt.",
-                    "type": "string"
-                },
-                "remote": {
-                    "description": "Remote to encrypt/decrypt.",
-                    "type": "string"
-                },
-                "serverSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different crypt configs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "showMapping": {
-                    "description": "For all files listed show how the names encrypt.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan items",
-                    "type": "string"
-                }
-            }
-        },
         "datasource.DriveRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "acknowledgeAbuse": {
                     "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
@@ -6169,7 +6489,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableHttp2": {
                     "description": "Disable drive using http2.",
@@ -6217,6 +6537,10 @@ const docTemplate = `{
                     "description": "Minimum time to sleep between API calls.",
                     "type": "string",
                     "default": "100ms"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "resourceKey": {
                     "description": "Resource key for accessing a link-shared file.",
@@ -6338,6 +6662,11 @@ const docTemplate = `{
         },
         "datasource.DropboxRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -6378,7 +6707,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6387,6 +6716,10 @@ const docTemplate = `{
                 },
                 "impersonate": {
                     "description": "Impersonate this user when using a business account.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sharedFiles": {
@@ -6415,6 +6748,11 @@ const docTemplate = `{
         },
         "datasource.FichierRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "apiKey": {
                     "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
@@ -6422,7 +6760,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6437,6 +6775,10 @@ const docTemplate = `{
                     "description": "If you want to list the files in a shared folder that is password protected, add this parameter.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sharedFolder": {
                     "description": "If you want to download a shared folder, add this parameter.",
                     "type": "string"
@@ -6449,10 +6791,15 @@ const docTemplate = `{
         },
         "datasource.FilefabricRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6461,6 +6808,10 @@ const docTemplate = `{
                 },
                 "permanentToken": {
                     "description": "Permanent Authentication Token.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "rootFolderId": {
@@ -6491,6 +6842,11 @@ const docTemplate = `{
         },
         "datasource.FtpRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "askPassword": {
                     "description": "Allow asking for FTP password when needed.",
@@ -6509,7 +6865,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableEpsv": {
                     "description": "Disable using EPSV even if server advertises support.",
@@ -6569,6 +6925,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "21"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "shutTimeout": {
                     "description": "Maximum time to wait for data connection closing status.",
                     "type": "string",
@@ -6602,6 +6962,11 @@ const docTemplate = `{
         },
         "datasource.GcsRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "anonymous": {
                     "description": "Access public buckets and objects without credentials.",
@@ -6636,7 +7001,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6669,6 +7034,10 @@ const docTemplate = `{
                     "description": "Project number.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "serviceAccountCredentials": {
                     "description": "Service Account Credentials JSON blob.",
                     "type": "string"
@@ -6697,6 +7066,11 @@ const docTemplate = `{
         },
         "datasource.GphotosRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -6712,7 +7086,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6733,6 +7107,10 @@ const docTemplate = `{
                     "description": "Set to read the size of media items.",
                     "type": "string",
                     "default": "false"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -6755,6 +7133,11 @@ const docTemplate = `{
         },
         "datasource.HdfsRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "dataTransferProtection": {
                     "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
@@ -6762,7 +7145,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6771,6 +7154,10 @@ const docTemplate = `{
                 },
                 "namenode": {
                     "description": "Hadoop name node and port.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "servicePrincipalName": {
@@ -6789,6 +7176,11 @@ const docTemplate = `{
         },
         "datasource.HidriveRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -6809,7 +7201,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableFetchingMemberCount": {
                     "description": "Do not fetch number of objects in directories unless it is absolutely necessary.",
@@ -6825,6 +7217,10 @@ const docTemplate = `{
                     "description": "Endpoint for the service.",
                     "type": "string",
                     "default": "https://api.hidrive.strato.com/2.1"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "rootPrefix": {
                     "description": "The root/parent folder for all paths.",
@@ -6867,10 +7263,15 @@ const docTemplate = `{
         },
         "datasource.HttpRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "headers": {
                     "description": "Set HTTP headers for all transactions.",
@@ -6886,6 +7287,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -6898,6 +7303,11 @@ const docTemplate = `{
         },
         "datasource.InternetarchiveRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessKeyId": {
                     "description": "IAS3 Access Key.",
@@ -6905,7 +7315,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableChecksum": {
                     "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
@@ -6927,6 +7337,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "https://archive.org"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "secretAccessKey": {
                     "description": "IAS3 Secret Key (password).",
                     "type": "string"
@@ -6944,10 +7358,15 @@ const docTemplate = `{
         },
         "datasource.JottacloudRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -6969,6 +7388,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -6987,10 +7410,15 @@ const docTemplate = `{
         },
         "datasource.KoofrRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7013,6 +7441,10 @@ const docTemplate = `{
                     "description": "Choose your storage provider.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "setmtime": {
                     "description": "Does the backend support setting modification time.",
                     "type": "string",
@@ -7030,6 +7462,11 @@ const docTemplate = `{
         },
         "datasource.LocalRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "caseInsensitive": {
                     "description": "Force the filesystem to report itself as case insensitive.",
@@ -7048,7 +7485,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7090,6 +7527,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "skipLinks": {
                     "description": "Don't warn about skipped symlinks.",
                     "type": "string",
@@ -7113,6 +7554,11 @@ const docTemplate = `{
         },
         "datasource.MailruRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "checkHash": {
                     "description": "What should copy do if file checksum is mismatched or invalid.",
@@ -7121,7 +7567,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7134,6 +7580,10 @@ const docTemplate = `{
                 },
                 "quirks": {
                     "description": "Comma separated list of internal maintenance flags.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sourcePath": {
@@ -7172,6 +7622,11 @@ const docTemplate = `{
         },
         "datasource.MegaRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "debug": {
                     "description": "Output more debug from Mega.",
@@ -7180,7 +7635,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7194,6 +7649,10 @@ const docTemplate = `{
                 },
                 "pass": {
                     "description": "Password.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sourcePath": {
@@ -7211,21 +7670,13 @@ const docTemplate = `{
                 }
             }
         },
-        "datasource.MemoryRequest": {
-            "type": "object",
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan items",
-                    "type": "string"
-                }
-            }
-        },
         "datasource.NetstorageRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "account": {
                     "description": "Set the NetStorage account name",
@@ -7233,7 +7684,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "host": {
                     "description": "Domain+path of NetStorage host to connect to.",
@@ -7243,6 +7694,10 @@ const docTemplate = `{
                     "description": "Select between HTTP or HTTPS protocol.",
                     "type": "string",
                     "default": "https"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "secret": {
                     "description": "Set the NetStorage account secret/G2O key for authentication.",
@@ -7256,6 +7711,11 @@ const docTemplate = `{
         },
         "datasource.OnedriveRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessScopes": {
                     "description": "Set scopes to be requested by rclone.",
@@ -7281,7 +7741,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableSitePermission": {
                     "description": "Disable the request for Sites.Read.All permission.",
@@ -7340,6 +7800,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "global"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "rootFolderId": {
                     "description": "ID of the root folder.",
                     "type": "string"
@@ -7365,6 +7829,11 @@ const docTemplate = `{
         },
         "datasource.OosRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "chunkSize": {
                     "description": "Chunk size to use for uploading.",
@@ -7397,7 +7866,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
@@ -7434,6 +7903,10 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Object storage Region",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sourcePath": {
@@ -7479,6 +7952,11 @@ const docTemplate = `{
         },
         "datasource.OpendriveRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "chunkSize": {
                     "description": "Files will be uploaded in chunks this size.",
@@ -7487,7 +7965,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7496,6 +7974,10 @@ const docTemplate = `{
                 },
                 "password": {
                     "description": "Password.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sourcePath": {
@@ -7510,6 +7992,11 @@ const docTemplate = `{
         },
         "datasource.PcloudRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -7525,7 +8012,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7539,6 +8026,10 @@ const docTemplate = `{
                 },
                 "password": {
                     "description": "Your pcloud password.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "rootFolderId": {
@@ -7566,6 +8057,11 @@ const docTemplate = `{
         },
         "datasource.PremiumizemeRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "apiKey": {
                     "description": "API Key.",
@@ -7573,12 +8069,16 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -7588,15 +8088,24 @@ const docTemplate = `{
         },
         "datasource.PutioRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -7606,6 +8115,11 @@ const docTemplate = `{
         },
         "datasource.QingstorRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessKeyId": {
                     "description": "QingStor Access Key ID.",
@@ -7623,7 +8137,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7638,6 +8152,10 @@ const docTemplate = `{
                     "description": "Get QingStor credentials from runtime.",
                     "type": "string",
                     "default": "false"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "secretAccessKey": {
                     "description": "QingStor Secret Access Key (password).",
@@ -7665,6 +8183,11 @@ const docTemplate = `{
         },
         "datasource.S3Request": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessKeyId": {
                     "description": "AWS Access Key ID.",
@@ -7695,7 +8218,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableChecksum": {
                     "description": "Don't store MD5 checksum with object metadata.",
@@ -7811,6 +8334,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -7903,6 +8430,11 @@ const docTemplate = `{
         },
         "datasource.SeafileRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "2fa": {
                     "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
@@ -7920,7 +8452,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -7939,6 +8471,10 @@ const docTemplate = `{
                     "description": "Password.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7955,6 +8491,11 @@ const docTemplate = `{
         },
         "datasource.SftpRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "askPassword": {
                     "description": "Allow asking for SFTP password when needed.",
@@ -7977,7 +8518,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "disableConcurrentReads": {
                     "description": "If set don't use concurrent reads.",
@@ -8053,6 +8594,10 @@ const docTemplate = `{
                     "description": "Optional path to public key file.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "serverCommand": {
                     "description": "Specifies the path or command to run a sftp server on the remote host.",
                     "type": "string"
@@ -8107,6 +8652,11 @@ const docTemplate = `{
         },
         "datasource.SharefileRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "chunkSize": {
                     "description": "Upload chunk size.",
@@ -8115,7 +8665,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -8124,6 +8674,10 @@ const docTemplate = `{
                 },
                 "endpoint": {
                     "description": "Endpoint for API calls.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "rootFolderId": {
@@ -8143,6 +8697,11 @@ const docTemplate = `{
         },
         "datasource.SiaRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "apiPassword": {
                     "description": "Sia Daemon API Password.",
@@ -8155,12 +8714,16 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -8175,6 +8738,11 @@ const docTemplate = `{
         },
         "datasource.SmbRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "caseInsensitive": {
                     "description": "Whether the server is configured to be case-insensitive.",
@@ -8183,7 +8751,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "domain": {
                     "description": "Domain name for NTLM authentication.",
@@ -8218,6 +8786,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "445"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8235,6 +8807,11 @@ const docTemplate = `{
         },
         "datasource.StorjRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessGrant": {
                     "description": "Access grant.",
@@ -8246,7 +8823,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "passphrase": {
                     "description": "Encryption passphrase.",
@@ -8256,6 +8833,10 @@ const docTemplate = `{
                     "description": "Choose an authentication method.",
                     "type": "string",
                     "default": "existing"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "satelliteAddress": {
                     "description": "Satellite address.",
@@ -8270,6 +8851,11 @@ const docTemplate = `{
         },
         "datasource.SugarsyncRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessKeyId": {
                     "description": "Sugarsync Access Key ID.",
@@ -8289,7 +8875,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "deletedId": {
                     "description": "Sugarsync deleted folder id.",
@@ -8313,6 +8899,10 @@ const docTemplate = `{
                     "description": "Sugarsync refresh token.",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "rootId": {
                     "description": "Sugarsync root id.",
                     "type": "string"
@@ -8329,6 +8919,11 @@ const docTemplate = `{
         },
         "datasource.SwiftRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "applicationCredentialId": {
                     "description": "Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).",
@@ -8362,7 +8957,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "domain": {
                     "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
@@ -8406,6 +9001,10 @@ const docTemplate = `{
                     "description": "Region name - optional (OS_REGION_NAME).",
                     "type": "string"
                 },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8440,43 +9039,13 @@ const docTemplate = `{
                 }
             }
         },
-        "datasource.TardigradeRequest": {
-            "type": "object",
-            "properties": {
-                "accessGrant": {
-                    "description": "Access grant.",
-                    "type": "string"
-                },
-                "apiKey": {
-                    "description": "API key.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
-                },
-                "passphrase": {
-                    "description": "Encryption passphrase.",
-                    "type": "string"
-                },
-                "provider": {
-                    "description": "Choose an authentication method.",
-                    "type": "string",
-                    "default": "existing"
-                },
-                "satelliteAddress": {
-                    "description": "Satellite address.",
-                    "type": "string",
-                    "default": "us1.storj.io"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan items",
-                    "type": "string"
-                }
-            }
-        },
         "datasource.UptoboxRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "accessToken": {
                     "description": "Your access token.",
@@ -8484,12 +9053,16 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
                     "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -8499,6 +9072,11 @@ const docTemplate = `{
         },
         "datasource.WebdavRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "bearerToken": {
                     "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
@@ -8510,7 +9088,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -8522,6 +9100,10 @@ const docTemplate = `{
                 },
                 "pass": {
                     "description": "Password.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sourcePath": {
@@ -8544,6 +9126,11 @@ const docTemplate = `{
         },
         "datasource.YandexRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -8559,7 +9146,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -8570,6 +9157,10 @@ const docTemplate = `{
                     "description": "Delete files permanently rather than putting them into the trash.",
                     "type": "string",
                     "default": "false"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
+                    "type": "string"
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -8587,6 +9178,11 @@ const docTemplate = `{
         },
         "datasource.ZohoRequest": {
             "type": "object",
+            "required": [
+                "deleteAfterExport",
+                "rescanInterval",
+                "sourcePath"
+            ],
             "properties": {
                 "authUrl": {
                     "description": "Auth server URL.",
@@ -8602,7 +9198,7 @@ const docTemplate = `{
                 },
                 "deleteAfterExport": {
                     "description": "Delete the source after exporting to CAR files",
-                    "type": "string"
+                    "type": "boolean"
                 },
                 "encoding": {
                     "description": "The encoding for the backend.",
@@ -8611,6 +9207,10 @@ const docTemplate = `{
                 },
                 "region": {
                     "description": "Zoho region to connect to.",
+                    "type": "string"
+                },
+                "rescanInterval": {
+                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
                 "sourcePath": {
@@ -8631,24 +9231,28 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "datasets": {
+                    "description": "dataset name filter",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "providers": {
+                    "description": "provider filter",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "schedules": {
+                    "description": "schedule id filter",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "states": {
+                    "description": "state filter",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -8660,49 +9264,80 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "clientAddress": {
+                    "description": "Client address",
                     "type": "string"
                 },
-                "durationDays": {
-                    "type": "number"
+                "duration": {
+                    "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
+                    "type": "string",
+                    "default": "12740h"
                 },
                 "fileSize": {
+                    "description": "File size in bytes for boost to fetch the CAR file",
                     "type": "integer"
                 },
                 "httpHeaders": {
+                    "description": "http headers to be passed with the request (i.e. key=value)",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "ipni": {
-                    "type": "boolean"
+                    "description": "Whether the deal should be IPNI",
+                    "type": "boolean",
+                    "default": true
                 },
                 "keepUnsealed": {
-                    "type": "boolean"
+                    "description": "Whether the deal should be kept unsealed",
+                    "type": "boolean",
+                    "default": true
                 },
-                "pieceCID": {
+                "pieceCid": {
+                    "description": "Piece CID",
                     "type": "string"
                 },
                 "pieceSize": {
+                    "description": "Piece size",
                     "type": "string"
                 },
-                "price": {
-                    "type": "number"
+                "pricePerDeal": {
+                    "description": "Price in FIL per deal",
+                    "type": "number",
+                    "default": 0
                 },
-                "providerID": {
+                "pricePerGb": {
+                    "description": "Price in FIL  per GiB",
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGbEpoch": {
+                    "description": "Price in FIL per GiB per epoch",
+                    "type": "number",
+                    "default": 0
+                },
+                "providerId": {
+                    "description": "Provider ID",
                     "type": "string"
                 },
-                "rootCID": {
-                    "type": "string"
+                "rootCid": {
+                    "description": "Root CID that is required as part of the deal proposal, if empty, will be set to empty CID",
+                    "type": "string",
+                    "default": "bafkqaaa"
                 },
-                "startDelayDays": {
-                    "type": "number"
+                "startDelay": {
+                    "description": "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
+                    "type": "string",
+                    "default": "72h"
                 },
                 "urlTemplate": {
+                    "description": "URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car",
                     "type": "string"
                 },
                 "verified": {
-                    "type": "boolean"
+                    "description": "Whether the deal should be verified",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
@@ -8710,11 +9345,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "path": {
-                    "description": "TODO Type     model.ItemType ` + "`" + `json:\"type\"` + "`" + `",
+                    "description": "Path to the new item, relative to the source",
                     "type": "string"
-                },
-                "sourceId": {
-                    "type": "integer"
                 }
             }
         },
@@ -8739,6 +9371,34 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "inspect.DirDetail": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "$ref": "#/definitions/model.Directory"
+                },
+                "dirs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Directory"
+                    }
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Item"
+                    }
+                }
+            }
+        },
+        "inspect.GetPathRequest": {
+            "type": "object",
+            "properties": {
+                "path": {
                     "type": "string"
                 }
             }
@@ -8863,26 +9523,20 @@ const docTemplate = `{
         "model.Deal": {
             "type": "object",
             "properties": {
-                "clientID": {
+                "clientId": {
                     "type": "string"
                 },
                 "createdAt": {
                     "type": "string"
                 },
-                "dataset": {
-                    "$ref": "#/definitions/model.Dataset"
-                },
-                "datasetID": {
+                "datasetId": {
                     "type": "integer"
                 },
-                "dealID": {
+                "dealId": {
                     "type": "integer"
                 },
-                "duration": {
-                    "$ref": "#/definitions/time.Duration"
-                },
-                "end": {
-                    "type": "string"
+                "endEpoch": {
+                    "type": "integer"
                 },
                 "errorMessage": {
                     "type": "string"
@@ -8893,32 +9547,29 @@ const docTemplate = `{
                 "label": {
                     "type": "string"
                 },
-                "pieceCID": {
+                "pieceCid": {
                     "type": "string"
                 },
                 "pieceSize": {
                     "type": "integer"
                 },
                 "price": {
-                    "type": "number"
+                    "type": "string"
                 },
-                "proposalID": {
+                "proposalId": {
                     "type": "string"
                 },
                 "provider": {
                     "type": "string"
                 },
-                "schedule": {
-                    "$ref": "#/definitions/model.Schedule"
-                },
-                "scheduleID": {
+                "scheduleId": {
                     "type": "integer"
                 },
-                "sectorStart": {
-                    "type": "string"
+                "sectorStartEpoch": {
+                    "type": "integer"
                 },
-                "start": {
-                    "type": "string"
+                "startEpoch": {
+                    "type": "integer"
                 },
                 "state": {
                     "$ref": "#/definitions/model.DealState"
@@ -8928,9 +9579,6 @@ const docTemplate = `{
                 },
                 "verified": {
                     "type": "boolean"
-                },
-                "wallet": {
-                    "$ref": "#/definitions/model.Wallet"
                 }
             }
         },
@@ -8957,11 +9605,40 @@ const docTemplate = `{
                 "DealErrored"
             ]
         },
+        "model.Directory": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "$ref": "#/definitions/model.CID"
+                },
+                "exported": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parentId": {
+                    "type": "integer"
+                },
+                "sourceId": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Item": {
             "type": "object",
             "properties": {
                 "cid": {
                     "$ref": "#/definitions/model.CID"
+                },
+                "createdAt": {
+                    "type": "string"
                 },
                 "directoryId": {
                     "type": "integer"
@@ -8982,9 +9659,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "path": {
-                    "type": "string"
-                },
-                "scannedAt": {
                     "type": "string"
                 },
                 "size": {
@@ -9030,13 +9704,13 @@ const docTemplate = `{
         "model.Schedule": {
             "type": "object",
             "properties": {
-                "AllowedPieceCIDs": {
+                "allowedPieceCids": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "announceToIPNI": {
+                "announceToIpni": {
                     "type": "boolean"
                 },
                 "createdAt": {
@@ -9075,7 +9749,13 @@ const docTemplate = `{
                 "notes": {
                     "type": "string"
                 },
-                "price": {
+                "pricePerDeal": {
+                    "type": "number"
+                },
+                "pricePerGb": {
+                    "type": "number"
+                },
+                "pricePerGbEpoch": {
                     "type": "number"
                 },
                 "provider": {
@@ -9217,6 +9897,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.WalletAssignment": {
+            "type": "object",
+            "properties": {
+                "datasetId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "walletId": {
+                    "type": "string"
+                }
+            }
+        },
         "model.WorkState": {
             "type": "string",
             "enum": [
@@ -9237,85 +9931,108 @@ const docTemplate = `{
         "schedule.CreateRequest": {
             "type": "object",
             "properties": {
-                "allowedPieceCIDs": {
+                "allowedPieceCids": {
+                    "description": "Allowed piece CIDs in this schedule",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "datasetName": {
+                    "description": "Dataset name",
                     "type": "string"
                 },
-                "durationDays": {
-                    "type": "number"
+                "duration": {
+                    "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
+                    "type": "string",
+                    "default": "12740h"
                 },
                 "httpHeaders": {
+                    "description": "http headers to be passed with the request (i.e. key=value)",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "ipni": {
-                    "type": "boolean"
+                    "description": "Whether the deal should be IPNI",
+                    "type": "boolean",
+                    "default": true
                 },
                 "keepUnsealed": {
-                    "type": "boolean"
+                    "description": "Whether the deal should be kept unsealed",
+                    "type": "boolean",
+                    "default": true
                 },
                 "maxPendingDealNumber": {
+                    "description": "Max pending deal number",
                     "type": "integer"
                 },
                 "maxPendingDealSize": {
+                    "description": "Max pending deal size in human readable format, i.e. 100 TiB",
                     "type": "string"
                 },
                 "notes": {
+                    "description": "Notes",
                     "type": "string"
                 },
-                "price": {
-                    "type": "number"
+                "pricePerDeal": {
+                    "description": "Price in FIL per deal",
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGb": {
+                    "description": "Price in FIL  per GiB",
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGbEpoch": {
+                    "description": "Price in FIL per GiB per epoch",
+                    "type": "number",
+                    "default": 0
                 },
                 "provider": {
+                    "description": "Provider",
                     "type": "string"
                 },
                 "scheduleDealNumber": {
+                    "description": "Number of deals per scheduled time",
                     "type": "integer"
                 },
                 "scheduleDealSize": {
+                    "description": "Size of deals per schedule trigger in human readable format, i.e. 100 TiB",
                     "type": "string"
                 },
                 "scheduleInterval": {
-                    "$ref": "#/definitions/time.Duration"
+                    "description": "Schedule interval in duration format, i.e. 1h",
+                    "type": "string"
                 },
-                "startDelayDays": {
-                    "type": "number"
+                "startDelay": {
+                    "description": "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
+                    "type": "string",
+                    "default": "72h"
                 },
                 "totalDealNumber": {
+                    "description": "Total number of deals",
                     "type": "integer"
                 },
                 "totalDealSize": {
+                    "description": "Total size of deals in human readable format, i.e. 100 TiB",
                     "type": "string"
                 },
                 "urlTemplate": {
+                    "description": "URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car",
                     "type": "string"
                 },
                 "verified": {
-                    "type": "boolean"
+                    "description": "Whether the deal should be verified",
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
         "store.PieceReader": {
-            "type": "object",
-            "properties": {
-                "blocks": {
-                    "type": "array",
-                    "items": {}
-                },
-                "header": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                }
-            }
+            "type": "object"
         },
         "time.Duration": {
             "type": "integer",
@@ -9362,6 +10079,10 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
     }
 }`
 
@@ -9375,6 +10096,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {

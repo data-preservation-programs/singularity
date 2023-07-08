@@ -7,7 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// AddWalletHandler godoc
+func AddWalletHandler(
+	db *gorm.DB,
+	datasetName string,
+	wallet string,
+) (*model.WalletAssignment, error) {
+	return addWalletHandler(db, datasetName, wallet)
+}
+
 // @Summary Associate a new wallet with a dataset
 // @Tags Wallet Association
 // @Produce json
@@ -18,7 +25,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName}/wallet/{wallet} [post]
-func AddWalletHandler(
+func addWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 	wallet string,

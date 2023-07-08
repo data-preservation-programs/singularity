@@ -17,7 +17,15 @@ type AddRemoteRequest struct {
 	RemotePeer string `json:"remotePeer"` // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
-// AddRemoteHandler godoc
+func AddRemoteHandler(
+	db *gorm.DB,
+	ctx context.Context,
+	lotusClient jsonrpc.RPCClient,
+	request AddRemoteRequest,
+) (*model.Wallet, error) {
+	return addRemoteHandler(db, ctx, lotusClient, request)
+}
+
 // @Summary Add a remote wallet
 // @Tags Wallet
 // @Accept json
@@ -27,7 +35,7 @@ type AddRemoteRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /wallet/remote [post]
-func AddRemoteHandler(
+func addRemoteHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	lotusClient jsonrpc.RPCClient,

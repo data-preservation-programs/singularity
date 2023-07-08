@@ -53,7 +53,6 @@ type ItemInfo struct {
 	Path string `json:"path"` // Path to the new item, relative to the source
 }
 
-// PushItem godoc
 // @Summary Push an item to be queued
 // @Description Tells Singularity that something is ready to be grabbed for data preparation
 // @Tags Data Source
@@ -65,7 +64,7 @@ type ItemInfo struct {
 // @Failure 409 {string} string "Item already exists"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /source/{id}/push [post]
-func (s Server) PushItem(c echo.Context) error {
+func (s Server) handlePushItem(c echo.Context) error {
 	id := c.Param("id")
 	sourceID, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
@@ -80,7 +79,6 @@ func (s Server) PushItem(c echo.Context) error {
 	return s.pushItem(c, uint32(sourceID), itemInfo)
 }
 
-// GetMetadataHandler godoc
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
 // @Tags Piece Metadata
@@ -91,7 +89,7 @@ func (s Server) PushItem(c echo.Context) error {
 // @Failure 404 {string} string "Not Found"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /piece/{id}/metadata [get]
-func (s Server) GetMetadataHandler(c echo.Context) error {
+func (s Server) getMetadataHandler(c echo.Context) error {
 	return contentprovider.GetMetadataHandler(c, s.db)
 }
 
@@ -416,10 +414,10 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
-	e.POST("/api/source/:id/push", s.PushItem)
+	e.POST("/api/source/:id/push", s.handlePushItem)
 
 	// Piece metadata
-	e.GET("/api/piece/:id/metadata", s.GetMetadataHandler)
+	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
 
 	// Data source status
 	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))

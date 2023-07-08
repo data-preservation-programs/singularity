@@ -7,7 +7,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// RemoveWalletHandler godoc
+func RemoveWalletHandler(
+	db *gorm.DB,
+	datasetName string,
+	wallet string,
+) error {
+	return removeWalletHandler(db, datasetName, wallet)
+}
+
 // @Summary Remove an associated wallet from a dataset
 // @Tags Wallet
 // @Param datasetName path string true "Dataset name"
@@ -16,7 +23,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName}/wallet/{wallet} [delete]
-func RemoveWalletHandler(
+func removeWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
