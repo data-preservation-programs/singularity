@@ -53,7 +53,15 @@ func argToDuration(s string) (time.Duration, error) {
 	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
-// CreateHandler godoc
+func CreateHandler(
+	db *gorm.DB,
+	ctx context.Context,
+	lotusClient jsonrpc.RPCClient,
+	request CreateRequest,
+) (*model.Schedule, error) {
+	return createHandler(db, ctx, lotusClient, request)
+}
+
 // @Summary Create a new schedule
 // @Description Create a new schedule
 // @Tags Deal Schedule
@@ -64,7 +72,7 @@ func argToDuration(s string) (time.Duration, error) {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/schedule [post]
-func CreateHandler(
+func createHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	lotusClient jsonrpc.RPCClient,

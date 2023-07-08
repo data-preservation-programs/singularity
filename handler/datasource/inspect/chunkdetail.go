@@ -9,7 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetSourceChunkDetailHandler godoc
+func GetSourceChunkDetailHandler(
+	db *gorm.DB,
+	id string,
+) (*model.Chunk, error) {
+	return getSourceChunkDetailHandler(db, id)
+}
+
 // @Summary Get detail of a specific chunk
 // @Tags Data Source
 // @Accept json
@@ -18,7 +24,7 @@ import (
 // @Success 200 {object} model.Chunk
 // @Failure 500 {object} handler.HTTPError
 // @Router /chunk/{id} [get]
-func GetSourceChunkDetailHandler(
+func getSourceChunkDetailHandler(
 	db *gorm.DB,
 	id string,
 ) (*model.Chunk, error) {

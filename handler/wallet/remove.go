@@ -7,7 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// RemoveHandler godoc
+func RemoveHandler(
+	db *gorm.DB,
+	address string,
+) error {
+	return removeHandler(db, address)
+}
+
 // @Summary Remove a wallet
 // @Tags Wallet
 // @Param address path string true "Address"
@@ -15,7 +21,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /wallet/{address} [delete]
-func RemoveHandler(
+func removeHandler(
 	db *gorm.DB,
 	address string,
 ) error {

@@ -30,7 +30,6 @@ func ListSourceByDatasetHandler(
 	return sources, nil
 }
 
-// ListSourceHandler godoc
 // @Summary List all sources for a dataset
 // @Tags Data Source
 // @Produce json
@@ -39,8 +38,14 @@ func ListSourceByDatasetHandler(
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source [get]
-func ListSourceHandler(
+func listSourceHandler(
 	db *gorm.DB,
 ) ([]model.Source, error) {
 	return ListSourceByDatasetHandler(db, "")
+}
+
+func ListSourceHandler(
+	db *gorm.DB,
+) ([]model.Source, error) {
+	return listSourceHandler(db)
 }

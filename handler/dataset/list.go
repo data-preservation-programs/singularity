@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// ListHandler godoc
 // @Summary List all datasets
 // @Tags Dataset
 // @Produce json
@@ -14,7 +13,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset [get]
-func ListHandler(
+func listHandler(
 	db *gorm.DB,
 ) ([]model.Dataset, error) {
 	var datasets []model.Dataset
@@ -23,4 +22,10 @@ func ListHandler(
 		return nil, handler.NewHandlerError(err)
 	}
 	return datasets, nil
+}
+
+func ListHandler(
+	db *gorm.DB,
+) ([]model.Dataset, error) {
+	return listHandler(db)
 }

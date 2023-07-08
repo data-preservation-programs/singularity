@@ -66,7 +66,7 @@ func TestPushItem_InvalidID(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "Invalid source ID")
@@ -87,7 +87,7 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "Syntax error")
@@ -108,7 +108,7 @@ func TestPushItem_SourceNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "source 1 not found")
@@ -144,7 +144,7 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 	require.NoError(t, err)
 	err = db.Create(&model.Directory{SourceID: 1}).Error
 	require.NoError(t, err)
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "object not found")
@@ -182,7 +182,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusCreated, rec.Code)
 	var newItem model.Item
@@ -198,7 +198,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	c.SetPath("/api/source/:id/push")
 	c.SetParamNames("id")
 	c.SetParamValues("1")
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusConflict, rec.Code)
 	require.Contains(t, rec.Body.String(), "already exists")
@@ -236,7 +236,7 @@ func TestPushItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.PushItem(c)
+	err = server.handlePushItem(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusCreated, rec.Code)
 	var newItem model.Item

@@ -19,7 +19,15 @@ import (
 
 type Config map[string]interface{}
 
-// UpdateSourceHandler godoc
+func UpdateSourceHandler(
+	db *gorm.DB,
+	ctx context.Context,
+	id string,
+	config Config,
+) (*model.Source, error) {
+	return updateSourceHandler(db, ctx, id, config)
+}
+
 // @Summary Update the config options of a source
 // @Tags Data Source
 // @Produce json
@@ -30,7 +38,7 @@ type Config map[string]interface{}
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id} [patch]
-func UpdateSourceHandler(
+func updateSourceHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	id string,

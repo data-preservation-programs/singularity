@@ -84,7 +84,13 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 	}, nil
 }
 
-// CreateHandler godoc
+func CreateHandler(
+	db *gorm.DB,
+	request CreateRequest,
+) (*model.Dataset, error) {
+	return createHandler(db, request)
+}
+
 // @Summary Create a new dataset
 // @Tags Dataset
 // @Accept json
@@ -95,7 +101,7 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset [post]
-func CreateHandler(
+func createHandler(
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {

@@ -24,7 +24,6 @@ type SourceStatus struct {
 	ItemSummary  ItemSummary     `json:"itemSummary"`  // summary of the items
 }
 
-// GetSourceStatusHandler godoc
 // @Summary Get the data preparation summary of a data source
 // @Tags Data Source
 // @Accept json
@@ -34,7 +33,7 @@ type SourceStatus struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/summary [get]
-func GetSourceStatusHandler(
+func getSourceStatusHandler(
 	db *gorm.DB,
 	id string,
 ) (*SourceStatus, error) {
@@ -71,4 +70,11 @@ func GetSourceStatusHandler(
 	}
 
 	return &summary, nil
+}
+
+func GetSourceStatusHandler(
+	db *gorm.DB,
+	id string,
+) (*SourceStatus, error) {
+	return getSourceStatusHandler(db, id)
 }

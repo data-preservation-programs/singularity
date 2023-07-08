@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// RemoveSourceHandler godoc
 // @Summary Remove a source
 // @Tags Data Source
 // @Param id path string true "Source ID"
@@ -18,7 +17,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id} [delete]
-func RemoveSourceHandler(
+func removeSourceHandler(
 	db *gorm.DB,
 	id string,
 ) error {
@@ -39,4 +38,11 @@ func RemoveSourceHandler(
 		return handler.NewHandlerError(err)
 	}
 	return nil
+}
+
+func RemoveSourceHandler(
+	db *gorm.DB,
+	id string,
+) error {
+	return removeSourceHandler(db, id)
 }

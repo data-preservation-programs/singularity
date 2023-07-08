@@ -21,7 +21,9 @@ OPTIONS:
 
    --duration value, -d value     Duration in days for deal length (default: 530)
    --keep-unsealed                Whether to keep unsealed copy (default: true)
-   --price value, -p value        Price per 32GiB Deal over whole duration in Fil (default: 0)
+   --price-per-deal value         Price in FIL per deal (default: 0)
+   --price-per-gb value           Price in FIL  per GiB (default: 0)
+   --price-per-gb-epoch value     Price in FIL per GiB per epoch (default: 0)
    --start-delay value, -s value  Deal start delay in days (default: 3)
    --verified                     Whether to propose deals as verified (default: true)
 

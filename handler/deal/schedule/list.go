@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// ListHandler godoc
 // @Summary List all deal making schedules
 // @Tags Deal Schedule
 // @Produce json
@@ -14,7 +13,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/schedules [get]
-func ListHandler(
+func listHandler(
 	db *gorm.DB,
 ) ([]model.Schedule, error) {
 	var schedules []model.Schedule
@@ -24,4 +23,10 @@ func ListHandler(
 	}
 
 	return schedules, nil
+}
+
+func ListHandler(
+	db *gorm.DB,
+) ([]model.Schedule, error) {
+	return listHandler(db)
 }
