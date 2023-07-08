@@ -303,10 +303,25 @@ func TestRunAPI(t *testing.T) {
 		}
 		createScheduleBody, err := json.Marshal(createSchedule)
 		require.NoError(t, err)
-		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal/schedule").Send(string(createScheduleBody)).End()
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/schedule").Send(string(createScheduleBody)).End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"id": 1`)
+
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/schedule").End()
+		require.Len(t, errs, 0)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		require.Contains(t, body, `"id": 1`)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/schedule/1/pause").End()
+		require.Len(t, errs, 0)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		require.Contains(t, body, `paused`)
+
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/schedule/1/resume").End()
+		require.Len(t, errs, 0)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		require.Contains(t, body, `active`)
 
 		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/local/dataset/test").
 			Send(`{"sourcePath":"/tmp","caseInsensitive":"false","deleteAfterExport":false,"rescanInterval":"1h"}`).End()
@@ -377,12 +392,12 @@ func TestRunAPI(t *testing.T) {
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal/send_manual").Send(`{}`).End()
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/send_deal").Send(`{}`).End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 		require.Contains(t, body, `client address not found`)
 
-		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal/list").Send(`{}`).End()
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/deal").Send(`{}`).End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `[`)
@@ -420,6 +435,15 @@ func TestDealScheduleCrud(t *testing.T) {
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity deal schedule create test f022352")
 		require.NoError(t, err)
+		body, _, err := RunArgsInTest(ctx, "singularity deal schedule list")
+		require.NoError(t, err)
+		require.Contains(t, body, "72h")
+		body, _, err = RunArgsInTest(ctx, "singularity deal schedule pause 1")
+		require.NoError(t, err)
+		require.Contains(t, body, "paused")
+		body, _, err = RunArgsInTest(ctx, "singularity deal schedule resume 1")
+		require.NoError(t, err)
+		require.Contains(t, body, "active")
 	})
 }
 

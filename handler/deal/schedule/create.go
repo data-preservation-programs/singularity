@@ -28,7 +28,7 @@ type CreateRequest struct {
 	IPNI                 bool     `default:"true"              json:"ipni"`            // Whether the deal should be IPNI
 	KeepUnsealed         bool     `default:"true"              json:"keepUnsealed"`    // Whether the deal should be kept unsealed
 	StartDelay           string   `default:"72h"               json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
-	Duration             string   `default:"12740h"            json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
+	Duration             string   `default:"12840h"            json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
 	ScheduleInterval     string   `json:"scheduleInterval"`                            // Schedule interval in duration format, i.e. 1h
 	ScheduleDealNumber   int      `json:"scheduleDealNumber"`                          // Number of deals per scheduled time
 	TotalDealNumber      int      `json:"totalDealNumber"`                             // Total number of deals
@@ -71,7 +71,7 @@ func CreateHandler(
 // @Success 200 {object} model.Schedule
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /deal/schedule [post]
+// @Router /schedule [post]
 func createHandler(
 	db *gorm.DB,
 	ctx context.Context,

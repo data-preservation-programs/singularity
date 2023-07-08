@@ -12,7 +12,7 @@ import (
 // @Success 200 {array} model.Schedule
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /deal/schedules [get]
+// @Router /schedules [get]
 func listHandler(
 	db *gorm.DB,
 ) ([]model.Schedule, error) {
