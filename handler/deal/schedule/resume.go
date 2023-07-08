@@ -17,11 +17,11 @@ func ResumeHandler(
 // @Summary Resume a specific schedule
 // @Tags Deal Schedule
 // @Produce json
-// @Param scheduleID path string true "Schedule ID"
+// @Param id path string true "Schedule ID"
 // @Success 200 {object} model.Schedule
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /deal/schedule/{scheduleID}/resume [post]
+// @Router /schedule/{id}/resume [post]
 func resumeHandler(
 	db *gorm.DB,
 	scheduleID string,
@@ -33,7 +33,7 @@ func resumeHandler(
 			return err
 		}
 		schedule.State = model.ScheduleActive
-		err = db.Where("id = ?", scheduleID).Update("state", model.ScheduleActive).Error
+		err = db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.ScheduleActive).Error
 		if err != nil {
 			return err
 		}

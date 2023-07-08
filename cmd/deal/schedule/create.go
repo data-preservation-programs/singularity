@@ -77,19 +77,19 @@ var CreateCmd = &cli.Command{
 			DefaultText: "disabled",
 			Value:       0,
 		},
-		&cli.Float64Flag{
+		&cli.StringFlag{
 			Name:     "start-delay",
 			Category: "Deal Proposal",
 			Aliases:  []string{"s"},
-			Usage:    "Deal start delay in days",
-			Value:    3,
+			Usage:    "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
+			Value:    "72h",
 		},
-		&cli.Float64Flag{
+		&cli.StringFlag{
 			Name:     "duration",
 			Category: "Deal Proposal",
 			Aliases:  []string{"d"},
-			Usage:    "Duration in days for deal length",
-			Value:    530,
+			Usage:    "Duration in epoch or in duration format, i.e. 1500000, 2400h",
+			Value:    "12840h",
 		},
 		&cli.IntFlag{
 			Name:        "schedule-deal-number",
