@@ -7,7 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// ResumeHandler godoc
+func ResumeHandler(
+	db *gorm.DB,
+	scheduleID string,
+) (*model.Schedule, error) {
+	return resumeHandler(db, scheduleID)
+}
+
 // @Summary Resume a specific schedule
 // @Tags Deal Schedule
 // @Produce json
@@ -16,7 +22,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/schedule/{scheduleID}/resume [post]
-func ResumeHandler(
+func resumeHandler(
 	db *gorm.DB,
 	scheduleID string,
 ) (*model.Schedule, error) {

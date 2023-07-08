@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// RemoveHandler godoc
 // @Summary Remove a specific dataset. This will not remove the CAR files.
 // @Description Important! If the dataset is large, this command will take some time to remove all relevant data.
 // @Tags Dataset
@@ -15,7 +14,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName} [delete]
-func RemoveHandler(
+func removeHandler(
 	db *gorm.DB,
 	datasetName string,
 ) error {
@@ -28,4 +27,11 @@ func RemoveHandler(
 		return handler.NewHandlerError(err)
 	}
 	return nil
+}
+
+func RemoveHandler(
+	db *gorm.DB,
+	datasetName string,
+) error {
+	return removeHandler(db, datasetName)
 }

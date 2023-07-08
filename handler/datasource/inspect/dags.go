@@ -9,7 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetDagsHandler godoc
+func GetDagsHandler(
+	db *gorm.DB,
+	id string,
+) ([]model.Car, error) {
+	return getDagsHandler(db, id)
+}
+
 // @Summary Get all dag details of a data source
 // @Tags Data Source
 // @Accept json
@@ -18,7 +24,7 @@ import (
 // @Success 200 {array} model.Car
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/chunks [get]
-func GetDagsHandler(
+func getDagsHandler(
 	db *gorm.DB,
 	id string,
 ) ([]model.Car, error) {

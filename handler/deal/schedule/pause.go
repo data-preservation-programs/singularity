@@ -7,7 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// PauseHandler godoc
+func PauseHandler(
+	db *gorm.DB,
+	scheduleID string,
+) (*model.Schedule, error) {
+	return pauseHandler(db, scheduleID)
+}
+
 // @Summary Pause a specific schedule
 // @Tags Deal Schedule
 // @Produce json
@@ -16,7 +22,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/schedule/{scheduleID}/pause [post]
-func PauseHandler(
+func pauseHandler(
 	db *gorm.DB,
 	scheduleID string,
 ) (*model.Schedule, error) {

@@ -9,7 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetSourceItemDetailHandler godoc
+func GetSourceItemDetailHandler(
+	db *gorm.DB,
+	id string,
+) (*model.Item, error) {
+	return getSourceItemDetailHandler(db, id)
+}
+
 // @Summary Get details about an item
 // @Tags Data Source
 // @Accept json
@@ -18,7 +24,7 @@ import (
 // @Success 200 {object} model.Item
 // @Failure 500 {object} handler.HTTPError
 // @Router /item/{id} [get]
-func GetSourceItemDetailHandler(
+func getSourceItemDetailHandler(
 	db *gorm.DB,
 	id string,
 ) (*model.Item, error) {

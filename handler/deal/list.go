@@ -14,7 +14,10 @@ type ListDealRequest struct {
 	States    []string `json:"states"`    // state filter
 }
 
-// ListHandler godoc
+func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
+	return listHandler(db, request)
+}
+
 // @Summary List all deals
 // @Description List all deals
 // @Tags Deal
@@ -25,7 +28,7 @@ type ListDealRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /deal/list [post]
-func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
+func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	var deals []model.Deal
 	statement := db
 	if len(request.Datasets) > 0 {

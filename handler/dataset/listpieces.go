@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// ListPiecesHandler godoc
 // @Summary List all pieces for the dataset that are available for deal making
 // @Tags Dataset
 // @Produce json
@@ -17,7 +16,7 @@ import (
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName}/piece [get]
-func ListPiecesHandler(
+func listPiecesHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Car, error) {
@@ -37,4 +36,11 @@ func ListPiecesHandler(
 	}
 
 	return cars, nil
+}
+
+func ListPiecesHandler(
+	db *gorm.DB,
+	datasetName string,
+) ([]model.Car, error) {
+	return listPiecesHandler(db, datasetName)
 }

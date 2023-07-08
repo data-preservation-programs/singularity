@@ -6,14 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-// ResetHandler godoc
 // @Summary Reset the database
 // @Description This will drop all tables and recreate them.
 // @Tags Admin
 // @Success 204
 // @Failure 500 {object} handler.HTTPError
 // @Router /admin/reset [post]
-func ResetHandler(db *gorm.DB) error {
+func resetHandler(db *gorm.DB) error {
 	err := model.DropAll(db)
 	if err != nil {
 		return handler.NewHandlerError(err)
@@ -25,4 +24,8 @@ func ResetHandler(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func ResetHandler(db *gorm.DB) error {
+	return resetHandler(db)
 }

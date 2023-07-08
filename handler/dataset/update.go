@@ -21,7 +21,14 @@ type UpdateRequest struct {
 	EncryptionScript     *string  `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
 
-// UpdateHandler godoc
+func UpdateHandler(
+	db *gorm.DB,
+	datasetName string,
+	request UpdateRequest,
+) (*model.Dataset, error) {
+	return updateHandler(db, datasetName, request)
+}
+
 // @Summary Update a dataset
 // @Tags Dataset
 // @Accept json
@@ -32,7 +39,7 @@ type UpdateRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /dataset/{datasetName} [patch]
-func UpdateHandler(
+func updateHandler(
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,

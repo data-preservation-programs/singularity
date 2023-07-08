@@ -15,7 +15,15 @@ type ImportRequest struct {
 	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
 }
 
-// ImportHandler godoc
+func ImportHandler(
+	db *gorm.DB,
+	ctx context.Context,
+	lotusClient jsonrpc.RPCClient,
+	request ImportRequest,
+) (*model.Wallet, error) {
+	return importHandler(db, ctx, lotusClient, request)
+}
+
 // @Summary Import a private key
 // @Tags Wallet
 // @Accept json
@@ -25,7 +33,7 @@ type ImportRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /wallet [post]
-func ImportHandler(
+func importHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	lotusClient jsonrpc.RPCClient,

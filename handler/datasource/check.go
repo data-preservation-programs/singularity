@@ -25,7 +25,15 @@ type Entry struct {
 	LastModified time.Time `json:"lastModified"`
 }
 
-// CheckSourceHandler godoc
+func CheckSourceHandler(
+	db *gorm.DB,
+	ctx context.Context,
+	id string,
+	request CheckSourceRequest,
+) ([]Entry, error) {
+	return checkSourceHandler(db, ctx, id, request)
+}
+
 // @Summary Check the connection of the data source by listing a path
 // @Tags Data Source
 // @Accept json
@@ -36,7 +44,7 @@ type Entry struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/check [post]
-func CheckSourceHandler(
+func checkSourceHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	id string,

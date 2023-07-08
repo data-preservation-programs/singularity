@@ -1,4 +1,6 @@
 // Code generated. DO NOT EDIT.
+//
+//lint:file-ignore U1000 Ignore all unused code, it's generated
 package datasource
 
 type AcdRequest struct {
@@ -16,7 +18,6 @@ type AcdRequest struct {
 	UploadWaitPerGb   string `json:"uploadWaitPerGb" default:"3m0s"`           // Additional time per GiB to wait after a failed complete upload to see if it appears.
 }
 
-// HandleAcd godoc
 // @Summary Add acd source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -27,7 +28,7 @@ type AcdRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body AcdRequest true "Request body"
 // @Router /source/acd/dataset/{datasetName} [post]
-func HandleAcd() {}
+func handleAcd() {}
 
 type AzureblobRequest struct {
 	SourcePath                 string `validate:"required" json:"sourcePath"`                                     // The path of the source to scan items
@@ -67,7 +68,6 @@ type AzureblobRequest struct {
 	Username                   string `json:"username"`                                                           // User name (usually an email address)
 }
 
-// HandleAzureblob godoc
 // @Summary Add azureblob source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -78,7 +78,7 @@ type AzureblobRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body AzureblobRequest true "Request body"
 // @Router /source/azureblob/dataset/{datasetName} [post]
-func HandleAzureblob() {}
+func handleAzureblob() {}
 
 type B2Request struct {
 	SourcePath           string `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
@@ -102,7 +102,6 @@ type B2Request struct {
 	Versions             string `json:"versions" default:"false"`                                   // Include old versions in directory listings.
 }
 
-// HandleB2 godoc
 // @Summary Add b2 source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -113,7 +112,7 @@ type B2Request struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body B2Request true "Request body"
 // @Router /source/b2/dataset/{datasetName} [post]
-func HandleB2() {}
+func handleB2() {}
 
 type BoxRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                        // The path of the source to scan items
@@ -135,7 +134,6 @@ type BoxRequest struct {
 	UploadCutoff      string `json:"uploadCutoff" default:"50Mi"`                                           // Cutoff for switching to multipart upload (>= 50 MiB).
 }
 
-// HandleBox godoc
 // @Summary Add box source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -146,7 +144,7 @@ type BoxRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body BoxRequest true "Request body"
 // @Router /source/box/dataset/{datasetName} [post]
-func HandleBox() {}
+func handleBox() {}
 
 type DriveRequest struct {
 	SourcePath                string `validate:"required" json:"sourcePath"`             // The path of the source to scan items
@@ -197,7 +195,6 @@ type DriveRequest struct {
 	V2DownloadMinSize         string `json:"v2DownloadMinSize" default:"off"`            // If Object's are greater, use drive v2 API to download.
 }
 
-// HandleDrive godoc
 // @Summary Add drive source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -208,7 +205,7 @@ type DriveRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body DriveRequest true "Request body"
 // @Router /source/drive/dataset/{datasetName} [post]
-func HandleDrive() {}
+func handleDrive() {}
 
 type DropboxRequest struct {
 	SourcePath         string `validate:"required" json:"sourcePath"`                                    // The path of the source to scan items
@@ -230,7 +227,6 @@ type DropboxRequest struct {
 	TokenUrl           string `json:"tokenUrl"`                                                          // Token server url.
 }
 
-// HandleDropbox godoc
 // @Summary Add dropbox source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -241,7 +237,7 @@ type DropboxRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body DropboxRequest true "Request body"
 // @Router /source/dropbox/dataset/{datasetName} [post]
-func HandleDropbox() {}
+func handleDropbox() {}
 
 type FichierRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                                                                                // The path of the source to scan items
@@ -254,7 +250,6 @@ type FichierRequest struct {
 	SharedFolder      string `json:"sharedFolder"`                                                                                                                  // If you want to download a shared folder, add this parameter.
 }
 
-// HandleFichier godoc
 // @Summary Add fichier source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -265,7 +260,7 @@ type FichierRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body FichierRequest true "Request body"
 // @Router /source/fichier/dataset/{datasetName} [post]
-func HandleFichier() {}
+func handleFichier() {}
 
 type FilefabricRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                   // The path of the source to scan items
@@ -280,7 +275,6 @@ type FilefabricRequest struct {
 	Version           string `json:"version"`                                          // Version read from the file fabric.
 }
 
-// HandleFilefabric godoc
 // @Summary Add filefabric source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -291,7 +285,7 @@ type FilefabricRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body FilefabricRequest true "Request body"
 // @Router /source/filefabric/dataset/{datasetName} [post]
-func HandleFilefabric() {}
+func handleFilefabric() {}
 
 type FtpRequest struct {
 	SourcePath         string `validate:"required" json:"sourcePath"`                  // The path of the source to scan items
@@ -319,7 +313,6 @@ type FtpRequest struct {
 	WritingMdtm        string `json:"writingMdtm" default:"false"`                     // Use MDTM to set modification time (VsFtpd quirk)
 }
 
-// HandleFtp godoc
 // @Summary Add ftp source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -330,7 +323,7 @@ type FtpRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body FtpRequest true "Request body"
 // @Router /source/ftp/dataset/{datasetName} [post]
-func HandleFtp() {}
+func handleFtp() {}
 
 type GcsRequest struct {
 	SourcePath                string `validate:"required" json:"sourcePath"`                // The path of the source to scan items
@@ -357,7 +350,6 @@ type GcsRequest struct {
 	TokenUrl                  string `json:"tokenUrl"`                                      // Token server url.
 }
 
-// HandleGcs godoc
 // @Summary Add gcs source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -368,7 +360,7 @@ type GcsRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body GcsRequest true "Request body"
 // @Router /source/gcs/dataset/{datasetName} [post]
-func HandleGcs() {}
+func handleGcs() {}
 
 type GphotosRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                // The path of the source to scan items
@@ -386,7 +378,6 @@ type GphotosRequest struct {
 	TokenUrl          string `json:"tokenUrl"`                                      // Token server url.
 }
 
-// HandleGphotos godoc
 // @Summary Add gphotos source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -397,7 +388,7 @@ type GphotosRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body GphotosRequest true "Request body"
 // @Router /source/gphotos/dataset/{datasetName} [post]
-func HandleGphotos() {}
+func handleGphotos() {}
 
 type HdfsRequest struct {
 	SourcePath             string `validate:"required" json:"sourcePath"`                         // The path of the source to scan items
@@ -410,7 +401,6 @@ type HdfsRequest struct {
 	Username               string `json:"username"`                                               // Hadoop user name.
 }
 
-// HandleHdfs godoc
 // @Summary Add hdfs source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -421,7 +411,7 @@ type HdfsRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body HdfsRequest true "Request body"
 // @Router /source/hdfs/dataset/{datasetName} [post]
-func HandleHdfs() {}
+func handleHdfs() {}
 
 type HidriveRequest struct {
 	SourcePath                 string `validate:"required" json:"sourcePath"`                        // The path of the source to scan items
@@ -443,7 +433,6 @@ type HidriveRequest struct {
 	UploadCutoff               string `json:"uploadCutoff" default:"96Mi"`                           // Cutoff/Threshold for chunked uploads.
 }
 
-// HandleHidrive godoc
 // @Summary Add hidrive source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -454,7 +443,7 @@ type HidriveRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body HidriveRequest true "Request body"
 // @Router /source/hidrive/dataset/{datasetName} [post]
-func HandleHidrive() {}
+func handleHidrive() {}
 
 type HttpRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
@@ -466,7 +455,6 @@ type HttpRequest struct {
 	Url               string `json:"url"`                                   // URL of HTTP host to connect to.
 }
 
-// HandleHttp godoc
 // @Summary Add http source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -477,7 +465,7 @@ type HttpRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body HttpRequest true "Request body"
 // @Router /source/http/dataset/{datasetName} [post]
-func HandleHttp() {}
+func handleHttp() {}
 
 type InternetarchiveRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
@@ -492,7 +480,6 @@ type InternetarchiveRequest struct {
 	WaitArchive       string `json:"waitArchive" default:"0s"`                                   // Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
 }
 
-// HandleInternetarchive godoc
 // @Summary Add internetarchive source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -503,7 +490,7 @@ type InternetarchiveRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body InternetarchiveRequest true "Request body"
 // @Router /source/internetarchive/dataset/{datasetName} [post]
-func HandleInternetarchive() {}
+func handleInternetarchive() {}
 
 type JottacloudRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                                                 // The path of the source to scan items
@@ -517,7 +504,6 @@ type JottacloudRequest struct {
 	UploadResumeLimit string `json:"uploadResumeLimit" default:"10Mi"`                                                               // Files bigger than this can be resumed if the upload fail's.
 }
 
-// HandleJottacloud godoc
 // @Summary Add jottacloud source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -528,7 +514,7 @@ type JottacloudRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body JottacloudRequest true "Request body"
 // @Router /source/jottacloud/dataset/{datasetName} [post]
-func HandleJottacloud() {}
+func handleJottacloud() {}
 
 type KoofrRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
@@ -543,7 +529,6 @@ type KoofrRequest struct {
 	User              string `json:"user"`                                                       // Your user name.
 }
 
-// HandleKoofr godoc
 // @Summary Add koofr source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -554,7 +539,7 @@ type KoofrRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body KoofrRequest true "Request body"
 // @Router /source/koofr/dataset/{datasetName} [post]
-func HandleKoofr() {}
+func handleKoofr() {}
 
 type LocalRequest struct {
 	SourcePath           string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
@@ -576,7 +561,6 @@ type LocalRequest struct {
 	ZeroSizeLinks        string `json:"zeroSizeLinks" default:"false"`         // Assume the Stat size of links is zero (and read them instead) (deprecated).
 }
 
-// HandleLocal godoc
 // @Summary Add local source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -587,7 +571,7 @@ type LocalRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body LocalRequest true "Request body"
 // @Router /source/local/dataset/{datasetName} [post]
-func HandleLocal() {}
+func handleLocal() {}
 
 type MailruRequest struct {
 	SourcePath          string `validate:"required" json:"sourcePath"`                                                                           // The path of the source to scan items
@@ -605,7 +589,6 @@ type MailruRequest struct {
 	UserAgent           string `json:"userAgent"`                                                                                                // HTTP user agent used internally by client.
 }
 
-// HandleMailru godoc
 // @Summary Add mailru source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -616,7 +599,7 @@ type MailruRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body MailruRequest true "Request body"
 // @Router /source/mailru/dataset/{datasetName} [post]
-func HandleMailru() {}
+func handleMailru() {}
 
 type MegaRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`           // The path of the source to scan items
@@ -630,7 +613,6 @@ type MegaRequest struct {
 	User              string `json:"user"`                                     // User name.
 }
 
-// HandleMega godoc
 // @Summary Add mega source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -641,7 +623,7 @@ type MegaRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body MegaRequest true "Request body"
 // @Router /source/mega/dataset/{datasetName} [post]
-func HandleMega() {}
+func handleMega() {}
 
 type NetstorageRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
@@ -653,7 +635,6 @@ type NetstorageRequest struct {
 	Secret            string `json:"secret"`                                // Set the NetStorage account secret/G2O key for authentication.
 }
 
-// HandleNetstorage godoc
 // @Summary Add netstorage source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -664,7 +645,7 @@ type NetstorageRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body NetstorageRequest true "Request body"
 // @Router /source/netstorage/dataset/{datasetName} [post]
-func HandleNetstorage() {}
+func handleNetstorage() {}
 
 type OnedriveRequest struct {
 	SourcePath              string `validate:"required" json:"sourcePath"`                                                                                                                      // The path of the source to scan items
@@ -693,7 +674,6 @@ type OnedriveRequest struct {
 	TokenUrl                string `json:"tokenUrl"`                                                                                                                                            // Token server url.
 }
 
-// HandleOnedrive godoc
 // @Summary Add onedrive source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -704,7 +684,7 @@ type OnedriveRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body OnedriveRequest true "Request body"
 // @Router /source/onedrive/dataset/{datasetName} [post]
-func HandleOnedrive() {}
+func handleOnedrive() {}
 
 type OpendriveRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                                                                                                   // The path of the source to scan items
@@ -716,7 +696,6 @@ type OpendriveRequest struct {
 	Username          string `json:"username"`                                                                                                                                         // Username.
 }
 
-// HandleOpendrive godoc
 // @Summary Add opendrive source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -727,7 +706,7 @@ type OpendriveRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body OpendriveRequest true "Request body"
 // @Router /source/opendrive/dataset/{datasetName} [post]
-func HandleOpendrive() {}
+func handleOpendrive() {}
 
 type OosRequest struct {
 	SourcePath           string `validate:"required" json:"sourcePath"`           // The path of the source to scan items
@@ -757,7 +736,6 @@ type OosRequest struct {
 	UploadCutoff         string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
 }
 
-// HandleOos godoc
 // @Summary Add oos source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -768,7 +746,7 @@ type OosRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body OosRequest true "Request body"
 // @Router /source/oos/dataset/{datasetName} [post]
-func HandleOos() {}
+func handleOos() {}
 
 type PcloudRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
@@ -786,7 +764,6 @@ type PcloudRequest struct {
 	Username          string `json:"username"`                                                   // Your pcloud username.
 }
 
-// HandlePcloud godoc
 // @Summary Add pcloud source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -797,7 +774,7 @@ type PcloudRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body PcloudRequest true "Request body"
 // @Router /source/pcloud/dataset/{datasetName} [post]
-func HandlePcloud() {}
+func handlePcloud() {}
 
 type PremiumizemeRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                         // The path of the source to scan items
@@ -807,7 +784,6 @@ type PremiumizemeRequest struct {
 	Encoding          string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-// HandlePremiumizeme godoc
 // @Summary Add premiumizeme source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -818,7 +794,7 @@ type PremiumizemeRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body PremiumizemeRequest true "Request body"
 // @Router /source/premiumizeme/dataset/{datasetName} [post]
-func HandlePremiumizeme() {}
+func handlePremiumizeme() {}
 
 type PutioRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
@@ -827,7 +803,6 @@ type PutioRequest struct {
 	Encoding          string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-// HandlePutio godoc
 // @Summary Add putio source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -838,7 +813,7 @@ type PutioRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body PutioRequest true "Request body"
 // @Router /source/putio/dataset/{datasetName} [post]
-func HandlePutio() {}
+func handlePutio() {}
 
 type QingstorRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`           // The path of the source to scan items
@@ -856,7 +831,6 @@ type QingstorRequest struct {
 	Zone              string `json:"zone"`                                     // Zone to connect to.
 }
 
-// HandleQingstor godoc
 // @Summary Add qingstor source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -867,7 +841,7 @@ type QingstorRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body QingstorRequest true "Request body"
 // @Router /source/qingstor/dataset/{datasetName} [post]
-func HandleQingstor() {}
+func handleQingstor() {}
 
 type S3Request struct {
 	SourcePath            string `validate:"required" json:"sourcePath"`           // The path of the source to scan items
@@ -924,7 +898,6 @@ type S3Request struct {
 	Versions              string `json:"versions" default:"false"`                 // Include old versions in directory listings.
 }
 
-// HandleS3 godoc
 // @Summary Add s3 source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -935,7 +908,7 @@ type S3Request struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body S3Request true "Request body"
 // @Router /source/s3/dataset/{datasetName} [post]
-func HandleS3() {}
+func handleS3() {}
 
 type SeafileRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                 // The path of the source to scan items
@@ -952,7 +925,6 @@ type SeafileRequest struct {
 	User              string `json:"user"`                                                           // User name (usually email address).
 }
 
-// HandleSeafile godoc
 // @Summary Add seafile source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -963,7 +935,7 @@ type SeafileRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SeafileRequest true "Request body"
 // @Router /source/seafile/dataset/{datasetName} [post]
-func HandleSeafile() {}
+func handleSeafile() {}
 
 type SftpRequest struct {
 	SourcePath              string `validate:"required" json:"sourcePath"`          // The path of the source to scan items
@@ -1002,7 +974,6 @@ type SftpRequest struct {
 	User                    string `json:"user" default:"shane"`                    // SSH username.
 }
 
-// HandleSftp godoc
 // @Summary Add sftp source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1013,7 +984,7 @@ type SftpRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SftpRequest true "Request body"
 // @Router /source/sftp/dataset/{datasetName} [post]
-func HandleSftp() {}
+func handleSftp() {}
 
 type SharefileRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                                                                                                   // The path of the source to scan items
@@ -1026,7 +997,6 @@ type SharefileRequest struct {
 	UploadCutoff      string `json:"uploadCutoff" default:"128Mi"`                                                                                                                     // Cutoff for switching to multipart upload.
 }
 
-// HandleSharefile godoc
 // @Summary Add sharefile source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1037,7 +1007,7 @@ type SharefileRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SharefileRequest true "Request body"
 // @Router /source/sharefile/dataset/{datasetName} [post]
-func HandleSharefile() {}
+func handleSharefile() {}
 
 type SiaRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                         // The path of the source to scan items
@@ -1049,7 +1019,6 @@ type SiaRequest struct {
 	UserAgent         string `json:"userAgent" default:"Sia-Agent"`                                          // Siad User Agent
 }
 
-// HandleSia godoc
 // @Summary Add sia source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1060,7 +1029,7 @@ type SiaRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SiaRequest true "Request body"
 // @Router /source/sia/dataset/{datasetName} [post]
-func HandleSia() {}
+func handleSia() {}
 
 type SmbRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                                                                              // The path of the source to scan items
@@ -1078,7 +1047,6 @@ type SmbRequest struct {
 	User              string `json:"user" default:"shane"`                                                                                                        // SMB username.
 }
 
-// HandleSmb godoc
 // @Summary Add smb source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1089,7 +1057,7 @@ type SmbRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SmbRequest true "Request body"
 // @Router /source/smb/dataset/{datasetName} [post]
-func HandleSmb() {}
+func handleSmb() {}
 
 type StorjRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`          // The path of the source to scan items
@@ -1102,7 +1070,6 @@ type StorjRequest struct {
 	SatelliteAddress  string `json:"satelliteAddress" default:"us1.storj.io"` // Satellite address.
 }
 
-// HandleStorj godoc
 // @Summary Add storj source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1113,7 +1080,7 @@ type StorjRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body StorjRequest true "Request body"
 // @Router /source/storj/dataset/{datasetName} [post]
-func HandleStorj() {}
+func handleStorj() {}
 
 type SugarsyncRequest struct {
 	SourcePath          string `validate:"required" json:"sourcePath"`               // The path of the source to scan items
@@ -1132,7 +1099,6 @@ type SugarsyncRequest struct {
 	User                string `json:"user"`                                         // Sugarsync user.
 }
 
-// HandleSugarsync godoc
 // @Summary Add sugarsync source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1143,7 +1109,7 @@ type SugarsyncRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SugarsyncRequest true "Request body"
 // @Router /source/sugarsync/dataset/{datasetName} [post]
-func HandleSugarsync() {}
+func handleSugarsync() {}
 
 type SwiftRequest struct {
 	SourcePath                  string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
@@ -1174,7 +1140,6 @@ type SwiftRequest struct {
 	UserId                      string `json:"userId"`                                // User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).
 }
 
-// HandleSwift godoc
 // @Summary Add swift source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1185,7 +1150,7 @@ type SwiftRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body SwiftRequest true "Request body"
 // @Router /source/swift/dataset/{datasetName} [post]
-func HandleSwift() {}
+func handleSwift() {}
 
 type UptoboxRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                                                        // The path of the source to scan items
@@ -1195,7 +1160,6 @@ type UptoboxRequest struct {
 	Encoding          string `json:"encoding" default:"Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-// HandleUptobox godoc
 // @Summary Add uptobox source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1206,7 +1170,7 @@ type UptoboxRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body UptoboxRequest true "Request body"
 // @Router /source/uptobox/dataset/{datasetName} [post]
-func HandleUptobox() {}
+func handleUptobox() {}
 
 type WebdavRequest struct {
 	SourcePath         string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
@@ -1222,7 +1186,6 @@ type WebdavRequest struct {
 	Vendor             string `json:"vendor"`                                // Name of the WebDAV site/service/software you are using.
 }
 
-// HandleWebdav godoc
 // @Summary Add webdav source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1233,7 +1196,7 @@ type WebdavRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body WebdavRequest true "Request body"
 // @Router /source/webdav/dataset/{datasetName} [post]
-func HandleWebdav() {}
+func handleWebdav() {}
 
 type YandexRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`                   // The path of the source to scan items
@@ -1248,7 +1211,6 @@ type YandexRequest struct {
 	TokenUrl          string `json:"tokenUrl"`                                         // Token server url.
 }
 
-// HandleYandex godoc
 // @Summary Add yandex source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1259,7 +1221,7 @@ type YandexRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body YandexRequest true "Request body"
 // @Router /source/yandex/dataset/{datasetName} [post]
-func HandleYandex() {}
+func handleYandex() {}
 
 type ZohoRequest struct {
 	SourcePath        string `validate:"required" json:"sourcePath"`         // The path of the source to scan items
@@ -1274,7 +1236,6 @@ type ZohoRequest struct {
 	TokenUrl          string `json:"tokenUrl"`                               // Token server url.
 }
 
-// HandleZoho godoc
 // @Summary Add zoho source for a dataset
 // @Tags Data Source
 // @Accept json
@@ -1285,7 +1246,7 @@ type ZohoRequest struct {
 // @Failure 500 {object} handler.HTTPError
 // @Param request body ZohoRequest true "Request body"
 // @Router /source/zoho/dataset/{datasetName} [post]
-func HandleZoho() {}
+func handleZoho() {}
 
 type AllConfig struct {
 	DeleteAfterExport                   bool   `validate:"optional" json:"deleteAfterExport"`                                                                                                                       // Delete the source after exporting to CAR files

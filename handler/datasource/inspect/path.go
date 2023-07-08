@@ -21,7 +21,14 @@ type GetPathRequest struct {
 	Path string `json:"path"`
 }
 
-// GetPathHandler godoc
+func GetPathHandler(
+	db *gorm.DB,
+	id string,
+	request GetPathRequest,
+) (*DirDetail, error) {
+	return getPathHandler(db, id, request)
+}
+
 // @Summary Get all item details inside a data source path
 // @Tags Data Source
 // @Accept json
@@ -32,7 +39,7 @@ type GetPathRequest struct {
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/path [get]
-func GetPathHandler(
+func getPathHandler(
 	db *gorm.DB,
 	id string,
 	request GetPathRequest,

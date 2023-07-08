@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// RescanSourceHandler godoc
 // @Summary Trigger a rescan of a data source
 // @Tags Data Source
 // @Produce json
@@ -18,7 +17,7 @@ import (
 // @Success 200 {object} model.Source
 // @Failure 500 {object} handler.HTTPError
 // @Router /source/{id}/rescan [post]
-func RescanSourceHandler(
+func rescanSourceHandler(
 	db *gorm.DB,
 	id string,
 ) (*model.Source, error) {
@@ -52,4 +51,11 @@ func RescanSourceHandler(
 	}
 
 	return &source, nil
+}
+
+func RescanSourceHandler(
+	db *gorm.DB,
+	id string,
+) (*model.Source, error) {
+	return rescanSourceHandler(db, id)
 }

@@ -3,14 +3,18 @@ definitions:
   dataset.AddPieceRequest:
     properties:
       filePath:
+        description: Path to the CAR file, used to determine the size of the file
+          and root CID
         type: string
-      fileSize:
-        type: integer
-      pieceCID:
+      pieceCid:
+        description: CID of the piece
         type: string
       pieceSize:
+        description: Size of the piece
         type: string
-      rootCID:
+      rootCid:
+        description: Root CID of the CAR file, if not provided, will be determined
+          by the CAR file header. Used to populate the label field of storage deal
         type: string
     type: object
   dataset.CreateRequest:
@@ -83,10 +87,14 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,InvalidUtf8,Dot
         description: The encoding for the backend.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -106,6 +114,10 @@ definitions:
         description: Additional time per GiB to wait after a failed complete upload
           to see if it appears.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.AllConfig:
     properties:
@@ -362,40 +374,9 @@ definitions:
         default: 50Mi
         description: Cutoff for switching to multipart upload (>= 50 MiB).
         type: string
-      cryptDirectoryNameEncryption:
-        default: "true"
-        description: Option to either encrypt directory names or leave them intact.
-        type: string
-      cryptFilenameEncoding:
-        default: base32
-        description: How to encode the encrypted filename to text string.
-        type: string
-      cryptFilenameEncryption:
-        default: standard
-        description: How to encrypt the filenames.
-        type: string
-      cryptNoDataEncryption:
-        default: "false"
-        description: Option to either encrypt file data or leave it unencrypted.
-        type: string
-      cryptPassword:
-        description: Password or pass phrase for encryption.
-        type: string
-      cryptPassword2:
-        description: Password or pass phrase for salt.
-        type: string
-      cryptRemote:
-        description: Remote to encrypt/decrypt.
-        type: string
-      cryptServerSideAcrossConfigs:
-        default: "false"
-        description: Allow server-side operations (e.g. copy) to work across different
-          crypt configs.
-        type: string
-      cryptShowMapping:
-        default: "false"
-        description: For all files listed show how the names encrypt.
-        type: string
+      deleteAfterExport:
+        description: Delete the source after exporting to CAR files
+        type: boolean
       driveAcknowledgeAbuse:
         default: "false"
         description: Set to allow files which return cannotDownloadAbusiveFile to
@@ -1379,6 +1360,10 @@ definitions:
       qingstorZone:
         description: Zone to connect to.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       s3AccessKeyId:
         description: AWS Access Key ID.
         type: string
@@ -1911,23 +1896,6 @@ definitions:
         description: User ID to log in - optional - most swift systems use user and
           leave this blank (v3 auth) (OS_USER_ID).
         type: string
-      tardigradeAccessGrant:
-        description: Access grant.
-        type: string
-      tardigradeApiKey:
-        description: API key.
-        type: string
-      tardigradePassphrase:
-        description: Encryption passphrase.
-        type: string
-      tardigradeProvider:
-        default: existing
-        description: Choose an authentication method.
-        type: string
-      tardigradeSatelliteAddress:
-        default: us1.storj.io
-        description: Satellite address.
-        type: string
       uptoboxAccessToken:
         description: Your access token.
         type: string
@@ -2040,7 +2008,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableChecksum:
         default: "false"
         description: Don't store MD5 checksum with object metadata.
@@ -2096,6 +2064,10 @@ definitions:
       publicAccess:
         description: 'Public access level of a container: blob or container.'
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sasUrl:
         description: SAS URL for container level access only.
         type: string
@@ -2128,6 +2100,10 @@ definitions:
       username:
         description: User name (usually an email address)
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.B2Request:
     properties:
@@ -2144,7 +2120,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableChecksum:
         default: "false"
         description: Disable checksums for large (> upload cutoff) files.
@@ -2179,6 +2155,10 @@ definitions:
         default: "false"
         description: Whether to use mmap buffers in internal memory pool.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2197,6 +2177,10 @@ definitions:
         default: "false"
         description: Include old versions in directory listings.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.BoxRequest:
     properties:
@@ -2224,7 +2208,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2235,6 +2219,10 @@ definitions:
         type: string
       ownedBy:
         description: Only show items owned by the login (email address) passed in.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       rootFolderId:
         default: "0"
@@ -2253,6 +2241,10 @@ definitions:
         default: 50Mi
         description: Cutoff for switching to multipart upload (>= 50 MiB).
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.CheckSourceRequest:
     properties:
@@ -2269,49 +2261,6 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.WorkState'
         description: the state of the chunks
-    type: object
-  datasource.CryptRequest:
-    properties:
-      deleteAfterExport:
-        description: Delete the source after exporting to CAR files
-        type: string
-      directoryNameEncryption:
-        default: "true"
-        description: Option to either encrypt directory names or leave them intact.
-        type: string
-      filenameEncoding:
-        default: base32
-        description: How to encode the encrypted filename to text string.
-        type: string
-      filenameEncryption:
-        default: standard
-        description: How to encrypt the filenames.
-        type: string
-      noDataEncryption:
-        default: "false"
-        description: Option to either encrypt file data or leave it unencrypted.
-        type: string
-      password:
-        description: Password or pass phrase for encryption.
-        type: string
-      password2:
-        description: Password or pass phrase for salt.
-        type: string
-      remote:
-        description: Remote to encrypt/decrypt.
-        type: string
-      serverSideAcrossConfigs:
-        default: "false"
-        description: Allow server-side operations (e.g. copy) to work across different
-          crypt configs.
-        type: string
-      showMapping:
-        default: "false"
-        description: For all files listed show how the names encrypt.
-        type: string
-      sourcePath:
-        description: The path of the source to scan items
-        type: string
     type: object
   datasource.DriveRequest:
     properties:
@@ -2351,7 +2300,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableHttp2:
         default: "true"
         description: Disable drive using http2.
@@ -2390,6 +2339,10 @@ definitions:
       pacerMinSleep:
         default: 100ms
         description: Minimum time to sleep between API calls.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       resourceKey:
         description: Resource key for accessing a link-shared file.
@@ -2483,6 +2436,10 @@ definitions:
         default: "off"
         description: If Object's are greater, use drive v2 API to download.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.DropboxRequest:
     properties:
@@ -2517,13 +2474,17 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       impersonate:
         description: Impersonate this user when using a business account.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sharedFiles:
         default: "false"
@@ -2542,6 +2503,10 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.FichierRequest:
     properties:
@@ -2550,7 +2515,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2563,24 +2528,36 @@ definitions:
         description: If you want to list the files in a shared folder that is password
           protected, add this parameter.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sharedFolder:
         description: If you want to download a shared folder, add this parameter.
         type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.FilefabricRequest:
     properties:
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       permanentToken:
         description: Permanent Authentication Token.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       rootFolderId:
         description: ID of the root folder.
@@ -2600,6 +2577,10 @@ definitions:
       version:
         description: Version read from the file fabric.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.FtpRequest:
     properties:
@@ -2617,7 +2598,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableEpsv:
         default: "false"
         description: Disable using EPSV even if server advertises support.
@@ -2665,6 +2646,10 @@ definitions:
         default: "21"
         description: FTP port number.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       shutTimeout:
         default: 1m0s
         description: Maximum time to wait for data connection closing status.
@@ -2688,6 +2673,10 @@ definitions:
         default: "false"
         description: Use MDTM to set modification time (VsFtpd quirk)
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.GcsRequest:
     properties:
@@ -2717,7 +2706,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,CrLf,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2743,6 +2732,10 @@ definitions:
       projectNumber:
         description: Project number.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       serviceAccountCredentials:
         description: Service Account Credentials JSON blob.
         type: string
@@ -2762,6 +2755,10 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.GphotosRequest:
     properties:
@@ -2776,7 +2773,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,CrLf,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2793,6 +2790,10 @@ definitions:
         default: "false"
         description: Set to read the size of media items.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2807,6 +2808,10 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.HdfsRequest:
     properties:
@@ -2815,13 +2820,17 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,Colon,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       namenode:
         description: Hadoop name node and port.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       servicePrincipalName:
         description: Kerberos service principal name for the namenode.
@@ -2832,6 +2841,10 @@ definitions:
       username:
         description: Hadoop user name.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.HidriveRequest:
     properties:
@@ -2850,7 +2863,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableFetchingMemberCount:
         default: "false"
         description: Do not fetch number of objects in directories unless it is absolutely
@@ -2863,6 +2876,10 @@ definitions:
       endpoint:
         default: https://api.hidrive.strato.com/2.1
         description: Endpoint for the service.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       rootPrefix:
         default: /
@@ -2895,12 +2912,16 @@ definitions:
         default: 96Mi
         description: Cutoff/Threshold for chunked uploads.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.HttpRequest:
     properties:
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       headers:
         description: Set HTTP headers for all transactions.
         type: string
@@ -2912,12 +2933,20 @@ definitions:
         default: "false"
         description: Set this if the site doesn't end directories with /.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
       url:
         description: URL of HTTP host to connect to.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.InternetarchiveRequest:
     properties:
@@ -2926,7 +2955,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableChecksum:
         default: "true"
         description: Don't ask the server to test against MD5 checksum calculated
@@ -2944,6 +2973,10 @@ definitions:
         default: https://archive.org
         description: Host of InternetArchive Frontend.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       secretAccessKey:
         description: IAS3 Secret Key (password).
         type: string
@@ -2955,12 +2988,16 @@ definitions:
         description: Timeout for waiting the server's processing tasks (specifically
           archive and book_op) to finish.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.JottacloudRequest:
     properties:
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -2979,6 +3016,10 @@ definitions:
         description: Avoid server side versioning by deleting files and recreating
           files instead of overwriting them.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2990,12 +3031,16 @@ definitions:
         default: 10Mi
         description: Files bigger than this can be resumed if the upload fail's.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.KoofrRequest:
     properties:
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3012,6 +3057,10 @@ definitions:
       provider:
         description: Choose your storage provider.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       setmtime:
         default: "true"
         description: Does the backend support setting modification time.
@@ -3022,6 +3071,10 @@ definitions:
       user:
         description: Your user name.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.LocalRequest:
     properties:
@@ -3039,7 +3092,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,Dot
         description: The encoding for the backend.
@@ -3073,6 +3126,10 @@ definitions:
         default: "false"
         description: Don't cross filesystem boundaries (unix/macOS only).
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       skipLinks:
         default: "false"
         description: Don't warn about skipped symlinks.
@@ -3089,6 +3146,10 @@ definitions:
         description: Assume the Stat size of links is zero (and read them instead)
           (deprecated).
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.MailruRequest:
     properties:
@@ -3098,7 +3159,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3108,6 +3169,10 @@ definitions:
         type: string
       quirks:
         description: Comma separated list of internal maintenance flags.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -3137,6 +3202,10 @@ definitions:
       userAgent:
         description: HTTP user agent used internally by client.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.MegaRequest:
     properties:
@@ -3146,7 +3215,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3158,6 +3227,10 @@ definitions:
       pass:
         description: Password.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3168,15 +3241,10 @@ definitions:
       user:
         description: User name.
         type: string
-    type: object
-  datasource.MemoryRequest:
-    properties:
-      deleteAfterExport:
-        description: Delete the source after exporting to CAR files
-        type: string
-      sourcePath:
-        description: The path of the source to scan items
-        type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.NetstorageRequest:
     properties:
@@ -3185,7 +3253,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       host:
         description: Domain+path of NetStorage host to connect to.
         type: string
@@ -3193,12 +3261,20 @@ definitions:
         default: https
         description: Select between HTTP or HTTPS protocol.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       secret:
         description: Set the NetStorage account secret/G2O key for authentication.
         type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.OnedriveRequest:
     properties:
@@ -3223,7 +3299,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableSitePermission:
         default: "false"
         description: Disable the request for Sites.Read.All permission.
@@ -3269,6 +3345,10 @@ definitions:
         default: global
         description: Choose national cloud region for OneDrive.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       rootFolderId:
         description: ID of the root folder.
         type: string
@@ -3286,6 +3366,10 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.OosRequest:
     properties:
@@ -3314,7 +3398,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableChecksum:
         default: "false"
         description: Don't store MD5 checksum with object metadata.
@@ -3344,6 +3428,10 @@ definitions:
         type: string
       region:
         description: Object storage Region
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -3381,6 +3469,10 @@ definitions:
         default: 200Mi
         description: Cutoff for switching to chunked upload.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.OpendriveRequest:
     properties:
@@ -3390,7 +3482,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3398,12 +3490,20 @@ definitions:
       password:
         description: Password.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
       username:
         description: Username.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.PcloudRequest:
     properties:
@@ -3418,7 +3518,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -3429,6 +3529,10 @@ definitions:
         type: string
       password:
         description: Your pcloud password.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       rootFolderId:
         default: d0
@@ -3446,6 +3550,10 @@ definitions:
       username:
         description: Your pcloud username.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.PremiumizemeRequest:
     properties:
@@ -3454,27 +3562,43 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.PutioRequest:
     properties:
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.QingstorRequest:
     properties:
@@ -3491,7 +3615,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,Ctl,InvalidUtf8
         description: The encoding for the backend.
@@ -3502,6 +3626,10 @@ definitions:
       envAuth:
         default: "false"
         description: Get QingStor credentials from runtime.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       secretAccessKey:
         description: QingStor Secret Access Key (password).
@@ -3520,6 +3648,10 @@ definitions:
       zone:
         description: Zone to connect to.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.S3Request:
     properties:
@@ -3547,7 +3679,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableChecksum:
         default: "false"
         description: Don't store MD5 checksum with object metadata.
@@ -3640,6 +3772,10 @@ definitions:
         default: "false"
         description: Enables requester pays option when interacting with S3 bucket.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -3714,6 +3850,10 @@ definitions:
         default: "false"
         description: Include old versions in directory listings.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SeafileRequest:
     properties:
@@ -3730,7 +3870,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8
         description: The encoding for the backend.
@@ -3744,6 +3884,10 @@ definitions:
       pass:
         description: Password.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3753,6 +3897,10 @@ definitions:
       user:
         description: User name (usually email address).
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SftpRequest:
     properties:
@@ -3774,7 +3922,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       disableConcurrentReads:
         default: "false"
         description: If set don't use concurrent reads.
@@ -3834,6 +3982,10 @@ definitions:
       pubkeyFile:
         description: Optional path to public key file.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       serverCommand:
         description: Specifies the path or command to run a sftp server on the remote
           host.
@@ -3874,6 +4026,10 @@ definitions:
         default: shane
         description: SSH username.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SharefileRequest:
     properties:
@@ -3883,13 +4039,17 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       endpoint:
         description: Endpoint for API calls.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       rootFolderId:
         description: ID of the root folder.
@@ -3901,6 +4061,10 @@ definitions:
         default: 128Mi
         description: Cutoff for switching to multipart upload.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SiaRequest:
     properties:
@@ -3913,10 +4077,14 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -3925,6 +4093,10 @@ definitions:
         default: Sia-Agent
         description: Siad User Agent
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SmbRequest:
     properties:
@@ -3934,7 +4106,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       domain:
         default: WORKGROUP
         description: Domain name for NTLM authentication.
@@ -3962,6 +4134,10 @@ definitions:
         default: "445"
         description: SMB port number.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3972,6 +4148,10 @@ definitions:
         default: shane
         description: SMB username.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.StorjRequest:
     properties:
@@ -3983,13 +4163,17 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       passphrase:
         description: Encryption passphrase.
         type: string
       provider:
         default: existing
         description: Choose an authentication method.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       satelliteAddress:
         default: us1.storj.io
@@ -3998,6 +4182,10 @@ definitions:
       sourcePath:
         description: The path of the source to scan items
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SugarsyncRequest:
     properties:
@@ -4015,7 +4203,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       deletedId:
         description: Sugarsync deleted folder id.
         type: string
@@ -4033,6 +4221,10 @@ definitions:
       refreshToken:
         description: Sugarsync refresh token.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       rootId:
         description: Sugarsync root id.
         type: string
@@ -4042,6 +4234,10 @@ definitions:
       user:
         description: Sugarsync user.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.SwiftRequest:
     properties:
@@ -4071,7 +4267,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       domain:
         description: User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)
         type: string
@@ -4106,6 +4302,10 @@ definitions:
       region:
         description: Region name - optional (OS_REGION_NAME).
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4133,32 +4333,10 @@ definitions:
         description: User ID to log in - optional - most swift systems use user and
           leave this blank (v3 auth) (OS_USER_ID).
         type: string
-    type: object
-  datasource.TardigradeRequest:
-    properties:
-      accessGrant:
-        description: Access grant.
-        type: string
-      apiKey:
-        description: API key.
-        type: string
-      deleteAfterExport:
-        description: Delete the source after exporting to CAR files
-        type: string
-      passphrase:
-        description: Encryption passphrase.
-        type: string
-      provider:
-        default: existing
-        description: Choose an authentication method.
-        type: string
-      satelliteAddress:
-        default: us1.storj.io
-        description: Satellite address.
-        type: string
-      sourcePath:
-        description: The path of the source to scan items
-        type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.UptoboxRequest:
     properties:
@@ -4167,14 +4345,22 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
+        type: string
       sourcePath:
         description: The path of the source to scan items
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.WebdavRequest:
     properties:
@@ -4186,7 +4372,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         description: The encoding for the backend.
         type: string
@@ -4195,6 +4381,10 @@ definitions:
         type: string
       pass:
         description: Password.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -4208,6 +4398,10 @@ definitions:
       vendor:
         description: Name of the WebDAV site/service/software you are using.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.YandexRequest:
     properties:
@@ -4222,7 +4416,7 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
@@ -4230,6 +4424,10 @@ definitions:
       hardDelete:
         default: "false"
         description: Delete files permanently rather than putting them into the trash.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -4240,6 +4438,10 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   datasource.ZohoRequest:
     properties:
@@ -4254,13 +4456,17 @@ definitions:
         type: string
       deleteAfterExport:
         description: Delete the source after exporting to CAR files
-        type: string
+        type: boolean
       encoding:
         default: Del,Ctl,InvalidUtf8
         description: The encoding for the backend.
         type: string
       region:
         description: Zoho region to connect to.
+        type: string
+      rescanInterval:
+        description: Automatically rescan the source directory when this interval
+          has passed from last successful scan
         type: string
       sourcePath:
         description: The path of the source to scan items
@@ -4271,22 +4477,30 @@ definitions:
       tokenUrl:
         description: Token server url.
         type: string
+    required:
+    - deleteAfterExport
+    - rescanInterval
+    - sourcePath
     type: object
   deal.ListDealRequest:
     properties:
       datasets:
+        description: dataset name filter
         items:
           type: string
         type: array
       providers:
+        description: provider filter
         items:
           type: string
         type: array
       schedules:
+        description: schedule id filter
         items:
           type: integer
         type: array
       states:
+        description: state filter
         items:
           type: string
         type: array
@@ -4294,43 +4508,72 @@ definitions:
   deal.Proposal:
     properties:
       clientAddress:
+        description: Client address
         type: string
-      durationDays:
-        type: number
+      duration:
+        default: 12740h
+        description: Duration in epoch or in duration format, i.e. 1500000, 2400h
+        type: string
       fileSize:
+        description: File size in bytes for boost to fetch the CAR file
         type: integer
       httpHeaders:
+        description: http headers to be passed with the request (i.e. key=value)
         items:
           type: string
         type: array
       ipni:
+        default: true
+        description: Whether the deal should be IPNI
         type: boolean
       keepUnsealed:
+        default: true
+        description: Whether the deal should be kept unsealed
         type: boolean
-      pieceCID:
+      pieceCid:
+        description: Piece CID
         type: string
       pieceSize:
+        description: Piece size
         type: string
-      price:
+      pricePerDeal:
+        default: 0
+        description: Price in FIL per deal
         type: number
-      providerID:
-        type: string
-      rootCID:
-        type: string
-      startDelayDays:
+      pricePerGb:
+        default: 0
+        description: Price in FIL  per GiB
         type: number
+      pricePerGbEpoch:
+        default: 0
+        description: Price in FIL per GiB per epoch
+        type: number
+      providerId:
+        description: Provider ID
+        type: string
+      rootCid:
+        default: bafkqaaa
+        description: Root CID that is required as part of the deal proposal, if empty,
+          will be set to empty CID
+        type: string
+      startDelay:
+        default: 72h
+        description: Deal start delay in epoch or in duration format, i.e. 1000, 72h
+        type: string
       urlTemplate:
+        description: URL template with PIECE_CID placeholder for boost to fetch the
+          CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
         type: string
       verified:
+        default: true
+        description: Whether the deal should be verified
         type: boolean
     type: object
   github_com_data-preservation-programs_singularity_api.ItemInfo:
     properties:
       path:
-        description: TODO Type     model.ItemType `json:"type"`
+        description: Path to the new item, relative to the source
         type: string
-      sourceId:
-        type: integer
     type: object
   github_com_data-preservation-programs_singularity_handler_datasource.Entry:
     properties:
@@ -4346,6 +4589,24 @@ definitions:
   handler.HTTPError:
     properties:
       err:
+        type: string
+    type: object
+  inspect.DirDetail:
+    properties:
+      current:
+        $ref: '#/definitions/model.Directory'
+      dirs:
+        items:
+          $ref: '#/definitions/model.Directory'
+        type: array
+      items:
+        items:
+          $ref: '#/definitions/model.Item'
+        type: array
+    type: object
+  inspect.GetPathRequest:
+    properties:
+      path:
         type: string
     type: object
   model.CID:
@@ -4427,52 +4688,44 @@ definitions:
     type: object
   model.Deal:
     properties:
-      clientID:
+      clientId:
         type: string
       createdAt:
         type: string
-      dataset:
-        $ref: '#/definitions/model.Dataset'
-      datasetID:
+      datasetId:
         type: integer
-      dealID:
+      dealId:
         type: integer
-      duration:
-        $ref: '#/definitions/time.Duration'
-      end:
-        type: string
+      endEpoch:
+        type: integer
       errorMessage:
         type: string
       id:
         type: integer
       label:
         type: string
-      pieceCID:
+      pieceCid:
         type: string
       pieceSize:
         type: integer
       price:
-        type: number
-      proposalID:
+        type: string
+      proposalId:
         type: string
       provider:
         type: string
-      schedule:
-        $ref: '#/definitions/model.Schedule'
-      scheduleID:
+      scheduleId:
         type: integer
-      sectorStart:
-        type: string
-      start:
-        type: string
+      sectorStartEpoch:
+        type: integer
+      startEpoch:
+        type: integer
       state:
         $ref: '#/definitions/model.DealState'
       updatedAt:
         type: string
       verified:
         type: boolean
-      wallet:
-        $ref: '#/definitions/model.Wallet'
     type: object
   model.DealState:
     enum:
@@ -4494,10 +4747,29 @@ definitions:
     - DealRejected
     - DealSlashed
     - DealErrored
+  model.Directory:
+    properties:
+      cid:
+        $ref: '#/definitions/model.CID'
+      exported:
+        type: boolean
+      id:
+        type: integer
+      name:
+        type: string
+      parentId:
+        type: integer
+      sourceId:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
   model.Item:
     properties:
       cid:
         $ref: '#/definitions/model.CID'
+      createdAt:
+        type: string
       directoryId:
         type: integer
       hash:
@@ -4511,8 +4783,6 @@ definitions:
       lastModified:
         type: integer
       path:
-        type: string
-      scannedAt:
         type: string
       size:
         type: integer
@@ -4542,11 +4812,11 @@ definitions:
     type: object
   model.Schedule:
     properties:
-      AllowedPieceCIDs:
+      allowedPieceCids:
         items:
           type: string
         type: array
-      announceToIPNI:
+      announceToIpni:
         type: boolean
       createdAt:
         type: string
@@ -4572,7 +4842,11 @@ definitions:
         type: integer
       notes:
         type: string
-      price:
+      pricePerDeal:
+        type: number
+      pricePerGb:
+        type: number
+      pricePerGbEpoch:
         type: number
       provider:
         type: string
@@ -4670,6 +4944,15 @@ definitions:
           purpose
         type: string
     type: object
+  model.WalletAssignment:
+    properties:
+      datasetId:
+        type: integer
+      id:
+        type: integer
+      walletId:
+        type: string
+    type: object
   model.WorkState:
     enum:
     - ""
@@ -4686,58 +4969,85 @@ definitions:
     - Error
   schedule.CreateRequest:
     properties:
-      allowedPieceCIDs:
+      allowedPieceCids:
+        description: Allowed piece CIDs in this schedule
         items:
           type: string
         type: array
       datasetName:
+        description: Dataset name
         type: string
-      durationDays:
-        type: number
+      duration:
+        default: 12740h
+        description: Duration in epoch or in duration format, i.e. 1500000, 2400h
+        type: string
       httpHeaders:
+        description: http headers to be passed with the request (i.e. key=value)
         items:
           type: string
         type: array
       ipni:
+        default: true
+        description: Whether the deal should be IPNI
         type: boolean
       keepUnsealed:
+        default: true
+        description: Whether the deal should be kept unsealed
         type: boolean
       maxPendingDealNumber:
+        description: Max pending deal number
         type: integer
       maxPendingDealSize:
+        description: Max pending deal size in human readable format, i.e. 100 TiB
         type: string
       notes:
+        description: Notes
         type: string
-      price:
+      pricePerDeal:
+        default: 0
+        description: Price in FIL per deal
+        type: number
+      pricePerGb:
+        default: 0
+        description: Price in FIL  per GiB
+        type: number
+      pricePerGbEpoch:
+        default: 0
+        description: Price in FIL per GiB per epoch
         type: number
       provider:
+        description: Provider
         type: string
       scheduleDealNumber:
+        description: Number of deals per scheduled time
         type: integer
       scheduleDealSize:
+        description: Size of deals per schedule trigger in human readable format,
+          i.e. 100 TiB
         type: string
       scheduleInterval:
-        $ref: '#/definitions/time.Duration'
-      startDelayDays:
-        type: number
+        description: Schedule interval in duration format, i.e. 1h
+        type: string
+      startDelay:
+        default: 72h
+        description: Deal start delay in epoch or in duration format, i.e. 1000, 72h
+        type: string
       totalDealNumber:
+        description: Total number of deals
         type: integer
       totalDealSize:
+        description: Total size of deals in human readable format, i.e. 100 TiB
         type: string
       urlTemplate:
+        description: URL template with PIECE_CID placeholder for boost to fetch the
+          CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
         type: string
       verified:
+        default: true
+        description: Whether the deal should be verified
         type: boolean
     type: object
   store.PieceReader:
-    properties:
-      blocks:
-        items: {}
-        type: array
-      header:
-        items:
-          type: integer
-        type: array
     type: object
   time.Duration:
     enum:
@@ -4775,11 +5085,19 @@ definitions:
         description: This is the exported private key from lotus wallet export
         type: string
     type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
 host: localhost:9090
 info:
-  contact: {}
+  contact:
+    name: Xinan Xu
+    url: https://github.com/data-preservation-programs/singularity/issues
   description: This is the API for Singularity, a tool for large-scale clients with
     PB-scale data onboarding to Filecoin network.
+  license:
+    name: MIT + Apache 2.0
+    url: https://github.com/data-preservation-programs/singularity/blob/main/LICENSE
   title: Singularity API
   version: beta
 paths:
@@ -4788,10 +5106,6 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
@@ -4805,6 +5119,48 @@ paths:
       responses:
         "204":
           description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Reset the database
+      tags:
+      - Admin
+  /chunk/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Chunk ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Chunk'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Get detail of a specific chunk
+      tags:
+      - Data Source
+  /dataset:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Dataset'
+            type: array
         "400":
           description: Bad Request
           schema:
@@ -4813,10 +5169,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: Reset the database
+      summary: List all datasets
       tags:
-      - Admin
-  /dataset:
+      - Dataset
     post:
       consumes:
       - application/json
@@ -4904,6 +5259,35 @@ paths:
       tags:
       - Dataset
   /dataset/{datasetName}/piece:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Car'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all pieces for the dataset that are available for deal making
+      tags:
+      - Dataset
     post:
       consumes:
       - application/json
@@ -4937,11 +5321,9 @@ paths:
       summary: Manually register a piece (CAR file) with the dataset for deal making
         purpose
       tags:
-      - Dataset Piece
-  /dataset/{datasetName}/pieces:
+      - Dataset
+  /dataset/{datasetName}/wallet:
     get:
-      consumes:
-      - application/json
       parameters:
       - description: Dataset name
         in: path
@@ -4955,7 +5337,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Car'
+              $ref: '#/definitions/model.Wallet'
             type: array
         "400":
           description: Bad Request
@@ -4965,1247 +5347,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: List all pieces for the dataset that are available for deal making"
+      summary: List all wallets of a dataset.
       tags:
-      - Dataset Piece
-  /dataset/{datasetName}/source/acd:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.AcdRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add acd source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/azureblob:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.AzureblobRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add azureblob source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/b2:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.B2Request'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add b2 source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/box:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.BoxRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add box source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/crypt:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.CryptRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add crypt source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/drive:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.DriveRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add drive source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/dropbox:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.DropboxRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add dropbox source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/fichier:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.FichierRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add fichier source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/filefabric:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.FilefabricRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add filefabric source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/ftp:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.FtpRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add ftp source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/gcs:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.GcsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add gcs source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/gphotos:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.GphotosRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add gphotos source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/hdfs:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.HdfsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add hdfs source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/hidrive:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.HidriveRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add hidrive source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/http:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.HttpRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add http source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/internetarchive:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.InternetarchiveRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add internetarchive source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/jottacloud:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.JottacloudRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add jottacloud source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/koofr:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.KoofrRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add koofr source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/local:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.LocalRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add local source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/mailru:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.MailruRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add mailru source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/mega:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.MegaRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add mega source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/memory:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.MemoryRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add memory source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/netstorage:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.NetstorageRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add netstorage source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/onedrive:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.OnedriveRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add onedrive source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/oos:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.OosRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add oos source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/opendrive:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.OpendriveRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add opendrive source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/pcloud:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.PcloudRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add pcloud source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/premiumizeme:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.PremiumizemeRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add premiumizeme source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/putio:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.PutioRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add putio source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/qingstor:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.QingstorRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add qingstor source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/s3:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.S3Request'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add s3 source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/seafile:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SeafileRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add seafile source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/sftp:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SftpRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add sftp source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/sharefile:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SharefileRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add sharefile source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/sia:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SiaRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add sia source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/smb:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SmbRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add smb source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/storj:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.StorjRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add storj source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/sugarsync:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SugarsyncRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add sugarsync source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/swift:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.SwiftRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add swift source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/tardigrade:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.TardigradeRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add tardigrade source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/uptobox:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.UptoboxRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add uptobox source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/webdav:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.WebdavRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add webdav source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/yandex:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.YandexRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add yandex source for a dataset
-      tags:
-      - New Data Source
-  /dataset/{datasetName}/source/zoho:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Dataset name
-        in: path
-        name: datasetName
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.ZohoRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Source'
-            type: array
-      summary: Add zoho source for a dataset
-      tags:
-      - New Data Source
+      - Wallet
   /dataset/{datasetName}/wallet/{wallet}:
     delete:
       parameters:
       - description: Dataset name
         in: path
-        name: name
+        name: datasetName
         required: true
         type: string
       - description: Wallet Address
@@ -6233,7 +5383,7 @@ paths:
       parameters:
       - description: Dataset name
         in: path
-        name: name
+        name: datasetName
         required: true
         type: string
       - description: Wallet Address
@@ -6247,7 +5397,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.WalletAssignment'
         "400":
           description: Bad Request
           schema:
@@ -6258,121 +5408,7 @@ paths:
             $ref: '#/definitions/handler.HTTPError'
       summary: Associate a new wallet with a dataset
       tags:
-      - Wallet
-  /dataset/{datasetName}/wallets:
-    get:
-      parameters:
-      - description: Dataset name
-        in: path
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Wallet'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: List all wallets of a dataset.
-      tags:
-      - Wallet
-  /dataset/push:
-    post:
-      consumes:
-      - application/json
-      description: Push an item to the staging area
-      parameters:
-      - description: Item
-        in: body
-        name: item
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: Push an item to the staging area
-      tags:
-      - Data Source
-  /dataset/upload:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a file to a dataset
-      parameters:
-      - description: Dataset name
-        in: query
-        name: dataset
-        required: true
-        type: string
-      - description: File to upload
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: File uploaded
-          schema:
-            type: string
-        "400":
-          description: 'Error: dataset not found.'
-          schema:
-            type: string
-        "500":
-          description: 'Error: internal server error.'
-          schema:
-            type: string
-      summary: Upload a file to a dataset
-      tags:
-      - Data Source
-  /datasets:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Dataset'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: List all datasets
-      tags:
-      - Dataset
+      - Wallet Association
   /deal/list:
     post:
       consumes:
@@ -6539,11 +5575,34 @@ paths:
       summary: Send a manual deal proposal
       tags:
       - Deal
-  /piece/metadata/{piece}:
+  /item/{id}:
     get:
       consumes:
       - application/json
-      description: Get metadata for a piece
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Item'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Get details about an item
+      tags:
+      - Data Source
+  /piece/{id}/metadata:
+    get:
+      description: Get metadata for a piece for how it may be reassembled from the
+        data source
       parameters:
       - description: Piece CID
         in: path
@@ -6561,13 +5620,44 @@ paths:
           description: Bad Request
           schema:
             type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
         "500":
           description: Internal Server Error
           schema:
             type: string
       summary: Get metadata for a piece
       tags:
-      - Piece
+      - Piece Metadata
+  /source:
+    get:
+      parameters:
+      - description: Dataset name
+        in: query
+        name: dataset
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Source'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all sources for a dataset
+      tags:
+      - Data Source
   /source/{id}:
     delete:
       parameters:
@@ -6591,6 +5681,8 @@ paths:
       tags:
       - Data Source
     patch:
+      consumes:
+      - application/json
       parameters:
       - description: Source ID
         in: path
@@ -6603,6 +5695,8 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/datasource.AllConfig'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
@@ -6644,6 +5738,10 @@ paths:
             items:
               $ref: '#/definitions/github_com_data-preservation-programs_singularity_handler_datasource.Entry'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
@@ -6668,13 +5766,39 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Chunk'
+              $ref: '#/definitions/model.Car'
             type: array
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: Get all chunk details of a data source
+      summary: Get all dag details of a data source
+      tags:
+      - Data Source
+  /source/{id}/daggen:
+    post:
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Mark a source as ready for DAG generation
       tags:
       - Data Source
   /source/{id}/items:
@@ -6696,6 +5820,10 @@ paths:
             items:
               $ref: '#/definitions/model.Item'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
@@ -6703,10 +5831,77 @@ paths:
       summary: Get all item details of a data source
       tags:
       - Data Source
-  /source/{id}/rescan:
+  /source/{id}/path:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: GetPathRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/inspect.GetPathRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/inspect.DirDetail'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Get all item details inside a data source path
+      tags:
+      - Data Source
+  /source/{id}/push:
     post:
       consumes:
       - application/json
+      description: Tells Singularity that something is ready to be grabbed for data
+        preparation
+      parameters:
+      - description: Item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Item'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "409":
+          description: Item already exists
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Push an item to be queued
+      tags:
+      - Data Source
+  /source/{id}/rescan:
+    post:
       parameters:
       - description: Source ID
         in: path
@@ -6724,7 +5919,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: Rescan a data source
+      summary: Trigger a rescan of a data source
       tags:
       - Data Source
   /source/{id}/summary:
@@ -6744,6 +5939,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/datasource.ChunksByState'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
@@ -6751,15 +5950,1402 @@ paths:
       summary: Get the data preparation summary of a data source
       tags:
       - Data Source
-  /sources:
-    get:
+  /source/acd/dataset/{datasetName}:
+    post:
       consumes:
       - application/json
       parameters:
       - description: Dataset name
-        in: query
-        name: dataset
+        in: path
+        name: datasetName
+        required: true
         type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.AcdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add acd source for a dataset
+      tags:
+      - Data Source
+  /source/azureblob/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.AzureblobRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add azureblob source for a dataset
+      tags:
+      - Data Source
+  /source/b2/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.B2Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add b2 source for a dataset
+      tags:
+      - Data Source
+  /source/box/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.BoxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add box source for a dataset
+      tags:
+      - Data Source
+  /source/drive/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.DriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add drive source for a dataset
+      tags:
+      - Data Source
+  /source/dropbox/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.DropboxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add dropbox source for a dataset
+      tags:
+      - Data Source
+  /source/fichier/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.FichierRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add fichier source for a dataset
+      tags:
+      - Data Source
+  /source/filefabric/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.FilefabricRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add filefabric source for a dataset
+      tags:
+      - Data Source
+  /source/ftp/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.FtpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add ftp source for a dataset
+      tags:
+      - Data Source
+  /source/gcs/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.GcsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add gcs source for a dataset
+      tags:
+      - Data Source
+  /source/gphotos/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.GphotosRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add gphotos source for a dataset
+      tags:
+      - Data Source
+  /source/hdfs/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.HdfsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add hdfs source for a dataset
+      tags:
+      - Data Source
+  /source/hidrive/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.HidriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add hidrive source for a dataset
+      tags:
+      - Data Source
+  /source/http/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.HttpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add http source for a dataset
+      tags:
+      - Data Source
+  /source/internetarchive/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.InternetarchiveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add internetarchive source for a dataset
+      tags:
+      - Data Source
+  /source/jottacloud/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.JottacloudRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add jottacloud source for a dataset
+      tags:
+      - Data Source
+  /source/koofr/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.KoofrRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add koofr source for a dataset
+      tags:
+      - Data Source
+  /source/local/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.LocalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add local source for a dataset
+      tags:
+      - Data Source
+  /source/mailru/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.MailruRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add mailru source for a dataset
+      tags:
+      - Data Source
+  /source/mega/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.MegaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add mega source for a dataset
+      tags:
+      - Data Source
+  /source/netstorage/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.NetstorageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add netstorage source for a dataset
+      tags:
+      - Data Source
+  /source/onedrive/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.OnedriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add onedrive source for a dataset
+      tags:
+      - Data Source
+  /source/oos/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.OosRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add oos source for a dataset
+      tags:
+      - Data Source
+  /source/opendrive/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.OpendriveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add opendrive source for a dataset
+      tags:
+      - Data Source
+  /source/pcloud/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.PcloudRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add pcloud source for a dataset
+      tags:
+      - Data Source
+  /source/premiumizeme/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.PremiumizemeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add premiumizeme source for a dataset
+      tags:
+      - Data Source
+  /source/putio/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.PutioRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add putio source for a dataset
+      tags:
+      - Data Source
+  /source/qingstor/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.QingstorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add qingstor source for a dataset
+      tags:
+      - Data Source
+  /source/s3/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.S3Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add s3 source for a dataset
+      tags:
+      - Data Source
+  /source/seafile/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SeafileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add seafile source for a dataset
+      tags:
+      - Data Source
+  /source/sftp/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SftpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add sftp source for a dataset
+      tags:
+      - Data Source
+  /source/sharefile/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SharefileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add sharefile source for a dataset
+      tags:
+      - Data Source
+  /source/sia/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SiaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add sia source for a dataset
+      tags:
+      - Data Source
+  /source/smb/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SmbRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add smb source for a dataset
+      tags:
+      - Data Source
+  /source/storj/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.StorjRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add storj source for a dataset
+      tags:
+      - Data Source
+  /source/sugarsync/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SugarsyncRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add sugarsync source for a dataset
+      tags:
+      - Data Source
+  /source/swift/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.SwiftRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add swift source for a dataset
+      tags:
+      - Data Source
+  /source/uptobox/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.UptoboxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add uptobox source for a dataset
+      tags:
+      - Data Source
+  /source/webdav/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.WebdavRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add webdav source for a dataset
+      tags:
+      - Data Source
+  /source/yandex/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.YandexRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add yandex source for a dataset
+      tags:
+      - Data Source
+  /source/zoho/dataset/{datasetName}:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dataset name
+        in: path
+        name: datasetName
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.ZohoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Source'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Add zoho source for a dataset
+      tags:
+      - Data Source
+  /wallet:
+    get:
       produces:
       - application/json
       responses:
@@ -6767,16 +7353,19 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Source'
+              $ref: '#/definitions/model.Wallet'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.HTTPError'
-      summary: List all sources for a dataset
+      summary: List all imported wallets
       tags:
-      - Data Source
-  /wallet:
+      - Wallet
     post:
       consumes:
       - application/json
@@ -6787,9 +7376,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/wallet.ImportRequest'
+      produces:
+      - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wallet'
         "400":
           description: Bad Request
           schema:
@@ -6834,9 +7427,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/wallet.AddRemoteRequest'
+      produces:
+      - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Wallet'
         "400":
           description: Bad Request
           schema:
@@ -6846,28 +7443,6 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: Add a remote wallet
-      tags:
-      - Wallet
-  /wallets:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Wallet'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: List all imported wallets
       tags:
       - Wallet
 swagger: "2.0"
