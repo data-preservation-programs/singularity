@@ -17,11 +17,11 @@ func PauseHandler(
 // @Summary Pause a specific schedule
 // @Tags Deal Schedule
 // @Produce json
-// @Param scheduleID path string true "Schedule ID"
+// @Param id path string true "Schedule ID"
 // @Success 200 {object} model.Schedule
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /deal/schedule/{scheduleID}/pause [post]
+// @Router /schedule/{id}/pause [post]
 func pauseHandler(
 	db *gorm.DB,
 	scheduleID string,
@@ -33,7 +33,7 @@ func pauseHandler(
 			return err
 		}
 		schedule.State = model.SchedulePaused
-		err = db.Where("id = ?", scheduleID).Update("state", model.SchedulePaused).Error
+		err = db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.SchedulePaused).Error
 		if err != nil {
 			return err
 		}

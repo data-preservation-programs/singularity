@@ -81,7 +81,7 @@ func (s Server) handlePushItem(c echo.Context) error {
 
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Piece Metadata
+// @Tags Metadata
 // @Produce json
 // @Param piece path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
@@ -429,15 +429,15 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/chunk/:id", s.toEchoHandler(inspect.GetSourceChunkDetailHandler))
 	e.GET("/api/item/:id", s.toEchoHandler(inspect.GetSourceItemDetailHandler))
 
-	// Deal
-	e.POST("/api/deal/send_manual", s.SendManualHandler)
-	e.POST("/api/deal/schedule", s.toEchoHandler(schedule.CreateHandler))
+	// Deal Schedule
+	e.POST("/api/send_deal", s.SendManualHandler)
+	e.POST("/api/schedule", s.toEchoHandler(schedule.CreateHandler))
+	e.GET("/api/schedule", s.toEchoHandler(schedule.ListHandler))
+	e.POST("/api/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
+	e.POST("/api/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))
 
-	// Pending test
-	e.GET("/api/deal/schedules", s.toEchoHandler(schedule.ListHandler))
-	e.POST("/api/deal/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
-	e.POST("/api/deal/schedule/:id/resume", s.toEchoHandler(schedule.ResumeHandler))
-	e.POST("/api/deal/list", s.toEchoHandler(deal.ListHandler))
+	// Deal
+	e.POST("/api/deal", s.toEchoHandler(deal.ListHandler))
 }
 
 var logger = logging.Logger("api")

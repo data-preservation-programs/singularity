@@ -27,7 +27,7 @@ func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 // @Success 200 {array} model.Deal
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /deal/list [post]
+// @Router /deal [post]
 func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	var deals []model.Deal
 	statement := db

@@ -65,7 +65,7 @@ func SendManualHandler(
 // @Success 200 {string} string
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
-// @Router /deal/send_manual [post]
+// @Router /send_deal [post]
 func sendManualHandler(
 	db *gorm.DB,
 	ctx context.Context,
