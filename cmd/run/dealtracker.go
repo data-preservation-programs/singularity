@@ -43,7 +43,6 @@ var DealTrackerCmd = &cli.Command{
 			c.String("lotus-token"),
 		)
 
-		tracker.Run(c.Context)
-		return nil
+		return tracker.Run(c.Context)
 	},
 }

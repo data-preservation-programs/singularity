@@ -52,7 +52,7 @@ func SendManualHandler(
 	ctx context.Context,
 	request Proposal,
 	dealMaker replication.DealMaker,
-) (string, error) {
+) (*model.Deal, error) {
 	return sendManualHandler(db, ctx, request, dealMaker)
 }
 
@@ -62,7 +62,7 @@ func SendManualHandler(
 // @Accept json
 // @Produce json
 // @Param proposal body Proposal true "Proposal"
-// @Success 200 {string} string
+// @Success 200 {object} model.Deal
 // @Failure 400 {object} handler.HTTPError
 // @Failure 500 {object} handler.HTTPError
 // @Router /send_deal [post]
@@ -71,34 +71,34 @@ func sendManualHandler(
 	ctx context.Context,
 	request Proposal,
 	dealMaker replication.DealMaker,
-) (string, error) {
+) (*model.Deal, error) {
 	// Get the wallet object
 	wallet := model.Wallet{}
 	err := db.Where("id = ?", request.ClientAddress).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return "", handler.NewBadRequestString("client address not found")
+		return nil, handler.NewBadRequestString("client address not found")
 	}
 	if err != nil {
-		return "", handler.NewHandlerError(err)
+		return nil, handler.NewHandlerError(err)
 	}
 
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
-		return "", handler.NewBadRequestString("invalid piece CID")
+		return nil, handler.NewBadRequestString("invalid piece CID")
 	}
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return "", handler.NewBadRequestString("piece CID must be commp")
+		return nil, handler.NewBadRequestString("piece CID must be commp")
 	}
 	pieceSize, err := humanize.ParseBytes(request.PieceSize)
 	if err != nil {
-		return "", handler.NewBadRequestString("invalid piece size")
+		return nil, handler.NewBadRequestString("invalid piece size")
 	}
 	if (pieceSize & (pieceSize - 1)) != 0 {
-		return "", handler.NewBadRequestString("piece size must be a power of 2")
+		return nil, handler.NewBadRequestString("piece size must be a power of 2")
 	}
 	rootCID, err := cid.Parse(request.RootCID)
 	if err != nil {
-		return "", handler.NewBadRequestString("invalid root CID")
+		return nil, handler.NewBadRequestString("invalid root CID")
 	}
 	car := model.Car{
 		PieceCID:  model.CID(pieceCID),
@@ -108,11 +108,11 @@ func sendManualHandler(
 	}
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return "", handler.NewBadRequestString("invalid duration")
+		return nil, handler.NewBadRequestString("invalid duration")
 	}
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return "", handler.NewBadRequestString("invalid start delay")
+		return nil, handler.NewBadRequestString("invalid start delay")
 	}
 
 	dealConfig := replication.DealConfig{
@@ -126,9 +126,9 @@ func sendManualHandler(
 		Duration:       startDelay,
 	}
 
-	proposalID, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
+	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
 	if err != nil {
-		return "", handler.NewHandlerError(err)
+		return nil, handler.NewHandlerError(err)
 	}
-	return proposalID, nil
+	return dealModel, nil
 }

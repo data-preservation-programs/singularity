@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/robfig/cron/v3"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -29,7 +31,7 @@ type CreateRequest struct {
 	KeepUnsealed         bool     `default:"true"              json:"keepUnsealed"`    // Whether the deal should be kept unsealed
 	StartDelay           string   `default:"72h"               json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
 	Duration             string   `default:"12840h"            json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
-	ScheduleInterval     string   `json:"scheduleInterval"`                            // Schedule interval in duration format, i.e. 1h
+	ScheduleCron         string   `json:"scheduleCron"`                                // Schedule cron patter
 	ScheduleDealNumber   int      `json:"scheduleDealNumber"`                          // Number of deals per scheduled time
 	TotalDealNumber      int      `json:"totalDealNumber"`                             // Total number of deals
 	ScheduleDealSize     string   `json:"scheduleDealSize"`                            // Size of deals per schedule trigger in human readable format, i.e. 100 TiB
@@ -96,9 +98,14 @@ func createHandler(
 		return nil, handler.NewBadRequestString("invalid duration")
 	}
 
-	scheduleInterval, err := time.ParseDuration(request.ScheduleInterval)
-	if err != nil {
-		return nil, handler.NewBadRequestString("invalid schedule interval")
+	var scheduleCron string
+	if request.ScheduleCron != "" {
+		_, err = cron.ParseStandard(request.ScheduleCron)
+		if err != nil {
+			return nil, handler.NewBadRequestString("invalid schedule cron")
+		} else {
+			scheduleCron = request.ScheduleCron
+		}
 	}
 
 	totalDealSize, err := humanize.ParseBytes(request.TotalDealSize)
@@ -140,28 +147,28 @@ func createHandler(
 	}
 
 	schedule := model.Schedule{
-		DatasetID:               dataset.ID,
-		URLTemplate:             request.URLTemplate,
-		HTTPHeaders:             request.HTTPHeaders,
-		Provider:                request.Provider,
-		TotalDealNumber:         request.TotalDealNumber,
-		TotalDealSize:           int64(totalDealSize),
-		Verified:                request.Verified,
-		KeepUnsealed:            request.KeepUnsealed,
-		AnnounceToIPNI:          request.IPNI,
-		StartDelay:              startDelay,
-		Duration:                duration,
-		State:                   model.ScheduleActive,
-		ScheduleDealNumber:      request.ScheduleDealNumber,
-		ScheduleDealSize:        int64(scheduleDealSize),
-		MaxPendingDealNumber:    request.MaxPendingDealNumber,
-		MaxPendingDealSize:      int64(pendingDealSize),
-		Notes:                   request.Notes,
-		AllowedPieceCIDs:        request.AllowedPieceCIDs,
-		ScheduleIntervalSeconds: uint64(scheduleInterval.Seconds()),
-		PricePerGBEpoch:         request.PricePerGBEpoch,
-		PricePerGB:              request.PricePerGB,
-		PricePerDeal:            request.PricePerDeal,
+		DatasetID:            dataset.ID,
+		URLTemplate:          request.URLTemplate,
+		HTTPHeaders:          request.HTTPHeaders,
+		Provider:             request.Provider,
+		TotalDealNumber:      request.TotalDealNumber,
+		TotalDealSize:        int64(totalDealSize),
+		Verified:             request.Verified,
+		KeepUnsealed:         request.KeepUnsealed,
+		AnnounceToIPNI:       request.IPNI,
+		StartDelay:           startDelay,
+		Duration:             duration,
+		State:                model.ScheduleActive,
+		ScheduleDealNumber:   request.ScheduleDealNumber,
+		ScheduleDealSize:     int64(scheduleDealSize),
+		MaxPendingDealNumber: request.MaxPendingDealNumber,
+		MaxPendingDealSize:   int64(pendingDealSize),
+		Notes:                request.Notes,
+		AllowedPieceCIDs:     request.AllowedPieceCIDs,
+		ScheduleCron:         scheduleCron,
+		PricePerGBEpoch:      request.PricePerGBEpoch,
+		PricePerGB:           request.PricePerGB,
+		PricePerDeal:         request.PricePerDeal,
 	}
 
 	if err := db.Create(&schedule).Error; err != nil {

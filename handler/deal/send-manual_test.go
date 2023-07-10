@@ -15,9 +15,9 @@ type MockDealMaker struct {
 	mock.Mock
 }
 
-func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (string, error) {
+func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
 	args := m.Called(ctx, walletObj, car, dealConfig)
-	return args.String(0), args.Error(1)
+	return args.Get(0).(*model.Deal), args.Error(1)
 }
 
 var proposal = Proposal{
@@ -49,7 +49,7 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	_, err = SendManualHandler(db, ctx, proposal, mockDealMaker)
 	require.ErrorContains(t, err, "client address not found")
 }
@@ -67,7 +67,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceCID = "bad"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -87,7 +87,7 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceCID = proposal.RootCID
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -107,7 +107,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceSize = "aaa"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -127,7 +127,7 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceSize = "31GiB"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -147,7 +147,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.RootCID = "xxxx"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -167,7 +167,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.Duration = "xxxx"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -187,7 +187,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.StartDelay = "xxxx"
 	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
@@ -207,8 +207,8 @@ func TestSendManualHandler(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return("dealID", nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	resp, err := SendManualHandler(db, ctx, proposal, mockDealMaker)
 	require.NoError(t, err)
-	require.Equal(t, "dealID", resp)
+	require.NotNil(t, resp)
 }

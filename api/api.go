@@ -101,7 +101,7 @@ func (s Server) SendManualHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	dealID, err := deal.SendManualHandler(db, ctx, request, s.dealMaker)
+	dealModel, err := deal.SendManualHandler(db, ctx, request, s.dealMaker)
 	if err != nil {
 		var err2 *handler.Error
 		if errors.As(err, &err2) {
@@ -109,7 +109,7 @@ func (s Server) SendManualHandler(c echo.Context) error {
 		}
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
-	return c.String(http.StatusOK, dealID)
+	return c.JSON(http.StatusOK, dealModel)
 }
 
 func (s Server) pushItem(c echo.Context, sourceID uint32, itemInfo ItemInfo) error {
@@ -173,11 +173,10 @@ func Run(c *cli.Context) error {
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 		lotusClient:               util.NewLotusClient(lotusAPI, lotusToken),
 		dealMaker: replication.NewDealMaker(
-			lotusAPI,
-			lotusToken,
+			util.NewLotusClient(lotusAPI, lotusToken),
 			h,
-			time.Minute*5,
 			time.Hour,
+			time.Minute*5,
 		),
 	}.Run(c)
 }

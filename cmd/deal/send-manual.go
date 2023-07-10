@@ -2,10 +2,9 @@ package deal
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
@@ -146,27 +145,16 @@ var SendManualCmd = &cli.Command{
 			return errors.Wrap(err, "failed to init host")
 		}
 		dealMaker := replication.NewDealMaker(
-			cctx.String("lotus-api"),
-			cctx.String("lotus-token"),
+			util.NewLotusClient(cctx.String("lotus-api"), cctx.String("lotus-token")),
 			h,
 			10*timeout,
 			timeout,
 		)
-		proposalID, err2 := deal.SendManualHandler(db.WithContext(ctx), ctx, proposal, dealMaker)
+		dealModel, err2 := deal.SendManualHandler(db.WithContext(ctx), ctx, proposal, dealMaker)
 		if err2 != nil {
 			return err2
 		}
-
-		if cctx.Bool("json") {
-			content, err := json.Marshal(map[string]string{"proposalId": proposalID})
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(content))
-			return nil
-		} else {
-			fmt.Println("Deal proposal sent with proposal ID: ", proposalID)
-			return nil
-		}
+		cliutil.PrintToConsole(dealModel, cctx.Bool("json"), nil)
+		return nil
 	},
 }
