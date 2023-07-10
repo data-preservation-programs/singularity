@@ -21,18 +21,6 @@ var SpadeAPICmd = &cli.Command{
 			Usage: "Bind address for the API server",
 			Value: "127.0.0.1:9091",
 		},
-		&cli.StringFlag{
-			Name:     "lotus-api",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API endpoint, only used to get miner info",
-			Value:    "https://api.node.glif.io/rpc/v1",
-		},
-		&cli.StringFlag{
-			Name:     "lotus-token",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API token, only used to get miner info",
-			Value:    "",
-		},
 	},
 	Action: func(c *cli.Context) error {
 		db, err := database.OpenFromCLI(c)
@@ -48,7 +36,9 @@ var SpadeAPICmd = &cli.Command{
 			return err
 		}
 
-		dealMaker := replication.NewDealMaker(c.String("lotus-api"), c.String("lotus-token"), h, time.Hour, time.Minute)
+		dealMaker := replication.NewDealMaker(
+			util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token")),
+			h, time.Hour, time.Minute)
 		if err != nil {
 			return err
 		}

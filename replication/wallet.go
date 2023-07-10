@@ -12,7 +12,6 @@ import (
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/pkg/errors"
-	"github.com/rjNemo/underscore"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
@@ -45,16 +44,16 @@ func (w DefaultWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 
 type DatacapWalletChooser struct {
 	db          *gorm.DB
-	cache       *ttlcache.Cache[string, uint64]
+	cache       *ttlcache.Cache[string, int64]
 	lotusClient jsonrpc.RPCClient
 	min         uint64
 }
 
 func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
 	lotusAPI string, lotusToken string, min uint64) DatacapWalletChooser {
-	cache := ttlcache.New[string, uint64](
-		ttlcache.WithTTL[string, uint64](cacheTTL),
-		ttlcache.WithDisableTouchOnHit[string, uint64]())
+	cache := ttlcache.New[string, int64](
+		ttlcache.WithTTL[string, int64](cacheTTL),
+		ttlcache.WithDisableTouchOnHit[string, int64]())
 
 	lotusClient := util.NewLotusClient(lotusAPI, lotusToken)
 	return DatacapWalletChooser{
@@ -65,32 +64,34 @@ func NewDatacapWalletChooser(db *gorm.DB, cacheTTL time.Duration,
 	}
 }
 
-func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Wallet) (uint64, error) {
+func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Wallet) (int64, error) {
 	var result string
 	err := w.lotusClient.CallFor(ctx, &result, "Filecoin.StateMarketBalance", wallet.Address, nil)
 	if err != nil {
 		return 0, err
 	}
-	return strconv.ParseUint(result, 10, 64)
+	return strconv.ParseInt(result, 10, 64)
 }
 
-func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model.Wallet) int64 {
+func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model.Wallet) (int64, error) {
 	item := w.cache.Get(wallet.Address)
 	if item != nil && !item.IsExpired() {
-		return int64(item.Value())
+		return item.Value(), nil
 	}
 	datacap, err := w.getDatacap(ctx, wallet)
 	if err != nil {
 		logger.Errorf("failed to get datacap for wallet %s: %s", wallet.Address, err)
-		return 0
+		if item != nil {
+			return item.Value(), nil
+		}
+		return 0, err
 	}
 	w.cache.Set(wallet.Address, datacap, ttlcache.DefaultTTL)
-	pending := w.getPendingDeals(ctx, wallet)
-	return int64(datacap) - int64(pending)
+	return datacap, nil
 }
 
-func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.Wallet) uint64 {
-	var totalPieceSize uint64
+func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.Wallet) (int64, error) {
+	var totalPieceSize int64
 	err := w.db.WithContext(ctx).Model(&model.Deal{}).
 		Select("COALESCE(SUM(piece_size), 0)").
 		Where("client_id = ? AND verified AND state = ?", wallet.ID, model.DealProposed).
@@ -98,9 +99,9 @@ func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.
 		Error
 	if err != nil {
 		logger.Errorf("failed to get pending deals for wallet %s: %s", wallet.Address, err)
-		return 0
+		return 0, err
 	}
-	return totalPieceSize
+	return totalPieceSize, nil
 }
 
 func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error) {
@@ -108,18 +109,31 @@ func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 		return model.Wallet{}, ErrNoWallet
 	}
 
-	wallets = underscore.Filter(wallets, func(wallet model.Wallet) bool {
-		return w.getDatacapCached(ctx, wallet) >= int64(w.min)
-	})
+	var eligibleWallets []model.Wallet
+	for _, wallet := range wallets {
+		datacap, err := w.getDatacapCached(ctx, wallet)
+		if err != nil {
+			logger.Errorw("failed to get datacap for wallet", "wallet", wallet.Address, "error", err)
+			continue
+		}
+		pendingDeals, err := w.getPendingDeals(ctx, wallet)
+		if err != nil {
+			logger.Errorw("failed to get pending deals for wallet", "wallet", wallet.Address, "error", err)
+			continue
+		}
+		if datacap-pendingDeals >= int64(w.min) {
+			eligibleWallets = append(eligibleWallets, wallet)
+		}
+	}
 
-	if len(wallets) == 0 {
+	if len(eligibleWallets) == 0 {
 		return model.Wallet{}, ErrNoDatacap
 	}
 
-	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(wallets))))
+	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(eligibleWallets))))
 	if err != nil {
 		return model.Wallet{}, err
 	}
-	chosenWallet := wallets[randomPick.Int64()]
+	chosenWallet := eligibleWallets[randomPick.Int64()]
 	return chosenWallet, nil
 }

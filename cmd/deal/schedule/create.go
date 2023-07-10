@@ -69,13 +69,13 @@ var CreateCmd = &cli.Command{
 			Usage:    "Whether to keep unsealed copy",
 			Value:    true,
 		},
-		&cli.DurationFlag{
-			Name:        "schedule-interval",
+		&cli.StringFlag{
+			Name:        "schedule-cron",
 			Category:    "Scheduling",
-			Aliases:     []string{"every"},
+			Aliases:     []string{"cron"},
 			Usage:       "Cron schedule to send out batch deals",
 			DefaultText: "disabled",
-			Value:       0,
+			Value:       "",
 		},
 		&cli.StringFlag{
 			Name:     "start-delay",
@@ -190,7 +190,7 @@ var CreateCmd = &cli.Command{
 			Verified:             c.Bool("verified"),
 			IPNI:                 c.Bool("ipni"),
 			KeepUnsealed:         c.Bool("keep-unsealed"),
-			ScheduleInterval:     c.String("schedule-interval"),
+			ScheduleCron:         c.String("schedule-cron"),
 			StartDelay:           c.String("start-delay"),
 			Duration:             c.String("duration"),
 			ScheduleDealNumber:   c.Int("schedule-deal-number"),

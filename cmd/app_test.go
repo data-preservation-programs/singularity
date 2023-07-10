@@ -181,7 +181,7 @@ func TestDealTracker(t *testing.T) {
 		ctx2, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
 		_, _, err := RunArgsInTest(ctx2, "singularity run deal-tracker")
-		require.NoError(t, err)
+		require.ErrorContains(t, err, "context deadline exceeded")
 	})
 }
 
@@ -296,7 +296,7 @@ func TestRunAPI(t *testing.T) {
 			Provider:           "f022352",
 			StartDelay:         "24h",
 			Duration:           "2400h",
-			ScheduleInterval:   "1h",
+			ScheduleCron:       "",
 			ScheduleDealSize:   "1P",
 			TotalDealSize:      "1P",
 			MaxPendingDealSize: "1P",

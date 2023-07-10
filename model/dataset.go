@@ -138,9 +138,10 @@ type WorkState string
 type WorkType string
 
 const (
-	Scan       WorkType = "scan"
-	DealMaking WorkType = "deal_making"
-	Packing    WorkType = "packing"
+	Scan         WorkType = "scan"
+	DealMaking   WorkType = "deal_making"
+	DealTracking WorkType = "deal_tracking"
+	Packing      WorkType = "packing"
 )
 
 const (

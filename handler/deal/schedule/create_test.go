@@ -61,7 +61,7 @@ var createRequest = CreateRequest{
 	KeepUnsealed:         true,
 	StartDelay:           "24h",
 	Duration:             "2400h",
-	ScheduleInterval:     "1h",
+	ScheduleCron:         "",
 	ScheduleDealNumber:   100,
 	TotalDealNumber:      100,
 	ScheduleDealSize:     "1TiB",
@@ -104,9 +104,9 @@ func TestCreateHandler_InvalidScheduleInterval(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, db.Create(&model.Dataset{Name: "test"}).Error)
 	badRequest := createRequest
-	badRequest.ScheduleInterval = "1year"
+	badRequest.ScheduleCron = "1year"
 	_, err = CreateHandler(db, context.Background(), getMockLotusClient(), badRequest)
-	require.ErrorContains(t, err, "invalid schedule interval")
+	require.ErrorContains(t, err, "invalid schedule cron")
 }
 
 func TestCreateHandler_InvalidScheduleDealSize(t *testing.T) {
