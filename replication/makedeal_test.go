@@ -115,7 +115,7 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 	client := setupBasicHost(t, ctx, "10002")
 	defer server.Close()
 	defer client.Close()
-	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	wallet := model.Wallet{
 		ID:         "f01074655",
@@ -172,7 +172,7 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 	client := setupBasicHost(t, ctx, "10002")
 	defer server.Close()
 	defer client.Close()
-	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
@@ -230,7 +230,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 	client := setupBasicHost(t, ctx, "10002")
 	defer server.Close()
 	defer client.Close()
-	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
@@ -262,7 +262,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 
 func TestDealMaker_GetCollateral(t *testing.T) {
 	lotusClient := new(MockRPCClient)
-	maker := NewDealMaker("", "", nil, time.Hour, time.Second)
+	maker := NewDealMaker(nil, nil, time.Hour, time.Second)
 	maker.lotusClient = lotusClient
 	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateDealProviderCollateralBounds", mock.Anything).
 		Return(nil).Run(func(args mock.Arguments) {
@@ -284,7 +284,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	client := setupBasicHost(t, ctx, "10002")
 	defer server.Close()
 	defer client.Close()
-	maker := NewDealMaker("", "", client, time.Hour, time.Second)
+	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
@@ -298,7 +298,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 
 func TestDealMaker_GetProviderInfo(t *testing.T) {
 	lotusClient := new(MockRPCClient)
-	maker := NewDealMaker("", "", nil, time.Hour, time.Second)
+	maker := NewDealMaker(nil, nil, time.Hour, time.Second)
 	maker.lotusClient = lotusClient
 
 	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateMinerInfo", []interface{}{"address1", nil}).

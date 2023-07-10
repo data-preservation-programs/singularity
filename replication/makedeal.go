@@ -11,7 +11,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
-	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
 	"github.com/filecoin-project/go-state-types/abi"
@@ -57,7 +56,7 @@ type DealProviderCollateralBound struct {
 }
 
 type DealMaker interface {
-	MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig DealConfig) (string, error)
+	MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig DealConfig) (*model.Deal, error)
 }
 
 type DealMakerImpl struct {
@@ -77,12 +76,11 @@ func (d DealMakerImpl) Close() error {
 	return nil
 }
 
-func NewDealMaker(lotusURL string,
-	lotusToken string,
+func NewDealMaker(
+	lotusClient jsonrpc.RPCClient,
 	libp2p host.Host,
 	cacheTTL time.Duration,
 	requestTimeout time.Duration) DealMakerImpl {
-	lotusClient := util.NewLotusClient(lotusURL, lotusToken)
 	minerInfoCache := ttlcache.New[string, *MinerInfo](
 		ttlcache.WithTTL[string, *MinerInfo](cacheTTL),
 		ttlcache.WithDisableTouchOnHit[string, *MinerInfo]())
@@ -325,21 +323,21 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 }
 
 func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
-	car model.Car, dealConfig DealConfig) (string, error) {
+	car model.Car, dealConfig DealConfig) (*model.Deal, error) {
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to parse wallet address")
+		return nil, errors.Wrap(err, "failed to parse wallet address")
 	}
 
 	pvd, err := address.NewFromString(dealConfig.Provider)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to parse provider address")
+		return nil, errors.Wrap(err, "failed to parse provider address")
 	}
 
 	label, err := proposal110.NewLabelFromString(cid.Cid(car.RootCID).String())
 	if err != nil {
-		return "", errors.Wrap(err, "failed to parse label")
+		return nil, errors.Wrap(err, "failed to parse label")
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, d.requestTimeout)
@@ -347,7 +345,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	minerInfo, err := d.getProviderInfo(ctx, dealConfig.Provider)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get provider info")
+		return nil, errors.Wrap(err, "failed to get provider info")
 	}
 
 	d.host.Peerstore().AddAddrs(minerInfo.PeerID, minerInfo.Multiaddrs, peerstore.TempAddrTTL)
@@ -355,7 +353,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	protocols, err := d.getProtocols(ctx, addrInfo)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get supported protocol")
+		return nil, errors.Wrap(err, "failed to get supported protocol")
 	}
 
 	startEpoch := TimeToEpoch(now.Add(dealConfig.StartDelay))
@@ -366,7 +364,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	pieceSize := abi.PaddedPieceSize(car.PieceSize)
 	collateral, err := d.getMinCollateral(ctx, car.PieceSize, verified)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to get min collateral")
+		return nil, errors.Wrap(err, "failed to get min collateral")
 	}
 	proposal := proposal110.DealProposal{
 		PieceCID:             pieceCID,
@@ -382,12 +380,12 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 	proposalBytes, err := cborutil.Dump(&proposal)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to serialize deal proposal")
+		return nil, errors.Wrap(err, "failed to serialize deal proposal")
 	}
 
 	signature, err := wallet.WalletSign(walletObj.PrivateKey, proposalBytes)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to sign deal proposal")
+		return nil, errors.Wrap(err, "failed to sign deal proposal")
 	}
 
 	deal := proposal110.ClientDealProposal{
@@ -395,25 +393,40 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		ClientSignature: *signature,
 	}
 
+	dealModel := &model.Deal{
+		DatasetID:  &car.DatasetID,
+		State:      model.DealProposed,
+		ClientID:   walletObj.ID,
+		Provider:   dealConfig.Provider,
+		Label:      cid.Cid(car.RootCID).String(),
+		PieceCID:   cid.Cid(car.PieceCID).String(),
+		PieceSize:  car.PieceSize,
+		StartEpoch: int32(startEpoch),
+		EndEpoch:   int32(endEpoch),
+		Price:      dealConfig.GetPrice(car.PieceSize, dealConfig.Duration).String(),
+		Verified:   dealConfig.Verified,
+	}
 	if slices.Contains(protocols, StorageProposalV120) {
 		dealID := uuid.New()
 		resp, err := d.makeDeal120(ctx, deal, dealID, dealConfig, car.FileSize, cid.Cid(car.RootCID), addrInfo)
 		if err != nil {
-			return "", errors.Wrap(err, "failed to make deal")
+			return nil, errors.Wrap(err, "failed to make deal")
 		}
 		if resp.Accepted {
-			return dealID.String(), nil
+			dealModel.ProposalID = dealID.String()
+			return dealModel, nil
 		}
 
-		return "", errors.Errorf("deal rejected: %s", resp.Message)
+		return nil, errors.Errorf("deal rejected: %s", resp.Message)
 	} else if slices.Contains(protocols, StorageProposalV111) {
 		resp, err := d.makeDeal111(ctx, deal, dealConfig, cid.Cid(car.RootCID), addrInfo)
 		if err != nil {
-			return "", errors.Wrap(err, "failed to make deal")
+			return nil, errors.Wrap(err, "failed to make deal")
 		}
 
-		return resp.Response.Proposal.String(), nil
+		dealModel.ProposalID = resp.Response.Proposal.String()
+		return dealModel, nil
 	}
 
-	return "", errors.New("no supported protocol found")
+	return nil, errors.New("no supported protocol found")
 }

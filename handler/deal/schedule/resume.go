@@ -27,24 +27,21 @@ func resumeHandler(
 	scheduleID string,
 ) (*model.Schedule, error) {
 	var schedule model.Schedule
-	err := db.Transaction(func(db *gorm.DB) error {
-		err := db.First(&schedule, "id = ?", scheduleID).Error
-		if err != nil {
-			return err
-		}
-		schedule.State = model.ScheduleActive
-		err = db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.ScheduleActive).Error
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
+	err := db.First(&schedule, "id = ?", scheduleID).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewBadRequestString("schedule not found")
 	}
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
 	}
+	if schedule.State != model.SchedulePaused {
+		return nil, handler.NewBadRequestString("schedule is not paused")
+	}
+	schedule.State = model.ScheduleActive
+	err = db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.ScheduleActive).Error
+	if err != nil {
+		return nil, handler.NewHandlerError(err)
+	}
+
 	return &schedule, nil
 }

@@ -77,17 +77,6 @@ func HealthCheckCleanup(db *gorm.DB) {
 	if err != nil {
 		log.Logger("healthcheck").Errorw("failed to remove stale packing worker", "error", err)
 	}
-
-	err = database.DoRetry(func() error {
-		return db.Model(&model.Schedule{}).Where("schedule_worker_id NOT IN (?)",
-			db.Table("workers").Select("id")).
-			Updates(map[string]interface{}{
-				"schedule_worker_id": nil,
-			}).Error
-	})
-	if err != nil {
-		log.Logger("healthcheck").Errorw("failed to remove stale schedule worker", "error", err)
-	}
 }
 
 func HealthCheck(db *gorm.DB, workerID uuid.UUID, getState func() State) {
@@ -121,7 +110,7 @@ func StartHealthCheck(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getS
 		case <-ctx.Done():
 			return
 		case <-time.After(time.Minute):
-			HealthCheck(db, workerID, getState)
+			HealthCheck(db.WithContext(ctx), workerID, getState)
 			continue
 		}
 	}
