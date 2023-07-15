@@ -19,6 +19,7 @@
 * [Add a data source](data-preparation/add-a-data-source.md)
 * [Start dataset worker](data-preparation/start-dataset-worker.md)
 * [Create DAG for the data source](data-preparation/create-dag-for-the-data-source.md)
+* [Data Preparation Technical Architecture](data-preparation/technical-architecture)
 
 ## Content Distribution
 
@@ -155,6 +156,10 @@
 * [Piece](web-api-reference/piece.md)
 * [Wallet](web-api-reference/wallet.md)
 * [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+
+## Technical Architecture (for developers)
+
+* [Data Preparation](technical-documentation/data-preparation.md)
 
 ## ❓ FAQ
 
