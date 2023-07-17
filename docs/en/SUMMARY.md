@@ -159,7 +159,7 @@
 
 ## Technical Architecture (for developers)
 
-* [Data Preparation](technical-documentation/data-preparation.md)
+* [Data Preparation](technical-architecture/data-preparation.md)
 
 ## ❓ FAQ
 
