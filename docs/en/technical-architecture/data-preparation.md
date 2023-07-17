@@ -12,7 +12,7 @@ A dataset is set of data with common policies for replication and one or more as
 
 Every data set can have one or more sources for data. A source is simply a pointer to a folder of data, that can be stored on storage supported by [RClone](https://github.com/rclone/rclone), including local file storage.
 
-Data preparation begins a singularity user:
+Data preparation begins when a singularity user:
 1. Creates a dataset
 2. Adds a source to the dataset
 3. Starts the data prepartation worker
@@ -37,7 +37,7 @@ To pack a car file, each ItemPart in a Chunk is read and chunked into IPLD Raw b
 
 At the end of the packing process, Singularity also writes a Car model to its database to represent the Car file, as well as a CarBlock for every block in the CAR. 
 
-As we finish writing each Car, we return to our Directories and Items. For each Item that has all of its ItemParts written, we build an additional UnixFS intermediate node tree to connect all of the ItemParts in a Item into a single UnixFS file for the item. We also assemble and update UnixFS directory nodes for each Directory. This data is stored in a temporary blockstore linked to Directory objects.
+As we finish writing each Car, we return to our Directories and Items. For each Item that has all of its ItemParts written, we build an additional UnixFS intermediate node tree to connect all of the ItemParts in a Item into a single UnixFS file for the item. We also assemble and update UnixFS directory nodes for each Directory. This data is stored temporarily in the database, linked to Directory objects.
 
 When the packing process is done, we have CAR files to store every ItemPart in a data source. However, note that at this point, while we've also assembled a UnixFS DAG that represents the directories (Directories) and files (Items) from the data source, we haven't serialized it to its own CAR to store on Filecoin.
 
