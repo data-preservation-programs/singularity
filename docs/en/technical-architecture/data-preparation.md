@@ -13,7 +13,7 @@ A dataset is set of data with common policies for replication and one or more as
 Every data set can have one or more sources for data. A source is simply a pointer to a folder of data, that can be stored on storage supported by [RClone](https://github.com/rclone/rclone), including local file storage.
 
 Data preparation begins a singularity user:
-1. Creates a data set
+1. Creates a dataset
 2. Adds a source to the dataset
 3. Starts the data prepartation worker
 
