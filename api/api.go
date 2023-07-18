@@ -6,9 +6,12 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"syscall"
 	"time"
 	"unicode"
 
@@ -24,6 +27,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	fs2 "github.com/rclone/rclone/fs"
 	"github.com/ybbus/jsonrpc/v3"
+	"golang.org/x/net/webdav"
 
 	_ "github.com/data-preservation-programs/singularity/api/docs"
 	"github.com/data-preservation-programs/singularity/cmd/embed"
@@ -43,10 +47,14 @@ import (
 
 type Server struct {
 	db                        *gorm.DB
-	bind                      string
+	adminBind                 string
 	datasourceHandlerResolver datasource.HandlerResolver
 	lotusClient               jsonrpc.RPCClient
 	dealMaker                 replication.DealMaker
+	adminEnabled              bool
+	webDavEnabled             bool
+	webDavBind                string
+	webDavSourceID            uint32
 }
 
 type ItemInfo struct {
@@ -160,16 +168,21 @@ func Run(c *cli.Context) error {
 	if err := model.AutoMigrate(db); err != nil {
 		return handler.NewHandlerError(err)
 	}
-	bind := c.String("bind")
+	adminBind := c.String("admin-bind")
+	adminEnabled := c.Bool("enable-admin")
+	webDavBind := c.String("webdav-bind")
+	webDavEnabled := c.Bool("enable-webdav")
+	webDavSourceID := c.Uint("webdav-source-id")
 
 	lotusAPI := c.String("lotus-api")
 	lotusToken := c.String("lotus-token")
+
 	h, err := util.InitHost(nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to init host")
 	}
 
-	return Server{db: db, bind: bind,
+	return Server{db: db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 		lotusClient:               util.NewLotusClient(lotusAPI, lotusToken),
 		dealMaker: replication.NewDealMaker(
@@ -178,7 +191,12 @@ func Run(c *cli.Context) error {
 			time.Hour,
 			time.Minute*5,
 		),
-	}.Run(c)
+		adminBind:      adminBind,
+		adminEnabled:   adminEnabled,
+		webDavBind:     webDavBind,
+		webDavEnabled:  webDavEnabled,
+		webDavSourceID: uint32(webDavSourceID),
+	}.Run(c.Context)
 }
 
 func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
@@ -441,7 +459,52 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 var logger = logging.Logger("api")
 
-func (s Server) Run(c *cli.Context) error {
+type WebDavHandler struct {
+	webdav.Handler
+}
+
+func (h *WebDavHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.Handler.ServeHTTP(w, r)
+}
+
+type cleanup func()
+
+func (s Server) runWebdav(sourceHandler *datasource.RCloneHandler) (<-chan error, cleanup) {
+	webdavHandler := &webdav.Handler{
+		Prefix:     "/",
+		FileSystem: sourceHandler,
+		// TODO: use a real lock system with a shared backend
+		LockSystem: webdav.NewMemLS(),
+	}
+
+	server := &http.Server{
+		Addr:              s.webDavBind,
+		Handler:           webdavHandler,
+		ReadHeaderTimeout: time.Second * 10,
+	}
+
+	errCh := make(chan error)
+	go func() {
+		defer close(errCh)
+		err := server.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errCh <- err
+		}
+	}()
+
+	return errCh, func() {
+		logger.Info("shutting down webdav server")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err := server.Shutdown(ctx)
+		if err != nil {
+			logger.Errorw("failed to shutdown webdav server", "err", err)
+		}
+	}
+}
+
+func (s Server) runAPI() (<-chan error, cleanup) {
+	errChan := make(chan error)
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.Recover())
@@ -471,7 +534,7 @@ func (s Server) Run(c *cli.Context) error {
 	s.setupRoutes(e)
 	efs, err := fs.Sub(embed.DashboardStaticFiles, "build")
 	if err != nil {
-		return err
+		errChan <- err
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -487,16 +550,84 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
 	go func() {
-		<-c.Context.Done()
+		defer close(errChan)
+		err := e.Start(s.adminBind)
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errChan <- err
+		}
+	}()
+
+	return errChan, func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
 		//nolint:contextcheck
 		if err := e.Shutdown(shutdownCtx); err != nil {
 			fmt.Printf("Error shutting down the server: %v\n", err)
 		}
-	}()
+	}
+}
 
-	return e.Start(s.bind)
+func (s Server) Run(ctx context.Context) error {
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var (
+		webdavErrChan <-chan error
+		webdavCleanup func()
+		apiErrChan    <-chan error
+		apiCleanup    func()
+	)
+	if s.adminEnabled {
+		//nolint:contextcheck
+		apiErrChan, apiCleanup = s.runAPI()
+		defer apiCleanup()
+	}
+	if s.webDavEnabled {
+		var source model.Source
+		err := s.db.WithContext(ctx).Where("id = ?", s.webDavSourceID).First(&source).Error
+		if err != nil {
+			return errors.Wrap(err, "failed to get source")
+		}
+		rCloneHandler, err := datasource.NewRCloneHandler(ctx, source)
+		if err != nil {
+			return errors.Wrap(err, "failed to create rclone handler")
+		}
+		if !rCloneHandler.Features().CanHaveEmptyDirectories {
+			return errors.New("source does not support empty directories")
+		}
+		_, ok := rCloneHandler.Fs.(fs2.Mover)
+		if !ok {
+			return errors.New("source does not support moving files")
+		}
+		_, ok = rCloneHandler.Fs.(fs2.DirMover)
+		if !ok {
+			return errors.New("source does not support moving directories")
+		}
+		_, ok = rCloneHandler.Fs.(fs2.Purger)
+		if !ok {
+			return errors.New("source does not support purging")
+		}
+		_, ok = rCloneHandler.Fs.(fs2.PutStreamer)
+		if !ok {
+			return errors.New("source does not support streaming uploads")
+		}
+		//nolint:contextcheck
+		webdavErrChan, webdavCleanup = s.runWebdav(rCloneHandler)
+		defer webdavCleanup()
+	}
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-webdavErrChan:
+		return errors.Wrap(err, "webdav server error")
+	case err := <-apiErrChan:
+		return errors.Wrap(err, "api server error")
+	case sig := <-signalChan:
+		logger.Infow("received signal", "signal", sig)
+		cancel()
+		return cli.Exit("shutting down", 130)
+	}
 }
 
 /* deprecated API

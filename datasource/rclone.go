@@ -1,12 +1,17 @@
 package datasource
 
 import (
+	"bytes"
 	"context"
+	"encoding/xml"
 	"fmt"
 	"io"
+	fs2 "io/fs"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
@@ -53,13 +58,282 @@ import (
 	_ "github.com/rclone/rclone/backend/zoho"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
+	"github.com/rclone/rclone/fs/object"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
+	"golang.org/x/net/webdav"
 )
 
 type RCloneHandler struct {
 	fs.Fs
+}
+
+type RCloneEntryInfo struct {
+	ctx context.Context
+	fs.DirEntry
+}
+
+type RCloneEntry struct {
+	ctx     context.Context
+	isDir   bool
+	name    string
+	readDir func(count int) ([]fs2.FileInfo, error)
+	fs.Object
+	readCloser io.ReadCloser
+	pos        int64
+	writer     *io.PipeWriter
+	writeDone  chan error
+}
+
+func (r *RCloneEntry) DeadProps() (map[xml.Name]webdav.Property, error) {
+	name := xml.Name{Space: "https://singularity.storage/ns", Local: "info"}
+	return map[xml.Name]webdav.Property{
+		name: {
+			XMLName:  name,
+			InnerXML: []byte(`<s:info></s:info>`),
+		},
+	}, nil
+}
+
+func (r *RCloneEntry) Patch(proppatches []webdav.Proppatch) ([]webdav.Propstat, error) {
+	return nil, nil
+}
+
+func (r *RCloneEntry) Close() error {
+	var errs []error
+	if r.readCloser != nil {
+		err := r.readCloser.Close()
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if r.writer != nil {
+		err := r.writer.Close()
+		if err != nil {
+			errs = append(errs, err)
+		} else {
+			err = <-r.writeDone
+			if err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+	if len(errs) > 0 {
+		return errors.Errorf("failed to close file: %v", errs)
+	}
+	return nil
+}
+
+func (r *RCloneEntry) Read(p []byte) (n int, err error) {
+	if r.isDir {
+		return 0, errors.New("cannot read directory")
+	}
+	if r.readCloser == nil {
+		r.readCloser, err = r.Object.Open(r.ctx, &fs.RangeOption{Start: r.pos, End: -1})
+		if err != nil {
+			return 0, err
+		}
+	}
+	n, err = r.readCloser.Read(p)
+	r.pos += int64(n)
+	return n, err
+}
+
+func (r *RCloneEntry) Seek(offset int64, whence int) (int64, error) {
+	if r.isDir {
+		return 0, errors.New("cannot seek directory")
+	}
+	if r.readCloser != nil {
+		err := r.readCloser.Close()
+		if err != nil {
+			return 0, err
+		}
+		r.readCloser = nil
+	}
+	if r.writer != nil {
+		return 0, errors.New("cannot seek while writing")
+	}
+	switch whence {
+	case io.SeekStart:
+		r.pos = offset
+	case io.SeekCurrent:
+		r.pos += offset
+	case io.SeekEnd:
+		r.pos = r.Object.Size() + offset
+	}
+	return r.pos, nil
+}
+
+func (r *RCloneEntry) Readdir(count int) ([]fs2.FileInfo, error) {
+	if !r.isDir {
+		return nil, errors.New("not a directory")
+	}
+
+	return r.readDir(count)
+}
+
+func (r *RCloneEntry) Stat() (fs2.FileInfo, error) {
+	if r.isDir {
+		return RCloneEntryInfo{r.ctx, fs.NewDir(r.name, time.Time{})}, nil
+	}
+	return RCloneEntryInfo{r.ctx, r.Object}, nil
+}
+
+func (r *RCloneEntry) Write(p []byte) (n int, err error) {
+	if r.isDir {
+		return 0, errors.New("cannot write directory")
+	}
+	if r.writer == nil {
+		var reader *io.PipeReader
+		reader, r.writer = io.Pipe()
+		r.writeDone = make(chan error)
+		objInfo := object.NewStaticObjectInfo(r.Object.Remote(), time.Now(), -1, true, nil, r.Fs())
+		go func() {
+			var err error
+			r.Object, err = r.Object.Fs().Features().PutStream(r.ctx, reader, objInfo)
+			r.writeDone <- err
+		}()
+	}
+	return r.writer.Write(p)
+}
+
+func (r RCloneEntryInfo) Name() string {
+	fullPath := r.DirEntry.Remote()
+	return fullPath[strings.LastIndex(fullPath, "/")+1:]
+}
+
+func (r RCloneEntryInfo) Size() int64 {
+	return r.DirEntry.Size()
+}
+
+func (r RCloneEntryInfo) Mode() fs2.FileMode {
+	_, ok := r.DirEntry.(fs.Directory)
+	if ok {
+		return fs2.ModeDir
+	} else {
+		return 0
+	}
+}
+
+func (r RCloneEntryInfo) ModTime() time.Time {
+	return r.DirEntry.ModTime(r.ctx)
+}
+
+func (r RCloneEntryInfo) IsDir() bool {
+	_, ok := r.DirEntry.(fs.Directory)
+	return ok
+}
+
+func (r RCloneEntryInfo) Sys() any {
+	return nil
+}
+
+func (h RCloneHandler) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
+	_, err := h.Fs.NewObject(ctx, name)
+	if errors.Is(err, fs.ErrorObjectNotFound) {
+		return h.Fs.Mkdir(ctx, name)
+	}
+	return os.ErrExist
+}
+
+func (h RCloneHandler) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
+	if os.O_CREATE&flag > 0 && os.O_TRUNC&flag == 0 {
+		return nil, errors.New("create without truncate not supported")
+	}
+	entry, err := h.Fs.NewObject(ctx, name)
+	if errors.Is(err, fs.ErrorIsDir) {
+		return &RCloneEntry{
+			ctx:   ctx,
+			isDir: true,
+			name:  name[strings.LastIndex(name, "/")+1:],
+			readDir: func(count int) ([]fs2.FileInfo, error) {
+				switch count {
+				case 0:
+					entries, err := h.Fs.List(ctx, name)
+					if err != nil {
+						return nil, errors.Wrap(err, "failed to list directory")
+					}
+					var infos []fs2.FileInfo
+					for _, entry := range entries {
+						infos = append(infos, RCloneEntryInfo{ctx, entry})
+					}
+					return infos, nil
+				default:
+					return nil, errors.New("unsupported count")
+				}
+			},
+		}, nil
+	}
+	if os.O_CREATE&flag > 0 {
+		if errors.Is(err, fs.ErrorObjectNotFound) {
+			objectInfo := object.NewStaticObjectInfo(name, time.Now(), 0, true, nil, h.Fs)
+			obj, err := h.Fs.Put(ctx, bytes.NewBuffer(nil), objectInfo)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create file")
+			}
+			return &RCloneEntry{
+				ctx:    ctx,
+				Object: obj,
+				name:   name[strings.LastIndex(name, "/")+1:],
+			}, nil
+		}
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create file")
+		}
+	}
+	return &RCloneEntry{
+		ctx:    ctx,
+		Object: entry,
+		name:   name[strings.LastIndex(name, "/")+1:],
+	}, nil
+}
+
+func (h RCloneHandler) RemoveAll(ctx context.Context, name string) error {
+	obj, err := h.Fs.NewObject(ctx, name)
+	if errors.Is(err, fs.ErrorIsDir) {
+		return h.Fs.Features().Purge(ctx, name)
+	}
+	if errors.Is(err, fs.ErrorObjectNotFound) {
+		return os.ErrNotExist
+	}
+	if err == nil {
+		return obj.Remove(ctx)
+	}
+	return err
+}
+
+func (h RCloneHandler) Rename(ctx context.Context, oldName, newName string) error {
+	entry, err := h.Fs.NewObject(ctx, oldName)
+	if errors.Is(err, fs.ErrorIsDir) {
+		return h.Fs.Features().DirMove(ctx, h.Fs, oldName, newName)
+	}
+	if err != nil {
+		return err
+	}
+	_, err = h.Fs.Features().Move(ctx, entry, newName)
+	return err
+}
+
+func (h RCloneHandler) Stat(ctx context.Context, name string) (os.FileInfo, error) {
+	entry, err := h.Fs.NewObject(ctx, name)
+	if errors.Is(err, fs.ErrorIsDir) {
+		return RCloneEntryInfo{
+			ctx:      ctx,
+			DirEntry: fs.NewDir(name, time.Time{}),
+		}, nil
+	}
+	if errors.Is(err, fs.ErrorObjectNotFound) {
+		return nil, os.ErrNotExist
+	}
+	if err != nil {
+		return nil, err
+	}
+	return RCloneEntryInfo{
+		ctx:      ctx,
+		DirEntry: entry,
+	}, nil
 }
 
 func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, error) {

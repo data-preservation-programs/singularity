@@ -39,8 +39,8 @@ var App = &cli.App{
 				"                                `CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii`\n" +
 				"Example for sqlite3   - sqlite:/absolute/path/to/database.db\n" +
 				"            or        - sqlite:relative/path/to/database.db\n",
-			DefaultText: "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
-			Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
+			DefaultText: "sqlite:" + must.String(os.UserHomeDir()) + "/singularity.db",
+			Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/singularity.db",
 			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 		},
 		&cli.BoolFlag{
