@@ -19,7 +19,6 @@
 * [Add a data source](data-preparation/add-a-data-source.md)
 * [Start dataset worker](data-preparation/start-dataset-worker.md)
 * [Create DAG for the data source](data-preparation/create-dag-for-the-data-source.md)
-* [Data Preparation Technical Architecture](data-preparation/technical-architecture)
 
 ## Content Distribution
 
