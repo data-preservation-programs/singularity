@@ -66,8 +66,11 @@ require (
 	github.com/rclone/rclone v1.62.2
 	github.com/rjNemo/underscore v0.5.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/rodaine/table v1.1.0
+	github.com/shirou/gopsutil/v3 v3.23.3
 	github.com/sashabaranov/go-openai v1.14.1
 	github.com/stretchr/testify v1.10.0
+
 	github.com/swaggo/echo-swagger v1.4.0
 	github.com/swaggo/swag v1.16.1
 	github.com/urfave/cli/v2 v2.27.3
@@ -308,6 +311,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rfjakob/eme v1.1.2 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
+
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
 	github.com/shoenig/go-m1cpu v0.1.4 // indirect
