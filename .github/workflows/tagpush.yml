@@ -1,3 +1,6 @@
+# File managed by web3-bot. DO NOT EDIT.
+# See https://github.com/protocol/.github/ for details.
+
 name: Tag Push Checker
 
 on:
@@ -15,4 +18,4 @@ concurrency:
 
 jobs:
   releaser:
-    uses: ipdxco/unified-github-workflows/.github/workflows/tagpush.yml@v0.0
+    uses: protocol/.github/.github/workflows/tagpush.yml@master

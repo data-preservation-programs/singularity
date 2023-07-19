@@ -67,6 +67,7 @@ require (
 	github.com/rjNemo/underscore v0.5.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sashabaranov/go-openai v1.14.1
+	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/echo-swagger v1.4.0
 	github.com/swaggo/swag v1.16.1
@@ -309,7 +310,6 @@ require (
 	github.com/rfjakob/eme v1.1.2 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
 	github.com/shoenig/go-m1cpu v0.1.4 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
