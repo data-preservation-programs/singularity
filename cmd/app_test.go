@@ -190,10 +190,15 @@ func TestDealTracker(t *testing.T) {
 func TestRunAPI(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx2, cancel := context.WithCancel(ctx)
+		serverClosed := make(chan struct{})
+		defer func() {
+			<-serverClosed
+		}()
 		defer cancel()
 		go func() {
 			_, _, err := RunArgsInTest(ctx2, "singularity run api")
 			require.ErrorContains(t, err, "Server closed")
+			close(serverClosed)
 		}()
 		time.Sleep(time.Second)
 		var resp *http.Response
