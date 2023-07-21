@@ -33,12 +33,30 @@ const (
 	DealErrored         DealState = "error"
 )
 
+var DealStates = []DealState{
+	DealProposed,
+	DealPublished,
+	DealActive,
+	DealExpired,
+	DealProposalExpired,
+	DealRejected,
+	DealSlashed,
+	DealErrored,
+}
+
 const (
 	ScheduleActive    ScheduleState = "active"
 	SchedulePaused    ScheduleState = "paused"
 	ScheduleError     ScheduleState = "error"
 	ScheduleCompleted ScheduleState = "completed"
 )
+
+var ScheduleStates = []ScheduleState{
+	ScheduleActive,
+	SchedulePaused,
+	ScheduleError,
+	ScheduleCompleted,
+}
 
 func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEpoch int32) float64 {
 	pricePerEpoch, _ := strconv.ParseFloat(price, 64)

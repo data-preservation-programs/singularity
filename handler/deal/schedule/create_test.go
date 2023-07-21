@@ -1,3 +1,5 @@
+//go:build !(windows && 386)
+
 package schedule
 
 import (

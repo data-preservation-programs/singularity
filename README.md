@@ -7,7 +7,7 @@
 The new pure-go implementation of Singularity provides everything you need to onboard your, or your client's data to Filecoin network
 
 ## Documentation
-[Read the Doc](https://protocol-labs-2.gitbook.io/singularity/overview/readme)
+[Read the Doc](https://data-programs.gitbook.io/singularity/overview/readme)
 
 ## Related projects
 - [js-singularity](https://github.com/tech-greedy/singularity) -

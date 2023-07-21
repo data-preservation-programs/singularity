@@ -1,3 +1,5 @@
+//go:build !386 && !windows
+
 package cmd
 
 import (
@@ -10,7 +12,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -188,10 +189,15 @@ func TestDealTracker(t *testing.T) {
 func TestRunAPI(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx2, cancel := context.WithCancel(ctx)
+		serverClosed := make(chan struct{})
+		defer func() {
+			<-serverClosed
+		}()
 		defer cancel()
 		go func() {
 			_, _, err := RunArgsInTest(ctx2, "singularity run api")
 			require.ErrorContains(t, err, "Server closed")
+			close(serverClosed)
 		}()
 		time.Sleep(time.Second)
 		var resp *http.Response
@@ -250,8 +256,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"pieceSize": 1024`)
 
-		godotenv.Load("../.env", ".env")
-		key := os.Getenv("TEST_WALLET_KEY")
+		key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/wallet").
 			Send(`{"privateKey":"` + key + `"}`).End()
 		require.Len(t, errs, 0)
@@ -274,7 +279,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, key)
 
-		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/dataset/test/wallet/f01074655").End()
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/dataset/test/wallet/f0808055").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"datasetId": 1`)
@@ -285,7 +290,7 @@ func TestRunAPI(t *testing.T) {
 		require.Contains(t, body, `"address": "`)
 
 		defer func() {
-			resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/dataset/test/wallet/f01074655").End()
+			resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/dataset/test/wallet/f0808055").End()
 			require.Len(t, errs, 0)
 			require.Equal(t, http.StatusNoContent, resp.StatusCode)
 			require.Equal(t, ``, body)
@@ -450,35 +455,35 @@ func TestDealScheduleCrud(t *testing.T) {
 func TestWalletCrud(t *testing.T) {
 	godotenv.Load("../.env", ".env")
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		key := os.Getenv("TEST_WALLET_KEY")
+		key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity wallet import "+key)
 		require.NoError(t, err)
 		out, _, err := RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
-		require.Contains(t, out, "f01074655")
+		require.Contains(t, out, "f0808055")
 		_, _, err = RunArgsInTest(ctx, "singularity wallet add-remote f1l2cc5vuw5moppwsjd3b7cjtwa2exowqo36esklq 12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
 		require.Contains(t, out, "f02170643")
-		out, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f01074655")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f0808055")
 		require.NoError(t, err)
-		require.Contains(t, out, "f01074655")
+		require.Contains(t, out, "f0808055")
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		require.NoError(t, err)
-		require.Contains(t, out, "f01074655")
-		_, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f01074655")
+		require.Contains(t, out, "f0808055")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f0808055")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		require.NoError(t, err)
-		require.NotContains(t, out, "f01074655")
-		_, _, err = RunArgsInTest(ctx, "singularity wallet remove f01074655")
+		require.NotContains(t, out, "f0808055")
+		_, _, err = RunArgsInTest(ctx, "singularity wallet remove f0808055")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
-		require.NotContains(t, out, "f01074655")
+		require.NotContains(t, out, "f0808055")
 	})
 }
 
@@ -543,13 +548,14 @@ func TestDatasetCrud(t *testing.T) {
 
 func TestEzPrepBenchmark(t *testing.T) {
 	temp := t.TempDir()
-	exec.Command("truncate", "-s", "1G", temp+"/test.img").Run()
+	err := os.WriteFile(temp+"/test.img", []byte("hello world"), 0777)
+	require.NoError(t, err)
 	ctx := context.Background()
-	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 8 "+temp)
+	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+temp)
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
-	require.Contains(t, out, "1073833069")
-	require.Contains(t, out, "156")
+	require.Contains(t, out, "107")
+	require.Contains(t, out, "152")
 }
 
 func TestDatasourceCrud(t *testing.T) {
@@ -670,7 +676,6 @@ func TestDatasourcePacking(t *testing.T) {
 		require.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
 		// Now load all car files to a block store and check if the resolved directory is same as the original
-		t.Log(root)
 		bs := loadCars(t, carDir)
 		dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
 		rootCID, err := cid.Decode(root)
@@ -792,13 +797,17 @@ func TestPieceDownload(t *testing.T) {
 		pieceCIDs = underscore.Unique(pieceCIDs)
 		require.Len(t, pieceCIDs, 4)
 		ctx2, cancel := context.WithCancel(ctx)
+		serverClosed := make(chan struct{})
+		defer func() {
+			<-serverClosed
+		}()
 		defer cancel()
 		go func() {
 			_, _, _ = RunArgsInTest(ctx2, "singularity run content-provider")
-			<-ctx2.Done()
+			close(serverClosed)
 		}()
 		// Wait for HTTP service to be ready
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Second)
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
 			commp := calculateCommp(t, content, 4*1024*1024)

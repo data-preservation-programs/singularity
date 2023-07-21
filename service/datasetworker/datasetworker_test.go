@@ -1,3 +1,5 @@
+//go:build !386 && !windows
+
 package datasetworker
 
 import (

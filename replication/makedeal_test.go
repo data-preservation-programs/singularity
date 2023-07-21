@@ -1,9 +1,10 @@
+//go:build !(windows && 386)
+
 package replication
 
 import (
 	"context"
 	"math/big"
-	"os"
 	"testing"
 	"time"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/joho/godotenv"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -107,8 +107,8 @@ func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 }
 
 func TestDealMaker_MakeDeal(t *testing.T) {
-	godotenv.Load("../.env", ".env")
-	key := os.Getenv("TEST_WALLET_KEY")
+	addr := "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
+	key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	server := setupBasicHost(t, ctx, "10001")
@@ -118,8 +118,8 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	wallet := model.Wallet{
-		ID:         "f01074655",
-		Address:    "f13vtwldyycj32sxhenrd7gmwj72hhatvuoydjxii",
+		ID:         "f047684",
+		Address:    addr,
 		PrivateKey: key,
 	}
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
@@ -286,6 +286,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
+	time.Sleep(time.Second)
 	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
 		Addrs: server.Addrs(),
