@@ -1,3 +1,5 @@
+//go:build !windows
+
 package api
 
 import (
@@ -16,11 +18,12 @@ import (
 )
 
 func TestHandlePostSource(t *testing.T) {
+	tmp := os.TempDir()
 	db, err := database.OpenInMemory()
 	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/dataset/test/source/local", bytes.NewBuffer([]byte(
-		`{"deleteAfterExport":true,"sourcePath":"/tmp","rescanInterval":"1h","caseInsensitive":"false"}`,
+		`{"deleteAfterExport":true,"sourcePath":"`+tmp+`","rescanInterval":"1h","caseInsensitive":"false"}`,
 	)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
@@ -46,7 +49,7 @@ func TestHandlePostSource(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, sources, 1)
 	require.EqualValues(t, 1, sources[0].DatasetID)
-	require.Equal(t, "/tmp", sources[0].Path)
+	require.Equal(t, tmp, sources[0].Path)
 	require.EqualValues(t, 3600, sources[0].ScanIntervalSeconds)
 	require.True(t, sources[0].DeleteAfterExport)
 }
