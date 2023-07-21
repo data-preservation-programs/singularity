@@ -250,8 +250,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"pieceSize": 1024`)
 
-		godotenv.Load("../.env", ".env")
-		key := os.Getenv("TEST_WALLET_KEY")
+		key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/wallet").
 			Send(`{"privateKey":"` + key + `"}`).End()
 		require.Len(t, errs, 0)
@@ -274,7 +273,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, key)
 
-		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/dataset/test/wallet/f01074655").End()
+		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/dataset/test/wallet/f0808055").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"datasetId": 1`)
@@ -285,7 +284,7 @@ func TestRunAPI(t *testing.T) {
 		require.Contains(t, body, `"address": "`)
 
 		defer func() {
-			resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/dataset/test/wallet/f01074655").End()
+			resp, body, errs = gorequest.New().Delete("http://127.0.0.1:9090/api/dataset/test/wallet/f0808055").End()
 			require.Len(t, errs, 0)
 			require.Equal(t, http.StatusNoContent, resp.StatusCode)
 			require.Equal(t, ``, body)
@@ -450,35 +449,35 @@ func TestDealScheduleCrud(t *testing.T) {
 func TestWalletCrud(t *testing.T) {
 	godotenv.Load("../.env", ".env")
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		key := os.Getenv("TEST_WALLET_KEY")
+		key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
 		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity wallet import "+key)
 		require.NoError(t, err)
 		out, _, err := RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
-		require.Contains(t, out, "f01074655")
+		require.Contains(t, out, "f0808055")
 		_, _, err = RunArgsInTest(ctx, "singularity wallet add-remote f1l2cc5vuw5moppwsjd3b7cjtwa2exowqo36esklq 12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
 		require.Contains(t, out, "f02170643")
-		out, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f01074655")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset add-wallet test f0808055")
 		require.NoError(t, err)
-		require.Contains(t, out, "f01074655")
+		require.Contains(t, out, "f0808055")
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		require.NoError(t, err)
-		require.Contains(t, out, "f01074655")
-		_, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f01074655")
+		require.Contains(t, out, "f0808055")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset remove-wallet test f0808055")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		require.NoError(t, err)
-		require.NotContains(t, out, "f01074655")
-		_, _, err = RunArgsInTest(ctx, "singularity wallet remove f01074655")
+		require.NotContains(t, out, "f0808055")
+		_, _, err = RunArgsInTest(ctx, "singularity wallet remove f0808055")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
-		require.NotContains(t, out, "f01074655")
+		require.NotContains(t, out, "f0808055")
 	})
 }
 
