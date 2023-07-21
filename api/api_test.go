@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -19,6 +20,9 @@ import (
 
 func TestHandlePostSource(t *testing.T) {
 	tmp := os.TempDir()
+	if strings.HasSuffix(tmp, "/") {
+		tmp = tmp[:len(tmp)-1]
+	}
 	db, err := database.OpenInMemory()
 	require.NoError(t, err)
 	e := echo.New()
