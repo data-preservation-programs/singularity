@@ -17,10 +17,10 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/item"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
-	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/data-preservation-programs/singularity/util"
 	fs2 "github.com/rclone/rclone/fs"
 	"github.com/ybbus/jsonrpc/v3"
@@ -47,36 +47,6 @@ type Server struct {
 	datasourceHandlerResolver datasource.HandlerResolver
 	lotusClient               jsonrpc.RPCClient
 	dealMaker                 replication.DealMaker
-}
-
-type ItemInfo struct {
-	Path string `json:"path"` // Path to the new item, relative to the source
-}
-
-// @Summary Push an item to be queued
-// @Description Tells Singularity that something is ready to be grabbed for data preparation
-// @Tags Data Source
-// @Accept json
-// @Produce json
-// @Param item body ItemInfo true "Item"
-// @Success 201 {object} model.Item
-// @Failure 400 {string} string "Bad Request"
-// @Failure 409 {string} string "Item already exists"
-// @Failure 500 {string} string "Internal Server Error"
-// @Router /source/{id}/push [post]
-func (s Server) handlePushItem(c echo.Context) error {
-	id := c.Param("id")
-	sourceID, err := strconv.ParseUint(id, 10, 32)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "Invalid source ID")
-	}
-
-	var itemInfo ItemInfo
-	err = c.Bind(&itemInfo)
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	return s.pushItem(c, uint32(sourceID), itemInfo)
 }
 
 // @Summary Get metadata for a piece
@@ -110,46 +80,6 @@ func (s Server) SendManualHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 	return c.JSON(http.StatusOK, dealModel)
-}
-
-func (s Server) pushItem(c echo.Context, sourceID uint32, itemInfo ItemInfo) error {
-	var source model.Source
-	err := s.db.WithContext(c.Request().Context()).Preload("Dataset").Where("id = ?", sourceID).First(&source).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: source %d not found.", sourceID))
-	}
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	handler, err := s.datasourceHandlerResolver.Resolve(c.Request().Context(), source)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	entry, err := handler.Check(c.Request().Context(), itemInfo.Path)
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	obj, ok := entry.(fs2.ObjectInfo)
-	if !ok {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s is not an object", itemInfo.Path))
-	}
-
-	item, itemParts, err := datasetworker.PushItem(c.Request().Context(), s.db, obj, source, *source.Dataset, map[string]uint64{})
-
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	if item == nil {
-		return c.String(http.StatusConflict, fmt.Sprintf("Error: %s already exists", obj.Remote()))
-	}
-
-	item.ItemParts = itemParts
-
-	return c.JSON(http.StatusCreated, item)
 }
 
 func Run(c *cli.Context) error {
@@ -203,25 +133,48 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
 				continue
 			}
+			if paramType.String() == "datasource.HandlerResolver" {
+				inputParams = append(inputParams, reflect.ValueOf(s.datasourceHandlerResolver))
+				continue
+			}
 			if paramType.String() == "jsonrpc.RPCClient" {
 				inputParams = append(inputParams, reflect.ValueOf(s.lotusClient))
 				continue
 			}
-			if paramType.Kind() == reflect.String {
+			switch paramType.Kind() {
+			case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				if j >= len(c.ParamValues()) {
 					logger.Error("Invalid handler function signature.")
 					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 				}
 				paramValue := c.ParamValues()[j]
-				decoded, err := url.QueryUnescape(paramValue)
-				if err != nil {
-					return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
+				switch paramType.Kind() {
+				case reflect.String:
+					decoded, err := url.QueryUnescape(paramValue)
+					if err != nil {
+						return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
+					}
+					inputParams = append(inputParams, reflect.ValueOf(decoded))
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					decoded, err := strconv.ParseInt(paramValue, 10, paramType.Bits())
+					if err != nil {
+						return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse path parameter as number.")
+					}
+					val := reflect.New(paramType).Elem()
+					val.SetInt(decoded)
+					inputParams = append(inputParams, val)
+				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+					decoded, err := strconv.ParseUint(paramValue, 10, paramType.Bits())
+					if err != nil {
+						return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse path parameter as number.")
+					}
+					val := reflect.New(paramType).Elem()
+					val.SetUint(decoded)
+					inputParams = append(inputParams, val)
 				}
-				inputParams = append(inputParams, reflect.ValueOf(decoded))
 				j += 1
 				continue
 			}
-
 			bodyParam := reflect.New(paramType).Elem()
 			if bodyParam.Kind() == reflect.Map {
 				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
@@ -413,7 +366,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
-	e.POST("/api/source/:id/push", s.handlePushItem)
+	e.POST("/api/source/:id/push", s.toEchoHandler(item.PushItemHandler))
 
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
