@@ -12,7 +12,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -549,12 +548,13 @@ func TestDatasetCrud(t *testing.T) {
 
 func TestEzPrepBenchmark(t *testing.T) {
 	temp := t.TempDir()
-	exec.Command("truncate", "-s", "1G", temp+"/test.img").Run()
+	err := os.WriteFile(temp+"/test.img", []byte("hello world"), 0777)
+	require.NoError(t, err)
 	ctx := context.Background()
 	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 8 "+temp)
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
-	require.Contains(t, out, "1073833069")
+	require.Contains(t, out, "107")
 	require.Contains(t, out, "156")
 }
 
