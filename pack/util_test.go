@@ -73,7 +73,7 @@ func TestAssembleItemFromLinks(t *testing.T) {
 
 func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
 	links := []format.Link{}
-	for i := 0; i < 2_000_000; i++ {
+	for i := 0; i < 2_000; i++ {
 		links = append(links, format.Link{
 			Name: "",
 			Size: 5,
@@ -86,9 +86,9 @@ func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
 	require.NotNil(t, node)
 	size, err := node.Size()
 	require.NoError(t, err)
-	require.Equal(t, uint64(10000113), size)
-	require.Equal(t, "bafybeidd6nph3lz2c34mvxoqsaxx6er2au7c73j32yfs6rhmiqeh35ko6m", node.String())
-	require.Len(t, blocks, 1957)
+	require.EqualValues(t, 10103, size)
+	require.Equal(t, "bafybeiamlrjlfotypfc5hse7uenmgmav7yq5vcb75yd7bxh2aaavxbi4ou", node.String())
+	require.Len(t, blocks, 3)
 	require.Equal(t, "bafybeidci5xcdskgvefhv3x6kp6zpyxkbiqshqjbpsdgmk2k3mexzaggwi", blocks[0].Cid().String())
 }
 

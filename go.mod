@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	filippo.io/age v1.1.1
+	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/bcicen/jstream v1.0.1
 	github.com/dustin/go-humanize v1.0.1
@@ -63,8 +64,9 @@ require (
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
 	gorm.io/driver/mysql v1.5.0
 	gorm.io/driver/postgres v1.5.0
+	gorm.io/driver/sqlite v1.5.2
 	gorm.io/driver/sqlserver v1.4.3
-	gorm.io/gorm v1.25.0
+	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
 )
 
 require (
@@ -80,7 +82,6 @@ require (
 	github.com/Max-Sum/base32768 v0.0.0-20230304063302-18e6ce5945fd // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/abbot/go-http-auth v0.4.0 // indirect
-	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/aws/aws-sdk-go v1.44.218 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -193,6 +194,7 @@ require (
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/microsoft/go-mssqldb v0.21.0 // indirect
 	github.com/miekg/dns v1.1.53 // indirect
