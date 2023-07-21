@@ -10,6 +10,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/data-preservation-programs/singularity/handler/item"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
@@ -66,10 +67,12 @@ func TestPushItem_InvalidID(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.handlePushItem(c)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusBadRequest, rec.Code)
-	require.Contains(t, rec.Body.String(), "Invalid source ID")
+	err = server.toEchoHandler(item.PushItemHandler)(c)
+	require.Error(t, err)
+	var httpError *echo.HTTPError
+	require.ErrorAs(t, err, &httpError)
+	require.Equal(t, http.StatusBadRequest, httpError.Code)
+	require.Contains(t, "Failed to parse path parameter as number.", httpError.Message)
 }
 
 func TestPushItem_InvalidPayload(t *testing.T) {
@@ -87,10 +90,12 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.handlePushItem(c)
-	require.NoError(t, err)
-	require.Equal(t, http.StatusBadRequest, rec.Code)
-	require.Contains(t, rec.Body.String(), "Syntax error")
+	err = server.toEchoHandler(item.PushItemHandler)(c)
+	require.Error(t, err)
+	var httpError *echo.HTTPError
+	require.ErrorAs(t, err, &httpError)
+	require.Equal(t, http.StatusBadRequest, httpError.Code)
+	require.Contains(t, "Failed to bind request body.", httpError.Message)
 }
 
 func TestPushItem_SourceNotFound(t *testing.T) {
@@ -108,7 +113,7 @@ func TestPushItem_SourceNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.handlePushItem(c)
+	err = server.toEchoHandler(item.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "source 1 not found")
@@ -144,7 +149,7 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 	require.NoError(t, err)
 	err = db.Create(&model.Directory{SourceID: 1}).Error
 	require.NoError(t, err)
-	err = server.handlePushItem(c)
+	err = server.toEchoHandler(item.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "object not found")
@@ -182,9 +187,9 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.handlePushItem(c)
+	err = server.toEchoHandler(item.PushItemHandler)(c)
 	require.NoError(t, err)
-	require.Equal(t, http.StatusCreated, rec.Code)
+	require.Equal(t, http.StatusOK, rec.Code)
 	var newItem model.Item
 	err = json.Unmarshal(rec.Body.Bytes(), &newItem)
 	require.NoError(t, err)
@@ -198,7 +203,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	c.SetPath("/api/source/:id/push")
 	c.SetParamNames("id")
 	c.SetParamValues("1")
-	err = server.handlePushItem(c)
+	err = server.toEchoHandler(item.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusConflict, rec.Code)
 	require.Contains(t, rec.Body.String(), "already exists")
@@ -236,9 +241,9 @@ func TestPushItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.handlePushItem(c)
+	err = server.toEchoHandler(item.PushItemHandler)(c)
 	require.NoError(t, err)
-	require.Equal(t, http.StatusCreated, rec.Code)
+	require.Equal(t, http.StatusOK, rec.Code)
 	var newItem model.Item
 	err = json.Unmarshal(rec.Body.Bytes(), &newItem)
 	require.NoError(t, err)
