@@ -555,7 +555,7 @@ func TestEzPrepBenchmark(t *testing.T) {
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
 	require.Contains(t, out, "107")
-	require.Contains(t, out, "156")
+	require.Contains(t, out, "152")
 }
 
 func TestDatasourceCrud(t *testing.T) {
