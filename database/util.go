@@ -95,12 +95,12 @@ func OpenInMemory() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = model.DropAll(db)
+	err = DoRetry(func() error { return model.DropAll(db) })
 	if err != nil {
 		logger.Error(err)
 		return nil, err
 	}
-	err = model.AutoMigrate(db)
+	err = DoRetry(func() error { return model.AutoMigrate(db) })
 	if err != nil {
 		logger.Error(err)
 		return nil, err

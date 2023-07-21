@@ -20,3 +20,5 @@ swag:
 test:
 	go test -coverprofile=coverage.out -coverpkg=./... ./...
 
+model2ts:
+	go run ./buildtool/model2ts/main.go

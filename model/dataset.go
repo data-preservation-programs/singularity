@@ -144,6 +144,21 @@ const (
 	Packing      WorkType = "packing"
 )
 
+var WorkTypes = []WorkType{
+	Scan,
+	DealMaking,
+	DealTracking,
+	Packing,
+}
+
+var WorkStates = []WorkState{
+	Created,
+	Ready,
+	Processing,
+	Complete,
+	Error,
+}
+
 const (
 	Local  SourceType = "local"
 	Upload SourceType = "upload"
@@ -163,16 +178,16 @@ const (
 )
 
 type Worker struct {
-	ID            string `gorm:"primaryKey;size:64"`
-	WorkType      WorkType
-	WorkingOn     string
-	LastHeartbeat time.Time
-	Hostname      string
+	ID            string    `gorm:"primaryKey;size:64" json:"id"`
+	WorkType      WorkType  `json:"workType"`
+	WorkingOn     string    `json:"workingOn"`
+	LastHeartbeat time.Time `json:"lastHeartbeat"`
+	Hostname      string    `json:"hostname"`
 }
 
 type Global struct {
-	Key   string `gorm:"primaryKey;size:256"`
-	Value string
+	Key   string `gorm:"primaryKey;size:256" json:"key"`
+	Value string `json:"value"`
 }
 
 // Dataset is the top level object that represents a set of data to be onboarded.
