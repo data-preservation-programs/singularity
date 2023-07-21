@@ -21,7 +21,6 @@ func TestMarshalling(t *testing.T) {
 	}
 	initial, err = dirData.MarshalBinary()
 	require.NoError(t, err)
-	t.Log(len(initial))
 }
 
 func TestDirectoryData(t *testing.T) {

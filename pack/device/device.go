@@ -24,12 +24,12 @@ func getRandomStringByWeight(pathMap map[string]uint64) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	randWeight := int(randomPick.Int64())
+	randWeight := uint64(randomPick.Int64())
 
 	var currentWeight uint64
 	for path, weight := range pathMap {
 		currentWeight += weight
-		if randWeight <= int(currentWeight) {
+		if randWeight <= currentWeight {
 			return path, nil
 		}
 	}
