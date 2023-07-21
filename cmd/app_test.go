@@ -551,7 +551,7 @@ func TestEzPrepBenchmark(t *testing.T) {
 	err := os.WriteFile(temp+"/test.img", []byte("hello world"), 0777)
 	require.NoError(t, err)
 	ctx := context.Background()
-	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 8 "+temp)
+	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+temp)
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
 	require.Contains(t, out, "107")
@@ -676,7 +676,6 @@ func TestDatasourcePacking(t *testing.T) {
 		require.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
 		// Now load all car files to a block store and check if the resolved directory is same as the original
-		t.Log(root)
 		bs := loadCars(t, carDir)
 		dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
 		rootCID, err := cid.Decode(root)

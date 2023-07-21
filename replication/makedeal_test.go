@@ -284,6 +284,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
+	time.Sleep(time.Second)
 	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
 		Addrs: server.Addrs(),
