@@ -1,5 +1,3 @@
-//go:build !(windows && 386)
-
 package replication
 
 import (
@@ -286,7 +284,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	defer client.Close()
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
-	time.Sleep(time.Second)
+	time.Sleep(100 * time.Millisecond)
 	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
 		Addrs: server.Addrs(),

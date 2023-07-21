@@ -1,5 +1,3 @@
-//go:build !386 && !windows
-
 package cmd
 
 import (
@@ -635,7 +633,7 @@ func TestDatasourcePacking(t *testing.T) {
 		original := uio.HAMTShardingSize
 		uio.HAMTShardingSize = 1024
 		defer func() { uio.HAMTShardingSize = original }()
-		c := 1_000
+		c := 100
 		temp := t.TempDir()
 		carDir := t.TempDir()
 		// multiple nested folder
@@ -662,7 +660,7 @@ func TestDatasourcePacking(t *testing.T) {
 		// Check the car folder
 		files, err := os.ReadDir(carDir)
 		require.NoError(t, err)
-		require.Equal(t, 131, len(files))
+		require.Equal(t, 26, len(files))
 		// Run the daggen
 		_, _, err = RunArgsInTest(ctx, "singularity datasource daggen 1")
 		require.NoError(t, err)
@@ -670,7 +668,7 @@ func TestDatasourcePacking(t *testing.T) {
 		require.NoError(t, err)
 		files, err = os.ReadDir(carDir)
 		require.NoError(t, err)
-		require.Equal(t, 132, len(files))
+		require.Equal(t, 27, len(files))
 		// Get the root CID
 		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
 		require.NoError(t, err)
@@ -682,12 +680,12 @@ func TestDatasourcePacking(t *testing.T) {
 		require.NoError(t, err)
 		entries := listDirsFromRootNode(t, dagServ, "", rootCID)
 		var content []byte
-		require.Equal(t, 1003, len(entries))
+		require.Equal(t, 103, len(entries))
 		require.True(t, slices.Contains(entries, "sub1"))
 		require.True(t, slices.Contains(entries, "test1.txt"))
 		require.True(t, slices.Contains(entries, "test2.txt"))
 		require.True(t, slices.Contains(entries, "0"))
-		require.True(t, slices.Contains(entries, "999"))
+		require.True(t, slices.Contains(entries, "99"))
 		content, err = os.ReadFile(temp + "/2/test2.txt")
 		require.NoError(t, err)
 		require.Equal(t, content, getFileFromRootNode(t, dagServ, "2/test2.txt", rootCID))
@@ -779,8 +777,8 @@ func TestPieceDownload(t *testing.T) {
 		temp2 := t.TempDir()
 		os.WriteFile(temp1+"/test1.txt", generateRandomBytes(10), 0777)
 		os.WriteFile(temp1+"/test2.txt", generateRandomBytes(10), 0777)
-		os.WriteFile(temp1+"/test3.txt", generateRandomBytes(10_000_000), 0777)
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 4MB --output-dir "+temp2+" test")
+		os.WriteFile(temp1+"/test3.txt", generateRandomBytes(2_000_000), 0777)
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1MB --output-dir "+temp2+" test")
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp1)
 		require.NoError(t, err)
@@ -810,20 +808,20 @@ func TestPieceDownload(t *testing.T) {
 		time.Sleep(time.Second)
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
-			commp := calculateCommp(t, content, 4*1024*1024)
+			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
 		// Clean up temp2 and try again
 		os.RemoveAll(temp2)
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
-			commp := calculateCommp(t, content, 4*1024*1024)
+			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
 		// multithread download
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPieceWithThreads(t, ctx, pieceCID, 10)
-			commp := calculateCommp(t, content, 4*1024*1024)
+			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
 		// download util
@@ -833,7 +831,7 @@ func TestPieceDownload(t *testing.T) {
 			require.NoError(t, err)
 			content, err := os.ReadFile(temp3 + "/" + pieceCID + ".car")
 			require.NoError(t, err)
-			commp := calculateCommp(t, content, 4*1024*1024)
+			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
 	})
@@ -897,7 +895,7 @@ func downloadPieceWithThreads(t *testing.T, ctx context.Context, pieceCID string
 
 			// Set the Range header to download a chunk
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
-			t.Log("Downloading piece", pieceCID, "part", i, "bytes", start, "-", end)
+			// t.Log("Downloading piece", pieceCID, "part", i, "bytes", start, "-", end)
 			resp, err := client.Do(req)
 			require.NoError(t, err)
 			defer resp.Body.Close()

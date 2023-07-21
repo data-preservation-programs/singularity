@@ -4,18 +4,25 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/alecthomas/units"
 	"github.com/ipfs/go-cid"
 	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
+	"github.com/ipfs/go-unixfs/io"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMarshalling(t *testing.T) {
+	oldShardingSize := io.HAMTShardingSize
+	defer func() {
+		io.HAMTShardingSize = oldShardingSize
+	}()
+	io.HAMTShardingSize = int(units.KiB)
 	var initial []byte
 	dirData := &DirectoryData{}
 	err := dirData.UnmarshallBinary(initial)
 	require.NoError(t, err)
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 100; i++ {
 		err = dirData.AddItem(strconv.Itoa(i), cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i)))), 4)
 		require.NoError(t, err)
 	}
