@@ -797,13 +797,17 @@ func TestPieceDownload(t *testing.T) {
 		pieceCIDs = underscore.Unique(pieceCIDs)
 		require.Len(t, pieceCIDs, 4)
 		ctx2, cancel := context.WithCancel(ctx)
+		serverClosed := make(chan struct{})
+		defer func() {
+			<-serverClosed
+		}()
 		defer cancel()
 		go func() {
 			_, _, _ = RunArgsInTest(ctx2, "singularity run content-provider")
-			<-ctx2.Done()
+			close(serverClosed)
 		}()
 		// Wait for HTTP service to be ready
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Second)
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
 			commp := calculateCommp(t, content, 4*1024*1024)
