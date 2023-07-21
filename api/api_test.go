@@ -20,9 +20,7 @@ import (
 
 func TestHandlePostSource(t *testing.T) {
 	tmp := os.TempDir()
-	if strings.HasSuffix(tmp, "/") {
-		tmp = tmp[:len(tmp)-1]
-	}
+	tmp = strings.TrimSuffix(tmp, "/")
 	db, err := database.OpenInMemory()
 	require.NoError(t, err)
 	e := echo.New()
