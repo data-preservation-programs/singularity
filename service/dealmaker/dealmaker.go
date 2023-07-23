@@ -26,7 +26,7 @@ var logger = log.Logger("dealmaker")
 type DealMakerService struct {
 	db                       *gorm.DB
 	walletChooser            replication.WalletChooser
-	dealMaker                replication.DealMakerImpl
+	dealMaker                replication.DealMaker
 	workerID                 uuid.UUID
 	activeSchedule           map[uint32]*model.Schedule
 	activeScheduleCancelFunc map[uint32]context.CancelFunc
@@ -68,7 +68,7 @@ func (d *DealMakerService) runScheduleAndUpdateState(ctx context.Context, schedu
 		updates["error_message"] = err.Error()
 	}
 	if len(updates) > 0 {
-		err = d.db.Model(&model.Schedule{}).Updates(updates).Error
+		err = d.db.Model(schedule).Updates(updates).Error
 		if err != nil {
 			logger.Errorw("failed to update schedule", "schedule", schedule.ID, "error", err)
 		}
@@ -83,22 +83,24 @@ func (d *DealMakerService) addSchedule(ctx context.Context, schedule model.Sched
 	defer d.mutex.Unlock()
 	scheduleCtx, cancel := context.WithCancel(ctx)
 	if schedule.ScheduleCron == "" {
-		go d.runScheduleAndUpdateState(ctx, &schedule)
 		d.activeSchedule[schedule.ID] = &schedule
 		d.activeScheduleCancelFunc[schedule.ID] = cancel
+		go d.runScheduleAndUpdateState(ctx, &schedule)
 		return nil
 	}
 
+	d.activeSchedule[schedule.ID] = &schedule
+	d.activeScheduleCancelFunc[schedule.ID] = cancel
 	entryID, err := d.cron.AddFunc(schedule.ScheduleCron, func() {
 		d.runScheduleAndUpdateState(scheduleCtx, &schedule)
 	})
 	if err != nil {
 		cancel()
+		delete(d.activeSchedule, schedule.ID)
+		delete(d.activeScheduleCancelFunc, schedule.ID)
 		return errors.Wrap(err, "failed to add cron job")
 	}
-	d.activeSchedule[schedule.ID] = &schedule
 	d.cronEntries[schedule.ID] = entryID
-	d.activeScheduleCancelFunc[schedule.ID] = cancel
 	return nil
 }
 
@@ -109,6 +111,7 @@ func (d *DealMakerService) removeSchedule(schedule model.Schedule) {
 		d.activeScheduleCancelFunc[schedule.ID]()
 		delete(d.activeSchedule, schedule.ID)
 		delete(d.activeScheduleCancelFunc, schedule.ID)
+		return
 	}
 
 	d.cron.Remove(d.cronEntries[schedule.ID])
@@ -120,7 +123,10 @@ func (d *DealMakerService) removeSchedule(schedule model.Schedule) {
 func (d *DealMakerService) updateSchedule(ctx context.Context, schedule model.Schedule) error {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
-	existing := d.activeSchedule[schedule.ID]
+	existing, ok := d.activeSchedule[schedule.ID]
+	if !ok {
+		return nil
+	}
 	if existing.ScheduleCron == "" && schedule.ScheduleCron != "" {
 		return errors.New("cannot update schedule - changed from oneoff to cron")
 	}
@@ -128,24 +134,27 @@ func (d *DealMakerService) updateSchedule(ctx context.Context, schedule model.Sc
 		return errors.New("cannot update schedule - changed from cron to oneoff")
 	}
 
-	*d.activeSchedule[schedule.ID] = schedule
 	if schedule.ScheduleCron == "" {
+		*d.activeSchedule[schedule.ID] = schedule
 		return nil
 	}
 
 	if d.activeSchedule[schedule.ID].ScheduleCron != schedule.ScheduleCron {
+		*d.activeSchedule[schedule.ID] = schedule
 		d.cron.Remove(d.cronEntries[schedule.ID])
 		d.activeScheduleCancelFunc[schedule.ID]()
 		scheduleCtx, cancel := context.WithCancel(ctx)
+		d.activeScheduleCancelFunc[schedule.ID] = cancel
 		entryID, err := d.cron.AddFunc(schedule.ScheduleCron, func() {
 			d.runScheduleAndUpdateState(scheduleCtx, &schedule)
 		})
 		if err != nil {
 			cancel()
+			delete(d.activeSchedule, schedule.ID)
+			delete(d.activeScheduleCancelFunc, schedule.ID)
 			return errors.Wrap(err, "failed to add cron job")
 		}
 		d.cronEntries[schedule.ID] = entryID
-		d.activeScheduleCancelFunc[schedule.ID] = cancel
 	}
 
 	return nil
@@ -156,21 +165,25 @@ func (d *DealMakerService) runSchedule(ctx context.Context, schedule *model.Sche
 	err := d.db.WithContext(ctx).Model(&model.Deal{}).
 		Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
 			model.DealProposed, model.DealPublished,
-		}).Select("COUNT(*) AS deal_number, SUM(piece_cid) AS deal_size").Scan(&pending).Error
+		}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&pending).Error
 	if err != nil {
 		return model.ScheduleError, errors.Wrap(err, "failed to count pending deals")
 	}
 	var total sumResult
 	err = d.db.WithContext(ctx).Model(&model.Deal{}).
 		Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
-			model.DealActive}).Select("COUNT(*) AS deal_number, SUM(piece_cid) AS deal_size").Scan(&total).Error
+			model.DealActive, model.DealProposed, model.DealPublished}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&total).Error
 	if err != nil {
-		return model.ScheduleError, errors.Wrap(err, "failed to count total active deals")
+		return model.ScheduleError, errors.Wrap(err, "failed to count total active and pending deals")
 	}
 
 	var current sumResult
 
 	for {
+		if ctx.Err() != nil {
+			//nolint:nilerr
+			return "", nil
+		}
 		var car model.Car
 		var dealModel *model.Deal
 		var walletObj model.Wallet
@@ -254,6 +267,7 @@ func (d *DealMakerService) runSchedule(ctx context.Context, schedule *model.Sche
 		total.DealNumber += 1
 		pending.DealSize += car.PieceSize
 		pending.DealNumber += 1
+		continue
 
 	waitAndNext:
 		select {
@@ -279,18 +293,54 @@ func NewDealMakerService(db *gorm.DB, lotusURL string,
 		db:                       db,
 		activeScheduleCancelFunc: make(map[uint32]context.CancelFunc),
 		activeSchedule:           make(map[uint32]*model.Schedule),
+		cronEntries:              make(map[uint32]cron.EntryID),
 		walletChooser:            &replication.DefaultWalletChooser{},
 		dealMaker:                dealMaker,
 		workerID:                 uuid.New(),
-		cron:                     cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC)),
+		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
+			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
 	}, nil
 }
 
 var staleThreshold = time.Minute * 5
 
+func (d *DealMakerService) runOnce(ctx context.Context) {
+	var schedules []model.Schedule
+	scheduleMap := map[uint32]model.Schedule{}
+	err := d.db.WithContext(ctx).Preload("Dataset.Wallets").Where("state = ?",
+		model.ScheduleActive).Find(&schedules).Error
+	if err != nil {
+		logger.Errorw("failed to get schedules", "error", err)
+		return
+	}
+	for _, schedule := range schedules {
+		scheduleMap[schedule.ID] = schedule
+	}
+	// Cancel all jobs that are no longer active
+	for id, active := range d.activeSchedule {
+		if _, ok := scheduleMap[id]; !ok {
+			d.removeSchedule(*active)
+		}
+	}
+
+	for _, schedule := range schedules {
+		if d.hasSchedule(schedule.ID) {
+			err = d.updateSchedule(ctx, schedule)
+			if err != nil {
+				logger.Errorw("failed to update schedule", "error", err)
+			}
+		} else {
+			err = d.addSchedule(ctx, schedule)
+			if err != nil {
+				logger.Errorw("failed to add schedule", "error", err)
+			}
+		}
+	}
+}
+
 func (d *DealMakerService) Run(ctx context.Context) error {
 	var activeWorkerCount int64
-	err := d.db.Where("work_type = ? AND last_heartbeat > ?", model.DealMaking, time.Now().UTC().Add(-staleThreshold)).
+	err := d.db.Model(&model.Worker{}).Where("work_type = ? AND last_heartbeat > ?", model.DealMaking, time.Now().UTC().Add(-staleThreshold)).
 		Count(&activeWorkerCount).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to count active workers")
@@ -313,39 +363,9 @@ func (d *DealMakerService) Run(ctx context.Context) error {
 	healthcheck.HealthCheck(d.db, d.workerID, getState)
 	go healthcheck.StartHealthCheck(ctx, d.db, d.workerID, getState)
 
+	d.cron.Start()
 	for {
-		var schedules []model.Schedule
-		scheduleMap := map[uint32]model.Schedule{}
-		err := d.db.WithContext(ctx).Preload("Dataset.Wallets").Where("state = ?",
-			model.ScheduleActive).Find(&schedules).Error
-		if err != nil {
-			logger.Errorw("failed to get schedules", "error", err)
-			goto nextloop
-		}
-		for _, schedule := range schedules {
-			scheduleMap[schedule.ID] = schedule
-		}
-		// Cancel all jobs that are no longer active
-		for id := range d.activeSchedule {
-			if s, ok := scheduleMap[id]; !ok {
-				d.removeSchedule(s)
-			}
-		}
-
-		for _, schedule := range schedules {
-			if d.hasSchedule(schedule.ID) {
-				err = d.updateSchedule(ctx, schedule)
-				if err != nil {
-					logger.Errorw("failed to update schedule", "error", err)
-				}
-			} else {
-				err = d.addSchedule(ctx, schedule)
-				if err != nil {
-					logger.Errorw("failed to add schedule", "error", err)
-				}
-			}
-		}
-	nextloop:
+		d.runOnce(ctx)
 		select {
 		case <-signalChan:
 			logger.Infow("received signal, stopping")
@@ -365,5 +385,6 @@ func (d *DealMakerService) Run(ctx context.Context) error {
 }
 
 func (d *DealMakerService) cleanup() error {
+	d.cron.Stop()
 	return d.db.Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
 }

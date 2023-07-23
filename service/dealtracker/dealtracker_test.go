@@ -11,6 +11,8 @@ import (
 	"github.com/bcicen/jstream"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-cid"
+	util "github.com/ipfs/go-ipfs-util"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
 )
@@ -127,6 +129,13 @@ func TestRunOnce(t *testing.T) {
 	d2 := uint64(2)
 	d4 := uint64(4)
 	d6 := uint64(6)
+	cid1 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid1"))))
+	cid2 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid2"))))
+	cid3 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid3"))))
+	cid4 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid4"))))
+	cid5 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid5"))))
+	cid6 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid6"))))
+	cid7 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid7"))))
 	err = db.Create([]model.Deal{
 		{
 			DealID:           &d1,
@@ -135,7 +144,7 @@ func TestRunOnce(t *testing.T) {
 			Provider:         "sp1",
 			ProposalID:       "proposal1",
 			Label:            "label1",
-			PieceCID:         "cid1",
+			PieceCID:         cid1,
 			PieceSize:        100,
 			StartEpoch:       100,
 			EndEpoch:         999999999,
@@ -149,7 +158,7 @@ func TestRunOnce(t *testing.T) {
 			Provider:         "sp1",
 			ProposalID:       "proposal2",
 			Label:            "label2",
-			PieceCID:         "cid2",
+			PieceCID:         cid2,
 			PieceSize:        100,
 			StartEpoch:       100,
 			EndEpoch:         999999999,
@@ -162,7 +171,7 @@ func TestRunOnce(t *testing.T) {
 			Provider:         "sp1",
 			ProposalID:       "proposal3",
 			Label:            "label3",
-			PieceCID:         "cid3",
+			PieceCID:         cid3,
 			PieceSize:        100,
 			StartEpoch:       999999998,
 			EndEpoch:         999999999,
@@ -176,7 +185,7 @@ func TestRunOnce(t *testing.T) {
 			Provider:         "sp1",
 			ProposalID:       "proposal4",
 			Label:            "label4",
-			PieceCID:         "cid4",
+			PieceCID:         cid4,
 			PieceSize:        100,
 			StartEpoch:       100,
 			EndEpoch:         200,
@@ -189,7 +198,7 @@ func TestRunOnce(t *testing.T) {
 			Provider:         "sp1",
 			ProposalID:       "proposal5",
 			Label:            "label5",
-			PieceCID:         "cid5",
+			PieceCID:         cid5,
 			PieceSize:        100,
 			StartEpoch:       100,
 			EndEpoch:         200,
@@ -203,7 +212,7 @@ func TestRunOnce(t *testing.T) {
 			Provider:         "sp1",
 			ProposalID:       "proposal6",
 			Label:            "label6",
-			PieceCID:         "cid6",
+			PieceCID:         cid6,
 			PieceSize:        100,
 			StartEpoch:       100,
 			EndEpoch:         200,
@@ -222,7 +231,7 @@ func TestRunOnce(t *testing.T) {
 	deals := map[string]Deal{
 		"1": {
 			Proposal: DealProposal{
-				PieceCID:             Cid{Root: "cid1"},
+				PieceCID:             Cid{Root: cid1.String()},
 				PieceSize:            100,
 				VerifiedDeal:         true,
 				Client:               "t0100",
@@ -240,7 +249,7 @@ func TestRunOnce(t *testing.T) {
 		},
 		"2": {
 			Proposal: DealProposal{
-				PieceCID:             Cid{Root: "cid2"},
+				PieceCID:             Cid{Root: cid2.String()},
 				PieceSize:            100,
 				VerifiedDeal:         true,
 				Client:               "t0100",
@@ -258,7 +267,7 @@ func TestRunOnce(t *testing.T) {
 		},
 		"3": {
 			Proposal: DealProposal{
-				PieceCID:             Cid{Root: "cid3"},
+				PieceCID:             Cid{Root: cid3.String()},
 				PieceSize:            100,
 				VerifiedDeal:         true,
 				Client:               "t0100",
@@ -276,7 +285,7 @@ func TestRunOnce(t *testing.T) {
 		},
 		"7": {
 			Proposal: DealProposal{
-				PieceCID:             Cid{Root: "cid7"},
+				PieceCID:             Cid{Root: cid7.String()},
 				PieceSize:            100,
 				VerifiedDeal:         true,
 				Client:               "t0100",

@@ -76,7 +76,7 @@ type Deal struct {
 	Provider         string    `gorm:"index:idx_stat;size:16"                             json:"provider"`
 	ProposalID       string    `json:"proposalId"`
 	Label            string    `json:"label"`
-	PieceCID         string    `gorm:"column:piece_cid;index"                             json:"pieceCid"`
+	PieceCID         CID       `gorm:"column:piece_cid;index"                             json:"pieceCid"`
 	PieceSize        int64     `json:"pieceSize"`
 	StartEpoch       int32     `json:"startEpoch"`
 	EndEpoch         int32     `json:"endEpoch"`
