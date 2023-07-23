@@ -14,6 +14,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/google/uuid"
+	"github.com/ipfs/go-cid"
 	"github.com/urfave/cli/v2"
 
 	"github.com/bcicen/jstream"
@@ -299,6 +300,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			return nil
 		}
 		logger.Debugw("Deal inserted from on-chain", "dealID", dealID, "state", newState)
+		root, err := cid.Parse(deal.Proposal.PieceCID.Root)
+		if err != nil {
+			return errors.Wrap(err, "failed to parse piece CID")
+		}
 		err = database.DoRetry(func() error {
 			return d.db.WithContext(ctx).Create(&model.Deal{
 				DealID:           &dealID,
@@ -306,7 +311,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				ClientID:         deal.Proposal.Client,
 				Provider:         deal.Proposal.Provider,
 				Label:            deal.Proposal.Label,
-				PieceCID:         deal.Proposal.PieceCID.Root,
+				PieceCID:         model.CID(root),
 				PieceSize:        deal.Proposal.PieceSize,
 				StartEpoch:       deal.Proposal.StartEpoch,
 				EndEpoch:         deal.Proposal.EndEpoch,
