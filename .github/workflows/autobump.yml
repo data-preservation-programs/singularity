@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x, windows/amd64]
+        platform: [linux/amd64, linux/386, linux/arm/v5, linux/arm/v7, linux/arm64/v8, linux/mips64le, linux/ppc64le, linux/s390x]
     steps:
       - uses: actions/checkout@v3
 
