@@ -1,10 +1,9 @@
-package item
+package datasource
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
@@ -49,7 +48,7 @@ func pushItemHandler(
 	var source model.Source
 	err := db.Preload("Dataset").Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestError(fmt.Errorf("source %d not found.", sourceID))
+		return nil, handler.NewBadRequestString(fmt.Sprintf("source %d not found", sourceID))
 	}
 	if err != nil {
 		return nil, handler.NewHandlerError(err)
@@ -67,7 +66,7 @@ func pushItemHandler(
 
 	obj, ok := entry.(fs2.ObjectInfo)
 	if !ok {
-		return nil, handler.NewBadRequestError(fmt.Errorf("%s is not an object", itemInfo.Path))
+		return nil, handler.NewBadRequestString(fmt.Sprintf("%s is not an object", itemInfo.Path))
 	}
 
 	item, itemParts, err := datasetworker.PushItem(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
@@ -77,7 +76,7 @@ func pushItemHandler(
 	}
 
 	if item == nil {
-		return nil, handler.NewHTTPError(http.StatusConflict, fmt.Sprintf("%s already exists", obj.Remote()))
+		return nil, handler.NewConflictString(fmt.Sprintf("%s already exists", obj.Remote()))
 	}
 
 	item.ItemParts = itemParts

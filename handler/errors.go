@@ -46,6 +46,34 @@ func NewBadRequestString(err string) *Error {
 	}
 }
 
+func NewNotFoundError(err error) *Error {
+	return &Error{
+		Err:            err,
+		HTTPStatusCode: http.StatusNotFound,
+	}
+}
+
+func NewNotFoundString(err string) *Error {
+	return &Error{
+		Err:            errors.New(err),
+		HTTPStatusCode: http.StatusNotFound,
+	}
+}
+
+func NewConflictError(err error) *Error {
+	return &Error{
+		Err:            err,
+		HTTPStatusCode: http.StatusConflict,
+	}
+}
+
+func NewConflictString(err string) *Error {
+	return &Error{
+		Err:            errors.New(err),
+		HTTPStatusCode: http.StatusConflict,
+	}
+}
+
 func NewHTTPError(code int, err string) *Error {
 	return &Error{
 		Err:            errors.New(err),
