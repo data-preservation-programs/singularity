@@ -35,6 +35,7 @@ require (
 	github.com/ipfs/go-merkledag v0.10.0
 	github.com/ipfs/go-unixfs v0.4.5
 	github.com/ipld/go-car v0.6.0
+	github.com/ipld/go-car/v2 v2.5.1
 	github.com/jellydator/ttlcache/v3 v3.0.1
 	github.com/joho/godotenv v1.5.1
 	github.com/jsign/go-filsigner v0.4.1
@@ -221,6 +222,7 @@ require (
 	github.com/oracle/oci-go-sdk/v65 v65.32.0 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14 // indirect
+	github.com/petar/GoLLRB v0.0.0-20210522233825-ae3b015fd3e9 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/sftp v1.13.6-0.20230213180117-971c283182b6 // indirect
 	github.com/pkg/xattr v0.4.9 // indirect
@@ -256,6 +258,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vivint/infectious v0.0.0-20200605153912-25a574ae18a3 // indirect
+	github.com/whyrusleeping/cbor v0.0.0-20171005072247-63513f603b11 // indirect
 	github.com/whyrusleeping/chunker v0.0.0-20181014151217-fe64bd25879f // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect

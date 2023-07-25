@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -105,6 +106,42 @@ func getFileFromRootNode(t *testing.T, dagServ format.DAGService, path string, r
 	require.NoError(t, err)
 	return content
 }
+
+func TestExtractCar(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tempDir := t.TempDir()
+		carDir := t.TempDir()
+		extractDir := t.TempDir()
+		err := os.WriteFile(filepath.Join(tempDir, "test1.txt"), []byte("hello"), 0644)
+		require.NoError(t, err)
+		err = os.MkdirAll(filepath.Join(tempDir, "test"), 0755)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(tempDir, "test", "test2.txt"), []byte("world"), 0644)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create -o "+carDir+" test")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+tempDir)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource daggen 1")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		require.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
+		require.NoError(t, err)
+		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
+		_, _, err = RunArgsInTest(ctx, "singularity tool extract-car -i "+carDir+" -o "+extractDir+" -c "+root)
+		require.NoError(t, err)
+		content, err := os.ReadFile(filepath.Join(extractDir, "test1.txt"))
+		require.NoError(t, err)
+		require.Equal(t, "hello", string(content))
+		content, err = os.ReadFile(filepath.Join(extractDir, "test", "test2.txt"))
+		require.NoError(t, err)
+		require.Equal(t, "world", string(content))
+	})
+}
+
 func listDirsFromRootNode(t *testing.T, dagServ format.DAGService, path string, rootCID cid.Cid) []string {
 	ctx := context.TODO()
 	segments := strings.Split(path, "/")
