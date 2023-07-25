@@ -11,7 +11,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
-	"github.com/data-preservation-programs/singularity/handler/item"
+	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
@@ -23,15 +23,15 @@ func TestHandlePostSource(t *testing.T) {
 	db, err := database.OpenInMemory()
 	require.NoError(t, err)
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodPost, "/api/dataset/test/source/local", bytes.NewBuffer([]byte(
+	req := httptest.NewRequest(http.MethodPost, "/api/source/local/dataset/test", bytes.NewBuffer([]byte(
 		`{"deleteAfterExport":true,"sourcePath":"`+tmp+`","rescanInterval":"1h","caseInsensitive":"false"}`,
 	)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	c.SetPath("/api/dataset/:datasetName/source/:type")
-	c.SetParamNames("datasetName", "type")
-	c.SetParamValues("test", "local")
+	c.SetPath("/api/source/:type/dataset/:datasetName")
+	c.SetParamNames("type", "datasetName")
+	c.SetParamValues("local", "test")
 	server := Server{
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
@@ -42,7 +42,7 @@ func TestHandlePostSource(t *testing.T) {
 		PieceSize: 4 * 1024 * 1024,
 	}).Error
 	require.NoError(t, err)
-	err = server.HandlePostSource(c)
+	err = server.toEchoHandler(dshandler.CreateDatasourceHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rec.Code)
 	var sources []model.Source
@@ -70,7 +70,7 @@ func TestPushItem_InvalidID(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.Error(t, err)
 	var httpError *echo.HTTPError
 	require.ErrorAs(t, err, &httpError)
@@ -93,7 +93,7 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.Error(t, err)
 	var httpError *echo.HTTPError
 	require.ErrorAs(t, err, &httpError)
@@ -116,7 +116,7 @@ func TestPushItem_SourceNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "source 1 not found")
@@ -152,7 +152,7 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 	require.NoError(t, err)
 	err = db.Create(&model.Directory{SourceID: 1}).Error
 	require.NoError(t, err)
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "object not found")
@@ -190,7 +190,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rec.Code)
 	var newItem model.Item
@@ -206,7 +206,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	c.SetPath("/api/source/:id/push")
 	c.SetParamNames("id")
 	c.SetParamValues("1")
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusConflict, rec.Code)
 	require.Contains(t, rec.Body.String(), "already exists")
@@ -244,7 +244,7 @@ func TestPushItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.toEchoHandler(item.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rec.Code)
 	var newItem model.Item
