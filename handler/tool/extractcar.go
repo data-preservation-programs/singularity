@@ -124,7 +124,7 @@ func ExtractCarHandler(ctx context.Context, inputDir string, output string, c ci
 	bs := &multiBlockstore{bss: bss}
 	bserv := blockservice.New(bs, nil)
 	dagServ := merkledag.NewDAGService(bserv)
-	return writeToOutput(ctx, dagServ, output, c)
+	return writeToOutput(ctx, dagServ, output, c, true)
 }
 
 func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
@@ -164,7 +164,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 				return errors.Wrapf(err, "failed to get output path for CID %s", c)
 			}
 		}
-		return os.WriteFile(outPath, node.RawData(), 0644)
+		return os.WriteFile(outPath, node.RawData(), 0600)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
 		if err != nil {
