@@ -142,6 +142,8 @@
   * [List](cli-reference/wallet/list.md)
   * [Add Remote](cli-reference/wallet/add-remote.md)
   * [Remove](cli-reference/wallet/remove.md)
+* [Tool](cli-reference/tool/README.md)
+  * [Extract Car](cli-reference/tool/extract-car.md)
 
 ## 🌐 Web API Reference
 
