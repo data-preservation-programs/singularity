@@ -6,23 +6,19 @@ import (
 	"io/fs"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
-	"unicode"
 
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
-	"github.com/data-preservation-programs/singularity/handler/item"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
-	fs2 "github.com/rclone/rclone/fs"
 	"github.com/ybbus/jsonrpc/v3"
 
 	_ "github.com/data-preservation-programs/singularity/api/docs"
@@ -141,21 +137,20 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 				inputParams = append(inputParams, reflect.ValueOf(s.lotusClient))
 				continue
 			}
-			switch paramType.Kind() {
-			case reflect.String, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			if paramType.Kind() == reflect.String || isIntKind(paramType.Kind()) || isUIntKind(paramType.Kind()) {
 				if j >= len(c.ParamValues()) {
 					logger.Error("Invalid handler function signature.")
 					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 				}
 				paramValue := c.ParamValues()[j]
-				switch paramType.Kind() {
-				case reflect.String:
+				switch {
+				case paramType.Kind() == reflect.String:
 					decoded, err := url.QueryUnescape(paramValue)
 					if err != nil {
 						return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
 					}
 					inputParams = append(inputParams, reflect.ValueOf(decoded))
-				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				case isIntKind(paramType.Kind()):
 					decoded, err := strconv.ParseInt(paramValue, 10, paramType.Bits())
 					if err != nil {
 						return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse path parameter as number.")
@@ -163,7 +158,7 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 					val := reflect.New(paramType).Elem()
 					val.SetInt(decoded)
 					inputParams = append(inputParams, val)
-				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				case isUIntKind(paramType.Kind()):
 					decoded, err := strconv.ParseUint(paramValue, 10, paramType.Bits())
 					if err != nil {
 						return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse path parameter as number.")
@@ -171,6 +166,7 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 					val := reflect.New(paramType).Elem()
 					val.SetUint(decoded)
 					inputParams = append(inputParams, val)
+				default:
 				}
 				j += 1
 				continue
@@ -224,117 +220,6 @@ func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
 	}
 }
 
-func lowerCamelToSnake(s string) string {
-	var result []rune
-	for i, r := range s {
-		if i > 0 && unicode.IsUpper(r) {
-			result = append(result, '_')
-		}
-		result = append(result, unicode.ToLower(r))
-	}
-	return string(result)
-}
-
-func (s Server) HandlePostSource(c echo.Context) error {
-	t := c.Param("type")
-	datasetName := c.Param("datasetName")
-	dataset, err := database.FindDatasetByName(s.db.WithContext(c.Request().Context()), datasetName)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return echo.NewHTTPError(http.StatusNotFound, "Dataset not found.")
-	}
-	if err != nil {
-		return errors.Wrap(err, "Failed to find dataset.")
-	}
-
-	r, err := fs2.Find(t)
-	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	body := map[string]interface{}{}
-	err = c.Bind(&body)
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	sourcePath := body["sourcePath"]
-	path, ok := sourcePath.(string)
-	if !ok {
-		return c.String(http.StatusBadRequest, "Error: sourcePath needs to be a string")
-	}
-	if path == "" {
-		return c.String(http.StatusBadRequest, "Error: sourcePath is required")
-	}
-	if r.Prefix == "local" {
-		path, err = filepath.Abs(path)
-		if err != nil {
-			return c.String(http.StatusBadRequest, fmt.Sprintf("failed to get absolute path: %s", err.Error()))
-		}
-	}
-	deleteAfterExportValue := body["deleteAfterExport"]
-	deleteAfterExport, ok := deleteAfterExportValue.(bool)
-	if !ok {
-		return c.String(http.StatusBadRequest, "Error: deleteAfterExport needs to be a boolean")
-	}
-	rescanIntervalValue := body["rescanInterval"]
-	rescanInterval, ok := rescanIntervalValue.(string)
-	if !ok {
-		return c.String(http.StatusBadRequest, "Error: rescanInterval needs to be a string")
-	}
-	rescan, err := time.ParseDuration(rescanInterval)
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: failed to parse rescanInterval: %s", err.Error()))
-	}
-	delete(body, "sourcePath")
-	delete(body, "deleteAfterExport")
-	delete(body, "rescanInterval")
-	delete(body, "type")
-	delete(body, "datasetName")
-	config := map[string]string{}
-	for k, v := range body {
-		str, ok := v.(string)
-		if !ok {
-			return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s needs to be a string", k))
-		}
-		config[lowerCamelToSnake(k)] = str
-	}
-
-	source := model.Source{
-		DatasetID:           dataset.ID,
-		Type:                r.Prefix,
-		Path:                path,
-		Metadata:            model.Metadata(config),
-		ScanIntervalSeconds: uint64(rescan.Seconds()),
-		ScanningState:       model.Ready,
-		DeleteAfterExport:   deleteAfterExport,
-		DagGenState:         model.Created,
-	}
-
-	handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Request().Context(), source)
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve handler")
-	}
-
-	_, err = handler.List(c.Request().Context(), "")
-	if err != nil {
-		return errors.Wrap(err, "failed to check source")
-	}
-
-	err = s.db.WithContext(c.Request().Context()).Create(&source).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to create source")
-	}
-
-	dir := model.Directory{
-		Name:     path,
-		SourceID: source.ID,
-	}
-	err = s.db.WithContext(c.Request().Context()).Create(&dir).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to create directory")
-	}
-
-	return c.JSON(http.StatusOK, source)
-}
-
 func (s Server) setupRoutes(e *echo.Echo) {
 	// Admin
 	e.POST("/api/admin/reset", s.toEchoHandler(admin.ResetHandler))
@@ -360,13 +245,13 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
 
 	// Data source
-	e.POST("/api/source/:type/dataset/:datasetName", s.HandlePostSource)
+	e.POST("/api/source/:type/dataset/:datasetName", s.toEchoHandler(datasource2.CreateDatasourceHandler))
 	e.GET("/api/source", s.toEchoHandler(datasource2.ListSourceHandler))
 	e.PATCH("/api/source/:id", s.toEchoHandler(datasource2.UpdateSourceHandler))
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
-	e.POST("/api/source/:id/push", s.toEchoHandler(item.PushItemHandler))
+	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushItemHandler))
 
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
@@ -450,6 +335,14 @@ func (s Server) Run(c *cli.Context) error {
 	}()
 
 	return e.Start(s.bind)
+}
+
+func isIntKind(kind reflect.Kind) bool {
+	return kind == reflect.Int || kind == reflect.Int8 || kind == reflect.Int16 || kind == reflect.Int32 || kind == reflect.Int64
+}
+
+func isUIntKind(kind reflect.Kind) bool {
+	return kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64
 }
 
 /* deprecated API
