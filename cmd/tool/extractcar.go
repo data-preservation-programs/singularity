@@ -18,11 +18,10 @@ var ExtractCarCmd = &cli.Command{
 			Aliases:  []string{"i"},
 		},
 		&cli.StringFlag{
-			Name:     "output",
-			Usage:    "Output directory or file to extract to. It will be created if it does not exist",
-			Required: true,
-			Aliases:  []string{"o"},
-			Value:    ".",
+			Name:    "output",
+			Usage:   "Output directory or file to extract to. It will be created if it does not exist",
+			Aliases: []string{"o"},
+			Value:   ".",
 		},
 		&cli.StringFlag{
 			Name:     "cid",

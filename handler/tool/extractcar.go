@@ -127,7 +127,30 @@ func ExtractCarHandler(ctx context.Context, inputDir string, output string, c ci
 	return writeToOutput(ctx, dagServ, output, c)
 }
 
-func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string, c cid.Cid) error {
+func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
+	stat, err := os.Stat(outPath)
+	// If the user supply /a/b.txt but the file does not exist, then we need to mkdir -p /a
+	if errors.Is(err, os.ErrNotExist) {
+		err = os.MkdirAll(filepath.Dir(outPath), 0755)
+		if err != nil {
+			return "", errors.Wrapf(err, "failed to create output directory %s", filepath.Dir(outPath))
+		}
+		return outPath, nil
+	}
+
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to stat output path %s", outPath)
+	}
+
+	// If the user supply /a/b but b is a directory, then we need to use /a/b/<cid> as the filename
+	if stat.IsDir() {
+		return filepath.Join(outPath, c.String()), nil
+	}
+
+	return outPath, nil
+}
+
+func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string, c cid.Cid, isRoot bool) error {
 	node, err := dagServ.Get(ctx, c)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get node for CID %s", c)
@@ -135,6 +158,12 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 
 	switch c.Type() {
 	case cid.Raw:
+		if isRoot {
+			outPath, err = getOutPathForFile(outPath, c)
+			if err != nil {
+				return errors.Wrapf(err, "failed to get output path for CID %s", c)
+			}
+		}
 		return os.WriteFile(outPath, node.RawData(), 0644)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
@@ -146,6 +175,12 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 			reader, err := io.NewDagReader(ctx, node, dagServ)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create dag reader for CID %s", c)
+			}
+			if isRoot {
+				outPath, err = getOutPathForFile(outPath, c)
+				if err != nil {
+					return errors.Wrapf(err, "failed to get output path for CID %s", c)
+				}
 			}
 			f, err := os.Create(outPath)
 			if err != nil {
@@ -165,7 +200,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)
 			}
 			err = dirNode.ForEachLink(ctx, func(link *ipld.Link) error {
-				return writeToOutput(ctx, dagServ, filepath.Join(outPath, link.Name), link.Cid)
+				return writeToOutput(ctx, dagServ, filepath.Join(outPath, link.Name), link.Cid, false)
 			})
 			if err != nil {
 				return errors.Wrapf(err, "failed to iterate links for CID %s", c)

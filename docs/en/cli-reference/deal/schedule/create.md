@@ -19,12 +19,12 @@ OPTIONS:
 
    Deal Proposal
 
-   --duration value, -d value     Duration in days for deal length (default: 530)
+   --duration value, -d value     Duration in epoch or in duration format, i.e. 1500000, 2400h (default: "12840h")
    --keep-unsealed                Whether to keep unsealed copy (default: true)
    --price-per-deal value         Price in FIL per deal (default: 0)
    --price-per-gb value           Price in FIL  per GiB (default: 0)
    --price-per-gb-epoch value     Price in FIL per GiB per epoch (default: 0)
-   --start-delay value, -s value  Deal start delay in days (default: 3)
+   --start-delay value, -s value  Deal start delay in epoch or in duration format, i.e. 1000, 72h (default: "72h")
    --verified                     Whether to propose deals as verified (default: true)
 
    Restrictions
@@ -37,9 +37,9 @@ OPTIONS:
 
    Scheduling
 
+   --schedule-cron value, --cron value              Cron schedule to send out batch deals (default: disabled)
    --schedule-deal-number value, --number value     Max deal number per triggered schedule, i.e. 30 (default: Unlimited)
    --schedule-deal-size value, --size value         Max deal sizes per triggered schedule, i.e. 500GB (default: Unlimited)
-   --schedule-interval value, --every value         Cron schedule to send out batch deals (default: disabled)
    --total-deal-number value, --total-number value  Max total deal number for this request, i.e. 1000 (default: Unlimited)
 
    Tracking

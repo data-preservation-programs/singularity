@@ -20,6 +20,8 @@ COMMANDS:
      dataset     Dataset management
      datasource  Data source management
      wallet      Wallet management
+   Tooling:
+     tool  Tools used for development and debugging
    Utility:
      download  Download a CAR file from the metadata API
 
