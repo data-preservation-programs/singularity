@@ -2,7 +2,6 @@ package run
 
 import (
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
@@ -55,7 +54,7 @@ var DatasetWorkerCmd = &cli.Command{
 			return err
 		}
 		if err := model.AutoMigrate(db); err != nil {
-			return handler.NewHandlerError(err)
+			return err
 		}
 		worker := datasetworker.NewDatasetWorker(
 			db,

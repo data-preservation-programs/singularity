@@ -30,8 +30,8 @@ func ImportHandler(
 // @Produce json
 // @Param request body ImportRequest true "Request body"
 // @Success 200 {object} model.Wallet
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /wallet [post]
 func importHandler(
 	db *gorm.DB,
@@ -41,18 +41,18 @@ func importHandler(
 ) (*model.Wallet, error) {
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid private key")
+		return nil, handler.NewInvalidParameterErr("invalid private key")
 	}
 
 	var result string
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid private key")
+		return nil, handler.NewInvalidParameterErr("invalid private key")
 	}
 
 	_, err = address.NewFromString(result)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid actor ID from GLIF result: " + result)
+		return nil, handler.NewInvalidParameterErr("invalid actor ID from GLIF result: " + result)
 	}
 
 	wallet := model.Wallet{
@@ -65,7 +65,7 @@ func importHandler(
 		return db.Create(&wallet).Error
 	})
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return &wallet, nil

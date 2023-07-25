@@ -1,7 +1,6 @@
 package deal
 
 import (
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -25,8 +24,8 @@ func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 // @Produce json
 // @Param request body ListDealRequest true "ListDealRequest"
 // @Success 200 {array} model.Deal
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /deal [post]
 func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	var deals []model.Deal
@@ -35,7 +34,7 @@ func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 		var datasets []model.Dataset
 		err := db.Where("name in ?", request.Datasets).Find(&datasets).Error
 		if err != nil {
-			return nil, handler.NewHandlerError(err)
+			return nil, err
 		}
 		statement = statement.Where("dataset_id IN ?", underscore.Map(datasets, func(dataset model.Dataset) uint32 { return dataset.ID }))
 	}
@@ -54,7 +53,7 @@ func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 
 	err := db.Where(statement).Find(&deals).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	return deals, nil
 }

@@ -19,24 +19,24 @@ func ListWalletHandler(
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {array} model.Wallet
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName}/wallet [get]
 func listWalletHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Wallet, error) {
 	if datasetName == "" {
-		return nil, handler.NewBadRequestString("dataset name is required")
+		return nil, handler.NewInvalidParameterErr("dataset name is required")
 	}
 
 	var dataset model.Dataset
 	err := db.Preload("Wallets").Where("name = ?", datasetName).First(&dataset).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("dataset not found")
+		return nil, handler.NewInvalidParameterErr("dataset not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return dataset.Wallets, nil

@@ -22,7 +22,7 @@ func GetSourceItemDetailHandler(
 // @Produce json
 // @Param id path string true "Item ID"
 // @Success 200 {object} model.Item
-// @Failure 500 {object} handler.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /item/{id} [get]
 func getSourceItemDetailHandler(
 	db *gorm.DB,
@@ -30,15 +30,15 @@ func getSourceItemDetailHandler(
 ) (*model.Item, error) {
 	itemID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid item id")
+		return nil, handler.NewInvalidParameterErr("invalid item id")
 	}
 	var item model.Item
 	err = db.Preload("ItemParts").Where("id = ?", itemID).First(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("item not found")
+		return nil, handler.NewInvalidParameterErr("item not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return &item, nil

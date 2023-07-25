@@ -21,8 +21,8 @@ func DagGenHandler(
 // @Produce json
 // @Param id path string true "Source ID"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/daggen [post]
 func dagGenHandler(
 	db *gorm.DB,
@@ -30,20 +30,20 @@ func dagGenHandler(
 ) (*model.Source, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid source id")
+		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 	var source model.Source
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("source not found")
+		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	err = db.Model(&source).Update("dag_gen_state", model.Ready).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	source.DagGenState = model.Ready
 	return &source, nil

@@ -11,8 +11,8 @@ import (
 // @Tags Dataset
 // @Param datasetName path string true "Dataset name"
 // @Success 204
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName} [delete]
 func removeHandler(
 	db *gorm.DB,
@@ -20,11 +20,11 @@ func removeHandler(
 ) error {
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return handler.NewBadRequestString("failed to find dataset: " + err.Error())
+		return handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 	err = database.DoRetry(func() error { return db.Delete(&dataset).Error })
 	if err != nil {
-		return handler.NewHandlerError(err)
+		return err
 	}
 	return nil
 }

@@ -1,89 +1,53 @@
 package handler
 
 import (
-	"net/http"
+	"fmt"
 
-	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 )
 
-type Error struct {
-	Err            error
-	HTTPStatusCode int
+type ErrInvalidParameter struct {
+	Err error
 }
 
-type HTTPError struct {
-	Err string `json:"err"`
+func (e ErrInvalidParameter) Unwrap() error {
+	return e.Err
+}
+func (e ErrInvalidParameter) Error() string {
+	return fmt.Sprintf("invalid parameter: %s", e.Err.Error())
 }
 
-func (e *Error) HTTPResponse(c echo.Context) error {
-	if e == nil {
-		return c.String(http.StatusOK, "OK")
-	}
-
-	if e.HTTPStatusCode == 0 {
-		e.HTTPStatusCode = http.StatusInternalServerError
-	}
-
-	return c.JSON(e.HTTPStatusCode, HTTPError{Err: e.Error()})
-}
-
-func (e *Error) Error() string {
-	return e.Err.Error()
-}
-
-func NewBadRequestError(err error) *Error {
-	return &Error{
-		Err:            err,
-		HTTPStatusCode: http.StatusBadRequest,
+func NewInvalidParameterErr(err string) ErrInvalidParameter {
+	return ErrInvalidParameter{
+		Err: errors.New(err),
 	}
 }
 
-func NewBadRequestString(err string) *Error {
-	return &Error{
-		Err:            errors.New(err),
-		HTTPStatusCode: http.StatusBadRequest,
-	}
+type ErrNotFound struct {
+	Err error
 }
 
-func NewNotFoundError(err error) *Error {
-	return &Error{
-		Err:            err,
-		HTTPStatusCode: http.StatusNotFound,
-	}
+func (e ErrNotFound) Unwrap() error {
+	return e.Err
+}
+func (e ErrNotFound) Error() string {
+	return fmt.Sprintf("not found: %s", e.Err.Error())
 }
 
-func NewNotFoundString(err string) *Error {
-	return &Error{
-		Err:            errors.New(err),
-		HTTPStatusCode: http.StatusNotFound,
-	}
+type ErrDuplicateRecord struct {
+	Err error
 }
 
-func NewConflictError(err error) *Error {
-	return &Error{
-		Err:            err,
-		HTTPStatusCode: http.StatusConflict,
-	}
+func (e ErrDuplicateRecord) Unwrap() error {
+	return e.Err
 }
 
-func NewConflictString(err string) *Error {
-	return &Error{
-		Err:            errors.New(err),
-		HTTPStatusCode: http.StatusConflict,
-	}
+func (e ErrDuplicateRecord) Error() string {
+	return fmt.Sprintf("duplicate record: %s", e.Err.Error())
 }
 
-func NewHTTPError(code int, err string) *Error {
-	return &Error{
-		Err:            errors.New(err),
-		HTTPStatusCode: code,
-	}
-}
-
-func NewHandlerError(err error) *Error {
-	return &Error{
-		Err:            err,
-		HTTPStatusCode: http.StatusInternalServerError,
+func NewDuplicateRecordError(err string) ErrDuplicateRecord {
+	return ErrDuplicateRecord{
+		Err: errors.New(err),
 	}
 }

@@ -15,7 +15,7 @@ import (
 // @Produce json
 // @Param id path string true "Source ID"
 // @Success 200 {object} model.Source
-// @Failure 500 {object} handler.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/rescan [post]
 func rescanSourceHandler(
 	db *gorm.DB,
@@ -23,7 +23,7 @@ func rescanSourceHandler(
 ) (*model.Source, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid source id")
+		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 	var source model.Source
 	err = db.Transaction(func(db *gorm.DB) error {
@@ -44,10 +44,10 @@ func rescanSourceHandler(
 	})
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("source not found")
+		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return &source, nil

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
@@ -28,7 +27,7 @@ var SpadeAPICmd = &cli.Command{
 			return err
 		}
 		if err := model.AutoMigrate(db); err != nil {
-			return handler.NewHandlerError(err)
+			return err
 		}
 
 		h, err := util.InitHost(nil)
