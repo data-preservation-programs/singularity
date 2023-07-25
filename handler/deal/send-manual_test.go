@@ -50,7 +50,7 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 
 	mockDealMaker := new(MockDealMaker)
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
-	_, err = SendManualHandler(db, ctx, proposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, proposal)
 	require.ErrorContains(t, err, "client address not found")
 }
 
@@ -70,7 +70,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceCID = "bad"
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "invalid piece CID")
 }
 
@@ -90,7 +90,7 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceCID = proposal.RootCID
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "piece CID must be commp")
 }
 
@@ -110,7 +110,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceSize = "aaa"
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "invalid piece size")
 }
 
@@ -130,7 +130,7 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.PieceSize = "31GiB"
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "piece size must be a power of 2")
 }
 
@@ -150,7 +150,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.RootCID = "xxxx"
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "invalid root CID")
 }
 
@@ -170,7 +170,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.Duration = "xxxx"
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "invalid duration")
 }
 
@@ -190,7 +190,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	badProposal := proposal
 	badProposal.StartDelay = "xxxx"
-	_, err = SendManualHandler(db, ctx, badProposal, mockDealMaker)
+	_, err = SendManualHandler(db, ctx, mockDealMaker, badProposal)
 	require.ErrorContains(t, err, "invalid start delay")
 }
 
@@ -208,7 +208,7 @@ func TestSendManualHandler(t *testing.T) {
 
 	mockDealMaker := new(MockDealMaker)
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
-	resp, err := SendManualHandler(db, ctx, proposal, mockDealMaker)
+	resp, err := SendManualHandler(db, ctx, mockDealMaker, proposal)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 }

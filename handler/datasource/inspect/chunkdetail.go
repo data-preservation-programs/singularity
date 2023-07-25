@@ -22,7 +22,7 @@ func GetSourceChunkDetailHandler(
 // @Produce json
 // @Param id path string true "Chunk ID"
 // @Success 200 {object} model.Chunk
-// @Failure 500 {object} handler.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /chunk/{id} [get]
 func getSourceChunkDetailHandler(
 	db *gorm.DB,
@@ -30,15 +30,15 @@ func getSourceChunkDetailHandler(
 ) (*model.Chunk, error) {
 	chunkID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid chunk id")
+		return nil, handler.NewInvalidParameterErr("invalid chunk id")
 	}
 	var chunk model.Chunk
 	err = db.Preload("Cars").Preload("ItemParts.Item").Where("id = ?", chunkID).First(&chunk).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("chunk not found")
+		return nil, handler.NewInvalidParameterErr("chunk not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return &chunk, nil

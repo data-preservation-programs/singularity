@@ -36,8 +36,8 @@ func GetPathHandler(
 // @Param id path string true "Source ID"
 // @Param request body GetPathRequest true "GetPathRequest"
 // @Success 200 {object} DirDetail
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/path [get]
 func getPathHandler(
 	db *gorm.DB,
@@ -47,21 +47,21 @@ func getPathHandler(
 	path := request.Path
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid source id")
+		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 	var source model.Source
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("source not found")
+		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	segments := underscore.Filter(strings.Split(path, "/"), func(s string) bool { return s != "" })
 	err = source.LoadRootDirectory(db)
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	dirID := source.RootDirectory().ID
 	var subdir model.Directory
@@ -72,10 +72,10 @@ func getPathHandler(
 				var items []model.Item
 				err = db.Where("directory_id = ? AND path = ?", dirID, strings.Join(segments, "/")).Find(&items).Error
 				if err != nil {
-					return nil, handler.NewHandlerError(err)
+					return nil, err
 				}
 				if len(items) == 0 {
-					return nil, handler.NewBadRequestString("entry not found with given path")
+					return nil, handler.NewInvalidParameterErr("entry not found with given path")
 				}
 				return &DirDetail{
 					Current: subdir,
@@ -83,10 +83,10 @@ func getPathHandler(
 					Items:   items,
 				}, nil
 			}
-			return nil, handler.NewBadRequestString("entry not found with given path")
+			return nil, handler.NewInvalidParameterErr("entry not found with given path")
 		}
 		if err != nil {
-			return nil, handler.NewHandlerError(err)
+			return nil, err
 		}
 		dirID = subdir.ID
 	}
@@ -96,15 +96,15 @@ func getPathHandler(
 	var items []model.Item
 	err = db.Where("id = ?", dirID).First(&current).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	err = db.Where("parent_id = ?", dirID).Find(&dirs).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	err = db.Where("directory_id = ?", dirID).Find(&items).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return &DirDetail{

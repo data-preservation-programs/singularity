@@ -35,8 +35,8 @@ func UpdateSourceHandler(
 // @Param id path string true "Source ID"
 // @Param config body AllConfig true "Config"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /source/{id} [patch]
 func updateSourceHandler(
 	db *gorm.DB,
@@ -47,25 +47,25 @@ func updateSourceHandler(
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid source id")
+		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("source not found")
+		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	t := source.Type
 	reg, err := fs.Find(t)
 	if err != nil {
-		return nil, handler.NewHandlerError(errors.New("invalid source type"))
+		return nil, errors.New("invalid source type")
 	}
 	value, ok := config["deleteAfterExport"]
 	if ok {
 		v, ok := value.(bool)
 		if !ok {
-			return nil, handler.NewBadRequestString("invalid deleteAfterExport value")
+			return nil, handler.NewInvalidParameterErr("invalid deleteAfterExport value")
 		}
 		source.DeleteAfterExport = v
 	}
@@ -73,11 +73,11 @@ func updateSourceHandler(
 	if ok {
 		v, ok := value.(string)
 		if !ok {
-			return nil, handler.NewBadRequestString("invalid rescanInterval value")
+			return nil, handler.NewInvalidParameterErr("invalid rescanInterval value")
 		}
 		d, err := time.ParseDuration(v)
 		if err != nil {
-			return nil, handler.NewBadRequestString("invalid rescanInterval value")
+			return nil, handler.NewInvalidParameterErr("invalid rescanInterval value")
 		}
 		source.ScanIntervalSeconds = uint64(d.Seconds())
 	}
@@ -87,35 +87,35 @@ func updateSourceHandler(
 	for key, value := range config {
 		v, ok := value.(string)
 		if !ok {
-			return nil, handler.NewBadRequestString("invalid config value: " + key)
+			return nil, handler.NewInvalidParameterErr("invalid config value: " + key)
 		}
 		snake := lowerCamelToSnake(key)
 		snake = strings.ReplaceAll(snake, "-", "_")
 		splitted := strings.SplitN(snake, "_", 2)
 		if len(splitted) != 2 {
-			return nil, handler.NewBadRequestString("invalid config key: " + key)
+			return nil, handler.NewInvalidParameterErr("invalid config key: " + key)
 		}
 		if splitted[0] != t {
-			return nil, handler.NewBadRequestString("invalid config key for this data source: " + key)
+			return nil, handler.NewInvalidParameterErr("invalid config key for this data source: " + key)
 		}
 		name := splitted[1]
 		_, err := underscore.Find(reg.Options, func(option fs.Option) bool {
 			return option.Name == name
 		})
 		if err != nil {
-			return nil, handler.NewBadRequestString("config key cannot be found for the data source: " + key)
+			return nil, handler.NewInvalidParameterErr("config key cannot be found for the data source: " + key)
 		}
 		source.Metadata[name] = v
 	}
 
 	h, err := datasource.DefaultHandlerResolver{}.Resolve(ctx, source)
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	_, err = h.List(ctx, "")
 	if err != nil {
-		return nil, handler.NewBadRequestError(err)
+		return nil, handler.ErrInvalidParameter{Err: err}
 	}
 
 	err = database.DoRetry(func() error {
@@ -126,7 +126,7 @@ func updateSourceHandler(
 		}).Error
 	})
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return &source, nil

@@ -50,10 +50,10 @@ func argToDuration(s string) (time.Duration, error) {
 func SendManualHandler(
 	db *gorm.DB,
 	ctx context.Context,
-	request Proposal,
 	dealMaker replication.DealMaker,
+	request Proposal,
 ) (*model.Deal, error) {
-	return sendManualHandler(db, ctx, request, dealMaker)
+	return sendManualHandler(db, ctx, dealMaker, request)
 }
 
 // @Summary Send a manual deal proposal
@@ -63,42 +63,42 @@ func SendManualHandler(
 // @Produce json
 // @Param proposal body Proposal true "Proposal"
 // @Success 200 {object} model.Deal
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /send_deal [post]
 func sendManualHandler(
 	db *gorm.DB,
 	ctx context.Context,
-	request Proposal,
 	dealMaker replication.DealMaker,
+	request Proposal,
 ) (*model.Deal, error) {
 	// Get the wallet object
 	wallet := model.Wallet{}
 	err := db.Where("id = ?", request.ClientAddress).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("client address not found")
+		return nil, handler.NewInvalidParameterErr("client address not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid piece CID")
+		return nil, handler.NewInvalidParameterErr("invalid piece CID")
 	}
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return nil, handler.NewBadRequestString("piece CID must be commp")
+		return nil, handler.NewInvalidParameterErr("piece CID must be commp")
 	}
 	pieceSize, err := humanize.ParseBytes(request.PieceSize)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid piece size")
+		return nil, handler.NewInvalidParameterErr("invalid piece size")
 	}
 	if (pieceSize & (pieceSize - 1)) != 0 {
-		return nil, handler.NewBadRequestString("piece size must be a power of 2")
+		return nil, handler.NewInvalidParameterErr("piece size must be a power of 2")
 	}
 	rootCID, err := cid.Parse(request.RootCID)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid root CID")
+		return nil, handler.NewInvalidParameterErr("invalid root CID")
 	}
 	car := model.Car{
 		PieceCID:  model.CID(pieceCID),
@@ -108,11 +108,11 @@ func sendManualHandler(
 	}
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid duration")
+		return nil, handler.NewInvalidParameterErr("invalid duration")
 	}
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid start delay")
+		return nil, handler.NewInvalidParameterErr("invalid start delay")
 	}
 
 	dealConfig := replication.DealConfig{
@@ -128,7 +128,7 @@ func sendManualHandler(
 
 	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	return dealModel, nil
 }
