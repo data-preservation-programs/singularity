@@ -145,7 +145,7 @@ var SendManualCmd = &cli.Command{
 			10*timeout,
 			timeout,
 		)
-		dealModel, err2 := deal.SendManualHandler(db.WithContext(ctx), ctx, proposal, dealMaker)
+		dealModel, err2 := deal.SendManualHandler(db.WithContext(ctx), ctx, dealMaker, proposal)
 		if err2 != nil {
 			return err2
 		}

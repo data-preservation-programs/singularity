@@ -71,11 +71,9 @@ func TestPushItem_InvalidID(t *testing.T) {
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
-	require.Error(t, err)
-	var httpError *echo.HTTPError
-	require.ErrorAs(t, err, &httpError)
-	require.Equal(t, http.StatusBadRequest, httpError.Code)
-	require.Contains(t, "Failed to parse path parameter as number.", httpError.Message)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusBadRequest, rec.Code)
+	require.Contains(t, rec.Body.String(), "failed to parse path parameter as number")
 }
 
 func TestPushItem_InvalidPayload(t *testing.T) {
@@ -94,11 +92,9 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
-	require.Error(t, err)
-	var httpError *echo.HTTPError
-	require.ErrorAs(t, err, &httpError)
-	require.Equal(t, http.StatusBadRequest, httpError.Code)
-	require.Contains(t, "Failed to bind request body.", httpError.Message)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusBadRequest, rec.Code)
+	require.Contains(t, rec.Body.String(), "failed to bind request body")
 }
 
 func TestPushItem_SourceNotFound(t *testing.T) {

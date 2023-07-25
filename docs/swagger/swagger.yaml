@@ -1,5 +1,10 @@
 basePath: /api
 definitions:
+  api.HTTPError:
+    properties:
+      err:
+        type: string
+    type: object
   dataset.AddPieceRequest:
     properties:
       filePath:
@@ -983,7 +988,7 @@ definitions:
         description: Follow symlinks and copy the pointed to item.
         type: string
       localEncoding:
-        default: Slash,Dot
+        default: Slash,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       localLinks:
@@ -1762,6 +1767,9 @@ definitions:
         default: $USER
         description: SMB username.
         type: string
+      sourcePath:
+        description: The path of the source to scan items
+        type: string
       storjAccessGrant:
         description: Access grant.
         type: string
@@ -1972,6 +1980,8 @@ definitions:
       zohoTokenUrl:
         description: Token server url.
         type: string
+    required:
+    - sourcePath
     type: object
   datasource.AzureblobRequest:
     properties:
@@ -3100,7 +3110,7 @@ definitions:
         description: Delete the source after exporting to CAR files
         type: boolean
       encoding:
-        default: Slash,Dot
+        default: Slash,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
       links:
@@ -4586,11 +4596,6 @@ definitions:
       size:
         type: integer
     type: object
-  handler.HTTPError:
-    properties:
-      err:
-        type: string
-    type: object
   inspect.DirDetail:
     properties:
       current:
@@ -5107,7 +5112,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Initialize the database
       tags:
       - Admin
@@ -5120,7 +5125,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Reset the database
       tags:
       - Admin
@@ -5144,7 +5149,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Get detail of a specific chunk
       tags:
       - Data Source
@@ -5162,11 +5167,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all datasets
       tags:
       - Dataset
@@ -5191,11 +5196,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Create a new dataset
       tags:
       - Dataset
@@ -5215,11 +5220,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Remove a specific dataset. This will not remove the CAR files.
       tags:
       - Dataset
@@ -5248,11 +5253,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Update a dataset
       tags:
       - Dataset
@@ -5278,11 +5283,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all pieces for the dataset that are available for deal making
       tags:
       - Dataset
@@ -5311,11 +5316,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Manually register a piece (CAR file) with the dataset for deal making
         purpose
       tags:
@@ -5340,11 +5345,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all wallets of a dataset.
       tags:
       - Wallet
@@ -5367,11 +5372,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Remove an associated wallet from a dataset
       tags:
       - Wallet
@@ -5399,11 +5404,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Associate a new wallet with a dataset
       tags:
       - Wallet Association
@@ -5431,11 +5436,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all deals
       tags:
       - Deal
@@ -5459,7 +5464,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Get details about an item
       tags:
       - Data Source
@@ -5517,11 +5522,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Create a new schedule
       tags:
       - Deal Schedule
@@ -5543,11 +5548,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Pause a specific schedule
       tags:
       - Deal Schedule
@@ -5569,11 +5574,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Resume a specific schedule
       tags:
       - Deal Schedule
@@ -5591,11 +5596,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all deal making schedules
       tags:
       - Deal Schedule
@@ -5621,11 +5626,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Send a manual deal proposal
       tags:
       - Deal
@@ -5648,11 +5653,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all sources for a dataset
       tags:
       - Data Source
@@ -5670,11 +5675,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Remove a source
       tags:
       - Data Source
@@ -5703,11 +5708,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Update the config options of a source
       tags:
       - Data Source
@@ -5739,11 +5744,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Check the connection of the data source by listing a path
       tags:
       - Data Source
@@ -5769,7 +5774,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Get all dag details of a data source
       tags:
       - Data Source
@@ -5791,11 +5796,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Mark a source as ready for DAG generation
       tags:
       - Data Source
@@ -5821,11 +5826,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Get all item details of a data source
       tags:
       - Data Source
@@ -5855,11 +5860,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Get all item details inside a data source path
       tags:
       - Data Source
@@ -5916,7 +5921,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Trigger a rescan of a data source
       tags:
       - Data Source
@@ -5940,11 +5945,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Get the data preparation summary of a data source
       tags:
       - Data Source
@@ -5974,11 +5979,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add acd source for a dataset
       tags:
       - Data Source
@@ -6008,11 +6013,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add azureblob source for a dataset
       tags:
       - Data Source
@@ -6042,11 +6047,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add b2 source for a dataset
       tags:
       - Data Source
@@ -6076,11 +6081,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add box source for a dataset
       tags:
       - Data Source
@@ -6110,11 +6115,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add drive source for a dataset
       tags:
       - Data Source
@@ -6144,11 +6149,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add dropbox source for a dataset
       tags:
       - Data Source
@@ -6178,11 +6183,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add fichier source for a dataset
       tags:
       - Data Source
@@ -6212,11 +6217,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add filefabric source for a dataset
       tags:
       - Data Source
@@ -6246,11 +6251,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add ftp source for a dataset
       tags:
       - Data Source
@@ -6280,11 +6285,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add gcs source for a dataset
       tags:
       - Data Source
@@ -6314,11 +6319,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add gphotos source for a dataset
       tags:
       - Data Source
@@ -6348,11 +6353,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add hdfs source for a dataset
       tags:
       - Data Source
@@ -6382,11 +6387,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add hidrive source for a dataset
       tags:
       - Data Source
@@ -6416,11 +6421,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add http source for a dataset
       tags:
       - Data Source
@@ -6450,11 +6455,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add internetarchive source for a dataset
       tags:
       - Data Source
@@ -6484,11 +6489,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add jottacloud source for a dataset
       tags:
       - Data Source
@@ -6518,11 +6523,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add koofr source for a dataset
       tags:
       - Data Source
@@ -6552,11 +6557,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add local source for a dataset
       tags:
       - Data Source
@@ -6586,11 +6591,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add mailru source for a dataset
       tags:
       - Data Source
@@ -6620,11 +6625,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add mega source for a dataset
       tags:
       - Data Source
@@ -6654,11 +6659,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add netstorage source for a dataset
       tags:
       - Data Source
@@ -6688,11 +6693,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add onedrive source for a dataset
       tags:
       - Data Source
@@ -6722,11 +6727,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add oos source for a dataset
       tags:
       - Data Source
@@ -6756,11 +6761,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add opendrive source for a dataset
       tags:
       - Data Source
@@ -6790,11 +6795,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add pcloud source for a dataset
       tags:
       - Data Source
@@ -6824,11 +6829,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add premiumizeme source for a dataset
       tags:
       - Data Source
@@ -6858,11 +6863,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add putio source for a dataset
       tags:
       - Data Source
@@ -6892,11 +6897,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add qingstor source for a dataset
       tags:
       - Data Source
@@ -6926,11 +6931,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add s3 source for a dataset
       tags:
       - Data Source
@@ -6960,11 +6965,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add seafile source for a dataset
       tags:
       - Data Source
@@ -6994,11 +6999,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add sftp source for a dataset
       tags:
       - Data Source
@@ -7028,11 +7033,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add sharefile source for a dataset
       tags:
       - Data Source
@@ -7062,11 +7067,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add sia source for a dataset
       tags:
       - Data Source
@@ -7096,11 +7101,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add smb source for a dataset
       tags:
       - Data Source
@@ -7130,11 +7135,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add storj source for a dataset
       tags:
       - Data Source
@@ -7164,11 +7169,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add sugarsync source for a dataset
       tags:
       - Data Source
@@ -7198,11 +7203,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add swift source for a dataset
       tags:
       - Data Source
@@ -7232,11 +7237,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add uptobox source for a dataset
       tags:
       - Data Source
@@ -7266,11 +7271,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add webdav source for a dataset
       tags:
       - Data Source
@@ -7300,11 +7305,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add yandex source for a dataset
       tags:
       - Data Source
@@ -7334,11 +7339,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add zoho source for a dataset
       tags:
       - Data Source
@@ -7356,11 +7361,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: List all imported wallets
       tags:
       - Wallet
@@ -7384,11 +7389,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Import a private key
       tags:
       - Wallet
@@ -7406,11 +7411,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Remove a wallet
       tags:
       - Wallet
@@ -7435,11 +7440,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.HTTPError'
+            $ref: '#/definitions/api.HTTPError'
       summary: Add a remote wallet
       tags:
       - Wallet

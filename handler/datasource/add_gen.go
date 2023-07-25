@@ -24,8 +24,8 @@ type AcdRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body AcdRequest true "Request body"
 // @Router /source/acd/dataset/{datasetName} [post]
 func handleAcd() {}
@@ -74,8 +74,8 @@ type AzureblobRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body AzureblobRequest true "Request body"
 // @Router /source/azureblob/dataset/{datasetName} [post]
 func handleAzureblob() {}
@@ -108,8 +108,8 @@ type B2Request struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body B2Request true "Request body"
 // @Router /source/b2/dataset/{datasetName} [post]
 func handleB2() {}
@@ -140,8 +140,8 @@ type BoxRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body BoxRequest true "Request body"
 // @Router /source/box/dataset/{datasetName} [post]
 func handleBox() {}
@@ -201,8 +201,8 @@ type DriveRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body DriveRequest true "Request body"
 // @Router /source/drive/dataset/{datasetName} [post]
 func handleDrive() {}
@@ -233,8 +233,8 @@ type DropboxRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body DropboxRequest true "Request body"
 // @Router /source/dropbox/dataset/{datasetName} [post]
 func handleDropbox() {}
@@ -256,8 +256,8 @@ type FichierRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body FichierRequest true "Request body"
 // @Router /source/fichier/dataset/{datasetName} [post]
 func handleFichier() {}
@@ -281,8 +281,8 @@ type FilefabricRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body FilefabricRequest true "Request body"
 // @Router /source/filefabric/dataset/{datasetName} [post]
 func handleFilefabric() {}
@@ -319,8 +319,8 @@ type FtpRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body FtpRequest true "Request body"
 // @Router /source/ftp/dataset/{datasetName} [post]
 func handleFtp() {}
@@ -356,8 +356,8 @@ type GcsRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body GcsRequest true "Request body"
 // @Router /source/gcs/dataset/{datasetName} [post]
 func handleGcs() {}
@@ -384,8 +384,8 @@ type GphotosRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body GphotosRequest true "Request body"
 // @Router /source/gphotos/dataset/{datasetName} [post]
 func handleGphotos() {}
@@ -407,8 +407,8 @@ type HdfsRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body HdfsRequest true "Request body"
 // @Router /source/hdfs/dataset/{datasetName} [post]
 func handleHdfs() {}
@@ -439,8 +439,8 @@ type HidriveRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body HidriveRequest true "Request body"
 // @Router /source/hidrive/dataset/{datasetName} [post]
 func handleHidrive() {}
@@ -461,8 +461,8 @@ type HttpRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body HttpRequest true "Request body"
 // @Router /source/http/dataset/{datasetName} [post]
 func handleHttp() {}
@@ -486,8 +486,8 @@ type InternetarchiveRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body InternetarchiveRequest true "Request body"
 // @Router /source/internetarchive/dataset/{datasetName} [post]
 func handleInternetarchive() {}
@@ -510,8 +510,8 @@ type JottacloudRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body JottacloudRequest true "Request body"
 // @Router /source/jottacloud/dataset/{datasetName} [post]
 func handleJottacloud() {}
@@ -535,30 +535,30 @@ type KoofrRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body KoofrRequest true "Request body"
 // @Router /source/koofr/dataset/{datasetName} [post]
 func handleKoofr() {}
 
 type LocalRequest struct {
-	SourcePath           string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
-	DeleteAfterExport    bool   `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
-	RescanInterval       string `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
-	CaseInsensitive      string `json:"caseInsensitive" default:"false"`       // Force the filesystem to report itself as case insensitive.
-	CaseSensitive        string `json:"caseSensitive" default:"false"`         // Force the filesystem to report itself as case sensitive.
-	CopyLinks            string `json:"copyLinks" default:"false"`             // Follow symlinks and copy the pointed to item.
-	Encoding             string `json:"encoding" default:"Slash,Dot"`          // The encoding for the backend.
-	Links                string `json:"links" default:"false"`                 // Translate symlinks to/from regular files with a '.rclonelink' extension.
-	NoCheckUpdated       string `json:"noCheckUpdated" default:"false"`        // Don't check to see if the files change during upload.
-	NoPreallocate        string `json:"noPreallocate" default:"false"`         // Disable preallocation of disk space for transferred files.
-	NoSetModtime         string `json:"noSetModtime" default:"false"`          // Disable setting modtime.
-	NoSparse             string `json:"noSparse" default:"false"`              // Disable sparse files for multi-thread downloads.
-	Nounc                string `json:"nounc" default:"false"`                 // Disable UNC (long path names) conversion on Windows.
-	OneFileSystem        string `json:"oneFileSystem" default:"false"`         // Don't cross filesystem boundaries (unix/macOS only).
-	SkipLinks            string `json:"skipLinks" default:"false"`             // Don't warn about skipped symlinks.
-	UnicodeNormalization string `json:"unicodeNormalization" default:"false"`  // Apply unicode NFC normalization to paths and filenames.
-	ZeroSizeLinks        string `json:"zeroSizeLinks" default:"false"`         // Assume the Stat size of links is zero (and read them instead) (deprecated).
+	SourcePath           string `validate:"required" json:"sourcePath"`           // The path of the source to scan items
+	DeleteAfterExport    bool   `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
+	RescanInterval       string `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
+	CaseInsensitive      string `json:"caseInsensitive" default:"false"`          // Force the filesystem to report itself as case insensitive.
+	CaseSensitive        string `json:"caseSensitive" default:"false"`            // Force the filesystem to report itself as case sensitive.
+	CopyLinks            string `json:"copyLinks" default:"false"`                // Follow symlinks and copy the pointed to item.
+	Encoding             string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
+	Links                string `json:"links" default:"false"`                    // Translate symlinks to/from regular files with a '.rclonelink' extension.
+	NoCheckUpdated       string `json:"noCheckUpdated" default:"false"`           // Don't check to see if the files change during upload.
+	NoPreallocate        string `json:"noPreallocate" default:"false"`            // Disable preallocation of disk space for transferred files.
+	NoSetModtime         string `json:"noSetModtime" default:"false"`             // Disable setting modtime.
+	NoSparse             string `json:"noSparse" default:"false"`                 // Disable sparse files for multi-thread downloads.
+	Nounc                string `json:"nounc" default:"false"`                    // Disable UNC (long path names) conversion on Windows.
+	OneFileSystem        string `json:"oneFileSystem" default:"false"`            // Don't cross filesystem boundaries (unix/macOS only).
+	SkipLinks            string `json:"skipLinks" default:"false"`                // Don't warn about skipped symlinks.
+	UnicodeNormalization string `json:"unicodeNormalization" default:"false"`     // Apply unicode NFC normalization to paths and filenames.
+	ZeroSizeLinks        string `json:"zeroSizeLinks" default:"false"`            // Assume the Stat size of links is zero (and read them instead) (deprecated).
 }
 
 // @Summary Add local source for a dataset
@@ -567,8 +567,8 @@ type LocalRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body LocalRequest true "Request body"
 // @Router /source/local/dataset/{datasetName} [post]
 func handleLocal() {}
@@ -595,8 +595,8 @@ type MailruRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body MailruRequest true "Request body"
 // @Router /source/mailru/dataset/{datasetName} [post]
 func handleMailru() {}
@@ -619,8 +619,8 @@ type MegaRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body MegaRequest true "Request body"
 // @Router /source/mega/dataset/{datasetName} [post]
 func handleMega() {}
@@ -641,8 +641,8 @@ type NetstorageRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body NetstorageRequest true "Request body"
 // @Router /source/netstorage/dataset/{datasetName} [post]
 func handleNetstorage() {}
@@ -680,8 +680,8 @@ type OnedriveRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body OnedriveRequest true "Request body"
 // @Router /source/onedrive/dataset/{datasetName} [post]
 func handleOnedrive() {}
@@ -702,8 +702,8 @@ type OpendriveRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body OpendriveRequest true "Request body"
 // @Router /source/opendrive/dataset/{datasetName} [post]
 func handleOpendrive() {}
@@ -742,8 +742,8 @@ type OosRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body OosRequest true "Request body"
 // @Router /source/oos/dataset/{datasetName} [post]
 func handleOos() {}
@@ -770,8 +770,8 @@ type PcloudRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body PcloudRequest true "Request body"
 // @Router /source/pcloud/dataset/{datasetName} [post]
 func handlePcloud() {}
@@ -790,8 +790,8 @@ type PremiumizemeRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body PremiumizemeRequest true "Request body"
 // @Router /source/premiumizeme/dataset/{datasetName} [post]
 func handlePremiumizeme() {}
@@ -809,8 +809,8 @@ type PutioRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body PutioRequest true "Request body"
 // @Router /source/putio/dataset/{datasetName} [post]
 func handlePutio() {}
@@ -837,8 +837,8 @@ type QingstorRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body QingstorRequest true "Request body"
 // @Router /source/qingstor/dataset/{datasetName} [post]
 func handleQingstor() {}
@@ -904,8 +904,8 @@ type S3Request struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body S3Request true "Request body"
 // @Router /source/s3/dataset/{datasetName} [post]
 func handleS3() {}
@@ -931,8 +931,8 @@ type SeafileRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SeafileRequest true "Request body"
 // @Router /source/seafile/dataset/{datasetName} [post]
 func handleSeafile() {}
@@ -980,8 +980,8 @@ type SftpRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SftpRequest true "Request body"
 // @Router /source/sftp/dataset/{datasetName} [post]
 func handleSftp() {}
@@ -1003,8 +1003,8 @@ type SharefileRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SharefileRequest true "Request body"
 // @Router /source/sharefile/dataset/{datasetName} [post]
 func handleSharefile() {}
@@ -1025,8 +1025,8 @@ type SiaRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SiaRequest true "Request body"
 // @Router /source/sia/dataset/{datasetName} [post]
 func handleSia() {}
@@ -1053,8 +1053,8 @@ type SmbRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SmbRequest true "Request body"
 // @Router /source/smb/dataset/{datasetName} [post]
 func handleSmb() {}
@@ -1076,8 +1076,8 @@ type StorjRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body StorjRequest true "Request body"
 // @Router /source/storj/dataset/{datasetName} [post]
 func handleStorj() {}
@@ -1105,8 +1105,8 @@ type SugarsyncRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SugarsyncRequest true "Request body"
 // @Router /source/sugarsync/dataset/{datasetName} [post]
 func handleSugarsync() {}
@@ -1146,8 +1146,8 @@ type SwiftRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body SwiftRequest true "Request body"
 // @Router /source/swift/dataset/{datasetName} [post]
 func handleSwift() {}
@@ -1166,8 +1166,8 @@ type UptoboxRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body UptoboxRequest true "Request body"
 // @Router /source/uptobox/dataset/{datasetName} [post]
 func handleUptobox() {}
@@ -1192,8 +1192,8 @@ type WebdavRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body WebdavRequest true "Request body"
 // @Router /source/webdav/dataset/{datasetName} [post]
 func handleWebdav() {}
@@ -1217,8 +1217,8 @@ type YandexRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body YandexRequest true "Request body"
 // @Router /source/yandex/dataset/{datasetName} [post]
 func handleYandex() {}
@@ -1242,13 +1242,14 @@ type ZohoRequest struct {
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body ZohoRequest true "Request body"
 // @Router /source/zoho/dataset/{datasetName} [post]
 func handleZoho() {}
 
 type AllConfig struct {
+	SourcePath                          string `validate:"required" json:"sourcePath"`                                                                                                                              // The path of the source to scan items
 	DeleteAfterExport                   bool   `validate:"optional" json:"deleteAfterExport"`                                                                                                                       // Delete the source after exporting to CAR files
 	RescanInterval                      string `validate:"optional" json:"rescanInterval"`                                                                                                                          // Automatically rescan the source directory when this interval has passed from last successful scan
 	AcdAuthUrl                          string `json:"acdAuthUrl"`                                                                                                                                                  // Auth server URL.
@@ -1486,7 +1487,7 @@ type AllConfig struct {
 	LocalCaseInsensitive                string `json:"localCaseInsensitive" default:"false"`                                                                                                                        // Force the filesystem to report itself as case insensitive.
 	LocalCaseSensitive                  string `json:"localCaseSensitive" default:"false"`                                                                                                                          // Force the filesystem to report itself as case sensitive.
 	LocalCopyLinks                      string `json:"localCopyLinks" default:"false"`                                                                                                                              // Follow symlinks and copy the pointed to item.
-	LocalEncoding                       string `json:"localEncoding" default:"Slash,Dot"`                                                                                                                           // The encoding for the backend.
+	LocalEncoding                       string `json:"localEncoding" default:"Slash,InvalidUtf8,Dot"`                                                                                                               // The encoding for the backend.
 	LocalLinks                          string `json:"localLinks" default:"false"`                                                                                                                                  // Translate symlinks to/from regular files with a '.rclonelink' extension.
 	LocalNoCheckUpdated                 string `json:"localNoCheckUpdated" default:"false"`                                                                                                                         // Don't check to see if the files change during upload.
 	LocalNoPreallocate                  string `json:"localNoPreallocate" default:"false"`                                                                                                                          // Disable preallocation of disk space for transferred files.

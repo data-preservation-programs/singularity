@@ -22,7 +22,7 @@ func GetDagsHandler(
 // @Produce json
 // @Param id path string true "Source ID"
 // @Success 200 {array} model.Car
-// @Failure 500 {object} handler.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/chunks [get]
 func getDagsHandler(
 	db *gorm.DB,
@@ -30,21 +30,21 @@ func getDagsHandler(
 ) ([]model.Car, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid source id")
+		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 	var source model.Source
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("source not found")
+		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	var cars []model.Car
 	err = db.Where("source_id = ? AND chunk_id IS NULL", sourceID).Find(&cars).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	return cars, nil

@@ -20,8 +20,8 @@ func RemoveWalletHandler(
 // @Param datasetName path string true "Dataset name"
 // @Param wallet path string true "Wallet Address"
 // @Success 204
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName}/wallet/{wallet} [delete]
 func removeWalletHandler(
 	db *gorm.DB,
@@ -29,22 +29,22 @@ func removeWalletHandler(
 	wallet string,
 ) error {
 	if datasetName == "" {
-		return handler.NewBadRequestString("dataset name is required")
+		return handler.NewInvalidParameterErr("dataset name is required")
 	}
 
 	if wallet == "" {
-		return handler.NewBadRequestString("wallet address is required")
+		return handler.NewInvalidParameterErr("wallet address is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return handler.NewBadRequestString("failed to find dataset: " + err.Error())
+		return handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 
 	var w model.Wallet
 	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
 	if err != nil {
-		return handler.NewBadRequestString("failed to find wallet: " + err.Error())
+		return handler.NewInvalidParameterErr("failed to find wallet: " + err.Error())
 	}
 
 	err = database.DoRetry(func() error {
@@ -52,7 +52,7 @@ func removeWalletHandler(
 	})
 
 	if err != nil {
-		return handler.NewHandlerError(err)
+		return err
 	}
 
 	return nil

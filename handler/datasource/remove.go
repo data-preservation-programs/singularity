@@ -14,8 +14,8 @@ import (
 // @Tags Data Source
 // @Param id path string true "Source ID"
 // @Success 204
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /source/{id} [delete]
 func removeSourceHandler(
 	db *gorm.DB,
@@ -24,18 +24,18 @@ func removeSourceHandler(
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return handler.NewBadRequestString("invalid source id")
+		return handler.NewInvalidParameterErr("invalid source id")
 	}
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return handler.NewBadRequestString("source not found")
+		return handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return handler.NewHandlerError(err)
+		return err
 	}
 	err = database.DoRetry(func() error { return db.Delete(&source).Error })
 	if err != nil {
-		return handler.NewHandlerError(err)
+		return err
 	}
 	return nil
 }
