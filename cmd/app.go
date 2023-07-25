@@ -18,6 +18,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/deal/spadepolicy"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
+	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/data-preservation-programs/singularity/util/must"
 	"github.com/mattn/go-shellwords"
@@ -167,6 +168,14 @@ var App = &cli.App{
 				wallet.ListCmd,
 				wallet.AddRemoteCmd,
 				wallet.RemoveCmd,
+			},
+		},
+		{
+			Name:     "tool",
+			Category: "Tooling",
+			Usage:    "Tools used for development and debugging",
+			Subcommands: []*cli.Command{
+				tool.ExtractCarCmd,
 			},
 		},
 	},
