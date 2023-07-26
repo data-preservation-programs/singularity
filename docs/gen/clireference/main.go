@@ -37,6 +37,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	summary.WriteString("* [Menu](cli-reference/README.md)\n")
 	for _, command := range app.Commands {
 		if command.Name == "help" {
 			continue

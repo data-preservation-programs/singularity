@@ -46,6 +46,7 @@
 ## 💻 CLI Reference
 <!-- cli begin -->
 
+* [Menu](cli-reference/README.md)
 * [Ez Prep](cli-reference/ez-prep.md)
 * [Admin](cli-reference/admin/README.md)
   * [Init](cli-reference/admin/init.md)
