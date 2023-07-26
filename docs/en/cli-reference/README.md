@@ -30,6 +30,7 @@ DESCRIPTION:
        Switching between different networks with the same database instance is not recommended.
 
 COMMANDS:
+   help, h  Shows a list of commands or help for one command
    Daemons:
      run  Run different singularity components
    Easy Commands:

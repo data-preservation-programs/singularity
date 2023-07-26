@@ -38,6 +38,9 @@ func main() {
 		panic(err)
 	}
 	for _, command := range app.Commands {
+		if command.Name == "help" {
+			continue
+		}
 		saveMarkdown(command, path.Join("docs/en/cli-reference"), []string{command.Name})
 	}
 
