@@ -11,8 +11,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-//go:generate go run .
-
 const header = `
 //lint:file-ignore U1000 Ignore all unused code, it's generated
 // Code generated. DO NOT EDIT.
@@ -76,14 +74,14 @@ type Type struct {
 func main() {
 	command := datasource.AddCmd
 	// Create generated file in the same directory
-	f, err := os.Create("../add_gen.go")
+	f, err := os.Create("handler/datasource/add_gen.go")
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
 	// Write package lines
-	f.Write([]byte(header))
+	f.WriteString(header)
 
 	tmpl, err := template.New("handler").Parse(handlerTemplate)
 	if err != nil {

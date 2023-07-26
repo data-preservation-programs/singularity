@@ -12,8 +12,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-//go:generate go run .
-
 var overrides = map[string]string{
 	"s3":    "AWS S3 and compliant",
 	"gcs":   "Google Cloud Storage",
@@ -31,19 +29,19 @@ func main() {
 	sb.WriteString(getStdout([]string{}))
 	sb.WriteString("```\n")
 	sb.WriteString("{% endcode %}\n")
-	err := os.MkdirAll("../../en/cli-reference", 0755)
+	err := os.MkdirAll("docs/en/cli-reference", 0755)
 	if err != nil {
 		panic(err)
 	}
-	err = os.WriteFile("../../en/cli-reference/README.md", []byte(sb.String()), 0644)
+	err = os.WriteFile("docs/en/cli-reference/README.md", []byte(sb.String()), 0644)
 	if err != nil {
 		panic(err)
 	}
 	for _, command := range app.Commands {
-		saveMarkdown(command, path.Join("../../en/cli-reference"), []string{command.Name})
+		saveMarkdown(command, path.Join("docs/en/cli-reference"), []string{command.Name})
 	}
 
-	currentSummary, err := os.ReadFile("../../en/SUMMARY.md")
+	currentSummary, err := os.ReadFile("docs/en/SUMMARY.md")
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +58,7 @@ func main() {
 	}
 
 	lines = append(lines[:beginIndex+1], append([]string{"", summary.String()}, lines[endIndex:]...)...)
-	err = os.WriteFile("../../en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
+	err = os.WriteFile("docs/en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
 	if err != nil {
 		panic(err)
 	}

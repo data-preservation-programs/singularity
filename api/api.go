@@ -21,10 +21,10 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ybbus/jsonrpc/v3"
 
-	_ "github.com/data-preservation-programs/singularity/api/docs"
 	"github.com/data-preservation-programs/singularity/cmd/embed"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
+	_ "github.com/data-preservation-programs/singularity/docs/swagger"
 	"github.com/data-preservation-programs/singularity/handler"
 	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"

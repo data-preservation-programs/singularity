@@ -25,7 +25,7 @@ func main() {
 		underscore.Map(model.DealStates, func(w model.DealState) string { return "'" + string(w) + "'" }),
 		underscore.Map(model.ScheduleStates, func(w model.ScheduleState) string { return "'" + string(w) + "'" }),
 	}
-	for i, _ := range k {
+	for i := range k {
 		definitions = append(definitions, fmt.Sprintf("export type %s = %s", k[i], strings.Join(m[i], " | ")))
 	}
 
