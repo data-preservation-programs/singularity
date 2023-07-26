@@ -22,6 +22,7 @@ type block struct {
 
 func Initialize(ctx context.Context, lotusAPI string, lotusToken string) error {
 	if strings.HasPrefix(lotusAPI, "https://api.node.glif.io/rpc") {
+		GenesisTimestamp = int32(1598306400)
 		return nil
 	}
 

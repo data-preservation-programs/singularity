@@ -45,7 +45,8 @@ Network Support:
       * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
     For all other networks:
       * Set LOTUS_API to your network's Lotus API endpoint
-      * Set MARKET_DEAL_URL to empty string`,
+      * Set MARKET_DEAL_URL to empty string
+    Switching between different networks with the same database instance is not recommended.`,
 	EnableBashCompletion: true,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
