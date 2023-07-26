@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -109,6 +110,29 @@ func NewDealTracker(
 	}
 }
 
+type threadSafeReadCloser struct {
+	reader io.Reader
+	closer func()
+	closed bool
+	mu     sync.Mutex
+}
+
+func (t *threadSafeReadCloser) Read(p []byte) (n int, err error) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.closed {
+		return 0, errors.New("closed")
+	}
+	return t.reader.Read(p)
+}
+
+func (t *threadSafeReadCloser) Close() {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.closed = true
+	t.closer()
+}
+
 func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool) (chan *jstream.MetaValue, io.Closer, error) {
 	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
@@ -127,9 +151,13 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 			resp.Body.Close()
 			return nil, nil, errors.Wrap(err, "failed to create zstd decompressor")
 		}
-		jsonDecoder = jstream.NewDecoder(decompressor, depth).EmitKV()
+		safeDecompressor := &threadSafeReadCloser{
+			reader: decompressor,
+			closer: decompressor.Close,
+		}
+		jsonDecoder = jstream.NewDecoder(safeDecompressor, depth).EmitKV()
 		closer = CloserFunc(func() error {
-			decompressor.Close()
+			safeDecompressor.Close()
 			return resp.Body.Close()
 		})
 	} else {
@@ -366,7 +394,8 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 			return errors.Wrap(err, "failed to callback")
 		}
 	}
-	return nil
+
+	return ctx.Err()
 }
 
 func (d *DealTracker) shouldTrackDeal(ctx context.Context) (bool, error) {
