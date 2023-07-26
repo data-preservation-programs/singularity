@@ -1,6 +1,7 @@
 package healthcheck
 
 import (
+	"context"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -17,12 +18,14 @@ func TestHealthCheck(t *testing.T) {
 	defer database.DropAll(db)
 
 	id := uuid.New()
-	HealthCheck(db, id, func() State {
+	_, err = Register(context.Background(), db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something",
 		}
-	})
+	}, true)
+	req.NoError(err)
+
 	var worker model.Worker
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
@@ -31,12 +34,13 @@ func TestHealthCheck(t *testing.T) {
 	req.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
-	HealthCheck(db, id, func() State {
+	ReportHealth(context.Background(), db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something else",
 		}
 	})
+
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
 	req.Equal(model.Packing, worker.WorkType)
