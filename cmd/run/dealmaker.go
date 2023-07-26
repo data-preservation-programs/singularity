@@ -5,6 +5,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/dealmaker"
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/urfave/cli/v2"
 )
 
@@ -19,6 +20,14 @@ var DealMakerCmd = &cli.Command{
 		if err := model.AutoMigrate(db); err != nil {
 			return handler.NewHandlerError(err)
 		}
+
+		lotusAPI := c.String("lotus-api")
+		lotusToken := c.String("lotus-token")
+		err = epochutil.Initialize(c.Context, lotusAPI, lotusToken)
+		if err != nil {
+			return err
+		}
+
 		dealMaker, err := dealmaker.NewDealMakerService(db, c.String("lotus-api"), c.String("lotus-token"))
 		if err != nil {
 			return cli.Exit(err.Error(), 1)

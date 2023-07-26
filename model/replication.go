@@ -8,18 +8,6 @@ import (
 
 type DealState string
 
-func EpochToTime(epoch int32) time.Time {
-	//nolint:gomnd
-	return time.Unix(int64(epoch)*30+1598306400, 0)
-}
-func EpochToUnix(epoch int32) int32 {
-	return epoch*30 + 1598306400
-}
-
-func UnixToEpoch(unix int64) int32 {
-	return (int32(unix) - 1598306400) / 30
-}
-
 type ScheduleState string
 
 const (
