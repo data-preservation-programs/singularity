@@ -112,7 +112,7 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 	}
 
 	name := convertHyphenatedString(command.Name)
-	if strings.Contains(stdout, "singularity datasource add") && len(command.Subcommands) == 0 {
+	if strings.Contains(stdout, "singularity datasource add") && len(command.Subcommands) <= 1 {
 		name = command.Usage
 	}
 	if newName, ok := overrides[command.Name]; ok {

@@ -19,7 +19,6 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
-	"github.com/data-preservation-programs/singularity/util/must"
 	"github.com/mattn/go-shellwords"
 	"github.com/urfave/cli/v2"
 )
@@ -51,8 +50,8 @@ Network Support:
 		&cli.StringFlag{
 			Name:        "database-connection-string",
 			Usage:       "Connection string to the database",
-			DefaultText: "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
-			Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
+			DefaultText: "sqlite:" + "./singularity.db",
+			Value:       "sqlite:" + "./singularity.db",
 			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 		},
 		&cli.BoolFlag{

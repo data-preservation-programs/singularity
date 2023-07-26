@@ -47,7 +47,7 @@ COMMANDS:
      download  Download a CAR file from the metadata API
 
 GLOBAL OPTIONS:
-   --database-connection-string value  Connection string to the database (default: sqlite:/home/shane/.singularity/singularity.db) [$DATABASE_CONNECTION_STRING]
+   --database-connection-string value  Connection string to the database (default: sqlite:./singularity.db) [$DATABASE_CONNECTION_STRING]
    --help, -h                          show help
    --json                              Enable JSON output (default: false)
 
