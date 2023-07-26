@@ -41,7 +41,6 @@ func addRemoteHandler(
 	lotusClient jsonrpc.RPCClient,
 	request AddRemoteRequest,
 ) (*model.Wallet, error) {
-	address.CurrentNetwork = address.Mainnet
 	addr, err := address.NewFromString(request.Address)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid address")
@@ -64,7 +63,7 @@ func addRemoteHandler(
 
 	wallet := model.Wallet{
 		ID:         result,
-		Address:    addr.String(),
+		Address:    request.Address,
 		RemotePeer: request.RemotePeer,
 	}
 

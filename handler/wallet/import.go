@@ -5,7 +5,6 @@ import (
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
@@ -39,7 +38,6 @@ func importHandler(
 	lotusClient jsonrpc.RPCClient,
 	request ImportRequest,
 ) (*model.Wallet, error) {
-	address.CurrentNetwork = address.Mainnet
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid private key")
@@ -53,7 +51,7 @@ func importHandler(
 
 	wallet := model.Wallet{
 		ID:         result,
-		Address:    addr.String(),
+		Address:    result[:1] + addr.String()[1:],
 		PrivateKey: request.PrivateKey,
 	}
 

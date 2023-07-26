@@ -26,20 +26,31 @@ import (
 )
 
 var App = &cli.App{
-	Name:                 "singularity",
-	Usage:                "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
+	Name:  "singularity",
+	Usage: "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
+	Description: `Database Backend Support:
+  Singularity supports multiple database backend: sqlite3, postgres, mysql
+  Use '--database-connection-string' or $DATABASE_CONNECTION_STRING to specify the database connection string.
+    Example for postgres  - postgres://user:pass@example.com:5432/dbname
+    Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true
+                            Note: the database needs to be created using ascii Character Set:
+                              CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii
+    Example for sqlite3   - sqlite:/absolute/path/to/database.db
+                or        - sqlite:relative/path/to/database.db
+
+Network Support:
+  Default settings in Singularity are for Mainnet. You may set below environment values for other network:
+    For Calibration network:
+      * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
+      * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+    For all other networks:
+      * Set LOTUS_API to your network's Lotus API endpoint
+      * Set MARKET_DEAL_URL to empty string`,
 	EnableBashCompletion: true,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name: "database-connection-string",
-			Usage: "Connection string to the database.\n" +
-				"Supported database: sqlite3, postgres, mysql\n" +
-				"Example for postgres  - postgres://user:pass@example.com:5432/dbname\n" +
-				"Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true\n" +
-				"                          Note: the database needs to be created using ascii Character Set:" +
-				"                                `CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii`\n" +
-				"Example for sqlite3   - sqlite:/absolute/path/to/database.db\n" +
-				"            or        - sqlite:relative/path/to/database.db\n",
+			Name:        "database-connection-string",
+			Usage:       "Connection string to the database",
 			DefaultText: "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
 			Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
 			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
@@ -54,12 +65,14 @@ var App = &cli.App{
 			Category: "Lotus",
 			Usage:    "Lotus RPC API endpoint",
 			Value:    "https://api.node.glif.io/rpc/v1",
+			EnvVars:  []string{"LOTUS_API"},
 		},
 		&cli.StringFlag{
 			Name:     "lotus-token",
 			Category: "Lotus",
 			Usage:    "Lotus RPC API token",
 			Value:    "",
+			EnvVars:  []string{"LOTUS_TOKEN"},
 		},
 	},
 	Commands: []*cli.Command{

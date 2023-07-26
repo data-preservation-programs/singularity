@@ -6,6 +6,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 
@@ -95,18 +96,6 @@ var SendManualCmd = &cli.Command{
 			Value:       "12840h",
 			DefaultText: "12840h[535 days]",
 		},
-		&cli.StringFlag{
-			Name:     "lotus-api",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API endpoint, only used to get miner info",
-			Value:    "https://api.node.glif.io/rpc/v1",
-		},
-		&cli.StringFlag{
-			Name:     "lotus-token",
-			Category: "Lotus",
-			Usage:    "Lotus RPC API token, only used to get miner info",
-			Value:    "",
-		},
 		&cli.DurationFlag{
 			Name:        "timeout",
 			Usage:       "Timeout for the deal proposal",
@@ -115,6 +104,12 @@ var SendManualCmd = &cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
+		lotusAPI := cctx.String("lotus-api")
+		lotusToken := cctx.String("lotus-token")
+		err := epochutil.Initialize(cctx.Context, lotusAPI, lotusToken)
+		if err != nil {
+			return err
+		}
 		proposal := deal.Proposal{
 			HTTPHeaders:     cctx.StringSlice("http-header"),
 			URLTemplate:     cctx.String("url-template"),
