@@ -49,17 +49,17 @@ func main() {
 	}
 
 	lines := strings.Split(string(currentSummary), "\n")
-	cliReferenceLineIndex := slices.IndexFunc(lines, func(line string) bool {
+	beginIndex := slices.IndexFunc(lines, func(line string) bool {
 		return strings.Contains(line, "<!-- cli begin -->")
 	})
-	webReferenceLineIndex := slices.IndexFunc(lines, func(line string) bool {
+	endIndex := slices.IndexFunc(lines, func(line string) bool {
 		return strings.Contains(line, "<!-- cli end -->")
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	lines = append(lines[:cliReferenceLineIndex+1], append([]string{"", summary.String()}, lines[webReferenceLineIndex:]...)...)
+	lines = append(lines[:beginIndex+1], append([]string{"", summary.String()}, lines[endIndex:]...)...)
 	err = os.WriteFile("../../en/SUMMARY.md", []byte(strings.Join(lines, "\n")), 0644)
 	if err != nil {
 		panic(err)
@@ -117,8 +117,12 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 		name = newName
 	}
 
-	summary.WriteString(fmt.Sprintf("%s* [%s](%s)\n", margin, name, outFile[8:]))
+	i := strings.Index(outFile, "cli-reference")
+	summary.WriteString(fmt.Sprintf("%s* [%s](%s)\n", margin, name, outFile[i:]))
 	for _, subcommand := range command.Subcommands {
+		if subcommand.Name == "help" {
+			continue
+		}
 		saveMarkdown(subcommand, path.Join(outDir, command.Name), append(args, subcommand.Name))
 	}
 }
@@ -126,7 +130,7 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 func getStdout(args []string) string {
 	args = append([]string{"singularity"}, args...)
 	args = append(args, "--help")
-	command := strings.Join(args, "")
+	command := strings.Join(args, " ")
 	stdout, stderr, err := cmd.RunArgsInTest(context.TODO(), command)
 	if err != nil {
 		panic(err)

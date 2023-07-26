@@ -35,7 +35,8 @@ func main() {
 	if log2.GetConfig().Level > log2.LevelInfo && os.Getenv("GOLOG_LOG_LEVEL") == "info" {
 		log2.SetAllLoggers(log2.LevelInfo)
 	}
-	if err := cmd.RunApp(context.TODO(), os.Args); err != nil {
+	cmd.SetupHelpPager()
+	if err := cmd.App.RunContext(context.TODO(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
