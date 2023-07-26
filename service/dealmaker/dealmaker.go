@@ -339,37 +339,29 @@ func (d *DealMakerService) runOnce(ctx context.Context) {
 }
 
 func (d *DealMakerService) Run(ctx context.Context) error {
+	var activeWorkerCount int64
+	err := d.db.Model(&model.Worker{}).Where("work_type = ? AND last_heartbeat > ?", model.DealMaking, time.Now().UTC().Add(-staleThreshold)).
+		Count(&activeWorkerCount).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to count active workers")
+	}
+	if activeWorkerCount > 0 {
+		return errors.New("deal maker already running")
+	}
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP)
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
 	getState := func() healthcheck.State {
 		return healthcheck.State{
 			WorkType: model.DealMaking,
 		}
 	}
-
-	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.db, d.workerID, getState, false)
-		if err == nil && !alreadyRunning {
-			break
-		}
-		if err != nil {
-			logger.Errorw("failed to register worker", "error", err)
-		}
-		if alreadyRunning {
-			logger.Warnw("another worker already running")
-		}
-		logger.Warn("retrying in 1 minute")
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(time.Minute):
-		}
-	}
-
-	go healthcheck.StartReportHealth(ctx, d.db, d.workerID, getState)
-
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP)
+	healthcheck.HealthCheck(d.db, d.workerID, getState)
+	go healthcheck.StartHealthCheck(ctx, d.db, d.workerID, getState)
 
 	d.cron.Start()
 	for {

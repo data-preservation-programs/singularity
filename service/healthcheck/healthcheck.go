@@ -9,7 +9,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -20,8 +19,6 @@ type State struct {
 	WorkType  model.WorkType
 	WorkingOn string
 }
-
-var logger = log.Logger("healthcheck")
 
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	for {
@@ -82,10 +79,10 @@ func HealthCheckCleanup(db *gorm.DB) {
 	}
 }
 
-func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State, allowDuplicate bool) (alreadyRunning bool, err error) {
+func HealthCheck(db *gorm.DB, workerID uuid.UUID, getState func() State) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get hostname")
+		log.Logger("healthcheck").Warnw("failed to get hostname", "error", err)
 	}
 	state := getState()
 	worker := model.Worker{
@@ -96,58 +93,24 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState fun
 		WorkingOn:     state.WorkingOn,
 	}
 	err = database.DoRetry(func() error {
-		if !allowDuplicate {
-			var activeWorkerCount int64
-			err := db.WithContext(ctx).Model(&model.Worker{}).Where("work_type = ? AND last_heartbeat > ?", state.WorkType, time.Now().UTC().Add(-staleThreshold)).
-				Count(&activeWorkerCount).Error
-			if err != nil {
-				return errors.Wrap(err, "failed to count active workers")
-			}
-			if activeWorkerCount > 0 {
-				alreadyRunning = true
-				return nil
-			}
-		}
-
-		return db.WithContext(ctx).Create(&worker).Error
-	})
-
-	return alreadyRunning, err
-}
-
-func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		logger.Errorw("failed to get hostname", "error", err)
-		return
-	}
-	state := getState()
-	worker := model.Worker{
-		ID:            workerID.String(),
-		LastHeartbeat: time.Now().UTC(),
-		Hostname:      hostname,
-		WorkType:      state.WorkType,
-		WorkingOn:     state.WorkingOn,
-	}
-	err = database.DoRetry(func() error {
-		return db.WithContext(ctx).Clauses(clause.OnConflict{
+		return db.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"last_heartbeat", "work_type", "working_on", "hostname"}),
+			DoUpdates: clause.AssignmentColumns([]string{"last_heartbeat", "work_type", "working_on"}),
 		}).Create(&worker).Error
 	})
 
 	if err != nil {
-		logger.Errorw("failed to send heartbeat", "error", err)
+		log.Logger("healthcheck").Errorw("failed to send heartbeat", "error", err)
 	}
 }
 
-func StartReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
+func StartHealthCheck(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(time.Minute):
-			ReportHealth(ctx, db, workerID, getState)
+			HealthCheck(db.WithContext(ctx), workerID, getState)
 			continue
 		}
 	}
