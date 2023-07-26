@@ -39,7 +39,6 @@ func importHandler(
 	lotusClient jsonrpc.RPCClient,
 	request ImportRequest,
 ) (*model.Wallet, error) {
-	address.CurrentNetwork = address.Mainnet
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid private key")
@@ -51,9 +50,14 @@ func importHandler(
 		return nil, handler.NewBadRequestString("invalid private key")
 	}
 
+	_, err = address.NewFromString(result)
+	if err != nil {
+		return nil, handler.NewBadRequestString("invalid actor ID from GLIF result: " + result)
+	}
+
 	wallet := model.Wallet{
 		ID:         result,
-		Address:    addr.String(),
+		Address:    result[:1] + addr.String()[1:],
 		PrivateKey: request.PrivateKey,
 	}
 

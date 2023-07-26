@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
 	"github.com/filecoin-project/go-state-types/abi"
@@ -33,14 +34,6 @@ const (
 	StorageProposalV120 = "/fil/storage/mk/1.2.0"
 	StorageProposalV111 = "/fil/storage/mk/1.1.1"
 )
-
-func TimeToEpoch(t time.Time) abi.ChainEpoch {
-	return abi.ChainEpoch((t.Unix() - 1598306400) / 30)
-}
-
-func EpochToTime(epoch abi.ChainEpoch) time.Time {
-	return time.Unix(int64(epoch*30+1598306400), 0)
-}
 
 // nolint: tagliatelle
 type MinerInfo struct {
@@ -356,8 +349,8 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		return nil, errors.Wrap(err, "failed to get supported protocol")
 	}
 
-	startEpoch := TimeToEpoch(now.Add(dealConfig.StartDelay))
-	endEpoch := TimeToEpoch(now.Add(dealConfig.StartDelay + dealConfig.Duration))
+	startEpoch := epochutil.TimeToEpoch(now.Add(dealConfig.StartDelay))
+	endEpoch := epochutil.TimeToEpoch(now.Add(dealConfig.StartDelay + dealConfig.Duration))
 	price := dealConfig.GetPrice(car.PieceSize, dealConfig.Duration)
 	verified := dealConfig.Verified
 	pieceCID := cid.Cid(car.PieceCID)

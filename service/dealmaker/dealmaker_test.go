@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -35,8 +36,8 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	deal.ProposalID = uuid.NewString()
 	deal.State = model.DealProposed
 	now := time.Now()
-	startEpoch := replication.TimeToEpoch(now.Add(dealConfig.StartDelay))
-	endEpoch := replication.TimeToEpoch(now.Add(dealConfig.StartDelay + dealConfig.Duration))
+	startEpoch := epochutil.TimeToEpoch(now.Add(dealConfig.StartDelay))
+	endEpoch := epochutil.TimeToEpoch(now.Add(dealConfig.StartDelay + dealConfig.Duration))
 	if deal.StartEpoch == 0 {
 		deal.StartEpoch = int32(startEpoch)
 	}

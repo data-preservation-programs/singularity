@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -42,12 +43,12 @@ func (d Deal) GetState() model.DealState {
 		return model.DealSlashed
 	}
 	if d.State.SectorStartEpoch < 0 {
-		if model.EpochToTime(d.Proposal.StartEpoch).Before(time.Now()) {
+		if epochutil.EpochToTime(d.Proposal.StartEpoch).Before(time.Now()) {
 			return model.DealProposalExpired
 		}
 		return model.DealPublished
 	}
-	if model.EpochToTime(d.Proposal.EndEpoch).Before(time.Now()) {
+	if epochutil.EpochToTime(d.Proposal.EndEpoch).Before(time.Now()) {
 		return model.DealExpired
 	}
 	return model.DealActive
@@ -242,7 +243,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	// Clean up the deals table before querying
 	// We want to mark all deals that has expired as expired
 	err = d.db.WithContext(ctx).Model(&model.Deal{}).
-		Where("end_epoch < ?", model.UnixToEpoch(time.Now().Unix())).
+		Where("end_epoch < ?", epochutil.UnixToEpoch(time.Now().Unix())).
 		Update("state", model.DealExpired).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update deals to expired")
