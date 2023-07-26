@@ -160,33 +160,38 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	return DealStateStreamFromHTTPRequest(req, 2, false)
 }
 
-var staleThreshold = time.Minute * 5
-
 func (d *DealTracker) Run(ctx context.Context) error {
-	var activeWorkerCount int64
-	err := d.db.WithContext(ctx).Model(&model.Worker{}).Where("work_type = ? AND last_heartbeat > ?", model.DealTracking, time.Now().UTC().Add(-staleThreshold)).
-		Count(&activeWorkerCount).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to count active workers")
-	}
-	if activeWorkerCount > 0 {
-		return errors.New("deal tracker already running")
-	}
-
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP)
-
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
 	getState := func() healthcheck.State {
 		return healthcheck.State{
 			WorkType: model.DealTracking,
 		}
 	}
 
-	healthcheck.StartHealthCheck(ctx, d.db, d.workerID, getState)
-	go healthcheck.StartHealthCheck(ctx, d.db, d.workerID, getState)
+	for {
+		alreadyRunning, err := healthcheck.Register(ctx, d.db, d.workerID, getState, false)
+		if err == nil && !alreadyRunning {
+			break
+		}
+		if err != nil {
+			logger.Errorw("failed to register worker", "error", err)
+		}
+		if alreadyRunning {
+			logger.Warnw("another worker already running")
+		}
+		logger.Warn("retrying in 1 minute")
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(time.Minute):
+		}
+	}
+
+	go healthcheck.StartReportHealth(ctx, d.db, d.workerID, getState)
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP)
 
 	go func() {
 		for {
