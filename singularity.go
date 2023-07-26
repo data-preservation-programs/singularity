@@ -11,6 +11,8 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+//go:generate go run github.com/swaggo/swag/cmd/swag@v1.8.12 init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./api/docs
+
 func init() {
 	if os.Getenv("GOLOG_LOG_LEVEL") == "" {
 		os.Setenv("GOLOG_LOG_LEVEL", "info")
