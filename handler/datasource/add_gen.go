@@ -309,7 +309,7 @@ type FtpRequest struct {
 	ShutTimeout        string `json:"shutTimeout" default:"1m0s"`                      // Maximum time to wait for data connection closing status.
 	Tls                string `json:"tls" default:"false"`                             // Use Implicit FTPS (FTP over TLS).
 	TlsCacheSize       string `json:"tlsCacheSize" default:"32"`                       // Size of TLS session cache for all control and data connections.
-	User               string `json:"user" default:"shane"`                            // FTP username.
+	User               string `json:"user" default:"$USER"`                            // FTP username.
 	WritingMdtm        string `json:"writingMdtm" default:"false"`                     // Use MDTM to set modification time (VsFtpd quirk)
 }
 
@@ -971,7 +971,7 @@ type SftpRequest struct {
 	Subsystem               string `json:"subsystem" default:"sftp"`                // Specifies the SSH2 subsystem on the remote host.
 	UseFstat                string `json:"useFstat" default:"false"`                // If set use fstat instead of stat.
 	UseInsecureCipher       string `json:"useInsecureCipher" default:"false"`       // Enable the use of insecure ciphers and key exchange methods.
-	User                    string `json:"user" default:"shane"`                    // SSH username.
+	User                    string `json:"user" default:"$USER"`                    // SSH username.
 }
 
 // @Summary Add sftp source for a dataset
@@ -1044,7 +1044,7 @@ type SmbRequest struct {
 	Pass              string `json:"pass"`                                                                                                                        // SMB password.
 	Port              string `json:"port" default:"445"`                                                                                                          // SMB port number.
 	Spn               string `json:"spn"`                                                                                                                         // Service principal name.
-	User              string `json:"user" default:"shane"`                                                                                                        // SMB username.
+	User              string `json:"user" default:"$USER"`                                                                                                        // SMB username.
 }
 
 // @Summary Add smb source for a dataset
@@ -1409,7 +1409,7 @@ type AllConfig struct {
 	FtpShutTimeout                      string `json:"ftpShutTimeout" default:"1m0s"`                                                                                                                               // Maximum time to wait for data connection closing status.
 	FtpTls                              string `json:"ftpTls" default:"false"`                                                                                                                                      // Use Implicit FTPS (FTP over TLS).
 	FtpTlsCacheSize                     string `json:"ftpTlsCacheSize" default:"32"`                                                                                                                                // Size of TLS session cache for all control and data connections.
-	FtpUser                             string `json:"ftpUser" default:"shane"`                                                                                                                                     // FTP username.
+	FtpUser                             string `json:"ftpUser" default:"$USER"`                                                                                                                                     // FTP username.
 	FtpWritingMdtm                      string `json:"ftpWritingMdtm" default:"false"`                                                                                                                              // Use MDTM to set modification time (VsFtpd quirk)
 	GcsAnonymous                        string `json:"gcsAnonymous" default:"false"`                                                                                                                                // Access public buckets and objects without credentials.
 	GcsAuthUrl                          string `json:"gcsAuthUrl"`                                                                                                                                                  // Auth server URL.
@@ -1675,7 +1675,7 @@ type AllConfig struct {
 	SftpSubsystem                       string `json:"sftpSubsystem" default:"sftp"`                                                                                                                                // Specifies the SSH2 subsystem on the remote host.
 	SftpUseFstat                        string `json:"sftpUseFstat" default:"false"`                                                                                                                                // If set use fstat instead of stat.
 	SftpUseInsecureCipher               string `json:"sftpUseInsecureCipher" default:"false"`                                                                                                                       // Enable the use of insecure ciphers and key exchange methods.
-	SftpUser                            string `json:"sftpUser" default:"shane"`                                                                                                                                    // SSH username.
+	SftpUser                            string `json:"sftpUser" default:"$USER"`                                                                                                                                    // SSH username.
 	SharefileChunkSize                  string `json:"sharefileChunkSize" default:"64Mi"`                                                                                                                           // Upload chunk size.
 	SharefileEncoding                   string `json:"sharefileEncoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"`   // The encoding for the backend.
 	SharefileEndpoint                   string `json:"sharefileEndpoint"`                                                                                                                                           // Endpoint for API calls.
@@ -1694,7 +1694,7 @@ type AllConfig struct {
 	SmbPass                             string `json:"smbPass"`                                                                                                                                                     // SMB password.
 	SmbPort                             string `json:"smbPort" default:"445"`                                                                                                                                       // SMB port number.
 	SmbSpn                              string `json:"smbSpn"`                                                                                                                                                      // Service principal name.
-	SmbUser                             string `json:"smbUser" default:"shane"`                                                                                                                                     // SMB username.
+	SmbUser                             string `json:"smbUser" default:"$USER"`                                                                                                                                     // SMB username.
 	StorjAccessGrant                    string `json:"storjAccessGrant"`                                                                                                                                            // Access grant.
 	StorjApiKey                         string `json:"storjApiKey"`                                                                                                                                                 // API key.
 	StorjPassphrase                     string `json:"storjPassphrase"`                                                                                                                                             // Encryption passphrase.

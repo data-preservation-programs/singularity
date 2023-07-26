@@ -4484,7 +4484,7 @@
                 "ftpUser": {
                     "description": "FTP username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "ftpWritingMdtm": {
                     "description": "Use MDTM to set modification time (VsFtpd quirk)",
@@ -5699,7 +5699,7 @@
                 "sftpUser": {
                     "description": "SSH username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "sharefileChunkSize": {
                     "description": "Upload chunk size.",
@@ -5788,7 +5788,7 @@
                 "smbUser": {
                     "description": "SMB username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "storjAccessGrant": {
                     "description": "Access grant.",
@@ -6944,7 +6944,7 @@
                 "user": {
                     "description": "FTP username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "writingMdtm": {
                     "description": "Use MDTM to set modification time (VsFtpd quirk)",
@@ -8648,7 +8648,7 @@
                 "user": {
                     "description": "SSH username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 }
             }
         },
@@ -8803,7 +8803,7 @@
                 "user": {
                     "description": "SMB username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 }
             }
         },

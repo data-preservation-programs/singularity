@@ -4491,7 +4491,7 @@ const docTemplate = `{
                 "ftpUser": {
                     "description": "FTP username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "ftpWritingMdtm": {
                     "description": "Use MDTM to set modification time (VsFtpd quirk)",
@@ -5706,7 +5706,7 @@ const docTemplate = `{
                 "sftpUser": {
                     "description": "SSH username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "sharefileChunkSize": {
                     "description": "Upload chunk size.",
@@ -5795,7 +5795,7 @@ const docTemplate = `{
                 "smbUser": {
                     "description": "SMB username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "storjAccessGrant": {
                     "description": "Access grant.",
@@ -6951,7 +6951,7 @@ const docTemplate = `{
                 "user": {
                     "description": "FTP username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 },
                 "writingMdtm": {
                     "description": "Use MDTM to set modification time (VsFtpd quirk)",
@@ -8655,7 +8655,7 @@ const docTemplate = `{
                 "user": {
                     "description": "SSH username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 }
             }
         },
@@ -8810,7 +8810,7 @@ const docTemplate = `{
                 "user": {
                     "description": "SMB username.",
                     "type": "string",
-                    "default": "shane"
+                    "default": "$USER"
                 }
             }
         },

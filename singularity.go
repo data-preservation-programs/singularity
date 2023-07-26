@@ -11,9 +11,8 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-//go:generate go run handler/datasource/generate/add.go
+//go:generate sh ./docgen.sh
 //go:generate go run github.com/swaggo/swag/cmd/swag@v1.8.12 init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./docs/swagger
-//go:generate go run docs/gen/clireference/main.go
 //go:generate go run docs/gen/webapireference/main.go
 
 func init() {

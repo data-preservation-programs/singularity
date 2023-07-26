@@ -63,6 +63,5 @@ jobs:
             if ! $(git add . && git diff-index HEAD --exit-code --quiet); then
               echo "go generated caused changes to the repository:"
               git status --short
-              git diff --cached
               exit 1
             fi

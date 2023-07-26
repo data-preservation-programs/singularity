@@ -143,7 +143,7 @@ OPTIONS:
    --ftp-shut-timeout value          Maximum time to wait for data connection closing status. (default: "1m0s") [$FTP_SHUT_TIMEOUT]
    --ftp-tls value                   Use Implicit FTPS (FTP over TLS). (default: "false") [$FTP_TLS]
    --ftp-tls-cache-size value        Size of TLS session cache for all control and data connections. (default: "32") [$FTP_TLS_CACHE_SIZE]
-   --ftp-user value                  FTP username. (default: "shane") [$FTP_USER]
+   --ftp-user value                  FTP username. (default: "$USER") [$FTP_USER]
    --ftp-writing-mdtm value          Use MDTM to set modification time (VsFtpd quirk) (default: "false") [$FTP_WRITING_MDTM]
 
 ```

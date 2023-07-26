@@ -701,7 +701,7 @@ definitions:
         description: Size of TLS session cache for all control and data connections.
         type: string
       ftpUser:
-        default: shane
+        default: $USER
         description: FTP username.
         type: string
       ftpWritingMdtm:
@@ -1688,7 +1688,7 @@ definitions:
         description: Enable the use of insecure ciphers and key exchange methods.
         type: string
       sftpUser:
-        default: shane
+        default: $USER
         description: SSH username.
         type: string
       sharefileChunkSize:
@@ -1759,7 +1759,7 @@ definitions:
         description: Service principal name.
         type: string
       smbUser:
-        default: shane
+        default: $USER
         description: SMB username.
         type: string
       storjAccessGrant:
@@ -2666,7 +2666,7 @@ definitions:
         description: Size of TLS session cache for all control and data connections.
         type: string
       user:
-        default: shane
+        default: $USER
         description: FTP username.
         type: string
       writingMdtm:
@@ -4029,7 +4029,7 @@ definitions:
         description: Enable the use of insecure ciphers and key exchange methods.
         type: string
       user:
-        default: shane
+        default: $USER
         description: SSH username.
         type: string
     required:
@@ -4151,7 +4151,7 @@ definitions:
         description: Service principal name.
         type: string
       user:
-        default: shane
+        default: $USER
         description: SMB username.
         type: string
     required:
