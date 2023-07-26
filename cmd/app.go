@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -20,7 +19,6 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
-	"github.com/data-preservation-programs/singularity/util/must"
 	"github.com/mattn/go-shellwords"
 	"github.com/urfave/cli/v2"
 )
@@ -52,8 +50,8 @@ Network Support:
 		&cli.StringFlag{
 			Name:        "database-connection-string",
 			Usage:       "Connection string to the database",
-			DefaultText: "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
-			Value:       "sqlite:" + must.String(os.UserHomeDir()) + "/.singularity/singularity.db",
+			DefaultText: "sqlite:" + "./singularity.db",
+			Value:       "sqlite:" + "./singularity.db",
 			EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
 		},
 		&cli.BoolFlag{
@@ -195,12 +193,13 @@ Network Support:
 	},
 }
 
-func RunApp(ctx context.Context, args []string) error {
-	printer := cli.HelpPrinter
+var originalHelpPrinter = cli.HelpPrinter
+
+func SetupHelpPager() {
 	//nolint:errcheck
 	cli.HelpPrinter = func(w io.Writer, templ string, data any) {
 		var helpText bytes.Buffer
-		printer(&helpText, templ, data)
+		originalHelpPrinter(&helpText, templ, data)
 		numLines := strings.Count(helpText.String(), "\n")
 		const maxLinesWithoutPager = 40
 		if numLines <= maxLinesWithoutPager {
@@ -237,11 +236,6 @@ func RunApp(ctx context.Context, args []string) error {
 		pagerIn.Close()
 		cmd.Wait()
 	}
-	if err := App.RunContext(ctx, args); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
@@ -261,10 +255,20 @@ func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
 	// Save current stdout and stderr
 	oldOut := os.Stdout
 	oldErr := os.Stderr
+	oldAppWriterOut := App.Writer
+	oldAppWriterErr := App.ErrWriter
+	defer func() {
+		os.Stdout = oldOut
+		os.Stderr = oldErr
+		App.Writer = oldAppWriterOut
+		App.ErrWriter = oldAppWriterErr
+	}()
 
 	// Overwrite the stdout and stderr
 	os.Stdout = wOut
 	os.Stderr = wErr
+	App.Writer = wOut
+	App.ErrWriter = wErr
 
 	outC := make(chan string) // Buffered to prevent goroutine leak
 	errC := make(chan string)
@@ -277,22 +281,15 @@ func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
 		errC <- string(out)
 	}()
 
-	err = RunApp(ctx, parsedArgs)
+	err = App.RunContext(ctx, parsedArgs)
 
 	// Close the pipes
 	wOut.Close()
 	wErr.Close()
 
-	// Restore original stdout and stderr
-	os.Stdout = oldOut
-	os.Stderr = oldErr
-
 	// Wait for the output from the goroutines
 	outputOut := <-outC
 	outputErr := <-errC
 
-	// Let's still print it to stdout and stderr
-	fmt.Println(outputOut)
-	fmt.Fprintln(os.Stderr, outputErr)
 	return outputOut, outputErr, err
 }

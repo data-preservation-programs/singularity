@@ -30,10 +30,5 @@ OPTIONS:
    --start-delay value, -s value  Deal start delay in epoch or in duration format, i.e. 1000, 72h (default: 72h[3 days])
    --verified                     Whether to propose deals as verified (default: true)
 
-   Lotus
-
-   --lotus-api value    Lotus RPC API endpoint, only used to get miner info (default: "https://api.node.glif.io/rpc/v1")
-   --lotus-token value  Lotus RPC API token, only used to get miner info
-
 ```
 {% endcode %}

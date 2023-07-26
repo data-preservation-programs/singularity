@@ -320,7 +320,7 @@ OPTIONS:
    --sftp-subsystem value                  Specifies the SSH2 subsystem on the remote host. (default: "sftp") [$SFTP_SUBSYSTEM]
    --sftp-use-fstat value                  If set use fstat instead of stat. (default: "false") [$SFTP_USE_FSTAT]
    --sftp-use-insecure-cipher value        Enable the use of insecure ciphers and key exchange methods. (default: "false") [$SFTP_USE_INSECURE_CIPHER]
-   --sftp-user value                       SSH username. (default: "shane") [$SFTP_USER]
+   --sftp-user value                       SSH username. (default: "$USER") [$SFTP_USER]
 
 ```
 {% endcode %}

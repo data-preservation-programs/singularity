@@ -200,7 +200,7 @@ OPTIONS:
    --ftp-shut-timeout value          Maximum time to wait for data connection closing status. (default: "1m0s") [$FTP_SHUT_TIMEOUT]
    --ftp-tls value                   Use Implicit FTPS (FTP over TLS). (default: "false") [$FTP_TLS]
    --ftp-tls-cache-size value        Size of TLS session cache for all control and data connections. (default: "32") [$FTP_TLS_CACHE_SIZE]
-   --ftp-user value                  FTP username. (default: "shane") [$FTP_USER]
+   --ftp-user value                  FTP username. (default: "$USER") [$FTP_USER]
    --ftp-writing-mdtm value          Use MDTM to set modification time (VsFtpd quirk) (default: "false") [$FTP_WRITING_MDTM]
 
    Options for gcs
@@ -526,7 +526,7 @@ OPTIONS:
    --sftp-subsystem value                  Specifies the SSH2 subsystem on the remote host. (default: "sftp") [$SFTP_SUBSYSTEM]
    --sftp-use-fstat value                  If set use fstat instead of stat. (default: "false") [$SFTP_USE_FSTAT]
    --sftp-use-insecure-cipher value        Enable the use of insecure ciphers and key exchange methods. (default: "false") [$SFTP_USE_INSECURE_CIPHER]
-   --sftp-user value                       SSH username. (default: "shane") [$SFTP_USER]
+   --sftp-user value                       SSH username. (default: "$USER") [$SFTP_USER]
 
    Options for sharefile
 
@@ -554,7 +554,7 @@ OPTIONS:
    --smb-pass value                SMB password. [$SMB_PASS]
    --smb-port value                SMB port number. (default: "445") [$SMB_PORT]
    --smb-spn value                 Service principal name. [$SMB_SPN]
-   --smb-user value                SMB username. (default: "shane") [$SMB_USER]
+   --smb-user value                SMB username. (default: "$USER") [$SMB_USER]
 
    Options for storj
 

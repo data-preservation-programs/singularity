@@ -44,7 +44,9 @@
 * [Benchmark](topics/benchmark.md)
 
 ## 💻 CLI Reference
+<!-- cli begin -->
 
+* [Menu](cli-reference/README.md)
 * [Ez Prep](cli-reference/ez-prep.md)
 * [Admin](cli-reference/admin/README.md)
   * [Init](cli-reference/admin/init.md)
@@ -145,18 +147,22 @@
 * [Tool](cli-reference/tool/README.md)
   * [Extract Car](cli-reference/tool/extract-car.md)
 
+<!-- cli end -->
+
 ## 🌐 Web API Reference
+<!-- webapi begin -->
 
 * [Admin](web-api-reference/admin.md)
 * [Data Source](web-api-reference/data-source.md)
-* [Dataset Piece](web-api-reference/dataset-piece.md)
 * [Dataset](web-api-reference/dataset.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
 * [Deal](web-api-reference/deal.md)
-* [New Data Source](web-api-reference/new-data-source.md)
-* [Piece](web-api-reference/piece.md)
+* [Metadata](web-api-reference/metadata.md)
+* [Wallet Association](web-api-reference/wallet-association.md)
 * [Wallet](web-api-reference/wallet.md)
-* [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+* [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
+
+<!-- webapi end -->
 
 ## Technical Architecture (for developers)
 

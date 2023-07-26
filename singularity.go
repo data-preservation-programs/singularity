@@ -11,6 +11,10 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+//go:generate sh ./docgen.sh
+//go:generate go run github.com/swaggo/swag/cmd/swag@v1.8.12 init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./docs/swagger
+//go:generate go run docs/gen/webapireference/main.go
+
 func init() {
 	if os.Getenv("GOLOG_LOG_LEVEL") == "" {
 		os.Setenv("GOLOG_LOG_LEVEL", "info")
@@ -33,7 +37,8 @@ func main() {
 	if log2.GetConfig().Level > log2.LevelInfo && os.Getenv("GOLOG_LOG_LEVEL") == "info" {
 		log2.SetAllLoggers(log2.LevelInfo)
 	}
-	if err := cmd.RunApp(context.TODO(), os.Args); err != nil {
+	cmd.SetupHelpPager()
+	if err := cmd.App.RunContext(context.TODO(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
