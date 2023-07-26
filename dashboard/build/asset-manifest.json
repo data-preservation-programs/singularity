@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/static/css/main.1f030119.css",
-    "main.js": "/static/js/main.712d5d55.js",
-    "static/js/787.545aecf5.chunk.js": "/static/js/787.545aecf5.chunk.js",
-    "index.html": "/index.html",
-    "main.1f030119.css.map": "/static/css/main.1f030119.css.map",
-    "main.712d5d55.js.map": "/static/js/main.712d5d55.js.map",
-    "787.545aecf5.chunk.js.map": "/static/js/787.545aecf5.chunk.js.map"
+    "main.css": "/singularity/overview/readme/static/css/main.1f030119.css",
+    "main.js": "/singularity/overview/readme/static/js/main.916ae78a.js",
+    "static/js/787.9b855ff2.chunk.js": "/singularity/overview/readme/static/js/787.9b855ff2.chunk.js",
+    "index.html": "/singularity/overview/readme/index.html",
+    "main.1f030119.css.map": "/singularity/overview/readme/static/css/main.1f030119.css.map",
+    "main.916ae78a.js.map": "/singularity/overview/readme/static/js/main.916ae78a.js.map",
+    "787.9b855ff2.chunk.js.map": "/singularity/overview/readme/static/js/787.9b855ff2.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.1f030119.css",
-    "static/js/main.712d5d55.js"
+    "static/js/main.916ae78a.js"
   ]
 }
