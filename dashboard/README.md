@@ -1,8 +1,23 @@
-# Getting Started with Create React App
+# Singularity Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Development
+### Commit
+To embed the built website into Singularity, make sure to run below steps before committing:
+```shell
+npm run build
+git add build
+```
 
-## Available Scripts
+### Run backend Server
+You should first run the dashboard backend server by running below from the repo root:
+```
+make build
+./singularity run api
+```
+
+This stands up the backend server on [http://localhost:9090](http://localhost:9090)
+
+## React Scripts
 
 In the project directory, you can run:
 

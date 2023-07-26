@@ -12,11 +12,5 @@ lint:
 	golangci-lint run --fix
 	staticcheck ./...
 
-swag:
-	swag init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./api/docs
-
 test:
-	go test -coverprofile=coverage.out -coverpkg=./... ./...
-
-model2ts:
-	go run ./buildtool/model2ts/main.go
+	go test -race -coverprofile=coverage.out -coverpkg=./... ./...

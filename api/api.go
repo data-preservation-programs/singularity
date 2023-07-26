@@ -21,7 +21,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ybbus/jsonrpc/v3"
 
-	"github.com/data-preservation-programs/singularity/cmd/embed"
+	"github.com/data-preservation-programs/singularity/dashboard"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	_ "github.com/data-preservation-programs/singularity/docs/swagger"
@@ -307,7 +307,7 @@ func (s Server) Run(c *cli.Context) error {
 	}))
 
 	s.setupRoutes(e)
-	efs, err := fs.Sub(embed.DashboardStaticFiles, "build")
+	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
 	if err != nil {
 		return err
 	}

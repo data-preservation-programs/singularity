@@ -17,7 +17,6 @@
 /singularity
 /test
 /.idea
-/Makefile
-/testremote
 /.env
 /baga*
+singularity.db*
