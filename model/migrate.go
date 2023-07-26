@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var Tables = []interface{}{
+var Tables = []any{
 	&Global{},
 	&Worker{},
 	&Dataset{},

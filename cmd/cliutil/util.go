@@ -12,7 +12,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func PrintAsJSON(obj interface{}) {
+func PrintAsJSON(obj any) {
 	objJSON, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
 		fmt.Println("Error: Unable to marshal object to JSON.")
@@ -21,7 +21,7 @@ func PrintAsJSON(obj interface{}) {
 	fmt.Println(string(objJSON))
 }
 
-func PrintToConsole(obj interface{}, useJSON bool, except []string) {
+func PrintToConsole(obj any, useJSON bool, except []string) {
 	if useJSON {
 		PrintAsJSON(obj)
 		return
@@ -41,8 +41,8 @@ func isNotEligibleType(field reflect.StructField, except []string) bool {
 		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8)
 }
 
-func getValue(fieldValue reflect.Value) interface{} {
-	var finalValue interface{}
+func getValue(fieldValue reflect.Value) any {
+	var finalValue any
 	if fieldValue.Kind() == reflect.Ptr {
 		if fieldValue.IsNil() {
 			finalValue = ""
@@ -57,7 +57,7 @@ func getValue(fieldValue reflect.Value) interface{} {
 	return finalValue
 }
 
-func printTable(objects interface{}, except []string) {
+func printTable(objects any, except []string) {
 	value := reflect.ValueOf(objects)
 	if value.Len() == 0 {
 		return
@@ -70,7 +70,7 @@ func printTable(objects interface{}, except []string) {
 	objType := firstObj.Type()
 
 	// Prepare headers using the first object
-	headers := make([]interface{}, 0, objType.NumField())
+	headers := make([]any, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		if isNotEligibleType(field, except) {
@@ -84,7 +84,7 @@ func printTable(objects interface{}, except []string) {
 
 	for i := 0; i < value.Len(); i++ {
 		objValue := reflect.Indirect(value.Index(i))
-		row := make([]interface{}, 0, objType.NumField())
+		row := make([]any, 0, objType.NumField())
 		for j := 0; j < objType.NumField(); j++ {
 			field := objType.Field(j)
 			fieldValue := objValue.Field(j)
@@ -99,14 +99,14 @@ func printTable(objects interface{}, except []string) {
 	tbl.Print()
 	fmt.Println()
 }
-func printSingleObject(obj interface{}, except []string) {
+func printSingleObject(obj any, except []string) {
 	value := reflect.Indirect(reflect.ValueOf(obj))
 	objType := value.Type()
 
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
 	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-	headers := make([]interface{}, 0, objType.NumField())
+	headers := make([]any, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		if isNotEligibleType(field, except) {
@@ -118,7 +118,7 @@ func printSingleObject(obj interface{}, except []string) {
 	tbl := table.New(headers...).WithWriter(os.Stdout)
 	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-	row := make([]interface{}, 0, objType.NumField())
+	row := make([]any, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		fieldValue := value.Field(i)

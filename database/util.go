@@ -32,15 +32,15 @@ func (d *databaseLogger) LogMode(level logger2.LogLevel) logger2.Interface {
 	return d
 }
 
-func (d *databaseLogger) Info(ctx context.Context, s string, i ...interface{}) {
+func (d *databaseLogger) Info(ctx context.Context, s string, i ...any) {
 	d.logger.Infof(s, i...)
 }
 
-func (d *databaseLogger) Warn(ctx context.Context, s string, i ...interface{}) {
+func (d *databaseLogger) Warn(ctx context.Context, s string, i ...any) {
 	d.logger.Warnf(s, i...)
 }
 
-func (d *databaseLogger) Error(ctx context.Context, s string, i ...interface{}) {
+func (d *databaseLogger) Error(ctx context.Context, s string, i ...any) {
 	d.logger.Errorf(s, i...)
 }
 

@@ -29,11 +29,11 @@ func (f DummyNode) String() string {
 	return "DummyNode - " + f.cid.String()
 }
 
-func (f DummyNode) Loggable() map[string]interface{} {
+func (f DummyNode) Loggable() map[string]any {
 	return nil
 }
 
-func (f DummyNode) Resolve(path []string) (interface{}, []string, error) {
+func (f DummyNode) Resolve(path []string) (any, []string, error) {
 	return nil, nil, ErrEmptyNode
 }
 

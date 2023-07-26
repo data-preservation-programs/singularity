@@ -56,7 +56,7 @@ func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	require.Len(t, kvs, 1)
 	require.Equal(t, "0", kvs[0].Key)
 	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
-		kvs[0].Value.(map[string]interface{})["Proposal"].(map[string]interface{})["Label"].(string))
+		kvs[0].Value.(map[string]any)["Proposal"].(map[string]any)["Label"].(string))
 }
 
 func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
@@ -81,7 +81,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 	require.Len(t, kvs, 1)
 	require.Equal(t, "0", kvs[0].Key)
 	require.Equal(t, "bagboea4b5abcatlxechwbp7kjpjguna6r6q7ejrhe6mdp3lf34pmswn27pkkiekz",
-		kvs[0].Value.(map[string]interface{})["Proposal"].(map[string]interface{})["Label"].(string))
+		kvs[0].Value.(map[string]any)["Proposal"].(map[string]any)["Label"].(string))
 }
 
 func TestTrackDeal(t *testing.T) {

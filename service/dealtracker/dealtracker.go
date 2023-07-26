@@ -284,7 +284,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			f := found[0]
 			logger.Debugw("Deal matched on-chain", "dealID", dealID, "state", newState)
 			err = database.DoRetry(func() error {
-				return d.db.WithContext(ctx).Model(&model.Deal{}).Where("id = ?", f.ID).Updates(map[string]interface{}{
+				return d.db.WithContext(ctx).Model(&model.Deal{}).Where("id = ?", f.ID).Updates(map[string]any{
 					"deal_id":            dealID,
 					"state":              newState,
 					"sector_start_epoch": deal.State.SectorStartEpoch,

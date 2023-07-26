@@ -196,7 +196,7 @@ func (w *DatasetWorkerThread) pack(
 				if err != nil {
 					return errors.Wrap(err, "failed to marshall directory data")
 				}
-				err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]interface{}{
+				err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]any{
 					"cid":      model.CID(dirData.Node.Cid()),
 					"data":     bytes,
 					"exported": false,

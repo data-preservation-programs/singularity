@@ -33,7 +33,7 @@ func rescanSourceHandler(
 		}
 		if source.ScanningState == model.Error || source.ScanningState == model.Complete {
 			return database.DoRetry(func() error {
-				return db.Model(&source).Updates(map[string]interface{}{
+				return db.Model(&source).Updates(map[string]any{
 					"scanning_state":         model.Ready,
 					"last_scanned_timestamp": 0,
 					"error_message":          "",

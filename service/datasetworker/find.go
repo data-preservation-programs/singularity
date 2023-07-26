@@ -33,7 +33,7 @@ func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
 
 			// Then, perform the update using the found id
 			return db.Model(&sources[0]).
-				Updates(map[string]interface{}{
+				Updates(map[string]any{
 					"dag_gen_state":         model.Processing,
 					"dag_gen_worker_id":     w.id,
 					"dag_gen_error_message": "",
@@ -81,7 +81,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 
 			// Then, perform the update using the found id
 			return db.Model(&chunks[0]).
-				Updates(map[string]interface{}{
+				Updates(map[string]any{
 					"packing_state":     model.Processing,
 					"packing_worker_id": w.id,
 					"error_message":     "",
@@ -136,7 +136,7 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 				return nil
 			}
 			err = db.Model(&sources[0]).
-				Updates(map[string]interface{}{
+				Updates(map[string]any{
 					"scanning_state":     model.Processing,
 					"scanning_worker_id": w.id,
 					"error_message":      "",

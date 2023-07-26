@@ -72,7 +72,7 @@ func (c CID) Value() (driver.Value, error) {
 	return cid.Cid(c).Bytes(), nil
 }
 
-func (c *CID) Scan(src interface{}) error {
+func (c *CID) Scan(src any) error {
 	if src == nil {
 		*c = CID(cid.Undef)
 		return nil
@@ -104,7 +104,7 @@ func (m Metadata) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
 
-func (ss *StringSlice) Scan(src interface{}) error {
+func (ss *StringSlice) Scan(src any) error {
 	if src == nil {
 		*ss = nil
 		return nil
@@ -118,7 +118,7 @@ func (ss *StringSlice) Scan(src interface{}) error {
 	return json.Unmarshal(source, ss)
 }
 
-func (m *Metadata) Scan(src interface{}) error {
+func (m *Metadata) Scan(src any) error {
 	if src == nil {
 		*m = nil
 		return nil

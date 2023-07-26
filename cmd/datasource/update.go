@@ -42,7 +42,7 @@ var UpdateCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		config := map[string]interface{}{}
+		config := map[string]any{}
 		for _, name := range c.LocalFlagNames() {
 			if c.IsSet(name) {
 				if name == "delete-after-export" {
