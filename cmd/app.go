@@ -184,7 +184,7 @@ var App = &cli.App{
 func RunApp(ctx context.Context, args []string) error {
 	printer := cli.HelpPrinter
 	//nolint:errcheck
-	cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
+	cli.HelpPrinter = func(w io.Writer, templ string, data any) {
 		var helpText bytes.Buffer
 		printer(&helpText, templ, data)
 		numLines := strings.Count(helpText.String(), "\n")

@@ -17,7 +17,7 @@ type MockRPCClient struct {
 	mock.Mock
 }
 
-func (m *MockRPCClient) Call(ctx context.Context, method string, params ...interface{}) (*jsonrpc.RPCResponse, error) {
+func (m *MockRPCClient) Call(ctx context.Context, method string, params ...any) (*jsonrpc.RPCResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -27,7 +27,7 @@ func (m *MockRPCClient) CallRaw(ctx context.Context, request *jsonrpc.RPCRequest
 	panic("implement me")
 }
 
-func (m *MockRPCClient) CallFor(ctx context.Context, out interface{}, method string, params ...interface{}) error {
+func (m *MockRPCClient) CallFor(ctx context.Context, out any, method string, params ...any) error {
 	return m.Called(ctx, out, method, params).Error(0)
 }
 
@@ -55,22 +55,22 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 	}
 
 	// Set up expectations for the lotusClient mock
-	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []interface{}{"address1", nil}).
+	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address1", nil}).
 		Return(nil).Run(func(args mock.Arguments) {
 		resultPtr := args.Get(1).(*string)
 		*resultPtr = "1000000"
 	})
 
-	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []interface{}{"address2", nil}).
+	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address2", nil}).
 		Return(errors.New("failed to get datacap"))
 
-	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []interface{}{"address3", nil}).
+	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address3", nil}).
 		Return(nil).Run(func(args mock.Arguments) {
 		resultPtr := args.Get(1).(*string)
 		*resultPtr = "1000000"
 	})
 
-	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []interface{}{"address4", nil}).
+	lotusClient.On("CallFor", mock.Anything, mock.AnythingOfType("*string"), "Filecoin.StateMarketBalance", []any{"address4", nil}).
 		Return(nil).Run(func(args mock.Arguments) {
 		resultPtr := args.Get(1).(*string)
 		*resultPtr = "900000"

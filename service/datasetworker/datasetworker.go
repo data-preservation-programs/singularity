@@ -157,7 +157,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 				}
 				err = database.DoRetry(func() error {
 					return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-						map[string]interface{}{
+						map[string]any{
 							"dag_gen_state":         newState,
 							"dag_gen_worker_id":     nil,
 							"dag_gen_error_message": newErrorMessage,
@@ -172,7 +172,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 
 			err = database.DoRetry(func() error {
 				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-					map[string]interface{}{
+					map[string]any{
 						"dag_gen_state":     model.Complete,
 						"dag_gen_worker_id": nil,
 					},
@@ -206,7 +206,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 				}
 				err = database.DoRetry(func() error {
 					return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-						map[string]interface{}{
+						map[string]any{
 							"scanning_state":         newState,
 							"scanning_worker_id":     nil,
 							"error_message":          newErrorMessage,
@@ -222,7 +222,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 
 			err = database.DoRetry(func() error {
 				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-					map[string]interface{}{
+					map[string]any{
 						"scanning_state":         model.Complete,
 						"scanning_worker_id":     nil,
 						"last_scanned_timestamp": time.Now().UTC().Unix(),
@@ -263,7 +263,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 					}
 					err = database.DoRetry(func() error {
 						return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
-							map[string]interface{}{
+							map[string]any{
 								"packing_state":     newState,
 								"packing_worker_id": nil,
 								"error_message":     newErrorMessage,
@@ -277,7 +277,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 				}
 				err = database.DoRetry(func() error {
 					return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
-						map[string]interface{}{
+						map[string]any{
 							"packing_state":     model.Complete,
 							"packing_worker_id": nil,
 						},
