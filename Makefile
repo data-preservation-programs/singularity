@@ -4,10 +4,8 @@ build:
 buildall:
 	go build ./...
 
-gen:
-	go generate ./replication/internal/proposal110/types.go
-	go generate ./replication/internal/proposal120/types.go
-	go run handler/datasource/generate/add.go
+generate:
+	go generate ./...
 
 lint:
 	gofmt -s -w .

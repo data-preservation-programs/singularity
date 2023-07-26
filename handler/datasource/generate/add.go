@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
 	"os"
 	"strings"
 	"text/template"
@@ -73,15 +75,11 @@ type Type struct {
 
 func main() {
 	command := datasource.AddCmd
-	// Create generated file in the same directory
-	f, err := os.Create("handler/datasource/add_gen.go")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+
+	f := bytes.NewBuffer(nil)
 
 	// Write package lines
-	f.Write([]byte(header))
+	f.WriteString(header)
 
 	tmpl, err := template.New("handler").Parse(handlerTemplate)
 	if err != nil {
@@ -159,6 +157,16 @@ func main() {
 	}
 
 	err = allStructTemplate.Execute(f, all)
+	if err != nil {
+		panic(err)
+	}
+
+	formatted, err := format.Source(f.Bytes())
+	if err != nil {
+		panic(err)
+	}
+	// Create generated file in the same directory
+	err = os.WriteFile("handler/datasource/add_gen.go", formatted, 0644)
 	if err != nil {
 		panic(err)
 	}

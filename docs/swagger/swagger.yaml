@@ -701,7 +701,7 @@ definitions:
         description: Size of TLS session cache for all control and data connections.
         type: string
       ftpUser:
-        default: shane
+        default: $USER
         description: FTP username.
         type: string
       ftpWritingMdtm:
@@ -1688,7 +1688,7 @@ definitions:
         description: Enable the use of insecure ciphers and key exchange methods.
         type: string
       sftpUser:
-        default: shane
+        default: $USER
         description: SSH username.
         type: string
       sharefileChunkSize:
@@ -1759,7 +1759,7 @@ definitions:
         description: Service principal name.
         type: string
       smbUser:
-        default: shane
+        default: $USER
         description: SMB username.
         type: string
       storjAccessGrant:
@@ -2666,7 +2666,7 @@ definitions:
         description: Size of TLS session cache for all control and data connections.
         type: string
       user:
-        default: shane
+        default: $USER
         description: FTP username.
         type: string
       writingMdtm:
@@ -2992,6 +2992,12 @@ definitions:
     - deleteAfterExport
     - rescanInterval
     - sourcePath
+    type: object
+  datasource.ItemInfo:
+    properties:
+      path:
+        description: Path to the new item, relative to the source
+        type: string
     type: object
   datasource.JottacloudRequest:
     properties:
@@ -4023,7 +4029,7 @@ definitions:
         description: Enable the use of insecure ciphers and key exchange methods.
         type: string
       user:
-        default: shane
+        default: $USER
         description: SSH username.
         type: string
     required:
@@ -4145,7 +4151,7 @@ definitions:
         description: Service principal name.
         type: string
       user:
-        default: shane
+        default: $USER
         description: SMB username.
         type: string
     required:
@@ -4569,12 +4575,6 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
-  github_com_data-preservation-programs_singularity_api.ItemInfo:
-    properties:
-      path:
-        description: Path to the new item, relative to the source
-        type: string
-    type: object
   github_com_data-preservation-programs_singularity_handler_datasource.Entry:
     properties:
       isDir:
@@ -4705,7 +4705,7 @@ definitions:
       label:
         type: string
       pieceCid:
-        type: string
+        $ref: '#/definitions/model.CID'
       pieceSize:
         type: integer
       price:
@@ -4834,8 +4834,6 @@ definitions:
         type: integer
       keepUnsealed:
         type: boolean
-      lastProcessedTimestamp:
-        type: integer
       maxPendingDealNumber:
         type: integer
       maxPendingDealSize:
@@ -4850,14 +4848,12 @@ definitions:
         type: number
       provider:
         type: string
+      scheduleCron:
+        type: string
       scheduleDealNumber:
         type: integer
       scheduleDealSize:
         type: integer
-      scheduleIntervalSeconds:
-        type: integer
-      scheduleWorkerId:
-        type: string
       startDelay:
         $ref: '#/definitions/time.Duration'
       state:
@@ -4877,11 +4873,13 @@ definitions:
     enum:
     - active
     - paused
+    - error
     - completed
     type: string
     x-enum-varnames:
     - ScheduleActive
     - SchedulePaused
+    - ScheduleError
     - ScheduleCompleted
   model.Source:
     properties:
@@ -4978,7 +4976,7 @@ definitions:
         description: Dataset name
         type: string
       duration:
-        default: 12740h
+        default: 12840h
         description: Duration in epoch or in duration format, i.e. 1500000, 2400h
         type: string
       httpHeaders:
@@ -5018,15 +5016,15 @@ definitions:
       provider:
         description: Provider
         type: string
+      scheduleCron:
+        description: Schedule cron patter
+        type: string
       scheduleDealNumber:
         description: Number of deals per scheduled time
         type: integer
       scheduleDealSize:
         description: Size of deals per schedule trigger in human readable format,
           i.e. 100 TiB
-        type: string
-      scheduleInterval:
-        description: Schedule interval in duration format, i.e. 1h
         type: string
       startDelay:
         default: 72h
@@ -5409,7 +5407,7 @@ paths:
       summary: Associate a new wallet with a dataset
       tags:
       - Wallet Association
-  /deal/list:
+  /deal:
     post:
       consumes:
       - application/json
@@ -5439,140 +5437,6 @@ paths:
           schema:
             $ref: '#/definitions/handler.HTTPError'
       summary: List all deals
-      tags:
-      - Deal
-  /deal/schedule:
-    post:
-      consumes:
-      - application/json
-      description: Create a new schedule
-      parameters:
-      - description: CreateRequest
-        in: body
-        name: schedule
-        required: true
-        schema:
-          $ref: '#/definitions/schedule.CreateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Schedule'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Create a new schedule
-      tags:
-      - Deal Schedule
-  /deal/schedule/{scheduleID}/pause:
-    post:
-      parameters:
-      - description: Schedule ID
-        in: path
-        name: scheduleID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Schedule'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Pause a specific schedule
-      tags:
-      - Deal Schedule
-  /deal/schedule/{scheduleID}/resume:
-    post:
-      parameters:
-      - description: Schedule ID
-        in: path
-        name: scheduleID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Schedule'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Resume a specific schedule
-      tags:
-      - Deal Schedule
-  /deal/schedules:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Schedule'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: List all deal making schedules
-      tags:
-      - Deal Schedule
-  /deal/send_manual:
-    post:
-      consumes:
-      - application/json
-      description: Send a manual deal proposal
-      parameters:
-      - description: Proposal
-        in: body
-        name: proposal
-        required: true
-        schema:
-          $ref: '#/definitions/deal.Proposal'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.HTTPError'
-      summary: Send a manual deal proposal
       tags:
       - Deal
   /item/{id}:
@@ -5630,7 +5494,141 @@ paths:
             type: string
       summary: Get metadata for a piece
       tags:
-      - Piece Metadata
+      - Metadata
+  /schedule:
+    post:
+      consumes:
+      - application/json
+      description: Create a new schedule
+      parameters:
+      - description: CreateRequest
+        in: body
+        name: schedule
+        required: true
+        schema:
+          $ref: '#/definitions/schedule.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Create a new schedule
+      tags:
+      - Deal Schedule
+  /schedule/{id}/pause:
+    post:
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Pause a specific schedule
+      tags:
+      - Deal Schedule
+  /schedule/{id}/resume:
+    post:
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Resume a specific schedule
+      tags:
+      - Deal Schedule
+  /schedules:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Schedule'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: List all deal making schedules
+      tags:
+      - Deal Schedule
+  /send_deal:
+    post:
+      consumes:
+      - application/json
+      description: Send a manual deal proposal
+      parameters:
+      - description: Proposal
+        in: body
+        name: proposal
+        required: true
+        schema:
+          $ref: '#/definitions/deal.Proposal'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Deal'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.HTTPError'
+      summary: Send a manual deal proposal
+      tags:
+      - Deal
   /source:
     get:
       parameters:
@@ -5877,7 +5875,7 @@ paths:
         name: item
         required: true
         schema:
-          $ref: '#/definitions/github_com_data-preservation-programs_singularity_api.ItemInfo'
+          $ref: '#/definitions/datasource.ItemInfo'
       produces:
       - application/json
       responses:

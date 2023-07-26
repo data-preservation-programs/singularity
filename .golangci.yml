@@ -4,9 +4,8 @@ run:
     - replication/internal
     - cmd/embed
     - docs
+    - dashboard/model2ts
     - handler/datasource/generate
-    - docgen
-    - buildtool
 
 linters:
   enable-all: true

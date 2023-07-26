@@ -79,7 +79,7 @@ OPTIONS:
    --smb-pass value                SMB password. [$SMB_PASS]
    --smb-port value                SMB port number. (default: "445") [$SMB_PORT]
    --smb-spn value                 Service principal name. [$SMB_SPN]
-   --smb-user value                SMB username. (default: "shane") [$SMB_USER]
+   --smb-user value                SMB username. (default: "$USER") [$SMB_USER]
 
 ```
 {% endcode %}
