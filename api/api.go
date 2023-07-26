@@ -107,7 +107,7 @@ func Run(c *cli.Context) error {
 	}.Run(c)
 }
 
-func (s Server) toEchoHandler(handlerFunc interface{}) echo.HandlerFunc {
+func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		handlerFuncValue := reflect.ValueOf(handlerFunc)
 		handlerFuncType := handlerFuncValue.Type()
@@ -450,7 +450,7 @@ func (s Server) GetDirectoryEntries(c echo.Context) error {
 		return echo.NewHTTPError(500, err.Error())
 	}
 
-	return c.JSON(200, map[string]interface{}{
+	return c.JSON(200, map[string]any{
 		"Directories": dirs,
 		"Items":       items,
 	})

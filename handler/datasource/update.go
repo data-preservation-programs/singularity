@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Config map[string]interface{}
+type Config map[string]any
 
 func UpdateSourceHandler(
 	db *gorm.DB,
@@ -119,7 +119,7 @@ func updateSourceHandler(
 	}
 
 	err = database.DoRetry(func() error {
-		return db.Model(&source).Updates(map[string]interface{}{
+		return db.Model(&source).Updates(map[string]any{
 			"metadata":              source.Metadata,
 			"scan_interval_seconds": source.ScanIntervalSeconds,
 			"delete_after_export":   source.DeleteAfterExport,

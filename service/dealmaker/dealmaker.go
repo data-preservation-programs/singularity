@@ -42,11 +42,11 @@ type sumResult struct {
 
 type cronLogger struct{}
 
-func (c cronLogger) Info(msg string, keysAndValues ...interface{}) {
+func (c cronLogger) Info(msg string, keysAndValues ...any) {
 	logger.Infow(msg, keysAndValues...)
 }
 
-func (c cronLogger) Error(err error, msg string, keysAndValues ...interface{}) {
+func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	keysAndValues = append(keysAndValues, "err", err)
 	logger.Errorw(msg, keysAndValues...)
 }
@@ -60,7 +60,7 @@ func (d *DealMakerService) hasSchedule(scheduleID uint32) bool {
 
 func (d *DealMakerService) runScheduleAndUpdateState(ctx context.Context, schedule *model.Schedule) {
 	state, err := d.runSchedule(ctx, schedule)
-	updates := make(map[string]interface{})
+	updates := make(map[string]any)
 	if state != "" {
 		updates["state"] = state
 	}

@@ -45,7 +45,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 	err = database.DoRetry(func() error {
 		return db.Model(&model.Source{}).Where("(dag_gen_worker_id NOT IN (?) OR dag_gen_worker_id IS NULL) AND dag_gen_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]interface{}{
+			Updates(map[string]any{
 				"dag_gen_worker_id": nil,
 				"dag_gen_state":     model.Ready,
 			}).Error
@@ -57,7 +57,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 	err = database.DoRetry(func() error {
 		return db.Model(&model.Source{}).Where("(scanning_worker_id NOT IN (?) OR scanning_worker_id IS NULL) AND scanning_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]interface{}{
+			Updates(map[string]any{
 				"scanning_worker_id": nil,
 				"scanning_state":     model.Ready,
 			}).Error
@@ -69,7 +69,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 	err = database.DoRetry(func() error {
 		return db.Model(&model.Chunk{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]interface{}{
+			Updates(map[string]any{
 				"packing_worker_id": nil,
 				"packing_state":     model.Ready,
 			}).Error

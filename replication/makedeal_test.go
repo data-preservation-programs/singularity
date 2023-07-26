@@ -300,7 +300,7 @@ func TestDealMaker_GetProviderInfo(t *testing.T) {
 	maker := NewDealMaker(nil, nil, time.Hour, time.Second)
 	maker.lotusClient = lotusClient
 
-	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateMinerInfo", []interface{}{"address1", nil}).
+	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateMinerInfo", []any{"address1", nil}).
 		Return(nil).Run(func(args mock.Arguments) {
 		resultPtr := args.Get(1).(*MinerInfo)
 		*resultPtr = MinerInfo{

@@ -22,7 +22,7 @@ func CreateDatasourceHandler(
 	datasourceHandlerResolver datasource.HandlerResolver,
 	sourceType string,
 	datasetName string,
-	sourceParameters map[string]interface{},
+	sourceParameters map[string]any,
 ) (*model.Source, error) {
 	return createDatasourceHandler(db, ctx, sourceType, datasetName, sourceParameters)
 }
@@ -42,7 +42,7 @@ func createDatasourceHandler(
 	ctx context.Context,
 	sourceType string,
 	datasetName string,
-	sourceParameters map[string]interface{},
+	sourceParameters map[string]any,
 ) (*model.Source, error) {
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {

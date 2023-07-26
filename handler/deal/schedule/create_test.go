@@ -16,7 +16,7 @@ type MockRPCClient struct {
 	mock.Mock
 }
 
-func (m *MockRPCClient) Call(ctx context.Context, method string, params ...interface{}) (*jsonrpc.RPCResponse, error) {
+func (m *MockRPCClient) Call(ctx context.Context, method string, params ...any) (*jsonrpc.RPCResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -26,7 +26,7 @@ func (m *MockRPCClient) CallRaw(ctx context.Context, request *jsonrpc.RPCRequest
 	panic("implement me")
 }
 
-func (m *MockRPCClient) CallFor(ctx context.Context, out interface{}, method string, params ...interface{}) error {
+func (m *MockRPCClient) CallFor(ctx context.Context, out any, method string, params ...any) error {
 	return m.Called(ctx, out, method, params).Error(0)
 }
 
