@@ -88,11 +88,6 @@ func (w DatasetWorker) Run(parent context.Context) error {
 			config:                    w.config,
 		}
 		w.threads[i] = thread
-		_, err := healthcheck.Register(ctx, w.db, thread.id, thread.getState, true)
-		if err != nil {
-			logger.Errorw("failed to register worker", "error", err)
-			continue
-		}
 		go thread.run(ctx, errChan, &wg)
 	}
 
@@ -136,7 +131,8 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 			errChan <- errors.Errorf("panic: %v", err)
 		}
 	}()
-	go healthcheck.StartReportHealth(ctx, w.db, w.id, w.getState)
+	healthcheck.HealthCheck(w.db, w.id, w.getState)
+	go healthcheck.StartHealthCheck(ctx, w.db, w.id, w.getState)
 	for {
 		w.directoryCache = map[string]uint64{}
 		// 0, find dag work
