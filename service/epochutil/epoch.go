@@ -45,8 +45,8 @@ func EpochToTime(epoch int32) time.Time {
 	return time.Unix(int64(epoch)*30+int64(GenesisTimestamp), 0)
 }
 
-func UnixToEpoch(unix int64) int32 {
-	return (int32(unix) - GenesisTimestamp) / 30
+func UnixToEpoch(unix int64) abi.ChainEpoch {
+	return abi.ChainEpoch(unix-int64(GenesisTimestamp)) / 30
 }
 
 func TimeToEpoch(t time.Time) abi.ChainEpoch {

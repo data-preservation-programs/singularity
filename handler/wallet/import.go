@@ -5,6 +5,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
@@ -47,6 +48,11 @@ func importHandler(
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
 		return nil, handler.NewBadRequestString("invalid private key")
+	}
+
+	_, err = address.NewFromString(result)
+	if err != nil {
+		return nil, handler.NewBadRequestString("invalid actor ID from GLIF result: " + result)
 	}
 
 	wallet := model.Wallet{
