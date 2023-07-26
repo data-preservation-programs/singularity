@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
@@ -12,6 +11,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
+
+//go:generate go run .
 
 var overrides = map[string]string{
 	"s3":    "AWS S3 and compliant",
@@ -49,10 +50,10 @@ func main() {
 
 	lines := strings.Split(string(currentSummary), "\n")
 	cliReferenceLineIndex := slices.IndexFunc(lines, func(line string) bool {
-		return strings.Contains(line, "CLI Reference")
+		return strings.Contains(line, "<!-- cli begin -->")
 	})
 	webReferenceLineIndex := slices.IndexFunc(lines, func(line string) bool {
-		return strings.Contains(line, "Web API Reference")
+		return strings.Contains(line, "<!-- cli end -->")
 	})
 	if err != nil {
 		panic(err)
@@ -123,15 +124,15 @@ func saveMarkdown(command *cli.Command, outDir string, args []string) {
 }
 
 func getStdout(args []string) string {
+	args = append([]string{"singularity"}, args...)
 	args = append(args, "--help")
-	c := exec.Command("./singularity", args...)
-	var stdout bytes.Buffer
-	c.Stdout = &stdout
-
-	err := c.Run()
+	command := strings.Join(args, "")
+	stdout, stderr, err := cmd.RunArgsInTest(context.TODO(), command)
 	if err != nil {
 		panic(err)
 	}
-
-	return stdout.String()
+	if stderr != "" {
+		panic(stderr)
+	}
+	return stdout
 }
