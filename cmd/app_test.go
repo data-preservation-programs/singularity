@@ -239,6 +239,11 @@ func TestRunAPI(t *testing.T) {
 		var body string
 		var errs []error
 		resp, body, errs = gorequest.New().
+			Get("http://127.0.0.1:9090/robots.txt").End()
+		require.Len(t, errs, 0)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		require.Contains(t, body, "robotstxt.org")
+		resp, body, errs = gorequest.New().
 			Post("http://127.0.0.1:9090/api/admin/init").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusNoContent, resp.StatusCode)

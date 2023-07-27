@@ -1,0 +1,23 @@
+{
+  "name": "singularity",
+  "version": "1.0.0",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://data-programs.gitbook.io/singularity/overview/readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/data-preservation-programs/singularity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/data-preservation-programs/singularity/issues"
+  },
+  "private": true,
+  "workspaces": [
+    "dashboard"
+  ],
+  "scripts": {
+    "start": "npm run --prefix dashboard start",
+    "build": "rm -rf ./dashboard/build && npm run --prefix dashboard build",
+    "test": "npm run --prefix dashboard test",
+    "eject": "npm run --prefix dashboard eject"
+  }
+}
