@@ -14,3 +14,7 @@ lint:
 
 test:
 	go test -race -coverprofile=coverage.out -coverpkg=./... ./...
+
+diagram: build
+	./singularity admin init
+	schemacrawler.sh --server=sqlite --database=./singularity.db --command=schema --output-format=svg --output-file=docs/database-diagram.svg --info-level=maximum

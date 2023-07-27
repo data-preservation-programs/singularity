@@ -9,3 +9,6 @@ ignore:
   - "client/swagger/http"
   - "client/swagger/models"
   - "client/swagger/operations"
+  - "dashboard/model2ts"
+  - "docs/gen"
+  - "handler/datasource/generate"
