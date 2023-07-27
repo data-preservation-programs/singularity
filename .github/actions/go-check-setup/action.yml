@@ -1,0 +1,20 @@
+name: Setup Cache
+description: Setup Cache
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Golang caches
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ matrix.os }}-golang-${{ matrix.go }}-
+    # Install swagger binary required by go generate to generate the client library.
+    - name: Install Swagger CLI
+      shell: bash
+      run: |
+        go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+        swagger version
