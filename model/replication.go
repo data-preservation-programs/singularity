@@ -97,8 +97,8 @@ type Schedule struct {
 	Verified             bool          `json:"verified"`
 	KeepUnsealed         bool          `json:"keepUnsealed"`
 	AnnounceToIPNI       bool          `json:"announceToIpni"`
-	StartDelay           time.Duration `json:"startDelay"`
-	Duration             time.Duration `json:"duration"`
+	StartDelay           time.Duration `json:"startDelay" swaggertype:"primitive,integer"`
+	Duration             time.Duration `json:"duration" swaggertype:"primitive,integer"`
 	State                ScheduleState `json:"state"`
 	ScheduleCron         string        `json:"scheduleCron"`
 	ScheduleDealNumber   int           `json:"scheduleDealNumber"`
