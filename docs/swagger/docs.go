@@ -9734,7 +9734,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "duration": {
-                    "$ref": "#/definitions/time.Duration"
+                    "type": "integer"
                 },
                 "errorMessage": {
                     "type": "string"
@@ -9782,7 +9782,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "startDelay": {
-                    "$ref": "#/definitions/time.Duration"
+                    "type": "integer"
                 },
                 "state": {
                     "$ref": "#/definitions/model.ScheduleState"
@@ -10043,29 +10043,6 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
-        },
-        "time.Duration": {
-            "type": "integer",
-            "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
-            ],
-            "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
-            ]
         },
         "wallet.AddRemoteRequest": {
             "type": "object",
