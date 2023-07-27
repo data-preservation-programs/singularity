@@ -307,7 +307,7 @@ func (s Server) Run(ctx context.Context) error {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	s.setupRoutes(e)
+	s.setupRoutes(e) //nolint: contextcheck
 	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
 	if err != nil {
 		return err
