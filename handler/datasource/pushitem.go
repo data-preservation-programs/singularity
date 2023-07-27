@@ -32,6 +32,7 @@ func PushItemHandler(
 // @Tags Data Source
 // @Accept json
 // @Produce json
+// @Param id path string true "Source ID"
 // @Param item body ItemInfo true "Item"
 // @Success 201 {object} model.Item
 // @Failure 400 {string} string "Bad Request"

@@ -49,7 +49,7 @@ type Server struct {
 // @Description Get metadata for a piece for how it may be reassembled from the data source
 // @Tags Metadata
 // @Produce json
-// @Param piece path string true "Piece CID"
+// @Param id path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
 // @Failure 400 {string} string "Bad Request"
 // @Failure 404 {string} string "Not Found"
