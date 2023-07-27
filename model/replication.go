@@ -85,7 +85,7 @@ type Schedule struct {
 	CreatedAt            time.Time     `json:"createdAt"`
 	UpdatedAt            time.Time     `json:"updatedAt"`
 	DatasetID            uint32        `json:"datasetId"`
-	Dataset              *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
+	Dataset              *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"        swaggerignore:"true"`
 	URLTemplate          string        `json:"urlTemplate"`
 	HTTPHeaders          []string      `gorm:"type:JSON"                                        json:"httpHeaders"`
 	Provider             string        `json:"provider"`
@@ -97,8 +97,8 @@ type Schedule struct {
 	Verified             bool          `json:"verified"`
 	KeepUnsealed         bool          `json:"keepUnsealed"`
 	AnnounceToIPNI       bool          `json:"announceToIpni"`
-	StartDelay           time.Duration `json:"startDelay" swaggertype:"primitive,integer"`
-	Duration             time.Duration `json:"duration" swaggertype:"primitive,integer"`
+	StartDelay           time.Duration `json:"startDelay"                                       swaggertype:"primitive,integer"`
+	Duration             time.Duration `json:"duration"                                         swaggertype:"primitive,integer"`
 	State                ScheduleState `json:"state"`
 	ScheduleCron         string        `json:"scheduleCron"`
 	ScheduleDealNumber   int           `json:"scheduleDealNumber"`
