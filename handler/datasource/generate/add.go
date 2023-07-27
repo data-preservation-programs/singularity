@@ -32,6 +32,7 @@ type {{.Name}} struct {
 
 const allStructTemplate = `
 type {{.Name}} struct {
+		SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan items
     DeleteAfterExport bool ` + "`validate:\"optional\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
     RescanInterval string ` + "`validate:\"optional\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
     {{- range .Fields }}
@@ -47,8 +48,8 @@ const handlerTemplate = `
 // @Produce json
 // @Param datasetName path string true "Dataset name"
 // @Success 200 {object} model.Source
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Param request body {{.StructName}} true "Request body"
 // @Router /source/{{.Name}}/dataset/{datasetName} [post]
 func {{.FuncName}}() {}

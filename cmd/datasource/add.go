@@ -47,10 +47,10 @@ var AddCmd = &cli.Command{
 			}
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
-				return handler.NewBadRequestError(err)
+				return handler.InvalidParameterError{Err: err}
 			}
 			if path == "" {
-				return handler.NewBadRequestString("path is required")
+				return handler.NewInvalidParameterErr("path is required")
 			}
 			if r.Prefix == "local" {
 				path, err = filepath.Abs(path)

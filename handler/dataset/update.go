@@ -36,8 +36,8 @@ func UpdateHandler(
 // @Param datasetName path string true "Dataset name"
 // @Param request body UpdateRequest true "Request body"
 // @Success 200 {object} model.Dataset
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName} [patch]
 func updateHandler(
 	db *gorm.DB,
@@ -46,12 +46,12 @@ func updateHandler(
 ) (*model.Dataset, error) {
 	logger := log.Logger("cli")
 	if datasetName == "" {
-		return nil, handler.NewBadRequestString("name is required")
+		return nil, handler.NewInvalidParameterErr("name is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return nil, handler.NewBadRequestString("dataset not found")
+		return nil, handler.NewInvalidParameterErr("dataset not found")
 	}
 
 	err2 := parseUpdateRequest(request, &dataset)
@@ -61,7 +61,7 @@ func updateHandler(
 
 	err = database.DoRetry(func() error { return db.Save(&dataset).Error })
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	logger.Infof("Dataset created with ID: %d", dataset.ID)
@@ -72,7 +72,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 	if request.MaxSizeStr != nil {
 		maxSize, err := humanize.ParseBytes(*request.MaxSizeStr)
 		if err != nil {
-			return handler.NewBadRequestString("invalid value for max-size: " + err.Error())
+			return handler.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
 		}
 		dataset.MaxSize = int64(maxSize)
 	}
@@ -82,21 +82,21 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		var err error
 		pieceSize, err = humanize.ParseBytes(*request.PieceSizeStr)
 		if err != nil {
-			return handler.NewBadRequestString("invalid value for piece-size: " + err.Error())
+			return handler.NewInvalidParameterErr("invalid value for piece-size: " + err.Error())
 		}
 
 		if pieceSize != util.NextPowerOfTwo(pieceSize) {
-			return handler.NewBadRequestString("piece size must be a power of two")
+			return handler.NewInvalidParameterErr("piece size must be a power of two")
 		}
 	}
 
 	dataset.PieceSize = int64(pieceSize)
 	if dataset.PieceSize > 1<<36 {
-		return handler.NewBadRequestString("piece size cannot be larger than 64 GiB")
+		return handler.NewInvalidParameterErr("piece size cannot be larger than 64 GiB")
 	}
 
 	if dataset.MaxSize*128/127 >= dataset.PieceSize {
-		return handler.NewBadRequestString("max size needs to be reduced to leave space for padding")
+		return handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
 	if request.OutputDirs != nil {
@@ -104,11 +104,11 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		for i, outputDir := range request.OutputDirs {
 			info, err := os.Stat(outputDir)
 			if err != nil || !info.IsDir() {
-				return handler.NewBadRequestString("output directory does not exist: " + outputDir)
+				return handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
 			}
 			abs, err := filepath.Abs(outputDir)
 			if err != nil {
-				return handler.NewBadRequestString("could not get absolute path for output directory: " + err.Error())
+				return handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 			}
 			outDirs[i] = abs
 		}
@@ -124,11 +124,11 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 	}
 
 	if len(dataset.EncryptionRecipients) > 0 && dataset.EncryptionScript != "" {
-		return handler.NewBadRequestString("encryption recipients and script cannot be used together")
+		return handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
 	}
 
 	if (len(dataset.EncryptionRecipients) > 0 || dataset.EncryptionScript != "") && len(dataset.OutputDirs) == 0 {
-		return handler.NewBadRequestString(
+		return handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
 		)

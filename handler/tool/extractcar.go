@@ -9,7 +9,7 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-ipfs-blockstore"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	ipld "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-unixfs"
@@ -205,7 +205,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 			if err != nil {
 				return errors.Wrapf(err, "failed to iterate links for CID %s", c)
 			}
-		default:
+		case unixfs.TRaw, unixfs.TMetadata, unixfs.TSymlink:
 			return errors.Errorf("unsupported node type %d", fsnode.Type())
 		}
 	default:

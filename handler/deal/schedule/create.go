@@ -71,8 +71,8 @@ func CreateHandler(
 // @Produce json
 // @Param schedule body CreateRequest true "CreateRequest"
 // @Success 200 {object} model.Schedule
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /schedule [post]
 func createHandler(
 	db *gorm.DB,
@@ -82,27 +82,27 @@ func createHandler(
 ) (*model.Schedule, error) {
 	dataset, err := database.FindDatasetByName(db, request.DatasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString("dataset not found")
+		return nil, handler.NewInvalidParameterErr("dataset not found")
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid start delay")
+		return nil, handler.NewInvalidParameterErr("invalid start delay")
 	}
 
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid duration")
+		return nil, handler.NewInvalidParameterErr("invalid duration")
 	}
 
 	var scheduleCron string
 	if request.ScheduleCron != "" {
 		_, err = cron.ParseStandard(request.ScheduleCron)
 		if err != nil {
-			return nil, handler.NewBadRequestString("invalid schedule cron")
+			return nil, handler.NewInvalidParameterErr("invalid schedule cron")
 		} else {
 			scheduleCron = request.ScheduleCron
 		}
@@ -110,40 +110,40 @@ func createHandler(
 
 	totalDealSize, err := humanize.ParseBytes(request.TotalDealSize)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid total deal size")
+		return nil, handler.NewInvalidParameterErr("invalid total deal size")
 	}
 	scheduleDealSize, err := humanize.ParseBytes(request.ScheduleDealSize)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid schedule deal size")
+		return nil, handler.NewInvalidParameterErr("invalid schedule deal size")
 	}
 	pendingDealSize, err := humanize.ParseBytes(request.MaxPendingDealSize)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid pending deal size")
+		return nil, handler.NewInvalidParameterErr("invalid pending deal size")
 	}
 	for _, pieceCID := range request.AllowedPieceCIDs {
 		parsed, err := cid.Parse(pieceCID)
 		if err != nil {
-			return nil, handler.NewBadRequestString("invalid allowed piece CID, it's not a CID")
+			return nil, handler.NewInvalidParameterErr("invalid allowed piece CID, it's not a CID")
 		}
 		if parsed.Type() != cid.FilCommitmentUnsealed {
-			return nil, handler.NewBadRequestString("invalid allowed piece CID, it's not a commp")
+			return nil, handler.NewInvalidParameterErr("invalid allowed piece CID, it's not a commp")
 		}
 	}
 
 	var walletCount int64
 	err = db.Model(&model.WalletAssignment{}).Where("dataset_id = ?", dataset.ID).Count(&walletCount).Error
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	if walletCount == 0 {
-		return nil, handler.NewBadRequestString("no wallet assigned to this dataset")
+		return nil, handler.NewInvalidParameterErr("no wallet assigned to this dataset")
 	}
 
 	var providerActor string
 	err = lotusClient.CallFor(ctx, &providerActor, "Filecoin.StateLookupID", request.Provider, nil)
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	schedule := model.Schedule{
@@ -172,7 +172,7 @@ func createHandler(
 	}
 
 	if err := db.Create(&schedule).Error; err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 	return &schedule, nil
 }

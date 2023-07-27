@@ -27,48 +27,48 @@ type CreateRequest struct {
 func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
 	if err != nil {
-		return nil, handler.NewBadRequestString("invalid value for max-size: " + err.Error())
+		return nil, handler.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
 	}
 
 	pieceSize := util.NextPowerOfTwo(maxSize)
 	if request.PieceSizeStr != "" {
 		pieceSize, err = humanize.ParseBytes(request.PieceSizeStr)
 		if err != nil {
-			return nil, handler.NewBadRequestString("invalid value for piece-size: " + err.Error())
+			return nil, handler.NewInvalidParameterErr("invalid value for piece-size: " + err.Error())
 		}
 
 		if pieceSize != util.NextPowerOfTwo(pieceSize) {
-			return nil, handler.NewBadRequestString("piece size must be a power of two")
+			return nil, handler.NewInvalidParameterErr("piece size must be a power of two")
 		}
 	}
 
 	if pieceSize > 1<<36 {
-		return nil, handler.NewBadRequestString("piece size cannot be larger than 64 GiB")
+		return nil, handler.NewInvalidParameterErr("piece size cannot be larger than 64 GiB")
 	}
 
 	if maxSize*128/127 >= pieceSize {
-		return nil, handler.NewBadRequestString("max size needs to be reduced to leave space for padding")
+		return nil, handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
 	outDirs := make([]string, len(request.OutputDirs))
 	for i, outputDir := range request.OutputDirs {
 		info, err := os.Stat(outputDir)
 		if err != nil || !info.IsDir() {
-			return nil, handler.NewBadRequestString("output directory does not exist: " + outputDir)
+			return nil, handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
 		}
 		abs, err := filepath.Abs(outputDir)
 		if err != nil {
-			return nil, handler.NewBadRequestString("could not get absolute path for output directory: " + err.Error())
+			return nil, handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 		}
 		outDirs[i] = abs
 	}
 
 	if len(request.EncryptionRecipients) > 0 && request.EncryptionScript != "" {
-		return nil, handler.NewBadRequestString("encryption recipients and script cannot be used together")
+		return nil, handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
 	}
 
 	if (len(request.EncryptionRecipients) > 0 || request.EncryptionScript != "") && len(request.OutputDirs) == 0 {
-		return nil, handler.NewBadRequestString(
+		return nil, handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
 		)
@@ -98,8 +98,8 @@ func CreateHandler(
 // @Description The dataset is a top level object to distinguish different dataset.
 // @Param request body CreateRequest true "Request body"
 // @Success 200 {object} model.Dataset
-// @Failure 400 {object} handler.HTTPError
-// @Failure 500 {object} handler.HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /dataset [post]
 func createHandler(
 	db *gorm.DB,
@@ -107,7 +107,7 @@ func createHandler(
 ) (*model.Dataset, error) {
 	logger := log.Logger("cli")
 	if request.Name == "" {
-		return nil, handler.NewBadRequestString("name is required")
+		return nil, handler.NewInvalidParameterErr("name is required")
 	}
 
 	dataset, err := parseCreateRequest(request)
@@ -117,11 +117,11 @@ func createHandler(
 
 	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) {
-		return nil, handler.NewBadRequestString("dataset with this name already exists")
+		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}
 
 	if err2 != nil {
-		return nil, handler.NewHandlerError(err2)
+		return nil, err2
 	}
 
 	logger.Infof("Dataset created with ID: %d", dataset.ID)

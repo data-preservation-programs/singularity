@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
@@ -25,7 +26,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	_ "github.com/data-preservation-programs/singularity/docs/swagger"
-	"github.com/data-preservation-programs/singularity/handler"
 	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
@@ -59,52 +59,57 @@ func (s Server) getMetadataHandler(c echo.Context) error {
 	return contentprovider.GetMetadataHandler(c, s.db)
 }
 
-func (s Server) SendManualHandler(c echo.Context) error {
-	db := s.db.WithContext(c.Request().Context())
-	ctx := c.Request().Context()
-	var request deal.Proposal
-	err := c.Bind(&request)
-	if err != nil {
-		return c.String(http.StatusBadRequest, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	dealModel, err := deal.SendManualHandler(db, ctx, request, s.dealMaker)
-	if err != nil {
-		var err2 *handler.Error
-		if errors.As(err, &err2) {
-			return err2.HTTPResponse(c)
-		}
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-	return c.JSON(http.StatusOK, dealModel)
-}
-
 func Run(c *cli.Context) error {
-	db, err := database.OpenFromCLI(c)
-	if err != nil {
-		return err
-	}
-	if err := model.AutoMigrate(db); err != nil {
-		return handler.NewHandlerError(err)
-	}
+	connString := c.String("database-connection-string")
+
 	bind := c.String("bind")
 
 	lotusAPI := c.String("lotus-api")
 	lotusToken := c.String("lotus-token")
+
+	server, err := InitServer(APIParams{
+		ConnString: connString,
+		Bind:       bind,
+		LotusAPI:   lotusAPI,
+		LotusToken: lotusToken,
+	})
+	if err != nil {
+		return err
+	}
+	return server.Run(c.Context)
+}
+
+type APIParams struct {
+	Ctx        context.Context
+	Bind       string
+	LotusAPI   string
+	LotusToken string
+	ConnString string
+}
+
+func InitServer(params APIParams) (Server, error) {
+	db, err := database.OpenWithDefaults(params.ConnString)
+	if err != nil {
+		return Server{}, err
+	}
+	if err := model.AutoMigrate(db); err != nil {
+		return Server{}, err
+	}
 	h, err := util.InitHost(nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to init host")
+		return Server{}, errors.Wrap(err, "failed to init host")
 	}
 
-	return Server{db: db, bind: bind,
+	return Server{db: db, bind: params.Bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
-		lotusClient:               util.NewLotusClient(lotusAPI, lotusToken),
+		lotusClient:               util.NewLotusClient(params.LotusAPI, params.LotusToken),
 		dealMaker: replication.NewDealMaker(
-			util.NewLotusClient(lotusAPI, lotusToken),
+			util.NewLotusClient(params.LotusAPI, params.LotusToken),
 			h,
 			time.Hour,
 			time.Minute*5,
 		),
-	}.Run(c)
+	}, nil
 }
 
 func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
@@ -137,23 +142,27 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 				inputParams = append(inputParams, reflect.ValueOf(s.lotusClient))
 				continue
 			}
+			if paramType.String() == "replication.DealMaker" {
+				inputParams = append(inputParams, reflect.ValueOf(s.dealMaker))
+				continue
+			}
 			if paramType.Kind() == reflect.String || isIntKind(paramType.Kind()) || isUIntKind(paramType.Kind()) {
 				if j >= len(c.ParamValues()) {
 					logger.Error("Invalid handler function signature.")
-					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
 				}
 				paramValue := c.ParamValues()[j]
 				switch {
 				case paramType.Kind() == reflect.String:
 					decoded, err := url.QueryUnescape(paramValue)
 					if err != nil {
-						return echo.NewHTTPError(http.StatusInternalServerError, "Failed to decode path parameter.")
+						return c.JSON(http.StatusInternalServerError, HTTPError{Err: "failed to decode path parameter"})
 					}
 					inputParams = append(inputParams, reflect.ValueOf(decoded))
 				case isIntKind(paramType.Kind()):
 					decoded, err := strconv.ParseInt(paramValue, 10, paramType.Bits())
 					if err != nil {
-						return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse path parameter as number.")
+						return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
 					}
 					val := reflect.New(paramType).Elem()
 					val.SetInt(decoded)
@@ -161,7 +170,7 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 				case isUIntKind(paramType.Kind()):
 					decoded, err := strconv.ParseUint(paramValue, 10, paramType.Bits())
 					if err != nil {
-						return echo.NewHTTPError(http.StatusBadRequest, "Failed to parse path parameter as number.")
+						return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
 					}
 					val := reflect.New(paramType).Elem()
 					val.SetUint(decoded)
@@ -176,7 +185,7 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
 			}
 			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "Failed to bind request body.")
+				return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to bind request body: %s", err)})
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
@@ -187,31 +196,23 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 
 		if len(results) == 1 {
 			// Handle the returned error
-			err, ok := results[0].Interface().(*handler.Error)
-			if results[0].Interface() != nil && !ok {
+			if results[0].Interface() != nil {
 				err, ok := results[1].Interface().(error)
 				if !ok {
-					return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
 				}
-				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-			}
-			if err != nil {
-				return err.HTTPResponse(c)
+				return httpResponseFromError(c, err)
 			}
 			return c.NoContent(http.StatusNoContent)
 		}
 
 		// Handle the returned error
-		err, ok := results[1].Interface().(*handler.Error)
-		if results[1].Interface() != nil && !ok {
+		if results[1].Interface() != nil {
 			err, ok := results[1].Interface().(error)
 			if !ok {
-				return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+				return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
 			}
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-		if err != nil {
-			return err.HTTPResponse(c)
+			return httpResponseFromError(c, err)
 		}
 
 		// Handle the returned data
@@ -267,7 +268,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/item/:id", s.toEchoHandler(inspect.GetSourceItemDetailHandler))
 
 	// Deal Schedule
-	e.POST("/api/send_deal", s.SendManualHandler)
+	e.POST("/api/send_deal", s.toEchoHandler(deal.SendManualHandler))
 	e.POST("/api/schedule", s.toEchoHandler(schedule.CreateHandler))
 	e.GET("/api/schedule", s.toEchoHandler(schedule.ListHandler))
 	e.POST("/api/schedule/:id/pause", s.toEchoHandler(schedule.PauseHandler))
@@ -279,7 +280,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 var logger = logging.Logger("api")
 
-func (s Server) Run(c *cli.Context) error {
+func (s Server) Run(ctx context.Context) error {
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.Recover())
@@ -325,7 +326,7 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
 	go func() {
-		<-c.Context.Done()
+		<-ctx.Done()
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
 		//nolint:contextcheck
@@ -343,6 +344,38 @@ func isIntKind(kind reflect.Kind) bool {
 
 func isUIntKind(kind reflect.Kind) bool {
 	return kind == reflect.Uint || kind == reflect.Uint8 || kind == reflect.Uint16 || kind == reflect.Uint32 || kind == reflect.Uint64
+}
+
+type HTTPError struct {
+	Err string `json:"err"`
+}
+
+func httpResponseFromError(c echo.Context, e error) error {
+	if e == nil {
+		return c.String(http.StatusOK, "OK")
+	}
+
+	httpStatusCode := http.StatusInternalServerError
+
+	var invalidParameterErr handler.InvalidParameterError
+	if errors.As(e, &invalidParameterErr) {
+		httpStatusCode = http.StatusBadRequest
+		e = invalidParameterErr.Unwrap()
+	}
+
+	var notFoundErr handler.NotFoundError
+	if errors.As(e, &notFoundErr) {
+		httpStatusCode = http.StatusNotFound
+		e = notFoundErr.Unwrap()
+	}
+
+	var duplicateRecordErr handler.DuplicateRecordError
+	if errors.As(e, &duplicateRecordErr) {
+		httpStatusCode = http.StatusConflict
+		e = duplicateRecordErr.Unwrap()
+	}
+
+	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
 }
 
 /* deprecated API

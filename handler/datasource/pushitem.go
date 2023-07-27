@@ -48,35 +48,35 @@ func pushItemHandler(
 	var source model.Source
 	err := db.Preload("Dataset").Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewBadRequestString(fmt.Sprintf("source %d not found", sourceID))
+		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("source %d not found.", sourceID))
 	}
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	dsHandler, err := datasourceHandlerResolver.Resolve(ctx, source)
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	entry, err := dsHandler.Check(ctx, itemInfo.Path)
 	if err != nil {
-		return nil, handler.NewBadRequestError(err)
+		return nil, handler.InvalidParameterError{Err: err}
 	}
 
 	obj, ok := entry.(fs2.ObjectInfo)
 	if !ok {
-		return nil, handler.NewBadRequestString(fmt.Sprintf("%s is not an object", itemInfo.Path))
+		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s is not an object", itemInfo.Path))
 	}
 
 	item, itemParts, err := datasetworker.PushItem(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
 
 	if err != nil {
-		return nil, handler.NewHandlerError(err)
+		return nil, err
 	}
 
 	if item == nil {
-		return nil, handler.NewConflictString(fmt.Sprintf("%s already exists", obj.Remote()))
+		return nil, handler.NewDuplicateRecordError(fmt.Sprintf("%s already exists", obj.Remote()))
 	}
 
 	item.ItemParts = itemParts
