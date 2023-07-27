@@ -5,3 +5,7 @@ coverage:
       default:
         threshold: 1%
         target: 50%
+ignore:
+  - "client/swagger/http"
+  - "client/swagger/models"
+  - "client/swagger/operations"
