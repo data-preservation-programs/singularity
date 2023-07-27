@@ -988,7 +988,7 @@ definitions:
         description: Follow symlinks and copy the pointed to item.
         type: string
       localEncoding:
-        default: Slash,InvalidUtf8,Dot
+        default: Slash,Dot
         description: The encoding for the backend.
         type: string
       localLinks:
@@ -3110,7 +3110,7 @@ definitions:
         description: Delete the source after exporting to CAR files
         type: boolean
       encoding:
-        default: Slash,InvalidUtf8,Dot
+        default: Slash,Dot
         description: The encoding for the backend.
         type: string
       links:

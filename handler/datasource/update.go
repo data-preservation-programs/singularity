@@ -115,7 +115,7 @@ func updateSourceHandler(
 
 	_, err = h.List(ctx, "")
 	if err != nil {
-		return nil, handler.ErrInvalidParameter{Err: err}
+		return nil, handler.InvalidParameterError{Err: err}
 	}
 
 	err = database.DoRetry(func() error {

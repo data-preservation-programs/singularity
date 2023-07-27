@@ -19,7 +19,7 @@ func retryOn(err error) bool {
 }
 
 func DoRetry(f func() error) error {
-	return retry.Do(f, retry.RetryIf(retryOn))
+	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true))
 }
 
 type databaseLogger struct {
@@ -70,26 +70,25 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 	}
 }
 
-func OpenFromCLI(c *cli.Context) (*gorm.DB, error) {
-	connString := c.String("database-connection-string")
+func OpenWithDefaults(connString string) (*gorm.DB, error) {
 	logger.Debug("Opening database: ", connString)
 	gormLogger := databaseLogger{
 		level:  logger2.Info,
 		logger: logger,
 	}
 	return Open(connString, &gorm.Config{
-		Logger: &gormLogger,
+		Logger:         &gormLogger,
+		TranslateError: true,
 	})
 }
 
+func OpenFromCLI(c *cli.Context) (*gorm.DB, error) {
+	connString := c.String("database-connection-string")
+	return OpenWithDefaults(connString)
+}
+
 func OpenInMemory() (*gorm.DB, error) {
-	gormLogger := &databaseLogger{
-		level:  logger2.Info,
-		logger: logger,
-	}
-	db, err := Open("sqlite:file::memory:?cache=shared", &gorm.Config{
-		Logger: gormLogger,
-	})
+	db, err := OpenWithDefaults("sqlite:file::memory:?cache=shared")
 	if err != nil {
 		logger.Error(err)
 		return nil, err

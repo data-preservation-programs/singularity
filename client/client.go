@@ -9,9 +9,9 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 )
 
-type ErrDuplicateRecord = handler.ErrDuplicateRecord
-type ErrInvalidParameter = handler.ErrInvalidParameter
-type ErrNotFound = handler.ErrNotFound
+type DuplicateRecordError = handler.DuplicateRecordError
+type InvalidParameterError = handler.InvalidParameterError
+type NotFoundError = handler.NotFoundError
 
 type Client interface {
 	CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error)

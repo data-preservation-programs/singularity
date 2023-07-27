@@ -4851,7 +4851,7 @@ const docTemplate = `{
                 "localEncoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
+                    "default": "Slash,Dot"
                 },
                 "localLinks": {
                     "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
@@ -7514,7 +7514,7 @@ const docTemplate = `{
                 "encoding": {
                     "description": "The encoding for the backend.",
                     "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
+                    "default": "Slash,Dot"
                 },
                 "links": {
                     "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",

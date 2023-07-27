@@ -60,32 +60,56 @@ func (s Server) getMetadataHandler(c echo.Context) error {
 }
 
 func Run(c *cli.Context) error {
-	db, err := database.OpenFromCLI(c)
-	if err != nil {
-		return err
-	}
-	if err := model.AutoMigrate(db); err != nil {
-		return err
-	}
+	connString := c.String("database-connection-string")
+
 	bind := c.String("bind")
 
 	lotusAPI := c.String("lotus-api")
 	lotusToken := c.String("lotus-token")
+
+	server, err := InitServer(APIParams{
+		ConnString: connString,
+		Bind:       bind,
+		LotusAPI:   lotusAPI,
+		LotusToken: lotusToken,
+	})
+	if err != nil {
+		return err
+	}
+	return server.Run(c.Context)
+}
+
+type APIParams struct {
+	Ctx        context.Context
+	Bind       string
+	LotusAPI   string
+	LotusToken string
+	ConnString string
+}
+
+func InitServer(params APIParams) (Server, error) {
+	db, err := database.OpenWithDefaults(params.ConnString)
+	if err != nil {
+		return Server{}, err
+	}
+	if err := model.AutoMigrate(db); err != nil {
+		return Server{}, err
+	}
 	h, err := util.InitHost(nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to init host")
+		return Server{}, errors.Wrap(err, "failed to init host")
 	}
 
-	return Server{db: db, bind: bind,
+	return Server{db: db, bind: params.Bind,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
-		lotusClient:               util.NewLotusClient(lotusAPI, lotusToken),
+		lotusClient:               util.NewLotusClient(params.LotusAPI, params.LotusToken),
 		dealMaker: replication.NewDealMaker(
-			util.NewLotusClient(lotusAPI, lotusToken),
+			util.NewLotusClient(params.LotusAPI, params.LotusToken),
 			h,
 			time.Hour,
 			time.Minute*5,
 		),
-	}.Run(c)
+	}, nil
 }
 
 func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
@@ -161,7 +185,7 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
 			}
 			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
-				return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to bind request body"})
+				return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to bind request body: %s", err)})
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
@@ -256,7 +280,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 var logger = logging.Logger("api")
 
-func (s Server) Run(c *cli.Context) error {
+func (s Server) Run(ctx context.Context) error {
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.Recover())
@@ -283,7 +307,7 @@ func (s Server) Run(c *cli.Context) error {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	s.setupRoutes(e)
+	s.setupRoutes(e) //nolint: contextcheck
 	efs, err := fs.Sub(embed.DashboardStaticFiles, "build")
 	if err != nil {
 		return err
@@ -302,7 +326,7 @@ func (s Server) Run(c *cli.Context) error {
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
 	go func() {
-		<-c.Context.Done()
+		<-ctx.Done()
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
 		//nolint:contextcheck
@@ -333,19 +357,19 @@ func httpResponseFromError(c echo.Context, e error) error {
 
 	httpStatusCode := http.StatusInternalServerError
 
-	var invalidParameterErr handler.ErrInvalidParameter
+	var invalidParameterErr handler.InvalidParameterError
 	if errors.As(e, &invalidParameterErr) {
 		httpStatusCode = http.StatusBadRequest
 		e = invalidParameterErr.Unwrap()
 	}
 
-	var notFoundErr handler.ErrNotFound
+	var notFoundErr handler.NotFoundError
 	if errors.As(e, &notFoundErr) {
-		httpStatusCode = http.StatusBadRequest
+		httpStatusCode = http.StatusNotFound
 		e = notFoundErr.Unwrap()
 	}
 
-	var duplicateRecordErr handler.ErrDuplicateRecord
+	var duplicateRecordErr handler.DuplicateRecordError
 	if errors.As(e, &duplicateRecordErr) {
 		httpStatusCode = http.StatusConflict
 		e = duplicateRecordErr.Unwrap()

@@ -47,7 +47,7 @@ var AddCmd = &cli.Command{
 			}
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
-				return handler.ErrInvalidParameter{Err: err}
+				return handler.InvalidParameterError{Err: err}
 			}
 			if path == "" {
 				return handler.NewInvalidParameterErr("path is required")
