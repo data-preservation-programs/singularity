@@ -590,7 +590,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Piece CID",
-                        "name": "piece",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     }
@@ -3334,6 +3334,13 @@ const docTemplate = `{
                 ],
                 "summary": "Push an item to be queued",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Item",
                         "name": "item",

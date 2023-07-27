@@ -5475,7 +5475,7 @@ paths:
       parameters:
       - description: Piece CID
         in: path
-        name: piece
+        name: id
         required: true
         type: string
       produces:
@@ -5875,6 +5875,11 @@ paths:
       description: Tells Singularity that something is ready to be grabbed for data
         preparation
       parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
       - description: Item
         in: body
         name: item
