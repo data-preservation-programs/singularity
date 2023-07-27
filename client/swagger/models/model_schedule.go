@@ -31,7 +31,7 @@ type ModelSchedule struct {
 	DatasetID int64 `json:"datasetId,omitempty"`
 
 	// duration
-	Duration TimeDuration `json:"duration,omitempty"`
+	Duration int64 `json:"duration,omitempty"`
 
 	// error message
 	ErrorMessage string `json:"errorMessage,omitempty"`
@@ -76,7 +76,7 @@ type ModelSchedule struct {
 	ScheduleDealSize int64 `json:"scheduleDealSize,omitempty"`
 
 	// start delay
-	StartDelay TimeDuration `json:"startDelay,omitempty"`
+	StartDelay int64 `json:"startDelay,omitempty"`
 
 	// state
 	State ModelScheduleState `json:"state,omitempty"`
@@ -101,14 +101,6 @@ type ModelSchedule struct {
 func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDuration(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateStartDelay(formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -116,40 +108,6 @@ func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ModelSchedule) validateDuration(formats strfmt.Registry) error {
-	if swag.IsZero(m.Duration) { // not required
-		return nil
-	}
-
-	if err := m.Duration.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("duration")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("duration")
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *ModelSchedule) validateStartDelay(formats strfmt.Registry) error {
-	if swag.IsZero(m.StartDelay) { // not required
-		return nil
-	}
-
-	if err := m.StartDelay.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("startDelay")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("startDelay")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -174,14 +132,6 @@ func (m *ModelSchedule) validateState(formats strfmt.Registry) error {
 func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateDuration(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateStartDelay(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -189,42 +139,6 @@ func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Regi
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *ModelSchedule) contextValidateDuration(ctx context.Context, formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Duration) { // not required
-		return nil
-	}
-
-	if err := m.Duration.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("duration")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("duration")
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (m *ModelSchedule) contextValidateStartDelay(ctx context.Context, formats strfmt.Registry) error {
-
-	if swag.IsZero(m.StartDelay) { // not required
-		return nil
-	}
-
-	if err := m.StartDelay.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("startDelay")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
-			return ce.ValidateName("startDelay")
-		}
-		return err
-	}
-
 	return nil
 }
 
