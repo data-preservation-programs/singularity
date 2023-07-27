@@ -1,4 +1,4 @@
-package embed
+package dashboard
 
 import "embed"
 

@@ -1,7 +1,16 @@
 {
-  "name": "dashboard",
+  "name": "singularity-dashboard",
   "version": "0.1.0",
   "private": true,
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://data-programs.gitbook.io/singularity/overview/readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/data-preservation-programs/singularity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/data-preservation-programs/singularity/issues"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
