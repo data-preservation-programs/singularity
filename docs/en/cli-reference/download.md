@@ -303,7 +303,7 @@ OPTIONS:
    --local-case-insensitive value       Force the filesystem to report itself as case insensitive. (default: "false") [$LOCAL_CASE_INSENSITIVE]
    --local-case-sensitive value         Force the filesystem to report itself as case sensitive. (default: "false") [$LOCAL_CASE_SENSITIVE]
    --local-copy-links value             Follow symlinks and copy the pointed to item. (default: "false") [$LOCAL_COPY_LINKS]
-   --local-encoding value               The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$LOCAL_ENCODING]
+   --local-encoding value               The encoding for the backend. (default: "Slash,Dot") [$LOCAL_ENCODING]
    --local-links value                  Translate symlinks to/from regular files with a '.rclonelink' extension. (default: "false") [$LOCAL_LINKS]
    --local-no-check-updated value       Don't check to see if the files change during upload. (default: "false") [$LOCAL_NO_CHECK_UPDATED]
    --local-no-preallocate value         Disable preallocation of disk space for transferred files. (default: "false") [$LOCAL_NO_PREALLOCATE]

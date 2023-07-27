@@ -542,23 +542,23 @@ type KoofrRequest struct {
 func handleKoofr() {}
 
 type LocalRequest struct {
-	SourcePath           string `validate:"required" json:"sourcePath"`           // The path of the source to scan items
-	DeleteAfterExport    bool   `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
-	RescanInterval       string `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
-	CaseInsensitive      string `json:"caseInsensitive" default:"false"`          // Force the filesystem to report itself as case insensitive.
-	CaseSensitive        string `json:"caseSensitive" default:"false"`            // Force the filesystem to report itself as case sensitive.
-	CopyLinks            string `json:"copyLinks" default:"false"`                // Follow symlinks and copy the pointed to item.
-	Encoding             string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
-	Links                string `json:"links" default:"false"`                    // Translate symlinks to/from regular files with a '.rclonelink' extension.
-	NoCheckUpdated       string `json:"noCheckUpdated" default:"false"`           // Don't check to see if the files change during upload.
-	NoPreallocate        string `json:"noPreallocate" default:"false"`            // Disable preallocation of disk space for transferred files.
-	NoSetModtime         string `json:"noSetModtime" default:"false"`             // Disable setting modtime.
-	NoSparse             string `json:"noSparse" default:"false"`                 // Disable sparse files for multi-thread downloads.
-	Nounc                string `json:"nounc" default:"false"`                    // Disable UNC (long path names) conversion on Windows.
-	OneFileSystem        string `json:"oneFileSystem" default:"false"`            // Don't cross filesystem boundaries (unix/macOS only).
-	SkipLinks            string `json:"skipLinks" default:"false"`                // Don't warn about skipped symlinks.
-	UnicodeNormalization string `json:"unicodeNormalization" default:"false"`     // Apply unicode NFC normalization to paths and filenames.
-	ZeroSizeLinks        string `json:"zeroSizeLinks" default:"false"`            // Assume the Stat size of links is zero (and read them instead) (deprecated).
+	SourcePath           string `validate:"required" json:"sourcePath"`        // The path of the source to scan items
+	DeleteAfterExport    bool   `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
+	RescanInterval       string `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
+	CaseInsensitive      string `json:"caseInsensitive" default:"false"`       // Force the filesystem to report itself as case insensitive.
+	CaseSensitive        string `json:"caseSensitive" default:"false"`         // Force the filesystem to report itself as case sensitive.
+	CopyLinks            string `json:"copyLinks" default:"false"`             // Follow symlinks and copy the pointed to item.
+	Encoding             string `json:"encoding" default:"Slash,Dot"`          // The encoding for the backend.
+	Links                string `json:"links" default:"false"`                 // Translate symlinks to/from regular files with a '.rclonelink' extension.
+	NoCheckUpdated       string `json:"noCheckUpdated" default:"false"`        // Don't check to see if the files change during upload.
+	NoPreallocate        string `json:"noPreallocate" default:"false"`         // Disable preallocation of disk space for transferred files.
+	NoSetModtime         string `json:"noSetModtime" default:"false"`          // Disable setting modtime.
+	NoSparse             string `json:"noSparse" default:"false"`              // Disable sparse files for multi-thread downloads.
+	Nounc                string `json:"nounc" default:"false"`                 // Disable UNC (long path names) conversion on Windows.
+	OneFileSystem        string `json:"oneFileSystem" default:"false"`         // Don't cross filesystem boundaries (unix/macOS only).
+	SkipLinks            string `json:"skipLinks" default:"false"`             // Don't warn about skipped symlinks.
+	UnicodeNormalization string `json:"unicodeNormalization" default:"false"`  // Apply unicode NFC normalization to paths and filenames.
+	ZeroSizeLinks        string `json:"zeroSizeLinks" default:"false"`         // Assume the Stat size of links is zero (and read them instead) (deprecated).
 }
 
 // @Summary Add local source for a dataset
@@ -1487,7 +1487,7 @@ type AllConfig struct {
 	LocalCaseInsensitive                string `json:"localCaseInsensitive" default:"false"`                                                                                                                        // Force the filesystem to report itself as case insensitive.
 	LocalCaseSensitive                  string `json:"localCaseSensitive" default:"false"`                                                                                                                          // Force the filesystem to report itself as case sensitive.
 	LocalCopyLinks                      string `json:"localCopyLinks" default:"false"`                                                                                                                              // Follow symlinks and copy the pointed to item.
-	LocalEncoding                       string `json:"localEncoding" default:"Slash,InvalidUtf8,Dot"`                                                                                                               // The encoding for the backend.
+	LocalEncoding                       string `json:"localEncoding" default:"Slash,Dot"`                                                                                                                           // The encoding for the backend.
 	LocalLinks                          string `json:"localLinks" default:"false"`                                                                                                                                  // Translate symlinks to/from regular files with a '.rclonelink' extension.
 	LocalNoCheckUpdated                 string `json:"localNoCheckUpdated" default:"false"`                                                                                                                         // Don't check to see if the files change during upload.
 	LocalNoPreallocate                  string `json:"localNoPreallocate" default:"false"`                                                                                                                          // Disable preallocation of disk space for transferred files.

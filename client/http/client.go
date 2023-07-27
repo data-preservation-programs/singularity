@@ -27,20 +27,28 @@ func NewHTTPClient(client *http.Client, serverURL string) *Client {
 	}
 }
 
-func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error) {
+func (c *Client) jsonRequest(ctx context.Context, method string, endpoint string, request any) (*http.Response, error) {
 	jsonParams, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
-	httpRequest, err := http.NewRequestWithContext(ctx, "POST", c.serverURL+"/api/dataset", bytes.NewReader(jsonParams))
+	httpRequest, err := http.NewRequestWithContext(ctx, method, endpoint, bytes.NewReader(jsonParams))
 	if err != nil {
 		return nil, err
 	}
-	response, err := c.client.Do(httpRequest)
+	httpRequest.Header.Add("Content-Type", "application/json")
+	return c.client.Do(httpRequest)
+}
+
+func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset", request)
+	defer func() {
+		_ = response.Body.Close()
+	}()
 	if err != nil {
 		return nil, err
 	}
-	if response.StatusCode < 200 && response.StatusCode >= 300 {
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
 	var dataset model.Dataset
@@ -52,19 +60,14 @@ func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateReques
 }
 
 func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, params datasource.LocalRequest) (*model.Source, error) {
-	jsonParams, err := json.Marshal(params)
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/local/dataset/"+datasetName, params)
+	defer func() {
+		_ = response.Body.Close()
+	}()
 	if err != nil {
 		return nil, err
 	}
-	httpRequest, err := http.NewRequestWithContext(ctx, "POST", c.serverURL+"/api/source/local/dataset/"+datasetName, bytes.NewReader(jsonParams))
-	if err != nil {
-		return nil, err
-	}
-	response, err := c.client.Do(httpRequest)
-	if err != nil {
-		return nil, err
-	}
-	if response.StatusCode < 200 && response.StatusCode >= 300 {
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
 	var source model.Source
@@ -76,8 +79,7 @@ func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, para
 }
 
 func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
-
-	httpRequest, err := http.NewRequestWithContext(ctx, "GET", c.serverURL+"/api/item/"+strconv.FormatUint(id, 10), nil)
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/item/"+strconv.FormatUint(id, 10), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +87,10 @@ func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 	if err != nil {
 		return nil, err
 	}
-	if response.StatusCode < 200 && response.StatusCode >= 300 {
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
 	var item model.Item
@@ -97,19 +102,14 @@ func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 }
 
 func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo datasource.ItemInfo) (*model.Item, error) {
-	jsonParams, err := json.Marshal(itemInfo)
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/push", itemInfo)
 	if err != nil {
 		return nil, err
 	}
-	httpRequest, err := http.NewRequestWithContext(ctx, "POST", c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/push", bytes.NewReader(jsonParams))
-	if err != nil {
-		return nil, err
-	}
-	response, err := c.client.Do(httpRequest)
-	if err != nil {
-		return nil, err
-	}
-	if response.StatusCode < 200 && response.StatusCode >= 300 {
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
 	var item model.Item
@@ -132,28 +132,25 @@ func parseHTTPError(response *http.Response) error {
 	var httpError HTTPError
 	jsonErr := json.Unmarshal(bodyData, &httpError)
 	if jsonErr == nil {
-		err = errors.New(httpError.Err)
+		err = errors.New(httpError.Err) //nolint:goerr113
 	} else {
-		err = errors.New(string(bodyData))
+		err = errors.New(string(bodyData)) //nolint:goerr113
 	}
 
-	if response.StatusCode == http.StatusBadRequest {
-		return handler.ErrInvalidParameter{
+	switch response.StatusCode {
+	case http.StatusBadRequest:
+		return handler.InvalidParameterError{
 			Err: err,
 		}
-	}
-
-	if response.StatusCode == http.StatusBadRequest {
-		return handler.ErrNotFound{
+	case http.StatusNotFound:
+		return handler.NotFoundError{
 			Err: err,
 		}
-	}
-
-	if response.StatusCode == http.StatusConflict {
-		return handler.ErrDuplicateRecord{
+	case http.StatusConflict:
+		return handler.DuplicateRecordError{
 			Err: err,
 		}
+	default:
+		return err
 	}
-
-	return err
 }
