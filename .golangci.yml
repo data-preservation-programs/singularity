@@ -56,6 +56,7 @@ linters:
     - godot
     - depguard
     - nakedret
+    - tagalign
 
 linters-settings:
   lll:
@@ -68,4 +69,3 @@ linters-settings:
     rules:
       - name: var-naming
         disabled: true
-
