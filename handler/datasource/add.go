@@ -46,7 +46,7 @@ func createDatasourceHandler(
 ) (*model.Source, error) {
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.ErrNotFound{Err: err}
+		return nil, handler.NotFoundError{Err: err}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to find dataset: %w", err)
@@ -54,7 +54,7 @@ func createDatasourceHandler(
 
 	r, err := fs2.Find(sourceType)
 	if err != nil {
-		return nil, handler.ErrInvalidParameter{Err: err}
+		return nil, handler.InvalidParameterError{Err: err}
 	}
 	sourcePath := sourceParameters["sourcePath"]
 	path, ok := sourcePath.(string)
@@ -67,7 +67,7 @@ func createDatasourceHandler(
 	if r.Prefix == "local" {
 		path, err = filepath.Abs(path)
 		if err != nil {
-			return nil, handler.ErrInvalidParameter{Err: fmt.Errorf("failed to get absolute path: %w", err)}
+			return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to get absolute path: %w", err)}
 		}
 	}
 	deleteAfterExportValue := sourceParameters["deleteAfterExport"]
@@ -82,7 +82,7 @@ func createDatasourceHandler(
 	}
 	rescan, err := time.ParseDuration(rescanInterval)
 	if err != nil {
-		return nil, handler.ErrInvalidParameter{Err: fmt.Errorf("failed to parse rescanInterval: %w", err)}
+		return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to parse rescanInterval: %w", err)}
 	}
 	delete(sourceParameters, "sourcePath")
 	delete(sourceParameters, "deleteAfterExport")

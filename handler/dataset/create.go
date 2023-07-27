@@ -117,7 +117,7 @@ func createHandler(
 
 	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) {
-		return nil, handler.NewInvalidParameterErr("dataset with this name already exists")
+		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}
 
 	if err2 != nil {

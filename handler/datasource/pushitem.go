@@ -61,7 +61,7 @@ func pushItemHandler(
 
 	entry, err := dsHandler.Check(ctx, itemInfo.Path)
 	if err != nil {
-		return nil, handler.ErrInvalidParameter{Err: err}
+		return nil, handler.InvalidParameterError{Err: err}
 	}
 
 	obj, ok := entry.(fs2.ObjectInfo)

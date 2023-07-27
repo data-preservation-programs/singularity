@@ -6,48 +6,48 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ErrInvalidParameter struct {
+type InvalidParameterError struct {
 	Err error
 }
 
-func (e ErrInvalidParameter) Unwrap() error {
+func (e InvalidParameterError) Unwrap() error {
 	return e.Err
 }
-func (e ErrInvalidParameter) Error() string {
+func (e InvalidParameterError) Error() string {
 	return fmt.Sprintf("invalid parameter: %s", e.Err.Error())
 }
 
-func NewInvalidParameterErr(err string) ErrInvalidParameter {
-	return ErrInvalidParameter{
+func NewInvalidParameterErr(err string) InvalidParameterError {
+	return InvalidParameterError{
 		Err: errors.New(err),
 	}
 }
 
-type ErrNotFound struct {
+type NotFoundError struct {
 	Err error
 }
 
-func (e ErrNotFound) Unwrap() error {
+func (e NotFoundError) Unwrap() error {
 	return e.Err
 }
-func (e ErrNotFound) Error() string {
+func (e NotFoundError) Error() string {
 	return fmt.Sprintf("not found: %s", e.Err.Error())
 }
 
-type ErrDuplicateRecord struct {
+type DuplicateRecordError struct {
 	Err error
 }
 
-func (e ErrDuplicateRecord) Unwrap() error {
+func (e DuplicateRecordError) Unwrap() error {
 	return e.Err
 }
 
-func (e ErrDuplicateRecord) Error() string {
+func (e DuplicateRecordError) Error() string {
 	return fmt.Sprintf("duplicate record: %s", e.Err.Error())
 }
 
-func NewDuplicateRecordError(err string) ErrDuplicateRecord {
-	return ErrDuplicateRecord{
+func NewDuplicateRecordError(err string) DuplicateRecordError {
+	return DuplicateRecordError{
 		Err: errors.New(err),
 	}
 }

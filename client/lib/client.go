@@ -20,7 +20,6 @@ type Client struct {
 }
 
 func NewClient(db *gorm.DB) (*Client, error) {
-
 	if err := model.AutoMigrate(db); err != nil {
 		return nil, err
 	}
@@ -35,12 +34,12 @@ func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateReques
 }
 
 func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, params dshandler.LocalRequest) (*model.Source, error) {
-	paramJson, err := json.Marshal(params)
+	paramJSON, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
 	paramsMap := map[string]interface{}{}
-	err = json.Unmarshal(paramJson, &paramsMap)
+	err = json.Unmarshal(paramJSON, &paramsMap)
 	if err != nil {
 		return nil, err
 	}

@@ -196,13 +196,17 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		}
 		envvar := strings.ToUpper(regInfo.Prefix + "_" + name)
 		flagName := strings.ToLower(strings.ReplaceAll(envvar, "_", "-"))
+		defaultValue := fmt.Sprint(options[0].Default)
+		if cmd.Name == "local" && name == "encoding" {
+			defaultValue = "Slash,Dot"
+		}
 		flag := &cli.StringFlag{
 			Name:     flagName,
 			Category: category,
 			Usage:    strings.Split(options[0].Help, "\n")[0],
 			Required: options[0].Required,
 			Hidden:   options[0].Hide&fs.OptionHideCommandLine != 0,
-			Value:    fmt.Sprint(options[0].Default),
+			Value:    defaultValue,
 			Aliases:  aliases,
 			EnvVars:  []string{envvar},
 		}
