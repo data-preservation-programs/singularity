@@ -137,6 +137,7 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 			logger.Fatal(err)
 		}
 	}
+	httpDone := make(chan struct{})
 	if s.bind != "" {
 		e := echo.New()
 		e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
@@ -193,6 +194,7 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 			if err := e.Shutdown(shutdownCtx); err != nil {
 				fmt.Printf("Error shutting down the server: %v\n", err)
 			}
+			httpDone <- struct{}{}
 		}()
 
 		err := e.Start(s.bind)
@@ -202,6 +204,9 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 	}
 
 	<-ctx.Done()
+	if s.bind != "" {
+		<-httpDone
+	}
 	return nil
 }
 

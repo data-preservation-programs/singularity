@@ -382,6 +382,9 @@ func (d *DealMakerService) Run(ctx context.Context) error {
 			d.cleanup()
 			return cli.Exit("received signal", 130)
 		case <-ctx.Done():
+			for _, cancel := range d.activeScheduleCancelFunc {
+				cancel()
+			}
 			//nolint:errcheck
 			d.cleanup()
 			return ctx.Err()
