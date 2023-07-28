@@ -27,6 +27,7 @@ var AddCmd = &cli.Command{
 	Subcommands: underscore.Map(underscore.Filter(fs.Registry, func(r *fs.RegInfo) bool {
 		return !slices.Contains([]string{"crypt", "memory", "tardigrade"}, r.Prefix)
 	}), func(r *fs.RegInfo) *cli.Command {
+		ws := model.Ready
 		cmd := datasource.OptionsToCLIFlags(r)
 		cmd.Flags = append(cmd.Flags, &cli.BoolFlag{
 			Name:     "delete-after-export",
@@ -37,6 +38,12 @@ var AddCmd = &cli.Command{
 			Usage:       "Automatically rescan the source directory when this interval has passed from last successful scan",
 			Category:    "Data Preparation Options",
 			DefaultText: "disabled",
+		}, &cli.GenericFlag{
+			Name:        "scanning-state",
+			Usage:       "set the initial scanning state",
+			Category:    "Data Preparation Options",
+			DefaultText: "ready",
+			Value:       &ws,
 		})
 		cmd.Action = func(c *cli.Context) error {
 			datasetName := c.Args().Get(0)
@@ -83,7 +90,7 @@ var AddCmd = &cli.Command{
 				Path:                path,
 				Metadata:            model.Metadata(result),
 				ScanIntervalSeconds: 0,
-				ScanningState:       model.Ready,
+				ScanningState:       ws,
 				DeleteAfterExport:   deleteAfterExport,
 				DagGenState:         model.Created,
 			}

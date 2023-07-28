@@ -30,6 +30,12 @@ type DatasourcePutioRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -44,6 +50,10 @@ func (m *DatasourcePutioRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -75,6 +85,11 @@ func (m *DatasourcePutioRequest) validateRescanInterval(formats strfmt.Registry)
 	return nil
 }
 
+func (m *DatasourcePutioRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourcePutioRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -84,8 +99,22 @@ func (m *DatasourcePutioRequest) validateSourcePath(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validates this datasource putio request based on context it is used
+// ContextValidate validate this datasource putio request based on the context it is used
 func (m *DatasourcePutioRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourcePutioRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

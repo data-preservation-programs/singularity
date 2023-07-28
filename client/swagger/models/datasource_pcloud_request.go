@@ -48,6 +48,12 @@ type DatasourcePcloudRequest struct {
 	// Fill in for rclone to use a non root folder as its starting point.
 	RootFolderID *string `json:"rootFolderId,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -71,6 +77,10 @@ func (m *DatasourcePcloudRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,6 +112,11 @@ func (m *DatasourcePcloudRequest) validateRescanInterval(formats strfmt.Registry
 	return nil
 }
 
+func (m *DatasourcePcloudRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourcePcloudRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -111,8 +126,22 @@ func (m *DatasourcePcloudRequest) validateSourcePath(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validates this datasource pcloud request based on context it is used
+// ContextValidate validate this datasource pcloud request based on the context it is used
 func (m *DatasourcePcloudRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourcePcloudRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

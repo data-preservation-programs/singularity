@@ -45,6 +45,12 @@ type DatasourceQingstorRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// QingStor Secret Access Key (password).
 	SecretAccessKey string `json:"secretAccessKey,omitempty"`
 
@@ -71,6 +77,10 @@ func (m *DatasourceQingstorRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,6 +112,11 @@ func (m *DatasourceQingstorRequest) validateRescanInterval(formats strfmt.Regist
 	return nil
 }
 
+func (m *DatasourceQingstorRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceQingstorRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -111,8 +126,22 @@ func (m *DatasourceQingstorRequest) validateSourcePath(formats strfmt.Registry) 
 	return nil
 }
 
-// ContextValidate validates this datasource qingstor request based on context it is used
+// ContextValidate validate this datasource qingstor request based on the context it is used
 func (m *DatasourceQingstorRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceQingstorRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

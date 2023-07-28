@@ -177,6 +177,22 @@ const (
 	Error WorkState = "error"
 )
 
+var ErrInvalidWorkState = errors.New("invalid work state")
+
+func (ws *WorkState) Set(value string) error {
+	for _, state := range WorkStates {
+		if state == WorkState(value) {
+			*ws = state
+			return nil
+		}
+	}
+	return ErrInvalidWorkState
+}
+
+func (ws *WorkState) String() string {
+	return string(*ws)
+}
+
 type Worker struct {
 	ID            string    `gorm:"primaryKey;size:64" json:"id"`
 	WorkType      WorkType  `json:"workType"`

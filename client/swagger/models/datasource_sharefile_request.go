@@ -39,6 +39,12 @@ type DatasourceSharefileRequest struct {
 	// ID of the root folder.
 	RootFolderID string `json:"rootFolderId,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -56,6 +62,10 @@ func (m *DatasourceSharefileRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +97,11 @@ func (m *DatasourceSharefileRequest) validateRescanInterval(formats strfmt.Regis
 	return nil
 }
 
+func (m *DatasourceSharefileRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceSharefileRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -96,8 +111,22 @@ func (m *DatasourceSharefileRequest) validateSourcePath(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this datasource sharefile request based on context it is used
+// ContextValidate validate this datasource sharefile request based on the context it is used
 func (m *DatasourceSharefileRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceSharefileRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

@@ -117,6 +117,12 @@ type DatasourceS3Request struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// AWS Secret Access Key (password).
 	SecretAccessKey string `json:"secretAccessKey,omitempty"`
 
@@ -191,6 +197,10 @@ func (m *DatasourceS3Request) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateScanningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourcePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -219,6 +229,11 @@ func (m *DatasourceS3Request) validateRescanInterval(formats strfmt.Registry) er
 	return nil
 }
 
+func (m *DatasourceS3Request) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceS3Request) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -228,8 +243,22 @@ func (m *DatasourceS3Request) validateSourcePath(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validates this datasource s3 request based on context it is used
+// ContextValidate validate this datasource s3 request based on the context it is used
 func (m *DatasourceS3Request) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceS3Request) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

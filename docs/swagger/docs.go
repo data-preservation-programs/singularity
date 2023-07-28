@@ -3720,6 +3720,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -3751,6 +3752,14 @@ const docTemplate = `{
                 "rescanInterval": {
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
+                },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -5548,6 +5557,14 @@ const docTemplate = `{
                     "type": "string",
                     "default": "false"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "seafile2fa": {
                     "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
                     "type": "string",
@@ -6094,6 +6111,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6216,6 +6234,14 @@ const docTemplate = `{
                     "description": "SAS URL for container level access only.",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "servicePrincipalFile": {
                     "description": "Path to file containing credentials for use with a service principal.",
                     "type": "string"
@@ -6258,6 +6284,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6325,6 +6352,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -6355,6 +6390,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6414,6 +6450,14 @@ const docTemplate = `{
                     "type": "string",
                     "default": "0"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -6464,6 +6508,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6571,6 +6616,14 @@ const docTemplate = `{
                 "rootFolderId": {
                     "description": "ID of the root folder.",
                     "type": "string"
+                },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 },
                 "scope": {
                     "description": "Scope that rclone should use when requesting access from drive.",
@@ -6687,6 +6740,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6744,6 +6798,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sharedFiles": {
                     "description": "Instructs rclone to work on individual shared files.",
                     "type": "string",
@@ -6773,6 +6835,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6801,6 +6864,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sharedFolder": {
                     "description": "If you want to download a shared folder, add this parameter.",
                     "type": "string"
@@ -6816,6 +6887,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6839,6 +6911,14 @@ const docTemplate = `{
                 "rootFolderId": {
                     "description": "ID of the root folder.",
                     "type": "string"
+                },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -6867,6 +6947,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -6951,6 +7032,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "shutTimeout": {
                     "description": "Maximum time to wait for data connection closing status.",
                     "type": "string",
@@ -6987,6 +7076,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7060,6 +7150,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "serviceAccountCredentials": {
                     "description": "Service Account Credentials JSON blob.",
                     "type": "string"
@@ -7091,6 +7189,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7134,6 +7233,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7158,6 +7265,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7182,6 +7290,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "servicePrincipalName": {
                     "description": "Kerberos service principal name for the namenode.",
                     "type": "string"
@@ -7201,6 +7317,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7249,6 +7366,14 @@ const docTemplate = `{
                     "type": "string",
                     "default": "/"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "scopeAccess": {
                     "description": "Access permissions that rclone should use when requesting access from HiDrive.",
                     "type": "string",
@@ -7288,6 +7413,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7313,6 +7439,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7328,6 +7462,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7363,6 +7498,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "secretAccessKey": {
                     "description": "IAS3 Secret Key (password).",
                     "type": "string"
@@ -7392,6 +7535,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7423,6 +7567,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7444,6 +7596,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7476,6 +7629,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "setmtime": {
                     "description": "Does the backend support setting modification time.",
                     "type": "string",
@@ -7496,6 +7657,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7562,6 +7724,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "skipLinks": {
                     "description": "Don't warn about skipped symlinks.",
                     "type": "string",
@@ -7588,6 +7758,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7616,6 +7787,14 @@ const docTemplate = `{
                 "rescanInterval": {
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
+                },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
@@ -7656,6 +7835,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7686,6 +7866,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7706,6 +7894,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7730,6 +7919,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "secret": {
                     "description": "Set the NetStorage account secret/G2O key for authentication.",
                     "type": "string"
@@ -7745,6 +7942,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7839,6 +8037,14 @@ const docTemplate = `{
                     "description": "ID of the root folder.",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "serverSideAcrossConfigs": {
                     "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
                     "type": "string",
@@ -7863,6 +8069,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -7940,6 +8147,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -7986,6 +8201,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8011,6 +8227,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8026,6 +8250,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8068,6 +8293,14 @@ const docTemplate = `{
                     "type": "string",
                     "default": "d0"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8091,6 +8324,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8111,6 +8345,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8122,6 +8364,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8138,6 +8381,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8149,6 +8400,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8188,6 +8440,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "secretAccessKey": {
                     "description": "QingStor Secret Access Key (password).",
                     "type": "string"
@@ -8217,6 +8477,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8369,6 +8630,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "secretAccessKey": {
                     "description": "AWS Secret Access Key (password).",
                     "type": "string"
@@ -8464,6 +8733,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8506,6 +8776,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8525,6 +8803,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8629,6 +8908,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "serverCommand": {
                     "description": "Specifies the path or command to run a sftp server on the remote host.",
                     "type": "string"
@@ -8686,6 +8973,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8715,6 +9003,14 @@ const docTemplate = `{
                     "description": "ID of the root folder.",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8731,6 +9027,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8756,6 +9053,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8772,6 +9077,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8821,6 +9127,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8841,6 +9155,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8874,6 +9189,14 @@ const docTemplate = `{
                     "type": "string",
                     "default": "us1.storj.io"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8885,6 +9208,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -8938,6 +9262,14 @@ const docTemplate = `{
                     "description": "Sugarsync root id.",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -8953,6 +9285,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -9036,6 +9369,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -9075,6 +9416,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -9095,6 +9437,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -9106,6 +9456,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -9137,6 +9488,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -9160,6 +9519,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -9193,6 +9553,14 @@ const docTemplate = `{
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
                 },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
+                },
                 "sourcePath": {
                     "description": "The path of the source to scan items",
                     "type": "string"
@@ -9212,6 +9580,7 @@ const docTemplate = `{
             "required": [
                 "deleteAfterExport",
                 "rescanInterval",
+                "scanningState",
                 "sourcePath"
             ],
             "properties": {
@@ -9243,6 +9612,14 @@ const docTemplate = `{
                 "rescanInterval": {
                     "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
                     "type": "string"
+                },
+                "scanningState": {
+                    "description": "Starting state for scanning",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 },
                 "sourcePath": {
                     "description": "The path of the source to scan items",

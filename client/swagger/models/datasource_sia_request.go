@@ -36,6 +36,12 @@ type DatasourceSiaRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -53,6 +59,10 @@ func (m *DatasourceSiaRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -84,6 +94,11 @@ func (m *DatasourceSiaRequest) validateRescanInterval(formats strfmt.Registry) e
 	return nil
 }
 
+func (m *DatasourceSiaRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceSiaRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -93,8 +108,22 @@ func (m *DatasourceSiaRequest) validateSourcePath(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this datasource sia request based on context it is used
+// ContextValidate validate this datasource sia request based on the context it is used
 func (m *DatasourceSiaRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceSiaRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

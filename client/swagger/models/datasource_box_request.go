@@ -60,6 +60,12 @@ type DatasourceBoxRequest struct {
 	// Fill in for rclone to use a non root folder as its starting point.
 	RootFolderID *string `json:"rootFolderId,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -83,6 +89,10 @@ func (m *DatasourceBoxRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -114,6 +124,11 @@ func (m *DatasourceBoxRequest) validateRescanInterval(formats strfmt.Registry) e
 	return nil
 }
 
+func (m *DatasourceBoxRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceBoxRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -123,8 +138,22 @@ func (m *DatasourceBoxRequest) validateSourcePath(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this datasource box request based on context it is used
+// ContextValidate validate this datasource box request based on the context it is used
 func (m *DatasourceBoxRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceBoxRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

@@ -48,6 +48,12 @@ type DatasourceGphotosRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -71,6 +77,10 @@ func (m *DatasourceGphotosRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,6 +112,11 @@ func (m *DatasourceGphotosRequest) validateRescanInterval(formats strfmt.Registr
 	return nil
 }
 
+func (m *DatasourceGphotosRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceGphotosRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -111,8 +126,22 @@ func (m *DatasourceGphotosRequest) validateSourcePath(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validates this datasource gphotos request based on context it is used
+// ContextValidate validate this datasource gphotos request based on the context it is used
 func (m *DatasourceGphotosRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceGphotosRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 
