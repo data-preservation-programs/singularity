@@ -12,3 +12,15 @@ runs:
         key: ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ matrix.os }}-golang-${{ matrix.go }}-
+    - name: Setup PostgreSQL database
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql db: 'singularity'
+        postgresql user: 'singularity'
+        postgresql password: 'singularity'
+    - name: Setup MySQL database
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        mysql database: 'singularity'
+        mysql user: 'singularity'
+        mysql password: 'singularity'
