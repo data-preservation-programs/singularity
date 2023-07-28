@@ -15,10 +15,11 @@ var StatusCmd = &cli.Command{
 	Usage:     "Get the data preparation summary of a data source",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		result, err := datasource.GetSourceStatusHandler(
 			db,
 			c.Args().Get(0),

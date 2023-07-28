@@ -48,10 +48,11 @@ var AddCmd = &cli.Command{
 		cmd.Action = func(c *cli.Context) error {
 			datasetName := c.Args().Get(0)
 			path := c.Args().Get(1)
-			db, err := database.OpenFromCLI(c)
+			db, closer, err := database.OpenFromCLI(c)
 			if err != nil {
 				return err
 			}
+			defer closer.Close()
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
 				return handler.InvalidParameterError{Err: err}

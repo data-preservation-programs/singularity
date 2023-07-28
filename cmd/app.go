@@ -30,9 +30,7 @@ var App = &cli.App{
   Singularity supports multiple database backend: sqlite3, postgres, mysql
   Use '--database-connection-string' or $DATABASE_CONNECTION_STRING to specify the database connection string.
     Example for postgres  - postgres://user:pass@example.com:5432/dbname
-    Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true
-                            Note: the database needs to be created using ascii Character Set:
-                              CREATE DATABASE <dbname> DEFAULT CHARACTER SET ascii
+    Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true
     Example for sqlite3   - sqlite:/absolute/path/to/database.db
                 or        - sqlite:relative/path/to/database.db
 

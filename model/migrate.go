@@ -37,6 +37,11 @@ func AutoMigrate(db *gorm.DB) error {
 		return errors.Wrap(err, "failed to auto migrate")
 	}
 
+	err = CreateIndexes(db)
+	if err != nil {
+		return errors.Wrap(err, "failed to create indexes")
+	}
+
 	logger.Debug("Creating instance id")
 	err = db.Clauses(clause.OnConflict{
 		DoNothing: true,

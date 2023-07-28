@@ -13,8 +13,9 @@ import (
 
 func TestHealthCheck(t *testing.T) {
 	req := require.New(t)
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	defer database.DropAll(db)
 
 	id := uuid.New()

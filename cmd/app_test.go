@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,11 +19,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	"filippo.io/age"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/pack"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	blocks "github.com/ipfs/go-block-format"
@@ -41,6 +43,55 @@ import (
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
+
+type testDB struct {
+	db      *gorm.DB
+	closer  io.Closer
+	connStr string
+}
+
+var testDBMap map[string]testDB = make(map[string]testDB)
+var mu sync.Mutex
+
+func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, connStr string, err error) {
+	if dialect == "sqlite" {
+		connStr = "sqlite:" + t.TempDir() + "/singularity.db"
+		db, closer, err = database.Open(connStr, &gorm.Config{})
+		return
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	found, ok := testDBMap[dialect]
+	if ok {
+		return found.db, found.closer, found.connStr, nil
+	}
+	var opError *net.OpError
+	switch dialect {
+	case "mysql":
+		connStr = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
+		db, closer, err = database.Open(connStr, &gorm.Config{})
+		if errors.As(err, &opError) {
+			db = nil
+			err = nil
+		}
+	case "postgres":
+		connStr = "postgres://singularity:singularity@localhost:5432/singularity?sslmode=disable"
+		db, closer, err = database.Open(connStr, &gorm.Config{})
+		if errors.As(err, &opError) {
+			db = nil
+			err = nil
+		}
+	default:
+		err = errors.New("Unsupported dialect")
+	}
+	if err != nil {
+		return
+	}
+	testDBMap[dialect] = testDB{
+		db, closer, connStr,
+	}
+	return
+}
 
 func generateRandomBytes(n int) []byte {
 	b := make([]byte, n)
@@ -178,22 +229,21 @@ func testWithAllBackendWithoutReset(t *testing.T, testFunc func(ctx context.Cont
 }
 
 func testWithAllBackendWithResetArg(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB), reset bool) {
-	backends := [][2]string{
-		{"sqlite", "sqlite:" + t.TempDir() + "/singularity.db"},
-		//{"mysql", "mysql://root:password@tcp(localhost:3306)/singularity?parseTime=true"},
-		//{"postgres", "postgres://postgres:password@localhost:5432/singularity?sslmode=disable"},
-	}
-	for _, backend := range backends {
-		os.Setenv("DATABASE_CONNECTION_STRING", backend[1])
+	for _, backend := range []string{"sqlite", "mysql", "postgres"} {
+		db, _, connStr, err := getTestDB(t, backend)
+		require.NoError(t, err)
+		if db == nil {
+			t.Log("Skip " + backend)
+			continue
+		}
+		os.Setenv("DATABASE_CONNECTION_STRING", connStr)
 		if reset {
 			_, _, err := RunArgsInTest(context.Background(), "singularity admin reset")
 			require.NoError(t, err)
 		}
-		db, err := database.Open(backend[1], &gorm.Config{})
-		require.NoError(t, err)
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 		defer cancel()
-		t.Run(backend[0], func(t *testing.T) {
+		t.Run(backend, func(t *testing.T) {
 			testFunc(ctx, t, db)
 		})
 	}

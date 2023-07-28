@@ -77,10 +77,12 @@ var PrepCmd = &cli.Command{
 				return errors.Wrap(err, "failed to get absolute path")
 			}
 		}
-		db, err := database.Open("sqlite:"+databaseFile, &gorm.Config{})
+		db, closer, err := database.Open("sqlite:"+databaseFile, &gorm.Config{})
 		if err != nil {
 			return errors.Wrapf(err, "failed to open database %s", databaseFile)
 		}
+
+		defer closer.Close()
 
 		// Step 1, initialize the database
 		err = admin.InitHandler(db)

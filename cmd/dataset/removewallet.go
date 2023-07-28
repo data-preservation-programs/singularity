@@ -11,10 +11,11 @@ var RemoveWalletCmd = &cli.Command{
 	Usage:     "Remove an associated wallet from the dataset",
 	ArgsUsage: "DATASET_NAME WALLET_ADDRESS",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		return wallet.RemoveWalletHandler(db, c.Args().Get(0), c.Args().Get(1))
 	},
 }
