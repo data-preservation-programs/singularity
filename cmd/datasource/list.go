@@ -22,7 +22,7 @@ var ListCmd = &cli.Command{
 			return err
 		}
 		datasetName := c.String("dataset")
-		sources, err := datasource.ListSourceByDatasetHandler(
+		sources, err := datasource.ListSourcesByDatasetHandler(
 			db,
 			datasetName,
 		)

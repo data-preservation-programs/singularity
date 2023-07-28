@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHTTPClient(t *testing.T) {
+func TestClients(t *testing.T) {
 	ctx := context.Background()
 	testWithAllClients(ctx, t, func(t *testing.T, client client.Client) {
 		// createDataset
@@ -61,6 +61,14 @@ func TestHTTPClient(t *testing.T) {
 		require.Equal(t, ds.ID, source.DatasetID)
 		require.Equal(t, path, source.Path)
 		require.Equal(t, model.Ready, source.ScanningState)
+
+		// list sources for dataset
+		sources, err := client.ListSourcesByDataset(ctx, "test")
+		require.NoError(t, err)
+		require.Len(t, sources, 1)
+		require.Equal(t, ds.ID, sources[0].DatasetID)
+		require.Equal(t, path, sources[0].Path)
+		require.Equal(t, model.Ready, sources[0].ScanningState)
 
 		// create datasource when dataset not found
 		notFoundSource, err := client.CreateLocalSource(ctx, "apples", datasource.LocalRequest{
