@@ -57,6 +57,12 @@ type DatasourceDropboxRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Instructs rclone to work on individual shared files.
 	SharedFiles *string `json:"sharedFiles,omitempty"`
 
@@ -83,6 +89,10 @@ func (m *DatasourceDropboxRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -114,6 +124,11 @@ func (m *DatasourceDropboxRequest) validateRescanInterval(formats strfmt.Registr
 	return nil
 }
 
+func (m *DatasourceDropboxRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceDropboxRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -123,8 +138,22 @@ func (m *DatasourceDropboxRequest) validateSourcePath(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validates this datasource dropbox request based on context it is used
+// ContextValidate validate this datasource dropbox request based on the context it is used
 func (m *DatasourceDropboxRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceDropboxRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

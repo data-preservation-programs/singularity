@@ -90,6 +90,12 @@ type DatasourceSftpRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Specifies the path or command to run a sftp server on the remote host.
 	ServerCommand string `json:"serverCommand,omitempty"`
 
@@ -137,6 +143,10 @@ func (m *DatasourceSftpRequest) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateScanningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourcePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -165,6 +175,11 @@ func (m *DatasourceSftpRequest) validateRescanInterval(formats strfmt.Registry) 
 	return nil
 }
 
+func (m *DatasourceSftpRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceSftpRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -174,8 +189,22 @@ func (m *DatasourceSftpRequest) validateSourcePath(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this datasource sftp request based on context it is used
+// ContextValidate validate this datasource sftp request based on the context it is used
 func (m *DatasourceSftpRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceSftpRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

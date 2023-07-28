@@ -14,6 +14,7 @@ import (
 	httpclient "github.com/data-preservation-programs/singularity/client/http"
 	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/model"
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
@@ -53,11 +54,13 @@ func TestHTTPClient(t *testing.T) {
 		source, err := client.CreateLocalSource(ctx, "test", datasource.LocalRequest{
 			SourcePath:     path,
 			RescanInterval: "0h",
+			ScanningState:  model.Ready,
 		})
 		require.NoError(t, err)
 		require.Equal(t, "local", source.Type)
 		require.Equal(t, ds.ID, source.DatasetID)
 		require.Equal(t, path, source.Path)
+		require.Equal(t, model.Ready, source.ScanningState)
 
 		// create datasource when dataset not found
 		notFoundSource, err := client.CreateLocalSource(ctx, "apples", datasource.LocalRequest{

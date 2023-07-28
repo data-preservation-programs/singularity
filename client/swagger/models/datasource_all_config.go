@@ -1180,6 +1180,11 @@ type DatasourceAllConfig struct {
 	// Include old versions in directory listings.
 	S3Versions *string `json:"s3Versions,omitempty"`
 
+	// Starting state for scanning
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState,omitempty"`
+
 	// Two-factor authentication ('true' if the account has 2FA enabled).
 	Seafile2fa *string `json:"seafile2fa,omitempty"`
 
@@ -1555,6 +1560,10 @@ type DatasourceAllConfig struct {
 func (m *DatasourceAllConfig) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateScanningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourcePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -1562,6 +1571,14 @@ func (m *DatasourceAllConfig) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *DatasourceAllConfig) validateScanningState(formats strfmt.Registry) error {
+	if swag.IsZero(m.ScanningState) { // not required
+		return nil
+	}
+
 	return nil
 }
 
@@ -1574,8 +1591,22 @@ func (m *DatasourceAllConfig) validateSourcePath(formats strfmt.Registry) error 
 	return nil
 }
 
-// ContextValidate validates this datasource all config based on context it is used
+// ContextValidate validate this datasource all config based on the context it is used
 func (m *DatasourceAllConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceAllConfig) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

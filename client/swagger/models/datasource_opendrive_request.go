@@ -36,6 +36,12 @@ type DatasourceOpendriveRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -53,6 +59,10 @@ func (m *DatasourceOpendriveRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -84,6 +94,11 @@ func (m *DatasourceOpendriveRequest) validateRescanInterval(formats strfmt.Regis
 	return nil
 }
 
+func (m *DatasourceOpendriveRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceOpendriveRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -93,8 +108,22 @@ func (m *DatasourceOpendriveRequest) validateSourcePath(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this datasource opendrive request based on context it is used
+// ContextValidate validate this datasource opendrive request based on the context it is used
 func (m *DatasourceOpendriveRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceOpendriveRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

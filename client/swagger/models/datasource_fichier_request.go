@@ -39,6 +39,12 @@ type DatasourceFichierRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// If you want to download a shared folder, add this parameter.
 	SharedFolder string `json:"sharedFolder,omitempty"`
 
@@ -56,6 +62,10 @@ func (m *DatasourceFichierRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +97,11 @@ func (m *DatasourceFichierRequest) validateRescanInterval(formats strfmt.Registr
 	return nil
 }
 
+func (m *DatasourceFichierRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceFichierRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -96,8 +111,22 @@ func (m *DatasourceFichierRequest) validateSourcePath(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validates this datasource fichier request based on context it is used
+// ContextValidate validate this datasource fichier request based on the context it is used
 func (m *DatasourceFichierRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceFichierRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

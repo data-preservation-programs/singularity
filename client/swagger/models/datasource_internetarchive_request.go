@@ -42,6 +42,12 @@ type DatasourceInternetarchiveRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// IAS3 Secret Key (password).
 	SecretAccessKey string `json:"secretAccessKey,omitempty"`
 
@@ -62,6 +68,10 @@ func (m *DatasourceInternetarchiveRequest) Validate(formats strfmt.Registry) err
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -93,6 +103,11 @@ func (m *DatasourceInternetarchiveRequest) validateRescanInterval(formats strfmt
 	return nil
 }
 
+func (m *DatasourceInternetarchiveRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceInternetarchiveRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -102,8 +117,22 @@ func (m *DatasourceInternetarchiveRequest) validateSourcePath(formats strfmt.Reg
 	return nil
 }
 
-// ContextValidate validates this datasource internetarchive request based on context it is used
+// ContextValidate validate this datasource internetarchive request based on the context it is used
 func (m *DatasourceInternetarchiveRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceInternetarchiveRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

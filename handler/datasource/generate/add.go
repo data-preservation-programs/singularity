@@ -17,6 +17,10 @@ const header = `
 //lint:file-ignore U1000 Ignore all unused code, it's generated
 // Code generated. DO NOT EDIT.
 package datasource
+
+import (
+	"github.com/data-preservation-programs/singularity/model"
+)
 `
 
 const structTemplate = `
@@ -24,7 +28,8 @@ type {{.Name}} struct {
     SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan items
     DeleteAfterExport bool ` + "`validate:\"required\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
     RescanInterval string ` + "`validate:\"required\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
-    {{- range .Fields }}
+    ScanningState model.WorkState ` + "`validate:\"required\" json:\"scanningState\"`" + `// Starting state for scanning
+		{{- range .Fields }}
     {{.Name}} {{.Type}} {{.Tag}} // {{.Description}}
 	{{- end }}
 }
@@ -35,7 +40,8 @@ type {{.Name}} struct {
 		SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan items
     DeleteAfterExport bool ` + "`validate:\"optional\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
     RescanInterval string ` + "`validate:\"optional\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
-    {{- range .Fields }}
+    ScanningState model.WorkState ` + "`validate:\"optional\" json:\"scanningState\"`" + `// Starting state for scanning
+		{{- range .Fields }}
     {{.Name}} {{.Type}} {{.Tag}} // {{.Description}}
 	{{- end }}
 }

@@ -24,7 +24,7 @@ func TestHandlePostSource(t *testing.T) {
 	require.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/local/dataset/test", bytes.NewBuffer([]byte(
-		`{"deleteAfterExport":true,"sourcePath":"`+tmp+`","rescanInterval":"1h","caseInsensitive":"false"}`,
+		`{"deleteAfterExport":true,"sourcePath":"`+tmp+`","rescanInterval":"1h","caseInsensitive":"false","scanningState":"ready"}`,
 	)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()

@@ -33,6 +33,12 @@ type DatasourcePremiumizemeRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -47,6 +53,10 @@ func (m *DatasourcePremiumizemeRequest) Validate(formats strfmt.Registry) error 
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -78,6 +88,11 @@ func (m *DatasourcePremiumizemeRequest) validateRescanInterval(formats strfmt.Re
 	return nil
 }
 
+func (m *DatasourcePremiumizemeRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourcePremiumizemeRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -87,8 +102,22 @@ func (m *DatasourcePremiumizemeRequest) validateSourcePath(formats strfmt.Regist
 	return nil
 }
 
-// ContextValidate validates this datasource premiumizeme request based on context it is used
+// ContextValidate validate this datasource premiumizeme request based on the context it is used
 func (m *DatasourcePremiumizemeRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourcePremiumizemeRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 
