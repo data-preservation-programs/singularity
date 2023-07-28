@@ -21,6 +21,8 @@ runs:
     - name: Setup MySQL database
       uses: shogo82148/actions-setup-mysql@v1
       with:
-        root-password: 'singularity'
         user: 'singularity'
         password: 'singularity'
+    - name: Create MySQL database
+      shell: bash
+      run: mysql -u root -e "create database singularity"
