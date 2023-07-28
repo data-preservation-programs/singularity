@@ -233,6 +233,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 	// Dataset
 	e.POST("/api/dataset", s.toEchoHandler(dataset.CreateHandler))
+	e.GET("/api/dataset/:datasetName/sources", s.toEchoHandler(datasource2.ListSourcesByDatasetHandler))
 	e.PATCH("/api/dataset/:datasetName", s.toEchoHandler(dataset.UpdateHandler))
 	e.DELETE("/api/dataset/:datasetName", s.toEchoHandler(dataset.RemoveHandler))
 	e.POST("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.AddPieceHandler))
