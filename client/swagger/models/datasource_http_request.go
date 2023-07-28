@@ -36,6 +36,12 @@ type DatasourceHTTPRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -53,6 +59,10 @@ func (m *DatasourceHTTPRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -84,6 +94,11 @@ func (m *DatasourceHTTPRequest) validateRescanInterval(formats strfmt.Registry) 
 	return nil
 }
 
+func (m *DatasourceHTTPRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceHTTPRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -93,8 +108,22 @@ func (m *DatasourceHTTPRequest) validateSourcePath(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this datasource Http request based on context it is used
+// ContextValidate validate this datasource Http request based on the context it is used
 func (m *DatasourceHTTPRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceHTTPRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

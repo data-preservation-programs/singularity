@@ -101,6 +101,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -122,6 +126,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.AllConfig:
@@ -1554,6 +1559,10 @@ definitions:
         default: "false"
         description: Include old versions in directory listings.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       seafile2fa:
         default: "false"
         description: Two-factor authentication ('true' if the account has 2FA enabled).
@@ -2081,6 +2090,10 @@ definitions:
       sasUrl:
         description: SAS URL for container level access only.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       servicePrincipalFile:
         description: Path to file containing credentials for use with a service principal.
         type: string
@@ -2113,6 +2126,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.B2Request:
@@ -2169,6 +2183,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2190,6 +2208,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.BoxRequest:
@@ -2238,6 +2257,10 @@ definitions:
         default: "0"
         description: Fill in for rclone to use a non root folder as its starting point.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2254,6 +2277,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.CheckSourceRequest:
@@ -2360,6 +2384,10 @@ definitions:
       rootFolderId:
         description: ID of the root folder.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       scope:
         description: Scope that rclone should use when requesting access from drive.
         type: string
@@ -2449,6 +2477,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.DropboxRequest:
@@ -2496,6 +2525,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sharedFiles:
         default: "false"
         description: Instructs rclone to work on individual shared files.
@@ -2516,6 +2549,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.FichierRequest:
@@ -2542,6 +2576,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sharedFolder:
         description: If you want to download a shared folder, add this parameter.
         type: string
@@ -2551,6 +2589,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.FilefabricRequest:
@@ -2572,6 +2611,10 @@ definitions:
       rootFolderId:
         description: ID of the root folder.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2590,6 +2633,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.FtpRequest:
@@ -2660,6 +2704,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       shutTimeout:
         default: 1m0s
         description: Maximum time to wait for data connection closing status.
@@ -2686,6 +2734,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.GcsRequest:
@@ -2746,6 +2795,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       serviceAccountCredentials:
         description: Service Account Credentials JSON blob.
         type: string
@@ -2768,6 +2821,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.GphotosRequest:
@@ -2804,6 +2858,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2821,6 +2879,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.HdfsRequest:
@@ -2842,6 +2901,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       servicePrincipalName:
         description: Kerberos service principal name for the namenode.
         type: string
@@ -2854,6 +2917,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.HidriveRequest:
@@ -2895,6 +2959,10 @@ definitions:
         default: /
         description: The root/parent folder for all paths.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       scopeAccess:
         default: rw
         description: Access permissions that rclone should use when requesting access
@@ -2925,6 +2993,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.HttpRequest:
@@ -2947,6 +3016,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -2956,6 +3029,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.InternetarchiveRequest:
@@ -2987,6 +3061,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       secretAccessKey:
         description: IAS3 Secret Key (password).
         type: string
@@ -3001,6 +3079,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.ItemInfo:
@@ -3036,6 +3115,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3050,6 +3133,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.KoofrRequest:
@@ -3077,6 +3161,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       setmtime:
         default: "true"
         description: Does the backend support setting modification time.
@@ -3090,6 +3178,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.LocalRequest:
@@ -3146,6 +3235,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       skipLinks:
         default: "false"
         description: Don't warn about skipped symlinks.
@@ -3165,6 +3258,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.MailruRequest:
@@ -3190,6 +3284,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3221,6 +3319,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.MegaRequest:
@@ -3247,6 +3346,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3260,6 +3363,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.NetstorageRequest:
@@ -3281,6 +3385,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       secret:
         description: Set the NetStorage account secret/G2O key for authentication.
         type: string
@@ -3290,6 +3398,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.OnedriveRequest:
@@ -3368,6 +3477,10 @@ definitions:
       rootFolderId:
         description: ID of the root folder.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       serverSideAcrossConfigs:
         default: "false"
         description: Allow server-side operations (e.g. copy) to work across different
@@ -3385,6 +3498,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.OosRequest:
@@ -3449,6 +3563,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3488,6 +3606,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.OpendriveRequest:
@@ -3510,6 +3629,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3519,6 +3642,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.PcloudRequest:
@@ -3554,6 +3678,10 @@ definitions:
         default: d0
         description: Fill in for rclone to use a non root folder as its starting point.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3569,6 +3697,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.PremiumizemeRequest:
@@ -3587,12 +3716,17 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.PutioRequest:
@@ -3608,12 +3742,17 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.QingstorRequest:
@@ -3647,6 +3786,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       secretAccessKey:
         description: QingStor Secret Access Key (password).
         type: string
@@ -3667,6 +3810,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.S3Request:
@@ -3792,6 +3936,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       secretAccessKey:
         description: AWS Secret Access Key (password).
         type: string
@@ -3869,6 +4017,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SeafileRequest:
@@ -3904,6 +4053,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -3916,6 +4069,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SftpRequest:
@@ -4002,6 +4156,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       serverCommand:
         description: Specifies the path or command to run a sftp server on the remote
           host.
@@ -4045,6 +4203,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SharefileRequest:
@@ -4070,6 +4229,10 @@ definitions:
       rootFolderId:
         description: ID of the root folder.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4080,6 +4243,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SiaRequest:
@@ -4102,6 +4266,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4112,6 +4280,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SmbRequest:
@@ -4154,6 +4323,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4167,6 +4340,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.StorjRequest:
@@ -4195,12 +4369,17 @@ definitions:
         default: us1.storj.io
         description: Satellite address.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SugarsyncRequest:
@@ -4244,6 +4423,10 @@ definitions:
       rootId:
         description: Sugarsync root id.
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4253,6 +4436,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.SwiftRequest:
@@ -4322,6 +4506,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4352,6 +4540,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.UptoboxRequest:
@@ -4370,12 +4559,17 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.WebdavRequest:
@@ -4402,6 +4596,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4417,6 +4615,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.YandexRequest:
@@ -4445,6 +4644,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4457,6 +4660,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   datasource.ZohoRequest:
@@ -4484,6 +4688,10 @@ definitions:
         description: Automatically rescan the source directory when this interval
           has passed from last successful scan
         type: string
+      scanningState:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: Starting state for scanning
       sourcePath:
         description: The path of the source to scan items
         type: string
@@ -4496,6 +4704,7 @@ definitions:
     required:
     - deleteAfterExport
     - rescanInterval
+    - scanningState
     - sourcePath
     type: object
   deal.ListDealRequest:

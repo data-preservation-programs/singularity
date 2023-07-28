@@ -102,6 +102,12 @@ type DatasourceAzureblobRequest struct {
 	// SAS URL for container level access only.
 	SasURL string `json:"sasUrl,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Path to file containing credentials for use with a service principal.
 	ServicePrincipalFile string `json:"servicePrincipalFile,omitempty"`
 
@@ -140,6 +146,10 @@ func (m *DatasourceAzureblobRequest) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateScanningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourcePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -168,6 +178,11 @@ func (m *DatasourceAzureblobRequest) validateRescanInterval(formats strfmt.Regis
 	return nil
 }
 
+func (m *DatasourceAzureblobRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceAzureblobRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -177,8 +192,22 @@ func (m *DatasourceAzureblobRequest) validateSourcePath(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this datasource azureblob request based on context it is used
+// ContextValidate validate this datasource azureblob request based on the context it is used
 func (m *DatasourceAzureblobRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceAzureblobRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

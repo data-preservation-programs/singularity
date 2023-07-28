@@ -72,6 +72,12 @@ type DatasourceFtpRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Maximum time to wait for data connection closing status.
 	ShutTimeout *string `json:"shutTimeout,omitempty"`
 
@@ -104,6 +110,10 @@ func (m *DatasourceFtpRequest) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateScanningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourcePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -132,6 +142,11 @@ func (m *DatasourceFtpRequest) validateRescanInterval(formats strfmt.Registry) e
 	return nil
 }
 
+func (m *DatasourceFtpRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceFtpRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -141,8 +156,22 @@ func (m *DatasourceFtpRequest) validateSourcePath(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this datasource ftp request based on context it is used
+// ContextValidate validate this datasource ftp request based on the context it is used
 func (m *DatasourceFtpRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceFtpRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

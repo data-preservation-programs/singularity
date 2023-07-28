@@ -51,6 +51,12 @@ type DatasourceSmbRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -71,6 +77,10 @@ func (m *DatasourceSmbRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -102,6 +112,11 @@ func (m *DatasourceSmbRequest) validateRescanInterval(formats strfmt.Registry) e
 	return nil
 }
 
+func (m *DatasourceSmbRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceSmbRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -111,8 +126,22 @@ func (m *DatasourceSmbRequest) validateSourcePath(formats strfmt.Registry) error
 	return nil
 }
 
-// ContextValidate validates this datasource smb request based on context it is used
+// ContextValidate validate this datasource smb request based on the context it is used
 func (m *DatasourceSmbRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceSmbRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

@@ -57,6 +57,12 @@ type DatasourceSugarsyncRequest struct {
 	// Sugarsync root id.
 	RootID string `json:"rootId,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -74,6 +80,10 @@ func (m *DatasourceSugarsyncRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -105,6 +115,11 @@ func (m *DatasourceSugarsyncRequest) validateRescanInterval(formats strfmt.Regis
 	return nil
 }
 
+func (m *DatasourceSugarsyncRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceSugarsyncRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -114,8 +129,22 @@ func (m *DatasourceSugarsyncRequest) validateSourcePath(formats strfmt.Registry)
 	return nil
 }
 
-// ContextValidate validates this datasource sugarsync request based on context it is used
+// ContextValidate validate this datasource sugarsync request based on the context it is used
 func (m *DatasourceSugarsyncRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceSugarsyncRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

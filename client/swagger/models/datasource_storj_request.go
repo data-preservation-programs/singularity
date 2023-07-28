@@ -42,6 +42,12 @@ type DatasourceStorjRequest struct {
 	// Satellite address.
 	SatelliteAddress *string `json:"satelliteAddress,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -56,6 +62,10 @@ func (m *DatasourceStorjRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +97,11 @@ func (m *DatasourceStorjRequest) validateRescanInterval(formats strfmt.Registry)
 	return nil
 }
 
+func (m *DatasourceStorjRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceStorjRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -96,8 +111,22 @@ func (m *DatasourceStorjRequest) validateSourcePath(formats strfmt.Registry) err
 	return nil
 }
 
-// ContextValidate validates this datasource storj request based on context it is used
+// ContextValidate validate this datasource storj request based on the context it is used
 func (m *DatasourceStorjRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceStorjRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

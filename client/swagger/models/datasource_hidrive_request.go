@@ -51,6 +51,12 @@ type DatasourceHidriveRequest struct {
 	// The root/parent folder for all paths.
 	RootPrefix *string `json:"rootPrefix,omitempty"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Access permissions that rclone should use when requesting access from HiDrive.
 	ScopeAccess *string `json:"scopeAccess,omitempty"`
 
@@ -86,6 +92,10 @@ func (m *DatasourceHidriveRequest) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateScanningState(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourcePath(formats); err != nil {
 		res = append(res, err)
 	}
@@ -114,6 +124,11 @@ func (m *DatasourceHidriveRequest) validateRescanInterval(formats strfmt.Registr
 	return nil
 }
 
+func (m *DatasourceHidriveRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceHidriveRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -123,8 +138,22 @@ func (m *DatasourceHidriveRequest) validateSourcePath(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validates this datasource hidrive request based on context it is used
+// ContextValidate validate this datasource hidrive request based on the context it is used
 func (m *DatasourceHidriveRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceHidriveRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

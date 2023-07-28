@@ -80,15 +80,29 @@ func createDatasourceHandler(
 	if !ok {
 		return nil, handler.NewInvalidParameterErr("rescanInterval needs to be a string")
 	}
+	scanningStateValue := sourceParameters["scanningState"]
+	scanningState, ok := scanningStateValue.(string)
+	if !ok {
+		return nil, handler.NewInvalidParameterErr("scanningState needs to be a string")
+	}
+
 	rescan, err := time.ParseDuration(rescanInterval)
 	if err != nil {
 		return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to parse rescanInterval: %w", err)}
 	}
+
+	var ws model.WorkState
+	err = ws.Set(scanningState)
+	if err != nil {
+		return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to parse scanningState: %w", err)}
+	}
 	delete(sourceParameters, "sourcePath")
 	delete(sourceParameters, "deleteAfterExport")
 	delete(sourceParameters, "rescanInterval")
+	delete(sourceParameters, "scanningState")
 	delete(sourceParameters, "type")
 	delete(sourceParameters, "datasetName")
+
 	config := map[string]string{}
 	for k, v := range sourceParameters {
 		str, ok := v.(string)
@@ -110,7 +124,7 @@ func createDatasourceHandler(
 		Path:                path,
 		Metadata:            model.Metadata(config),
 		ScanIntervalSeconds: uint64(rescan.Seconds()),
-		ScanningState:       model.Ready,
+		ScanningState:       ws,
 		DeleteAfterExport:   deleteAfterExport,
 		DagGenState:         model.Created,
 	}

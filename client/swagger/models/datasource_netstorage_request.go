@@ -36,6 +36,12 @@ type DatasourceNetstorageRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Set the NetStorage account secret/G2O key for authentication.
 	Secret string `json:"secret,omitempty"`
 
@@ -53,6 +59,10 @@ func (m *DatasourceNetstorageRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -84,6 +94,11 @@ func (m *DatasourceNetstorageRequest) validateRescanInterval(formats strfmt.Regi
 	return nil
 }
 
+func (m *DatasourceNetstorageRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceNetstorageRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -93,8 +108,22 @@ func (m *DatasourceNetstorageRequest) validateSourcePath(formats strfmt.Registry
 	return nil
 }
 
-// ContextValidate validates this datasource netstorage request based on context it is used
+// ContextValidate validate this datasource netstorage request based on the context it is used
 func (m *DatasourceNetstorageRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceNetstorageRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

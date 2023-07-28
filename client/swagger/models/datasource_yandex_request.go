@@ -42,6 +42,12 @@ type DatasourceYandexRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// The path of the source to scan items
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
@@ -62,6 +68,10 @@ func (m *DatasourceYandexRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -93,6 +103,11 @@ func (m *DatasourceYandexRequest) validateRescanInterval(formats strfmt.Registry
 	return nil
 }
 
+func (m *DatasourceYandexRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceYandexRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -102,8 +117,22 @@ func (m *DatasourceYandexRequest) validateSourcePath(formats strfmt.Registry) er
 	return nil
 }
 
-// ContextValidate validates this datasource yandex request based on context it is used
+// ContextValidate validate this datasource yandex request based on the context it is used
 func (m *DatasourceYandexRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceYandexRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

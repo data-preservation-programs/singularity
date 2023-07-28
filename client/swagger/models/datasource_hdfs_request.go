@@ -36,6 +36,12 @@ type DatasourceHdfsRequest struct {
 	// Required: true
 	RescanInterval *string `json:"rescanInterval"`
 
+	// Starting state for scanning
+	// Required: true
+	ScanningState struct {
+		ModelWorkState
+	} `json:"scanningState"`
+
 	// Kerberos service principal name for the namenode.
 	ServicePrincipalName string `json:"servicePrincipalName,omitempty"`
 
@@ -56,6 +62,10 @@ func (m *DatasourceHdfsRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRescanInterval(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateScanningState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +97,11 @@ func (m *DatasourceHdfsRequest) validateRescanInterval(formats strfmt.Registry) 
 	return nil
 }
 
+func (m *DatasourceHdfsRequest) validateScanningState(formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *DatasourceHdfsRequest) validateSourcePath(formats strfmt.Registry) error {
 
 	if err := validate.Required("sourcePath", "body", m.SourcePath); err != nil {
@@ -96,8 +111,22 @@ func (m *DatasourceHdfsRequest) validateSourcePath(formats strfmt.Registry) erro
 	return nil
 }
 
-// ContextValidate validates this datasource hdfs request based on context it is used
+// ContextValidate validate this datasource hdfs request based on the context it is used
 func (m *DatasourceHdfsRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateScanningState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DatasourceHdfsRequest) contextValidateScanningState(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 
