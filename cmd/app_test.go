@@ -938,6 +938,11 @@ func downloadPiece(t *testing.T, ctx context.Context, pieceCID string) []byte {
 	resp, err := client.Do(req)
 	require.NoError(t, err)
 	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		t.Error("Download failed", string(body))
+	}
 	require.Less(t, resp.StatusCode, 300)
 	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
