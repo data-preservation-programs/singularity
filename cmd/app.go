@@ -27,7 +27,7 @@ var App = &cli.App{
 	Name:  "singularity",
 	Usage: "A tool for large-scale clients with PB-scale data onboarding to Filecoin network",
 	Description: `Database Backend Support:
-  Singularity supports multiple database backend: sqlite3, postgres, mysql
+  Singularity supports multiple database backend: sqlite3, postgres, mysql5.7+
   Use '--database-connection-string' or $DATABASE_CONNECTION_STRING to specify the database connection string.
     Example for postgres  - postgres://user:pass@example.com:5432/dbname
     Example for mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true
