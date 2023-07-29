@@ -9894,6 +9894,9 @@ const docTemplate = `{
                 "maxSize": {
                     "type": "integer"
                 },
+                "metadata": {
+                    "$ref": "#/definitions/model.Metadata"
+                },
                 "name": {
                     "type": "string"
                 },

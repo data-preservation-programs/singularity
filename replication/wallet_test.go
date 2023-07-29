@@ -42,8 +42,9 @@ func (m *MockRPCClient) CallBatchRaw(ctx context.Context, requests jsonrpc.RPCRe
 }
 
 func TestDatacapWalletChooser_Choose(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	lotusClient := new(MockRPCClient)
 
 	// Set up the test data

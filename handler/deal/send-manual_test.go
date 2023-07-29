@@ -42,8 +42,9 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -60,8 +61,9 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -80,8 +82,9 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -100,8 +103,9 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -120,8 +124,9 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -140,8 +145,9 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -160,8 +166,9 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -180,8 +187,9 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()
@@ -200,8 +208,9 @@ func TestSendManualHandler(t *testing.T) {
 		Address: "f10000",
 	}
 
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	err = db.Create(&wallet).Error
 	require.NoError(t, err)
 	ctx := context.Background()

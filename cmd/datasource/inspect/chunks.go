@@ -15,10 +15,11 @@ var ChunksCmd = &cli.Command{
 	Usage:     "Get all chunk details of a data source",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		result, err := inspect.GetSourceChunksHandler(
 			db,
 			c.Args().Get(0),

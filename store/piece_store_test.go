@@ -14,8 +14,9 @@ import (
 )
 
 func TestReadAt2(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	defer database.DropAll(db)
 
 	car := model.Car{

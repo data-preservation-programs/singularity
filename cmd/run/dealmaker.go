@@ -12,10 +12,11 @@ var DealMakerCmd = &cli.Command{
 	Name:  "dealmaker",
 	Usage: "Start a deal making/tracking worker to process deal making",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		if err := model.AutoMigrate(db); err != nil {
 			return err
 		}

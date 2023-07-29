@@ -12,10 +12,11 @@ var RemoveDatasetCmd = &cli.Command{
 	Description: "Important! If the dataset is large, this command will take some time to remove all relevant data.",
 	ArgsUsage:   "<dataset_name>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		return dataset.RemoveHandler(
 			db,
 			c.Args().Get(0),

@@ -12,10 +12,11 @@ var ResumeCmd = &cli.Command{
 	Usage:     "Resume a specific schedule",
 	ArgsUsage: "SCHEDULE_ID",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		schedule, err := schedule.ResumeHandler(db, c.Args().Get(0))
 		if err != nil {
 			return err

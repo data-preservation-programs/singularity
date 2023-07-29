@@ -20,8 +20,9 @@ import (
 func TestHandlePostSource(t *testing.T) {
 	tmp := os.TempDir()
 	tmp = strings.TrimSuffix(tmp, "/")
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/local/dataset/test", bytes.NewBuffer([]byte(
 		`{"deleteAfterExport":true,"sourcePath":"`+tmp+`","rescanInterval":"1h","caseInsensitive":"false","scanningState":"ready"}`,
@@ -56,8 +57,9 @@ func TestHandlePostSource(t *testing.T) {
 }
 
 func TestPushItem_InvalidID(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -77,8 +79,9 @@ func TestPushItem_InvalidID(t *testing.T) {
 }
 
 func TestPushItem_InvalidPayload(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`invalid payload`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -98,8 +101,9 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 }
 
 func TestPushItem_SourceNotFound(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -119,8 +123,9 @@ func TestPushItem_SourceNotFound(t *testing.T) {
 }
 
 func TestPushItem_EntryNotFound(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -155,8 +160,9 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 }
 
 func TestPushItem_DuplicateItem(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -209,8 +215,9 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 }
 
 func TestPushItem(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)

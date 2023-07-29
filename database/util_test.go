@@ -7,7 +7,8 @@ import (
 )
 
 func TestAutoMigrate(t *testing.T) {
-	db, err := OpenInMemory()
+	db, closer, err := OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	require.NotNil(t, db)
 }

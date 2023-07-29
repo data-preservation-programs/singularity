@@ -129,10 +129,11 @@ var SendManualCmd = &cli.Command{
 			FileSize:        cctx.Uint64("file-size"),
 		}
 		timeout := cctx.Duration("timeout")
-		db, err := database.OpenFromCLI(cctx)
+		db, closer, err := database.OpenFromCLI(cctx)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		ctx, cancel := context.WithTimeout(cctx.Context, timeout)
 		defer cancel()
 		h, err := util.InitHost(nil)

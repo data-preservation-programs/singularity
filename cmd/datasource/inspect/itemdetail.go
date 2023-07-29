@@ -14,10 +14,11 @@ var ItemDetailCmd = &cli.Command{
 	Usage:     "Get details about a specific item",
 	ArgsUsage: "<item_id>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		result, err := inspect.GetSourceItemDetailHandler(
 			db,
 			c.Args().Get(0),

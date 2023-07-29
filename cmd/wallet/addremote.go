@@ -14,10 +14,11 @@ var AddRemoteCmd = &cli.Command{
 	ArgsUsage: "<address> <remote_peer>",
 	Flags:     []cli.Flag{},
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
 		w, err2 := wallet.AddRemoteHandler(db,

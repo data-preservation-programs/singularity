@@ -24,6 +24,7 @@ export interface Dataset {
 	outputDirs: string[]
 	encryptionRecipients: string[]
 	encryptionScript: string
+	metadata: {[key: string]: string}
 	wallets: Wallet[] | undefined
 }
 export interface Source {

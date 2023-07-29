@@ -31,10 +31,11 @@ var ChunkDetailCmd = &cli.Command{
 	Usage:     "Get details about a specific chunk",
 	ArgsUsage: "<chunk_id>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		result, err := inspect.GetSourceChunkDetailHandler(
 			db,
 			c.Args().Get(0),
