@@ -130,6 +130,8 @@ func AssembleCar(
 		if outDir != "" {
 			current.CarFilePath = path.Join(outDir, pieceCid.String()+".car")
 		}
+		writeCloser.Close()
+		writeCloser = nil
 		if filepath != "" {
 			err = os.Rename(filepath, current.CarFilePath)
 			if err != nil {
@@ -139,8 +141,6 @@ func AssembleCar(
 		result.CarResults = append(result.CarResults, current)
 		current = CarResult{}
 		offset = 0
-		writeCloser.Close()
-		writeCloser = nil
 		calc = nil
 		filepath = ""
 		return nil
