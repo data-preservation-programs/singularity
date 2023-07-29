@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -43,6 +44,7 @@ type Server struct {
 	datasourceHandlerResolver datasource.HandlerResolver
 	lotusClient               jsonrpc.RPCClient
 	dealMaker                 replication.DealMaker
+	closer                    io.Closer
 }
 
 // @Summary Get metadata for a piece
@@ -57,6 +59,13 @@ type Server struct {
 // @Router /piece/{id}/metadata [get]
 func (s Server) getMetadataHandler(c echo.Context) error {
 	return contentprovider.GetMetadataHandler(c, s.db)
+}
+
+func (s Server) Close() error {
+	if s.closer != nil {
+		return s.closer.Close()
+	}
+	return nil
 }
 
 func Run(c *cli.Context) error {
@@ -88,7 +97,7 @@ type APIParams struct {
 }
 
 func InitServer(params APIParams) (Server, error) {
-	db, err := database.OpenWithDefaults(params.ConnString)
+	db, closer, err := database.OpenWithDefaults(params.ConnString)
 	if err != nil {
 		return Server{}, err
 	}
@@ -109,6 +118,7 @@ func InitServer(params APIParams) (Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
+		closer: closer,
 	}, nil
 }
 

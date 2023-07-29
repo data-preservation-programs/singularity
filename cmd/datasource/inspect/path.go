@@ -14,10 +14,11 @@ var PathCmd = &cli.Command{
 	Usage:     "Get details about a path within a data source",
 	ArgsUsage: "<source_id> <path>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		result, err := inspect.GetPathHandler(
 			db,
 			c.Args().Get(0),

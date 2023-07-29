@@ -12,10 +12,11 @@ var DagsCmd = &cli.Command{
 	Usage:     "Get all piece details for generated dags",
 	ArgsUsage: "<source_id>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		cars, err := inspect.GetDagsHandler(
 			db,
 			c.Args().Get(0),

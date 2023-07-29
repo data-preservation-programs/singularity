@@ -14,8 +14,9 @@ import (
 )
 
 func TestDatasetWorkerRun(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	worker := NewDatasetWorker(db, DatasetWorkerConfig{
 		Concurrency:    1,
 		ExitOnComplete: true,
@@ -39,8 +40,9 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	require.NoError(t, err)
 	err = file.Close()
 	require.NoError(t, err)
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	thread := DatasetWorkerThread{
 		id:                        uuid.New(),
 		db:                        db,
@@ -165,8 +167,9 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 
 func TestDatasetWorkerThread_scan(t *testing.T) {
 	ctx := context.Background()
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	thread := DatasetWorkerThread{
 		id:                        uuid.New(),
 		db:                        db,
@@ -220,8 +223,9 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 }
 
 func TestDatasetWorkerThread_findPackWork(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	thread := DatasetWorkerThread{
 		id:                        uuid.New(),
 		db:                        db,
@@ -323,8 +327,9 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 }
 
 func TestDatasetWorkerThread_findScanWork(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	thread := DatasetWorkerThread{
 		id:                        uuid.New(),
 		db:                        db,

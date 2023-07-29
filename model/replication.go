@@ -58,19 +58,19 @@ type Deal struct {
 	DealID           *uint64   `gorm:"unique"                                             json:"dealId"`
 	DatasetID        *uint32   `json:"datasetId"`
 	Dataset          *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:SET NULL"  json:"dataset,omitempty"  swaggerignore:"true"`
-	State            DealState `gorm:"index:idx_stat;index:idx_pending;size:16"           json:"state"`
-	ClientID         string    `gorm:"index:idx_pending;size:16"                          json:"clientId"`
+	State            DealState `gorm:"index:idx_stat;index:idx_pending"                   json:"state"`
+	ClientID         string    `gorm:"index:idx_pending"                                  json:"clientId"`
 	Wallet           *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true"`
-	Provider         string    `gorm:"index:idx_stat;size:16"                             json:"provider"`
+	Provider         string    `gorm:"index:idx_stat"                                     json:"provider"`
 	ProposalID       string    `json:"proposalId"`
 	Label            string    `json:"label"`
-	PieceCID         CID       `gorm:"column:piece_cid;index"                             json:"pieceCid"`
+	PieceCID         CID       `gorm:"column:piece_cid;index;size:255"                    json:"pieceCid"`
 	PieceSize        int64     `json:"pieceSize"`
 	StartEpoch       int32     `json:"startEpoch"`
 	EndEpoch         int32     `json:"endEpoch"`
 	SectorStartEpoch int32     `json:"sectorStartEpoch"`
 	Price            string    `json:"price"`
-	Verified         bool      `gorm:"index:idx_pending"                                  json:"verified"`
+	Verified         bool      `json:"verified"`
 	ErrorMessage     string    `json:"errorMessage"`
 	ScheduleID       *uint32   `json:"scheduleId"`
 	Schedule         *Schedule `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true"`
@@ -111,10 +111,10 @@ type Schedule struct {
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey;size:16"   json:"id"`      // ID is the short ID of the wallet
-	Address    string `gorm:"unique;size:256"      json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty"`                // PrivateKey is the private key of the wallet
-	RemotePeer string `json:"remotePeer,omitempty"`                // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
+	ID         string `gorm:"primaryKey;size:15"   json:"id"` // ID is the short ID of the wallet
+	Address    string `json:"address"`                        // Address is the Filecoin full address of the wallet
+	PrivateKey string `json:"privateKey,omitempty"`           // PrivateKey is the private key of the wallet
+	RemotePeer string `json:"remotePeer,omitempty"`           // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
 type WalletAssignment struct {

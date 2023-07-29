@@ -38,10 +38,11 @@ var UpdateCmd = &cli.Command{
 		return newFlags
 	}(),
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		config := map[string]any{}
 		for _, name := range c.LocalFlagNames() {
 			if c.IsSet(name) {

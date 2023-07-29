@@ -45,10 +45,11 @@ var UpdateCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		var maxSizeStr *string
 		if c.IsSet("max-size") {
 			s := c.String("max-size")

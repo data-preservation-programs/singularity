@@ -12,10 +12,11 @@ var ListPiecesCmd = &cli.Command{
 	Usage:     "List all pieces for the dataset that are available for deal making",
 	ArgsUsage: "<dataset_name>",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 
 		car, err := dataset.ListPiecesHandler(
 			db, c.Args().Get(0),

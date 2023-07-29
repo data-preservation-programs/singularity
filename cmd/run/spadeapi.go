@@ -22,10 +22,11 @@ var SpadeAPICmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		if err := model.AutoMigrate(db); err != nil {
 			return err
 		}

@@ -52,8 +52,9 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 }
 
 func TestDealMakerService_StartRun(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	service, err := NewDealMakerService(db, "https://api.node.glif.io", "")
 	require.NoError(t, err)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -69,8 +70,9 @@ func TestDealMakerService_StartRun(t *testing.T) {
 }
 
 func TestDealMakerService_Cron(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	service, err := NewDealMakerService(db, "https://api.node.glif.io", "")
 	require.NoError(t, err)
 	mockDealmaker := new(MockDealMaker)
@@ -149,8 +151,9 @@ func TestDealMakerService_Cron(t *testing.T) {
 }
 
 func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
-	db, err := database.OpenInMemory()
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
+	defer closer.Close()
 	service, err := NewDealMakerService(db, "https://api.node.glif.io", "")
 	require.NoError(t, err)
 	mockDealmaker := new(MockDealMaker)

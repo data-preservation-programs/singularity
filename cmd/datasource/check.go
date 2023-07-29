@@ -14,10 +14,11 @@ var CheckCmd = &cli.Command{
 	Description: "This command will list entries in a data source under <sub_path>. " +
 		"If <sub_path> is not provided, it will use the root directory",
 	Action: func(c *cli.Context) error {
-		db, err := database.OpenFromCLI(c)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
+		defer closer.Close()
 		entries, err := datasource.CheckSourceHandler(
 			db,
 			c.Context,
