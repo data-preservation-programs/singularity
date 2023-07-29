@@ -117,6 +117,7 @@ func loadCars(t *testing.T, path string) blockstore.Blockstore {
 	for _, file := range files {
 		f, err := os.Open(filepath.Join(path, file.Name()))
 		require.NoError(t, err)
+		defer f.Close()
 		reader := bufio.NewReader(f)
 		_, err = car.ReadHeader(reader)
 		require.NoError(t, err)
@@ -158,6 +159,10 @@ func getFileFromRootNode(t *testing.T, dagServ format.DAGService, path string, r
 	return content
 }
 
+func escapePath(p string) string {
+	return "'" + strings.ReplaceAll(p, `\`, `\\`) + "'"
+}
+
 func TestExtractCar(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tempDir := t.TempDir()
@@ -169,9 +174,9 @@ func TestExtractCar(t *testing.T) {
 		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(tempDir, "test", "test2.txt"), []byte("world"), 0644)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity dataset create -o "+carDir+" test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create -o "+escapePath(carDir)+" test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+tempDir)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(tempDir))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -182,7 +187,7 @@ func TestExtractCar(t *testing.T) {
 		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
 		require.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
-		_, _, err = RunArgsInTest(ctx, "singularity tool extract-car -i "+carDir+" -o "+extractDir+" -c "+root)
+		_, _, err = RunArgsInTest(ctx, "singularity tool extract-car -i "+escapePath(carDir)+" -o "+escapePath(extractDir)+" -c "+root)
 		require.NoError(t, err)
 		content, err := os.ReadFile(filepath.Join(extractDir, "test1.txt"))
 		require.NoError(t, err)
@@ -419,8 +424,18 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `active`)
 
+		tmp := t.TempDir()
+		payload := map[string]any{
+			"sourcePath":        tmp,
+			"caseInsensitive":   "false",
+			"deleteAfterExport": false,
+			"rescanInterval":    "1h",
+			"scanningState":     "ready",
+		}
+		requestBody, err := json.Marshal(payload)
+		require.NoError(t, err)
 		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/local/dataset/test").
-			Send(`{"sourcePath":"/tmp","caseInsensitive":"false","deleteAfterExport":false,"rescanInterval":"1h","scanningState":"ready"}`).End()
+			Send(string(requestBody)).End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"id": 1`)
@@ -596,8 +611,8 @@ func TestDatasetAddPiece(t *testing.T) {
 		require.NoError(t, err)
 		commp := calculateCommp(t, content, 1048576)
 		// Add as path
-		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -p \"%s\" test %s %d",
-			temp+"/test.car", commp, 1048576))
+		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -p %s test %s %d",
+			escapePath(filepath.Join(temp, "test.car")), commp, 1048576))
 		require.NoError(t, err)
 		out, _, err := RunArgsInTest(ctx, "singularity dataset list-pieces test")
 		require.NoError(t, err)
@@ -626,7 +641,7 @@ func TestDatasetCrud(t *testing.T) {
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list")
 		require.NoError(t, err)
 		require.Contains(t, out, "test")
-		out, _, err = RunArgsInTest(ctx, "singularity dataset update --output-dir "+tmp+" --max-size 1000 test")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset update --output-dir "+escapePath(tmp)+" --max-size 1000 test")
 		require.NoError(t, err)
 		require.Contains(t, out, tmp)
 		require.Contains(t, out, "1000")
@@ -640,10 +655,10 @@ func TestDatasetCrud(t *testing.T) {
 
 func TestEzPrepBenchmark(t *testing.T) {
 	temp := t.TempDir()
-	err := os.WriteFile(temp+"/test.img", []byte("hello world"), 0777)
+	err := os.WriteFile(filepath.Join(temp, "test.img"), []byte("hello world"), 0777)
 	require.NoError(t, err)
 	ctx := context.Background()
-	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+temp)
+	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+escapePath(temp))
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
 	require.Contains(t, out, "107")
@@ -659,7 +674,7 @@ func TestDatasourceCrud(t *testing.T) {
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity dataset create test")
 		require.NoError(t, err)
-		out, _, err := RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		out, _, err := RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		require.Contains(t, out, temp)
 		out, _, err = RunArgsInTest(ctx, "singularity datasource list")
@@ -694,13 +709,13 @@ func TestEncryption(t *testing.T) {
 		carDir := t.TempDir()
 		content1 := generateRandomBytes(10)
 		content2 := generateRandomBytes(10_000_000)
-		os.WriteFile(filepath.Join(temp, "/test1.txt"), content1, 0777)
-		os.WriteFile(filepath.Join(temp, "/test2.txt"), content2, 0777)
+		os.WriteFile(filepath.Join(temp, "test1.txt"), content1, 0777)
+		os.WriteFile(filepath.Join(temp, "test2.txt"), content2, 0777)
 		public := "age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"
 		private := "AGE-SECRET-KEY-1HZG3ESWDVPE3S4AM8WWCZG3H66A6RVJPXPZZEAC04FWZVT6RJ7XQAUV49J"
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1500000 -o "+carDir+" --encryption-recipient "+public+" test")
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1500000 -o "+escapePath(carDir)+" --encryption-recipient "+public+" test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -753,9 +768,9 @@ func TestDatasourcePacking(t *testing.T) {
 		// file of empty size
 		err = os.WriteFile(filepath.Join(temp, "test2.txt"), []byte{}, 0777)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1000 -o "+carDir+" test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1000 -o "+escapePath(carDir)+" test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -818,7 +833,7 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1000 test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=false --enable-dag=false --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -889,9 +904,9 @@ func TestPieceDownload(t *testing.T) {
 		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(temp1, "test3.txt"), generateRandomBytes(2_000_000), 0777)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1MB --output-dir "+temp2+" test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1MB --output-dir "+escapePath(temp2)+" test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp1)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp1))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -938,7 +953,7 @@ func TestPieceDownload(t *testing.T) {
 		// download util
 		temp3 := t.TempDir()
 		for _, pieceCID := range pieceCIDs {
-			_, _, err = RunArgsInTest(ctx, "singularity download --local-links true -o "+temp3+" "+pieceCID)
+			_, _, err = RunArgsInTest(ctx, "singularity download --local-links true -o "+escapePath(temp3)+" "+pieceCID)
 			require.NoError(t, err)
 			content, err := os.ReadFile(filepath.Join(temp3, pieceCID+".car"))
 			require.NoError(t, err)

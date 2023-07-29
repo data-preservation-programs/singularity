@@ -9,7 +9,6 @@ import (
 	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -55,7 +54,6 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	if strings.HasPrefix(connString, "postgres:") {
-		db, err = gorm.Open(postgres.Open(connString), config)
 		if err != nil {
 			return nil, nil, err
 		}
