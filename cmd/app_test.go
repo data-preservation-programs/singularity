@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -808,9 +809,13 @@ func TestDatasourceRescan(t *testing.T) {
 		err := os.Mkdir(filepath.Join(temp, "sub"), 0777)
 		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(temp, "sub", "test1.txt"), generateRandomBytes(10), 0777)
+		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(temp, "sub", "test2.txt"), generateRandomBytes(100), 0777)
+		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(temp, "sub", "test3.txt"), generateRandomBytes(1000), 0777)
+		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(temp, "sub", "test4.txt"), generateRandomBytes(10000), 0777)
+		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1000 test")
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
@@ -871,6 +876,75 @@ func TestDatasourceRescan(t *testing.T) {
 		out3, _, err := RunArgsInTest(ctx, "singularity datasource inspect dags 1")
 		require.NoError(t, err)
 		require.Equal(t, out3, out2)
+	})
+}
+
+func TestPieceDownload(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		temp1 := t.TempDir()
+		temp2 := t.TempDir()
+		err := os.WriteFile(filepath.Join(temp1, "test1.txt"), generateRandomBytes(10), 0777)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(temp1, "test2.txt"), generateRandomBytes(10), 0777)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(temp1, "test3.txt"), generateRandomBytes(2_000_000), 0777)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1MB --output-dir "+temp2+" test")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp1)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource daggen 1")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		require.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity dataset list-pieces test")
+		require.NoError(t, err)
+		pieceCIDs := regexp.MustCompile("baga6ea4sea[0-9a-z]+").FindAllString(out, -1)
+		require.Len(t, pieceCIDs, 8)
+		pieceCIDs = underscore.Unique(pieceCIDs)
+		require.Len(t, pieceCIDs, 4)
+		ctx2, cancel := context.WithCancel(ctx)
+		serverClosed := make(chan struct{})
+		defer func() {
+			<-serverClosed
+		}()
+		defer cancel()
+		go func() {
+			_, _, _ = RunArgsInTest(ctx2, "singularity run content-provider")
+			close(serverClosed)
+		}()
+		// Wait for HTTP service to be ready
+		time.Sleep(time.Second)
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPiece(t, ctx, pieceCID)
+			commp := calculateCommp(t, content, 1024*1024)
+			require.Equal(t, pieceCID, commp)
+		}
+		// Clean up temp2 and try again
+		os.RemoveAll(temp2)
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPiece(t, ctx, pieceCID)
+			commp := calculateCommp(t, content, 1024*1024)
+			require.Equal(t, pieceCID, commp)
+		}
+		// multithread download
+		for _, pieceCID := range pieceCIDs {
+			content := downloadPieceWithThreads(t, ctx, pieceCID, 10)
+			commp := calculateCommp(t, content, 1024*1024)
+			require.Equal(t, pieceCID, commp)
+		}
+		// download util
+		temp3 := t.TempDir()
+		for _, pieceCID := range pieceCIDs {
+			_, _, err = RunArgsInTest(ctx, "singularity download --local-links true -o "+temp3+" "+pieceCID)
+			require.NoError(t, err)
+			content, err := os.ReadFile(filepath.Join(temp3, pieceCID+".car"))
+			require.NoError(t, err)
+			commp := calculateCommp(t, content, 1024*1024)
+			require.Equal(t, pieceCID, commp)
+		}
 	})
 }
 
