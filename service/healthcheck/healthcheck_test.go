@@ -3,6 +3,7 @@ package healthcheck
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -35,6 +36,7 @@ func TestHealthCheck(t *testing.T) {
 	req.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
+	time.Sleep(200 * time.Millisecond)
 	ReportHealth(context.Background(), db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
