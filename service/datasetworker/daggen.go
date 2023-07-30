@@ -97,6 +97,7 @@ func (w *DatasetWorkerThread) dag(source model.Source) error {
 		car.FilePath = path.Join(outDir, pieceCid.String()+".car")
 	}
 	if car.FilePath != "" {
+		writeCloser.Close()
 		err = os.Rename(filepath, car.FilePath)
 		if err != nil {
 			return errors.Wrap(err, "failed to rename car file")

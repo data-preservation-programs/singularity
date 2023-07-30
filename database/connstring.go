@@ -3,6 +3,7 @@
 package database
 
 import (
+	"io"
 	"strings"
 
 	"github.com/glebarez/sqlite"
@@ -10,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 )
 
@@ -18,42 +18,59 @@ var ErrDatabaseNotSupported = errors.New("database not supported")
 
 var logger = log.Logger("database")
 
-func Open(connString string, config *gorm.Config) (*gorm.DB, error) {
+func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
+	var db *gorm.DB
+	var closer io.Closer
+	var err error
 	if strings.HasPrefix(connString, "sqlite:") {
-		db, err := gorm.Open(sqlite.Open(connString[7:]), config)
+		db, err = gorm.Open(sqlite.Open(connString[7:]), config)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
+		}
+
+		closer, err = db.DB()
+		if err != nil {
+			return nil, nil, err
 		}
 
 		err = db.Exec("PRAGMA foreign_keys = ON").Error
 		if err != nil {
-			return nil, err
+			closer.Close()
+			return nil, nil, err
 		}
 
-		err = db.Exec("PRAGMA busy_timeout = 5000").Error
+		err = db.Exec("PRAGMA busy_timeout = 50000").Error
 		if err != nil {
-			return nil, err
+			closer.Close()
+			return nil, nil, err
 		}
 
 		err = db.Exec("PRAGMA journal_mode = WAL").Error
 		if err != nil {
-			return nil, err
+			closer.Close()
+			return nil, nil, err
 		}
 
-		return db, nil
+		return db, closer, nil
 	}
 
 	if strings.HasPrefix(connString, "postgres:") {
-		return gorm.Open(postgres.Open(connString), config)
+		db, err = gorm.Open(postgres.Open(connString), config)
+		if err != nil {
+			return nil, nil, err
+		}
+		closer, err = db.DB()
+		return db, closer, err
 	}
 
 	if strings.HasPrefix(connString, "mysql://") {
-		return gorm.Open(mysql.Open(connString[8:]), config)
+		db, err = gorm.Open(mysql.Open(connString[8:]), config)
+		if err != nil {
+			return nil, nil, err
+		}
+		closer, err = db.DB()
+		return db, closer, err
 	}
 
-	if strings.HasPrefix(connString, "sqlserver://") {
-		return gorm.Open(sqlserver.Open(connString), config)
-	}
-
-	return nil, ErrDatabaseNotSupported
+	return nil, nil, ErrDatabaseNotSupported
 }

@@ -115,8 +115,9 @@ func loadCars(t *testing.T, path string) blockstore.Blockstore {
 	require.NoError(t, err)
 	bs := blockstore.NewBlockstore(datastore.NewMapDatastore())
 	for _, file := range files {
-		f, err := os.Open(path + "/" + file.Name())
+		f, err := os.Open(filepath.Join(path, file.Name()))
 		require.NoError(t, err)
+		defer f.Close()
 		reader := bufio.NewReader(f)
 		_, err = car.ReadHeader(reader)
 		require.NoError(t, err)
@@ -158,6 +159,10 @@ func getFileFromRootNode(t *testing.T, dagServ format.DAGService, path string, r
 	return content
 }
 
+func escapePath(p string) string {
+	return "'" + strings.ReplaceAll(p, `\`, `\\`) + "'"
+}
+
 func TestExtractCar(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tempDir := t.TempDir()
@@ -169,9 +174,9 @@ func TestExtractCar(t *testing.T) {
 		require.NoError(t, err)
 		err = os.WriteFile(filepath.Join(tempDir, "test", "test2.txt"), []byte("world"), 0644)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity dataset create -o "+carDir+" test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create -o "+escapePath(carDir)+" test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+tempDir)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(tempDir))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -182,7 +187,7 @@ func TestExtractCar(t *testing.T) {
 		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
 		require.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
-		_, _, err = RunArgsInTest(ctx, "singularity tool extract-car -i "+carDir+" -o "+extractDir+" -c "+root)
+		_, _, err = RunArgsInTest(ctx, "singularity tool extract-car -i "+escapePath(carDir)+" -o "+escapePath(extractDir)+" -c "+root)
 		require.NoError(t, err)
 		content, err := os.ReadFile(filepath.Join(extractDir, "test1.txt"))
 		require.NoError(t, err)
@@ -230,12 +235,13 @@ func testWithAllBackendWithoutReset(t *testing.T, testFunc func(ctx context.Cont
 
 func testWithAllBackendWithResetArg(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB), reset bool) {
 	for _, backend := range []string{"sqlite", "mysql", "postgres"} {
-		db, _, connStr, err := getTestDB(t, backend)
+		db, closer, connStr, err := getTestDB(t, backend)
 		require.NoError(t, err)
 		if db == nil {
 			t.Log("Skip " + backend)
 			continue
 		}
+		defer closer.Close()
 		os.Setenv("DATABASE_CONNECTION_STRING", connStr)
 		if reset {
 			_, _, err := RunArgsInTest(context.Background(), "singularity admin reset")
@@ -418,8 +424,18 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `active`)
 
+		tmp := t.TempDir()
+		payload := map[string]any{
+			"sourcePath":        tmp,
+			"caseInsensitive":   "false",
+			"deleteAfterExport": false,
+			"rescanInterval":    "1h",
+			"scanningState":     "ready",
+		}
+		requestBody, err := json.Marshal(payload)
+		require.NoError(t, err)
 		resp, body, errs = gorequest.New().Post("http://127.0.0.1:9090/api/source/local/dataset/test").
-			Send(`{"sourcePath":"/tmp","caseInsensitive":"false","deleteAfterExport":false,"rescanInterval":"1h","scanningState":"ready"}`).End()
+			Send(string(requestBody)).End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `"id": 1`)
@@ -582,7 +598,7 @@ func TestDatasetAddPiece(t *testing.T) {
 		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
 		require.NoError(t, err)
 		temp := t.TempDir()
-		newFile, err := os.Create(temp + "/test.car")
+		newFile, err := os.Create(filepath.Join(temp, "test.car"))
 		require.NoError(t, err)
 		blk := blocks.NewBlock([]byte("test"))
 		root := blk.Cid()
@@ -591,12 +607,12 @@ func TestDatasetAddPiece(t *testing.T) {
 		_, err = pack.WriteCarBlock(newFile, blk)
 		require.NoError(t, err)
 		newFile.Close()
-		content, err := os.ReadFile(temp + "/test.car")
+		content, err := os.ReadFile(filepath.Join(temp, "test.car"))
 		require.NoError(t, err)
 		commp := calculateCommp(t, content, 1048576)
 		// Add as path
-		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -p \"%s\" test %s %d",
-			temp+"/test.car", commp, 1048576))
+		_, _, err = RunArgsInTest(ctx, fmt.Sprintf("singularity dataset add-piece -p %s test %s %d",
+			escapePath(filepath.Join(temp, "test.car")), commp, 1048576))
 		require.NoError(t, err)
 		out, _, err := RunArgsInTest(ctx, "singularity dataset list-pieces test")
 		require.NoError(t, err)
@@ -618,15 +634,16 @@ func TestDatasetAddPiece(t *testing.T) {
 
 func TestDatasetCrud(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tmp := t.TempDir()
 		out, _, err := RunArgsInTest(ctx, "singularity dataset create test")
 		require.NoError(t, err)
 		require.Contains(t, out, "test")
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list")
 		require.NoError(t, err)
 		require.Contains(t, out, "test")
-		out, _, err = RunArgsInTest(ctx, "singularity dataset update --output-dir /tmp --max-size 1000 test")
+		out, _, err = RunArgsInTest(ctx, "singularity dataset update --output-dir "+escapePath(tmp)+" --max-size 1000 test")
 		require.NoError(t, err)
-		require.Contains(t, out, "/tmp")
+		require.Contains(t, out, tmp)
 		require.Contains(t, out, "1000")
 		_, _, err = RunArgsInTest(ctx, "singularity dataset remove test")
 		require.NoError(t, err)
@@ -638,10 +655,10 @@ func TestDatasetCrud(t *testing.T) {
 
 func TestEzPrepBenchmark(t *testing.T) {
 	temp := t.TempDir()
-	err := os.WriteFile(temp+"/test.img", []byte("hello world"), 0777)
+	err := os.WriteFile(filepath.Join(temp, "test.img"), []byte("hello world"), 0777)
 	require.NoError(t, err)
 	ctx := context.Background()
-	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+temp)
+	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+escapePath(temp))
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
 	require.Contains(t, out, "107")
@@ -651,11 +668,13 @@ func TestEzPrepBenchmark(t *testing.T) {
 func TestDatasourceCrud(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		temp := t.TempDir()
-		os.Mkdir(temp+"/sub", 0777)
-		os.WriteFile(temp+"/sub/test.txt", []byte("hello world"), 0777)
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create test")
+		err := os.Mkdir(filepath.Join(temp, "sub"), 0777)
 		require.NoError(t, err)
-		out, _, err := RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		err = os.WriteFile(filepath.Join(temp, "sub", "test.txt"), []byte("hello world"), 0777)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create test")
+		require.NoError(t, err)
+		out, _, err := RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		require.Contains(t, out, temp)
 		out, _, err = RunArgsInTest(ctx, "singularity datasource list")
@@ -690,13 +709,13 @@ func TestEncryption(t *testing.T) {
 		carDir := t.TempDir()
 		content1 := generateRandomBytes(10)
 		content2 := generateRandomBytes(10_000_000)
-		os.WriteFile(temp+"/test1.txt", content1, 0777)
-		os.WriteFile(temp+"/test2.txt", content2, 0777)
+		os.WriteFile(filepath.Join(temp, "test1.txt"), content1, 0777)
+		os.WriteFile(filepath.Join(temp, "test2.txt"), content2, 0777)
 		public := "age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"
 		private := "AGE-SECRET-KEY-1HZG3ESWDVPE3S4AM8WWCZG3H66A6RVJPXPZZEAC04FWZVT6RJ7XQAUV49J"
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1500000 -o "+carDir+" --encryption-recipient "+public+" test")
+		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1500000 -o "+escapePath(carDir)+" --encryption-recipient "+public+" test")
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -729,23 +748,29 @@ func TestDatasourcePacking(t *testing.T) {
 		temp := t.TempDir()
 		carDir := t.TempDir()
 		// multiple nested folder
-		os.MkdirAll(temp+"/sub1/sub2/sub3/sub4", 0777)
+		err := os.MkdirAll(filepath.Join(temp, "sub1", "sub2", "sub3", "sub4"), 0777)
+		require.NoError(t, err)
 		// dynamic directory with 10k files
 		for i := 0; i < c; i++ {
-			os.WriteFile(temp+"/sub1/sub2/sub3/sub4/test"+strconv.Itoa(i)+".txt", generateRandomBytes(10), 0777)
+			err = os.WriteFile(filepath.Join(temp, "sub1", "sub2", "sub3", "sub4", "test"+strconv.Itoa(i)+".txt"), generateRandomBytes(10), 0777)
+			require.NoError(t, err)
 		}
 		// dynamic directory with 10k folders
 		for i := 0; i < c; i++ {
-			os.MkdirAll(temp+"/"+strconv.Itoa(i), 0777)
-			os.WriteFile(temp+"/"+strconv.Itoa(i)+"/test"+strconv.Itoa(i)+".txt", generateRandomBytes(10), 0777)
+			err = os.MkdirAll(filepath.Join(temp, strconv.Itoa(i)), 0777)
+			require.NoError(t, err)
+			err = os.WriteFile(filepath.Join(temp, strconv.Itoa(i), "test"+strconv.Itoa(i)+".txt"), generateRandomBytes(10), 0777)
+			require.NoError(t, err)
 		}
 		// file of large size
-		os.WriteFile(temp+"/test1.txt", generateRandomBytes(10000), 0777)
-		// file of empty size
-		os.WriteFile(temp+"/test2.txt", []byte{}, 0777)
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1000 -o "+carDir+" test")
+		err = os.WriteFile(filepath.Join(temp, "test1.txt"), generateRandomBytes(10000), 0777)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		// file of empty size
+		err = os.WriteFile(filepath.Join(temp, "test2.txt"), []byte{}, 0777)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1000 -o "+escapePath(carDir)+" test")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -778,16 +803,16 @@ func TestDatasourcePacking(t *testing.T) {
 		require.True(t, slices.Contains(entries, "test2.txt"))
 		require.True(t, slices.Contains(entries, "0"))
 		require.True(t, slices.Contains(entries, "99"))
-		content, err = os.ReadFile(temp + "/2/test2.txt")
+		content, err = os.ReadFile(filepath.Join(temp, "2", "test2.txt"))
 		require.NoError(t, err)
 		require.Equal(t, content, getFileFromRootNode(t, dagServ, "2/test2.txt", rootCID))
-		content, err = os.ReadFile(temp + "/sub1/sub2/sub3/sub4/test2.txt")
+		content, err = os.ReadFile(filepath.Join(temp, "sub1", "sub2", "sub3", "sub4", "test2.txt"))
 		require.NoError(t, err)
 		require.Equal(t, content, getFileFromRootNode(t, dagServ, "sub1/sub2/sub3/sub4/test2.txt", rootCID))
-		content, err = os.ReadFile(temp + "/test1.txt")
+		content, err = os.ReadFile(filepath.Join(temp, "test1.txt"))
 		require.NoError(t, err)
 		require.Equal(t, content, getFileFromRootNode(t, dagServ, "test1.txt", rootCID))
-		content, err = os.ReadFile(temp + "/test2.txt")
+		content, err = os.ReadFile(filepath.Join(temp, "test2.txt"))
 		require.NoError(t, err)
 		require.Equal(t, content, getFileFromRootNode(t, dagServ, "test2.txt", rootCID))
 	})
@@ -796,14 +821,19 @@ func TestDatasourcePacking(t *testing.T) {
 func TestDatasourceRescan(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		temp := t.TempDir()
-		os.Mkdir(temp+"/sub", 0777)
-		os.WriteFile(temp+"/sub/test1.txt", generateRandomBytes(10), 0777)
-		os.WriteFile(temp+"/sub/test2.txt", generateRandomBytes(100), 0777)
-		os.WriteFile(temp+"/sub/test3.txt", generateRandomBytes(1000), 0777)
-		os.WriteFile(temp+"/sub/test4.txt", generateRandomBytes(10000), 0777)
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1000 test")
+		err := os.Mkdir(filepath.Join(temp, "sub"), 0777)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp)
+		err = os.WriteFile(filepath.Join(temp, "sub", "test1.txt"), generateRandomBytes(10), 0777)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(temp, "sub", "test2.txt"), generateRandomBytes(100), 0777)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(temp, "sub", "test3.txt"), generateRandomBytes(1000), 0777)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(temp, "sub", "test4.txt"), generateRandomBytes(10000), 0777)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1000 test")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=false --enable-dag=false --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -812,7 +842,8 @@ func TestDatasourceRescan(t *testing.T) {
 		require.Contains(t, out, "ready")
 		// We should get 15 chunks
 		require.Contains(t, out, "15")
-		os.WriteFile(temp+"/sub/test5.txt", generateRandomBytes(10000), 0777)
+		err = os.WriteFile(filepath.Join(temp, "sub", "test5.txt"), generateRandomBytes(10000), 0777)
+		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity datasource rescan 1")
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=false --enable-dag=false --exit-on-complete=true --exit-on-error=true")
@@ -867,12 +898,15 @@ func TestPieceDownload(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		temp1 := t.TempDir()
 		temp2 := t.TempDir()
-		os.WriteFile(temp1+"/test1.txt", generateRandomBytes(10), 0777)
-		os.WriteFile(temp1+"/test2.txt", generateRandomBytes(10), 0777)
-		os.WriteFile(temp1+"/test3.txt", generateRandomBytes(2_000_000), 0777)
-		_, _, err := RunArgsInTest(ctx, "singularity dataset create --max-size 1MB --output-dir "+temp2+" test")
+		err := os.WriteFile(filepath.Join(temp1, "test1.txt"), generateRandomBytes(10), 0777)
 		require.NoError(t, err)
-		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+temp1)
+		err = os.WriteFile(filepath.Join(temp1, "test2.txt"), generateRandomBytes(10), 0777)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(temp1, "test3.txt"), generateRandomBytes(2_000_000), 0777)
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity dataset create --max-size 1MB --output-dir "+escapePath(temp2)+" test")
+		require.NoError(t, err)
+		_, _, err = RunArgsInTest(ctx, "singularity datasource add local test "+escapePath(temp1))
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
@@ -897,7 +931,11 @@ func TestPieceDownload(t *testing.T) {
 			close(serverClosed)
 		}()
 		// Wait for HTTP service to be ready
-		time.Sleep(time.Second)
+		time.Sleep(2 * time.Second)
+		// Wait for HTTP service to shutdown
+		defer func() {
+			time.Sleep(2 * time.Second)
+		}()
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
 			commp := calculateCommp(t, content, 1024*1024)
@@ -919,9 +957,9 @@ func TestPieceDownload(t *testing.T) {
 		// download util
 		temp3 := t.TempDir()
 		for _, pieceCID := range pieceCIDs {
-			_, _, err = RunArgsInTest(ctx, "singularity download --local-links true -o "+temp3+" "+pieceCID)
+			_, _, err = RunArgsInTest(ctx, "singularity download --local-links true -o "+escapePath(temp3)+" "+pieceCID)
 			require.NoError(t, err)
-			content, err := os.ReadFile(temp3 + "/" + pieceCID + ".car")
+			content, err := os.ReadFile(filepath.Join(temp3, pieceCID+".car"))
 			require.NoError(t, err)
 			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
