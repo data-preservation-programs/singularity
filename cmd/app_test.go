@@ -940,6 +940,7 @@ func TestPieceDownload(t *testing.T) {
 				break
 			}
 		}
+		time.Sleep(time.Second)
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
 			commp := calculateCommp(t, content, 1024*1024)
@@ -968,6 +969,7 @@ func TestPieceDownload(t *testing.T) {
 			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
+		time.Sleep(time.Second)
 	})
 }
 
