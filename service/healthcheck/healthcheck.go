@@ -25,7 +25,7 @@ var logger = log.Logger("healthcheck")
 
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	for {
-		HealthCheckCleanup(db)
+		HealthCheckCleanup(db.WithContext(ctx))
 		select {
 		case <-ctx.Done():
 			return

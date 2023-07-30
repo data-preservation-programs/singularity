@@ -61,13 +61,6 @@ func (s Server) getMetadataHandler(c echo.Context) error {
 	return contentprovider.GetMetadataHandler(c, s.db)
 }
 
-func (s Server) Close() error {
-	if s.closer != nil {
-		return s.closer.Close()
-	}
-	return nil
-}
-
 func Run(c *cli.Context) error {
 	connString := c.String("database-connection-string")
 
@@ -335,6 +328,11 @@ func (s Server) Run(ctx context.Context) error {
 	*/
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
+	shutdownDone := make(chan struct{})
+	defer func() {
+		<-shutdownDone
+		s.closer.Close()
+	}()
 	go func() {
 		<-ctx.Done()
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -343,6 +341,7 @@ func (s Server) Run(ctx context.Context) error {
 		if err := e.Shutdown(shutdownCtx); err != nil {
 			fmt.Printf("Error shutting down the server: %v\n", err)
 		}
+		close(shutdownDone)
 	}()
 
 	return e.Start(s.bind)

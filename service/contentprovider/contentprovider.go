@@ -197,6 +197,10 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 			httpDone <- struct{}{}
 		}()
 
+		defer func() {
+			<-httpDone
+		}()
+
 		err := e.Start(s.bind)
 		if err != nil {
 			return err
@@ -204,9 +208,6 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 	}
 
 	<-ctx.Done()
-	if s.bind != "" {
-		<-httpDone
-	}
 	return nil
 }
 
