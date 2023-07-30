@@ -931,16 +931,7 @@ func TestPieceDownload(t *testing.T) {
 			close(serverClosed)
 		}()
 		// Wait for HTTP service to be ready
-		const maxAttempts = 50
-		for i := 0; i < maxAttempts; i++ {
-			time.Sleep(100 * time.Millisecond)
-			_, _, errs := gorequest.New().
-				Get("http://127.0.0.1:7777").End()
-			if len(errs) == 0 {
-				break
-			}
-		}
-		time.Sleep(time.Second)
+		time.Sleep(2 * time.Second)
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
 			commp := calculateCommp(t, content, 1024*1024)
