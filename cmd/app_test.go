@@ -932,6 +932,10 @@ func TestPieceDownload(t *testing.T) {
 		}()
 		// Wait for HTTP service to be ready
 		time.Sleep(2 * time.Second)
+		// Wait for HTTP service to shutdown
+		defer func() {
+			time.Sleep(2 * time.Second)
+		}()
 		for _, pieceCID := range pieceCIDs {
 			content := downloadPiece(t, ctx, pieceCID)
 			commp := calculateCommp(t, content, 1024*1024)
@@ -960,7 +964,6 @@ func TestPieceDownload(t *testing.T) {
 			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
-		time.Sleep(time.Second)
 	})
 }
 
