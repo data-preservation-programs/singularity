@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an idea for this project
+title: "[Feature Request]: "
+labels: ["feature request", "triage"]
+assignees:
+  - xinaxu
+
+body:
+  - type: markdown
+    attributes:
+      value: "## Thanks for taking the time to fill out this feature request!"
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "What is the problem you're trying to solve?"
+      description: "Describe the problem this feature will solve"
+      value: I'm always frustrated when ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: "Describe the workaround you currently have"
+      value: I don't have any workaround
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: "Describe the feature you'd like"
+      description: "A clear and concise description of what you want to happen."
+      value: I would like singularity to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional context"
+      description: "Add any other context or screenshots about the feature request here."
+    validations:
+      required: false
