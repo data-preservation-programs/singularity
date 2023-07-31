@@ -79,6 +79,8 @@ func AssembleCar(
 	outDir string,
 	pieceSize int64,
 ) (*Result, error) {
+	logger.Debugw("assembling car", "dataset",
+		dataset.ID, "itemParts", len(itemParts), "outDir", outDir, "pieceSize", pieceSize)
 	var writeCloser io.WriteCloser
 	var calc *commp.Calc
 	var filepath string

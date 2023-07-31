@@ -38,7 +38,7 @@ body:
     attributes:
       label: Version
       description: What version of Singularity are you using?
-      placeholder: Use 'singularity -v' to get the version
+      placeholder: Use 'singularity version' to get the version
     validations:
       required: true
   - type: dropdown

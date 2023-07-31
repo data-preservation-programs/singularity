@@ -68,12 +68,14 @@ func (d *DealMakerService) runScheduleAndUpdateState(ctx context.Context, schedu
 		updates["error_message"] = err.Error()
 	}
 	if len(updates) > 0 {
+		logger.Debugw("updating schedule", "schedule", schedule.ID, "updates", updates)
 		err = d.db.Model(schedule).Updates(updates).Error
 		if err != nil {
 			logger.Errorw("failed to update schedule", "schedule", schedule.ID, "error", err)
 		}
 	}
 	if state == model.ScheduleCompleted {
+		logger.Infow("schedule completed", "schedule", schedule.ID)
 		d.removeSchedule(*schedule)
 	}
 }
@@ -140,6 +142,7 @@ func (d *DealMakerService) updateSchedule(ctx context.Context, schedule model.Sc
 	}
 
 	if d.activeSchedule[schedule.ID].ScheduleCron != schedule.ScheduleCron {
+		logger.Info("cron schedule has changed", "old", d.activeSchedule[schedule.ID].ScheduleCron, "new", schedule.ScheduleCron)
 		*d.activeSchedule[schedule.ID] = schedule
 		d.cron.Remove(d.cronEntries[schedule.ID])
 		d.activeScheduleCancelFunc[schedule.ID]()
@@ -179,6 +182,7 @@ func (d *DealMakerService) runSchedule(ctx context.Context, schedule *model.Sche
 
 	var current sumResult
 
+	logger.Infow("current stats for schedule", "schedule_id", schedule.ID, "pending", pending, "total", total, "current", current)
 	for {
 		if ctx.Err() != nil {
 			//nolint:nilerr
@@ -256,6 +260,7 @@ func (d *DealMakerService) runSchedule(ctx context.Context, schedule *model.Sche
 		}
 		dealModel.ScheduleID = &schedule.ID
 
+		logger.Debugw("save accepted deal", "deal", dealModel)
 		err = d.db.Create(dealModel).Error
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to create deal")
@@ -305,6 +310,7 @@ func NewDealMakerService(db *gorm.DB, lotusURL string,
 func (d *DealMakerService) runOnce(ctx context.Context) {
 	var schedules []model.Schedule
 	scheduleMap := map[uint32]model.Schedule{}
+	logger.Debugw("getting schedules")
 	err := d.db.WithContext(ctx).Preload("Dataset.Wallets").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
@@ -317,6 +323,7 @@ func (d *DealMakerService) runOnce(ctx context.Context) {
 	// Cancel all jobs that are no longer active
 	for id, active := range d.activeSchedule {
 		if _, ok := scheduleMap[id]; !ok {
+			logger.Infow("removing inactive schedule", "schedule_id", id)
 			d.removeSchedule(*active)
 		}
 	}
@@ -328,6 +335,7 @@ func (d *DealMakerService) runOnce(ctx context.Context) {
 				logger.Errorw("failed to update schedule", "error", err)
 			}
 		} else {
+			logger.Infow("adding new schedule", "schedule_id", schedule.ID)
 			err = d.addSchedule(ctx, schedule)
 			if err != nil {
 				logger.Errorw("failed to add schedule", "error", err)
@@ -372,6 +380,7 @@ func (d *DealMakerService) Run(ctx context.Context) error {
 	d.cron.Start()
 	for {
 		d.runOnce(ctx)
+		logger.Debug("waiting for next run in 5 secs")
 		select {
 		case <-signalChan:
 			logger.Infow("received signal, stopping")

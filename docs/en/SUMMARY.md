@@ -52,6 +52,7 @@
   * [Init](cli-reference/admin/init.md)
   * [Reset](cli-reference/admin/reset.md)
   * [Migrate](cli-reference/admin/migrate.md)
+* [Version](cli-reference/version.md)
 * [Download](cli-reference/download.md)
 * [Deal](cli-reference/deal/README.md)
   * [Schedule](cli-reference/deal/schedule/README.md)
