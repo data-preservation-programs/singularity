@@ -109,9 +109,9 @@ func NewContentProviderService(db *gorm.DB, config ContentProviderConfig) (*Cont
 			return nil, err
 		}
 		for _, m := range h.Addrs() {
-			logging.Logger("contentprovider").Info("listening on " + m.String())
+			logger.Info("listening on " + m.String())
 		}
-		logging.Logger("contentprovider").Info("peerID: " + h.ID().String())
+		logger.Info("peerID: " + h.ID().String())
 		return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}, host: h}, nil
 	}
 	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}}, nil
@@ -188,6 +188,7 @@ func (s *ContentProviderService) Start(ctx context.Context) error {
 
 		go func() {
 			<-ctx.Done()
+			logger.Warnw("shutting down the server")
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer shutdownCancel()
 			//nolint:contextcheck

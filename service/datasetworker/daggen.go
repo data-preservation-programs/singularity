@@ -51,6 +51,7 @@ func (w *DatasetWorkerThread) dag(source model.Source) error {
 		}
 		dirUpdateTimes[dir.ID] = dir.UpdatedAt
 
+		logger.Debugw("Reading content of directory", "dir_id", dir.ID, "name", dir.Name)
 		_, blks, err := daggen.UnmarshallToBlocks(dir.Data)
 		if err != nil {
 			return errors.Wrap(err, "failed to unmarshall to blocks")
@@ -110,6 +111,7 @@ func (w *DatasetWorkerThread) dag(source model.Source) error {
 	car.FileSize = offset
 	car.DatasetID = source.DatasetID
 	car.SourceID = &source.ID
+	logger.Debugw("Saving car", "car", car)
 	err = database.DoRetry(func() error {
 		return w.db.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&car).Error
