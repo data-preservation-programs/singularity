@@ -1,17 +1,17 @@
-# 交易计划
+# 定时任务调度
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/deal/schedule" method="post" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/schedule" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/deal/schedule/{scheduleID}/resume" method="post" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/schedule/{id}/pause" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/deal/schedule/{scheduleID}/pause" method="post" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/schedule/{id}/resume" method="post" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml" path="/deal/schedules" method="get" %}
-[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/api/docs/swagger.yaml)
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/schedules" method="get" %}
+[https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
