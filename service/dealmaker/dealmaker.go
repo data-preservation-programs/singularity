@@ -260,7 +260,7 @@ func (d *DealMakerService) runSchedule(ctx context.Context, schedule *model.Sche
 		}
 		dealModel.ScheduleID = &schedule.ID
 
-		logger.Debugw("save accepted deal", dealModel)
+		logger.Debugw("save accepted deal", "deal", dealModel)
 		err = d.db.Create(dealModel).Error
 		if err != nil {
 			return model.ScheduleError, errors.Wrap(err, "failed to create deal")

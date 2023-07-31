@@ -198,11 +198,11 @@ var originalHelpPrinter = cli.HelpPrinter
 
 var Version string
 
-func SetVersion(versionJson []byte) error {
+func SetVersion(versionJSON []byte) error {
 	var v struct {
 		Version string `json:"version"`
 	}
-	err := json.Unmarshal(versionJson, &v)
+	err := json.Unmarshal(versionJSON, &v)
 	if err != nil {
 		return errors.Wrap(err, "cannot unmarshal version")
 	}
