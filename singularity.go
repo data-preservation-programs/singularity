@@ -2,18 +2,21 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"log"
 	"os"
 
 	"github.com/data-preservation-programs/singularity/cmd"
 	log2 "github.com/ipfs/go-log/v2"
-
 	_ "github.com/joho/godotenv/autoload"
 )
 
 //go:generate sh ./docgen.sh
 //go:generate go run github.com/swaggo/swag/cmd/swag@v1.8.12 init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./docs/swagger
 //go:generate go run docs/gen/webapireference/main.go
+
+//go:embed version.json
+var version []byte
 
 func init() {
 	if os.Getenv("GOLOG_LOG_LEVEL") == "" {
@@ -38,7 +41,11 @@ func main() {
 		log2.SetAllLoggers(log2.LevelInfo)
 	}
 	cmd.SetupHelpPager()
-	if err := cmd.App.RunContext(context.TODO(), os.Args); err != nil {
+	err := cmd.SetVersion(version)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = cmd.App.RunContext(context.TODO(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

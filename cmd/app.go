@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"os"
 	"os/exec"
@@ -20,6 +21,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/mattn/go-shellwords"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -84,6 +86,7 @@ Network Support:
 				admin.MigrateCmd,
 			},
 		},
+		VersionCmd,
 		DownloadCmd,
 		{
 			Name:     "deal",
@@ -192,6 +195,21 @@ Network Support:
 }
 
 var originalHelpPrinter = cli.HelpPrinter
+
+var Version string
+
+func SetVersion(versionJson []byte) error {
+	var v struct {
+		Version string `json:"version"`
+	}
+	err := json.Unmarshal(versionJson, &v)
+	if err != nil {
+		return errors.Wrap(err, "cannot unmarshal version")
+	}
+
+	Version = v.Version
+	return nil
+}
 
 func SetupHelpPager() {
 	//nolint:errcheck

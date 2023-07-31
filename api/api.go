@@ -78,6 +78,8 @@ func Run(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	logger.Info("Starting Singularity API server...")
 	return server.Run(c.Context)
 }
 
@@ -90,7 +92,7 @@ type APIParams struct {
 }
 
 func InitServer(params APIParams) (Server, error) {
-	db, closer, err := database.OpenWithDefaults(params.ConnString)
+	db, closer, err := database.OpenWithLogger(params.ConnString)
 	if err != nil {
 		return Server{}, err
 	}
@@ -317,20 +319,13 @@ func (s Server) Run(ctx context.Context) error {
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	/* deprecated API
-	e.GET("/api/datasets", s.GetDatasets)
-	e.GET("/api/dataset/:id/sources", s.GetSources)
-	e.GET("/api/source/:id/cars", s.GetCars)
-	e.GET("/api/car/:id/items", s.GetItems)
-	e.GET("/api/car/:id/deals", s.GetDealsForCar)
-	e.GET("/api/item/:id/deals", s.GetDealsForItem)
-	e.GET("/api/directory/:id/entries", s.GetDirectoryEntries)
-	*/
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 
 	shutdownDone := make(chan struct{})
 	defer func() {
 		<-shutdownDone
+		logger.Info("Server shutdown complete")
+		logger.Debug("Closing the database connection")
 		s.closer.Close()
 	}()
 	go func() {
@@ -338,6 +333,7 @@ func (s Server) Run(ctx context.Context) error {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutdownCancel()
 		//nolint:contextcheck
+		logger.Info("Gracefully shutting down the server...")
 		if err := e.Shutdown(shutdownCtx); err != nil {
 			fmt.Printf("Error shutting down the server: %v\n", err)
 		}
@@ -386,115 +382,3 @@ func httpResponseFromError(c echo.Context, e error) error {
 
 	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
 }
-
-/* deprecated API
-func (s Server) GetDatasets(c echo.Context) error {
-	var datasets []model.Dataset
-	err := s.db.Find(&datasets).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, datasets)
-}
-
-func (s Server) GetSources(c echo.Context) error {
-	datasetID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var sources []model.Source
-	err = s.db.Where("dataset_id = ?", datasetID).Find(&sources).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, sources)
-}
-
-func (s Server) GetCars(c echo.Context) error {
-	sourceID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var cars []model.Car
-	err = s.db.Where("chunk_id in (?)",
-		s.db.Table("chunks").Where("source_id", sourceID).Select("id"),
-	).Find(&cars).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, cars)
-}
-
-func (s Server) GetItems(c echo.Context) error {
-	carID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var items []model.Item
-	err = s.db.Where("chunk_id in (?)",
-		s.db.Table("cars").Where("id = ?", carID).Select("chunk_id")).Find(&items).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, items)
-}
-
-func (s Server) GetDealsForCar(c echo.Context) error {
-	carID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var deals []model.Deal
-	err = s.db.Where("piece_cid in (?)",
-		s.db.Table("cars").Where("id = ?", carID).Select("piece_cid")).Find(&deals).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, deals)
-}
-
-func (s Server) GetDealsForItem(c echo.Context) error {
-	itemID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var deals []model.Deal
-	err = s.db.Where("piece_cid in (?)",
-		s.db.Table("cars").Where("chunk_id in (?)",
-			s.db.Table("items").Where("id = ?", itemID).Select("chunk_id")).
-			Select("piece_cid")).Find(&deals).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, deals)
-}
-
-func (s Server) GetDirectoryEntries(c echo.Context) error {
-	directoryID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(400, err.Error())
-	}
-	var dirs []model.Directory
-	err = s.db.Where("parent_id = ?", directoryID).Find(&dirs).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	var items []model.Item
-	err = s.db.Where("directory_id = ?", directoryID).Find(&items).Error
-	if err != nil {
-		return echo.NewHTTPError(500, err.Error())
-	}
-
-	return c.JSON(200, map[string]any{
-		"Directories": dirs,
-		"Items":       items,
-	})
-}
-*/

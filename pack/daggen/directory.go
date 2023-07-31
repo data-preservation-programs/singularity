@@ -14,6 +14,7 @@ import (
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
+	"github.com/ipfs/go-log/v2"
 	"github.com/ipfs/go-merkledag"
 	uio "github.com/ipfs/go-unixfs/io"
 	"github.com/ipld/go-car"
@@ -83,6 +84,8 @@ func NewDirectoryData() DirectoryData {
 		Node:   node,
 	}
 }
+
+var logger = log.Logger("daggen")
 
 func (d *DirectoryData) AddItem(name string, c cid.Cid, length uint64) error {
 	return d.dir.AddChild(context.Background(), name, NewDummyNode(length, c))

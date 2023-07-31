@@ -36,6 +36,7 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 }
 
 func HealthCheckCleanup(db *gorm.DB) {
+	logger.Debugw("running healthcheck cleanup")
 	// Remove all workers that haven't sent heartbeat for 5 minutes
 	err := database.DoRetry(func() error {
 		return db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Delete(&model.Worker{}).Error
@@ -95,6 +96,7 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState fun
 		WorkType:      state.WorkType,
 		WorkingOn:     state.WorkingOn,
 	}
+	logger.Debugw("registering worker", "worker", worker)
 	err = database.DoRetry(func() error {
 		if !allowDuplicate {
 			var activeWorkerCount int64
@@ -129,6 +131,7 @@ func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState
 		WorkType:      state.WorkType,
 		WorkingOn:     state.WorkingOn,
 	}
+	logger.Debugw("sending heartbeat", "worker", worker)
 	err = database.DoRetry(func() error {
 		return db.WithContext(ctx).Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "id"}},
