@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListSourceByDatasetHandler(
+func ListSourcesByDatasetHandler(
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Source, error) {
@@ -41,7 +41,7 @@ func ListSourceByDatasetHandler(
 func listSourceHandler(
 	db *gorm.DB,
 ) ([]model.Source, error) {
-	return ListSourceByDatasetHandler(db, "")
+	return ListSourcesByDatasetHandler(db, "")
 }
 
 func ListSourceHandler(

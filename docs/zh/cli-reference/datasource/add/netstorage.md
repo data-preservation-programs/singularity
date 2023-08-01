@@ -5,32 +5,32 @@
 名称：
    singularity datasource add netstorage - Akamai NetStorage
 
-用法：
-   singularity datasource add netstorage [command options] <dataset_name> <source_path>
+使用方法：
+   singularity datasource add netstorage [命令选项] <数据集名称> <源路径>
 
-介绍：
-   --netstorage-secret
-      设置 NetStorage 帐户的密钥/G2O 密钥进行身份验证。
-      
-      请选择“y”选项，然后输入您的密钥以设置自己的密码。
-
-   --netstorage-protocol
-      选择 HTTP 或 HTTPS 协议。
-      
-      大多数用户应选择默认的 HTTPS。
-      HTTP 主要提供用于调试的功能。
-
-      示例：
-         | http  | HTTP 协议
-         | https | HTTPS 协议
+说明：
+   --netstorage-account
+      设置NetStorage帐户名称
 
    --netstorage-host
-      NetStorage 主机的域名 + 路径。
+      连接到NetStorage主机的域名+路径。
       
-      格式应为 `<domain>/<internal folders>`
+      格式应为“<域名>/<内部文件夹>”
 
-   --netstorage-account
-      设置 NetStorage 帐户名
+   --netstorage-protocol
+      选择HTTP或HTTPS协议。
+      
+      大多数用户应选择HTTPS，这是默认值。
+      HTTP主要用于调试目的。
+
+      示例：
+         | http  | HTTP协议
+         | https | HTTPS协议
+
+   --netstorage-secret
+      设置用于身份验证的NetStorage帐户密码/密钥。
+      
+      请选"是"选项设置您自己的密码，然后输入您的密钥。
 
 
 选项：
@@ -38,15 +38,16 @@
 
    数据准备选项
 
-   --delete-after-export    [危险] 将数据集导出到 CAR 文件后删除数据集的文件。（默认值：false）
-   --rescan-interval value  当自上次成功扫描后经过此间隔时间时，自动重新扫描源目录（默认值：禁用）
+   --delete-after-export    [危险] 导出数据集为CAR文件后删除数据集的文件。  (默认值: false)
+   --rescan-interval value  上次成功扫描后自动重新扫描源目录的时间间隔 (默认值: 禁用)
+   --scanning-state value   设置初始扫描状态 (默认值: 准备就绪)
 
-   NetStorage 选项
+   NetStorage选项
 
-   --netstorage-account value   设置 NetStorage 帐户名 [$NETSTORAGE_ACCOUNT]
-   --netstorage-host value      NetStorage 主机的域名 + 路径。[$NETSTORAGE_HOST]
-   --netstorage-protocol value  选择 HTTP 或 HTTPS 协议。（默认值：“https”）[$NETSTORAGE_PROTOCOL]
-   --netstorage-secret value    设置 NetStorage 帐户的密钥/G2O 密钥进行身份验证。[$NETSTORAGE_SECRET]
+   --netstorage-account value   设置NetStorage帐户名称 [$NETSTORAGE_ACCOUNT]
+   --netstorage-host value      连接到NetStorage主机的域名+路径。 [$NETSTORAGE_HOST]
+   --netstorage-protocol value  选择HTTP或HTTPS协议。 (默认值: "https") [$NETSTORAGE_PROTOCOL]
+   --netstorage-secret value    设置用于身份验证的NetStorage帐户密码/密钥。 [$NETSTORAGE_SECRET]
 
 ```
 {% endcode %}

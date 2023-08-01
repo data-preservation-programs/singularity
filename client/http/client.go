@@ -78,6 +78,29 @@ func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, para
 	return &source, nil
 }
 
+func (c *Client) ListSourcesByDataset(ctx context.Context, datasetName string) ([]model.Source, error) {
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/dataset/"+datasetName+"/sources", nil)
+	if err != nil {
+		return nil, err
+	}
+	response, err := c.client.Do(httpRequest)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var sources []model.Source
+	err = json.NewDecoder(response.Body).Decode(&sources)
+	if err != nil {
+		return nil, err
+	}
+	return sources, nil
+}
+
 func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/item/"+strconv.FormatUint(id, 10), nil)
 	if err != nil {

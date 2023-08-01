@@ -12,6 +12,7 @@ func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
 	if !w.config.EnableDag {
 		return nil, nil
 	}
+	w.logger.Debugw("finding dag work")
 	var sources []model.Source
 
 	err := database.DoRetry(func() error {
@@ -61,6 +62,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 	if !w.config.EnablePack {
 		return nil, nil
 	}
+	w.logger.Debugw("finding pack work")
 	var chunks []model.Chunk
 
 	err := database.DoRetry(func() error {
@@ -114,6 +116,7 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 	if !w.config.EnableScan {
 		return nil, nil
 	}
+	w.logger.Debugw("finding scan work")
 	var sources []model.Source
 	// Find all ready sources or sources that is being processed but does not have a worker id,
 	// or all source that is complete but needs rescanning

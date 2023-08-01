@@ -1,33 +1,33 @@
-# 交易前提条件
+# 成交前提条件
 
-## 找到存储提供者
+## 寻找存储提供商
 
-目前，Singularity 不会帮助您找到接受您交易的存储提供者。您可以使用许多资源来寻找高质量的存储提供者，比如：
+目前，Singularity并不能帮助您寻找接受您的交易的存储提供商。您可以使用许多资源来寻找高质量的存储提供商，例如：
 
-* TODO
+- TODO
 
-## 创建 Filecoin 钱包
+## 创建Filecoin钱包
 
-在进行交易之前，您必须创建 Filecoin 钱包。您不能使用带账本的钱包或交易所钱包。要创建 Filecoin 钱包，您可以运行下面的命令：
+在进行交易之前，您必须创建一个Filecoin钱包。您不能使用硬件钱包或交易所钱包。要创建一个Filecoin钱包，您可以运行以下命令：
 
-```
+```sh
 singularity wallet create
 ```
 
-这将生成一个钱包地址以及与之关联的私钥。此钱包目前还不能用于交易，因为 blockchain 尚未识别它。现在是一个很好的时间将 0 FIL 转入此钱包，这样所有人都会知道它。
+这将生成一个钱包地址以及与钱包相关联的私钥。这个钱包目前还不能用于交易，因为它尚未被区块链识别到。现在是时候将0 FIL转入此钱包，以便大家都知道它的存在。
 
-一旦此钱包在链上记录，上面的命令将完成，您就可以准备进行交易了。
+一旦这个钱包被记录在链上，上述命令就会完成，您就可以开始进行交易了。
 
-如果您已经有现有的钱包，您可以使用下面的命令导入：
+或者，如果您已经拥有现有的钱包，可以使用以下命令导入：
 
-```
+```sh
 singularity wallet import xxx
 ```
 
-## 【可选】获得 [datacap](https://docs.filecoin.io/basics/how-storage-works/filecoin-plus/#datacap)
+## [可选] 获取[数据容量(datacap)](https://docs.filecoin.io/basics/how-storage-works/filecoin-plus/#datacap)
 
-在当前的市场状况下，大多数存储提供者更愿意接受[验证交易](https://docs.filecoin.io/storage-provider/filecoin-deals/verified-deals/)而不是普通交易。如果您的数据集大于几 TiB，最好向 [Filplus 治理团队和公证人](https://github.com/filecoin-project/notary-governance)申请 datacap。
+在当前市场情况下，大多数存储提供商更喜欢[验证的交易(verified deals)](https://docs.filecoin.io/storage-provider/filecoin-deals/verified-deals/)，而不是普通交易。如果您的数据集超过几TiB，最好向[Filplus治理团队和公证人](https://github.com/filecoin-project/notary-governance)申请数据容量。
 
 ## 下一步
 
-[创建交易时间表](create-a-deal-schedule.md)
+[创建交易计划](create-a-deal-schedule.md)

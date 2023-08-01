@@ -49,6 +49,7 @@ func ExtractFromFsObject(ctx context.Context, info fs.ObjectInfo) (size int64, h
 func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	source model.Source, dataset model.Dataset,
 	directoryCache map[string]uint64) (*model.Item, []model.ItemPart, error) {
+	logger.Debugw("pushed item", "item", obj.Remote(), "source_id", source.ID, "dataset_id", dataset.ID)
 	db = db.WithContext(ctx)
 	splitSize := MaxSizeToSplitSize(dataset.MaxSize)
 	rootID, err := source.RootDirectoryID(db)
@@ -57,6 +58,9 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	}
 	size, hashValue, lastModified, lastModifiedReliable := ExtractFromFsObject(ctx, obj)
 	existing := int64(0)
+	logger.Debugw("finding if the item already exists",
+		"source_id", source.ID, "path", obj.Remote(),
+		"hash", hashValue, "size", size, "last_modified_reliable", lastModifiedReliable, "last_modified", lastModified.UnixNano())
 	err = db.Model(&model.Item{}).Where(
 		"source_id = ? AND path = ? AND "+
 			"(( hash = ? AND hash != '' ) "+
@@ -68,6 +72,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 		return nil, nil, errors.Wrap(err, "failed to check existing item")
 	}
 	if existing > 0 {
+		logger.Debugw("item already exists", "source_id", source.ID, "path", obj.Remote())
 		return nil, nil, nil
 	}
 	item := model.Item{
@@ -77,7 +82,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 		LastModifiedTimestampNano: lastModified.UnixNano(),
 		Hash:                      hashValue,
 	}
-	logger.Debugw("found item", "item", item)
+	logger.Debugw("new item", "item", item)
 	err = EnsureParentDirectories(db, &item, rootID, directoryCache)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to ensure parent directories")
@@ -205,6 +210,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 ) error {
 	// If everything fit, create a chunk. Usually this is the case for the last chunk
 	if remaining.carSize <= dataset.MaxSize {
+		w.logger.Debugw("creating chunk", "size", remaining.carSize)
 		err := database.DoRetry(func() error {
 			return w.db.Transaction(
 				func(db *gorm.DB) error {
@@ -250,6 +256,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 	}
 
 	// create a chunk for [0:si)
+	w.logger.Debugw("creating chunk", "size", s)
 	err := database.DoRetry(func() error {
 		return w.db.Transaction(
 			func(db *gorm.DB) error {
@@ -299,6 +306,7 @@ func EnsureParentDirectories(db *gorm.DB,
 			Name:     segment,
 			ParentID: &last,
 		}
+		logger.Debugw("creating directory", "path", p, "dir", newDir)
 		err := database.DoRetry(func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				return db.

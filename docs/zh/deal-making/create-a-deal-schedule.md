@@ -1,28 +1,28 @@
-# 创建成交时间表
+# 创建交易计划
 
-现在可以和存储供应商达成一些成交了。首先要运行成交服务。
+是时候与存储提供商进行一些交易了。首先运行交易服务。
 
 ```
 singularity run dealmaker
 ```
 
-## 一次性发送所有成交
+## 一次发送所有交易
 
-如果数据集较小，您可以一次性将所有成交发送给您的存储供应商。您可以使用以下命令来实现：
+对于较小的数据集，您可以一次性将所有交易发送给存储提供商。为了实现这一点，您可以使用以下命令。
 
 ```sh
 singularity deal schedule create dataset_name provider_id
 ```
 
-然而，如果数据集较大，存储提供商在成交建议到期之前可能无法处理那么多成交。所以您可以创建一个时间表。
+然而，如果数据集很大，存储提供商在交易建议到期之前可能无法处理那么多的交易，因此您可以创建一个计划。
 
-## 按时间表发送成交
+## 定时发送交易
 
-使用相同的命令，您可以创建自己的时间表来控制成交向存储供应商的生成速度和频率。
+使用相同的命令，您可以创建自己的计划来控制交易向存储提供商的发送速度和频率。
 
 ```
---schedule-deal-number 值，--number 值          每个触发计划的最大成交量，例如30（默认值：无限制）
---schedule-deal-size 值，--size 值              每个触发计划的最大成交大小，例如500GB（默认值：无限制）
---schedule-interval 值，--every 值              Cron调度发送批次成交（默认值：未启用）
---total-deal-number 值，--total-number 值       此请求的最大总成交量，例如1000（默认值：无限制）
+--schedule-deal-number value, --number value     触发计划的每个计划的最大交易数，例如30（默认：无限）
+--schedule-deal-size value, --size value         触发计划的每个计划的最大交易大小，例如500GB（默认：无限）
+--schedule-interval value, --every value         发送批量交易的Cron计划（默认：禁用）
+--total-deal-number value, --total-number value  此请求的最大总交易数，例如1000（默认：无限）
 ```
