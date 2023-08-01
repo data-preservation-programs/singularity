@@ -61,6 +61,10 @@ func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 	return inspect.GetSourceItemDetailHandler(c.db.WithContext(ctx), strconv.FormatUint(id, 10))
 }
 
+func (c *Client) GetItemDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
+	return inspect.GetItemDealsHandler(c.db.WithContext(ctx), strconv.FormatUint(id, 10))
+}
+
 func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo dshandler.ItemInfo) (*model.Item, error) {
 	return dshandler.PushItemHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, sourceID, itemInfo)
 }
