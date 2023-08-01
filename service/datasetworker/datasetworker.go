@@ -174,6 +174,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 				goto errorLoop
 			}
 
+			w.logger.Debugw("saving dag generation state to complete", "sourceID", source.ID)
 			err = database.DoRetry(func() error {
 				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
 					map[string]any{
@@ -224,6 +225,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 				goto errorLoop
 			}
 
+			w.logger.Debugw("saving scanning state to complete", "sourceID", source.ID)
 			err = database.DoRetry(func() error {
 				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
 					map[string]any{
@@ -279,6 +281,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 					}
 					goto errorLoop
 				}
+				w.logger.Debugw("saving packing state to complete", "chunkID", chunk.ID)
 				err = database.DoRetry(func() error {
 					return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
 						map[string]any{

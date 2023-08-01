@@ -100,12 +100,14 @@ func (d DealMakerImpl) getProviderInfo(ctx context.Context, provider string) (*M
 		return item.Value(), nil
 	}
 
+	logger.Debugw("getting miner info", "miner", provider)
 	minerInfo := new(MinerInfo)
 	err := d.lotusClient.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get miner info")
 	}
 
+	logger.Debug("got miner info", "miner", provider, "minerInfo", minerInfo)
 	minerInfo.Multiaddrs = make([]multiaddr.Multiaddr, len(minerInfo.MultiaddrsBase64Encoded))
 	for i, addr := range minerInfo.MultiaddrsBase64Encoded {
 		decoded, err := base64.StdEncoding.DecodeString(addr)
@@ -132,6 +134,7 @@ func (d DealMakerImpl) getProtocols(ctx context.Context, minerInfo peer.AddrInfo
 		return item.Value(), nil
 	}
 
+	logger.Debugw("getting protocols", "miner", minerInfo.ID)
 	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
 	if err := d.host.Connect(ctx, minerInfo); err != nil {
 		return nil, errors.Wrap(err, "failed to connect to miner")
@@ -142,6 +145,7 @@ func (d DealMakerImpl) getProtocols(ctx context.Context, minerInfo peer.AddrInfo
 		return nil, errors.Wrap(err, "failed to get protocols")
 	}
 
+	logger.Debugw("got protocols", "miner", minerInfo.ID, "protocols", protocols)
 	d.protocolsCache.Set(minerInfo.ID, protocols, ttlcache.DefaultTTL)
 	return protocols, nil
 }
@@ -152,12 +156,14 @@ func (d DealMakerImpl) getMinCollateral(ctx context.Context, pieceSize int64, ve
 		return item.Value(), nil
 	}
 
+	logger.Debugw("getting deal provider collateral bounds", "pieceSize", pieceSize, "verified", verified)
 	bound := new(DealProviderCollateralBound)
 	err := d.lotusClient.CallFor(ctx, bound, "Filecoin.StateDealProviderCollateralBounds", pieceSize, verified, nil)
 	if err != nil {
 		return big.Int{}, errors.Wrap(err, "failed to get deal provider collateral bounds")
 	}
 
+	logger.Debugw("got deal provider collateral bounds", "pieceSize", pieceSize, "verified", verified, "bound", bound)
 	value, err := big.FromString(bound.Min)
 	if err != nil {
 		return big.Int{}, errors.Wrap(err, "failed to parse min collateral")
@@ -174,6 +180,8 @@ func (d DealMakerImpl) makeDeal120(
 	fileSize int64,
 	rootCID cid.Cid,
 	minerInfo peer.AddrInfo) (*proposal120.DealResponse, error) {
+	logger.Debugw("making deal 120", "dealID", dealID, "deal", deal,
+		"dealConfig", dealConfig, "fileSize", fileSize, "rootCID", rootCID.String(), "minerInfo", minerInfo)
 	transfer := proposal120.Transfer{
 		Size: uint64(fileSize),
 	}
@@ -228,6 +236,7 @@ func (d DealMakerImpl) makeDeal120(
 		defer stream.SetDeadline(time.Time{})
 	}
 
+	logger.Debugw("sending deal params", "dealParams", dealParams)
 	err = cborutil.WriteCborRPC(stream, &dealParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to write deal params")
@@ -239,6 +248,7 @@ func (d DealMakerImpl) makeDeal120(
 		return nil, errors.Wrap(err, "failed to read deal response")
 	}
 
+	logger.Debugw("got deal response", "resp", resp)
 	return &resp, nil
 }
 
@@ -248,6 +258,7 @@ func (d DealMakerImpl) makeDeal111(
 	dealConfig DealConfig,
 	rootCID cid.Cid,
 	minerInfo peer.AddrInfo) (*proposal110.SignedResponse, error) {
+	logger.Debugw("making deal 111", "deal", deal, "dealConfig", dealConfig, "rootCID", rootCID.String(), "minerInfo", minerInfo)
 	proposal := proposal110.Proposal{
 		FastRetrieval: dealConfig.KeepUnsealed,
 		DealProposal:  &deal,
@@ -278,6 +289,7 @@ func (d DealMakerImpl) makeDeal111(
 		defer stream.SetDeadline(time.Time{})
 	}
 
+	logger.Debugw("sending deal params", "proposal", proposal)
 	var resp proposal110.SignedResponse
 	err = cborutil.WriteCborRPC(stream, &proposal)
 	if err != nil {
@@ -289,6 +301,7 @@ func (d DealMakerImpl) makeDeal111(
 		return nil, errors.Wrap(err, "failed to read deal response")
 	}
 
+	logger.Debugw("got deal response", "resp", resp)
 	return &resp, nil
 }
 
@@ -317,6 +330,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 
 func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	car model.Car, dealConfig DealConfig) (*model.Deal, error) {
+	logger.Info("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {

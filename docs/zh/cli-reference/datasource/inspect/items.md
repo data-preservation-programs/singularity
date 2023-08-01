@@ -9,9 +9,9 @@
    singularity datasource inspect items [命令选项] <source_id>
 
 描述：
-   此命令将列出数据源中的所有项目。这可能是非常大的列表。
+   此命令将列出数据源中的所有项目。该列表可能非常大。
 
 选项：
-   --help，-h 显示帮助
+   --help, -h  显示帮助
 ```
 {% endcode %}

@@ -9,7 +9,7 @@
    singularity run api [命令选项] [参数...]
 
 选项:
-   --bind value  API 服务的绑定地址 (默认值: "127.0.0.1:9090")
+   --bind value  API 服务器的绑定地址 (默认值: "127.0.0.1:9090")
    --help, -h    显示帮助信息
 ```
 {% endcode %}

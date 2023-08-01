@@ -24,8 +24,7 @@ func DoRetry(f func() error) error {
 }
 
 type databaseLogger struct {
-	level  logger2.LogLevel
-	logger *logging.ZapEventLogger
+	level logger2.LogLevel
 }
 
 func (d *databaseLogger) LogMode(level logger2.LogLevel) logger2.Interface {
@@ -34,15 +33,15 @@ func (d *databaseLogger) LogMode(level logger2.LogLevel) logger2.Interface {
 }
 
 func (d *databaseLogger) Info(ctx context.Context, s string, i ...any) {
-	d.logger.Infof(s, i...)
+	logger.Infof(s, i...)
 }
 
 func (d *databaseLogger) Warn(ctx context.Context, s string, i ...any) {
-	d.logger.Warnf(s, i...)
+	logger.Warnf(s, i...)
 }
 
 func (d *databaseLogger) Error(ctx context.Context, s string, i ...any) {
-	d.logger.Errorf(s, i...)
+	logger.Errorf(s, i...)
 }
 
 func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
@@ -63,19 +62,17 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		if len(sql) > 1000 {
 			sql = sql[:1000] + "...(trimmed)"
 		}
-		d.logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
+		logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	case logging.LevelWarn:
-		d.logger.Warnw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
+		logger.Warnw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	case logging.LevelError:
-		d.logger.Errorw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
+		logger.Errorw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	}
 }
 
-func OpenWithDefaults(connString string) (*gorm.DB, io.Closer, error) {
-	logger.Debug("Opening database: ", connString)
+func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 	gormLogger := databaseLogger{
-		level:  logger2.Info,
-		logger: logger,
+		level: logger2.Info,
 	}
 	return Open(connString, &gorm.Config{
 		Logger:         &gormLogger,
@@ -85,11 +82,11 @@ func OpenWithDefaults(connString string) (*gorm.DB, io.Closer, error) {
 
 func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
-	return OpenWithDefaults(connString)
+	return OpenWithLogger(connString)
 }
 
 func OpenInMemory() (*gorm.DB, io.Closer, error) {
-	db, closer, err := OpenWithDefaults("sqlite:file::memory:?cache=shared")
+	db, closer, err := OpenWithLogger("sqlite:file::memory:?cache=shared")
 	if err != nil {
 		logger.Error(err)
 		return nil, nil, err

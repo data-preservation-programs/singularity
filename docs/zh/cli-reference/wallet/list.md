@@ -2,7 +2,7 @@
 
 {% code fullWidth="true" %}
 ```
-名称：
+命令名称：
    singularity wallet list - 列出所有导入的钱包
 
 用法：

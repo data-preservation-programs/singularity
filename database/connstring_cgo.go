@@ -23,6 +23,7 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	var closer io.Closer
 	var err error
 	if strings.HasPrefix(connString, "sqlite:") {
+		logger.Info("Opening sqlite database (cgo version)")
 		db, err = gorm.Open(sqlite.Open(connString[7:]), config)
 		if err != nil {
 			return nil, nil, err
@@ -55,6 +56,7 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	if strings.HasPrefix(connString, "postgres:") {
+		logger.Info("Opening postgres database")
 		db, err = gorm.Open(postgres.Open(connString), config)
 		if err != nil {
 			return nil, nil, err
@@ -64,6 +66,7 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	if strings.HasPrefix(connString, "mysql://") {
+		logger.Info("Opening mysql database")
 		db, err = gorm.Open(mysql.Open(connString[8:]), config)
 		if err != nil {
 			return nil, nil, err

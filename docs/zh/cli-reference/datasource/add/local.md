@@ -2,130 +2,131 @@
 
 {% code fullWidth="true" %}
 ```
-名称:
+命令:
    singularity datasource add local - 本地磁盘
 
 用法:
-   singularity datasource add local [命令选项] <数据集名称> <数据源路径>
+   singularity datasource add local [命令选项] <数据集名称> <源路径>
 
-说明:
-   --local-links
-      将符号链接转换为普通文件并加上“.rclonelink”扩展名。
+描述:
+   --local-case-insensitive
+      强制文件系统自声明为不区分大小写。
+      
+      通常本地后端在Windows/macOS上自声明为不区分大小写，而对于其他系统则自声明为区分大小写。使用此标志可以覆盖默认选择。
 
    --local-case-sensitive
-      强制文件系统报告其区分大小写。
+      强制文件系统自声明为区分大小写。
       
-      通常，本地后端在 Windows/macOS 上声明为不区分大小写，而在其他系统上即区分大小写。使用此标志覆盖默认选择。
-
-   --local-no-preallocate
-      禁用已转移文件的磁盘空间的预分配。
-      
-      预先分配磁盘空间有助于防止文件系统碎片。但是，某些虚拟文件系统层（例如 Google Drive File Stream）可能会错误地将实际文件大小设置为分配的空间大小，导致校验和和文件大小检查失败。使用此标志来禁用预分配。
-
-   --local-no-set-modtime
-      禁用设置修改时间。
-      
-      通常，rclone在上传完成后会更新文件的修改时间。当 rclone 运行的用户不拥有上传的文件（例如在拷贝到由另一个用户拥有的 CIFS 挂载时）时，这可能会引起权限问题。如果启用此选项，则 rclone 更不会在拷贝文件后更新修改时间。
+      通常本地后端在Windows/macOS上自声明为不区分大小写，而对于其他系统则自声明为区分大小写。使用此标志可以覆盖默认选择。
 
    --local-copy-links
-      对符号链接进行跟随并复制指向的项目。
+      跟随符号链接并复制指向的项目。
 
-   --local-skip-links
-      不会警告已跳过的符号链接。
+   --local-encoding
+      后端的编码方式。
       
-      此标志禁用有关跳过的符号链接或联接点的警告消息，因此您明确知道应跳过它们。
+      有关更多信息，请参阅[概述中的编码部分](/overview/#encoding)。
+
+   --local-links
+      将符号链接转换成常规文件，并加上“.rclonelink”扩展名。
 
    --local-no-check-updated
-      不检查上传期间文件是否更改。
+      在上传过程中不检查文件是否更改。
       
-      通常，rclone 会在上传时检查文件的大小和修改时间，并在文件上传期间更改时中止并显示一条消息开头为“can't copy -  source file is being updated”的消息。
+      通常，在上传文件时，rclone会检查文件的大小和修改时间，如果文件在上传过程中发生更改，则会中止并显示一条消息，消息以“can't copy - source file is being updated”开头。
       
-      但是，在某些文件系统中，此修改时间检查可能会失败（例如 [Glusterfs #2206](https://github.com/rclone/rclone/issues/2206)），因此可以使用此标志禁用此检查。
+      但是在某些文件系统上，此修改时间检查可能失败（例如 [Glusterfs #2206](https://github.com/rclone/rclone/issues/2206)），因此可以使用此标志禁用此检查。
       
-      如果设置了此标志，则 rclone 将尽其所能传输正在更新的文件。如果文件只是在其中添加内容（例如日志），那么 rclone 将传输第一次看到它时具有的大小的日志文件。
+      如果设置了此标志，rclone将尽力传输正在更新的文件。如果文件只是追加内容（例如日志），那么rclone将传输拥有第一次看到的大小的日志文件。
       
-      如果该文件正在全面修改（而不仅仅是添加到其中），则传输可能会失败，显示散列校验失败信息。
+      如果文件正在进行完全修改（而不仅仅是追加），则传输可能会因哈希检查失败而失败。
       
-      详细来说，一旦对该文件第一次调用 stat()，我们就会：
+      具体来说，一旦文件被首次调用stat()：
       
-      - 仅传输 stat 指定的大小
-      - 仅核对 stat 指定的大小
-      - 不要更新文件的 stat 信息
+      - 只传输stat给出的大小
+      - 只对stat给出的大小进行校验和
+      - 不更新文件的stat信息
       
       
+
+   --local-no-preallocate
+      禁用传输文件的磁盘空间预先分配。
+      
+      磁盘空间的预先分配有助于防止文件系统碎片化。但是，某些虚拟文件系统层（例如Google Drive File Stream）可能会错误地将实际文件大小设置为已预先分配的空间大小，导致校验和和文件大小检查失败。使用此标志禁用预先分配。
+
+   --local-no-set-modtime
+      禁用修改修改时间。
+      
+      通常，在文件上传完成后，rclone会更新文件的修改时间。当rclone正在运行的用户不拥有所上传的文件（例如，复制到由另一个用户拥有的CIFS挂载点）时，这可能会导致权限问题。如果启用了此选项，rclone将不再在复制文件后更新修改时间。
 
    --local-no-sparse
       禁用多线程下载的稀疏文件。
       
-      在 Windows 平台上，rclone 在进行多线程下载时会制作稀疏文件。这可以避免 OS 长时间在文件中放置零。但是稀疏文件可能不可取，因为它们会导致磁盘碎片，并且使用起来可能很慢。
-
-   --local-encoding
-      后端的编码。
-      
-      有关详细信息，请参见 [总览中的编码部分](/overview/#encoding)。
+      在Windows平台上，rclone在进行多线程下载时会生成稀疏文件。这样可以避免在操作系统将文件清零时出现长时间的暂停。但稀疏文件可能不可取，因为它们会导致磁盘碎片化，并且使用起来可能很慢。
 
    --local-nounc
-      在 Windows 上禁用 UNC（长文件名）转换。
+      在Windows上禁用UNC（长路径名）转换。
 
-      示例:
+      示例：
          | true | 禁用长文件名。
 
-   --local-unicode-normalization
-      对路径和文件名应用 Unicode NFC 标准化。
-      
-      可以使用此标志将从本地文件系统读取的文件名标准化为 Unicode NFC 形式。
-      
-      rclone 通常不会触及从文件系统中读取的文件名的编码。
-      
-      在 macOS 上使用它可以非常有用，因为它通常提供了已分解的（NFD）Unicode，这在某些语言（例如韩文）上在某些操作系统上无法正确显示。
-      
-      请注意，rclone 在同步过程中比较文件名时使用 Unicode 标准化，因此通常不应使用此标志。
-
    --local-one-file-system
-      不要跨越文件系统边界（仅限 Unix/macOS）。
+      不跨文件系统边界（仅适用于Unix/macOS）。
+
+   --local-skip-links
+      不提醒跳过的符号链接。
+      
+      此标志禁用有关跳过的符号链接或结合点的警告消息，因为您明确确认它们应该被跳过。
+
+   --local-unicode-normalization
+      将路径和文件名应用于Unicode NFC规范化。
+      
+      可以使用此标志将从本地文件系统读取的文件名规范化为Unicode NFC形式。
+      
+      rclone通常不会更改从文件系统读取的文件名的编码。
+      
+      当在macOS上使用时，这可能很有用，因为它通常提供了分解的（NFD）Unicode，在某些语言（例如韩语）中在某些操作系统上无法正确显示。
+      
+      请注意，rclone在同步过程中使用Unicode规范化比较文件名，因此通常不应使用此标志。
 
    --local-zero-size-links
-      假设链接的 Stat 大小为零（并读取它们）（已废弃）。
+      假设链接的Stat大小为零（并读取它们）（已弃用）。
       
-      rclone 曾经使用链接的 Stat 大小作为链接大小，但它在相当多的地方失败了：
+      Rclone之前使用链接的Stat大小作为链接大小，但在以下几个位置失败：
       
       - Windows
-      - 在某些虚拟文件系统上（例如 LucidLink）
+      - 某些虚拟文件系统（例如LucidLink）
       - Android
       
-      因此，rclone 现在总是读取链接。
+      因此，rclone现在总是读取链接。
       
-
-   --local-case-insensitive
-      强制文件系统报告其区分大小写。
-      
-      通常，本地后端在 Windows/macOS 上声明为不区分大小写，而在其他系统上即区分大小写。使用此标志覆盖默认选择。
 
 
 选项:
-   --help, -h  显示帮助
+   --help, -h  显示帮助信息
 
    数据准备选项
 
-   --delete-after-export    [危险] 在将数据集导出为 CAR 文件后删除其文件。  (默认值: false)
-   --rescan-interval value  当此间隔从上次成功扫描后经过时，自动重新扫描源目录（默认: 禁用）
+   --delete-after-export    [危险] 导出数据集为CAR文件后删除数据集的文件。 (默认值: false)
+   --rescan-interval value  当距离上一次成功扫描的时间间隔过去时，自动重新扫描源目录（默认值: 禁用）
+   --scanning-state value   设置初始扫描状态（默认值: 准备就绪）
 
    本地选项
 
-   --local-case-insensitive value           强制文件系统报告其区分大小写。 (默认值: "false") [$LOCAL_CASE_INSENSITIVE]
-   --local-case-sensitive value             强制文件系统报告其区分大小写。 (默认值: "false") [$LOCAL_CASE_SENSITIVE]
-   --local-copy-links value, -L value       对符号链接进行跟随并复制指向的项目。 (默认值: "false") [$LOCAL_COPY_LINKS]
-   --local-encoding value                   后端的编码。 (默认值: "Slash,Dot") [$LOCAL_ENCODING]
-   --local-links value, -l value            将符号链接转换为普通文件并加上“.rclonelink”扩展名。 (默认值: "false") [$LOCAL_LINKS]
-   --local-no-check-updated value           不检查上传期间文件是否更改。 (默认值: "false") [$LOCAL_NO_CHECK_UPDATED]
-   --local-no-preallocate value             禁用已转移文件的磁盘空间的预分配。 (默认值: "false") [$LOCAL_NO_PREALLOCATE]
-   --local-no-set-modtime value             禁用设置修改时间。 (默认值: "false") [$LOCAL_NO_SET_MODTIME]
-   --local-no-sparse value                  禁用多线程下载的稀疏文件。 (默认值: "false") [$LOCAL_NO_SPARSE]
-   --local-nounc value                      在 Windows 上禁用 UNC（长文件名）转换。 (默认值: "false") [$LOCAL_NOUNC]
-   --local-one-file-system value, -x value  不要跨越文件系统边界（仅限 Unix/macOS）。 (默认值: "false") [$LOCAL_ONE_FILE_SYSTEM]
-   --local-skip-links value                 不会警告已跳过的符号链接。 (默认值: "false") [$LOCAL_SKIP_LINKS]
-   --local-unicode-normalization value      对路径和文件名应用 Unicode NFC 标准化。 (默认值: "false") [$LOCAL_UNICODE_NORMALIZATION]
-   --local-zero-size-links value            假设链接的 Stat 大小为零（并读取它们）（已废弃）。 (默认值: "false") [$LOCAL_ZERO_SIZE_LINKS]
+   --local-case-insensitive value       强制文件系统自声明为不区分大小写。 (默认值: "false") [$LOCAL_CASE_INSENSITIVE]
+   --local-case-sensitive value         强制文件系统自声明为区分大小写。 (默认值: "false") [$LOCAL_CASE_SENSITIVE]
+   --local-copy-links value             跟随符号链接并复制指向的项目。 (默认值: "false") [$LOCAL_COPY_LINKS]
+   --local-encoding value               后端的编码方式。 (默认值: "Slash,Dot") [$LOCAL_ENCODING]
+   --local-links value                  将符号链接转换成常规文件，并加上“.rclonelink”扩展名。 (默认值: "false") [$LOCAL_LINKS]
+   --local-no-check-updated value       在上传过程中不检查文件是否更改。 (默认值: "false") [$LOCAL_NO_CHECK_UPDATED]
+   --local-no-preallocate value         禁用传输文件的磁盘空间预先分配。 (默认值: "false") [$LOCAL_NO_PREALLOCATE]
+   --local-no-set-modtime value         禁用修改修改时间。 (默认值: "false") [$LOCAL_NO_SET_MODTIME]
+   --local-no-sparse value              禁用多线程下载的稀疏文件。 (默认值: "false") [$LOCAL_NO_SPARSE]
+   --local-nounc value                  在Windows上禁用UNC（长路径名）转换。 (默认值: "false") [$LOCAL_NOUNC]
+   --local-one-file-system value        不跨文件系统边界（仅适用于Unix/macOS）。 (默认值: "false") [$LOCAL_ONE_FILE_SYSTEM]
+   --local-skip-links value             不提醒跳过的符号链接。 (默认值: "false") [$LOCAL_SKIP_LINKS]
+   --local-unicode-normalization value  将路径和文件名应用于Unicode NFC规范化。 (默认值: "false") [$LOCAL_UNICODE_NORMALIZATION]
+   --local-zero-size-links value        假设链接的Stat大小为零（并读取它们）（已弃用）。 (默认值: "false") [$LOCAL_ZERO_SIZE_LINKS]
 
 ```
 {% endcode %}

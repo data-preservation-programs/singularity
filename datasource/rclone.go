@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
 	_ "github.com/rclone/rclone/backend/azureblob"
@@ -58,15 +59,19 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var logger = log.Logger("datasource")
+
 type RCloneHandler struct {
 	fs.Fs
 }
 
 func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, error) {
+	logger.Debugw("List: listing path", "type", h.Fs.Name(), "root", h.Fs.Root(), "path", path)
 	return h.Fs.List(ctx, path)
 }
 
 func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch chan<- Entry) error {
+	logger.Debugw("Scan: listing path", "type", h.Fs.Name(), "root", h.Fs.Root(), "path", path, "last", last)
 	entries, err := h.Fs.List(ctx, path)
 	if err != nil {
 		select {
@@ -101,6 +106,7 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 			// If 'last' is specified, skip entries until the first entry greater than 'last' is found.
 			if !startScanning {
 				if strings.Compare(entry.Remote(), last) > 0 {
+					logger.Debugw("Scan: found first entry greater than last", "entry", entry.Remote(), "last", last)
 					startScanning = true // Found the first entry greater than 'last', start scanning.
 				} else {
 					continue
@@ -127,10 +133,12 @@ func (h RCloneHandler) Scan(ctx context.Context, path string, last string) <-cha
 }
 
 func (h RCloneHandler) Check(ctx context.Context, path string) (fs.DirEntry, error) {
+	logger.Debugw("Check: checking path", "type", h.Fs.Name(), "root", h.Fs.Root(), "path", path)
 	return h.Fs.NewObject(ctx, path)
 }
 
 func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
+	logger.Debugw("Read: reading path", "type", h.Fs.Name(), "root", h.Fs.Root(), "path", path, "offset", offset, "length", length)
 	object, err := h.Fs.NewObject(ctx, path)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to open object")

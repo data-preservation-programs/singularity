@@ -28,6 +28,7 @@ func (w *DatasetWorkerThread) pack(
 			outDir = chunk.Source.Dataset.OutputDirs[0]
 		}
 	}
+	w.logger.Debugw("Use output dir", "dir", outDir)
 	handler, err := w.datasourceHandlerResolver.Resolve(ctx, *chunk.Source)
 	if err != nil {
 		return errors.Wrap(err, "failed to get datasource handler")
@@ -44,6 +45,7 @@ func (w *DatasetWorkerThread) pack(
 		if !ok {
 			return errors.New("item part not found in result")
 		}
+		w.logger.Debugw("update item part CID", "itemPartID", itemPartID, "CID", itemPartCID.String())
 		err = database.DoRetry(func() error {
 			return w.db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
 				Update("cid", model.CID(itemPartCID)).Error
@@ -51,6 +53,7 @@ func (w *DatasetWorkerThread) pack(
 		if err != nil {
 			return errors.Wrap(err, "failed to update cid of item")
 		}
+		w.logger.Debugw("update item CID", "itemID", itemPart.ItemID, "CID", itemPartCID.String())
 		if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
 			err = database.DoRetry(func() error {
 				return w.db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).
@@ -62,6 +65,7 @@ func (w *DatasetWorkerThread) pack(
 		}
 	}
 
+	w.logger.Debugw("create car for finished chunk", "chunkID", chunk.ID)
 	err = database.DoRetry(func() error {
 		return w.db.Transaction(
 			func(db *gorm.DB) error {
@@ -97,7 +101,7 @@ func (w *DatasetWorkerThread) pack(
 		return errors.Wrap(err, "failed to save car")
 	}
 
-	// Update all directory CIDs
+	w.logger.Debugw("update directory data", "chunkID", chunk.ID)
 	err = database.DoRetry(func() error {
 		return w.db.Transaction(func(db *gorm.DB) error {
 			dirCache := make(map[uint64]*daggen.DirectoryData)

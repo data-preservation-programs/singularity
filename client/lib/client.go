@@ -33,6 +33,10 @@ func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateReques
 	return dataset.CreateHandler(c.db.WithContext(ctx), request)
 }
 
+func (c *Client) ListSourcesByDataset(ctx context.Context, datasetName string) ([]model.Source, error) {
+	return dshandler.ListSourcesByDatasetHandler(c.db, datasetName)
+}
+
 func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, params dshandler.LocalRequest) (*model.Source, error) {
 	paramJSON, err := json.Marshal(params)
 	if err != nil {

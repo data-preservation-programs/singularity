@@ -1,48 +1,50 @@
-# 创建一个定时任务，向存储提供者发送交易
+# 创建时间表以将交易发送给存储提供者
 
 {% code fullWidth="true" %}
 ```
-命令名称：
-   singularity deal schedule create - 创建一个定时任务，向存储提供者发送交易
+名称:
+   singularity deal schedule create - 创建时间表以将交易发送给存储提供者
 
-用法：
-   singularity deal schedule create [命令选项] 数据集名称 提供者ID
+用法:
+   singularity deal schedule create [command options] DATASET_NAME PROVIDER_ID
 
-选项：  
-   --help，-h  显示帮助
+选项：
+   --help, -h  显示帮助
 
-   仅限于增强Boost
+   只加速
 
-   --http-header value, -H value [ --http-header value, -H value ]  客户端与服务端之间的HTTP请求头（例如key=value）
-   --ipni                                                           是否要将交易告知IPNI（默认值：true）
-   --url-template value, -u value                                   带有PIECE_CID占位符的URL模板，用于增强提取CAR文件，例如：http://127.0.0.1/piece/{PIECE_CID}.car
+   --http-header value, -H value    要与请求一起传递的 HTTP 标头（即 key=value）
+   --ipni                            是否向 IPNI 公布交易（默认：true）
+   --url-template value, -u value    URL 模板，其中包含用于从 boost 中提取 CAR 文件的 PIECE_CID 占位符，例如 http://127.0.0.1/piece/{PIECE_CID}.car
 
-   交易提议
+   交易提案
 
-   --duration value, -d value     交易时长，单位为天数（默认值：530）
-   --keep-unsealed                是否保留未封装的复制品（默认值：true）
-   --price value, -p value        32GiB交易期间价格，以Fil为单位（默认值：0）
-   --start-delay value, -s value  交易开始前的延迟天数（默认值：3）
-   --verified                     是否作为已验证的交易提议（默认值：true）
+   --duration value, -d value        持续时间（以时代或时间格式），例如 1500000、2400h（默认："12840h"）
+   --keep-unsealed                   是否保留未封装副本（默认：true）
+   --price-per-deal value            每笔交易的 FIL 价格（默认：0）
+   --price-per-gb value              每 GiB 的 FIL 价格（默认：0）
+   --price-per-gb-epoch value        每个时代的每 GiB 的 FIL 价格（默认：0）
+   --start-delay value, -s value     交易启动延迟（以时代或时间格式），例如 1000、72h（默认："72h"）
+   --verified                        是否将交易提议为已验证（默认：true）
 
    限制
 
-   --allowed-piece-cid value, --piece-cid value [ --allowed-piece-cid value, --piece-cid value ]                      允许在此计划中使用的piece CID列表（默认值：Any）
-   --allowed-piece-cid-file value, --piece-cid-file value [ --allowed-piece-cid-file value, --piece-cid-file value ]  包含允许使用的piece CID列表的文件列表
-   --max-pending-deal-number value, --pending-number value                                                            整个请求中最大挂起交易数量（默认值：无限制）
-   --max-pending-deal-size value, --pending-size value                                                                整个请求中最大挂起交易总大小（默认值：无限制）
-   --total-deal-size value, --total-size value                                                                        此请求中的最大交易总大小，例如100TB（默认值：无限制）
+   --allowed-piece-cid value, --piece-cid value [ --allowed-piece-cid value, --piece-cid value ]                      此时间表中允许的 piece CID 列表（默认：Any）
+   --allowed-piece-cid-file value, --piece-cid-file value [ --allowed-piece-cid-file value, --piece-cid-file value ]  包含一组允许的 piece CID 列表的文件
+   --max-pending-deal-number value, --pending-number value                                                            此请求的全部待处理交易数量上限（默认：无限制）
+   --max-pending-deal-size value, --pending-size value                                                                此请求的全部待处理交易大小上限（默认：无限制）
+   --total-deal-size value, --total-size value                                                                        此请求的最大总交易大小，例如 100TB（默认：无限制）
 
-   调度
+   安排
 
-   --schedule-deal-number value, --number value     触发计划表中最大的交易数量，例如30（默认值：无限制）
-   --schedule-deal-size value, --size value         触发计划表中的最大交易总大小，例如500GB（默认值：无限制）
-   --schedule-interval value, --every value         触发批量交易发送的定时任务规则（默认值：禁用）
-   --total-deal-number value, --total-number value  此请求中的最大交易总数，例如1000（默认值：无限制）
+   --schedule-cron value, --cron value              定时发送批量交易的 cron 安排（默认：禁用）
+   --schedule-deal-number value, --number value     触发安排的最大交易数量，例如 30（默认：无限制）
+   --schedule-deal-size value, --size value         触发安排的最大交易大小，例如 500GB（默认：无限制）
+   --total-deal-number value, --total-number value  此请求的最大总交易数量，例如 1000（默认：无限制）
 
    跟踪
 
-   --notes value, -n value  用于跟踪的任何说明或标记。
+   --notes value, -n value  用于存储在请求中的任何注释或标签，以用于跟踪目的
 
 ```
 {% endcode %}
