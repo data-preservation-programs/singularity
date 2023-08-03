@@ -8,6 +8,14 @@ NAME:
 USAGE:
    singularity deal send-manual [command options] CLIENT_ADDRESS PROVIDER_ID PIECE_CID PIECE_SIZE
 
+DESCRIPTION:
+   Send a manual deal proposal to boost or legacy market
+     Example: singularity deal send-manual f01234 f05678 bagaxxxx 32GiB
+   Notes:
+     * The client address must have been imported to the wallet using 'singularity wallet import'
+     * The deal proposal will not be saved in the database however will eventually be tracked if the deal tracker is running
+     * There is a quick address verification using GLIF API which can be made faster by setting LOTUS_API and LOTUS_TOKEN to your own lotus node
+
 OPTIONS:
    --help, -h       show help
    --timeout value  Timeout for the deal proposal (default: 1m)
