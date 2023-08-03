@@ -49,6 +49,9 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 	elapsed := time.Since(begin)
 	isNotFound := errors.Is(err, gorm.ErrRecordNotFound)
 	lvl := logging.LevelDebug
+	if len(sql) > 1000 {
+		sql = sql[:1000] + "...(trimmed)"
+	}
 	if elapsed > time.Second {
 		lvl = logging.LevelWarn
 		sql = "[SLOW!] " + sql
@@ -59,9 +62,6 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 
 	switch lvl {
 	case logging.LevelDebug:
-		if len(sql) > 1000 {
-			sql = sql[:1000] + "...(trimmed)"
-		}
 		logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)
 	case logging.LevelWarn:
 		logger.Warnw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)

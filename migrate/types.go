@@ -1,40 +1,69 @@
 package migrate
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+type ScanningRequestStatus string
+type GenerationRequestStatus string
+type ReplicationRequestStatus string
+
+const (
+	ScanningStatusActive       ScanningRequestStatus    = "active"
+	ScanningStatusCompleted    ScanningRequestStatus    = "completed"
+	ScanningStatusError        ScanningRequestStatus    = "error"
+	ScanningStatusPaused       ScanningRequestStatus    = "paused"
+	GenerationStatusActive     GenerationRequestStatus  = "active"
+	GenerationStatusError      GenerationRequestStatus  = "error"
+	GenerationStatusPaused     GenerationRequestStatus  = "paused"
+	GenerationStatusCompleted  GenerationRequestStatus  = "completed"
+	GenerationStatusCreated    GenerationRequestStatus  = "created"
+	GenerationStatusDAG        GenerationRequestStatus  = "dag"
+	ReplicationStatusActive    ReplicationRequestStatus = "active"
+	ReplicationStatusError     ReplicationRequestStatus = "error"
+	ReplicationStatusPaused    ReplicationRequestStatus = "paused"
+	ReplicationStatusCompleted ReplicationRequestStatus = "completed"
+)
 
 type ScanningRequest struct {
-	ID                     string    `bson:"_id"`
-	Name                   string    `bson:"name"`
-	MinSize                uint64    `bson:"minSize"`
-	MaxSize                uint64    `bson:"maxSize"`
-	Path                   string    `bson:"path"`
-	Status                 string    `bson:"status"`
-	OutDir                 string    `bson:"outDir"`
-	TmpDir                 string    `bson:"tmpDir"`
-	Scanned                uint64    `bson:"scanned"`
-	DagGenerationAttempted bool      `bson:"dagGenerationAttempted"`
-	UpdatedAt              time.Time `bson:"updatedAt"`
+	ID                    primitive.ObjectID    `bson:"_id"`
+	Name                  string                `bson:"name"`
+	Path                  string                `bson:"path"`
+	OutDir                string                `bson:"outDir"`
+	MinSize               uint64                `bson:"minSize"`
+	MaxSize               uint64                `bson:"maxSize"`
+	Status                ScanningRequestStatus `bson:"status"`
+	ErrorMessage          string                `bson:"errorMessage"`
+	TmpDir                string                `bson:"tmpDir"`
+	SkipInaccessibleFiles bool                  `bson:"skipInaccessibleFiles"`
 }
 
 type GenerationRequest struct {
-	ID          string    `bson:"_id"`
-	DatasetName string    `bson:"datasetName"`
-	Path        string    `bson:"path"`
-	Index       uint64    `bson:"index"`
-	OutDir      string    `bson:"outDir"`
-	Status      string    `bson:"status"`
-	TmpDir      string    `bson:"tmpDir"`
-	CreatedAt   time.Time `bson:"createdAt"`
-	UpdatedAt   time.Time `bson:"updatedAt"`
-	CarSize     uint64    `bson:"carSize"`
-	DataCID     string    `bson:"dataCid"`
-	PieceCID    string    `bson:"pieceCid"`
-	PieceSize   uint64    `bson:"pieceSize"`
+	ID                    primitive.ObjectID      `bson:"_id"`
+	DatasetID             string                  `bson:"datasetId"`
+	DatasetName           string                  `bson:"datasetName"`
+	Path                  string                  `bson:"path"`
+	OutDir                string                  `bson:"outDir"`
+	Index                 int64                   `bson:"index"`
+	Status                GenerationRequestStatus `bson:"status"`
+	ErrorMessage          string                  `bson:"errorMessage"`
+	DataCID               string                  `bson:"dataCid"`
+	CarSize               uint64                  `bson:"carSize"`
+	PieceCID              string                  `bson:"pieceCid"`
+	PieceSize             uint64                  `bson:"pieceSize"`
+	FilenameOverride      string                  `bson:"filenameOverride"`
+	TmpDir                string                  `bson:"tmpDir"`
+	SkipInaccessibleFiles bool                    `bson:"skipInaccessibleFiles"`
+	CreatedAt             time.Time               `bson:"createdAt"`
 }
 
 type OutputFileList struct {
-	ID                string          `bson:"_id"`
-	GeneratedFileList []GeneratedFile `bson:"generatedFileList"`
+	ID                primitive.ObjectID `bson:"_id"`
+	GenerationID      string             `bson:"generationId"`
+	Index             int64              `bson:"index"`
+	GeneratedFileList []GeneratedFile    `bson:"generatedFileList"`
 }
 
 type GeneratedFile struct {
@@ -46,36 +75,28 @@ type GeneratedFile struct {
 	End   uint64 `bson:"end"`
 }
 
-type ReplicationRequest struct {
-	ID                  string    `bson:"_id"`
-	DatasetID           string    `bson:"datasetId"`
-	StorageProviders    string    `bson:"storageProviders"`
-	URLPrefix           string    `bson:"urlPrefix"`
-	MaxPrice            uint64    `bson:"maxPrice"`
-	IsVerified          bool      `bson:"isVerified"`
-	StartDelay          uint64    `bson:"startDelay"`
-	Duration            uint64    `bson:"duration"`
-	MaxNumberOfDeals    uint64    `bson:"maxNumberOfDeals"`
-	Status              string    `bson:"status"`
-	CreatedAt           time.Time `bson:"createdAt"`
-	UpdatedAt           time.Time `bson:"updatedAt"`
-	FileListPath        string    `bson:"fileListPath"`
-	CronSchedule        string    `bson:"cronSchedule"`
-	CronMaxDeals        uint64    `bson:"cronMaxDeals"`
-	CronMaxPendingDeals uint64    `bson:"cronMaxPendingDeals"`
-	Notes               string    `bson:"notes"`
+func (g GeneratedFile) IsComplete() bool {
+	return g.Start == 0 && (g.End == 0 || g.End == g.Size)
 }
 
-type DealState struct {
-	Client     string    `bson:"client"`
-	Provider   string    `bson:"provider"`
-	DealCID    string    `bson:"dealCid"`
-	PieceCID   string    `bson:"pieceCid"`
-	StartEpoch int64     `bson:"startEpoch"`
-	Expiration int64     `bson:"expiration"`
-	Duration   int64     `bson:"duration"`
-	DealID     uint64    `bson:"dealId"`
-	State      string    `bson:"state"`
-	CreatedAt  time.Time `bson:"createdAt"`
-	UpdatedAt  time.Time `bson:"updatedAt"`
+type ReplicationRequest struct {
+	ID                  primitive.ObjectID       `bson:"_id"`
+	DatasetID           string                   `bson:"datasetId"`
+	MaxReplicas         int                      `bson:"maxReplicas"`      // targeted replica per piece
+	StorageProviders    string                   `bson:"storageProviders"` // comma separated SP
+	Client              string                   `bson:"client"`           // deal sent from client address
+	URLPrefix           string                   `bson:"urlPrefix"`
+	MaxPrice            float64                  `bson:"maxPrice"`         // unit in Fil
+	MaxNumberOfDeals    uint64                   `bson:"maxNumberOfDeals"` // per SP, unlimited if 0
+	IsVerified          bool                     `bson:"isVerified"`
+	StartDelay          uint64                   `bson:"startDelay"` // in epoch
+	Duration            uint64                   `bson:"duration"`   // in epoch
+	IsOffline           bool                     `bson:"isOffline"`
+	Status              ReplicationRequestStatus `bson:"status"`
+	CronSchedule        string                   `bson:"cronSchedule"`
+	CronMaxDeals        uint64                   `bson:"cronMaxDeals"`
+	CronMaxPendingDeals uint64                   `bson:"cronMaxPendingDeals"`
+	FileListPath        string                   `bson:"fileListPath"`
+	Notes               string                   `bson:"notes"`
+	ErrorMessage        string                   `bson:"errorMessage"`
 }
