@@ -83,7 +83,8 @@ Network Support:
 			Subcommands: []*cli.Command{
 				admin.InitCmd,
 				admin.ResetCmd,
-				admin.MigrateCmd,
+				admin.MigrateDatasetCmd,
+				admin.MigrateScheduleCmd,
 			},
 		},
 		VersionCmd,

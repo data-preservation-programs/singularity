@@ -16,6 +16,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var ValidateSource = true
+
 func CreateDatasourceHandler(
 	db *gorm.DB,
 	ctx context.Context,
@@ -129,14 +131,16 @@ func createDatasourceHandler(
 		DagGenState:         model.Created,
 	}
 
-	dsHandler, err := datasource.DefaultHandlerResolver{}.Resolve(ctx, source)
-	if err != nil {
-		return nil, fmt.Errorf("failed to resolve handler: %w", err)
-	}
+	if ValidateSource {
+		dsHandler, err := datasource.DefaultHandlerResolver{}.Resolve(ctx, source)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve handler: %w", err)
+		}
 
-	_, err = dsHandler.List(ctx, "")
-	if err != nil {
-		return nil, fmt.Errorf("failed to check source: %w", err)
+		_, err = dsHandler.List(ctx, "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to check source: %w", err)
+		}
 	}
 
 	err = db.Create(&source).Error
