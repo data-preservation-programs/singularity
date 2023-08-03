@@ -64,8 +64,8 @@ func getPathHandler(
 		return nil, err
 	}
 	dirID := source.RootDirectory().ID
-	var subdir model.Directory
 	for i, segment := range segments {
+		var subdir model.Directory
 		err = db.Where("parent_id = ? AND name = ?", dirID, segment).First(&subdir).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			if i == len(segments)-1 {
