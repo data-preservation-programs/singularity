@@ -3,6 +3,7 @@ package deal
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -216,8 +217,21 @@ func TestSendManualHandler(t *testing.T) {
 	ctx := context.Background()
 
 	mockDealMaker := new(MockDealMaker)
-	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
+	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, replication.DealConfig{
+		Provider:        proposal.ProviderID,
+		StartDelay:      24 * time.Hour,
+		Duration:        2400 * time.Hour,
+		Verified:        proposal.Verified,
+		HTTPHeaders:     proposal.HTTPHeaders,
+		URLTemplate:     proposal.URLTemplate,
+		KeepUnsealed:    proposal.KeepUnsealed,
+		AnnounceToIPNI:  proposal.IPNI,
+		PricePerDeal:    proposal.PricePerDeal,
+		PricePerGB:      proposal.PricePerGB,
+		PricePerGBEpoch: proposal.PricePerGBEpoch,
+	}).Return(&model.Deal{}, nil)
 	resp, err := SendManualHandler(db, ctx, mockDealMaker, proposal)
+	mockDealMaker.AssertExpectations(t)
 	require.NoError(t, err)
 	require.NotNil(t, resp)
 }

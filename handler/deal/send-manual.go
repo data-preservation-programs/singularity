@@ -74,7 +74,7 @@ func sendManualHandler(
 ) (*model.Deal, error) {
 	// Get the wallet object
 	wallet := model.Wallet{}
-	err := db.Where("id = ?", request.ClientAddress).First(&wallet).Error
+	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr("client address not found")
 	}
@@ -122,8 +122,8 @@ func sendManualHandler(
 		Verified:       request.Verified,
 		KeepUnsealed:   request.KeepUnsealed,
 		AnnounceToIPNI: request.IPNI,
-		StartDelay:     duration,
-		Duration:       startDelay,
+		StartDelay:     startDelay,
+		Duration:       duration,
 	}
 
 	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)

@@ -330,7 +330,7 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 
 func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	car model.Car, dealConfig DealConfig) (*model.Deal, error) {
-	logger.Info("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
+	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {
