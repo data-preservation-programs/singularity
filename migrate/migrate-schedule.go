@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -37,7 +38,18 @@ func MigrateSchedule(cctx *cli.Context) error {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}
 
-	resp, err := mg.Database("singularity").Collection("scanningrequests").Find(ctx, bson.M{})
+	var count int64
+	err = db.Model(&model.Schedule{}).Count(&count).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to count schedules")
+	}
+
+	if count > 0 {
+		log.Println("Schedules already exist, skipping")
+		return nil
+	}
+
+	resp, err := mg.Database("singularity").Collection("replicationrequests").Find(ctx, bson.M{})
 	if err != nil {
 		return errors.Wrap(err, "failed to query mongo for scanning requests")
 	}
@@ -51,7 +63,11 @@ func MigrateSchedule(cctx *cli.Context) error {
 	var schedules []model.Schedule
 	for _, replication := range replications {
 		var scanning ScanningRequest
-		findResult := mg.Database("singularity").Collection("scanningrequests").FindOne(ctx, bson.M{"_id": replication.DatasetID})
+		oid, err := primitive.ObjectIDFromHex(replication.DatasetID)
+		if err != nil {
+			return errors.Wrapf(err, "failed to parse dataset id %s", replication.DatasetID)
+		}
+		findResult := mg.Database("singularity").Collection("scanningrequests").FindOne(ctx, bson.M{"_id": oid})
 		if findResult.Err() != nil {
 			return errors.Wrapf(err, "failed to find dataset %s", replication.DatasetID)
 		}
@@ -94,6 +110,8 @@ func MigrateSchedule(cctx *cli.Context) error {
 				continue
 			}
 			schedule := model.Schedule{
+				CreatedAt:            replication.CreatedAt,
+				UpdatedAt:            replication.UpdatedAt,
 				DatasetID:            dataset.ID,
 				URLTemplate:          urlTemplate,
 				Provider:             provider,
@@ -119,7 +137,7 @@ func MigrateSchedule(cctx *cli.Context) error {
 		}
 	}
 
-	err = db.Create(&schedules).Error
+	err = db.CreateInBatches(&schedules, 100).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create schedules")
 	}

@@ -81,6 +81,8 @@ func (g GeneratedFile) IsComplete() bool {
 
 type ReplicationRequest struct {
 	ID                  primitive.ObjectID       `bson:"_id"`
+	CreatedAt           time.Time                `bson:"createdAt"`
+	UpdatedAt           time.Time                `bson:"updatedAt"`
 	DatasetID           string                   `bson:"datasetId"`
 	MaxReplicas         int                      `bson:"maxReplicas"`      // targeted replica per piece
 	StorageProviders    string                   `bson:"storageProviders"` // comma separated SP

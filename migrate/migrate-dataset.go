@@ -25,7 +25,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning ScanningRequest) error {
+func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning ScanningRequest, skipItems bool) error {
 	_, err := os.Stat(scanning.OutDir)
 	if err != nil {
 		log.Printf("[Warning] Output directory %s does not exist\n", scanning.OutDir)
@@ -130,6 +130,9 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 		}
 		log.Printf("-- Created car %s for %s\n", generation.PieceCID, ds.Name)
 
+		if skipItems {
+			continue
+		}
 		cursor, err := mg.Database("singularity").Collection("outputfilelists").Find(
 			ctx,
 			bson.M{"generationId": generation.ID.Hex()},
@@ -220,9 +223,9 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 				if err != nil {
 					return errors.Wrap(err, "failed to ensure parent directories")
 				}
-				directory, ok := directoryCache[filepath.Dir(file.Path)]
+				directory, ok := directoryCache[filepath.Dir(item.Path)]
 				if !ok {
-					return errors.Errorf("directory %s not found in cache", filepath.Dir(file.Path))
+					return errors.Errorf("directory %s not found in cache", filepath.Dir(item.Path))
 				}
 				item.DirectoryID = &directory
 				items = append(items, item)
@@ -241,6 +244,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 }
 
 func MigrateDataset(cctx *cli.Context) error {
+	skipItems := cctx.Bool("skip-items")
 	datasource.ValidateSource = false
 	log.Println("Migrating dataset from old singularity database")
 	mongoConnectionString := cctx.String("mongo-connection-string")
@@ -286,7 +290,7 @@ func MigrateDataset(cctx *cli.Context) error {
 			continue
 		}
 		log.Printf("Migrating Dataset: %s\n", scanning.Name)
-		err = migrateDataset(ctx, mg, db, scanning)
+		err = migrateDataset(ctx, mg, db, scanning, skipItems)
 		if err != nil {
 			return errors.Wrapf(err, "failed to migrate dataset %s", scanning.Name)
 		}
