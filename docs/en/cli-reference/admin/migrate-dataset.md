@@ -21,7 +21,7 @@ DESCRIPTION:
 
 OPTIONS:
    --mongo-connection-string value  MongoDB connection string (default: "mongodb://localhost:27017") [$MONGO_CONNECTION_STRING]
-   --skip-items                     Skip migrating details about items and folders. This will make the migration much much faster. Useful if you only want to make deals. (default: false)
+   --skip-items                     Skip migrating details about items and folders. This will make the migration much faster. Useful if you only want to make deals. (default: false)
    --help, -h                       show help
 ```
 {% endcode %}

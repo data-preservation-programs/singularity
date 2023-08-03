@@ -26,7 +26,7 @@ var MigrateDatasetCmd = &cli.Command{
 		},
 		&cli.BoolFlag{
 			Name:  "skip-items",
-			Usage: "Skip migrating details about items and folders. This will make the migration much much faster. Useful if you only want to make deals.",
+			Usage: "Skip migrating details about items and folders. This will make the migration much faster. Useful if you only want to make deals.",
 			Value: false,
 		},
 	},
