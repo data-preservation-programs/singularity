@@ -157,7 +157,8 @@ Notes:
 			return err2
 		}
 		cliutil.PrintToConsole(dealModel, cctx.Bool("json"), []string{
-			"CreatedAt", "UpdatedAt", "DealID", "DatasetID", "SectorStartEpoch"})
+			"CreatedAt", "UpdatedAt", "DealID", "DatasetID", "SectorStartEpoch",
+			"ID", "State", "ErrorMessage", "ScheduleID"})
 		return nil
 	},
 }
