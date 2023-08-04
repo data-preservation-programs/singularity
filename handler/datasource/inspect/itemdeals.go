@@ -26,13 +26,12 @@ func getItemDealsHandler(
 ) ([]model.Deal, error) {
 	var deals []model.Deal
 	query := db.
-		Model(&model.Item{}).
+		Model(&model.ItemPart{}).
 		Select("deals.*").
-		Joins("JOIN item_parts ON items.id = item_parts.item_id").
 		Joins("JOIN chunks ON item_parts.chunk_id = chunks.id").
 		Joins("JOIN cars ON chunks.id = cars.chunk_id").
 		Joins("JOIN deals ON cars.piece_cid = deals.piece_cid").
-		Where("id = ?", id)
+		Where("item_parts.item_id = ?", id)
 	if err := query.Find(&deals).Error; err != nil {
 		return nil, err
 	}
