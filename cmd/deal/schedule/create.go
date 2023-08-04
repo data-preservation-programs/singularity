@@ -19,7 +19,7 @@ var CreateCmd = &cli.Command{
 	Name:      "create",
 	Usage:     "Create a schedule to send out deals to a storage provider",
 	ArgsUsage: "DATASET_NAME PROVIDER_ID",
-	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be standard CRON, descriptor, or an optional second field
+	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
   Standard CRON:
     ┌───────────── minute (0 - 59)
     │ ┌───────────── hour (0 - 23)

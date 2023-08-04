@@ -9,7 +9,7 @@ USAGE:
    singularity deal schedule create [command options] DATASET_NAME PROVIDER_ID
 
 DESCRIPTION:
-   CRON pattern '--schedule-cron': The CRON pattern can either be standard CRON, descriptor, or an optional second field
+   CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
      Standard CRON:
        ┌───────────── minute (0 - 59)
        │ ┌───────────── hour (0 - 23)
