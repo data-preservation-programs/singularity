@@ -19,6 +19,35 @@ var CreateCmd = &cli.Command{
 	Name:      "create",
 	Usage:     "Create a schedule to send out deals to a storage provider",
 	ArgsUsage: "DATASET_NAME PROVIDER_ID",
+	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be standard CRON, descriptor, or an optional second field
+  Standard CRON:
+    ┌───────────── minute (0 - 59)
+    │ ┌───────────── hour (0 - 23)
+    │ │ ┌───────────── day of the month (1 - 31)
+    │ │ │ ┌───────────── month (1 - 12)
+    │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+    │ │ │ │ │                                   
+    │ │ │ │ │
+    │ │ │ │ │
+    * * * * *
+
+  Optional Second field:
+    ┌─────────────  second (0 - 59)
+    │ ┌─────────────  minute (0 - 59)
+    │ │ ┌─────────────  hour (0 - 23)
+    │ │ │ ┌─────────────  day of the month (1 - 31)
+    │ │ │ │ ┌─────────────  month (1 - 12)
+    │ │ │ │ │ ┌─────────────  day of the week (0 - 6) (Sunday to Saturday)
+    │ │ │ │ │ │
+    │ │ │ │ │ │
+    * * * * * *
+
+  Descriptor:
+    @yearly, @annually - Equivalent to 0 0 1 1 *
+    @monthly           - Equivalent to 0 0 1 * *
+    @weekly            - Equivalent to 0 0 * * 0
+    @daily,  @midnight - Equivalent to 0 0 * * *
+    @hourly            - Equivalent to 0 * * * *`,
 	Flags: []cli.Flag{
 		&cli.StringSliceFlag{
 			Name:     "http-header",
@@ -42,7 +71,7 @@ var CreateCmd = &cli.Command{
 		&cli.Float64Flag{
 			Name:     "price-per-gb",
 			Category: "Deal Proposal",
-			Usage:    "Price in FIL  per GiB",
+			Usage:    "Price in FIL per GiB",
 			Value:    0,
 		},
 		&cli.Float64Flag{
@@ -78,18 +107,20 @@ var CreateCmd = &cli.Command{
 			Value:       "",
 		},
 		&cli.StringFlag{
-			Name:     "start-delay",
-			Category: "Deal Proposal",
-			Aliases:  []string{"s"},
-			Usage:    "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
-			Value:    "72h",
+			Name:        "start-delay",
+			Category:    "Deal Proposal",
+			Aliases:     []string{"s"},
+			Usage:       "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
+			Value:       "72h",
+			DefaultText: "72h[3 days]",
 		},
 		&cli.StringFlag{
-			Name:     "duration",
-			Category: "Deal Proposal",
-			Aliases:  []string{"d"},
-			Usage:    "Duration in epoch or in duration format, i.e. 1500000, 2400h",
-			Value:    "12840h",
+			Name:        "duration",
+			Category:    "Deal Proposal",
+			Aliases:     []string{"d"},
+			Usage:       "Duration in epoch or in duration format, i.e. 1500000, 2400h",
+			Value:       "12840h",
+			DefaultText: "12840h[535 days]",
 		},
 		&cli.IntFlag{
 			Name:        "schedule-deal-number",
@@ -100,7 +131,7 @@ var CreateCmd = &cli.Command{
 		},
 		&cli.IntFlag{
 			Name:        "total-deal-number",
-			Category:    "Scheduling",
+			Category:    "Restrictions",
 			Aliases:     []string{"total-number"},
 			Usage:       "Max total deal number for this request, i.e. 1000",
 			DefaultText: "Unlimited",
@@ -109,7 +140,7 @@ var CreateCmd = &cli.Command{
 			Name:        "schedule-deal-size",
 			Category:    "Scheduling",
 			Aliases:     []string{"size"},
-			Usage:       "Max deal sizes per triggered schedule, i.e. 500GB",
+			Usage:       "Max deal sizes per triggered schedule, i.e. 500GiB",
 			DefaultText: "Unlimited",
 			Value:       "0",
 		},
@@ -117,7 +148,7 @@ var CreateCmd = &cli.Command{
 			Name:        "total-deal-size",
 			Category:    "Restrictions",
 			Aliases:     []string{"total-size"},
-			Usage:       "Max total deal sizes for this request, i.e. 100TB",
+			Usage:       "Max total deal sizes for this request, i.e. 100TiB",
 			DefaultText: "Unlimited",
 			Value:       "0",
 		},
@@ -132,7 +163,7 @@ var CreateCmd = &cli.Command{
 			Name:        "max-pending-deal-size",
 			Category:    "Restrictions",
 			Aliases:     []string{"pending-size"},
-			Usage:       "Max pending deal sizes overall for this request",
+			Usage:       "Max pending deal sizes overall for this request, i.e. 1000",
 			DefaultText: "Unlimited",
 			Value:       "0",
 		},
@@ -140,7 +171,7 @@ var CreateCmd = &cli.Command{
 			Name:        "max-pending-deal-number",
 			Category:    "Restrictions",
 			Aliases:     []string{"pending-number"},
-			Usage:       "Max pending deal number overall for this request",
+			Usage:       "Max pending deal number overall for this request, i.e. 100TiB",
 			DefaultText: "Unlimited",
 		},
 		&cli.StringSliceFlag{
