@@ -12,7 +12,8 @@ import (
 	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
-	datasourcehandler "github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,13 +21,12 @@ func TestItemDeals(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test file to add
-	testSourcePath := path.Join(os.TempDir(), "singularity-test-source")
-	require.NoError(t, os.RemoveAll(testSourcePath))
+	testSourcePath := path.Join(t.TempDir(), "singularity-test-source")
 	require.NoError(t, os.Mkdir(testSourcePath, 0744))
 	require.NoError(t, os.WriteFile(path.Join(testSourcePath, "a"), []byte("test file a"), fs.FileMode(os.O_WRONLY)))
 	require.NoError(t, os.WriteFile(path.Join(testSourcePath, "b"), []byte("test file b"), fs.FileMode(os.O_WRONLY)))
 
-	db, closer, err := database.OpenWithLogger("sqlite:" + filepath.Join(t.TempDir(), "singularity.db"))
+	db, closer, err := database.OpenWithLogger("sqlite:" + filepath.Join(os.TempDir(), "singularity.db"))
 	require.NoError(t, err)
 	defer closer.Close()
 
@@ -42,28 +42,38 @@ func TestItemDeals(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create datasource
-	datasource, err := client.CreateLocalSource(ctx, datasetName, datasourcehandler.LocalRequest{
+	source, err := client.CreateLocalSource(ctx, datasetName, datasource.LocalRequest{
 		SourcePath:     testSourcePath,
 		RescanInterval: "10s",
 	})
 	require.NoError(t, err)
 
 	// Push items
-	_, err = client.PushItem(ctx, datasource.ID, datasourcehandler.ItemInfo{Path: "a"})
+	itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "a"})
 	require.NoError(t, err)
 
-	_, err = client.PushItem(ctx, datasource.ID, datasourcehandler.ItemInfo{Path: "b"})
+	itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "b"})
 	require.NoError(t, err)
 
-	items, err := client.GetSourceItems(ctx, datasource.ID)
+	// Chunk
+	chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{ItemIDs: []uint64{itemA.ID, itemB.ID}})
 	require.NoError(t, err)
+	fmt.Printf("%#v\n", chunk)
 
-	fmt.Printf("item count: %v\n", len(items))
+	// TODO: create CARs
 
-	for _, item := range items {
-		deals, err := client.GetItemDeals(ctx, item.ID)
+	// Manually add fake deals
+	for _, car := range chunk.Cars {
+		err := db.Create(&model.Deal{
+			PieceCID: car.PieceCID,
+		}).Error
 		require.NoError(t, err)
-
-		fmt.Printf("%#v", deals)
 	}
+
+	// Test item deals
+	deals, err := client.GetItemDeals(ctx, itemA.ID)
+	require.NoError(t, err)
+	require.Len(t, deals, 2)
+
+	fmt.Printf("%#v\n", deals)
 }
