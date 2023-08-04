@@ -31,7 +31,8 @@ func getItemDealsHandler(
 		Joins("JOIN item_parts ON items.id = item_parts.item_id").
 		Joins("JOIN chunks ON item_parts.chunk_id = chunks.id").
 		Joins("JOIN cars ON chunks.id = cars.chunk_id").
-		Joins("JOIN deals ON cars.piece_cid = deals.piece_cid")
+		Joins("JOIN deals ON cars.piece_cid = deals.piece_cid").
+		Where("id = ?", id)
 	if err := query.Find(&deals).Error; err != nil {
 		return nil, err
 	}
