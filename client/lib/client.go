@@ -66,7 +66,7 @@ func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo dshandl
 	return dshandler.PushItemHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, sourceID, itemInfo)
 }
 
-func (c *Client) Chunk(ctx context.Context, sourceID uint32, request dshandler.ChunkRequest) error {
+func (c *Client) Chunk(ctx context.Context, sourceID uint32, request dshandler.ChunkRequest) (*model.Chunk, error) {
 	return dshandler.ChunkHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
 }
 

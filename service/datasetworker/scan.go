@@ -92,7 +92,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 	// If everything fit, create a chunk. Usually this is the case for the last chunk
 	if remaining.carSize <= dataset.MaxSize {
 		w.logger.Debugw("creating chunk", "size", remaining.carSize)
-		err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
+		_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
 			ItemIDs: remaining.itemIDs(),
 		})
 
@@ -126,7 +126,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 	itemPartIDs := underscore.Map(remaining.itemParts[:si], func(item model.ItemPart) uint64 {
 		return item.ID
 	})
-	err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
+	_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
 		ItemIDs: itemPartIDs,
 	})
 	if err != nil {
