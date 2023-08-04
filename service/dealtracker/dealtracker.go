@@ -312,7 +312,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			}
 		} else {
 			key := deal.Key()
-			unknownDeals[key] = append(unknownDeals[deal.Key()], UnknownDeal{
+			unknownDeals[key] = append(unknownDeals[key], UnknownDeal{
 				ID:         deal.ID,
 				ClientID:   deal.ClientID,
 				Provider:   deal.Provider,
@@ -444,7 +444,7 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 			select {
 			case <-countingCtx.Done():
 				return
-			case <-time.After(5 * time.Second):
+			case <-time.After(15 * time.Second):
 				downloaded := humanize.Bytes(uint64(counter.N()))
 				speed := humanize.Bytes(uint64(counter.Speed()))
 				logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
