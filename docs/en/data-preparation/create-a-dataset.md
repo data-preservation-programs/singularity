@@ -6,7 +6,7 @@ description: Start by initializing the database and creating a new dataset
 
 ## Initialize the database
 
-By default, it will be using the `sqlite3` database backend and initialize the database files in `$HOME/.singularity`
+By default, it will be using the `sqlite3` database backend and initialize the database files in the current folder
 
 To use a different database backend for Production use, check [deploy-to-production.md](../installation/deploy-to-production.md "mention")
 
@@ -22,7 +22,7 @@ The dataset is a collection of data sources that relates to a single dataset. On
 singularity dataset create my_dataset
 ```
 
-By default, singularity uses a technical called Inline Preparation which will not export to any CAR files. That's because for most data source, it does not change and the CAR file is essentially storing the same content as the original data source.&#x20;
+By default, singularity uses a technical called Inline Preparation which will not export to any CAR files. That's because for most data source, it does not change and the CAR file is essentially storing the same content as the original data source.
 
 ## Next step
 
