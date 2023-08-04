@@ -57,4 +57,4 @@ Singularity allows storage providers to query for a list of PieceCIDs that they 
 
 Singularity allows clients to import a Filecoin wallet using private keys and associate multiple wallets with datasets. It regularly checks datacap of each wallet to load balance between different wallets.
 
-Singularity also supports remote signer so the client can keep their wallet private key known only to them.
+Singularity also supports remote signing so the client can keep their wallet private key outside of the system.
