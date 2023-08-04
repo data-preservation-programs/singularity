@@ -19,12 +19,12 @@ import (
 )
 
 func PackHandler(
-	ctx context.Context,
 	db *gorm.DB,
-	chunkID uint64,
+	ctx context.Context,
 	resolver datasource.HandlerResolver,
+	chunkID uint64,
 ) ([]model.Car, error) {
-	return packHandler(ctx, db, chunkID, resolver)
+	return packHandler(db, ctx, resolver, chunkID)
 }
 
 // @Summary Pack a chunk into car files
@@ -37,10 +37,10 @@ func PackHandler(
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /chunk/{id}/pack [post]
 func packHandler(
-	ctx context.Context,
 	db *gorm.DB,
-	chunkID uint64,
+	ctx context.Context,
 	resolver datasource.HandlerResolver,
+	chunkID uint64,
 ) ([]model.Car, error) {
 	var chunk model.Chunk
 	err := db.Where("id = ?", chunkID).Find(&chunk).Error

@@ -69,4 +69,8 @@ func (c *Client) Chunk(ctx context.Context, sourceID uint32, request dshandler.C
 	return dshandler.ChunkHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
 }
 
+func (c *Client) Pack(ctx context.Context, chunkID uint64) ([]model.Car, error) {
+	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, chunkID)
+}
+
 var _ client.Client = (*Client)(nil)
