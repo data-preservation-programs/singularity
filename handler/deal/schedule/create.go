@@ -100,7 +100,8 @@ func createHandler(
 
 	var scheduleCron string
 	if request.ScheduleCron != "" {
-		_, err = cron.ParseStandard(request.ScheduleCron)
+		cronParser := cron.NewParser(cron.SecondOptional | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
+		_, err = cronParser.Parse(request.ScheduleCron)
 		if err != nil {
 			return nil, handler.NewInvalidParameterErr("invalid schedule cron")
 		} else {
@@ -119,6 +120,9 @@ func createHandler(
 	pendingDealSize, err := humanize.ParseBytes(request.MaxPendingDealSize)
 	if err != nil {
 		return nil, handler.NewInvalidParameterErr("invalid pending deal size")
+	}
+	if scheduleCron != "" && scheduleDealSize == 0 && request.ScheduleDealNumber == 0 {
+		return nil, handler.NewInvalidParameterErr("schedule deal number or size must be set when using cron schedule")
 	}
 	for _, pieceCID := range request.AllowedPieceCIDs {
 		parsed, err := cid.Parse(pieceCID)
