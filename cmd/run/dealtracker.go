@@ -30,10 +30,9 @@ var DealTrackerCmd = &cli.Command{
 			Value:   1 * time.Hour,
 		},
 		&cli.BoolFlag{
-			Name:    "once",
-			Usage:   "Run once and exit",
-			Aliases: []string{"o"},
-			Value:   false,
+			Name:  "once",
+			Usage: "Run once and exit",
+			Value: false,
 		},
 	},
 	Action: func(c *cli.Context) error {
