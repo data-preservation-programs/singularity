@@ -14,7 +14,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
-	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/pkg/errors"
@@ -219,7 +218,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						item.CID = model.CID(root.Cid())
 					}
 				}
-				err = datasetworker.EnsureParentDirectories(db, &item, rootDirectoryID, directoryCache)
+				err = datasource.EnsureParentDirectories(db, &item, rootDirectoryID, directoryCache)
 				if err != nil {
 					return errors.Wrap(err, "failed to ensure parent directories")
 				}
