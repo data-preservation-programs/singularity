@@ -15,6 +15,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/urfave/cli/v2"
@@ -44,12 +45,12 @@ func (d Deal) GetState() model.DealState {
 		return model.DealSlashed
 	}
 	if d.State.SectorStartEpoch < 0 {
-		if epochutil.EpochToTime(d.Proposal.StartEpoch).Before(time.Now()) {
+		if epochutil.EpochToTime(d.Proposal.StartEpoch).Before(time.Now().Add(-24 * time.Hour)) {
 			return model.DealProposalExpired
 		}
 		return model.DealPublished
 	}
-	if epochutil.EpochToTime(d.Proposal.EndEpoch).Before(time.Now()) {
+	if epochutil.EpochToTime(d.Proposal.EndEpoch).Before(time.Now().Add(-24 * time.Hour)) {
 		return model.DealExpired
 	}
 	return model.DealActive
@@ -133,23 +134,24 @@ func (t *threadSafeReadCloser) Close() {
 	t.closer()
 }
 
-func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool) (chan *jstream.MetaValue, io.Closer, error) {
+func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool) (chan *jstream.MetaValue, Counter, io.Closer, error) {
 	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to get deal state from lotus API")
+		return nil, nil, nil, errors.Wrap(err, "failed to get deal state from lotus API")
 	}
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return nil, nil, errors.New("failed to get deal state: " + resp.Status)
+		return nil, nil, nil, errors.New("failed to get deal state: " + resp.Status)
 	}
 	var jsonDecoder *jstream.Decoder
 	var closer io.Closer
+	countingReader := NewCountingReader(resp.Body)
 	if decompress {
-		decompressor, err := zstd.NewReader(resp.Body)
+		decompressor, err := zstd.NewReader(countingReader)
 		if err != nil {
 			resp.Body.Close()
-			return nil, nil, errors.Wrap(err, "failed to create zstd decompressor")
+			return nil, nil, nil, errors.Wrap(err, "failed to create zstd decompressor")
 		}
 		safeDecompressor := &threadSafeReadCloser{
 			reader: decompressor,
@@ -161,25 +163,27 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 			return resp.Body.Close()
 		})
 	} else {
-		jsonDecoder = jstream.NewDecoder(resp.Body, depth).EmitKV()
+		jsonDecoder = jstream.NewDecoder(countingReader, depth).EmitKV()
 		closer = resp.Body
 	}
 
-	return jsonDecoder.Stream(), closer, nil
+	return jsonDecoder.Stream(), countingReader, closer, nil
 }
 
-func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, io.Closer, error) {
+func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
 	if d.dealZstURL != "" {
+		logger.Infof("getting deal state from %s", d.dealZstURL)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
 		if err != nil {
-			return nil, nil, errors.Wrap(err, "failed to create request to get deal state zst file")
+			return nil, nil, nil, errors.Wrap(err, "failed to create request to get deal state zst file")
 		}
 		return DealStateStreamFromHTTPRequest(req, 1, true)
 	}
 
+	logger.Infof("getting deal state from %s", d.lotusURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to create request to get deal state from lotus API")
+		return nil, nil, nil, errors.Wrap(err, "failed to create request to get deal state from lotus API")
 	}
 	if d.lotusToken != "" {
 		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
@@ -189,7 +193,7 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	return DealStateStreamFromHTTPRequest(req, 2, false)
 }
 
-func (d *DealTracker) Run(ctx context.Context) error {
+func (d *DealTracker) Run(ctx context.Context, once bool) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	getState := func() healthcheck.State {
@@ -205,9 +209,15 @@ func (d *DealTracker) Run(ctx context.Context) error {
 		}
 		if err != nil {
 			logger.Errorw("failed to register worker", "error", err)
+			if once {
+				return err
+			}
 		}
 		if alreadyRunning {
 			logger.Warnw("another worker already running")
+			if once {
+				return nil
+			}
 		}
 		logger.Warn("retrying in 1 minute")
 		select {
@@ -227,6 +237,10 @@ func (d *DealTracker) Run(ctx context.Context) error {
 			err := d.runOnce(ctx)
 			if err != nil {
 				logger.Errorw("failed to run deal maker", "error", err)
+			}
+			if once {
+				cancel()
+				return
 			}
 			select {
 			case <-ctx.Done():
@@ -252,71 +266,102 @@ func (d *DealTracker) cleanup() error {
 	return d.db.Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
 }
 
+type KnownDeal struct {
+	State model.DealState
+}
+type UnknownDeal struct {
+	ID         uint64
+	ClientID   string
+	Provider   string
+	PieceCID   model.CID
+	StartEpoch int32
+	EndEpoch   int32
+}
+
 func (d *DealTracker) runOnce(ctx context.Context) error {
-	should, err := d.shouldTrackDeal(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to check if should track deal")
-	}
-
-	if !should {
-		return nil
-	}
-
 	var wallets []model.Wallet
-	err = d.db.WithContext(ctx).Find(&wallets).Error
+	err := d.db.WithContext(ctx).Find(&wallets).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to get wallets from database")
 	}
 
-	// Clean up the deals table before querying
-	// We want to mark all deals that has expired as expired
-	err = d.db.WithContext(ctx).Model(&model.Deal{}).
-		Where("end_epoch < ?", epochutil.UnixToEpoch(time.Now().Unix())).
-		Update("state", model.DealExpired).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to update deals to expired")
+	walletIDs := make(map[string]struct{})
+	for _, wallet := range wallets {
+		logger.Infof("tracking deals for wallet %s", wallet.ID)
+		walletIDs[wallet.ID] = struct{}{}
 	}
 
-	var deals []model.Deal
-	err = d.db.WithContext(ctx).Find(&deals).Error
+	rows, err := d.db.WithContext(ctx).Model(&model.Deal{}).
+		Select("id", "deal_id", "state", "client_id", "provider", "piece_cid",
+			"start_epoch", "end_epoch").Rows()
 	if err != nil {
 		return errors.Wrap(err, "failed to get deals from database")
 	}
 
-	dealsByDealID := make(map[uint64]model.Deal)
-	unPublishedDeals := make(map[string][]model.Deal)
-	for _, deal := range deals {
+	knownDeals := make(map[uint64]KnownDeal)
+	unknownDeals := make(map[string][]UnknownDeal)
+	for rows.Next() {
+		var deal model.Deal
+		err = rows.Scan(&deal.ID, &deal.DealID, &deal.State, &deal.ClientID, &deal.Provider, &deal.PieceCID, &deal.StartEpoch, &deal.EndEpoch)
+		if err != nil {
+			return errors.Wrap(err, "failed to scan row")
+		}
 		if deal.DealID != nil {
-			dealsByDealID[*deal.DealID] = deal
+			knownDeals[*deal.DealID] = KnownDeal{
+				State: deal.State,
+			}
 		} else {
-			unPublishedDeals[deal.Key()] = append(unPublishedDeals[deal.Key()], deal)
+			key := deal.Key()
+			unknownDeals[key] = append(unknownDeals[deal.Key()], UnknownDeal{
+				ID:         deal.ID,
+				ClientID:   deal.ClientID,
+				Provider:   deal.Provider,
+				PieceCID:   deal.PieceCID,
+				StartEpoch: deal.StartEpoch,
+				EndEpoch:   deal.EndEpoch,
+			})
 		}
 	}
 
+	var updated int64
+	var inserted int64
+	defer func() {
+		logger.Infof("updated %d deals and inserted %d deals", updated, inserted)
+	}()
 	err = d.trackDeal(ctx, func(dealID uint64, deal Deal) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		current, ok := dealsByDealID[dealID]
+		_, ok := walletIDs[deal.Proposal.Client]
+		if !ok {
+			return nil
+		}
 		newState := deal.GetState()
-		if ok && current.State != newState {
-			logger.Debugw("Deal state changed", "dealID", dealID, "oldState", current.State, "newState", newState)
+		current, ok := knownDeals[dealID]
+		if ok {
+			if current.State == newState {
+				return nil
+			}
+
+			logger.Infow("Deal state changed", "dealID", dealID, "oldState", current.State, "newState", newState)
 			err = database.DoRetry(func() error {
-				return d.db.WithContext(ctx).Model(&model.Deal{}).Where("id = ?", current.ID).Update("state", newState).Error
+				return d.db.WithContext(ctx).Model(&model.Deal{}).Where("deal_id = ?", dealID).Updates(
+					map[string]any{
+						"state":              newState,
+						"sector_start_epoch": deal.State.SectorStartEpoch,
+					}).Error
 			})
 			if err != nil {
 				return errors.Wrap(err, "failed to update deal")
 			}
-			return nil
-		}
-		if ok {
+			updated++
 			return nil
 		}
 		dealKey := deal.Key()
-		found, ok := unPublishedDeals[dealKey]
+		found, ok := unknownDeals[dealKey]
 		if ok {
 			f := found[0]
-			logger.Debugw("Deal matched on-chain", "dealID", dealID, "state", newState)
+			logger.Infow("Deal matched on-chain", "dealID", dealID, "state", newState)
 			err = database.DoRetry(func() error {
 				return d.db.WithContext(ctx).Model(&model.Deal{}).Where("id = ?", f.ID).Updates(map[string]any{
 					"deal_id":            dealID,
@@ -327,13 +372,14 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			if err != nil {
 				return errors.Wrap(err, "failed to update deal")
 			}
-			unPublishedDeals[dealKey] = unPublishedDeals[dealKey][1:]
-			if len(unPublishedDeals[dealKey]) == 0 {
-				delete(unPublishedDeals, dealKey)
+			updated++
+			unknownDeals[dealKey] = unknownDeals[dealKey][1:]
+			if len(unknownDeals[dealKey]) == 0 {
+				delete(unknownDeals, dealKey)
 			}
 			return nil
 		}
-		logger.Debugw("Deal inserted from on-chain", "dealID", dealID, "state", newState)
+		logger.Infow("Deal external inserted from on-chain", "dealID", dealID, "state", newState)
 		root, err := cid.Parse(deal.Proposal.PieceCID.Root)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse piece CID")
@@ -357,20 +403,54 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to insert deal")
 		}
+		inserted++
 		return nil
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to track deal")
 	}
+
+	// Mark all expired active deals as expired
+	result := d.db.WithContext(ctx).Model(&model.Deal{}).
+		Where("end_epoch < ? AND state = 'active'", epochutil.UnixToEpoch(time.Now().Add(-24*time.Hour).Unix())).
+		Update("state", model.DealExpired)
+	if result.Error != nil {
+		return errors.Wrap(result.Error, "failed to update deals to expired")
+	}
+	logger.Infof("marked %d deals as expired", result.RowsAffected)
+
+	// Mark all expired deal proposals
+	result = d.db.WithContext(ctx).Model(&model.Deal{}).
+		Where("state in ('proposed', 'published') AND start_epoch < ?", epochutil.UnixToEpoch(time.Now().Add(-24*time.Hour).Unix())).
+		Update("state", model.DealProposalExpired)
+	if result.Error != nil {
+		return errors.Wrap(result.Error, "failed to update deal proposals to expired")
+	}
+	logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
+
 	return nil
 }
 
 func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64, deal Deal) error) error {
-	kvstream, closer, err := d.dealStateStream(ctx)
+	kvstream, counter, closer, err := d.dealStateStream(ctx)
 	if err != nil {
 		return err
 	}
 	defer closer.Close()
+	countingCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-countingCtx.Done():
+				return
+			case <-time.After(5 * time.Second):
+				downloaded := humanize.Bytes(uint64(counter.N()))
+				speed := humanize.Bytes(uint64(counter.Speed()))
+				logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
+			}
+		}
+	}()
 	for stream := range kvstream {
 		keyValuePair, ok := stream.Value.(jstream.KV)
 
@@ -396,40 +476,4 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 	}
 
 	return ctx.Err()
-}
-
-func (d *DealTracker) shouldTrackDeal(ctx context.Context) (bool, error) {
-	now := time.Now()
-	last := model.Global{
-		Key:   "dealTrackingLastTimestampNano",
-		Value: fmt.Sprintf("%d", now.UnixNano()),
-	}
-	shouldContinue := false
-	err := database.DoRetry(func() error {
-		return d.db.WithContext(ctx).Transaction(func(db *gorm.DB) error {
-			var global model.Global
-			err := db.Where("key = ?", "dealTrackingLastTimestampNano").First(&global).Error
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				shouldContinue = true
-				return db.Create(&last).Error
-			}
-			if err != nil {
-				return err
-			}
-			ts, err := strconv.ParseInt(global.Value, 10, 64)
-			if err != nil {
-				return err
-			}
-
-			if now.UnixNano()-ts > int64(d.interval) {
-				shouldContinue = true
-				return db.Model(&model.Global{}).Where("key = ?", "dealTrackingLastTimestampNano").Update("value", last.Value).Error
-			}
-			return nil
-		})
-	})
-	if err != nil {
-		return false, errors.Wrap(err, "failed to get last dealtracking timestamp from database")
-	}
-	return shouldContinue, nil
 }

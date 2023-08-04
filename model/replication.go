@@ -77,7 +77,7 @@ type Deal struct {
 }
 
 func (d Deal) Key() string {
-	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID, d.StartEpoch, d.EndEpoch)
+	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
 }
 
 type Schedule struct {

@@ -1,12 +1,14 @@
 package run
 
 import (
+	"context"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/dealtracker"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -26,6 +28,12 @@ var DealTrackerCmd = &cli.Command{
 			Usage:   "How often to check for new deals",
 			Aliases: []string{"i"},
 			Value:   1 * time.Hour,
+		},
+		&cli.BoolFlag{
+			Name:    "once",
+			Usage:   "Run once and exit",
+			Aliases: []string{"o"},
+			Value:   false,
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -52,6 +60,11 @@ var DealTrackerCmd = &cli.Command{
 			c.String("lotus-token"),
 		)
 
-		return tracker.Run(c.Context)
+		err = tracker.Run(c.Context, c.Bool("once"))
+		if errors.Is(err, context.Canceled) {
+			return nil
+		} else {
+			return err
+		}
 	},
 }
