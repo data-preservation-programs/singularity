@@ -260,6 +260,8 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
 	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushItemHandler))
 	e.POST("/api/source/:id/repack", s.toEchoHandler(datasource2.RepackHandler))
+	e.POST("/api/source/:id/chunk", s.toEchoHandler(datasource2.ChunkHandler))
+
 
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
