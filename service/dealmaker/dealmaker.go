@@ -87,7 +87,7 @@ func (d *DealMakerService) addSchedule(ctx context.Context, schedule model.Sched
 	if schedule.ScheduleCron == "" {
 		d.activeSchedule[schedule.ID] = &schedule
 		d.activeScheduleCancelFunc[schedule.ID] = cancel
-		go d.runScheduleAndUpdateState(ctx, &schedule)
+		go d.runScheduleAndUpdateState(scheduleCtx, &schedule)
 		return nil
 	}
 
