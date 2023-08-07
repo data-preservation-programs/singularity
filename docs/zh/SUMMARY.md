@@ -1,4 +1,4 @@
-# 目录
+# Table of contents
 
 ## 概述
 
@@ -44,7 +44,6 @@
 * [性能基准](topics/benchmark.md)
 
 ## 💻 CLI 参考
-<!-- cli begin -->
 
 * [菜单](cli-reference/README.md)
 * [快速准备](cli-reference/ez-prep.md)
@@ -148,10 +147,7 @@
 * [工具](cli-reference/tool/README.md)
   * [提取CAR文件](cli-reference/tool/extract-car.md)
 
-<!-- cli end -->
-
 ## 🌐 Web API 参考
-<!-- webapi begin -->
 
 * [管理](web-api-reference/admin.md)
 * [数据源](web-api-reference/data-source.md)
@@ -163,8 +159,6 @@
 * [钱包](web-api-reference/wallet.md)
 * [规范](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 
-<!-- webapi end -->
-
 ## 技术架构（针对开发人员）
 
 * [数据准备](technical-architecture/data-preparation.md)
@@ -173,3 +167,7 @@
 
 * [数据库已锁定](faq/database-is-locked.md)
 * [文件删除](faq/file-deletion.md)
+
+## 测试 <a href="#test" id="test"></a>
+
+* [测试页面](test/ce-shi-ye-mian.md)
