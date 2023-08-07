@@ -104,7 +104,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 	}
 
 	if request.OutputDirs != nil {
-		if len(request.OutputDirs) == 0 && request.OutputDirs[0] == "" {
+		if len(request.OutputDirs) == 1 && request.OutputDirs[0] == "" {
 			dataset.OutputDirs = nil
 		} else {
 			outDirs := make([]string, len(request.OutputDirs))
