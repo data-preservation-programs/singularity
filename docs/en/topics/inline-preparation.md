@@ -2,44 +2,58 @@
 
 ## Overview
 
-Tranditional approach to data preparation is to convert original data source, most likely a folder in a local file system to a bunch of CAR files each less than 32GiB. This creates a new issue for data preparers. If they are to prepare one PiB of dataset, they need to provision another PiB of storage servers to store those CAR files.
+The traditional method for data preparation involves converting the original data source, typically a folder on a local file system, into a collection of CAR files, each smaller than 32GiB. This method necessitates that Data Preparers possess twice the storage capacity, which can be very expensive. For instance, preparing a 1 PiB dataset would also require another 1 PiB of storage for the CAR files, resulting in a total requirement of 2 PiB of storage space.
 
-Inline preparation solves this problem by mapping blocks of those CAR files back to the original data source so that there is no need to store the exported CAR files.
+Inline preparation solves this problem by mapping the blocks of CAR files back to the original data source so that there is no need to store the exported CAR files.
+
+<div align="center">
+<img width="500" alt="Screenshot 2023-08-07 at 9 42 26 AM" src="https://github.com/data-preservation-programs/singularity/assets/12418265/4292faf1-9f01-4b7c-b79f-67b0bc1e2acc">
+<img width="500" alt="Screenshot 2023-08-07 at 9 42 31 AM" src="https://github.com/data-preservation-programs/singularity/assets/12418265/f5cfc209-5e38-4bb9-8cd9-f1aeffaf284d">
+</div>
+
 
 ## How CAR retrieval works
 
-With inline preparation, the CAR files can be served via HTTP using the metadata database and the original data source because it knows how to map certain bytes range of the CAR file back to the original data source.&#x20;
+With inline preparation, the CAR files can be served via HTTP using the metadata database and the original data source because it knows how to map byte ranges of the CAR file back to the original data source.&#x20;
 
-To serve CAR files via HTTP, simply start the content provider and optionally put it behind a reverse proxy
+To serve CAR files via HTTP, simply start the content provider
 
 ```sh
 singularity run content-provider
 ```
 
-This creates another challenge, if the data source is already a remote storage system, i.e. S3 or FTP, the file content is still proxied through the singularity content provider to the storage provider.
+> Note: This command will run a local HTTP server. If you intend to make it accessible over the internet, you may want to put it behind a reverse proxy such as nginx.
 
-We have a solution to solve that using singularity metadata API and singularity download utility
+This creates a potential bottleneck if the data source is already a remote storage system (i.e. S3 or FTP), as the file content would be proxied through the Singularity content provider to the Storage Provider.
 
-```bash
+We have a solution to this challenge using Singularity metadata API and Singularity download utility
+
+To run the Singularity Metadata API
+
+```sh
 singularity run api
+```
+
+Then, to use the Singularity download utility (on the Storage Provider)
+```sh
 singularity download <piece_cid>
 ```
 
-Singualrity metadata API will return a plan for how to assemble the CAR files from original data source and the singularity download utility will interprete this plan and stream from original data into a local CAR file. There is no conversion or assembling happening in the middle, everything works as streams.
+The Singularity metadata API will return a plan for how to assemble the CAR files from original data source and the Singularity download utility will interpret this plan and stream data from original data into a local CAR file. There is no conversion or assembling happening in the middle, everything works as streams.
 
-The metadata API does not return any credential required to access the data from original data source so storage provider needs to get their own access to the data source and supply such credential to the singularity download command.
+The metadata API does not return any credentials required to access the data from original data source. The Storage Provider needs to get their own access to the data source and supply such credentials to the `singularity download` command.
 
 ## Overhead
 
-Inline preparation comes with a very small overhead.
+Inline preparation introduces a minimal overhead, primarily in terms of the storage space required. Additionally, computational and bandwidth overhead is also minimal.
 
-Since we need to store a database row for each block of data, we need 100 bytes for each 1MiB block of data we prepared. For 1PiB dataset, the database will 10TiB of disk space for storing such mapping metadata. This is typically not a problem but for dataset with large number of small files, the disk overhead would be larger.
+Metadata for each block of data is stored as a database row, requiring 100 bytes for every 1MiB block of prepared data. For a 1PiB dataset, this translates to a requisite of 10TiB of disk space to store the mapping metadata. While this isn't typically an issue, datasets with a large number of small files may result in a significantly higher disk overhead.
 
-Later when we regenerates CAR files on the fly from the original data source, we will need to check those mappings in the database. This is typically not a problem because a bandwidth of 1GB / sec translates to 1000 entry lookup in the database which is well below bottleneck of all supported database backend and there could be future optimization that reduces such overhead.
+Later, when CAR files are dynamically regenerated from the original data source, it's necessary to cross-reference these mappings in the database. However, this is generally not a concern. A bandwidth of 1GB/sec equates to 1,000 database entry lookups, which is far from the bottleneck capabilities of all supported database backends. Additionally, future optimizations may further reduce this overhead.
 
 ## Enable Inline Preparation
 
-Inline preparation is always enabled for all dataset that does not need encryption. When dataset is created with specifying the output directory, CAR files will be exported to those directories. In such case, CAR retrieval request will be served from those directories first and fall back to original data source if those CAR files are deleted by the user.
+Inline preparation is automatically enabled for datasets that don't require encryption. Upon dataset creation, when an output directory is designated, CAR files are exported to that location. CAR retrieval requests prioritize these directories. If the CAR files are removed by the user, the system reverts to fetching from the original data source.
 
 ## Related resources
 
