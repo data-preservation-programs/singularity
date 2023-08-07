@@ -26,7 +26,7 @@ var UpdateCmd = &cli.Command{
 			DefaultText: "inferred",
 			Category:    "Preparation Parameters",
 		},
-		&cli.StringSliceFlag{
+		&cli.StringFlag{
 			Name:        "output-dir",
 			Aliases:     []string{"o"},
 			Usage:       "Output directory for CAR files",
@@ -65,13 +65,18 @@ var UpdateCmd = &cli.Command{
 			s := c.String("encryption-script")
 			encryptionScript = &s
 		}
+		var outDir *string
+		if c.IsSet("output-dir") {
+			s := c.String("output-dir")
+			outDir = &s
+		}
 		dataset, err := dataset.UpdateHandler(
 			db,
 			c.Args().Get(0),
 			dataset.UpdateRequest{
 				MaxSizeStr:           maxSizeStr,
 				PieceSizeStr:         pieceSizeStr,
-				OutputDirs:           c.StringSlice("output-dir"),
+				OutputDir:            outDir,
 				EncryptionRecipients: c.StringSlice("encryption-recipients"),
 				EncryptionScript:     encryptionScript,
 			},

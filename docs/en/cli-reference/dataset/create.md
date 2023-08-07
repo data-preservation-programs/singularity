@@ -22,7 +22,7 @@ OPTIONS:
 
    Inline Preparation
 
-   --output-dir value, -o value [ --output-dir value, -o value ]  Output directory for CAR files (default: not needed)
+   --output-dir value, -o value  Output directory for CAR files (default: not needed)
 
    Preparation Parameters
 

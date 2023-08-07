@@ -39,11 +39,9 @@ definitions:
       name:
         description: Name must be a unique identifier for a dataset
         type: string
-      outputDirs:
+      outputDir:
         description: Output directory for CAR files. Do not set if using inline preparation
-        items:
-          type: string
-        type: array
+        type: string
       pieceSize:
         description: Target piece size of the CAR files used for piece commitment
           calculation
@@ -66,11 +64,9 @@ definitions:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
         type: string
-      outputDirs:
+      outputDir:
         description: Output directory for CAR files. Do not set if using inline preparation
-        items:
-          type: string
-        type: array
+        type: string
       pieceSize:
         description: Target piece size of the CAR files used for piece commitment
           calculation

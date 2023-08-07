@@ -3670,12 +3670,9 @@ const docTemplate = `{
                     "description": "Name must be a unique identifier for a dataset",
                     "type": "string"
                 },
-                "outputDirs": {
+                "outputDir": {
                     "description": "Output directory for CAR files. Do not set if using inline preparation",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "pieceSize": {
                     "description": "Target piece size of the CAR files used for piece commitment calculation",
@@ -3702,12 +3699,9 @@ const docTemplate = `{
                     "type": "string",
                     "default": "31.5GiB"
                 },
-                "outputDirs": {
+                "outputDir": {
                     "description": "Output directory for CAR files. Do not set if using inline preparation",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "pieceSize": {
                     "description": "Target piece size of the CAR files used for piece commitment calculation",

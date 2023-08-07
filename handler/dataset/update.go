@@ -16,7 +16,7 @@ import (
 type UpdateRequest struct {
 	MaxSizeStr           *string  `default:"31.5GiB"           json:"maxSize"      validate:"optional"` // Maximum size of the CAR files to be created
 	PieceSizeStr         *string  `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
-	OutputDirs           []string `json:"outputDirs"           validate:"optional"`                     // Output directory for CAR files. Do not set if using inline preparation
+	OutputDir            *string  `json:"outputDir"           validate:"optional"`                      // Output directory for CAR files. Do not set if using inline preparation
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
 	EncryptionScript     *string  `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
@@ -99,9 +99,11 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		return handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
-	if request.OutputDirs != nil {
-		outDirs := make([]string, len(request.OutputDirs))
-		for i, outputDir := range request.OutputDirs {
+	if request.OutputDir != nil {
+		outputDir := *request.OutputDir
+		if outputDir == "" {
+			dataset.OutputDirs = nil
+		} else {
 			info, err := os.Stat(outputDir)
 			if err != nil || !info.IsDir() {
 				return handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
@@ -110,9 +112,8 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 			if err != nil {
 				return handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 			}
-			outDirs[i] = abs
+			dataset.OutputDirs = []string{abs}
 		}
-		dataset.OutputDirs = outDirs
 	}
 
 	if request.EncryptionRecipients != nil {

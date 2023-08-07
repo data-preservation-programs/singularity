@@ -32,7 +32,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	ds, err := dataset.CreateHandler(db, dataset.CreateRequest{
 		Name:                 scanning.Name,
 		MaxSizeStr:           fmt.Sprintf("%d", scanning.MaxSize),
-		OutputDirs:           nil,
+		OutputDir:            "",
 		EncryptionRecipients: nil,
 		EncryptionScript:     "",
 	})

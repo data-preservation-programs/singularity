@@ -20,7 +20,7 @@ type CreateRequest struct {
 	Name                 string   `json:"name"                 validate:"required"`                     // Name must be a unique identifier for a dataset
 	MaxSizeStr           string   `default:"31.5GiB"           json:"maxSize"      validate:"required"` // Maximum size of the CAR files to be created
 	PieceSizeStr         string   `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
-	OutputDirs           []string `json:"outputDirs"           validate:"optional"`                     // Output directory for CAR files. Do not set if using inline preparation
+	OutputDir            string   `json:"outputDir"           validate:"optional"`                      // Output directory for CAR files. Do not set if using inline preparation
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
 	EncryptionScript     string   `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
@@ -51,8 +51,11 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		return nil, handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
-	outDirs := make([]string, len(request.OutputDirs))
-	for i, outputDir := range request.OutputDirs {
+	var outDirs []string
+	if request.OutputDir != "" {
+		outDirs = append(outDirs, request.OutputDir)
+	}
+	for i, outputDir := range outDirs {
 		info, err := os.Stat(outputDir)
 		if err != nil || !info.IsDir() {
 			return nil, handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
@@ -68,7 +71,7 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		return nil, handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
 	}
 
-	if (len(request.EncryptionRecipients) > 0 || request.EncryptionScript != "") && len(request.OutputDirs) == 0 {
+	if (len(request.EncryptionRecipients) > 0 || request.EncryptionScript != "") && request.OutputDir == "" {
 		return nil, handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",

@@ -67,7 +67,7 @@ func TestCreateHandler_OutDirDoesNotExist(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", OutputDirs: []string{"not exist"}})
+	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", OutputDir: "not exist"})
 	require.ErrorContains(t, err, "output directory does not exist")
 }
 

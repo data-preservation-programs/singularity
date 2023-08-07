@@ -90,11 +90,11 @@ var PrepCmd = &cli.Command{
 			return err
 		}
 
+		var outputDir string
 		// Step 2, create a dataset
-		var outputDirs []string
 		if c.String("output-dir") != "" {
-			outputDirs = []string{c.String("output-dir")}
-			err = os.MkdirAll(outputDirs[0], 0755)
+			outputDir = c.String("output-dir")
+			err = os.MkdirAll(outputDir, 0755)
 			if err != nil {
 				return errors.Wrap(err, "failed to create output directory")
 			}
@@ -102,7 +102,7 @@ var PrepCmd = &cli.Command{
 		ds, err2 := dataset.CreateHandler(db, dataset.CreateRequest{
 			Name:       "ez",
 			MaxSizeStr: c.String("max-size"),
-			OutputDirs: outputDirs,
+			OutputDir:  outputDir,
 		})
 		if err2 != nil {
 			return err2

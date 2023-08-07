@@ -28,7 +28,7 @@ var CreateCmd = &cli.Command{
 			DefaultText: "inferred",
 			Category:    "Preparation Parameters",
 		},
-		&cli.StringSliceFlag{
+		&cli.StringFlag{
 			Name:        "output-dir",
 			Aliases:     []string{"o"},
 			Usage:       "Output directory for CAR files",
@@ -58,7 +58,7 @@ var CreateCmd = &cli.Command{
 				Name:                 c.Args().Get(0),
 				MaxSizeStr:           c.String("max-size"),
 				PieceSizeStr:         c.String("piece-size"),
-				OutputDirs:           c.StringSlice("output-dir"),
+				OutputDir:            c.String("output-dir"),
 				EncryptionRecipients: c.StringSlice("encryption-recipient"),
 				EncryptionScript:     c.String("encryption-script")},
 		)

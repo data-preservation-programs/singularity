@@ -27,7 +27,7 @@ type DatasetUpdateRequest struct {
 	MaxSize *string `json:"maxSize,omitempty"`
 
 	// Output directory for CAR files. Do not set if using inline preparation
-	OutputDirs []string `json:"outputDirs"`
+	OutputDir string `json:"outputDir,omitempty"`
 
 	// Target piece size of the CAR files used for piece commitment calculation
 	PieceSize string `json:"pieceSize,omitempty"`

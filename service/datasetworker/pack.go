@@ -8,7 +8,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
-	"github.com/data-preservation-programs/singularity/pack/device"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/pkg/errors"
@@ -21,12 +20,7 @@ func (w *DatasetWorkerThread) pack(
 ) error {
 	var outDir string
 	if len(chunk.Source.Dataset.OutputDirs) > 0 {
-		var err error
-		outDir, err = device.GetPathWithMostSpace(chunk.Source.Dataset.OutputDirs)
-		if err != nil {
-			w.logger.Warnw("failed to get path with most space. using the first one", "error", err)
-			outDir = chunk.Source.Dataset.OutputDirs[0]
-		}
+		outDir = chunk.Source.Dataset.OutputDirs[0]
 	}
 	w.logger.Debugw("Use output dir", "dir", outDir)
 	handler, err := w.datasourceHandlerResolver.Resolve(ctx, *chunk.Source)
