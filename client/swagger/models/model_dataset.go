@@ -39,8 +39,8 @@ type ModelDataset struct {
 	// name
 	Name string `json:"name,omitempty"`
 
-	// output dirs
-	OutputDirs []string `json:"outputDirs"`
+	// output dir
+	OutputDir string `json:"outputDir,omitempty"`
 
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`

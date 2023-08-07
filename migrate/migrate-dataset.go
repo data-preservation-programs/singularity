@@ -39,7 +39,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	if err != nil {
 		return errors.Wrap(err, "failed to create dataset")
 	}
-	ds.OutputDirs = []string{scanning.OutDir}
+	ds.OutputDir = scanning.OutDir
 	err = db.Save(ds).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to save dataset")

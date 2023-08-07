@@ -17,13 +17,10 @@ import (
 
 func (w *DatasetWorkerThread) dag(source model.Source) error {
 	var rootCID cid.Cid
-	var outDir string
+	outDir := source.Dataset.OutputDir
 	var headerBytes []byte
 	var carBlocks []model.CarBlock
 	var car model.Car
-	if len(source.Dataset.OutputDirs) > 0 {
-		outDir = source.Dataset.OutputDirs[0]
-	}
 
 	writeCloser, calc, filepath, err := pack.GetMultiWriter(outDir)
 	if err != nil {

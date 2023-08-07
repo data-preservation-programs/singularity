@@ -9894,11 +9894,8 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "outputDirs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "outputDir": {
+                    "type": "string"
                 },
                 "pieceSize": {
                     "type": "integer"

@@ -51,20 +51,16 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		return nil, handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
-	var outDirs []string
-	if request.OutputDir != "" {
-		outDirs = append(outDirs, request.OutputDir)
-	}
-	for i, outputDir := range outDirs {
+	outputDir := request.OutputDir
+	if outputDir != "" {
 		info, err := os.Stat(outputDir)
 		if err != nil || !info.IsDir() {
 			return nil, handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
 		}
-		abs, err := filepath.Abs(outputDir)
+		outputDir, err = filepath.Abs(outputDir)
 		if err != nil {
 			return nil, handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 		}
-		outDirs[i] = abs
 	}
 
 	if len(request.EncryptionRecipients) > 0 && request.EncryptionScript != "" {
@@ -82,7 +78,7 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		Name:                 request.Name,
 		MaxSize:              int64(maxSize),
 		PieceSize:            int64(pieceSize),
-		OutputDirs:           outDirs,
+		OutputDir:            outputDir,
 		EncryptionRecipients: request.EncryptionRecipients,
 		EncryptionScript:     request.EncryptionScript,
 	}, nil

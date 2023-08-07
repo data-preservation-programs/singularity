@@ -21,7 +21,7 @@ export interface Dataset {
 	updatedAt: Date
 	maxSize: number
 	pieceSize: number
-	outputDirs: string[]
+	outputDir: string
 	encryptionRecipients: string[]
 	encryptionScript: string
 	metadata: {[key: string]: string}

@@ -4889,10 +4889,8 @@ definitions:
         $ref: '#/definitions/model.Metadata'
       name:
         type: string
-      outputDirs:
-        items:
-          type: string
-        type: array
+      outputDir:
+        type: string
       pieceSize:
         type: integer
       updatedAt:

@@ -18,10 +18,7 @@ import (
 func (w *DatasetWorkerThread) pack(
 	ctx context.Context, chunk model.Chunk,
 ) error {
-	var outDir string
-	if len(chunk.Source.Dataset.OutputDirs) > 0 {
-		outDir = chunk.Source.Dataset.OutputDirs[0]
-	}
+	outDir := chunk.Source.Dataset.OutputDir
 	w.logger.Debugw("Use output dir", "dir", outDir)
 	handler, err := w.datasourceHandlerResolver.Resolve(ctx, *chunk.Source)
 	if err != nil {

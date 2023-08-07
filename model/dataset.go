@@ -215,7 +215,7 @@ type Dataset struct {
 	UpdatedAt            time.Time   `json:"updatedAt"`
 	MaxSize              int64       `json:"maxSize"`
 	PieceSize            int64       `json:"pieceSize"`
-	OutputDirs           StringSlice `gorm:"type:JSON"                    json:"outputDirs"`
+	OutputDir            string      `json:"outputDir"`
 	EncryptionRecipients StringSlice `gorm:"type:JSON"                    json:"encryptionRecipients"`
 	EncryptionScript     string      `json:"encryptionScript"`
 	Metadata             Metadata    `gorm:"type:JSON"                    json:"metadata"`

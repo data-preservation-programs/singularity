@@ -59,9 +59,9 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		},
 	}
 	dataset := model.Dataset{
-		Name:       "test",
-		MaxSize:    1024,
-		OutputDirs: []string{temp},
+		Name:      "test",
+		MaxSize:   1024,
+		OutputDir: temp,
 	}
 	err = db.Create(&dataset).Error
 	require.NoError(t, err)

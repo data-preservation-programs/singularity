@@ -102,7 +102,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 	if request.OutputDir != nil {
 		outputDir := *request.OutputDir
 		if outputDir == "" {
-			dataset.OutputDirs = nil
+			dataset.OutputDir = ""
 		} else {
 			info, err := os.Stat(outputDir)
 			if err != nil || !info.IsDir() {
@@ -112,7 +112,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 			if err != nil {
 				return handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 			}
-			dataset.OutputDirs = []string{abs}
+			dataset.OutputDir = abs
 		}
 	}
 
@@ -128,7 +128,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		return handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
 	}
 
-	if (len(dataset.EncryptionRecipients) > 0 || dataset.EncryptionScript != "") && len(dataset.OutputDirs) == 0 {
+	if (len(dataset.EncryptionRecipients) > 0 || dataset.EncryptionScript != "") && len(dataset.OutputDir) == 0 {
 		return handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
