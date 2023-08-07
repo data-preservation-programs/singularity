@@ -7,8 +7,8 @@ The traditional method for data preparation involves converting the original dat
 Inline preparation solves this problem by mapping the blocks of CAR files back to the original data source so that there is no need to store the exported CAR files.
 
 <div align="center">
-<img width="500" alt="Screenshot 2023-08-07 at 9 42 26 AM" src="https://github.com/data-preservation-programs/singularity/assets/12418265/4292faf1-9f01-4b7c-b79f-67b0bc1e2acc">
-<img width="500" alt="Screenshot 2023-08-07 at 9 42 31 AM" src="https://github.com/data-preservation-programs/singularity/assets/12418265/f5cfc209-5e38-4bb9-8cd9-f1aeffaf284d">
+<img width="500" alt="Traditional data prep diagram" src="https://github.com/data-preservation-programs/singularity/assets/12418265/4292faf1-9f01-4b7c-b79f-67b0bc1e2acc">
+<img width="500" alt="Inline data prep diagram" src="https://github.com/data-preservation-programs/singularity/assets/12418265/f5cfc209-5e38-4bb9-8cd9-f1aeffaf284d">
 </div>
 
 
