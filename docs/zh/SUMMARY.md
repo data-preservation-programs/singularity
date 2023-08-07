@@ -1,41 +1,41 @@
-# 目录
+# Table of contents
 
-## 概述
+## 概述 <a href="#overview" id="overview"></a>
 
 * [什么是Singularity](overview/README.md)
 * [版本1或版本2](overview/v1-or-v2.md)
 * [当前状态](overview/current-status.md)
 * [相关项目](overview/related-projects.md)
 
-## 安装
+## 安装 <a href="#installation" id="installation"></a>
 
 * [从源代码安装](installation/install-from-source.md)
 * [从Docker安装](installation/install-from-docker.md)
 * [部署到生产环境](installation/deploy-to-production.md)
 
-## 数据准备
+## 数据准备 <a href="#data-preparation" id="data-preparation"></a>
 
 * [创建数据集](data-preparation/create-a-dataset.md)
 * [添加数据源](data-preparation/add-a-data-source.md)
 * [启动数据集处理器](data-preparation/start-dataset-worker.md)
 * [为数据源创建DAG](data-preparation/create-dag-for-the-data-source.md)
 
-## 内容分发
+## 内容分发 <a href="#content-distribution" id="content-distribution"></a>
 
 * [分发CAR文件](content-distribution/distribute-car-files.md)
 * [文件检索（暂存）](content-distribution/file-retrieval-staging.md)
 
-## 交易处理
+## 交易处理 <a href="#deal-making" id="deal-making"></a>
 
 * [交易处理前提条件](deal-making/deal-making-prerequisite.md)
 * [创建交易计划](deal-making/create-a-deal-schedule.md)
 * [自助服务提供商（SP Self Service）](deal-making/sp-self-service.md)
 
-## 检索
+## 检索 <a href="#retrieval" id="retrieval"></a>
 
 * [概述](retrieval/overview.md)
 
-## 专题
+## 专题 <a href="#topics" id="topics"></a>
 
 * [加密](topics/encryption.md)
 * [内联准备](topics/inline-preparation.md)
@@ -43,8 +43,7 @@
 * [推送和上传](topics/push-and-upload.md)
 * [性能基准](topics/benchmark.md)
 
-## 💻 CLI 参考
-<!-- cli begin -->
+## 💻 CLI 参考 <a href="#cli-reference" id="cli-reference"></a>
 
 * [菜单](cli-reference/README.md)
 * [快速准备](cli-reference/ez-prep.md)
@@ -148,10 +147,7 @@
 * [工具](cli-reference/tool/README.md)
   * [提取CAR文件](cli-reference/tool/extract-car.md)
 
-<!-- cli end -->
-
-## 🌐 Web API 参考
-<!-- webapi begin -->
+## 🌐 Web API 参考 <a href="#web-api-reference" id="web-api-reference"></a>
 
 * [管理](web-api-reference/admin.md)
 * [数据源](web-api-reference/data-source.md)
@@ -163,13 +159,11 @@
 * [钱包](web-api-reference/wallet.md)
 * [规范](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 
-<!-- webapi end -->
-
-## 技术架构（针对开发人员）
+## 技术架构（针对开发人员） <a href="#technical-architecture" id="technical-architecture"></a>
 
 * [数据准备](technical-architecture/data-preparation.md)
 
-## ❓ 常见问题
+## ❓ 常见问题 <a href="#faq" id="faq"></a>
 
 * [数据库已锁定](faq/database-is-locked.md)
 * [文件删除](faq/file-deletion.md)
