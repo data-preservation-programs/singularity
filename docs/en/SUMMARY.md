@@ -1,41 +1,41 @@
 # Table of contents
 
-## Overview
+## Overview <a href="#overview" id="overview"></a>
 
 * [What is Singularity](README.md)
 * [V1 or V2](overview/v1-or-v2.md)
 * [Current Status](overview/current-status.md)
 * [Related Projects](overview/related-projects.md)
 
-## Installation
+## Installation <a href="#installation" id="installation"></a>
 
 * [Install from source](installation/install-from-source.md)
 * [Install from docker](installation/install-from-docker.md)
 * [Deploy to production](installation/deploy-to-production.md)
 
-## Data Preparation
+## Data Preparation <a href="#data-preparation" id="data-preparation"></a>
 
 * [Create a dataset](data-preparation/create-a-dataset.md)
 * [Add a data source](data-preparation/add-a-data-source.md)
 * [Start dataset worker](data-preparation/start-dataset-worker.md)
 * [Create DAG for the data source](data-preparation/create-dag-for-the-data-source.md)
 
-## Content Distribution
+## Content Distribution <a href="#content-distribution" id="content-distribution"></a>
 
 * [Distribute CAR files](content-distribution/distribute-car-files.md)
 * [File Retrieval (Staging)](content-distribution/file-retrieval-staging.md)
 
-## Deal Making
+## Deal Making <a href="#deal-making" id="deal-making"></a>
 
 * [Deal Making Prerequisite](deal-making/deal-making-prerequisite.md)
 * [Create a deal schedule](deal-making/create-a-deal-schedule.md)
 * [SP Self Service](deal-making/sp-self-service.md)
 
-## Retrieval
+## Retrieval <a href="#retrieval" id="retrieval"></a>
 
 * [Overview](retrieval/overview.md)
 
-## Topics
+## Topics <a href="#topics" id="topics"></a>
 
 * [Encryption](topics/encryption.md)
 * [Inline Preparation](topics/inline-preparation.md)
@@ -43,7 +43,7 @@
 * [Push and Upload](topics/push-and-upload.md)
 * [Benchmark](topics/benchmark.md)
 
-## 💻 CLI Reference
+## 💻 CLI Reference <a href="#cli-reference" id="cli-reference"></a>
 <!-- cli begin -->
 
 * [Menu](cli-reference/README.md)
@@ -151,7 +151,7 @@
 
 <!-- cli end -->
 
-## 🌐 Web API Reference
+## 🌐 Web API Reference <a href="#web-api-reference" id="web-api-reference"></a>
 <!-- webapi begin -->
 
 * [Admin](web-api-reference/admin.md)
@@ -166,11 +166,11 @@
 
 <!-- webapi end -->
 
-## Technical Architecture (for developers)
+## Technical Architecture (for developers) <a href="#technical-architecture" id="technical-architecture"></a>
 
 * [Data Preparation](technical-architecture/data-preparation.md)
 
-## ❓ FAQ
+## ❓ FAQ <a href="#faq" id="faq"></a>
 
 * [Database is locked](faq/database-is-locked.md)
 * [File deletion](faq/file-deletion.md)
