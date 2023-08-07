@@ -52,6 +52,10 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 	}
 
 	outDirs := make([]string, len(request.OutputDirs))
+	if len(request.OutputDirs) > 1 {
+		return nil, handler.NewInvalidParameterErr("multiple output directories will not supported in the future hence no longer allowed")
+	}
+
 	for i, outputDir := range request.OutputDirs {
 		info, err := os.Stat(outputDir)
 		if err != nil || !info.IsDir() {

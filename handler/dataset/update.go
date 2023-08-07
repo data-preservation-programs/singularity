@@ -99,20 +99,28 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		return handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
+	if len(request.OutputDirs) > 1 {
+		return handler.NewInvalidParameterErr("multiple output directories will not supported in the future hence no longer allowed")
+	}
+
 	if request.OutputDirs != nil {
-		outDirs := make([]string, len(request.OutputDirs))
-		for i, outputDir := range request.OutputDirs {
-			info, err := os.Stat(outputDir)
-			if err != nil || !info.IsDir() {
-				return handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
+		if len(request.OutputDirs) == 0 && request.OutputDirs[0] == "" {
+			dataset.OutputDirs = nil
+		} else {
+			outDirs := make([]string, len(request.OutputDirs))
+			for i, outputDir := range request.OutputDirs {
+				info, err := os.Stat(outputDir)
+				if err != nil || !info.IsDir() {
+					return handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
+				}
+				abs, err := filepath.Abs(outputDir)
+				if err != nil {
+					return handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
+				}
+				outDirs[i] = abs
 			}
-			abs, err := filepath.Abs(outputDir)
-			if err != nil {
-				return handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
-			}
-			outDirs[i] = abs
+			dataset.OutputDirs = outDirs
 		}
-		dataset.OutputDirs = outDirs
 	}
 
 	if request.EncryptionRecipients != nil {
