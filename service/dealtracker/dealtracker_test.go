@@ -44,7 +44,7 @@ func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	req, err := http.NewRequest("GET", url, nil)
 	require.NoError(t, err)
 	depth := 1
-	stream, closer, err := DealStateStreamFromHTTPRequest(req, depth, true)
+	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, true)
 	require.NoError(t, err)
 	defer closer.Close()
 	var kvs []jstream.KV
@@ -69,7 +69,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 	req, err := http.NewRequest("GET", server.URL, nil)
 	require.NoError(t, err)
 	depth := 2
-	stream, closer, err := DealStateStreamFromHTTPRequest(req, depth, false)
+	stream, _, closer, err := DealStateStreamFromHTTPRequest(req, depth, false)
 	require.NoError(t, err)
 	defer closer.Close()
 	var kvs []jstream.KV
@@ -96,26 +96,6 @@ func TestTrackDeal(t *testing.T) {
 	err := tracker.trackDeal(context.Background(), callback)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
-}
-
-func TestShouldTrackDeal(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	tracker := NewDealTracker(db, time.Second, "", "", "")
-	should, err := tracker.shouldTrackDeal(context.Background())
-	require.NoError(t, err)
-	require.True(t, should)
-	should, err = tracker.shouldTrackDeal(context.Background())
-	require.NoError(t, err)
-	require.False(t, should)
-	time.Sleep(time.Second)
-	should, err = tracker.shouldTrackDeal(context.Background())
-	require.NoError(t, err)
-	require.True(t, should)
-	should, err = tracker.shouldTrackDeal(context.Background())
-	require.NoError(t, err)
-	require.False(t, should)
 }
 
 func TestRunOnce(t *testing.T) {
@@ -195,7 +175,7 @@ func TestRunOnce(t *testing.T) {
 			Verified:         true,
 		},
 		{
-			State:            model.DealProposed,
+			State:            model.DealActive,
 			ClientID:         "t0100",
 			Provider:         "sp1",
 			ProposalID:       "proposal5",
@@ -228,7 +208,7 @@ func TestRunOnce(t *testing.T) {
 	// Deal 2 : Published -> Active
 	// Deal 3 : Proposed -> Published
 	// Deal 4 : Active -> Expired
-	// Deal 5 : Proposed -> Expired
+	// Deal 5 : Active -> Expired
 	// Deal 6 : Published -> Expired
 	deals := map[string]Deal{
 		"1": {
@@ -320,6 +300,6 @@ func TestRunOnce(t *testing.T) {
 	require.Equal(t, model.DealPublished, allDeals[2].State)
 	require.Equal(t, model.DealExpired, allDeals[3].State)
 	require.Equal(t, model.DealExpired, allDeals[4].State)
-	require.Equal(t, model.DealExpired, allDeals[5].State)
+	require.Equal(t, model.DealProposalExpired, allDeals[5].State)
 	require.Equal(t, model.DealActive, allDeals[6].State)
 }
