@@ -2,7 +2,7 @@
 
 ## 概述 <a href="#overview" id="overview"></a>
 
-* [什么是Singularity](overview/README.md)
+* [什么是Singularity](README.md)
 * [版本1或版本2](overview/v1-or-v2.md)
 * [当前状态](overview/current-status.md)
 * [相关项目](overview/related-projects.md)

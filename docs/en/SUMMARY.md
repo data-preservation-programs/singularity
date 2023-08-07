@@ -2,7 +2,7 @@
 
 ## Overview <a href="#overview" id="overview"></a>
 
-* [What is Singularity](overview/README.md)
+* [What is Singularity](README.md)
 * [V1 or V2](overview/v1-or-v2.md)
 * [Current Status](overview/current-status.md)
 * [Related Projects](overview/related-projects.md)
