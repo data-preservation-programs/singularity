@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/pkg/errors"
@@ -231,7 +232,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			}
 		}
 		if len(items) > 0 {
-			err = db.CreateInBatches(&items, 1000).Error
+			err = db.CreateInBatches(&items, util.BatchSize).Error
 			if err != nil {
 				return errors.Wrap(err, "failed to create items")
 			}

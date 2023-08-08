@@ -269,18 +269,8 @@ func GetPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
 	}
-	itemIDSet := make(map[uint64]struct{})
-	for _, carBlock := range carBlocks {
-		if carBlock.ItemID != nil {
-			itemIDSet[*carBlock.ItemID] = struct{}{}
-		}
-	}
-	var itemIDs []uint64
-	for itemID := range itemIDSet {
-		itemIDs = append(itemIDs, itemID)
-	}
 	var items []model.Item
-	err = db.WithContext(ctx).Where("id IN ?", itemIDs).Find(&items).Error
+	err = db.WithContext(ctx).Where("id IN (?)", db.Model(&model.CarBlock{}).Select("item_id").Where("car_id = ?", car.ID)).Find(&items).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for items: %w", err)
 	}

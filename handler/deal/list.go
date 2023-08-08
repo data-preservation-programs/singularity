@@ -2,13 +2,12 @@ package deal
 
 import (
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 )
 
 type ListDealRequest struct {
 	Datasets  []string `json:"datasets"`  // dataset name filter
-	Schedules []uint32 `json:"schedules"` // schedule id filter
+	Schedules []uint   `json:"schedules"` // schedule id filter
 	Providers []string `json:"providers"` // provider filter
 	States    []string `json:"states"`    // state filter
 }
@@ -31,12 +30,7 @@ func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	var deals []model.Deal
 	statement := db
 	if len(request.Datasets) > 0 {
-		var datasets []model.Dataset
-		err := db.Where("name in ?", request.Datasets).Find(&datasets).Error
-		if err != nil {
-			return nil, err
-		}
-		statement = statement.Where("dataset_id IN ?", underscore.Map(datasets, func(dataset model.Dataset) uint32 { return dataset.ID }))
+		statement = statement.Where("dataset_id IN (?)", statement.Model(&model.Dataset{}).Select("id").Where("name in ?", request.Datasets))
 	}
 
 	if len(request.Schedules) > 0 {

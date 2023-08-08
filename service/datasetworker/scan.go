@@ -6,6 +6,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -102,10 +103,14 @@ func (w *DatasetWorkerThread) chunkOnce(
 					if err != nil {
 						return errors.Wrap(err, "failed to create chunk")
 					}
-					err = w.db.Model(&model.ItemPart{}).
-						Where("id IN ?", remaining.itemIDs()).Update("chunk_id", chunk.ID).Error
-					if err != nil {
-						return errors.Wrap(err, "failed to update items")
+					remainingItemIDs := remaining.itemIDs()
+					remainingItemIDChunks := util.ChunkSlice(remainingItemIDs, util.BatchSize)
+					for _, remainingItemIDChunk := range remainingItemIDChunks {
+						err = w.db.Model(&model.ItemPart{}).
+							Where("id IN ?", remainingItemIDChunk).Update("chunk_id", chunk.ID).Error
+						if err != nil {
+							return errors.Wrap(err, "failed to update items")
+						}
 					}
 					return nil
 				},
@@ -151,9 +156,12 @@ func (w *DatasetWorkerThread) chunkOnce(
 				itemPartIDs := underscore.Map(remaining.itemParts[:si], func(item model.ItemPart) uint64 {
 					return item.ID
 				})
-				err = w.db.Model(&model.ItemPart{}).Where("id IN ?", itemPartIDs).Update("chunk_id", chunk.ID).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to update items")
+				itemPartIDChunks := util.ChunkSlice(itemPartIDs, util.BatchSize)
+				for _, itemPartIDChunk := range itemPartIDChunks {
+					err = w.db.Model(&model.ItemPart{}).Where("id IN ?", itemPartIDChunk).Update("chunk_id", chunk.ID).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to update items")
+					}
 				}
 				return nil
 			},
