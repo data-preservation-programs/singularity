@@ -9,11 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type GetSourceChunksRequest struct {
+	State string `json:"state"`
+}
+
 func GetSourceChunksHandler(
 	db *gorm.DB,
 	id string,
+	request GetSourceChunksRequest,
 ) ([]model.Chunk, error) {
-	return getSourceChunksHandler(db, id)
+	return getSourceChunksHandler(db, id, request)
 }
 
 // @Summary Get all chunk details of a data source
@@ -21,6 +26,7 @@ func GetSourceChunksHandler(
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
+// @Param request body GetSourceChunksRequest true "GetSourceChunksRequest"
 // @Success 200 {array} model.Chunk
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -28,6 +34,7 @@ func GetSourceChunksHandler(
 func getSourceChunksHandler(
 	db *gorm.DB,
 	id string,
+	request GetSourceChunksRequest,
 ) ([]model.Chunk, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
@@ -43,7 +50,12 @@ func getSourceChunksHandler(
 	}
 
 	var chunks []model.Chunk
-	err = db.Preload("Cars").Where("source_id = ?", sourceID).Find(&chunks).Error
+	if request.State == "" {
+		err = db.Preload("Cars").Where("source_id = ?", sourceID).Find(&chunks).Error
+	} else {
+		err = db.Preload("Cars").Where("source_id = ? AND packing_state = ?", sourceID, request.State).Find(&chunks).Error
+	}
+
 	if err != nil {
 		return nil, err
 	}

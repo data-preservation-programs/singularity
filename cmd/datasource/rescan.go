@@ -11,7 +11,7 @@ var RescanCmd = &cli.Command{
 	Name:        "rescan",
 	Usage:       "Rescan a data source",
 	ArgsUsage:   "<source_id>",
-	Description: "This command will clear any error of a data source and rescan it",
+	Description: "This command will clear any error of a data source scanning work and rescan it",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {

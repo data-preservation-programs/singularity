@@ -134,6 +134,7 @@
   * [Update](cli-reference/datasource/update.md)
   * [Rescan](cli-reference/datasource/rescan.md)
   * [Daggen](cli-reference/datasource/daggen.md)
+  * [Repack](cli-reference/datasource/repack.md)
   * [Inspect](cli-reference/datasource/inspect/README.md)
     * [Chunks](cli-reference/datasource/inspect/chunks.md)
     * [Items](cli-reference/datasource/inspect/items.md)

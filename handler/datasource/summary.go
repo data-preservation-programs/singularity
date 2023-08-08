@@ -22,6 +22,7 @@ type ItemSummary struct {
 type SourceStatus struct {
 	ChunkSummary []ChunksByState `json:"chunkSummary"` // summary of the chunks
 	ItemSummary  ItemSummary     `json:"itemSummary"`  // summary of the items
+	FailedChunks []model.Chunk   `json:"failedChunks"` // failed chunks
 }
 
 // @Summary Get the data preparation summary of a data source
@@ -65,6 +66,11 @@ func getSourceStatusHandler(
 	}
 
 	err = db.Model(&model.Item{}).Where("source_id = ? AND cid IS NOT NULL", sourceID).Count(&summary.ItemSummary.Prepared).Error
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Model(&model.Chunk{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedChunks).Error
 	if err != nil {
 		return nil, err
 	}

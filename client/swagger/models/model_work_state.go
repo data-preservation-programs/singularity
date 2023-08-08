@@ -30,8 +30,8 @@ func (m ModelWorkState) Pointer() *ModelWorkState {
 
 const (
 
-	// ModelWorkStateEmpty captures enum value ""
-	ModelWorkStateEmpty ModelWorkState = ""
+	// ModelWorkStateCreated captures enum value "created"
+	ModelWorkStateCreated ModelWorkState = "created"
 
 	// ModelWorkStateReady captures enum value "ready"
 	ModelWorkStateReady ModelWorkState = "ready"
@@ -51,7 +51,7 @@ var modelWorkStateEnum []interface{}
 
 func init() {
 	var res []ModelWorkState
-	if err := json.Unmarshal([]byte(`["","ready","processing","complete","error"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["created","ready","processing","complete","error"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

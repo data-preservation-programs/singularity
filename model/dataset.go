@@ -160,6 +160,14 @@ var WorkStates = []WorkState{
 	Error,
 }
 
+var WorkStateStrings = []string{
+	string(Created),
+	string(Ready),
+	string(Processing),
+	string(Complete),
+	string(Error),
+}
+
 const (
 	Local  SourceType = "local"
 	Upload SourceType = "upload"
@@ -167,7 +175,7 @@ const (
 
 const (
 	// Created means the item has been created is not ready for processing.
-	Created WorkState = ""
+	Created WorkState = "created"
 	// Ready means the item is ready to be processed.
 	Ready WorkState = "ready"
 	// Processing means the work is currently being processed.
