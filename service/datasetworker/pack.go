@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/pack/device"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/pkg/errors"
@@ -88,7 +89,7 @@ func (w *DatasetWorkerThread) pack(
 					for i := range result.CarBlocks {
 						result.CarBlocks[i].CarID = car.ID
 					}
-					err = db.CreateInBatches(&result.CarBlocks, 1000).Error
+					err = db.CreateInBatches(&result.CarBlocks, util.BatchSize).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to create car blocks")
 					}

@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/pack/device"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
@@ -121,7 +122,7 @@ func (w *DatasetWorkerThread) dag(source model.Source) error {
 			for i := range carBlocks {
 				carBlocks[i].CarID = car.ID
 			}
-			err = db.CreateInBatches(carBlocks, 100).Error
+			err = db.CreateInBatches(carBlocks, util.BatchSize).Error
 			if err != nil {
 				return err
 			}
