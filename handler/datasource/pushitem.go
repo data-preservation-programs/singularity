@@ -161,7 +161,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 					}
 				}
 			}
-			err = db.Create(&itemParts).Error
+			err = db.CreateInBatches(&itemParts, util.BatchSize).Error
 			if err != nil {
 				return errors.Wrap(err, "failed to create item parts")
 			}

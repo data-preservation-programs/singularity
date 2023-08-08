@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -137,7 +138,7 @@ func MigrateSchedule(cctx *cli.Context) error {
 		}
 	}
 
-	err = db.CreateInBatches(&schedules, 100).Error
+	err = db.CreateInBatches(&schedules, util.BatchSize).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to create schedules")
 	}
