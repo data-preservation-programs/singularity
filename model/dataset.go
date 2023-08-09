@@ -240,7 +240,7 @@ type Source struct {
 	ID                   uint32     `gorm:"primaryKey"                                                             json:"id"`
 	CreatedAt            time.Time  `json:"createdAt"`
 	UpdatedAt            time.Time  `json:"updatedAt"`
-	DatasetID            uint32     `json:"datasetId"`
+	DatasetID            uint32     `gorm:"index"                                                                  json:"datasetId"`
 	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"                       json:"dataset,omitempty"          swaggerignore:"true"`
 	Type                 SourceType `json:"type"`
 	Path                 string     `json:"path"`
@@ -279,13 +279,13 @@ type Item struct {
 	_                         struct{}   `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
 	ID                        uint64     `gorm:"primaryKey"                                                json:"id"`
 	CreatedAt                 time.Time  `json:"createdAt"`
+	CID                       CID        `gorm:"index:source_summary_items;column:cid;type:bytes;size:255" json:"cid"`
 	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
 	Source                    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"    swaggerignore:"true"`
 	Path                      string     `json:"path"`
 	Hash                      string     `json:"hash"`
 	Size                      int64      `json:"size"`
 	LastModifiedTimestampNano int64      `json:"lastModified"`
-	CID                       CID        `gorm:"index:source_summary_items;column:cid;type:bytes;size:255" json:"cid"`
 	DirectoryID               *uint64    `gorm:"index"                                                     json:"directoryId"`
 	Directory                 *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty" swaggerignore:"true"`
 	ItemParts                 []ItemPart `gorm:"constraint:OnDelete:CASCADE"                               json:"itemParts,omitempty"`
@@ -328,13 +328,13 @@ type Directory struct {
 	ID        uint64     `gorm:"primaryKey"                                      json:"id"`
 	UpdatedAt time.Time  `json:"updatedAt"`
 	CID       CID        `gorm:"column:cid;type:bytes"                           json:"cid"`
-	SourceID  uint32     `gorm:"index"                                           json:"sourceId"`
+	SourceID  uint32     `gorm:"index:daggen"                                    json:"sourceId"`
 	Source    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE" json:"source,omitempty" swaggerignore:"true"`
 	Data      []byte     `gorm:"column:data"                                     json:"-"                swaggerignore:"true"`
 	Name      string     `json:"name"`
 	ParentID  *uint64    `gorm:"index"                                           json:"parentId"`
 	Parent    *Directory `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE" json:"parent,omitempty" swaggerignore:"true"`
-	Exported  bool       `json:"exported"`
+	Exported  bool       `gorm:"index:daggen"                                    json:"exported"`
 }
 
 func (s *Source) LoadRootDirectory(db *gorm.DB) error {
@@ -378,9 +378,9 @@ type Car struct {
 	FilePath  string    `json:"filePath"`
 	DatasetID uint32    `gorm:"index"                                            json:"datasetId"`
 	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
-	SourceID  *uint32   `gorm:"index"                                            json:"sourceId"`
+	SourceID  *uint32   `gorm:"index:find_dag"                                   json:"sourceId"`
 	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"  json:"source,omitempty"  swaggerignore:"true"`
-	ChunkID   *uint32   `json:"chunkId"`
+	ChunkID   *uint32   `gorm:"index:find_dag"                                   json:"chunkId"`
 	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"   json:"chunk,omitempty"   swaggerignore:"true"`
 	Header    []byte    `json:"header"`
 }
@@ -393,7 +393,7 @@ type Car struct {
 type CarBlock struct {
 	_     struct{} `cbor:",toarray"                                     json:"-"             swaggerignore:"true"`
 	ID    uint64   `gorm:"primaryKey"                                   json:"id"`
-	CarID uint32   `json:"carId"`
+	CarID uint32   `gorm:"index"                                        json:"carId"`
 	Car   *Car     `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE" json:"car,omitempty" swaggerignore:"true"`
 	CID   CID      `gorm:"index;column:cid;type:bytes;size:255"         json:"cid"`
 	// Offset of the varint inside the CAR

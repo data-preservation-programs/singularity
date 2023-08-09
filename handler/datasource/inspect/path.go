@@ -66,11 +66,12 @@ func getPathHandler(
 	dirID := source.RootDirectory().ID
 	for i, segment := range segments {
 		var subdir model.Directory
+		// TODO: name is not indexed. We may not need to add index if this path is not used frequently.
 		err = db.Where("parent_id = ? AND name = ?", dirID, segment).First(&subdir).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			if i == len(segments)-1 {
 				var items []model.Item
-				err = db.Where("directory_id = ? AND path = ?", dirID, strings.Join(segments, "/")).Find(&items).Error
+				err = db.Where("source_id = ? AND path = ?", sourceID, strings.Join(segments, "/")).Find(&items).Error
 				if err != nil {
 					return nil, err
 				}
