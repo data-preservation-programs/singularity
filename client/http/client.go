@@ -43,12 +43,12 @@ func (c *Client) jsonRequest(ctx context.Context, method string, endpoint string
 
 func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset", request)
-	defer func() {
-		_ = response.Body.Close()
-	}()
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
@@ -62,12 +62,12 @@ func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateReques
 
 func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, params datasource.LocalRequest) (*model.Source, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/local/dataset/"+datasetName, params)
-	defer func() {
-		_ = response.Body.Close()
-	}()
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}

@@ -2,10 +2,10 @@ package testutil
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/api"
 	"github.com/data-preservation-programs/singularity/client"
@@ -24,9 +24,11 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 			err := <-httpErr
 			require.ErrorIs(t, err, http.ErrServerClosed)
 		}()
+		listener, err := net.Listen("tcp", "127.0.0.1:0")
+		require.NoError(t, err)
 		server, err := api.InitServer(api.APIParams{
 			ConnString: "sqlite:" + filepath.Join(t.TempDir(), "singularity.db"),
-			Bind:       "127.0.0.1:9090",
+			Listener:   listener,
 			LotusAPI:   "https://api.node.glif.io/rpc/v1",
 		})
 		require.NoError(t, err)
@@ -34,8 +36,7 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 			err := server.Run(ctx)
 			httpErr <- err
 		}()
-		time.Sleep(time.Second)
-		client := httpclient.NewHTTPClient(http.DefaultClient, "http://127.0.0.1:9090")
+		client := httpclient.NewHTTPClient(http.DefaultClient, "http://"+listener.Addr().String())
 		test(t, client)
 	})
 	t.Run("lib", func(t *testing.T) {

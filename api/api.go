@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -40,7 +41,7 @@ import (
 
 type Server struct {
 	db                        *gorm.DB
-	bind                      string
+	listener                  net.Listener
 	datasourceHandlerResolver datasource.HandlerResolver
 	lotusClient               jsonrpc.RPCClient
 	dealMaker                 replication.DealMaker
@@ -69,9 +70,13 @@ func Run(c *cli.Context) error {
 	lotusAPI := c.String("lotus-api")
 	lotusToken := c.String("lotus-token")
 
+	listener, err := net.Listen("tcp", bind)
+	if err != nil {
+		return err
+	}
 	server, err := InitServer(APIParams{
 		ConnString: connString,
-		Bind:       bind,
+		Listener:   listener,
 		LotusAPI:   lotusAPI,
 		LotusToken: lotusToken,
 	})
@@ -85,7 +90,7 @@ func Run(c *cli.Context) error {
 
 type APIParams struct {
 	Ctx        context.Context
-	Bind       string
+	Listener   net.Listener
 	LotusAPI   string
 	LotusToken string
 	ConnString string
@@ -104,7 +109,7 @@ func InitServer(params APIParams) (Server, error) {
 		return Server{}, errors.Wrap(err, "failed to init host")
 	}
 
-	return Server{db: db, bind: params.Bind,
+	return Server{db: db, listener: params.Listener,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 		lotusClient:               util.NewLotusClient(params.LotusAPI, params.LotusToken),
 		dealMaker: replication.NewDealMaker(
@@ -323,7 +328,7 @@ func (s Server) Run(ctx context.Context) error {
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
-
+	e.Listener = s.listener
 	shutdownDone := make(chan struct{})
 	defer func() {
 		<-shutdownDone
@@ -342,8 +347,7 @@ func (s Server) Run(ctx context.Context) error {
 		}
 		close(shutdownDone)
 	}()
-
-	return e.Start(s.bind)
+	return e.Start("")
 }
 
 func isIntKind(kind reflect.Kind) bool {
