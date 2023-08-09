@@ -345,7 +345,7 @@ func (s *ContentProviderService) handleGetCid(c echo.Context) error {
 	}
 
 	var item model.Item
-	err = s.DB.WithContext(c.Request().Context()).Joins("Source").Where("cid = ?", cid.String()).First(&item).Error
+	err = s.DB.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "CID not found")
 	}
