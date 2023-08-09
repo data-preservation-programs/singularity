@@ -9,6 +9,7 @@ USAGE:
    singularity datasource inspect chunks [command options] <source_id>
 
 OPTIONS:
-   --help, -h  show help
+   --state value, -s value  Filter chunks by state. Valid values are: created, ready, processing, complete, error (default: All states)
+   --help, -h               show help
 ```
 {% endcode %}

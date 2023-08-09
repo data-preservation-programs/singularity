@@ -82,6 +82,8 @@ type ClientService interface {
 
 	PostSourceIDPush(params *PostSourceIDPushParams, opts ...ClientOption) (*PostSourceIDPushCreated, error)
 
+	PostSourceIDRepack(params *PostSourceIDRepackParams, opts ...ClientOption) (*PostSourceIDRepackOK, error)
+
 	PostSourceIDRescan(params *PostSourceIDRescanParams, opts ...ClientOption) (*PostSourceIDRescanOK, error)
 
 	PostSourceInternetarchiveDatasetDatasetName(params *PostSourceInternetarchiveDatasetDatasetNameParams, opts ...ClientOption) (*PostSourceInternetarchiveDatasetDatasetNameOK, error)
@@ -1128,6 +1130,44 @@ func (a *Client) PostSourceIDPush(params *PostSourceIDPushParams, opts ...Client
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PostSourceIDPush: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PostSourceIDRepack triggers a repack of a chunk or all errored chunks of a data source
+*/
+func (a *Client) PostSourceIDRepack(params *PostSourceIDRepackParams, opts ...ClientOption) (*PostSourceIDRepackOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostSourceIDRepackParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostSourceIDRepack",
+		Method:             "POST",
+		PathPattern:        "/source/{id}/repack",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostSourceIDRepackReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostSourceIDRepackOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostSourceIDRepack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

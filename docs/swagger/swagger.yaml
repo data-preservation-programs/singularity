@@ -3813,6 +3813,11 @@ definitions:
     - scanningState
     - sourcePath
     type: object
+  datasource.RepackRequest:
+    properties:
+      chunkId:
+        type: integer
+    type: object
   datasource.S3Request:
     properties:
       accessKeyId:
@@ -4823,6 +4828,11 @@ definitions:
       path:
         type: string
     type: object
+  inspect.GetSourceChunksRequest:
+    properties:
+      state:
+        type: string
+    type: object
   model.CID:
     type: object
   model.Car:
@@ -5169,7 +5179,7 @@ definitions:
     type: object
   model.WorkState:
     enum:
-    - ""
+    - created
     - ready
     - processing
     - complete
@@ -6097,6 +6107,36 @@ paths:
           schema:
             type: string
       summary: Push an item to be queued
+      tags:
+      - Data Source
+  /source/{id}/repack:
+    post:
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.RepackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Chunk'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Trigger a repack of a chunk or all errored chunks of a data source
       tags:
       - Data Source
   /source/{id}/rescan:

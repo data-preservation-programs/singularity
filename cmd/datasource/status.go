@@ -41,6 +41,10 @@ var StatusCmd = &cli.Command{
 		cliutil.PrintToConsole(result.ChunkSummary, c.Bool("json"), nil)
 		fmt.Println("Items by state:")
 		cliutil.PrintToConsole(result.ItemSummary, c.Bool("json"), nil)
+		if len(result.FailedChunks) > 0 {
+			fmt.Println("Failed chunks:")
+			cliutil.PrintToConsole(result.FailedChunks, c.Bool("json"), nil)
+		}
 		return nil
 	},
 }

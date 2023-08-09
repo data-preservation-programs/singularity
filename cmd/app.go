@@ -22,6 +22,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/mattn/go-shellwords"
 	"github.com/pkg/errors"
+	"github.com/rclone/rclone/lib/terminal"
 	"github.com/urfave/cli/v2"
 )
 
@@ -159,6 +160,7 @@ Network Support:
 				datasource.UpdateCmd,
 				datasource.RescanCmd,
 				datasource.DagGenCmd,
+				datasource.RepackCmd,
 				{
 					Name:  "inspect",
 					Usage: "Get preparation status of a data source",
@@ -218,8 +220,8 @@ func SetupHelpPager() {
 		var helpText bytes.Buffer
 		originalHelpPrinter(&helpText, templ, data)
 		numLines := strings.Count(helpText.String(), "\n")
-		const maxLinesWithoutPager = 40
-		if numLines <= maxLinesWithoutPager {
+		_, maxLinesWithoutPager := terminal.GetSize()
+		if numLines < maxLinesWithoutPager-1 {
 			w.Write(helpText.Bytes())
 			return
 		}
