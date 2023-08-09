@@ -262,7 +262,6 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/source/:id/repack", s.toEchoHandler(datasource2.RepackHandler))
 	e.POST("/api/source/:id/chunk", s.toEchoHandler(datasource2.ChunkHandler))
 
-
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
 

@@ -64,7 +64,6 @@ func chunkHandler(
 					}
 				}
 				return nil
-				return nil
 			},
 		)
 	})
