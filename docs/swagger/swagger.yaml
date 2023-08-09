@@ -2286,6 +2286,13 @@ definitions:
         description: Path relative to the data source root
         type: string
     type: object
+  datasource.ChunkRequest:
+    properties:
+      itemIDs:
+        items:
+          type: integer
+        type: array
+    type: object
   datasource.ChunksByState:
     properties:
       count:
@@ -5951,6 +5958,40 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Check the connection of the data source by listing a path
+      tags:
+      - Data Source
+  /source/{id}/chunk:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.ChunkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Item'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a chunk for the specified items
       tags:
       - Data Source
   /source/{id}/chunks:
