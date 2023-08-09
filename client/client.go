@@ -6,6 +6,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
@@ -19,4 +20,6 @@ type Client interface {
 	ListSourcesByDataset(ctx context.Context, datasetName string) ([]model.Source, error)
 	GetItem(ctx context.Context, id uint64) (*model.Item, error)
 	PushItem(ctx context.Context, sourceID uint32, itemInfo datasource.ItemInfo) (*model.Item, error)
+	GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error)
+	Chunk(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) (*model.Chunk, error)
 }

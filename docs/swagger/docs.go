@@ -3142,6 +3142,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/source/{id}/chunk": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Create a chunk for the specified items",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.ChunkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Item"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/source/{id}/chunks": {
             "get": {
                 "consumes": [
@@ -6532,6 +6584,17 @@ const docTemplate = `{
                 }
             }
         },
+        "datasource.ChunkRequest": {
+            "type": "object",
+            "properties": {
+                "itemIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "datasource.ChunksByState": {
             "type": "object",
             "properties": {
@@ -9852,7 +9915,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "state": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.WorkState"
                 }
             }
         },
