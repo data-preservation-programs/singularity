@@ -12,6 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
@@ -143,18 +144,43 @@ func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo datasou
 	return &item, nil
 }
 
-func (c *Client) ChunkHandler(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) error {
+func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/chunks", request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var chunks []model.Chunk
+	err = json.NewDecoder(response.Body).Decode(&chunks)
+	if err != nil {
+		return nil, err
+	}
+	return chunks, nil
+}
+
+func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) (*model.Chunk, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/chunk", request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		_ = response.Body.Close()
 	}()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return parseHTTPError(response)
+		return nil, parseHTTPError(response)
 	}
-	return nil
+	var chunk model.Chunk
+	err = json.NewDecoder(response.Body).Decode(&chunk)
+	if err != nil {
+		return nil, err
+	}
+	return &chunk, nil
 }
 
 type HTTPError struct {

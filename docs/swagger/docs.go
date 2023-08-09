@@ -9915,7 +9915,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "state": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.WorkState"
                 }
             }
         },

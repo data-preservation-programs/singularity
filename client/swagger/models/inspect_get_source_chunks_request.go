@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -18,16 +19,69 @@ import (
 type InspectGetSourceChunksRequest struct {
 
 	// state
-	State string `json:"state,omitempty"`
+	State ModelWorkState `json:"state,omitempty"`
 }
 
 // Validate validates this inspect get source chunks request
 func (m *InspectGetSourceChunksRequest) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateState(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this inspect get source chunks request based on context it is used
+func (m *InspectGetSourceChunksRequest) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	if err := m.State.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("state")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("state")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this inspect get source chunks request based on the context it is used
 func (m *InspectGetSourceChunksRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateState(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *InspectGetSourceChunksRequest) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	if err := m.State.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("state")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("state")
+		}
+		return err
+	}
+
 	return nil
 }
 

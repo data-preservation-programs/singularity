@@ -50,10 +50,9 @@ func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, para
 	return dshandler.CreateDatasourceHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, "local", datasetName, paramsMap)
 }
 
-func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32) ([]model.Chunk, error) {
-	return inspect.GetSourceChunksHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
+func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {
+	return inspect.GetSourceChunksHandler(c.db.WithContext(ctx), sourceID, request)
 }
-
 func (c *Client) GetSourceItems(ctx context.Context, sourceID uint32) ([]model.Item, error) {
 	return inspect.GetSourceItemsHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
 }

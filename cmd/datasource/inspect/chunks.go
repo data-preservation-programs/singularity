@@ -2,6 +2,7 @@ package inspect
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
@@ -16,8 +17,9 @@ var ChunksCmd = &cli.Command{
 	Usage:     "Get all chunk details of a data source",
 	ArgsUsage: "<source_id>",
 	Flags: []cli.Flag{
-		&cli.StringFlag{
+		&cli.GenericFlag{
 			Name:        "state",
+			Value:       new(model.WorkState),
 			Usage:       "Filter chunks by state. Valid values are: " + strings.Join(model.WorkStateStrings, ", "),
 			Aliases:     []string{"s"},
 			DefaultText: "All states",
@@ -29,10 +31,14 @@ var ChunksCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
+		sourceID, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
+		if err != nil {
+			return err
+		}
 		result, err := inspect.GetSourceChunksHandler(
 			db,
-			c.Args().Get(0),
-			inspect.GetSourceChunksRequest{State: c.String("state")},
+			uint32(sourceID),
+			inspect.GetSourceChunksRequest{State: *(c.Generic("state").(*model.WorkState))},
 		)
 		if err != nil {
 			return err

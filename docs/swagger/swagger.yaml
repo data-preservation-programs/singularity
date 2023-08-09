@@ -4838,7 +4838,7 @@ definitions:
   inspect.GetSourceChunksRequest:
     properties:
       state:
-        type: string
+        $ref: '#/definitions/model.WorkState'
     type: object
   model.CID:
     type: object

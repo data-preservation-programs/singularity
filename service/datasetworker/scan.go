@@ -7,7 +7,6 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 )
