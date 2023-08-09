@@ -99,7 +99,7 @@ type Schedule struct {
 	AnnounceToIPNI       bool          `json:"announceToIpni"`
 	StartDelay           time.Duration `json:"startDelay"                                       swaggertype:"primitive,integer"`
 	Duration             time.Duration `json:"duration"                                         swaggertype:"primitive,integer"`
-	State                ScheduleState `json:"state"`
+	State                ScheduleState `gorm:"index"                                            json:"state"`
 	ScheduleCron         string        `json:"scheduleCron"`
 	ScheduleDealNumber   int           `json:"scheduleDealNumber"`
 	ScheduleDealSize     int64         `json:"scheduleDealSize"`
@@ -112,7 +112,7 @@ type Schedule struct {
 
 type Wallet struct {
 	ID         string `gorm:"primaryKey;size:15"   json:"id"` // ID is the short ID of the wallet
-	Address    string `json:"address"`                        // Address is the Filecoin full address of the wallet
+	Address    string `gorm:"index"                json:"address"`           // Address is the Filecoin full address of the wallet
 	PrivateKey string `json:"privateKey,omitempty"`           // PrivateKey is the private key of the wallet
 	RemotePeer string `json:"remotePeer,omitempty"`           // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
@@ -121,6 +121,6 @@ type WalletAssignment struct {
 	ID        uint32   `gorm:"primaryKey"                                       json:"id"`
 	WalletID  string   `json:"walletId"`
 	Wallet    *Wallet  `gorm:"foreignKey:WalletID;constraint:OnDelete:CASCADE"  json:"wallet,omitempty"  swaggerignore:"true"`
-	DatasetID uint32   `json:"datasetId"`
+	DatasetID uint32   `gorm:"index"                                            json:"datasetId"`
 	Dataset   *Dataset `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
 }
