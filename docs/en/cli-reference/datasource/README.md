@@ -17,6 +17,7 @@ COMMANDS:
    update   Update the config options of a source
    rescan   Rescan a data source
    daggen   Generate and export the DAG which represents the full folder structure of the data source
+   repack   Retry packing a chunk or all errored chunks of a data source
    inspect  Get preparation status of a data source
    help, h  Shows a list of commands or help for one command
 

@@ -3379,6 +3379,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/source/{id}/repack": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Trigger a repack of a chunk or all errored chunks of a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.RepackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Chunk"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/source/{id}/rescan": {
             "post": {
                 "produces": [
@@ -8472,6 +8518,14 @@ const docTemplate = `{
                 }
             }
         },
+        "datasource.RepackRequest": {
+            "type": "object",
+            "properties": {
+                "chunkId": {
+                    "type": "integer"
+                }
+            }
+        },
         "datasource.S3Request": {
             "type": "object",
             "required": [
@@ -9794,6 +9848,14 @@ const docTemplate = `{
                 }
             }
         },
+        "inspect.GetSourceChunksRequest": {
+            "type": "object",
+            "properties": {
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
         "model.CID": {
             "type": "object"
         },
@@ -10304,7 +10366,7 @@ const docTemplate = `{
         "model.WorkState": {
             "type": "string",
             "enum": [
-                "",
+                "created",
                 "ready",
                 "processing",
                 "complete",
