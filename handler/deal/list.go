@@ -45,6 +45,7 @@ func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 		statement = statement.Where("state IN ?", request.States)
 	}
 
+	// We did not create indexes for all above query and it should be fine for now
 	err := db.Where(statement).Find(&deals).Error
 	if err != nil {
 		return nil, err
