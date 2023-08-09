@@ -78,6 +78,8 @@ type ClientService interface {
 
 	PostSourceIDCheck(params *PostSourceIDCheckParams, opts ...ClientOption) (*PostSourceIDCheckOK, error)
 
+	PostSourceIDChunk(params *PostSourceIDChunkParams, opts ...ClientOption) (*PostSourceIDChunkCreated, error)
+
 	PostSourceIDDaggen(params *PostSourceIDDaggenParams, opts ...ClientOption) (*PostSourceIDDaggenOK, error)
 
 	PostSourceIDPush(params *PostSourceIDPushParams, opts ...ClientOption) (*PostSourceIDPushCreated, error)
@@ -1052,6 +1054,44 @@ func (a *Client) PostSourceIDCheck(params *PostSourceIDCheckParams, opts ...Clie
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PostSourceIDCheck: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PostSourceIDChunk creates a chunk for the specified items
+*/
+func (a *Client) PostSourceIDChunk(params *PostSourceIDChunkParams, opts ...ClientOption) (*PostSourceIDChunkCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostSourceIDChunkParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostSourceIDChunk",
+		Method:             "POST",
+		PathPattern:        "/source/{id}/chunk",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostSourceIDChunkReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostSourceIDChunkCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostSourceIDChunk: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
