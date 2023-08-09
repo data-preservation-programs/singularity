@@ -183,6 +183,25 @@ func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.
 	return &chunk, nil
 }
 
+func (c *Client) Pack(ctx context.Context, chunkID uint64) ([]model.Car, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/chunk/"+strconv.FormatUint(chunkID, 10)+"/pack", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var cars []model.Car
+	err = json.NewDecoder(response.Body).Decode(&cars)
+	if err != nil {
+		return nil, err
+	}
+	return cars, nil
+}
+
 type HTTPError struct {
 	Err string `json:"err"`
 }
