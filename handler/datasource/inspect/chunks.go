@@ -51,9 +51,9 @@ func getSourceChunksHandler(
 
 	var chunks []model.Chunk
 	if request.State == "" {
-		err = db.Preload("Cars").Where("source_id = ?", sourceID).Find(&chunks).Error
+		err = db.Where("source_id = ?", sourceID).Find(&chunks).Error
 	} else {
-		err = db.Preload("Cars").Where("source_id = ? AND packing_state = ?", sourceID, request.State).Find(&chunks).Error
+		err = db.Where("source_id = ? AND packing_state = ?", sourceID, request.State).Find(&chunks).Error
 	}
 
 	if err != nil {

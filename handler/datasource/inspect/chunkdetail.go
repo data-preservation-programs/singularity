@@ -5,6 +5,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -33,12 +34,36 @@ func getSourceChunkDetailHandler(
 		return nil, handler.NewInvalidParameterErr("invalid chunk id")
 	}
 	var chunk model.Chunk
-	err = db.Preload("Cars").Preload("ItemParts.Item").Where("id = ?", chunkID).First(&chunk).Error
+	err = db.Preload("Cars").Preload("ItemParts").Where("id = ?", chunkID).First(&chunk).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr("chunk not found")
 	}
 	if err != nil {
 		return nil, err
+	}
+
+	itemMap := make(map[uint64]*model.Item)
+	for _, part := range chunk.ItemParts {
+		itemMap[part.ItemID] = nil
+	}
+
+	itemIDChunks := util.ChunkMapKeys(itemMap, util.BatchSize)
+	for _, itemIDChunk := range itemIDChunks {
+		var items []model.Item
+		err = db.Where("id IN ?", itemIDChunk).Find(&items).Error
+		if err != nil {
+			return nil, err
+		}
+		for i, item := range items {
+			itemMap[item.ID] = &items[i]
+		}
+	}
+
+	for i, part := range chunk.ItemParts {
+		item, ok := itemMap[part.ItemID]
+		if ok {
+			chunk.ItemParts[i].Item = item
+		}
 	}
 
 	return &chunk, nil

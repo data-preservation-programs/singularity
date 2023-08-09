@@ -44,12 +44,6 @@ var ChunksCmd = &cli.Command{
 		}
 		fmt.Println("Chunks:")
 		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
-		fmt.Println("Pieces:")
-		var cars []model.Car
-		for _, chunk := range result {
-			cars = append(cars, chunk.Cars...)
-		}
-		cliutil.PrintToConsole(cars, false, nil)
 
 		return nil
 	},
