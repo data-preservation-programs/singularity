@@ -4,14 +4,14 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/data-preservation-programs/singularity.svg)](https://pkg.go.dev/github.com/data-preservation-programs/singularity)
 [![Build](https://github.com/data-preservation-programs/singularity/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/data-preservation-programs/singularity/actions/workflows/go.yml)
 
-The new pure-go implementation of Singularity provides everything you need to onboard your, or your client's data to Filecoin network
+The new pure-go implementation of Singularity provides everything you need to onboard your, or your client's data to Filecoin network.
 
 ## Documentation
 [Read the Doc](https://data-programs.gitbook.io/singularity/overview/readme)
 
 ## Related projects
 - [js-singularity](https://github.com/tech-greedy/singularity) -
-The predecessor that was implemented in NodeJS
+The predecessor that was implemented in Node.js
 - [js-singularity-import-boost](https://github.com/tech-greedy/singularity-import) -
 Automatically import deals to boost for Filecoin storage providers
 - [js-singularity-browser](https://github.com/tech-greedy/singularity-browser) -
