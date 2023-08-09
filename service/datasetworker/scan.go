@@ -19,8 +19,8 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
-	err := w.db.Joins("Item").Preload("Item").
-		Where("source_id = ? AND chunk_id is null", source.ID).
+	err := w.db.Joins("Item").
+		Where("source_id = ? AND item_parts.chunk_id is null", source.ID).
 		Order("item_parts.id asc").
 		Find(&remainingParts).Error
 	if err != nil {

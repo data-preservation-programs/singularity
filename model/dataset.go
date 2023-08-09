@@ -378,9 +378,9 @@ type Car struct {
 	FilePath  string    `json:"filePath"`
 	DatasetID uint32    `gorm:"index"                                            json:"datasetId"`
 	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
-	SourceID  *uint32   `gorm:"index:find_dag"                                   json:"sourceId"`
+	SourceID  *uint32   `gorm:"index"                                            json:"sourceId"`
 	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"  json:"source,omitempty"  swaggerignore:"true"`
-	ChunkID   *uint32   `gorm:"index:find_dag"                                   json:"chunkId"`
+	ChunkID   *uint32   `gorm:"index"                                            json:"chunkId"`
 	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"   json:"chunk,omitempty"   swaggerignore:"true"`
 	Header    []byte    `json:"header"`
 }

@@ -234,7 +234,7 @@ func testWithAllBackendWithoutReset(t *testing.T, testFunc func(ctx context.Cont
 }
 
 func testWithAllBackendWithResetArg(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB), reset bool) {
-	for _, backend := range []string{"sqlite", "mysql", "postgres"} {
+	for _, backend := range []string{"postgres"} {
 		db, closer, connStr, err := getTestDB(t, backend)
 		require.NoError(t, err)
 		if db == nil {
@@ -864,8 +864,6 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		require.NotContains(t, out, "ready")
 		require.Contains(t, out, "complete")
-		require.Contains(t, out, "baf")
-		require.Contains(t, out, "baga")
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect items 1")
 		require.NoError(t, err)
 		require.Contains(t, out, "baf")

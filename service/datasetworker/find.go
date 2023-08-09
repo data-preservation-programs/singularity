@@ -99,12 +99,12 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 		return nil, nil
 	}
 
-	err = w.db.Model(&chunks[0]).Preload("Dataset").Association("Source").Find(&chunks[0].Source)
+	err = w.db.Model(&chunks[0]).Joins("Dataset").Association("Source").Find(&chunks[0].Source)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.db.Model(&chunks[0]).Preload("Item").Association("ItemParts").Find(&chunks[0].ItemParts)
+	err = w.db.Model(&chunks[0]).Joins("Item").Association("ItemParts").Find(&chunks[0].ItemParts)
 	if err != nil {
 		return nil, err
 	}

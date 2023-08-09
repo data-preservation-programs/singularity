@@ -34,6 +34,14 @@ func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
 	}
 }
 
+func ChunkMapKeys[T1 comparable, T2 any](m map[T1]T2, chunkSize int) [][]T1 {
+	keys := make([]T1, 0, len(m))
+	for key, _ := range m {
+		keys = append(keys, key)
+	}
+	return ChunkSlice(keys, chunkSize)
+}
+
 func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
 	var chunks [][]T
 
