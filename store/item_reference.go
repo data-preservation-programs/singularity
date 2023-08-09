@@ -26,7 +26,7 @@ func (i ItemReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, er
 
 func (i ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var carBlock model.CarBlock
-	err := i.DB.WithContext(ctx).Preload("Item.Source").Where("Cid = ?", cid.String()).First(&carBlock).Error
+	err := i.DB.WithContext(ctx).Joins("Item.Source").Where("car_blocks.cid = ?", cid.String()).First(&carBlock).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, format.ErrNotFound{Cid: cid}
 	}

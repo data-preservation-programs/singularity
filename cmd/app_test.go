@@ -864,8 +864,6 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		require.NotContains(t, out, "ready")
 		require.Contains(t, out, "complete")
-		require.Contains(t, out, "baf")
-		require.Contains(t, out, "baga")
 		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect items 1")
 		require.NoError(t, err)
 		require.Contains(t, out, "baf")

@@ -51,7 +51,7 @@ func pushItemHandler(
 	itemInfo ItemInfo,
 ) (*model.Item, error) {
 	var source model.Source
-	err := db.Preload("Dataset").Where("id = ?", sourceID).First(&source).Error
+	err := db.Joins("Dataset").Where("sources.id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("source %d not found.", sourceID))
 	}
