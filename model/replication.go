@@ -111,10 +111,10 @@ type Schedule struct {
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey;size:15"   json:"id"` // ID is the short ID of the wallet
-	Address    string `gorm:"index"                json:"address"`           // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty"`           // PrivateKey is the private key of the wallet
-	RemotePeer string `json:"remotePeer,omitempty"`           // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
+	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // ID is the short ID of the wallet
+	Address    string `gorm:"index"                json:"address"` // Address is the Filecoin full address of the wallet
+	PrivateKey string `json:"privateKey,omitempty"`                // PrivateKey is the private key of the wallet
+	RemotePeer string `json:"remotePeer,omitempty"`                // RemotePeer is the remote peer ID of the wallet, for remote signing purpose
 }
 
 type WalletAssignment struct {
