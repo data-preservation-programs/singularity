@@ -22,7 +22,7 @@ func PackHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	chunkID uint64,
+	chunkID uint32,
 ) ([]model.Car, error) {
 	return packHandler(db, ctx, resolver, chunkID)
 }
@@ -40,10 +40,10 @@ func packHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	chunkID uint64,
+	chunkID uint32,
 ) ([]model.Car, error) {
 	var chunk model.Chunk
-	err := db.Where("id = ?", chunkID).Find(&chunk).Error
+	err := db.Where("id = ?", chunkID).Preload("Source.Dataset").Preload("ItemParts.Item").Find(&chunk).Error
 	if err != nil {
 		return nil, err
 	}

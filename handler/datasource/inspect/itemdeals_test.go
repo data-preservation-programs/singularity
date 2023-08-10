@@ -6,16 +6,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"testing"
 
 	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
-	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service/datasetworker"
+	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,27 +53,27 @@ func TestItemDeals(t *testing.T) {
 	itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "a"})
 	require.NoError(t, err)
 
-	_, err = client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "b"})
+	itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "b"})
 	require.NoError(t, err)
 
-	dsworker := datasetworker.NewDatasetWorker(db, datasetworker.DatasetWorkerConfig{
-		Concurrency:    1,
-		EnableScan:     true,
-		EnablePack:     true,
-		EnableDag:      true,
-		ExitOnComplete: true,
-		ExitOnError:    true,
+	chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{
+		ItemIDs: append(underscore.Map(itemA.ItemParts, func(itemPart model.ItemPart) uint64 { return itemPart.ID }),
+			underscore.Map(itemB.ItemParts, func(itemPart model.ItemPart) uint64 { return itemPart.ID })...),
 	})
-
-	require.NoError(t, dsworker.Run(ctx))
-
-	chunks, err := inspect.GetSourceChunksHandler(db, strconv.FormatUint(uint64(source.ID), 10))
+	require.NoError(t, err)
+	cars, err := client.Pack(ctx, chunk.ID)
 	require.NoError(t, err)
 
 	// Manually add fake deals
-	for _, car := range chunks[0].Cars {
-		err := db.Create(&model.Deal{
+	for _, car := range cars {
+		wallet := model.Wallet{
+			ID: "Apples",
+		}
+		err := db.Create(&wallet).Error
+		require.NoError(t, err)
+		err = db.Create(&model.Deal{
 			PieceCID: car.PieceCID,
+			ClientID: wallet.ID,
 		}).Error
 		require.NoError(t, err)
 	}
@@ -84,6 +82,9 @@ func TestItemDeals(t *testing.T) {
 	deals, err := client.GetItemDeals(ctx, itemA.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
-
 	fmt.Printf("%#v\n", deals)
+
+	deals, err = client.GetItemDeals(ctx, itemB.ID)
+	require.NoError(t, err)
+	require.Len(t, deals, 1)
 }

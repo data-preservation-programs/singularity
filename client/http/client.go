@@ -183,8 +183,8 @@ func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.
 	return &chunk, nil
 }
 
-func (c *Client) Pack(ctx context.Context, chunkID uint64) ([]model.Car, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/chunk/"+strconv.FormatUint(chunkID, 10)+"/pack", nil)
+func (c *Client) Pack(ctx context.Context, chunkID uint32) ([]model.Car, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/chunk/"+strconv.FormatUint(uint64(chunkID), 10)+"/pack", nil)
 	if err != nil {
 		return nil, err
 	}
