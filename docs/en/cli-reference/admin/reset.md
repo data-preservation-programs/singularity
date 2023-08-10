@@ -9,6 +9,7 @@ USAGE:
    singularity admin reset [command options] [arguments...]
 
 OPTIONS:
-   --help, -h  show help
+   --really-do-it  Really do it (default: false)
+   --help, -h      show help
 ```
 {% endcode %}

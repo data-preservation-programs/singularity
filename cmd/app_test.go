@@ -244,7 +244,7 @@ func testWithAllBackendWithResetArg(t *testing.T, testFunc func(ctx context.Cont
 		defer closer.Close()
 		os.Setenv("DATABASE_CONNECTION_STRING", connStr)
 		if reset {
-			_, _, err := RunArgsInTest(context.Background(), "singularity admin reset")
+			_, _, err := RunArgsInTest(context.Background(), "singularity admin reset --really-do-it")
 			require.NoError(t, err)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -528,10 +528,17 @@ func TestListDeals(t *testing.T) {
 	})
 }
 
+func TestResetDatabaseReallyDoIt(t *testing.T) {
+	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, _, err := RunArgsInTest(ctx, "singularity admin reset --really-do-it")
+		require.NoError(t, err)
+	})
+}
+
 func TestResetDatabase(t *testing.T) {
 	testWithAllBackendWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, _, err := RunArgsInTest(ctx, "singularity admin reset")
-		require.NoError(t, err)
+		require.ErrorContains(t, err, "really-do-it")
 	})
 }
 
@@ -591,7 +598,7 @@ func TestWalletCrud(t *testing.T) {
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list-wallet test")
 		require.NoError(t, err)
 		require.NotContains(t, out, "f0808055")
-		_, _, err = RunArgsInTest(ctx, "singularity wallet remove f0808055")
+		_, _, err = RunArgsInTest(ctx, "singularity wallet remove --really-do-it f0808055")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity wallet list ")
 		require.NoError(t, err)
@@ -651,7 +658,7 @@ func TestDatasetCrud(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, out, tmp)
 		require.Contains(t, out, "1000")
-		_, _, err = RunArgsInTest(ctx, "singularity dataset remove test")
+		_, _, err = RunArgsInTest(ctx, "singularity dataset remove --really-do-it test")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity dataset list")
 		require.NoError(t, err)
@@ -701,7 +708,7 @@ func TestDatasourceCrud(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, out, "case_sensitive:true")
 		require.Contains(t, out, "3600")
-		_, _, err = RunArgsInTest(ctx, "singularity datasource remove 1")
+		_, _, err = RunArgsInTest(ctx, "singularity datasource remove --really-do-it 1")
 		require.NoError(t, err)
 		out, _, err = RunArgsInTest(ctx, "singularity datasource list")
 		require.NoError(t, err)
