@@ -25,6 +25,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
+	github.com/gotidy/ptr v1.4.0
 	github.com/hannahhoward/cbor-gen-for v0.0.0-20230214144701-5d17c9d5243c
 	github.com/ipfs/go-block-format v0.1.2
 	github.com/ipfs/go-blockservice v0.5.0

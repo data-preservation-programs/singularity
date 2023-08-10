@@ -124,7 +124,7 @@ func (s *ContentProviderService) StartBitswap(ctx context.Context) error {
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.DefaultHandlerResolver{}}
+	bs := &store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.DefaultHandlerResolver{}}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
 	return nil
