@@ -12,6 +12,7 @@ DESCRIPTION:
    Important! If the dataset is large, this command will take some time to remove all relevant data.
 
 OPTIONS:
-   --help, -h  show help
+   --really-do-it  Really do it (default: false)
+   --help, -h      show help
 ```
 {% endcode %}

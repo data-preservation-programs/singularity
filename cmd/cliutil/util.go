@@ -9,8 +9,21 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
+
+var ReallyDotItFlag = &cli.BoolFlag{
+	Name:  "really-do-it",
+	Usage: "Really do it",
+}
+
+func HandleReallyDoIt(context *cli.Context) error {
+	if !context.Bool("really-do-it") {
+		return cli.Exit("You must pass --really-do-it to do this.", 1)
+	}
+	return nil
+}
 
 func PrintAsJSON(obj any) {
 	objJSON, err := json.MarshalIndent(obj, "", "  ")
