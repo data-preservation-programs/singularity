@@ -23,4 +23,5 @@ type Client interface {
 	GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error)
 	Chunk(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) (*model.Chunk, error)
 	Pack(ctx context.Context, chunkID uint32) ([]model.Car, error)
+	GetItemDeals(ctx context.Context, id uint64) ([]model.Deal, error)
 }

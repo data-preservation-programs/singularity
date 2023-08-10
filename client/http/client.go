@@ -202,6 +202,29 @@ func (c *Client) Pack(ctx context.Context, chunkID uint32) ([]model.Car, error) 
 	return cars, nil
 }
 
+func (c *Client) GetItemDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/item/"+strconv.FormatUint(id, 10)+"/deals", nil)
+	if err != nil {
+		return nil, err
+	}
+	response, err := c.client.Do(httpRequest)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var deals []model.Deal
+	err = json.NewDecoder(response.Body).Decode(&deals)
+	if err != nil {
+		return nil, err
+	}
+	return deals, nil
+}
+
 type HTTPError struct {
 	Err string `json:"err"`
 }

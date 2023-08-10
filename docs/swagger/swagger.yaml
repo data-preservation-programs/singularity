@@ -5706,6 +5706,32 @@ paths:
       summary: Get details about an item
       tags:
       - Data Source
+  /item/{id}/deals:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Deal'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get all deals that have been made for an item
+      tags:
+      - Data Source
   /piece/{id}/metadata:
     get:
       description: Get metadata for a piece for how it may be reassembled from the

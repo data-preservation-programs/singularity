@@ -36,6 +36,8 @@ type ClientService interface {
 
 	GetItemID(params *GetItemIDParams, opts ...ClientOption) (*GetItemIDOK, error)
 
+	GetItemIDDeals(params *GetItemIDDealsParams, opts ...ClientOption) (*GetItemIDDealsOK, error)
+
 	GetSource(params *GetSourceParams, opts ...ClientOption) (*GetSourceOK, error)
 
 	GetSourceIDChunks(params *GetSourceIDChunksParams, opts ...ClientOption) (*GetSourceIDChunksOK, error)
@@ -258,6 +260,44 @@ func (a *Client) GetItemID(params *GetItemIDParams, opts ...ClientOption) (*GetI
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetItemID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetItemIDDeals gets all deals that have been made for an item
+*/
+func (a *Client) GetItemIDDeals(params *GetItemIDDealsParams, opts ...ClientOption) (*GetItemIDDealsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetItemIDDealsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetItemIDDeals",
+		Method:             "GET",
+		PathPattern:        "/item/{id}/deals",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetItemIDDealsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetItemIDDealsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetItemIDDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
