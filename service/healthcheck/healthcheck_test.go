@@ -12,21 +12,71 @@ import (
 	"gorm.io/gorm"
 )
 
+func TestHealthCheckCleanup(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		StartHealthCheckCleanup(ctx, db)
+		close(done)
+	}()
+	time.Sleep(time.Second)
+	cancel()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("healthcheck cleanup didn't stop")
+	}
+}
+func TestHealthCheckReport(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		StartReportHealth(ctx, db, uuid.New(), func() State {
+			return State{
+				WorkType:  model.Packing,
+				WorkingOn: "something",
+			}
+		})
+		close(done)
+	}()
+	time.Sleep(time.Second)
+	cancel()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("healthcheck report didn't stop")
+	}
+}
+
 func TestHealthCheck(t *testing.T) {
 	req := require.New(t)
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	defer database.DropAll(db)
 
 	id := uuid.New()
-	_, err = Register(context.Background(), db, id, func() State {
+	alreadyRunning, err := Register(context.Background(), db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something",
 		}
-	}, true)
+	}, false)
 	req.NoError(err)
+	req.False(alreadyRunning)
+	alreadyRunning, err = Register(context.Background(), db, uuid.New(), func() State {
+		return State{
+			WorkType:  model.Packing,
+			WorkingOn: "something",
+		}
+	}, false)
+	req.NoError(err)
+	req.True(alreadyRunning)
 
 	var worker model.Worker
 	err = db.Where("id = ?", id.String()).First(&worker).Error

@@ -236,26 +236,26 @@ func (d Dataset) UseEncryption() bool {
 
 // Source represents a source of data, i.e. a local file system directory.
 type Source struct {
-	_                    struct{}   `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
+	_                    struct{}   `cbor:",toarray"                                                               json:"-"                        swaggerignore:"true"`
 	ID                   uint32     `gorm:"primaryKey"                                                             json:"id"`
 	CreatedAt            time.Time  `json:"createdAt"`
 	UpdatedAt            time.Time  `json:"updatedAt"`
 	DatasetID            uint32     `gorm:"index"                                                                  json:"datasetId"`
-	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"                       json:"dataset,omitempty"          swaggerignore:"true"`
+	Dataset              *Dataset   `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"                       json:"dataset,omitempty"        swaggerignore:"true"`
 	Type                 SourceType `json:"type"`
 	Path                 string     `json:"path"`
 	Metadata             Metadata   `gorm:"type:JSON"                                                              json:"metadata"`
 	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
-	ScanningState        WorkState  `gorm:"index:source_cleanup"                                                   json:"scanningState"`
-	ScanningWorkerID     *string    `gorm:"index:source_cleanup"                                                   json:"scanningWorkerId,omitempty"`
-	ScanningWorker       *Worker    `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"scanningWorker,omitempty"   swaggerignore:"true"`
+	ScanningState        WorkState  `gorm:"index"                                                                  json:"scanningState"`
+	ScanningWorkerID     *string    `json:"scanningWorkerId,omitempty"`
+	ScanningWorker       *Worker    `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"scanningWorker,omitempty" swaggerignore:"true"`
 	LastScannedTimestamp int64      `json:"lastScannedTimestamp"`
 	LastScannedPath      string     `json:"lastScannedPath"`
 	ErrorMessage         string     `json:"errorMessage"`
 	DeleteAfterExport    bool       `json:"deleteAfterExport"`
-	DagGenState          WorkState  `gorm:"index:daggen_cleanup"                                                   json:"dagGenState"`
-	DagGenWorkerID       *string    `gorm:"index:daggen_cleanup"                                                   json:"dagGenWorkerId,omitempty"`
-	DagGenWorker         *Worker    `gorm:"foreignKey:DagGenWorkerID;references:ID;constraint:OnDelete:SET NULL"   json:"dagGenWorker,omitempty"     swaggerignore:"true"`
+	DagGenState          WorkState  `gorm:"index"                                                                  json:"dagGenState"`
+	DagGenWorkerID       *string    `json:"dagGenWorkerId,omitempty"`
+	DagGenWorker         *Worker    `gorm:"foreignKey:DagGenWorkerID;references:ID;constraint:OnDelete:SET NULL"   json:"dagGenWorker,omitempty"   swaggerignore:"true"`
 	DagGenErrorMessage   string     `json:"dagGenErrorMessage"`
 	rootDirectory        *Directory
 }
@@ -265,10 +265,10 @@ type Chunk struct {
 	ID              uint32     `gorm:"primaryKey"                                                            json:"id"`
 	CreatedAt       time.Time  `json:"createdAt"`
 	SourceID        uint32     `gorm:"index:source_summary_chunks"                                           json:"sourceId"`
-	Source          *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"                       json:"source,omitempty"          swaggerignore:"true"`
-	PackingState    WorkState  `gorm:"index:source_summary_chunks;index:chunk_cleanup"                       json:"packingState"`
-	PackingWorkerID *string    `gorm:"index:chunk_cleanup"                                                   json:"packingWorkerId,omitempty"`
-	PackingWorker   *Worker    `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty"   swaggerignore:"true"`
+	Source          *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"                       json:"source,omitempty"        swaggerignore:"true"`
+	PackingState    WorkState  `gorm:"index:source_summary_chunks;index"                                     json:"packingState"`
+	PackingWorkerID *string    `json:"packingWorkerId,omitempty"`
+	PackingWorker   *Worker    `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty" swaggerignore:"true"`
 	ErrorMessage    string     `json:"errorMessage"`
 	ItemParts       []ItemPart `gorm:"constraint:OnDelete:SET NULL"                                          json:"itemParts,omitempty"`
 	Cars            []Car      `gorm:"constraint:OnDelete:CASCADE"                                           json:"cars,omitempty"`
