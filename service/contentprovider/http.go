@@ -82,7 +82,7 @@ func (s *HTTPServer) Start(ctx context.Context) (service.Done, service.Fail, err
 	)
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		Skipper:           middleware.DefaultSkipper,
-		StackSize:         4 << 10, // 4 KB
+		StackSize:         4 << 10, // 4 KiB
 		DisableStackAll:   false,
 		DisablePrintStack: false,
 		LogLevel:          0,
