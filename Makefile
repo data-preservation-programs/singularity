@@ -9,6 +9,7 @@ generate:
 
 lint:
 	gofmt -s -w .
+	golangci-lint run --no-config --fix --disable-all -E tagalign
 	golangci-lint run --fix
 	staticcheck ./...
 
