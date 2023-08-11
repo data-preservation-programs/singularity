@@ -236,7 +236,7 @@ func testWithAllBackendWithoutReset(t *testing.T, testFunc func(ctx context.Cont
 func testWithAllBackendWithResetArg(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB), reset bool) {
 	for _, backend := range []string{"sqlite", "mysql", "postgres"} {
 		db, closer, connStr, err := getTestDB(t, backend)
-		if strings.Contains(err.Error(), "Unsupported dialect") {
+		if err != nil && strings.Contains(err.Error(), "Unsupported dialect") {
 			t.Log("Skip " + backend)
 			continue
 		}
