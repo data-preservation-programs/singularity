@@ -3,6 +3,7 @@ package dataset
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/pkg/errors"
@@ -120,7 +121,7 @@ func createHandler(
 	}
 
 	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
-	if errors.Is(err2, gorm.ErrDuplicatedKey) {
+	if errors.Is(err2, gorm.ErrDuplicatedKey) || (err2 != nil && strings.Contains(err2.Error(), "constraint failed")) {
 		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}
 
