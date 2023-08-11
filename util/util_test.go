@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 )
@@ -127,4 +128,22 @@ func TestChunkMapKeys(t *testing.T) {
 			require.Equal(t, len(tt.m), total)
 		})
 	}
+}
+func TestGenerateNewPeer(t *testing.T) {
+	privateBytes, publicBytes, peerID, err := GenerateNewPeer()
+
+	require.NoError(t, err, "GenerateNewPeer should not return an error")
+
+	privateKey, err := crypto.UnmarshalPrivateKey(privateBytes)
+	require.NoError(t, err, "UnmarshalPrivateKey should not return an error")
+	require.NotNil(t, privateKey, "privateKey should not be nil")
+
+	publicKey, err := crypto.UnmarshalPublicKey(publicBytes)
+	require.NoError(t, err, "UnmarshalPublicKey should not return an error")
+	require.NotNil(t, publicKey, "publicKey should not be nil")
+
+	require.NotEmpty(t, peerID, "peerID should not be empty")
+
+	err = peerID.Validate()
+	require.NoError(t, err)
 }

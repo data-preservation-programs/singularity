@@ -2,10 +2,11 @@ package datasource
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"

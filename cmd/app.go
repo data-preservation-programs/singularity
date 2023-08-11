@@ -128,7 +128,6 @@ Network Support:
 				run.ContentProviderCmd,
 				run.DealTrackerCmd,
 				run.DealMakerCmd,
-				run.SpadeAPICmd,
 			},
 		},
 		{
