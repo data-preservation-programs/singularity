@@ -162,7 +162,6 @@ func TestHTTPServerHandler(t *testing.T) {
 		c.SetParamValues(pieceCID.String())
 		err = s.handleGetPiece(c)
 		require.NoError(t, err)
-		t.Log(rec.Body.String())
 		require.Equal(t, http.StatusOK, rec.Code)
 		require.EqualValues(t, 48, rec.Body.Len())
 	}
