@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/glebarez/go-sqlite"
 	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -122,14 +121,6 @@ func createHandler(
 
 	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) {
-		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
-	}
-
-	// This is thrown by sqlite when cgo is not enabled
-	// https://www.sqlite.org/rescode.html#:~:text=(2067)%20SQLITE_CONSTRAINT_UNIQUE,that%20a%20UNIQUE%20constraint%20failed.
-	// TODO: the error check logic also needs to be tested against mysql and postgres
-	var sqliteError *sqlite.Error
-	if errors.As(err2, &sqliteError) && sqliteError.Code() == 2067 {
 		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}
 
