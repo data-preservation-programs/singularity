@@ -82,7 +82,6 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 				case anyFail <- v:
 				}
 			case <-ctx.Done():
-			default:
 			}
 		}(fail)
 	}
