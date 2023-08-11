@@ -73,7 +73,6 @@
   * [Content Provider](cli-reference/run/content-provider.md)
   * [Deal Tracker](cli-reference/run/deal-tracker.md)
   * [Dealmaker](cli-reference/run/dealmaker.md)
-  * [Spade Api](cli-reference/run/spade-api.md)
 * [Dataset](cli-reference/dataset/README.md)
   * [Create](cli-reference/dataset/create.md)
   * [List](cli-reference/dataset/list.md)
