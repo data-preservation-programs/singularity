@@ -204,6 +204,33 @@ type PieceMetadata struct {
 	Items     []model.Item     `json:"items"`
 }
 
+// findPiece is a method on the HTTPServer struct that finds a piece by its CID.
+//
+// It first queries the database for cars associated with the CID. If there's an error querying the database,
+// it returns the error wrapped with additional context.
+//
+// If no cars are found, it returns os.ErrNotExist.
+//
+// Then, it tries to open each car's file. If it can't open a file or the file size doesn't match the car's file size,
+// it records the error and continues with the next car.
+//
+// If it successfully opens a file, it returns the file, its modification time, and nil error.
+//
+// If it can't open any of the files, it tries to create a piece reader for each car. If it can't create a reader,
+// it records the error and continues with the next car.
+//
+// If it successfully creates a reader, it returns the reader, the car's creation time, and nil error.
+//
+// If it can't create a reader for any of the cars, it returns nil, the zero time, and an aggregate error of all recorded errors.
+//
+// Parameters:
+// ctx: The context for the operation. This can be used to cancel the operation or set a deadline.
+// pieceCid: The CID of the piece to find.
+//
+// Returns:
+// A ReadSeekCloser that can be used to read the piece content.
+// The modification time of the piece content.
+// An error if there was a problem finding the piece.
 func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	io.ReadSeekCloser,
 	time.Time,
@@ -269,6 +296,21 @@ func (s *HTTPServer) setCommonHeaders(c echo.Context, pieceCid string) {
 	c.Response().Header().Set("Etag", "\""+pieceCid+"\"")
 }
 
+// handleGetPiece is a method on the HTTPServer struct that handles HTTP requests to get a piece.
+//
+// It first parses the piece CID from the URL parameters. If the CID is invalid, it returns a 400 Bad Request response.
+//
+// Then, it tries to find the piece in the storage. If the piece is not found, it returns a 404 Not Found response.
+// If there's an error finding the piece, it returns a 500 Internal Server Error response.
+//
+// If the piece is found, it sets common headers on the response and serves the piece content using http.ServeContent.
+// The name of the served content is the string representation of the piece CID with a ".car" extension.
+//
+// Parameters:
+// c: The Echo context for the HTTP request.
+//
+// Returns:
+// An error if there was a problem handling the request.
 func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	id := c.Param("id")
 	pieceCid, err := cid.Parse(id)
