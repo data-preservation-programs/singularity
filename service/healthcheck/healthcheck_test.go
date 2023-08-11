@@ -111,7 +111,7 @@ func TestHealthCheck(t *testing.T) {
 		staleThreshold = oldThreshold
 	}()
 
-	time.Sleep(time.Second)git
+	time.Sleep(time.Second)
 	HealthCheckCleanup(db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.ErrorIs(err, gorm.ErrRecordNotFound)
