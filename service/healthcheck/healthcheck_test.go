@@ -86,7 +86,7 @@ func TestHealthCheck(t *testing.T) {
 	req.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(time.Second)
 	ReportHealth(context.Background(), db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
@@ -111,6 +111,7 @@ func TestHealthCheck(t *testing.T) {
 		staleThreshold = oldThreshold
 	}()
 
+	time.Sleep(time.Second)
 	HealthCheckCleanup(db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.ErrorIs(err, gorm.ErrRecordNotFound)

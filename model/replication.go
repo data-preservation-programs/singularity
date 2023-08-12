@@ -87,7 +87,7 @@ type Schedule struct {
 	DatasetID            uint32        `json:"datasetId"`
 	Dataset              *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"        swaggerignore:"true"`
 	URLTemplate          string        `json:"urlTemplate"`
-	HTTPHeaders          []string      `gorm:"type:JSON"                                        json:"httpHeaders"`
+	HTTPHeaders          StringSlice   `gorm:"type:JSON"                                        json:"httpHeaders"`
 	Provider             string        `json:"provider"`
 	PricePerGBEpoch      float64       `json:"pricePerGbEpoch"`
 	PricePerGB           float64       `json:"pricePerGb"`
@@ -107,7 +107,7 @@ type Schedule struct {
 	MaxPendingDealSize   int64         `json:"maxPendingDealSize"`
 	Notes                string        `json:"notes"`
 	ErrorMessage         string        `json:"errorMessage"`
-	AllowedPieceCIDs     StringSlice   `json:"allowedPieceCids"`
+	AllowedPieceCIDs     StringSlice   `gorm:"type:JSON"                                        json:"allowedPieceCids"`
 }
 
 type Wallet struct {
