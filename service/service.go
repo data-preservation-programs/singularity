@@ -18,10 +18,10 @@ type Fail = <-chan error
 
 // Server is an interface that represents a server that can be started and has a name.
 type Server interface {
-	// Start Starts the server and returns two channels. The Done channel is closed when the server is done running,
+	// Start Starts the server and returns two channels. The Done channels are closed when the server is done running,
 	//	and the Fail channel receives an error if the server fails. The method also returns an error immediately
 	//	if the server fails to start. The server runs until the provided context is cancelled.
-	Start(ctx context.Context) (Done, Fail, error)
+	Start(ctx context.Context) ([]Done, Fail, error)
 	// Name returns the name of the server.
 	Name() string
 }
@@ -68,7 +68,7 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 			logger.Errorw("failed to start service "+server.Name(), "error", err)
 			return err
 		}
-		dones = append(dones, done)
+		dones = append(dones, done...)
 		fails = append(fails, fail)
 	}
 
@@ -82,7 +82,6 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 				case anyFail <- v:
 				}
 			case <-ctx.Done():
-			default:
 			}
 		}(fail)
 	}

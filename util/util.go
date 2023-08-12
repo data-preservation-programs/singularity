@@ -1,7 +1,9 @@
 package util
 
 import (
+	"context"
 	"crypto/rand"
+	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -57,6 +59,26 @@ func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
 			},
 		})
 	}
+}
+
+// GetLotusHeadTime retrieves the timestamp of the latest block in the Lotus API and returns it as a time.Time value.
+func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (time.Time, error) {
+	client := NewLotusClient(lotusAPI, lotusToken)
+	var resp struct {
+		Blocks []struct {
+			Timestamp int64 `json:"Timestamp"`
+		} `json:"Blocks"`
+	}
+	err := client.CallFor(ctx, &resp, "Filecoin.ChainHead")
+	if err != nil {
+		return time.Time{}, errors.Wrap(err, "failed to get chain head")
+	}
+
+	if len(resp.Blocks) == 0 {
+		return time.Time{}, errors.New("chain head is empty")
+	}
+
+	return time.Unix(resp.Blocks[0].Timestamp, 0), nil
 }
 
 // ChunkMapKeys is a generic function that takes a map with keys of any comparable type and values of any type, and an integer as input.
