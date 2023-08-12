@@ -87,7 +87,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 func TestTrackDeal(t *testing.T) {
 	url, server := setupTestServer(t)
 	defer server.Close()
-	tracker := NewDealTracker(nil, 0, url, "", "")
+	tracker := NewDealTracker(nil, 0, url, "", "", true)
 	var deals []Deal
 	callback := func(dealID uint64, deal Deal) error {
 		deals = append(deals, deal)
@@ -288,7 +288,7 @@ func TestRunOnce(t *testing.T) {
 	url, server := setupTestServerWithBody(t, string(body))
 	defer server.Close()
 	require.NoError(t, err)
-	tracker := NewDealTracker(db, time.Minute, url, "", "")
+	tracker := NewDealTracker(db, time.Minute, url, "", "", true)
 	err = tracker.runOnce(context.Background())
 	require.NoError(t, err)
 	var allDeals []model.Deal

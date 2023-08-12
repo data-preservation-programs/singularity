@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -340,9 +341,19 @@ type UnknownDeal struct {
 }
 
 func (d *DealTracker) runOnce(ctx context.Context) error {
+	delay := time.Hour
+	var err error
+	if d.dealZstURL == "" {
+		lotusTime, err := util.GetLotusHeadTime(ctx, d.lotusURL, d.lotusToken)
+		if err != nil {
+			return errors.Wrap(err, "failed to get lotus head time")
+		}
+		delay = time.Now().Sub(lotusTime)
+	}
+
 	db := d.db.WithContext(ctx)
 	var wallets []model.Wallet
-	err := db.Find(&wallets).Error
+	err = db.Find(&wallets).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to get wallets from database")
 	}
@@ -482,7 +493,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	// Mark all expired active deals as expired
 	result := db.Model(&model.Deal{}).
-		Where("end_epoch < ? AND state = 'active'", epochutil.UnixToEpoch(time.Now().Add(-24*time.Hour).Unix())).
+		Where("end_epoch < ? AND state = 'active'", epochutil.UnixToEpoch(time.Now().Add(-delay).Unix())).
 		Update("state", model.DealExpired)
 	if result.Error != nil {
 		return errors.Wrap(result.Error, "failed to update deals to expired")
@@ -491,7 +502,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	// Mark all expired deal proposals
 	result = db.Model(&model.Deal{}).
-		Where("state in ('proposed', 'published') AND start_epoch < ?", epochutil.UnixToEpoch(time.Now().Add(-24*time.Hour).Unix())).
+		Where("state in ('proposed', 'published') AND start_epoch < ?", epochutil.UnixToEpoch(time.Now().Add(-delay).Unix())).
 		Update("state", model.DealProposalExpired)
 	if result.Error != nil {
 		return errors.Wrap(result.Error, "failed to update deal proposals to expired")
