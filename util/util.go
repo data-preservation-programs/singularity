@@ -62,6 +62,8 @@ func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
 }
 
 // GetLotusHeadTime retrieves the timestamp of the latest block in the Lotus API and returns it as a time.Time value.
+//
+//nolint:tagliatelle
 func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (time.Time, error) {
 	client := NewLotusClient(lotusAPI, lotusToken)
 	var resp struct {

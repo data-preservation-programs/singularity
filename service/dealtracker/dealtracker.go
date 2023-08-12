@@ -27,6 +27,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var ErrAlreadyRunning = errors.New("another worker already running")
+
 type Deal struct {
 	Proposal DealProposal
 	State    DealState
@@ -81,7 +83,7 @@ func (c CloserFunc) Close() error {
 	return c()
 }
 
-var logger = log.Logger("dealtracker")
+var Logger = log.Logger("dealtracker")
 
 type DealTracker struct {
 	workerID   uuid.UUID
@@ -205,7 +207,7 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 
 func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaValue, Counter, io.Closer, error) {
 	if d.dealZstURL != "" {
-		logger.Infof("getting deal state from %s", d.dealZstURL)
+		Logger.Infof("getting deal state from %s", d.dealZstURL)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
 		if err != nil {
 			return nil, nil, nil, errors.Wrap(err, "failed to create request to get deal state zst file")
@@ -213,7 +215,7 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 		return DealStateStreamFromHTTPRequest(req, 1, true)
 	}
 
-	logger.Infof("getting deal state from %s", d.lotusURL)
+	Logger.Infof("getting deal state from %s", d.lotusURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "failed to create request to get deal state from lotus API")
@@ -236,7 +238,8 @@ func (*DealTracker) Name() string {
 // 1. Defines a getState function that returns a healthcheck.State with WorkType set to model.DealTracking.
 // 2. Registers the worker using healthcheck.Register with the provided context, db, workerID, getState function, and false for the force flag.
 //   - If an error occurs during registration, it returns nil for the service.Done channels, nil for the service.Fail channel, and the error wrapped with an appropriate message.
-//   - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels, nil for the service.Fail channel, and an error indicating that another worker is already running.
+//   - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels,
+//     nil for the service.Fail channel, and an error indicating that another worker is already running.
 //
 // 3. Logs a warning message and waits for 1 minute before retrying.
 //   - If the context is done during the wait, it returns nil for the service.Done channels, nil for the service.Fail channel, and the context error.
@@ -270,12 +273,12 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 			return nil, nil, errors.Wrap(err, "failed to register worker")
 		}
 		if alreadyRunning {
-			logger.Warnw("another worker already running")
+			Logger.Warnw("another worker already running")
 			if d.once {
-				return nil, nil, errors.New("another worker already running")
+				return nil, nil, ErrAlreadyRunning
 			}
 		}
-		logger.Warn("retrying in 1 minute")
+		Logger.Warn("retrying in 1 minute")
 		select {
 		case <-ctx.Done():
 			return nil, nil, ctx.Err()
@@ -296,7 +299,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		for {
 			err := d.runOnce(ctx)
 			if err != nil {
-				logger.Errorw("failed to run once", "error", err)
+				Logger.Errorw("failed to run once", "error", err)
 			}
 			if d.once {
 				return
@@ -315,7 +318,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		<-ctx.Done()
 		err := d.cleanup()
 		if err != nil {
-			logger.Errorw("failed to cleanup", "error", err)
+			Logger.Errorw("failed to cleanup", "error", err)
 		}
 	}()
 
@@ -348,7 +351,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to get lotus head time")
 		}
-		delay = time.Now().Sub(lotusTime)
+		delay = time.Since(lotusTime)
 	}
 
 	db := d.db.WithContext(ctx)
@@ -360,7 +363,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 
 	walletIDs := make(map[string]struct{})
 	for _, wallet := range wallets {
-		logger.Infof("tracking deals for wallet %s", wallet.ID)
+		Logger.Infof("tracking deals for wallet %s", wallet.ID)
 		walletIDs[wallet.ID] = struct{}{}
 	}
 
@@ -407,7 +410,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	var updated int64
 	var inserted int64
 	defer func() {
-		logger.Infof("updated %d deals and inserted %d deals", updated, inserted)
+		Logger.Infof("updated %d deals and inserted %d deals", updated, inserted)
 	}()
 	err = d.trackDeal(ctx, func(dealID uint64, deal Deal) error {
 		if ctx.Err() != nil {
@@ -424,7 +427,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				return nil
 			}
 
-			logger.Infow("Deal state changed", "dealID", dealID, "oldState", current, "newState", newState)
+			Logger.Infow("Deal state changed", "dealID", dealID, "oldState", current, "newState", newState)
 			err = database.DoRetry(func() error {
 				return db.Model(&model.Deal{}).Where("deal_id = ?", dealID).Updates(
 					map[string]any{
@@ -442,7 +445,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		found, ok := unknownDeals[dealKey]
 		if ok {
 			f := found[0]
-			logger.Infow("Deal matched on-chain", "dealID", dealID, "state", newState)
+			Logger.Infow("Deal matched on-chain", "dealID", dealID, "state", newState)
 			err = database.DoRetry(func() error {
 				return db.Model(&model.Deal{}).Where("id = ?", f.ID).Updates(map[string]any{
 					"deal_id":            dealID,
@@ -460,7 +463,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			}
 			return nil
 		}
-		logger.Infow("Deal external inserted from on-chain", "dealID", dealID, "state", newState)
+		Logger.Infow("Deal external inserted from on-chain", "dealID", dealID, "state", newState)
 		root, err := cid.Parse(deal.Proposal.PieceCID.Root)
 		if err != nil {
 			return errors.Wrap(err, "failed to parse piece CID")
@@ -498,7 +501,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if result.Error != nil {
 		return errors.Wrap(result.Error, "failed to update deals to expired")
 	}
-	logger.Infof("marked %d deals as expired", result.RowsAffected)
+	Logger.Infof("marked %d deals as expired", result.RowsAffected)
 
 	// Mark all expired deal proposals
 	result = db.Model(&model.Deal{}).
@@ -507,7 +510,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 	if result.Error != nil {
 		return errors.Wrap(result.Error, "failed to update deal proposals to expired")
 	}
-	logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
+	Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
 
 	return nil
 }
@@ -528,7 +531,7 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 			case <-time.After(15 * time.Second):
 				downloaded := humanize.Bytes(uint64(counter.N()))
 				speed := humanize.Bytes(uint64(counter.Speed()))
-				logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
+				Logger.Infof("Downloaded %s with average speed %s / s", downloaded, speed)
 			}
 		}
 	}()

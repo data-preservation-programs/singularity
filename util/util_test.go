@@ -14,8 +14,8 @@ import (
 func TestGetLotusHeadTime(t *testing.T) {
 	head, err := GetLotusHeadTime(context.Background(), "https://api.node.glif.io/", "")
 	require.NoError(t, err)
-	require.Greater(t, time.Now().Sub(head).Seconds(), float64(0))
-	require.Less(t, time.Now().Sub(head).Seconds(), float64(3600))
+	require.Greater(t, time.Since(head).Seconds(), float64(0))
+	require.Less(t, time.Since(head).Seconds(), float64(3600))
 }
 
 func TestNextPowerOfTwo(t *testing.T) {

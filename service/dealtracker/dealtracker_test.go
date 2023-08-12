@@ -38,6 +38,64 @@ func setupTestServerWithBody(t *testing.T, b string) (string, Closer) {
 	return server.URL, server
 }
 
+func TestDealTracker_Name(t *testing.T) {
+	tracker := NewDealTracker(nil, time.Minute, "", "", "", true)
+	require.Equal(t, "DealTracker", tracker.Name())
+}
+
+func TestDealTracker_Start(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tracker := NewDealTracker(db, time.Minute, "", "", "", true)
+	ctx, cancel := context.WithCancel(context.Background())
+	dones, _, err := tracker.Start(ctx)
+	require.NoError(t, err)
+	time.Sleep(time.Second)
+	cancel()
+	for _, done := range dones {
+		<-done
+	}
+}
+
+func TestDealTracker_MultipleRunning_Once(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tracker1 := NewDealTracker(db, time.Minute, "", "", "", true)
+	tracker2 := NewDealTracker(db, time.Minute, "", "", "", true)
+	ctx, cancel := context.WithCancel(context.Background())
+	dones, _, err := tracker1.Start(ctx)
+	require.NoError(t, err)
+	_, _, err2 := tracker2.Start(ctx)
+	require.ErrorIs(t, err2, ErrAlreadyRunning)
+	time.Sleep(time.Second)
+	cancel()
+	for _, done := range dones {
+		<-done
+	}
+}
+
+func TestDealTracker_MultipleRunning(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
+	tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	dones1, _, err := tracker1.Start(ctx)
+	require.NoError(t, err)
+	dones2, _, err2 := tracker2.Start(ctx)
+	require.ErrorIs(t, err2, context.DeadlineExceeded)
+	for _, done := range dones1 {
+		<-done
+	}
+	for _, done := range dones2 {
+		<-done
+	}
+}
+
 func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
 	url, server := setupTestServer(t)
 	defer server.Close()
