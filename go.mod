@@ -12,10 +12,9 @@ require (
 	github.com/filecoin-project/go-address v1.1.0
 	github.com/filecoin-project/go-cbor-util v0.0.1
 	github.com/filecoin-project/go-fil-commcid v0.1.0
-	github.com/filecoin-project/go-fil-commp-hashhash v0.2.0
+	github.com/filecoin-project/go-fil-commp-hashhash v0.2.1-0.20230811065821-2e9c683db589
 	github.com/filecoin-project/go-state-types v0.11.1
 	github.com/fxamacker/cbor/v2 v2.4.0
-	github.com/glebarez/go-sqlite v1.21.1
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-openapi/errors v0.20.4
 	github.com/go-openapi/runtime v0.26.0
@@ -116,6 +115,7 @@ require (
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
+	github.com/glebarez/go-sqlite v1.21.1 // indirect
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

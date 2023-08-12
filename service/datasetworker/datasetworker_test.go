@@ -241,7 +241,8 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		},
 	}
 	worker := model.Worker{
-		ID: thread.id.String(),
+		ID:            thread.id.String(),
+		LastHeartbeat: time.Now(),
 	}
 	err = db.Create(&worker).Error
 	require.NoError(t, err)
@@ -345,7 +346,8 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		},
 	}
 	worker := model.Worker{
-		ID: thread.id.String(),
+		ID:            thread.id.String(),
+		LastHeartbeat: time.Now(),
 	}
 	err = db.Create(&worker).Error
 	require.NoError(t, err)
