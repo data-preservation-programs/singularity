@@ -9,6 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var TestConnectionString = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
+
 func OpenInMemory() (*gorm.DB, io.Closer, error) {
 	db, closer, err := OpenWithLogger("mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true")
 	if err != nil {
@@ -31,3 +33,5 @@ func OpenInMemory() (*gorm.DB, io.Closer, error) {
 
 	return db, closer, nil
 }
+
+var SupportedTestDialects = []string{"postgres", "mysql"}

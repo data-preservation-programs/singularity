@@ -9,6 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var TestConnectionString = "sqlite:file::memory:?cache=shared"
+
 func OpenInMemory() (*gorm.DB, io.Closer, error) {
 	db, closer, err := OpenWithLogger("sqlite:file::memory:?cache=shared")
 	if err != nil {
@@ -31,3 +33,5 @@ func OpenInMemory() (*gorm.DB, io.Closer, error) {
 
 	return db, closer, nil
 }
+
+var SupportedTestDialects = []string{"postgres", "mysql", "sqlite"}

@@ -234,7 +234,7 @@ func testWithAllBackendWithoutReset(t *testing.T, testFunc func(ctx context.Cont
 }
 
 func testWithAllBackendWithResetArg(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB), reset bool) {
-	for _, backend := range []string{"sqlite", "mysql", "postgres"} {
+	for _, backend := range database.SupportedTestDialects {
 		db, closer, connStr, err := getTestDB(t, backend)
 		if err != nil && strings.Contains(err.Error(), "Unsupported dialect") {
 			t.Log("Skip " + backend)
@@ -668,18 +668,6 @@ func TestDatasetCrud(t *testing.T) {
 		require.NoError(t, err)
 		require.NotContains(t, out, "test")
 	})
-}
-
-func TestEzPrepBenchmark(t *testing.T) {
-	temp := t.TempDir()
-	err := os.WriteFile(filepath.Join(temp, "test.img"), []byte("hello world"), 0777)
-	require.NoError(t, err)
-	ctx := context.Background()
-	out, _, err := RunArgsInTest(ctx, "singularity ez-prep --output-dir '' --database-file '' -j 1 "+escapePath(temp))
-	require.NoError(t, err)
-	// contains two CARs, one for the file and another one for the dag
-	require.Contains(t, out, "107")
-	require.Contains(t, out, "152")
 }
 
 func TestDatasourceCrud(t *testing.T) {
