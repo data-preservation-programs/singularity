@@ -122,6 +122,10 @@ func (d *DealPusher) addSchedule(ctx context.Context, schedule model.Schedule) e
 func (d *DealPusher) removeSchedule(schedule model.Schedule) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
+	d.removeScheduleUnsafe(schedule)
+}
+
+func (d *DealPusher) removeScheduleUnsafe(schedule model.Schedule) {
 	if schedule.ScheduleCron == "" {
 		d.activeScheduleCancelFunc[schedule.ID]()
 		delete(d.activeSchedule, schedule.ID)
@@ -144,11 +148,11 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 	}
 	if existing.ScheduleCron == "" && schedule.ScheduleCron != "" {
 		Logger.Warnw("schedule changed from oneoff to cron", "schedule_id", schedule.ID)
-		d.removeSchedule(*existing)
+		d.removeScheduleUnsafe(*existing)
 	}
 	if existing.ScheduleCron != "" && schedule.ScheduleCron == "" {
 		Logger.Warnw("schedule changed from cron to oneoff", "schedule_id", schedule.ID)
-		d.removeSchedule(*existing)
+		d.removeScheduleUnsafe(*existing)
 	}
 
 	if schedule.ScheduleCron == "" {
@@ -273,7 +277,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 					})
 				return err
 			}, retry.Attempts(d.sendDealRetry), retry.Delay(time.Second),
-				retry.DelayType(retry.FixedDelay))
+				retry.DelayType(retry.FixedDelay), retry.Context(ctx))
 			if err != nil {
 				return "", errors.Wrap(err, "failed to send deal")
 			}
@@ -345,12 +349,14 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 		scheduleMap[schedule.ID] = schedule
 	}
 	// Cancel all jobs that are no longer active
+	d.mutex.Lock()
 	for id, active := range d.activeSchedule {
 		if _, ok := scheduleMap[id]; !ok {
 			Logger.Infow("removing inactive schedule", "schedule_id", id)
 			d.removeSchedule(*active)
 		}
 	}
+	d.mutex.Unlock()
 
 	for _, schedule := range schedules {
 		if d.hasSchedule(schedule.ID) {
