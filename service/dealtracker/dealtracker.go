@@ -315,11 +315,11 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 			}
 			select {
 			case <-ctx.Done():
+				Logger.Info("run stopped")
 				return
 			case <-time.After(d.interval):
 			}
 		}
-		Logger.Info("run stopped")
 	}()
 
 	cleanupDone := make(chan struct{})

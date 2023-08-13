@@ -79,7 +79,7 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 		w.logger.Info("healthcheck cleanup stopped")
 	}()
 
-	done := make(chan struct{}, 0)
+	done := make(chan struct{})
 	fail := make(chan error)
 	go func() {
 		defer cancel()
@@ -187,6 +187,7 @@ func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint
 		updates[ErrorMessageKey[workType]] = ""
 		updates[WorkStateKey[workType]] = model.Ready
 		var cancel context.CancelFunc
+		//nolint:contextcheck
 		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 	} else {

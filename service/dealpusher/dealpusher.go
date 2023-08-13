@@ -417,11 +417,11 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 			Logger.Debug("waiting for deal schedule check in 15 secs")
 			select {
 			case <-ctx.Done():
+				Logger.Info("cron stopped")
 				return
 			case <-time.After(15 * time.Second):
 			}
 		}
-		Logger.Info("cron stopped")
 	}()
 
 	fail := make(chan error)
