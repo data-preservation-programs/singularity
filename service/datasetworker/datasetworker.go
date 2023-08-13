@@ -2,35 +2,28 @@ package datasetworker
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/service/healthcheck"
-	"github.com/rjNemo/underscore"
-
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 var logger = log.Logger("datasetworker")
 
-type DatasetWorker struct {
-	db      *gorm.DB
-	threads []DatasetWorkerThread
-	config  DatasetWorkerConfig
+type Worker struct {
+	db     *gorm.DB
+	config Config
 }
 
-type DatasetWorkerConfig struct {
+type Config struct {
 	Concurrency    int
 	ExitOnComplete bool
 	EnableScan     bool
@@ -39,330 +32,266 @@ type DatasetWorkerConfig struct {
 	ExitOnError    bool
 }
 
-func NewDatasetWorker(db *gorm.DB, config DatasetWorkerConfig) *DatasetWorker {
-	return &DatasetWorker{
-		db:      db,
-		threads: make([]DatasetWorkerThread, config.Concurrency),
-		config:  config,
+func NewWorker(db *gorm.DB, config Config) *Worker {
+	return &Worker{
+		db:     db,
+		config: config,
 	}
 }
 
-type DatasetWorkerThread struct {
+type Thread struct {
 	id                        uuid.UUID
 	db                        *gorm.DB
 	logger                    *zap.SugaredLogger
-	directoryCache            map[string]uint64
 	workType                  model.WorkType
 	workingOn                 string
 	datasourceHandlerResolver datasource.HandlerResolver
-	config                    DatasetWorkerConfig
+	config                    Config
 }
 
-func (w DatasetWorker) cleanup() error {
-	workerIDs := make([]string, len(w.threads))
-	for i, thread := range w.threads {
-		workerIDs[i] = thread.id.String()
+func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	getState := func() healthcheck.State {
+		return healthcheck.State{
+			WorkType:  w.workType,
+			WorkingOn: w.workingOn,
+		}
 	}
-	return w.db.Where("id IN ?", workerIDs).Delete(&model.Worker{}).Error
+
+	_, err := healthcheck.Register(ctx, w.db, w.id, getState, true)
+	if err != nil {
+		cancel()
+		return nil, nil, errors.Wrap(err, "failed to register worker")
+	}
+
+	healthcheckDone := make(chan struct{})
+	go func() {
+		defer close(healthcheckDone)
+		healthcheck.StartReportHealth(ctx, w.db, w.id, getState)
+		w.logger.Info("health report stopped")
+	}()
+
+	healthcheckCleanupDone := make(chan struct{})
+	go func() {
+		defer close(healthcheckCleanupDone)
+		healthcheck.StartHealthCheckCleanup(ctx, w.db)
+		w.logger.Info("healthcheck cleanup stopped")
+	}()
+
+	done := make(chan struct{}, 0)
+	fail := make(chan error)
+	go func() {
+		defer cancel()
+		defer close(done)
+		w.run(ctx, fail)
+		w.logger.Info("worker thread finished")
+	}()
+
+	cleanupDone := make(chan struct{})
+	go func() {
+		defer close(cleanupDone)
+		<-ctx.Done()
+		err := w.cleanup()
+		if err != nil {
+			w.logger.Errorw("failed to cleanup", "error", err)
+		} else {
+			w.logger.Info("cleanup complete")
+		}
+	}()
+
+	return []service.Done{done, healthcheckDone, healthcheckCleanupDone, cleanupDone}, fail, nil
 }
 
-func (w DatasetWorker) Run(parent context.Context) error {
-	ctx, cancel := context.WithCancel(parent)
-	defer cancel()
+func (w *Thread) Name() string {
+	return "Dataset Worker Thread - " + w.id.String()
+}
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGTRAP)
-	errChan := make(chan error)
+func (w *Thread) cleanup() error {
+	return database.DoRetry(func() error {
+		return w.db.Where("id = ?", w.id.String()).Delete(&model.Worker{}).Error
+	})
+}
 
-	go healthcheck.StartHealthCheckCleanup(ctx, w.db)
-
-	var wg sync.WaitGroup
+func (w Worker) Run(ctx context.Context) error {
+	threads := make([]service.Server, w.config.Concurrency)
 	for i := 0; i < w.config.Concurrency; i++ {
-		wg.Add(1)
 		id := uuid.New()
-		thread := DatasetWorkerThread{
+		thread := &Thread{
 			id:                        id,
-			db:                        w.db.WithContext(ctx),
+			db:                        w.db,
 			logger:                    logger.With("workerID", id.String()),
 			datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 			config:                    w.config,
 		}
-		w.threads[i] = thread
-		_, err := healthcheck.Register(ctx, w.db, thread.id, thread.getState, true)
-		if err != nil {
-			logger.Errorw("failed to register worker", "error", err)
-			continue
-		}
-		go thread.run(ctx, errChan, &wg)
+		threads[i] = thread
 	}
+	return service.StartServers(ctx, logger, threads...)
+}
 
-	done := make(chan struct{})
+type WorkType string
 
-	go func() {
-		wg.Wait()
-		done <- struct{}{}
-	}()
+const (
+	WorkTypeNone WorkType = ""
+	WorkTypeScan WorkType = "scan"
+	WorkTypePack WorkType = "pack"
+	WorkTypeDag  WorkType = "dag"
+)
 
-	select {
-	case <-done:
-		log.Logger("worker").Info("All work done, cleaning up")
-		//nolint:errcheck
-		w.cleanup()
+var WorkStateKey = map[WorkType]string{
+	WorkTypeScan: "scanning_state",
+	WorkTypePack: "packing_state",
+	WorkTypeDag:  "dag_gen_state",
+}
+
+var WorkerIDKey = map[WorkType]string{
+	WorkTypeScan: "scanning_worker_id",
+	WorkTypePack: "packing_worker_id",
+	WorkTypeDag:  "dag_gen_worker_id",
+}
+
+var ErrorMessageKey = map[WorkType]string{
+	WorkTypeScan: "error_message",
+	WorkTypePack: "error_message",
+	WorkTypeDag:  "dag_gen_error_message",
+}
+
+var WorkModel = map[WorkType]func() any{
+	WorkTypeScan: func() any { return &model.Source{} },
+	WorkTypePack: func() any { return &model.Chunk{} },
+	WorkTypeDag:  func() any { return &model.Source{} },
+}
+
+func (w *Thread) handleWorkComplete(ctx context.Context, workType WorkType, id uint64, updates map[string]any) error {
+	if workType == WorkTypeNone {
 		return nil
-	case <-signalChan:
-		log.Logger("worker").Info("received signal, cleaning up")
-		//nolint:errcheck
-		w.cleanup()
-		return cli.Exit("received signal", 130)
-	case err := <-errChan:
-		log.Logger("worker").Errorw("one of the worker thread encountered unrecoverable error", "error", err)
-		//nolint:errcheck
-		w.cleanup()
-		return cli.Exit("worker thread failed", 1)
 	}
+	w.logger.Infow("finished "+string(workType), "id", id)
+	updates[WorkerIDKey[workType]] = nil
+	updates[ErrorMessageKey[workType]] = ""
+	updates[WorkStateKey[workType]] = model.Complete
+	return database.DoRetry(func() error {
+		return w.db.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
+	})
 }
 
-func (w *DatasetWorkerThread) getState() healthcheck.State {
-	return healthcheck.State{
-		WorkType:  w.workType,
-		WorkingOn: w.workingOn,
+func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint64, err error) error {
+	if err == nil || workType == WorkTypeNone {
+		return nil
 	}
+	w.logger.Errorw("failed to "+string(workType), "id", id, "error", err)
+	updates := make(map[string]any)
+	updates[WorkerIDKey[workType]] = nil
+	// reset the state to ready if the context was canceled
+	if errors.Is(err, context.Canceled) {
+		updates[ErrorMessageKey[workType]] = ""
+		updates[WorkStateKey[workType]] = model.Ready
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+	} else {
+		updates[ErrorMessageKey[workType]] = err.Error()
+		updates[WorkStateKey[workType]] = model.Error
+	}
+	return database.DoRetry(func() error {
+		return w.db.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
+	})
 }
 
-func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (w *Thread) findWork() (WorkType, *model.Source, *model.Chunk, error) {
+	source, err := w.findDagWork()
+	if err != nil {
+		return "", nil, nil, errors.Wrap(err, "failed to find dag work")
+	}
+	if source != nil {
+		return WorkTypeDag, source, nil, nil
+	}
+
+	source, err = w.findScanWork()
+	if err != nil {
+		return "", nil, nil, errors.Wrap(err, "failed to find scan work")
+	}
+	if source != nil {
+		return WorkTypeScan, source, nil, nil
+	}
+
+	chunk, err := w.findPackWork()
+	if err != nil {
+		return "", nil, nil, errors.Wrap(err, "failed to find pack work")
+	}
+	if chunk != nil {
+		return WorkTypePack, nil, chunk, nil
+	}
+
+	return WorkTypeNone, nil, nil, nil
+}
+
+func (w *Thread) run(ctx context.Context, errChan chan error) {
 	defer func() {
 		if err := recover(); err != nil {
 			errChan <- errors.Errorf("panic: %v", err)
 		}
 	}()
-	go healthcheck.StartReportHealth(ctx, w.db, w.id, w.getState)
 	for {
-		w.directoryCache = map[string]uint64{}
-		// 0, find dag work
-		source, err := w.findDagWork()
+		var id uint64
+		workType, source, chunk, err := w.findWork()
 		if err != nil {
-			w.logger.Errorw("failed to find dag work", "error", err)
 			goto errorLoop
 		}
-		if source != nil {
-			err = w.dag(*source)
-			if err != nil {
-				w.logger.Errorw("failed to generate dag", "error", err)
-				newState := model.Error
-				newErrorMessage := err.Error()
-				if errors.Is(err, context.Canceled) {
-					newState = model.Ready
-					newErrorMessage = ""
-					cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
-					//nolint:contextcheck
-					w.db = w.db.WithContext(cancelCtx)
-				}
-				err = database.DoRetry(func() error {
-					return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-						map[string]any{
-							"dag_gen_state":         newState,
-							"dag_gen_worker_id":     nil,
-							"dag_gen_error_message": newErrorMessage,
-						},
-					).Error
-				})
-				if err != nil {
-					w.logger.Errorw("failed to update source daggen with error", "error", err)
-				}
-				goto errorLoop
-			}
 
-			w.logger.Debugw("saving dag generation state to complete", "sourceID", source.ID)
-			err = database.DoRetry(func() error {
-				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-					map[string]any{
-						"dag_gen_state":     model.Complete,
-						"dag_gen_worker_id": nil,
-					},
-				).Error
-			})
-			if err != nil {
-				w.logger.Errorw("failed to update source daggen to complete", "error", err)
-				goto errorLoop
+		switch workType {
+		case WorkTypeNone:
+			if w.config.ExitOnComplete {
+				w.logger.Info("no work found, exiting")
+				return
 			}
-			continue
-		}
-		// 1st, find scanning work
-		source, err = w.findScanWork()
-		if err != nil {
-			w.logger.Errorw("failed to scan", "error", err)
-			goto errorLoop
-		}
-		if source != nil {
-			err = w.scan(ctx, *source, source.Type != "manual")
-			if err != nil {
-				w.logger.Errorw("failed to scan", "error", err)
-				newState := model.Error
-				newErrorMessage := err.Error()
-				if errors.Is(err, context.Canceled) {
-					newState = model.Ready
-					newErrorMessage = ""
-					cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-					defer cancel()
-					//nolint:contextcheck
-					w.db = w.db.WithContext(cancelCtx)
-				}
-				err = database.DoRetry(func() error {
-					return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-						map[string]any{
-							"scanning_state":         newState,
-							"scanning_worker_id":     nil,
-							"error_message":          newErrorMessage,
-							"last_scanned_timestamp": time.Now().UTC().Unix(),
-						},
-					).Error
-				})
-				if err != nil {
-					w.logger.Errorw("failed to update source with error", "error", err)
-				}
-				goto errorLoop
-			}
-
-			w.logger.Debugw("saving scanning state to complete", "sourceID", source.ID)
-			err = database.DoRetry(func() error {
-				return w.db.Model(&model.Source{}).Where("id = ?", source.ID).Updates(
-					map[string]any{
-						"scanning_state":         model.Complete,
-						"scanning_worker_id":     nil,
-						"last_scanned_timestamp": time.Now().UTC().Unix(),
-						"last_scanned_path":      "",
-					},
-				).Error
-			})
-			if err != nil {
-				w.logger.Errorw("failed to update source to complete", "error", err)
-				goto errorLoop
-			}
-			continue
-		}
-
-		// 2nd, find packing work
-		{
-			chunk, err := w.findPackWork()
-			if err != nil {
-				w.logger.Errorw("failed to find pack work", "error", err)
-				goto errorLoop
-			}
-			if chunk != nil {
-				err = w.pack(
-					ctx,
-					*chunk,
-				)
-				if err != nil {
-					w.logger.Errorw("failed to pack", "error", err)
-					newState := model.Error
-					newErrorMessage := err.Error()
-					if errors.Is(err, context.Canceled) {
-						newState = model.Ready
-						newErrorMessage = ""
-						cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-						defer cancel()
-						//nolint:contextcheck
-						w.db = w.db.WithContext(cancelCtx)
-					}
-					err = database.DoRetry(func() error {
-						return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
-							map[string]any{
-								"packing_state":     newState,
-								"packing_worker_id": nil,
-								"error_message":     newErrorMessage,
-							},
-						).Error
-					})
-					if err != nil {
-						w.logger.Errorw("failed to update chunk with error", "error", err)
-					}
-					goto errorLoop
-				}
-				w.logger.Debugw("saving packing state to complete", "chunkID", chunk.ID)
-				err = database.DoRetry(func() error {
-					return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
-						map[string]any{
-							"packing_state":     model.Complete,
-							"packing_worker_id": nil,
-						},
-					).Error
-				})
-				if err != nil {
-					w.logger.Errorw("failed to update chunk to complete", "error", err)
-					goto errorLoop
-				}
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(15 * time.Second):
 				continue
 			}
+		case WorkTypeScan:
+			err = w.scan(ctx, *source, source.Type != "manual")
+			id = uint64(source.ID)
+		case WorkTypePack:
+			err = w.pack(ctx, *chunk)
+			id = uint64(chunk.ID)
+		case WorkTypeDag:
+			err = w.dag(*source)
+			id = uint64(source.ID)
 		}
-		if w.config.ExitOnComplete {
-			w.logger.Debug("exiting on complete")
-			return
+		if err != nil {
+			err = w.handleWorkError(ctx, workType, id, err)
+			if err != nil {
+				w.logger.Errorw("failed to update state to error",
+					"type", workType, "id", id, "error", err)
+			}
+			goto errorLoop
+		} else {
+			updates := make(map[string]any)
+			if workType == WorkTypeScan {
+				updates["last_scanned_timestamp"] = time.Now().UTC().Unix()
+				updates["last_scanned_path"] = ""
+			}
+			err = w.handleWorkComplete(ctx, workType, id, updates)
+			if err != nil {
+				w.logger.Errorw("failed to update state to complete",
+					"type", workType, "id", id, "error", err)
+				goto errorLoop
+			}
+			continue
 		}
 	errorLoop:
 		if w.config.ExitOnError {
 			errChan <- err
 			return
 		}
-		w.logger.Debug("sleeping for a minute")
+		w.logger.Info("sleeping for a minute")
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(time.Minute):
 		}
 	}
-}
-
-type remain struct {
-	itemParts []model.ItemPart
-	carSize   int64
-}
-
-const carHeaderSize = 59
-
-func newRemain() *remain {
-	return &remain{
-		itemParts: make([]model.ItemPart, 0),
-		// Some buffer for header
-		carSize: carHeaderSize,
-	}
-}
-
-func (r *remain) add(itemParts []model.ItemPart) {
-	r.itemParts = append(r.itemParts, itemParts...)
-	for _, itemPart := range itemParts {
-		r.carSize += toCarSize(itemPart.Length)
-	}
-}
-
-func (r *remain) reset() {
-	r.itemParts = make([]model.ItemPart, 0)
-	r.carSize = carHeaderSize
-}
-
-func (r *remain) itemIDs() []uint64 {
-	return underscore.Map(r.itemParts, func(itemPart model.ItemPart) uint64 {
-		return itemPart.ID
-	})
-}
-
-func toCarSize(size int64) int64 {
-	out := size
-	nBlocks := size / 1024 / 1024
-	if size%(1024*1024) != 0 {
-		nBlocks++
-	}
-
-	// For each block, we need to add the bytes for the CID as well as varint
-	out += nBlocks * (36 + 9)
-
-	// For every 256 blocks, we need to add another block.
-	// The block stores up to 256 CIDs and integers, estimate it to be 12kb
-	if nBlocks > 1 {
-		out += (((nBlocks - 1) / 256) + 1) * 12000
-	}
-
-	return out
 }

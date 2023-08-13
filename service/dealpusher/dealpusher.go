@@ -24,17 +24,18 @@ var Logger = log.Logger("dealpusher")
 
 var waitPendingInterval = time.Minute
 
+// DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	db                       *gorm.DB
-	walletChooser            replication.WalletChooser
-	dealMaker                replication.DealMaker
-	workerID                 uuid.UUID
-	activeSchedule           map[uint32]*model.Schedule
-	activeScheduleCancelFunc map[uint32]context.CancelFunc
-	cronEntries              map[uint32]cron.EntryID
-	cron                     *cron.Cron
-	mutex                    sync.Mutex
-	sendDealRetry            uint
+	db                       *gorm.DB                      // Pointer to a gorm.DB object representing a database connection.
+	walletChooser            replication.WalletChooser     // Object responsible for choosing a wallet for replication.
+	dealMaker                replication.DealMaker         // Object responsible for making a deal in replication.
+	workerID                 uuid.UUID                     // UUID identifying the associated worker.
+	activeSchedule           map[uint32]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.
+	activeScheduleCancelFunc map[uint32]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
+	cronEntries              map[uint32]cron.EntryID       // Map storing cron entries for the DealPusher with schedule IDs as keys and EntryID as values.
+	cron                     *cron.Cron                    // Job scheduler for scheduling tasks at specified intervals.
+	mutex                    sync.Mutex                    // Mutex for providing mutual exclusion to protect shared resources.
+	sendDealAttempts         uint                          // Number of attempts for sending a deal.
 }
 
 func (*DealPusher) Name() string {
@@ -276,7 +277,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
 					})
 				return err
-			}, retry.Attempts(d.sendDealRetry), retry.Delay(time.Second),
+			}, retry.Attempts(d.sendDealAttempts), retry.Delay(time.Second),
 				retry.DelayType(retry.FixedDelay), retry.Context(ctx))
 			if err != nil {
 				return "", errors.Wrap(err, "failed to send deal")
@@ -331,7 +332,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		workerID:                 uuid.New(),
 		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
 			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
-		sendDealRetry: numAttempts,
+		sendDealAttempts: numAttempts,
 	}, nil
 }
 
@@ -404,6 +405,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	go func() {
 		defer close(healthcheckDone)
 		healthcheck.StartReportHealth(ctx, d.db, d.workerID, getState)
+		Logger.Info("healthcheck stopped")
 	}()
 
 	runDone := make(chan struct{})
@@ -419,6 +421,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 			case <-time.After(15 * time.Second):
 			}
 		}
+		Logger.Info("cron stopped")
 	}()
 
 	fail := make(chan error)
@@ -430,6 +433,8 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 		err := d.cleanup()
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)
+		} else {
+			Logger.Info("cleanup done")
 		}
 	}()
 

@@ -14,7 +14,8 @@ import (
 // scan scans the data source and inserts the chunking strategy back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned item, which is useful for resuming a failed scan
-func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
+func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool) error {
+	directoryCache := make(map[string]uint64)
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
@@ -49,7 +50,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			continue
 		}
 
-		item, itemParts, err := datasource.PushItem(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
+		item, itemParts, err := datasource.PushItem(ctx, w.db, entry.Info, source, dataset, directoryCache)
 		if err != nil {
 			return errors.Wrap(err, "failed to push item")
 		}
@@ -83,7 +84,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 	return nil
 }
 
-func (w *DatasetWorkerThread) chunkOnce(
+func (w *Thread) chunkOnce(
 	source model.Source,
 	dataset model.Dataset,
 	remaining *remain,
@@ -134,4 +135,56 @@ func (w *DatasetWorkerThread) chunkOnce(
 	remaining.itemParts = remaining.itemParts[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize
 	return nil
+}
+
+type remain struct {
+	itemParts []model.ItemPart
+	carSize   int64
+}
+
+const carHeaderSize = 59
+
+func newRemain() *remain {
+	return &remain{
+		itemParts: make([]model.ItemPart, 0),
+		// Some buffer for header
+		carSize: carHeaderSize,
+	}
+}
+
+func (r *remain) add(itemParts []model.ItemPart) {
+	r.itemParts = append(r.itemParts, itemParts...)
+	for _, itemPart := range itemParts {
+		r.carSize += toCarSize(itemPart.Length)
+	}
+}
+
+func (r *remain) reset() {
+	r.itemParts = make([]model.ItemPart, 0)
+	r.carSize = carHeaderSize
+}
+
+func (r *remain) itemIDs() []uint64 {
+	return underscore.Map(r.itemParts, func(itemPart model.ItemPart) uint64 {
+		return itemPart.ID
+	})
+}
+
+func toCarSize(size int64) int64 {
+	out := size
+	nBlocks := size / 1024 / 1024
+	if size%(1024*1024) != 0 {
+		nBlocks++
+	}
+
+	// For each block, we need to add the bytes for the CID as well as varint
+	out += nBlocks * (36 + 9)
+
+	// For every 256 blocks, we need to add another block.
+	// The block stores up to 256 CIDs and integers, estimate it to be 12kb
+	if nBlocks > 1 {
+		out += (((nBlocks - 1) / 256) + 1) * 12000
+	}
+
+	return out
 }

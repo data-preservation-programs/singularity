@@ -258,6 +258,8 @@ func (*DealTracker) Name() string {
 //
 // 7. Returns a list of service.Done channels containing healthcheckDone, runDone, and cleanupDone, the service.Fail channel fail, and nil for the error.
 func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
 	getState := func() healthcheck.State {
 		return healthcheck.State{
 			WorkType: model.DealTracking,
@@ -270,17 +272,20 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 			break
 		}
 		if err != nil {
+			cancel()
 			return nil, nil, errors.Wrap(err, "failed to register worker")
 		}
 		if alreadyRunning {
 			Logger.Warnw("another worker already running")
 			if d.once {
+				cancel()
 				return nil, nil, ErrAlreadyRunning
 			}
 		}
 		Logger.Warn("retrying in 1 minute")
 		select {
 		case <-ctx.Done():
+			cancel()
 			return nil, nil, ctx.Err()
 		case <-time.After(time.Minute):
 		}
@@ -290,11 +295,13 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 	go func() {
 		defer close(healthcheckDone)
 		healthcheck.StartReportHealth(ctx, d.db, d.workerID, getState)
+		Logger.Info("health report stopped")
 	}()
 
 	runDone := make(chan struct{})
 	fail := make(chan error)
 	go func() {
+		defer cancel()
 		defer close(runDone)
 		for {
 			err := d.runOnce(ctx)
@@ -302,6 +309,8 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 				Logger.Errorw("failed to run once", "error", err)
 			}
 			if d.once {
+				cancel()
+				Logger.Info("run once done")
 				return
 			}
 			select {
@@ -310,6 +319,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 			case <-time.After(d.interval):
 			}
 		}
+		Logger.Info("run stopped")
 	}()
 
 	cleanupDone := make(chan struct{})
@@ -319,6 +329,8 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		err := d.cleanup()
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)
+		} else {
+			Logger.Info("cleanup done")
 		}
 	}()
 

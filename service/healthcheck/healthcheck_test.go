@@ -61,7 +61,9 @@ func TestHealthCheck(t *testing.T) {
 	defer closer.Close()
 
 	id := uuid.New()
-	alreadyRunning, err := Register(context.Background(), db, id, func() State {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	alreadyRunning, err := Register(ctx, db, id, func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something",
@@ -69,7 +71,7 @@ func TestHealthCheck(t *testing.T) {
 	}, false)
 	req.NoError(err)
 	req.False(alreadyRunning)
-	alreadyRunning, err = Register(context.Background(), db, uuid.New(), func() State {
+	alreadyRunning, err = Register(ctx, db, uuid.New(), func() State {
 		return State{
 			WorkType:  model.Packing,
 			WorkingOn: "something",
@@ -101,7 +103,7 @@ func TestHealthCheck(t *testing.T) {
 	req.NotEmpty(worker.Hostname)
 	req.NotEqual(lastHeatbeat, worker.LastHeartbeat)
 
-	HealthCheckCleanup(db)
+	HealthCheckCleanup(ctx, db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
 
@@ -112,7 +114,7 @@ func TestHealthCheck(t *testing.T) {
 	}()
 
 	time.Sleep(time.Second)
-	HealthCheckCleanup(db)
+	HealthCheckCleanup(ctx, db)
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.ErrorIs(err, gorm.ErrRecordNotFound)
 }

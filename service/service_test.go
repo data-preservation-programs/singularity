@@ -90,7 +90,10 @@ func TestStartServers_ServerError(t *testing.T) {
 
 	// Server is always done
 	done := make(chan struct{})
-	close(done)
+	go func() {
+		time.Sleep(time.Second)
+		close(done)
+	}()
 
 	fail := make(chan error)
 	serverError := errors.New("server error")

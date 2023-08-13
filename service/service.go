@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/pkg/errors"
@@ -86,6 +87,20 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 		}(fail)
 	}
 
+	var wg sync.WaitGroup
+	var allDone = make(chan struct{})
+	for _, done := range dones {
+		wg.Add(1)
+		go func(done Done) {
+			<-done
+			wg.Done()
+		}(done)
+	}
+	go func() {
+		wg.Wait()
+		close(allDone)
+	}()
+
 	var err error
 	select {
 	case <-ctx.Done():
@@ -101,11 +116,9 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 	case err = <-anyFail:
 		logger.Errorw("service failed", "error", err)
 		cancel()
-	}
-
-	logger.Info("waiting for services to stop")
-	for _, done := range dones {
-		<-done
+	case <-allDone:
+		logger.Info("all services stopped")
+		cancel()
 	}
 
 	return err
