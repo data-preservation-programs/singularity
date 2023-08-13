@@ -353,7 +353,7 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	for id, active := range d.activeSchedule {
 		if _, ok := scheduleMap[id]; !ok {
 			Logger.Infow("removing inactive schedule", "schedule_id", id)
-			d.removeSchedule(*active)
+			d.removeScheduleUnsafe(*active)
 		}
 	}
 	d.mutex.Unlock()
