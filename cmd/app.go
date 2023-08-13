@@ -127,7 +127,7 @@ Network Support:
 				run.DatasetWorkerCmd,
 				run.ContentProviderCmd,
 				run.DealTrackerCmd,
-				run.DealMakerCmd,
+				run.DealPusherCmd,
 			},
 		},
 		{

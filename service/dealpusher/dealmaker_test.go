@@ -1,4 +1,4 @@
-package dealmaker
+package dealpusher
 
 import (
 	"bytes"
@@ -15,6 +15,7 @@ import (
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -25,6 +26,9 @@ type MockDealMaker struct {
 
 func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
 	args := m.Called(ctx, walletObj, car, dealConfig)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	deal := *args.Get(0).(*model.Deal)
 	deal.ID = 0
 	deal.PieceCID = car.PieceCID
@@ -51,29 +55,101 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	return &deal, nil
 }
 
-func TestDealMakerService_StartRun(t *testing.T) {
+func TestDealMakerService_Start(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	service, err := NewDealMakerService(db, "https://api.node.glif.io", "")
+	service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
 	require.NoError(t, err)
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	done := make(chan struct{})
-	go func() {
-		err = service.Run(ctx)
-		require.Error(t, err, context.Canceled)
-		close(done)
-	}()
+	dones, _, err := service.Start(ctx)
+	require.NoError(t, err)
+	time.Sleep(time.Second)
 	cancel()
-	<-done
+	for _, done := range dones {
+		<-done
+	}
+}
+
+func TestDealMakerService_MultipleInstances(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	service1, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
+	require.NoError(t, err)
+	service2, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	dones1, _, err := service1.Start(ctx)
+	require.NoError(t, err)
+	dones2, _, err2 := service2.Start(ctx)
+	require.ErrorIs(t, err2, context.DeadlineExceeded)
+	for _, done := range dones1 {
+		<-done
+	}
+	for _, done := range dones2 {
+		<-done
+	}
+}
+
+func TestDealMakerService_FailtoSend(t *testing.T) {
+	waitPendingInterval = 100 * time.Millisecond
+	defer func() {
+		waitPendingInterval = time.Second
+	}()
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	service, err := NewDealPusher(db, "https://api.node.glif.io", "", 2)
+	require.NoError(t, err)
+	mockDealmaker := new(MockDealMaker)
+	service.dealMaker = mockDealmaker
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	provider := "f0miner"
+	client := "f0client"
+	schedule := model.Schedule{
+		Dataset: &model.Dataset{Name: "test", Wallets: []model.Wallet{
+			{
+				ID: client, Address: "f0xx",
+			},
+		}},
+		State:                model.ScheduleActive,
+		Provider:             provider,
+		MaxPendingDealNumber: 2,
+		MaxPendingDealSize:   2048,
+		TotalDealNumber:      4,
+	}
+	err = db.Create(&schedule).Error
+	require.NoError(t, err)
+	mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("send deal error"))
+	pieceCIDs := []model.CID{
+		model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+	}
+	err = db.Create([]model.Car{
+		{
+			DatasetID: schedule.Dataset.ID,
+			PieceCID:  pieceCIDs[0],
+			PieceSize: 1024,
+			FilePath:  "0",
+		},
+	}).Error
+	require.NoError(t, err)
+	service.runOnce(ctx)
+	time.Sleep(3 * time.Second)
+	schedule = model.Schedule{}
+	err = db.First(&schedule).Error
+	require.NoError(t, err)
+	require.Equal(t, model.ScheduleError, schedule.State)
+	require.Contains(t, schedule.ErrorMessage, "#2: send deal error")
 }
 
 func TestDealMakerService_Cron(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	service, err := NewDealMakerService(db, "https://api.node.glif.io", "")
+	service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
 	require.NoError(t, err)
 	mockDealmaker := new(MockDealMaker)
 	service.dealMaker = mockDealmaker
@@ -124,6 +200,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 	defer service.cron.Stop()
 	service.runOnce(ctx)
 
+	// Update to a new cron schedule
 	err = db.Model(&schedule).Update("schedule_cron", "* * * * * *").Error
 	require.NoError(t, err)
 	service.runOnce(ctx)
@@ -135,6 +212,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 	ndeals := len(deals)
 	require.True(t, ndeals == 1 || ndeals == 2)
 
+	// Pause the cron schedule
 	err = db.Model(&schedule).Update("state", model.SchedulePaused).Error
 	require.NoError(t, err)
 	service.runOnce(ctx)
@@ -143,6 +221,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, deals, ndeals)
 
+	// Resume the cron schedule
 	db.Model(&schedule).Update("state", model.ScheduleActive)
 	service.runOnce(ctx)
 	time.Sleep(3 * time.Second)
@@ -151,11 +230,118 @@ func TestDealMakerService_Cron(t *testing.T) {
 	require.Greater(t, len(deals), ndeals)
 }
 
+func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
+	waitPendingInterval = 100 * time.Millisecond
+	defer func() {
+		waitPendingInterval = time.Second
+	}()
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
+	require.NoError(t, err)
+	mockDealmaker := new(MockDealMaker)
+	service.dealMaker = mockDealmaker
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	provider := "f0miner"
+	client := "f0client"
+	schedule := model.Schedule{
+		Dataset: &model.Dataset{Name: "test", Wallets: []model.Wallet{
+			{
+				ID: client, Address: "f0xx",
+			},
+		}},
+		State:                model.ScheduleActive,
+		Provider:             provider,
+		MaxPendingDealNumber: 2,
+		MaxPendingDealSize:   2048,
+		TotalDealNumber:      4,
+	}
+	err = db.Create(&schedule).Error
+	require.NoError(t, err)
+	mockDealmaker.On("MakeDeal", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
+		ScheduleID: &schedule.ID,
+	}, nil)
+	pieceCIDs := []model.CID{
+		model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+		model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+		model.CID(calculateCommp(t, generateRandomBytes(1000), 2048)),
+		model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+		model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+	}
+	err = db.Create([]model.Car{
+		{
+			DatasetID: schedule.Dataset.ID,
+			PieceCID:  pieceCIDs[0],
+			PieceSize: 1024,
+			FilePath:  "0",
+		},
+		{
+			DatasetID: schedule.Dataset.ID,
+			PieceCID:  pieceCIDs[1],
+			PieceSize: 1024,
+			FilePath:  "1",
+		},
+		{
+			DatasetID: schedule.Dataset.ID,
+			PieceCID:  pieceCIDs[2],
+			PieceSize: 2048,
+			FilePath:  "2",
+		},
+		{
+			DatasetID: schedule.Dataset.ID,
+			PieceCID:  pieceCIDs[3],
+			PieceSize: 1024,
+			FilePath:  "3",
+		},
+		{
+			DatasetID: schedule.Dataset.ID,
+			PieceCID:  pieceCIDs[4],
+			PieceSize: 1024,
+			FilePath:  "4",
+		},
+	}).Error
+	require.NoError(t, err)
+
+	service.runOnce(ctx)
+	time.Sleep(time.Second)
+	var deals []model.Deal
+	err = db.Find(&deals).Error
+	require.NoError(t, err)
+	require.Len(t, deals, 2)
+
+	err = db.Model(&deals).Update("state", model.DealActive).Error
+	require.NoError(t, err)
+	time.Sleep(time.Second)
+	err = db.Find(&deals).Error
+	require.NoError(t, err)
+	require.Len(t, deals, 3)
+
+	err = db.Model(&deals).Update("state", model.DealActive).Error
+	require.NoError(t, err)
+	time.Sleep(time.Second)
+	err = db.Find(&deals).Error
+	require.NoError(t, err)
+	require.Len(t, deals, 4)
+
+	err = db.Model(&schedule).Update("state", model.ScheduleActive).
+		Update("total_deal_size", 4096).
+		Update("total_deal_number", 5).
+		Error
+	require.NoError(t, err)
+	service.runOnce(ctx)
+	time.Sleep(time.Second)
+	err = db.Find(&deals).Error
+	require.NoError(t, err)
+	require.Len(t, deals, 4)
+}
+
 func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	service, err := NewDealMakerService(db, "https://api.node.glif.io", "")
+	service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
 	require.NoError(t, err)
 	mockDealmaker := new(MockDealMaker)
 	service.dealMaker = mockDealmaker
