@@ -25,6 +25,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//nolint:gocritic
 func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning ScanningRequest, skipItems bool) error {
 	_, err := os.Stat(scanning.OutDir)
 	if err != nil {

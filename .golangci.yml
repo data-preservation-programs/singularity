@@ -6,7 +6,6 @@ run:
     - docs
     - dashboard/model2ts
     - handler/datasource/generate
-    - migrate
 
 linters:
   enable-all: true
