@@ -17,7 +17,7 @@ var ListWalletCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		wallets, err := wallet.ListWalletHandler(db, c.Args().Get(0))
+		wallets, err := wallet.ListWalletHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return err
 		}

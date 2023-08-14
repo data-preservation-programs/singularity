@@ -128,20 +128,26 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 		handlerFuncType := handlerFuncValue.Type()
 
 		// Check the number of input parameters
-		if handlerFuncType.NumIn() == 0 || handlerFuncType.In(0) != reflect.TypeOf(s.db) {
+		if handlerFuncType.NumIn() == 0 || handlerFuncType.In(1) != reflect.TypeOf(s.db) {
 			logger.Error("Invalid handler function signature.")
 			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 		}
 
 		// Prepare input parameters
-		inputParams := []reflect.Value{reflect.ValueOf(s.db.WithContext(c.Request().Context()))}
+		var inputParams []reflect.Value
 
 		var j int
+		var hasContext bool
 		// Get path parameters
-		for i := 1; i < handlerFuncType.NumIn(); i++ {
+		for i := 0; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
 			if paramType.String() == "context.Context" {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
+				hasContext = true
+				continue
+			}
+			if paramType.String() == "*gorm.DB" {
+				inputParams = append(inputParams, reflect.ValueOf(s.db.WithContext(c.Request().Context())))
 				continue
 			}
 			if paramType.String() == "datasource.HandlerResolver" {
@@ -199,6 +205,10 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
+		}
+
+		if !hasContext {
+			return c.JSON(http.StatusInternalServerError, HTTPError{Err: "handler function must have context.Context as input parameter"})
 		}
 
 		// Call the handler function

@@ -84,7 +84,7 @@ func Pack(
 			return nil, errors.New("item part not found in result")
 		}
 		logger.Debugw("update item part CID", "itemPartID", itemPartID, "CID", itemPartCID.String())
-		err = database.DoRetry(func() error {
+		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
 				Update("cid", model.CID(itemPartCID)).Error
 		})
@@ -93,7 +93,7 @@ func Pack(
 		}
 		logger.Debugw("update item CID", "itemID", itemPart.ItemID, "CID", itemPartCID.String())
 		if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
-			err = database.DoRetry(func() error {
+			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).
 					Update("cid", model.CID(itemPartCID)).Error
 			})
@@ -105,7 +105,7 @@ func Pack(
 
 	logger.Debugw("create car for finished chunk", "chunkID", chunk.ID)
 	var cars []model.Car
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				for _, result := range result.CarResults {
@@ -142,7 +142,7 @@ func Pack(
 	}
 
 	logger.Debugw("update directory data", "chunkID", chunk.ID)
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			dirCache := make(map[uint64]*daggen.DirectoryData)
 			childrenCache := make(map[uint64][]uint64)

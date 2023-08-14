@@ -1,6 +1,8 @@
 package inspect
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
@@ -12,11 +14,12 @@ type GetSourceChunksRequest struct {
 }
 
 func GetSourceChunksHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
 	request GetSourceChunksRequest,
 ) ([]model.Chunk, error) {
-	return getSourceChunksHandler(db, id, request)
+	return getSourceChunksHandler(db.WithContext(ctx), id, request)
 }
 
 // @Summary Get all chunk details of a data source

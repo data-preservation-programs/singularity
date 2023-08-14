@@ -11,15 +11,15 @@ var ResetCmd = &cli.Command{
 	Name:  "reset",
 	Usage: "Reset the database",
 	Flags: []cli.Flag{cliutil.ReallyDotItFlag},
-	Action: func(context *cli.Context) error {
-		if err := cliutil.HandleReallyDoIt(context); err != nil {
+	Action: func(c *cli.Context) error {
+		if err := cliutil.HandleReallyDoIt(c); err != nil {
 			return err
 		}
-		db, closer, err := database.OpenFromCLI(context)
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		return admin.ResetHandler(db)
+		return admin.ResetHandler(c.Context, db)
 	},
 }

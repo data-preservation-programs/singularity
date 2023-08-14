@@ -36,6 +36,7 @@ var ChunksCmd = &cli.Command{
 			return err
 		}
 		result, err := inspect.GetSourceChunksHandler(
+			c.Context,
 			db,
 			uint32(sourceID),
 			inspect.GetSourceChunksRequest{State: *(c.Generic("state").(*model.WorkState))},

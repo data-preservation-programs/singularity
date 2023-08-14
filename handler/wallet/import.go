@@ -3,6 +3,7 @@ package wallet
 import (
 	"context"
 
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/filecoin-project/go-address"
@@ -16,12 +17,12 @@ type ImportRequest struct {
 }
 
 func ImportHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
 	request ImportRequest,
 ) (*model.Wallet, error) {
-	return importHandler(db, ctx, lotusClient, request)
+	return importHandler(ctx, db.WithContext(ctx), lotusClient, request)
 }
 
 // @Summary Import a private key
@@ -34,8 +35,8 @@ func ImportHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /wallet [post]
 func importHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
 	request ImportRequest,
 ) (*model.Wallet, error) {
@@ -61,7 +62,7 @@ func importHandler(
 		PrivateKey: request.PrivateKey,
 	}
 
-	err = db.Transaction(func(db *gorm.DB) error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Create(&wallet).Error
 	})
 	if err != nil {

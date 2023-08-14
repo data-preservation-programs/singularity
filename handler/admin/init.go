@@ -1,12 +1,14 @@
 package admin
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
 
-func InitHandler(db *gorm.DB) error {
-	return initHandler(db)
+func InitHandler(ctx context.Context, db *gorm.DB) error {
+	return initHandler(db.WithContext(ctx))
 }
 
 // @Summary Initialize the database

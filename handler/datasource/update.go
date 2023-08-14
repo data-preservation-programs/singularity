@@ -20,12 +20,12 @@ import (
 type Config map[string]any
 
 func UpdateSourceHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	id string,
 	config Config,
 ) (*model.Source, error) {
-	return updateSourceHandler(db, ctx, id, config)
+	return updateSourceHandler(ctx, db.WithContext(ctx), id, config)
 }
 
 // @Summary Update the config options of a source
@@ -39,8 +39,8 @@ func UpdateSourceHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id} [patch]
 func updateSourceHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	id string,
 	config Config,
 ) (*model.Source, error) {
@@ -118,7 +118,7 @@ func updateSourceHandler(
 		return nil, handler.InvalidParameterError{Err: err}
 	}
 
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Model(&source).Updates(map[string]any{
 			"metadata":              source.Metadata,
 			"scan_interval_seconds": source.ScanIntervalSeconds,

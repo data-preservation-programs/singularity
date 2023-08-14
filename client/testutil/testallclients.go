@@ -16,6 +16,7 @@ import (
 
 func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T, client.Client)) {
 	t.Run("http", func(t *testing.T) {
+		//nolint:contextcheck
 		_, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		closer.Close()

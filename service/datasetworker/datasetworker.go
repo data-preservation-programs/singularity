@@ -19,8 +19,8 @@ import (
 var logger = log.Logger("datasetworker")
 
 type Worker struct {
-	db     *gorm.DB
-	config Config
+	dbNoContext *gorm.DB
+	config      Config
 }
 
 type Config struct {
@@ -34,14 +34,14 @@ type Config struct {
 
 func NewWorker(db *gorm.DB, config Config) *Worker {
 	return &Worker{
-		db:     db,
-		config: config,
+		dbNoContext: db,
+		config:      config,
 	}
 }
 
 type Thread struct {
 	id                        uuid.UUID
-	db                        *gorm.DB
+	dbNoContext               *gorm.DB
 	logger                    *zap.SugaredLogger
 	workType                  model.WorkType
 	workingOn                 string
@@ -59,7 +59,7 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 		}
 	}
 
-	_, err := healthcheck.Register(ctx, w.db, w.id, getState, true)
+	_, err := healthcheck.Register(ctx, w.dbNoContext, w.id, getState, true)
 	if err != nil {
 		cancel()
 		return nil, nil, errors.Wrap(err, "failed to register worker")
@@ -68,14 +68,14 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, w.db, w.id, getState)
+		healthcheck.StartReportHealth(ctx, w.dbNoContext, w.id, getState)
 		w.logger.Info("health report stopped")
 	}()
 
 	healthcheckCleanupDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckCleanupDone)
-		healthcheck.StartHealthCheckCleanup(ctx, w.db)
+		healthcheck.StartHealthCheckCleanup(ctx, w.dbNoContext)
 		w.logger.Info("healthcheck cleanup stopped")
 	}()
 
@@ -92,7 +92,10 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 	go func() {
 		defer close(cleanupDone)
 		<-ctx.Done()
-		err := w.cleanup()
+		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		//nolint:contextcheck
+		err := w.cleanup(ctx2)
 		if err != nil {
 			w.logger.Errorw("failed to cleanup", "error", err)
 		} else {
@@ -107,9 +110,9 @@ func (w *Thread) Name() string {
 	return "Dataset Worker Thread - " + w.id.String()
 }
 
-func (w *Thread) cleanup() error {
-	return database.DoRetry(func() error {
-		return w.db.Where("id = ?", w.id.String()).Delete(&model.Worker{}).Error
+func (w *Thread) cleanup(ctx context.Context) error {
+	return database.DoRetry(ctx, func() error {
+		return w.dbNoContext.WithContext(ctx).Where("id = ?", w.id.String()).Delete(&model.Worker{}).Error
 	})
 }
 
@@ -119,7 +122,7 @@ func (w Worker) Run(ctx context.Context) error {
 		id := uuid.New()
 		thread := &Thread{
 			id:                        id,
-			db:                        w.db,
+			dbNoContext:               w.dbNoContext,
 			logger:                    logger.With("workerID", id.String()),
 			datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 			config:                    w.config,
@@ -170,8 +173,8 @@ func (w *Thread) handleWorkComplete(ctx context.Context, workType WorkType, id u
 	updates[WorkerIDKey[workType]] = nil
 	updates[ErrorMessageKey[workType]] = ""
 	updates[WorkStateKey[workType]] = model.Complete
-	return database.DoRetry(func() error {
-		return w.db.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
+	return database.DoRetry(ctx, func() error {
+		return w.dbNoContext.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
 	})
 }
 
@@ -194,13 +197,13 @@ func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint
 		updates[ErrorMessageKey[workType]] = err.Error()
 		updates[WorkStateKey[workType]] = model.Error
 	}
-	return database.DoRetry(func() error {
-		return w.db.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
+	return database.DoRetry(ctx, func() error {
+		return w.dbNoContext.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
 	})
 }
 
-func (w *Thread) findWork() (WorkType, *model.Source, *model.Chunk, error) {
-	source, err := w.findDagWork()
+func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.Chunk, error) {
+	source, err := w.findDagWork(ctx)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "failed to find dag work")
 	}
@@ -208,7 +211,7 @@ func (w *Thread) findWork() (WorkType, *model.Source, *model.Chunk, error) {
 		return WorkTypeDag, source, nil, nil
 	}
 
-	source, err = w.findScanWork()
+	source, err = w.findScanWork(ctx)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "failed to find scan work")
 	}
@@ -216,7 +219,7 @@ func (w *Thread) findWork() (WorkType, *model.Source, *model.Chunk, error) {
 		return WorkTypeScan, source, nil, nil
 	}
 
-	chunk, err := w.findPackWork()
+	chunk, err := w.findPackWork(ctx)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "failed to find pack work")
 	}
@@ -235,7 +238,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 	}()
 	for {
 		var id uint64
-		workType, source, chunk, err := w.findWork()
+		workType, source, chunk, err := w.findWork(ctx)
 		if err != nil {
 			goto errorLoop
 		}
@@ -259,7 +262,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			err = w.pack(ctx, *chunk)
 			id = uint64(chunk.ID)
 		case WorkTypeDag:
-			err = w.dag(*source)
+			err = w.dag(ctx, *source)
 			id = uint64(source.ID)
 		}
 		if err != nil {

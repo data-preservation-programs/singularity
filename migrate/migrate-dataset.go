@@ -31,7 +31,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	if err != nil {
 		log.Printf("[Warning] Output directory %s does not exist\n", scanning.OutDir)
 	}
-	ds, err := dataset.CreateHandler(db, dataset.CreateRequest{
+	ds, err := dataset.CreateHandler(ctx, db, dataset.CreateRequest{
 		Name:                 scanning.Name,
 		MaxSizeStr:           fmt.Sprintf("%d", scanning.MaxSize),
 		OutputDirs:           nil,
@@ -61,7 +61,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 		"rescanInterval":    "0",
 		"scanningState":     "complete",
 	}
-	src, err := datasource.CreateDatasourceHandler(db, ctx, nil, sourceType, ds.Name, metadata)
+	src, err := datasource.CreateDatasourceHandler(ctx, db, sourceType, ds.Name, metadata)
 	if err != nil {
 		return errors.Wrap(err, "failed to create datasource")
 	}
@@ -222,7 +222,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						item.CID = model.CID(root.Cid())
 					}
 				}
-				err = datasource.EnsureParentDirectories(db, &item, rootDirectoryID, directoryCache)
+				err = datasource.EnsureParentDirectories(ctx, db, &item, rootDirectoryID, directoryCache)
 				if err != nil {
 					return errors.Wrap(err, "failed to ensure parent directories")
 				}

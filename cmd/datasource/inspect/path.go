@@ -20,6 +20,7 @@ var PathCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetPathHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			inspect.GetPathRequest{

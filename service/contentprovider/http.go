@@ -22,9 +22,9 @@ import (
 )
 
 type HTTPServer struct {
-	db       *gorm.DB
-	bind     string
-	resolver datasource.HandlerResolver
+	dbNoContext *gorm.DB
+	bind        string
+	resolver    datasource.HandlerResolver
 }
 
 func (*HTTPServer) Name() string {
@@ -141,7 +141,7 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 }
 
 // GetMetadataHandler is a function that handles HTTP requests to get the metadata of a piece.
-// It takes an Echo context and a Gorm DB connection as arguments.
+// It takes an Echo context and a Gorm DBNoContext connection as arguments.
 //
 // The function first parses the piece CID from the URL parameters. If the CID is invalid, it returns a 400 Bad Request response.
 //
@@ -155,7 +155,7 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 //
 // Parameters:
 // c: The Echo context for the HTTP request.
-// db: The Gorm DB connection to use for database queries.
+// dbNoContext: The Gorm DBNoContext connection to use for database queries.
 //
 // Returns:
 // An error if there was a problem handling the request.
@@ -194,7 +194,7 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 }
 
 func (s *HTTPServer) getMetadataHandler(c echo.Context) error {
-	return GetMetadataHandler(c, s.db)
+	return GetMetadataHandler(c, s.dbNoContext.WithContext(c.Request().Context()))
 }
 
 type PieceMetadata struct {
@@ -236,7 +236,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	time.Time,
 	error,
 ) {
-	db := s.db.WithContext(ctx)
+	db := s.dbNoContext.WithContext(ctx)
 	var cars []model.Car
 	err := db.Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
 	if err != nil {
@@ -273,7 +273,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	}
 
 	for _, car := range cars {
-		metadata, err := getPieceMetadata(ctx, s.db, car)
+		metadata, err := getPieceMetadata(ctx, s.dbNoContext.WithContext(ctx), car)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to get piece metadata"))
 			continue

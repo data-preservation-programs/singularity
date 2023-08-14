@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -11,10 +12,11 @@ import (
 )
 
 func GetSourceChunkDetailHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.Chunk, error) {
-	return getSourceChunkDetailHandler(db, id)
+	return getSourceChunkDetailHandler(db.WithContext(ctx), id)
 }
 
 // @Summary Get detail of a specific chunk

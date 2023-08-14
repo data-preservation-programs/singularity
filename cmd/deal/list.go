@@ -34,7 +34,7 @@ var ListCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		deals, err := deal.ListHandler(db, deal.ListDealRequest{
+		deals, err := deal.ListHandler(c.Context, db, deal.ListDealRequest{
 			Datasets:  c.StringSlice("dataset"),
 			Schedules: c.UintSlice("schedule"),
 			Providers: c.StringSlice("provider"),

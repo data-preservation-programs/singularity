@@ -1,6 +1,8 @@
 package dataset
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -39,8 +41,9 @@ func listPiecesHandler(
 }
 
 func ListPiecesHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Car, error) {
-	return listPiecesHandler(db, datasetName)
+	return listPiecesHandler(db.WithContext(ctx), datasetName)
 }

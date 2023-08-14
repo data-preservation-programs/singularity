@@ -56,12 +56,12 @@ func argToDuration(s string) (time.Duration, error) {
 }
 
 func CreateHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
 	request CreateRequest,
 ) (*model.Schedule, error) {
-	return createHandler(db, ctx, lotusClient, request)
+	return createHandler(ctx, db.WithContext(ctx), lotusClient, request)
 }
 
 // @Summary Create a new schedule
@@ -75,8 +75,8 @@ func CreateHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /schedule [post]
 func createHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
 	request CreateRequest,
 ) (*model.Schedule, error) {
@@ -175,7 +175,9 @@ func createHandler(
 		PricePerDeal:         request.PricePerDeal,
 	}
 
-	if err := db.Create(&schedule).Error; err != nil {
+	if err := database.DoRetry(ctx, func() error {
+		return db.Create(&schedule).Error
+	}); err != nil {
 		return nil, err
 	}
 	return &schedule, nil

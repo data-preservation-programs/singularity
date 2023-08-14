@@ -110,7 +110,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -236,7 +236,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -291,7 +291,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -374,7 +374,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			require.NoError(t, err)
 		}
 		require.NoError(t, err)
-		ck, err := thread.findPackWork()
+		ck, err := thread.findPackWork(context.Background())
 		require.NoError(t, err)
 		if shouldBeFound {
 			require.NotNil(t, ck)
@@ -396,7 +396,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -468,7 +468,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		}
 		err = db.Create(&root).Error
 		require.NoError(t, err)
-		src, err := thread.findScanWork()
+		src, err := thread.findScanWork(context.Background())
 		require.NoError(t, err)
 		if shouldBeFound {
 			require.NotNil(t, src)

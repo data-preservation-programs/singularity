@@ -21,6 +21,7 @@ var StatusCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := datasource.GetSourceStatusHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)
