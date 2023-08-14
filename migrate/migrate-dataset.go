@@ -25,6 +25,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//nolint:gocritic
 func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning ScanningRequest, skipItems bool) error {
 	_, err := os.Stat(scanning.OutDir)
 	if err != nil {
@@ -50,15 +51,15 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 
 	sourceType := "local"
 	path := scanning.Path
+	if strings.HasPrefix(scanning.Path, "s3://") {
+		sourceType = "s3"
+		path = strings.TrimPrefix(scanning.Path, "s3://")
+	}
 	metadata := map[string]any{
 		"sourcePath":        path,
 		"deleteAfterExport": false,
 		"rescanInterval":    "0",
 		"scanningState":     "complete",
-	}
-	if strings.HasPrefix(scanning.Path, "s3://") {
-		sourceType = "s3"
-		path = strings.TrimPrefix(scanning.Path, "s3://")
 	}
 	src, err := datasource.CreateDatasourceHandler(db, ctx, nil, sourceType, ds.Name, metadata)
 	if err != nil {
@@ -79,6 +80,8 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	}
 
 	directoryCache := map[string]uint64{}
+	directoryCache[""] = rootDirectoryID
+	directoryCache["."] = rootDirectoryID
 	var lastItem model.Item
 	for cursor.Next(ctx) {
 		var generation GenerationRequest
@@ -258,7 +261,7 @@ func MigrateDataset(cctx *cli.Context) error {
 	defer closer.Close()
 	ctx := cctx.Context
 	db = db.WithContext(ctx)
-	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(cctx.String("mongo-connection-string")))
+	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoConnectionString))
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}

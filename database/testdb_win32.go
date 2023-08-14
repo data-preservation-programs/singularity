@@ -12,7 +12,7 @@ import (
 var TestConnectionString = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
 
 func OpenInMemory() (*gorm.DB, io.Closer, error) {
-	db, closer, err := OpenWithLogger("mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true")
+	db, closer, err := OpenWithLogger(TestConnectionString)
 	if err != nil {
 		logger.Error(err)
 		return nil, nil, err
