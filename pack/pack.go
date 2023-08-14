@@ -7,7 +7,7 @@ import (
 	"path"
 
 	"github.com/data-preservation-programs/singularity/pack/encryption"
-	util "github.com/ipfs/go-ipfs-util"
+	"github.com/ipfs/boxo/util"
 	"github.com/rclone/rclone/fs"
 
 	"github.com/data-preservation-programs/singularity/datasource"

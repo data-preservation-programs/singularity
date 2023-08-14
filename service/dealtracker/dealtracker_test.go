@@ -11,8 +11,8 @@ import (
 	"github.com/bcicen/jstream"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
 )
