@@ -9,37 +9,37 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetSourceItemDetailHandler(
+func GetSourceFileDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Item, error) {
-	return getSourceItemDetailHandler(db, id)
+) (*model.File, error) {
+	return getSourceFileDetailHandler(db, id)
 }
 
-// @Summary Get details about an item
+// @Summary Get details about an file
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "Item ID"
-// @Success 200 {object} model.Item
+// @Param id path string true "File ID"
+// @Success 200 {object} model.File
 // @Failure 500 {object} api.HTTPError
-// @Router /item/{id} [get]
-func getSourceItemDetailHandler(
+// @Router /file/{id} [get]
+func getSourceFileDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Item, error) {
-	itemID, err := strconv.Atoi(id)
+) (*model.File, error) {
+	fileID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid item id")
+		return nil, handler.NewInvalidParameterErr("invalid file id")
 	}
-	var item model.Item
-	err = db.Preload("FileRanges").Where("id = ?", itemID).First(&item).Error
+	var file model.File
+	err = db.Preload("FileRanges").Where("id = ?", fileID).First(&file).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("item not found")
+		return nil, handler.NewInvalidParameterErr("file not found")
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	return &item, nil
+	return &file, nil
 }

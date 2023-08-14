@@ -17,39 +17,39 @@ import (
 	"gorm.io/gorm"
 )
 
-type ItemInfo struct {
-	Path string `json:"path"` // Path to the new item, relative to the source
+type FileInfo struct {
+	Path string `json:"path"` // Path to the new file, relative to the source
 }
 
-func PushItemHandler(
+func PushFileHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	datasourceHandlerResolver datasource.HandlerResolver,
 	sourceID uint32,
-	itemInfo ItemInfo,
-) (*model.Item, error) {
-	return pushItemHandler(db, ctx, datasourceHandlerResolver, sourceID, itemInfo)
+	fileInfo FileInfo,
+) (*model.File, error) {
+	return pushFileHandler(db, ctx, datasourceHandlerResolver, sourceID, fileInfo)
 }
 
-// @Summary Push an item to be queued
+// @Summary Push a file to be queued
 // @Description Tells Singularity that something is ready to be grabbed for data preparation
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Param item body ItemInfo true "Item"
-// @Success 201 {object} model.Item
+// @Param file body FileInfo true "File"
+// @Success 201 {object} model.File
 // @Failure 400 {string} string "Bad Request"
-// @Failure 409 {string} string "Item already exists"
+// @Failure 409 {string} string "File already exists"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /source/{id}/push [post]
-func pushItemHandler(
+func pushFileHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	datasourceHandlerResolver datasource.HandlerResolver,
 	sourceID uint32,
-	itemInfo ItemInfo,
-) (*model.Item, error) {
+	fileInfo FileInfo,
+) (*model.File, error) {
 	var source model.Source
 	err := db.Joins("Dataset").Where("sources.id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -64,35 +64,35 @@ func pushItemHandler(
 		return nil, err
 	}
 
-	entry, err := dsHandler.Check(ctx, itemInfo.Path)
+	entry, err := dsHandler.Check(ctx, fileInfo.Path)
 	if err != nil {
 		return nil, handler.InvalidParameterError{Err: err}
 	}
 
 	obj, ok := entry.(fs.ObjectInfo)
 	if !ok {
-		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s is not an object", itemInfo.Path))
+		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s is not an object", fileInfo.Path))
 	}
 
-	item, fileRanges, err := PushItem(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
+	file, fileRanges, err := PushFile(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if item == nil {
+	if file == nil {
 		return nil, handler.NewDuplicateRecordError(fmt.Sprintf("%s already exists", obj.Remote()))
 	}
 
-	item.FileRanges = fileRanges
+	file.FileRanges = fileRanges
 
-	return item, nil
+	return file, nil
 }
 
-func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
+func PushFile(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	source model.Source, dataset model.Dataset,
-	directoryCache map[string]uint64) (*model.Item, []model.FileRange, error) {
-	logger.Debugw("pushed item", "item", obj.Remote(), "source_id", source.ID, "dataset_id", dataset.ID)
+	directoryCache map[string]uint64) (*model.File, []model.FileRange, error) {
+	logger.Debugw("pushed file", "file", obj.Remote(), "source_id", source.ID, "dataset_id", dataset.ID)
 	db = db.WithContext(ctx)
 	splitSize := MaxSizeToSplitSize(dataset.MaxSize)
 	rootID, err := source.RootDirectoryID(db)
@@ -101,10 +101,10 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	}
 	size, hashValue, lastModified, lastModifiedReliable := ExtractFromFsObject(ctx, obj)
 	existing := int64(0)
-	logger.Debugw("finding if the item already exists",
+	logger.Debugw("finding if the file already exists",
 		"source_id", source.ID, "path", obj.Remote(),
 		"hash", hashValue, "size", size, "last_modified_reliable", lastModifiedReliable, "last_modified", lastModified.UnixNano())
-	err = db.Model(&model.Item{}).Where(
+	err = db.Model(&model.File{}).Where(
 		"source_id = ? AND path = ? AND "+
 			"(( hash = ? AND hash != '' ) "+
 			"OR (size = ? AND (? OR last_modified_timestamp_nano = ?)))",
@@ -112,76 +112,76 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 		hashValue, size, !lastModifiedReliable, lastModified.UnixNano(),
 	).Count(&existing).Error
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to check existing item")
+		return nil, nil, errors.Wrap(err, "failed to check existing file")
 	}
 	if existing > 0 {
-		logger.Debugw("item already exists", "source_id", source.ID, "path", obj.Remote())
+		logger.Debugw("file already exists", "source_id", source.ID, "path", obj.Remote())
 		return nil, nil, nil
 	}
-	item := model.Item{
+	file := model.File{
 		SourceID:                  source.ID,
 		Path:                      obj.Remote(),
 		Size:                      size,
 		LastModifiedTimestampNano: lastModified.UnixNano(),
 		Hash:                      hashValue,
 	}
-	logger.Debugw("new item", "item", item)
-	err = EnsureParentDirectories(db, &item, rootID, directoryCache)
+	logger.Debugw("new file", "file", file)
+	err = EnsureParentDirectories(db, &file, rootID, directoryCache)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to ensure parent directories")
 	}
 	var fileRanges []model.FileRange
 	err = database.DoRetry(func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			err := db.Create(&item).Error
+			err := db.Create(&file).Error
 			if err != nil {
-				return errors.Wrap(err, "failed to create item")
+				return errors.Wrap(err, "failed to create file")
 			}
 			if dataset.UseEncryption() {
 				fileRanges = append(fileRanges, model.FileRange{
-					ItemID: item.ID,
+					FileID: file.ID,
 					Offset: 0,
-					Length: item.Size,
+					Length: file.Size,
 				})
 			} else {
 				offset := int64(0)
 				for {
 					length := splitSize
-					if item.Size-offset < length {
-						length = item.Size - offset
+					if file.Size-offset < length {
+						length = file.Size - offset
 					}
 					fileRanges = append(fileRanges, model.FileRange{
-						ItemID: item.ID,
+						FileID: file.ID,
 						Offset: offset,
 						Length: length,
 					})
 					offset += length
-					if offset >= item.Size {
+					if offset >= file.Size {
 						break
 					}
 				}
 			}
 			err = db.CreateInBatches(&fileRanges, util.BatchSize).Error
 			if err != nil {
-				return errors.Wrap(err, "failed to create item parts")
+				return errors.Wrap(err, "failed to create file parts")
 			}
 			return nil
 		})
 	})
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to create item")
+		return nil, nil, errors.Wrap(err, "failed to create file")
 	}
-	return &item, fileRanges, nil
+	return &file, fileRanges, nil
 }
 
 func EnsureParentDirectories(db *gorm.DB,
-	item *model.Item, rootDirID uint64,
+	file *model.File, rootDirID uint64,
 	directoryCache map[string]uint64) error {
-	if item.DirectoryID != nil {
+	if file.DirectoryID != nil {
 		return nil
 	}
 	last := rootDirID
-	segments := strings.Split(item.Path, "/")
+	segments := strings.Split(file.Path, "/")
 	for i, segment := range segments[:len(segments)-1] {
 		p := strings.Join(segments[:i+1], "/")
 		if dirID, ok := directoryCache[p]; ok {
@@ -189,7 +189,7 @@ func EnsureParentDirectories(db *gorm.DB,
 			continue
 		}
 		newDir := model.Directory{
-			SourceID: item.SourceID,
+			SourceID: file.SourceID,
 			Name:     segment,
 			ParentID: &last,
 		}
@@ -208,7 +208,7 @@ func EnsureParentDirectories(db *gorm.DB,
 		last = newDir.ID
 	}
 
-	item.DirectoryID = &last
+	file.DirectoryID = &last
 	return nil
 }
 

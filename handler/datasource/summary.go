@@ -14,14 +14,14 @@ type ChunksByState struct {
 	State model.WorkState `json:"state"` // the state of the chunks
 }
 
-type ItemSummary struct {
-	Total    int64 `json:"total"`    // number of items in the source
-	Prepared int64 `json:"prepared"` // number of items prepared
+type FileSummary struct {
+	Total    int64 `json:"total"`    // number of files in the source
+	Prepared int64 `json:"prepared"` // number of files prepared
 }
 
 type SourceStatus struct {
 	ChunkSummary []ChunksByState `json:"chunkSummary"` // summary of the chunks
-	ItemSummary  ItemSummary     `json:"itemSummary"`  // summary of the items
+	FileSummary  FileSummary     `json:"fileSummary"`  // summary of the files
 	FailedChunks []model.Chunk   `json:"failedChunks"` // failed chunks
 }
 
@@ -60,12 +60,12 @@ func getSourceStatusHandler(
 		return nil, err
 	}
 
-	err = db.Model(&model.Item{}).Where("source_id = ?", sourceID).Count(&summary.ItemSummary.Total).Error
+	err = db.Model(&model.File{}).Where("source_id = ?", sourceID).Count(&summary.FileSummary.Total).Error
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Model(&model.Item{}).Where("source_id = ? AND cid IS NOT NULL", sourceID).Count(&summary.ItemSummary.Prepared).Error
+	err = db.Model(&model.File{}).Where("source_id = ? AND cid IS NOT NULL", sourceID).Count(&summary.FileSummary.Prepared).Error
 	if err != nil {
 		return nil, err
 	}

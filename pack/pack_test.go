@@ -13,19 +13,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAssembleCar_LargeItems(t *testing.T) {
+func TestAssembleCar_LargeFiles(t *testing.T) {
 	ctx := context.Background()
 	data := make([]byte, 10*1<<20)
 	rand.Read(data)
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader(data)), nil, nil)
-	items := []model.FileRange{
+	files := []model.FileRange{
 		{
 			ID:     0,
 			Offset: 0,
 			Length: 10 * 1 << 20,
-			Item: &model.Item{
+			File: &model.File{
 				Size: 10 * 1 << 20,
 			},
 		},
@@ -33,12 +33,12 @@ func TestAssembleCar_LargeItems(t *testing.T) {
 			ID:     1,
 			Offset: 0,
 			Length: 10 * 1 << 20,
-			Item: &model.Item{
+			File: &model.File{
 				Size: 10 * 1 << 20,
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{}, items, "", 1<<30)
+	result, err := AssembleCar(ctx, handler, model.Dataset{}, files, "", 1<<30)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -53,16 +53,16 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	items := []model.FileRange{
+	files := []model.FileRange{
 		{
 			Offset: 1,
 			Length: 4,
-			Item: &model.Item{
+			File: &model.File{
 				Size: 5,
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{}, items, "", 1<<20)
+	result, err := AssembleCar(ctx, handler, model.Dataset{}, files, "", 1<<20)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -77,7 +77,7 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 	require.EqualValues(t, 59, result.CarResults[0].CarBlocks[0].CarOffset)
 	v, _, _ := varint.FromUvarint(result.CarResults[0].CarBlocks[0].Varint)
 	require.EqualValues(t, 41, v)
-	require.EqualValues(t, 1, result.CarResults[0].CarBlocks[0].ItemOffset)
+	require.EqualValues(t, 1, result.CarResults[0].CarBlocks[0].FileOffset)
 }
 
 func TestAssembleCar_WithEncryption(t *testing.T) {
@@ -85,18 +85,18 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	items := []model.FileRange{
+	files := []model.FileRange{
 		{
 			Offset: 0,
 			Length: 5,
-			Item: &model.Item{
+			File: &model.File{
 				Size: 5,
 			},
 		},
 	}
 	result, err := AssembleCar(ctx, handler, model.Dataset{
 		EncryptionRecipients: []string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"},
-	}, items, t.TempDir(), 1<<20)
+	}, files, t.TempDir(), 1<<20)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.NotEmpty(t, result.CarResults[0].CarFilePath)

@@ -166,10 +166,10 @@ Network Support:
 					Usage: "Get preparation status of a data source",
 					Subcommands: []*cli.Command{
 						inspect.ChunksCmd,
-						inspect.ItemsCmd,
+						inspect.FilesCmd,
 						inspect.DagsCmd,
 						inspect.ChunkDetailCmd,
-						inspect.ItemDetailCmd,
+						inspect.FileDetailCmd,
 						inspect.PathCmd,
 					},
 				},

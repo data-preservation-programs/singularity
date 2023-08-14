@@ -46,15 +46,15 @@ func TestChunk(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		// Push items
-		itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "a"})
+		// Push files
+		fileA, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: "a"})
 		require.NoError(t, err)
 
-		itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "b"})
+		fileB, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: "b"})
 		require.NoError(t, err)
 
 		// Chunk
-		chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{ItemIDs: []uint64{itemA.ID, itemB.ID}})
+		chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
 		require.NoError(t, err)
 		fmt.Printf("%#v\n", chunk)
 

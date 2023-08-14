@@ -12,7 +12,7 @@ import (
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-ipfs-blockstore"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	uio "github.com/ipfs/go-unixfs/io"
@@ -40,7 +40,7 @@ func ResolveDirectoryTree(currentID uint64,
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve child %d", child)
 		}
-		err = current.AddItem(link.Name, link.Cid, link.Size)
+		err = current.AddFile(link.Name, link.Cid, link.Size)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to add child %d to directory", child)
 		}
@@ -84,15 +84,15 @@ func NewDirectoryData() DirectoryData {
 	}
 }
 
-func (d *DirectoryData) AddItem(name string, c cid.Cid, length uint64) error {
+func (d *DirectoryData) AddFile(name string, c cid.Cid, length uint64) error {
 	return d.dir.AddChild(context.Background(), name, NewDummyNode(length, c))
 }
 
-func (d *DirectoryData) AddItemFromLinks(name string, links []format.Link) (cid.Cid, error) {
+func (d *DirectoryData) AddFileFromLinks(name string, links []format.Link) (cid.Cid, error) {
 	ctx := context.Background()
-	blks, node, err := pack.AssembleItemFromLinks(links)
+	blks, node, err := pack.AssembleFileFromLinks(links)
 	if err != nil {
-		return cid.Undef, errors.Wrap(err, "failed to assemble item from links")
+		return cid.Undef, errors.Wrap(err, "failed to assemble file from links")
 	}
 	err = d.dir.AddChild(ctx, name, node)
 	if err != nil {

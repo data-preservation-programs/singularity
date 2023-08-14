@@ -263,7 +263,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
-	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushItemHandler))
+	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushFileHandler))
 	e.POST("/api/source/:id/repack", s.toEchoHandler(datasource2.RepackHandler))
 	e.POST("/api/source/:id/chunk", s.toEchoHandler(datasource2.ChunkHandler))
 	e.POST("/api/chunk/:id/pack", s.toEchoHandler(datasource2.PackHandler))
@@ -275,11 +275,11 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))
 	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
 	e.GET("/api/source/:id/chunks", s.toEchoHandler(inspect.GetSourceChunksHandler))
-	e.GET("/api/source/:id/items", s.toEchoHandler(inspect.GetSourceItemsHandler))
+	e.GET("/api/source/:id/files", s.toEchoHandler(inspect.GetSourceFilesHandler))
 	e.GET("/api/source/:id/dags", s.toEchoHandler(inspect.GetDagsHandler))
 	e.GET("/api/source/:id/path", s.toEchoHandler(inspect.GetPathHandler))
 	e.GET("/api/chunk/:id", s.toEchoHandler(inspect.GetSourceChunkDetailHandler))
-	e.GET("/api/item/:id", s.toEchoHandler(inspect.GetSourceItemDetailHandler))
+	e.GET("/api/file/:id", s.toEchoHandler(inspect.GetSourceFileDetailHandler))
 
 	// Deal Schedule
 	e.POST("/api/send_deal", s.toEchoHandler(deal.SendManualHandler))

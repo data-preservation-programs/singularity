@@ -74,31 +74,31 @@ func Pack(
 	result, err := pack.AssembleCar(ctx, handler, *chunk.Source.Dataset,
 		chunk.FileRanges, outDir, chunk.Source.Dataset.PieceSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to pack items")
+		return nil, errors.Wrap(err, "failed to pack files")
 	}
 
 	for _, fileRange := range chunk.FileRanges {
 		fileRangeID := fileRange.ID
 		fileRangeCID, ok := result.FileRangeCIDs[fileRangeID]
 		if !ok {
-			return nil, errors.New("item part not found in result")
+			return nil, errors.New("file part not found in result")
 		}
-		logger.Debugw("update item part CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
+		logger.Debugw("update file part CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
 		err = database.DoRetry(func() error {
 			return db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
 				Update("cid", model.CID(fileRangeCID)).Error
 		})
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to update cid of item")
+			return nil, errors.Wrap(err, "failed to update cid of file")
 		}
-		logger.Debugw("update item CID", "itemID", fileRange.ItemID, "CID", fileRangeCID.String())
-		if fileRange.Offset == 0 && fileRange.Length == fileRange.Item.Size {
+		logger.Debugw("update file CID", "fileID", fileRange.FileID, "CID", fileRangeCID.String())
+		if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 			err = database.DoRetry(func() error {
-				return db.Model(&model.Item{}).Where("id = ?", fileRange.ItemID).
+				return db.Model(&model.File{}).Where("id = ?", fileRange.FileID).
 					Update("cid", model.CID(fileRangeCID)).Error
 			})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to update cid of item")
+				return nil, errors.Wrap(err, "failed to update cid of file")
 			}
 		}
 	}
@@ -147,7 +147,7 @@ func Pack(
 			dirCache := make(map[uint64]*daggen.DirectoryData)
 			childrenCache := make(map[uint64][]uint64)
 			for _, fileRange := range chunk.FileRanges {
-				dirID := fileRange.Item.DirectoryID
+				dirID := fileRange.File.DirectoryID
 				for dirID != nil {
 					dirData, ok := dirCache[*dirID]
 					if !ok {
@@ -170,35 +170,35 @@ func Pack(
 					}
 
 					// Update the directory for first iteration
-					if dirID == fileRange.Item.DirectoryID {
+					if dirID == fileRange.File.DirectoryID {
 						fileRangeID := fileRange.ID
 						fileRangeCID, ok := result.FileRangeCIDs[fileRangeID]
 						if !ok {
-							return errors.New("item part not found in result")
+							return errors.New("file part not found in result")
 						}
 						err = db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
 							Update("cid", model.CID(fileRangeCID)).Error
 						if err != nil {
-							return errors.Wrap(err, "failed to update cid of item")
+							return errors.Wrap(err, "failed to update cid of file")
 						}
-						name := fileRange.Item.Path[strings.LastIndex(fileRange.Item.Path, "/")+1:]
-						if fileRange.Offset == 0 && fileRange.Length == fileRange.Item.Size {
+						name := fileRange.File.Path[strings.LastIndex(fileRange.File.Path, "/")+1:]
+						if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 							partCID := result.FileRangeCIDs[fileRange.ID]
-							err = dirData.AddItem(name, partCID, uint64(fileRange.Length))
+							err = dirData.AddFile(name, partCID, uint64(fileRange.Length))
 							if err != nil {
-								return errors.Wrap(err, "failed to add item to directory")
+								return errors.Wrap(err, "failed to add file to directory")
 							}
 							/*
-								err = db.Model(&model.Item{}).Where("id = ?", fileRange.ItemID).Update("cid", model.CID(fileRangeCID)).Error
+								err = db.Model(&model.File{}).Where("id = ?", fileRange.FileID).Update("cid", model.CID(fileRangeCID)).Error
 								if err != nil {
-									return errors.Wrap(err, "failed to update cid of item")
+									return errors.Wrap(err, "failed to update cid of file")
 								}
 							*/
 						} else {
 							var allParts []model.FileRange
-							err = db.Where("item_id = ?", fileRange.ItemID).Order("\"offset\" asc").Find(&allParts).Error
+							err = db.Where("file_id = ?", fileRange.FileID).Order("\"offset\" asc").Find(&allParts).Error
 							if err != nil {
-								return errors.Wrap(err, "failed to get all item parts")
+								return errors.Wrap(err, "failed to get all file parts")
 							}
 							if underscore.All(allParts, func(p model.FileRange) bool {
 								return p.CID != model.CID(cid.Undef)
@@ -209,13 +209,13 @@ func Pack(
 										Cid:  cid.Cid(p.CID),
 									}
 								})
-								c, err := dirData.AddItemFromLinks(name, links)
+								c, err := dirData.AddFileFromLinks(name, links)
 								if err != nil {
-									return errors.Wrap(err, "failed to add item to directory")
+									return errors.Wrap(err, "failed to add file to directory")
 								}
-								err = db.Model(&model.Item{}).Where("id = ?", fileRange.ItemID).Update("cid", model.CID(c)).Error
+								err = db.Model(&model.File{}).Where("id = ?", fileRange.FileID).Update("cid", model.CID(c)).Error
 								if err != nil {
-									return errors.Wrap(err, "failed to update cid of item")
+									return errors.Wrap(err, "failed to update cid of file")
 								}
 							}
 						}
@@ -261,12 +261,12 @@ func Pack(
 		logger.Info("Deleting original data source")
 		handled := map[uint64]struct{}{}
 		for _, fileRange := range chunk.FileRanges {
-			if _, ok := handled[fileRange.ItemID]; ok {
+			if _, ok := handled[fileRange.FileID]; ok {
 				continue
 			}
-			handled[fileRange.ItemID] = struct{}{}
-			object := result.Objects[fileRange.ItemID]
-			if fileRange.Offset == 0 && fileRange.Length == fileRange.Item.Size {
+			handled[fileRange.FileID] = struct{}{}
+			object := result.Objects[fileRange.FileID]
+			if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 				logger.Debugw("removing object", "path", object.Remote())
 				err = object.Remove(ctx)
 				if err != nil {
@@ -277,13 +277,13 @@ func Pack(
 			// Make sure all parts of this file has been exported before deleting
 			var unfinishedCount int64
 			err = db.Model(&model.FileRange{}).
-				Where("item_id = ? AND cid IS NULL", fileRange.ItemID).Count(&unfinishedCount).Error
+				Where("file_id = ? AND cid IS NULL", fileRange.FileID).Count(&unfinishedCount).Error
 			if err != nil {
-				logger.Warnw("failed to get count for unfinished item parts", "error", err)
+				logger.Warnw("failed to get count for unfinished file parts", "error", err)
 				continue
 			}
 			if unfinishedCount > 0 {
-				logger.Info("not all items have been exported yet, skipping delete")
+				logger.Info("not all files have been exported yet, skipping delete")
 				continue
 			}
 			logger.Debugw("removing object", "path", object.Remote())

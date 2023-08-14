@@ -12,7 +12,7 @@ import (
 )
 
 type ChunkRequest struct {
-	ItemIDs []uint64 `json:"itemIDs" validation:"required"`
+	FileIDs []uint64 `json:"fileIDs" validation:"required"`
 }
 
 func ChunkHandler(
@@ -23,13 +23,13 @@ func ChunkHandler(
 	return chunkHandler(db, sourceID, request)
 }
 
-// @Summary Create a chunk for the specified items
+// @Summary Create a chunk for the specified files
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
 // @Param request body ChunkRequest true "Request body"
-// @Success 201 {object} model.Item
+// @Success 201 {object} model.File
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /source/{id}/chunk [post]
@@ -55,12 +55,12 @@ func chunkHandler(
 				if err != nil {
 					return errors.Wrap(err, "failed to create chunk")
 				}
-				fileRangeIDChunks := util.ChunkSlice(request.ItemIDs, util.BatchSize)
+				fileRangeIDChunks := util.ChunkSlice(request.FileIDs, util.BatchSize)
 				for _, fileRangeIDChunks := range fileRangeIDChunks {
 					err = db.Model(&model.FileRange{}).
 						Where("id IN ?", fileRangeIDChunks).Update("chunk_id", chunk.ID).Error
 					if err != nil {
-						return errors.Wrap(err, "failed to update items")
+						return errors.Wrap(err, "failed to update files")
 					}
 				}
 				return nil

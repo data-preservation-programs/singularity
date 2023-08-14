@@ -53,16 +53,16 @@ func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, para
 func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {
 	return inspect.GetSourceChunksHandler(c.db.WithContext(ctx), sourceID, request)
 }
-func (c *Client) GetSourceItems(ctx context.Context, sourceID uint32) ([]model.Item, error) {
-	return inspect.GetSourceItemsHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
+func (c *Client) GetSourceFiles(ctx context.Context, sourceID uint32) ([]model.File, error) {
+	return inspect.GetSourceFilesHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
 }
 
-func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
-	return inspect.GetSourceItemDetailHandler(c.db.WithContext(ctx), strconv.FormatUint(id, 10))
+func (c *Client) GetFile(ctx context.Context, id uint64) (*model.File, error) {
+	return inspect.GetSourceFileDetailHandler(c.db.WithContext(ctx), strconv.FormatUint(id, 10))
 }
 
-func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo dshandler.ItemInfo) (*model.Item, error) {
-	return dshandler.PushItemHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, sourceID, itemInfo)
+func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandler.FileInfo) (*model.File, error) {
+	return dshandler.PushFileHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, sourceID, fileInfo)
 }
 
 func (c *Client) Chunk(ctx context.Context, sourceID uint32, request dshandler.ChunkRequest) (*model.Chunk, error) {

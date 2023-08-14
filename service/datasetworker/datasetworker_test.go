@@ -82,20 +82,20 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	require.NoError(t, err)
 	stat1, _ := os.Stat(temp + "/test.txt")
 	stat2, _ := os.Stat(temp + "/test2.txt")
-	item2 := &model.Item{
+	file2 := &model.File{
 		SourceID:                  source.ID,
 		Path:                      "test2.txt",
 		Size:                      5,
 		DirectoryID:               &root.ID,
 		LastModifiedTimestampNano: stat2.ModTime().UTC().UnixNano(),
 	}
-	err = db.Create(item2).Error
+	err = db.Create(file2).Error
 	require.NoError(t, err)
 	chunk := model.Chunk{
 		SourceID: source.ID,
 		FileRanges: []model.FileRange{
 			{
-				Item: &model.Item{
+				File: &model.File{
 					SourceID:                  source.ID,
 					Path:                      "test.txt",
 					Size:                      4,
@@ -110,12 +110,12 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	err = db.Create(&chunk).Error
 	require.NoError(t, err)
 	parts := []model.FileRange{{
-		ItemID:  item2.ID,
+		FileID:  file2.ID,
 		Offset:  0,
 		Length:  2,
 		ChunkID: &chunk.ID,
 	}, {
-		ItemID:  item2.ID,
+		FileID:  file2.ID,
 		Offset:  2,
 		Length:  3,
 		ChunkID: &chunk.ID,
@@ -123,7 +123,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	err = db.Create(&parts).Error
 	require.NoError(t, err)
 	chunk.Source = &source
-	err = db.Preload("FileRanges.Item").Find(&chunk).Error
+	err = db.Preload("FileRanges.File").Find(&chunk).Error
 	require.NoError(t, err)
 	err = thread.pack(context.TODO(), chunk)
 	require.NoError(t, err)
@@ -136,11 +136,11 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	var chunks []model.Chunk
 	err = db.Find(&chunks).Error
 	require.NoError(t, err)
-	var items []model.Item
-	err = db.Find(&items).Error
+	var files []model.File
+	err = db.Find(&files).Error
 	require.NoError(t, err)
-	for _, item := range items {
-		require.NotEqual(t, item.CID.String(), "")
+	for _, file := range files {
+		require.NotEqual(t, file.CID.String(), "")
 	}
 	var fileRanges []model.FileRange
 	err = db.Find(&fileRanges).Error
@@ -212,10 +212,10 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 	err = db.Find(&dirs).Error
 	require.NoError(t, err)
 	require.Greater(t, len(dirs), 0)
-	var items []model.Item
-	err = db.Find(&items).Error
+	var files []model.File
+	err = db.Find(&files).Error
 	require.NoError(t, err)
-	require.Greater(t, len(items), 0)
+	require.Greater(t, len(files), 0)
 	var fileRanges []model.FileRange
 	err = db.Find(&fileRanges).Error
 	require.NoError(t, err)
@@ -261,7 +261,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	err = db.Create(&root).Error
 	require.NoError(t, err)
-	items := []model.Item{
+	files := []model.File{
 		{
 			SourceID: source.ID,
 		},
@@ -269,17 +269,17 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			SourceID: source.ID,
 		},
 	}
-	err = db.Create(&items).Error
+	err = db.Create(&files).Error
 	require.NoError(t, err)
 	fileRanges := []model.FileRange{
 		{
-			ItemID: items[0].ID,
+			FileID: files[0].ID,
 		},
 		{
-			ItemID: items[1].ID,
+			FileID: files[1].ID,
 		},
 		{
-			ItemID: items[1].ID,
+			FileID: files[1].ID,
 		},
 	}
 	err = db.Create(&fileRanges).Error
@@ -317,7 +317,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			require.NotNil(t, ck.Source)
 			require.NotNil(t, ck.Source.Dataset)
 			require.NotNil(t, ck.FileRanges)
-			require.NotNil(t, ck.FileRanges[0].Item)
+			require.NotNil(t, ck.FileRanges[0].File)
 		} else {
 			require.Nil(t, ck)
 		}

@@ -124,7 +124,7 @@ func (s *ContentProviderService) StartBitswap(ctx context.Context) error {
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := &store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.DefaultHandlerResolver{}}
+	bs := &store.FileReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.DefaultHandlerResolver{}}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
 	return nil
@@ -254,7 +254,7 @@ type PieceMetadata struct {
 	Car       model.Car        `json:"car"`
 	Source    model.Source     `json:"source"`
 	CarBlocks []model.CarBlock `json:"carBlocks"`
-	Items     []model.Item     `json:"items"`
+	Files     []model.File     `json:"files"`
 }
 
 func GetPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
@@ -269,16 +269,16 @@ func GetPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
 	}
-	var items []model.Item
-	err = db.WithContext(ctx).Where("id IN (?)", db.Model(&model.CarBlock{}).Select("item_id").Where("car_id = ?", car.ID)).Find(&items).Error
+	var files []model.File
+	err = db.WithContext(ctx).Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to query for items: %w", err)
+		return nil, fmt.Errorf("failed to query for files: %w", err)
 	}
 	return &PieceMetadata{
 		Car:       car,
 		Source:    source,
 		CarBlocks: carBlocks,
-		Items:     items,
+		Files:     files,
 	}, nil
 }
 
@@ -323,7 +323,7 @@ func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid
 	if err != nil {
 		return nil, time.Time{}, fmt.Errorf("failed to get piece metadata: %w", err)
 	}
-	reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Items, s.Resolver)
+	reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Files, s.Resolver)
 	if err != nil {
 		return nil, time.Time{}, fmt.Errorf("failed to create piece reader: %w", err)
 	}
@@ -344,17 +344,17 @@ func (s *ContentProviderService) handleGetCid(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "failed to parse CID: "+err.Error())
 	}
 
-	var item model.Item
-	err = s.DB.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&item).Error
+	var file model.File
+	err = s.DB.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&file).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.String(http.StatusNotFound, "CID not found")
 	}
-	handler, err := s.Resolver.Resolve(c.Request().Context(), *item.Source)
+	handler, err := s.Resolver.Resolve(c.Request().Context(), *file.Source)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to get handler: "+err.Error())
 	}
 
-	handle, _, err := handler.Read(c.Request().Context(), item.Path, 0, item.Size)
+	handle, _, err := handler.Read(c.Request().Context(), file.Path, 0, file.Size)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to open handler: "+err.Error())
 	}

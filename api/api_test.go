@@ -63,7 +63,7 @@ func TestHandlePostSource(t *testing.T) {
 	require.True(t, sources[0].DeleteAfterExport)
 }
 
-func TestPushItem_InvalidID(t *testing.T) {
+func TestPushFile_InvalidID(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
@@ -79,13 +79,13 @@ func TestPushItem_InvalidID(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "failed to parse path parameter as number")
 }
 
-func TestPushItem_InvalidPayload(t *testing.T) {
+func TestPushFile_InvalidPayload(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
@@ -101,13 +101,13 @@ func TestPushItem_InvalidPayload(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "failed to bind request body")
 }
 
-func TestPushItem_SourceNotFound(t *testing.T) {
+func TestPushFile_SourceNotFound(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
@@ -123,13 +123,13 @@ func TestPushItem_SourceNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "source 1 not found")
 }
 
-func TestPushItem_EntryNotFound(t *testing.T) {
+func TestPushFile_EntryNotFound(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
@@ -160,13 +160,13 @@ func TestPushItem_EntryNotFound(t *testing.T) {
 	require.NoError(t, err)
 	err = db.Create(&model.Directory{SourceID: 1}).Error
 	require.NoError(t, err)
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, rec.Code)
 	require.Contains(t, rec.Body.String(), "object not found")
 }
 
-func TestPushItem_DuplicateItem(t *testing.T) {
+func TestPushFile_Duplicate(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
@@ -199,14 +199,14 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rec.Code)
-	var newItem model.Item
-	err = json.Unmarshal(rec.Body.Bytes(), &newItem)
+	var newFile model.File
+	err = json.Unmarshal(rec.Body.Bytes(), &newFile)
 	require.NoError(t, err)
-	require.Equal(t, "test.txt", newItem.Path)
-	require.Len(t, newItem.FileRanges, 1)
+	require.Equal(t, "test.txt", newFile.Path)
+	require.Len(t, newFile.FileRanges, 1)
 
 	req = httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -215,13 +215,13 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	c.SetPath("/api/source/:id/push")
 	c.SetParamNames("id")
 	c.SetParamValues("1")
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusConflict, rec.Code)
 	require.Contains(t, rec.Body.String(), "already exists")
 }
 
-func TestPushItem(t *testing.T) {
+func TestPushFile(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
@@ -254,12 +254,12 @@ func TestPushItem(t *testing.T) {
 	require.NoError(t, err)
 	err = os.WriteFile(temp+"/test.txt", []byte("test"), 0644)
 	require.NoError(t, err)
-	err = server.toEchoHandler(dshandler.PushItemHandler)(c)
+	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, rec.Code)
-	var newItem model.Item
-	err = json.Unmarshal(rec.Body.Bytes(), &newItem)
+	var newFile model.File
+	err = json.Unmarshal(rec.Body.Bytes(), &newFile)
 	require.NoError(t, err)
-	require.Equal(t, "test.txt", newItem.Path)
-	require.Len(t, newItem.FileRanges, 1)
+	require.Equal(t, "test.txt", newFile.Path)
+	require.Len(t, newFile.FileRanges, 1)
 }

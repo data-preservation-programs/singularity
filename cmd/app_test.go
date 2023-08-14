@@ -485,7 +485,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `[`)
 
-		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/items").End()
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/files").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `[`)
@@ -501,7 +501,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `[`)
 
-		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/item/1").End()
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/file/1").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -871,7 +871,7 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		require.NotContains(t, out, "ready")
 		require.Contains(t, out, "complete")
-		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect items 1")
+		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect files 1")
 		require.NoError(t, err)
 		require.Contains(t, out, "baf")
 		require.Contains(t, out, "test5.txt")

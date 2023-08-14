@@ -25,7 +25,7 @@ import (
 
 const structTemplate = `
 type {{.Name}} struct {
-    SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan items
+    SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan files
     DeleteAfterExport bool ` + "`validate:\"required\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
     RescanInterval string ` + "`validate:\"required\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
     ScanningState model.WorkState ` + "`validate:\"required\" json:\"scanningState\"`" + `// Starting state for scanning
@@ -37,7 +37,7 @@ type {{.Name}} struct {
 
 const allStructTemplate = `
 type {{.Name}} struct {
-		SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan items
+		SourcePath string ` + "`validate:\"required\" json:\"sourcePath\"`" + `// The path of the source to scan files
     DeleteAfterExport bool ` + "`validate:\"optional\" json:\"deleteAfterExport\"`" + `// Delete the source after exporting to CAR files
     RescanInterval string ` + "`validate:\"optional\" json:\"rescanInterval\"`" + `// Automatically rescan the source directory when this interval has passed from last successful scan
     ScanningState model.WorkState ` + "`validate:\"optional\" json:\"scanningState\"`" + `// Starting state for scanning

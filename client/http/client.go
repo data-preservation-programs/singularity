@@ -102,8 +102,8 @@ func (c *Client) ListSourcesByDataset(ctx context.Context, datasetName string) (
 	return sources, nil
 }
 
-func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
-	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/item/"+strconv.FormatUint(id, 10), nil)
+func (c *Client) GetFile(ctx context.Context, id uint64) (*model.File, error) {
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/file/"+strconv.FormatUint(id, 10), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -117,16 +117,16 @@ func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var item model.Item
-	err = json.NewDecoder(response.Body).Decode(&item)
+	var file model.File
+	err = json.NewDecoder(response.Body).Decode(&file)
 	if err != nil {
 		return nil, err
 	}
-	return &item, nil
+	return &file, nil
 }
 
-func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo datasource.ItemInfo) (*model.Item, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/push", itemInfo)
+func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo datasource.FileInfo) (*model.File, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/push", fileInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -136,12 +136,12 @@ func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo datasou
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var item model.Item
-	err = json.NewDecoder(response.Body).Decode(&item)
+	var file model.File
+	err = json.NewDecoder(response.Body).Decode(&file)
 	if err != nil {
 		return nil, err
 	}
-	return &item, nil
+	return &file, nil
 }
 
 func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {

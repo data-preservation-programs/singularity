@@ -74,15 +74,15 @@ func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Walle
 }
 
 func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model.Wallet) (int64, error) {
-	item := w.cache.Get(wallet.Address)
-	if item != nil && !item.IsExpired() {
-		return item.Value(), nil
+	file := w.cache.Get(wallet.Address)
+	if file != nil && !file.IsExpired() {
+		return file.Value(), nil
 	}
 	datacap, err := w.getDatacap(ctx, wallet)
 	if err != nil {
 		logger.Errorf("failed to get datacap for wallet %s: %s", wallet.Address, err)
-		if item != nil {
-			return item.Value(), nil
+		if file != nil {
+			return file.Value(), nil
 		}
 		return 0, err
 	}

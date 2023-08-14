@@ -95,9 +95,9 @@ func NewDealMaker(
 }
 
 func (d DealMakerImpl) getProviderInfo(ctx context.Context, provider string) (*MinerInfo, error) {
-	item := d.minerInfoCache.Get(provider)
-	if item != nil && !item.IsExpired() {
-		return item.Value(), nil
+	file := d.minerInfoCache.Get(provider)
+	if file != nil && !file.IsExpired() {
+		return file.Value(), nil
 	}
 
 	logger.Debugw("getting miner info", "miner", provider)
@@ -129,9 +129,9 @@ func (d DealMakerImpl) getProviderInfo(ctx context.Context, provider string) (*M
 }
 
 func (d DealMakerImpl) getProtocols(ctx context.Context, minerInfo peer.AddrInfo) ([]protocol.ID, error) {
-	item := d.protocolsCache.Get(minerInfo.ID)
-	if item != nil && !item.IsExpired() {
-		return item.Value(), nil
+	file := d.protocolsCache.Get(minerInfo.ID)
+	if file != nil && !file.IsExpired() {
+		return file.Value(), nil
 	}
 
 	logger.Debugw("getting protocols", "miner", minerInfo.ID)
@@ -151,9 +151,9 @@ func (d DealMakerImpl) getProtocols(ctx context.Context, minerInfo peer.AddrInfo
 }
 
 func (d DealMakerImpl) getMinCollateral(ctx context.Context, pieceSize int64, verified bool) (big.Int, error) {
-	item := d.collateralCache.Get(fmt.Sprintf("%d-%t", pieceSize, verified))
-	if item != nil && !item.IsExpired() {
-		return item.Value(), nil
+	file := d.collateralCache.Get(fmt.Sprintf("%d-%t", pieceSize, verified))
+	if file != nil && !file.IsExpired() {
+		return file.Value(), nil
 	}
 
 	logger.Debugw("getting deal provider collateral bounds", "pieceSize", pieceSize, "verified", verified)

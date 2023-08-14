@@ -42,27 +42,27 @@ func getSourceChunkDetailHandler(
 		return nil, err
 	}
 
-	itemMap := make(map[uint64]*model.Item)
+	fileMap := make(map[uint64]*model.File)
 	for _, part := range chunk.FileRanges {
-		itemMap[part.ItemID] = nil
+		fileMap[part.FileID] = nil
 	}
 
-	itemIDChunks := util.ChunkMapKeys(itemMap, util.BatchSize)
-	for _, itemIDChunk := range itemIDChunks {
-		var items []model.Item
-		err = db.Where("id IN ?", itemIDChunk).Find(&items).Error
+	fileIDChunks := util.ChunkMapKeys(fileMap, util.BatchSize)
+	for _, fileIDChunk := range fileIDChunks {
+		var files []model.File
+		err = db.Where("id IN ?", fileIDChunk).Find(&files).Error
 		if err != nil {
 			return nil, err
 		}
-		for i, item := range items {
-			itemMap[item.ID] = &items[i]
+		for i, file := range files {
+			fileMap[file.ID] = &files[i]
 		}
 	}
 
 	for i, part := range chunk.FileRanges {
-		item, ok := itemMap[part.ItemID]
+		file, ok := fileMap[part.FileID]
 		if ok {
-			chunk.FileRanges[i].Item = item
+			chunk.FileRanges[i].File = file
 		}
 	}
 

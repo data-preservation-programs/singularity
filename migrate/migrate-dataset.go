@@ -25,7 +25,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning ScanningRequest, skipItems bool) error {
+func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning ScanningRequest, skipFiles bool) error {
 	_, err := os.Stat(scanning.OutDir)
 	if err != nil {
 		log.Printf("[Warning] Output directory %s does not exist\n", scanning.OutDir)
@@ -79,7 +79,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	}
 
 	directoryCache := map[string]uint64{}
-	var lastItem model.Item
+	var lastFile model.File
 	for cursor.Next(ctx) {
 		var generation GenerationRequest
 		err = cursor.Decode(&generation)
@@ -130,7 +130,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 		}
 		log.Printf("-- Created car %s for %s\n", generation.PieceCID, ds.Name)
 
-		if skipItems {
+		if skipFiles {
 			continue
 		}
 		cursor, err := mg.Database("singularity").Collection("outputfilelists").Find(
@@ -140,53 +140,53 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 		if err != nil {
 			return errors.Wrap(err, "failed to query mongo for output file lists")
 		}
-		var items []model.Item
+		var files []model.File
 		for cursor.Next(ctx) {
 			var fileList OutputFileList
 			err = cursor.Decode(&fileList)
 			if err != nil {
 				return errors.Wrap(err, "failed to decode output file list")
 			}
-			for _, file := range fileList.GeneratedFileList {
-				if file.CID == "unrecoverable" {
+			for _, generatedFile := range fileList.GeneratedFileList {
+				if generatedFile.CID == "unrecoverable" {
 					continue
 				}
-				if file.Dir {
+				if generatedFile.Dir {
 					continue
 				}
-				fileCID, err := cid.Parse(file.CID)
+				fileCID, err := cid.Parse(generatedFile.CID)
 				if err != nil {
-					return errors.Wrapf(err, "failed to parse file cid %s", file.CID)
+					return errors.Wrapf(err, "failed to parse file cid %s", generatedFile.CID)
 				}
 
-				var item model.Item
-				if file.IsComplete() {
-					item = model.Item{
+				var file model.File
+				if generatedFile.IsComplete() {
+					file = model.File{
 						CreatedAt: generation.CreatedAt,
 						SourceID:  src.ID,
-						Path:      file.Path,
-						Size:      int64(file.Size),
+						Path:      generatedFile.Path,
+						Size:      int64(generatedFile.Size),
 						CID:       model.CID(fileCID),
 						FileRanges: []model.FileRange{
 							{
 								Offset:  0,
-								Length:  int64(file.Size),
+								Length:  int64(generatedFile.Size),
 								CID:     model.CID(fileCID),
 								ChunkID: &chunk.ID,
 							},
 						},
 					}
-				} else if file.Start == 0 {
-					lastItem = model.Item{
+				} else if generatedFile.Start == 0 {
+					lastFile = model.File{
 						CreatedAt: generation.CreatedAt,
 						SourceID:  src.ID,
-						Path:      file.Path,
-						Size:      int64(file.Size),
+						Path:      generatedFile.Path,
+						Size:      int64(generatedFile.Size),
 						CID:       model.CID(cid.Undef),
 						FileRanges: []model.FileRange{
 							{
 								Offset:  0,
-								Length:  int64(file.End),
+								Length:  int64(generatedFile.End),
 								CID:     model.CID(fileCID),
 								ChunkID: &chunk.ID,
 							},
@@ -194,57 +194,57 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 					}
 					continue
 				} else {
-					lastItem.FileRanges = append(lastItem.FileRanges, model.FileRange{
-						Offset:  int64(file.Start),
-						Length:  int64(file.End - file.Start),
+					lastFile.FileRanges = append(lastFile.FileRanges, model.FileRange{
+						Offset:  int64(generatedFile.Start),
+						Length:  int64(generatedFile.End - generatedFile.Start),
 						CID:     model.CID(fileCID),
 						ChunkID: &chunk.ID,
 					})
-					if file.End < file.Size {
+					if generatedFile.End < generatedFile.Size {
 						continue
 					} else {
-						item = lastItem
-						lastItem = model.Item{}
+						file = lastFile
+						lastFile = model.File{}
 						links := make([]format.Link, 0)
-						for _, part := range item.FileRanges {
+						for _, part := range file.FileRanges {
 							links = append(links, format.Link{
 								Size: uint64(part.Length),
 								Cid:  cid.Cid(part.CID),
 							})
 						}
-						_, root, err := pack.AssembleItemFromLinks(links)
+						_, root, err := pack.AssembleFileFromLinks(links)
 						if err != nil {
-							return errors.Wrap(err, "failed to assemble item from links")
+							return errors.Wrap(err, "failed to assemble file from links")
 						}
-						item.CID = model.CID(root.Cid())
+						file.CID = model.CID(root.Cid())
 					}
 				}
-				err = datasource.EnsureParentDirectories(db, &item, rootDirectoryID, directoryCache)
+				err = datasource.EnsureParentDirectories(db, &file, rootDirectoryID, directoryCache)
 				if err != nil {
 					return errors.Wrap(err, "failed to ensure parent directories")
 				}
-				directory, ok := directoryCache[filepath.Dir(item.Path)]
+				directory, ok := directoryCache[filepath.Dir(file.Path)]
 				if !ok {
-					return errors.Errorf("directory %s not found in cache", filepath.Dir(item.Path))
+					return errors.Errorf("directory %s not found in cache", filepath.Dir(file.Path))
 				}
-				item.DirectoryID = &directory
-				items = append(items, item)
+				file.DirectoryID = &directory
+				files = append(files, file)
 			}
 		}
-		if len(items) > 0 {
-			err = db.CreateInBatches(&items, util.BatchSize).Error
+		if len(files) > 0 {
+			err = db.CreateInBatches(&files, util.BatchSize).Error
 			if err != nil {
-				return errors.Wrap(err, "failed to create items")
+				return errors.Wrap(err, "failed to create files")
 			}
 		}
-		log.Printf("-- Created %d items for %s\n", len(items), ds.Name)
+		log.Printf("-- Created %d files for %s\n", len(files), ds.Name)
 	}
 
 	return nil
 }
 
 func MigrateDataset(cctx *cli.Context) error {
-	skipItems := cctx.Bool("skip-items")
+	skipFiles := cctx.Bool("skip-files")
 	datasource.ValidateSource = false
 	log.Println("Migrating dataset from old singularity database")
 	mongoConnectionString := cctx.String("mongo-connection-string")
@@ -290,7 +290,7 @@ func MigrateDataset(cctx *cli.Context) error {
 			continue
 		}
 		log.Printf("Migrating Dataset: %s\n", scanning.Name)
-		err = migrateDataset(ctx, mg, db, scanning, skipItems)
+		err = migrateDataset(ctx, mg, db, scanning, skipFiles)
 		if err != nil {
 			return errors.Wrapf(err, "failed to migrate dataset %s", scanning.Name)
 		}

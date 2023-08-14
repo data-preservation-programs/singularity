@@ -107,7 +107,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 	chunks[0].Source = &src
 
 	var fileRanges []model.FileRange
-	err = w.db.Joins("Item").Where("item_parts.chunk_id = ?", chunks[0].ID).Order("item_parts.id asc").Find(&fileRanges).Error
+	err = w.db.Joins("File").Where("file_ranges.chunk_id = ?", chunks[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
 	if err != nil {
 		return nil, err
 	}

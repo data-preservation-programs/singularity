@@ -13,19 +13,19 @@ import (
 
 // scan scans the data source and inserts the chunking strategy back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
-// resume is true if the scan will be resumed from the last scanned item, which is useful for resuming a failed scan
+// resume is true if the scan will be resumed from the last scanned file, which is useful for resuming a failed scan
 func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.FileRange
-	err := w.db.Joins("Item").
-		Where("source_id = ? AND item_parts.chunk_id is null", source.ID).
-		Order("item_parts.id asc").
+	err := w.db.Joins("File").
+		Where("source_id = ? AND file_ranges.chunk_id is null", source.ID).
+		Order("file_ranges.id asc").
 		Find(&remainingParts).Error
 	if err != nil {
 		return err
 	}
-	w.logger.With("remaining", len(remainingParts)).Info("remaining items")
+	w.logger.With("remaining", len(remainingParts)).Info("remaining files")
 	remaining.add(remainingParts)
 
 	if !scanSource {
@@ -49,17 +49,17 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			continue
 		}
 
-		item, fileRanges, err := datasource.PushItem(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
+		file, fileRanges, err := datasource.PushFile(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
 		if err != nil {
-			return errors.Wrap(err, "failed to push item")
+			return errors.Wrap(err, "failed to push file")
 		}
-		if item == nil {
-			w.logger.Infow("item already exists", "path", entry.Info.Remote())
+		if file == nil {
+			w.logger.Infow("file already exists", "path", entry.Info.Remote())
 			continue
 		}
 		err = database.DoRetry(func() error {
 			return w.db.Model(&model.Source{}).Where("id = ?", source.ID).
-				Update("last_scanned_path", item.Path).Error
+				Update("last_scanned_path", file.Path).Error
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to update last scanned path")
@@ -92,7 +92,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 	if remaining.carSize <= dataset.MaxSize {
 		w.logger.Debugw("creating chunk", "size", remaining.carSize)
 		_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
-			ItemIDs: remaining.itemIDs(),
+			FileIDs: remaining.itemIDs(),
 		})
 
 		if err != nil {
@@ -101,7 +101,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 		remaining.reset()
 		return nil
 	}
-	// size > maxSize, first, find the first item that makes it larger than maxSize
+	// size > maxSize, first, find the first file that makes it larger than maxSize
 	s := remaining.carSize
 	si := len(remaining.fileRanges) - 1
 	for si >= 0 {
@@ -112,8 +112,8 @@ func (w *DatasetWorkerThread) chunkOnce(
 		si--
 	}
 
-	// In case si == 0, this is the case where a single item is more than sector size for encryption
-	// We will allow a single item to be more than sector size and handle it later during packing
+	// In case si == 0, this is the case where a single file is more than sector size for encryption
+	// We will allow a single file to be more than sector size and handle it later during packing
 	if si == 0 {
 		si = 1
 		s += toCarSize(remaining.fileRanges[0].Length)
@@ -122,11 +122,11 @@ func (w *DatasetWorkerThread) chunkOnce(
 	// create a chunk for [0:si)
 	w.logger.Debugw("creating chunk", "size", s)
 
-	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(item model.FileRange) uint64 {
-		return item.ID
+	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(file model.FileRange) uint64 {
+		return file.ID
 	})
 	_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
-		ItemIDs: fileRangeIDs,
+		FileIDs: fileRangeIDs,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create chunk")
