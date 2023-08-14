@@ -9,10 +9,11 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
+	"github.com/filecoin-project/go-fil-markets/storagemarket"
+	"github.com/filecoin-project/go-fil-markets/storagemarket/network"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/go-state-types/builtin/v9/market"
@@ -258,13 +259,13 @@ func (d DealMakerImpl) makeDeal111(
 	deal market.ClientDealProposal,
 	dealConfig DealConfig,
 	rootCID cid.Cid,
-	minerInfo peer.AddrInfo) (*proposal110.SignedResponse, error) {
+	minerInfo peer.AddrInfo) (*network.SignedResponse, error) {
 	logger.Debugw("making deal 111", "deal", deal, "dealConfig", dealConfig, "rootCID", rootCID.String(), "minerInfo", minerInfo)
-	proposal := proposal110.Proposal{
+	proposal := network.Proposal{
 		FastRetrieval: dealConfig.KeepUnsealed,
 		DealProposal:  &deal,
-		Piece: &proposal110.DataRef{
-			TransferType: proposal110.TTManual,
+		Piece: &storagemarket.DataRef{
+			TransferType: storagemarket.TTManual,
 			Root:         rootCID,
 			PieceCid:     &deal.Proposal.PieceCID,
 			PieceSize:    deal.Proposal.PieceSize.Unpadded(),
@@ -291,7 +292,7 @@ func (d DealMakerImpl) makeDeal111(
 	}
 
 	logger.Debugw("sending deal params", "proposal", proposal)
-	var resp proposal110.SignedResponse
+	var resp network.SignedResponse
 	err = cborutil.WriteCborRPC(stream, &proposal)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to write deal params")
