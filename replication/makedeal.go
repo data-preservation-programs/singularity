@@ -10,12 +10,13 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
-	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
+	"github.com/filecoin-project/go-state-types/builtin/v9/market"
+	"github.com/filecoin-shipyard/boostly"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
@@ -174,21 +175,21 @@ func (d DealMakerImpl) getMinCollateral(ctx context.Context, pieceSize int64, ve
 
 func (d DealMakerImpl) makeDeal120(
 	ctx context.Context,
-	deal proposal110.ClientDealProposal,
+	deal market.ClientDealProposal,
 	dealID uuid.UUID,
 	dealConfig DealConfig,
 	fileSize int64,
 	rootCID cid.Cid,
-	minerInfo peer.AddrInfo) (*proposal120.DealResponse, error) {
+	minerInfo peer.AddrInfo) (*boostly.DealResponse, error) {
 	logger.Debugw("making deal 120", "dealID", dealID, "deal", deal,
 		"dealConfig", dealConfig, "fileSize", fileSize, "rootCID", rootCID.String(), "minerInfo", minerInfo)
-	transfer := proposal120.Transfer{
+	transfer := boostly.Transfer{
 		Size: uint64(fileSize),
 	}
 	url := strings.Replace(dealConfig.URLTemplate, "{PIECE_CID}", deal.Proposal.PieceCID.String(), 1)
 	isOnline := url != ""
 	if isOnline {
-		transferParams := &proposal120.HttpRequest{URL: url}
+		transferParams := &boostly.HttpRequest{URL: url}
 		if len(dealConfig.HTTPHeaders) > 0 {
 			transferParams.Headers = make(map[string]string)
 			for _, header := range dealConfig.HTTPHeaders {
@@ -207,7 +208,7 @@ func (d DealMakerImpl) makeDeal120(
 		transfer.Params = paramsBytes
 	}
 
-	dealParams := proposal120.DealParams{
+	dealParams := boostly.DealParams{
 		DealUUID:           dealID,
 		ClientDealProposal: deal,
 		DealDataRoot:       rootCID,
@@ -242,7 +243,7 @@ func (d DealMakerImpl) makeDeal120(
 		return nil, errors.Wrap(err, "failed to write deal params")
 	}
 
-	var resp proposal120.DealResponse
+	var resp boostly.DealResponse
 	err = cborutil.ReadCborRPC(stream, &resp)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read deal response")
@@ -254,7 +255,7 @@ func (d DealMakerImpl) makeDeal120(
 
 func (d DealMakerImpl) makeDeal111(
 	ctx context.Context,
-	deal proposal110.ClientDealProposal,
+	deal market.ClientDealProposal,
 	dealConfig DealConfig,
 	rootCID cid.Cid,
 	minerInfo peer.AddrInfo) (*proposal110.SignedResponse, error) {
@@ -342,7 +343,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		return nil, errors.Wrap(err, "failed to parse provider address")
 	}
 
-	label, err := proposal110.NewLabelFromString(cid.Cid(car.RootCID).String())
+	label, err := market.NewLabelFromString(cid.Cid(car.RootCID).String())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse label")
 	}
@@ -373,7 +374,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get min collateral")
 	}
-	proposal := proposal110.DealProposal{
+	proposal := market.DealProposal{
 		PieceCID:             pieceCID,
 		PieceSize:            pieceSize,
 		VerifiedDeal:         verified,
@@ -395,7 +396,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		return nil, errors.Wrap(err, "failed to sign deal proposal")
 	}
 
-	deal := proposal110.ClientDealProposal{
+	deal := market.ClientDealProposal{
 		Proposal:        proposal,
 		ClientSignature: *signature,
 	}

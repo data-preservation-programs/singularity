@@ -4,6 +4,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/filecoin-project/go-state-types/abi"
+	"github.com/filecoin-project/go-state-types/builtin/v9/market"
 	"github.com/filecoin-project/go-state-types/crypto"
 	"github.com/ipfs/go-cid"
 	"golang.org/x/xerrors"
@@ -26,7 +27,7 @@ type DataRef struct {
 // Proposal is the data sent over the network from client to provider when proposing
 // a deal
 type Proposal struct {
-	DealProposal  *ClientDealProposal
+	DealProposal  *market.ClientDealProposal
 	Piece         *DataRef
 	FastRetrieval bool
 }
