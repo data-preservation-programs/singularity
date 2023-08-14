@@ -128,7 +128,9 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 		handlerFuncType := handlerFuncValue.Type()
 
 		// Check the number of input parameters
-		if handlerFuncType.NumIn() == 0 || handlerFuncType.In(1) != reflect.TypeOf(s.db) {
+		if handlerFuncType.NumIn() == 0 ||
+			handlerFuncType.In(1).String() != "*gorm.DB" ||
+			handlerFuncType.In(0).String() != "context.Context" {
 			logger.Error("Invalid handler function signature.")
 			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 		}
