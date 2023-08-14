@@ -57,9 +57,9 @@ var DatasetWorkerCmd = &cli.Command{
 		if err := model.AutoMigrate(db); err != nil {
 			return err
 		}
-		worker := datasetworker.NewDatasetWorker(
+		worker := datasetworker.NewWorker(
 			db,
-			datasetworker.DatasetWorkerConfig{
+			datasetworker.Config{
 				Concurrency:    c.Int("concurrency"),
 				EnableScan:     c.Bool("enable-scan"),
 				EnablePack:     c.Bool("enable-pack"),

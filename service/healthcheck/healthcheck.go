@@ -28,7 +28,7 @@ var logger = log.Logger("healthcheck")
 
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	for {
-		HealthCheckCleanup(db.WithContext(ctx))
+		HealthCheckCleanup(ctx, db)
 		select {
 		case <-ctx.Done():
 			return
@@ -53,13 +53,14 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 //
 // Parameters:
 // db: The Gorm DB connection to use for database queries.
-func HealthCheckCleanup(db *gorm.DB) {
+func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
+	db = db.WithContext(ctx)
 	logger.Debugw("running healthcheck cleanup")
 	// Remove all workers that haven't sent heartbeat for 5 minutes
 	err := database.DoRetry(func() error {
 		return db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Delete(&model.Worker{}).Error
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Logger("healthcheck").Errorw("failed to remove dead workers", "error", err)
 	}
 
@@ -72,7 +73,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 				"dag_gen_state":     model.Ready,
 			}).Error
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Logger("healthcheck").Errorw("failed to remove stale daggen worker", "error", err)
 	}
 
@@ -84,7 +85,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 				"scanning_state":     model.Ready,
 			}).Error
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Logger("healthcheck").Errorw("failed to remove stale scanning worker", "error", err)
 	}
 
@@ -96,7 +97,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 				"packing_state":     model.Ready,
 			}).Error
 	})
-	if err != nil {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Logger("healthcheck").Errorw("failed to remove stale packing worker", "error", err)
 	}
 }
@@ -195,7 +196,6 @@ func StartReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, get
 			return
 		case <-time.After(reportInterval):
 			ReportHealth(ctx, db, workerID, getState)
-			continue
 		}
 	}
 }

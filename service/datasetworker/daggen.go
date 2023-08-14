@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (w *DatasetWorkerThread) dag(source model.Source) error {
+func (w *Thread) dag(source model.Source) error {
 	var rootCID cid.Cid
 	var outDir string
 	var headerBytes []byte

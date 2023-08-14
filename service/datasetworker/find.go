@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
+func (w *Thread) findDagWork() (*model.Source, error) {
 	if !w.config.EnableDag {
 		return nil, nil
 	}
@@ -58,7 +58,7 @@ func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
 	return &sources[0], nil
 }
 
-func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
+func (w *Thread) findPackWork() (*model.Chunk, error) {
 	if !w.config.EnablePack {
 		return nil, nil
 	}
@@ -116,7 +116,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 	return &chunks[0], nil
 }
 
-func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
+func (w *Thread) findScanWork() (*model.Source, error) {
 	if !w.config.EnableScan {
 		return nil, nil
 	}

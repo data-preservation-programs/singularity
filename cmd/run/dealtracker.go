@@ -1,14 +1,13 @@
 package run
 
 import (
-	"context"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealtracker"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -57,13 +56,9 @@ var DealTrackerCmd = &cli.Command{
 			c.String("market-deal-url"),
 			c.String("lotus-api"),
 			c.String("lotus-token"),
+			c.Bool("once"),
 		)
 
-		err = tracker.Run(c.Context, c.Bool("once"))
-		if errors.Is(err, context.Canceled) {
-			return nil
-		} else {
-			return err
-		}
+		return service.StartServers(c.Context, dealtracker.Logger, &tracker)
 	},
 }
