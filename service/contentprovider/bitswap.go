@@ -22,7 +22,7 @@ func (BitswapServer) Name() string {
 	return "Bitswap"
 }
 
-func (s BitswapServer) Start(ctx context.Context) (service.Done, service.Fail, error) {
+func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
 	if err != nil {
 		return nil, nil, err
@@ -41,5 +41,5 @@ func (s BitswapServer) Start(ctx context.Context) (service.Done, service.Fail, e
 		bsserver.Close()
 		close(done)
 	}()
-	return done, fail, nil
+	return []service.Done{done}, fail, nil
 }

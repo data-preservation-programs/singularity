@@ -46,10 +46,10 @@ func (*HTTPServer) Name() string {
 // ctx: The context for the server. This can be used to cancel the server or set a deadline.
 //
 // Returns:
-// A Done channel that is closed when the server has stopped.
+// A Done channel slice that are closed when the server has stopped.
 // A Fail channel that receives an error if the server fails to start or stop.
 // An error if the server fails to start.
-func (s *HTTPServer) Start(ctx context.Context) (service.Done, service.Fail, error) {
+func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
 	e.Use(
@@ -112,7 +112,7 @@ func (s *HTTPServer) Start(ctx context.Context) (service.Done, service.Fail, err
 		}
 		close(done)
 	}()
-	return done, fail, nil
+	return []service.Done{done}, fail, nil
 }
 
 func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {

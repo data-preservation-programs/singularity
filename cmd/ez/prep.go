@@ -136,9 +136,9 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 3, start dataset worker
-		worker := datasetworker.NewDatasetWorker(
+		worker := datasetworker.NewWorker(
 			db,
-			datasetworker.DatasetWorkerConfig{
+			datasetworker.Config{
 				Concurrency:    c.Int("concurrency"),
 				EnableScan:     true,
 				EnablePack:     true,

@@ -17,14 +17,79 @@ func TestDatasetWorkerRun(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	worker := NewDatasetWorker(db, DatasetWorkerConfig{
+	worker := NewWorker(db, Config{
 		Concurrency:    1,
 		ExitOnComplete: true,
 	})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	err = worker.Run(ctx)
 	require.NoError(t, err)
+}
+
+func TestDatasetWorker_HandleScanWork_Failure(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	worker := NewWorker(db, Config{
+		Concurrency:    1,
+		ExitOnComplete: true,
+		ExitOnError:    true,
+		EnableScan:     true,
+	})
+	source := &model.Source{
+		Dataset:       &model.Dataset{},
+		Type:          "invalid",
+		Path:          "",
+		ScanningState: model.Ready,
+	}
+	err = db.Create(source).Error
+	require.NoError(t, err)
+	dir := &model.Directory{SourceID: source.ID, Name: ""}
+	err = db.Create(dir).Error
+	require.NoError(t, err)
+	err = worker.Run(context.Background())
+	require.NoError(t, err)
+	var found model.Source
+	err = db.Model(&model.Source{}).First(&found).Error
+	require.NoError(t, err)
+	require.Equal(t, model.Error, found.ScanningState)
+	require.Contains(t, found.ErrorMessage, "failed to find rclone backend")
+	require.Nil(t, found.ScanningWorkerID)
+}
+
+func TestDatasetWorker_HandleScanWork_Success(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tmp := t.TempDir()
+	worker := NewWorker(db, Config{
+		Concurrency:    1,
+		ExitOnComplete: true,
+		ExitOnError:    true,
+		EnableScan:     true,
+	})
+	source := &model.Source{
+		Dataset:       &model.Dataset{},
+		Type:          "local",
+		Path:          tmp,
+		ScanningState: model.Ready,
+	}
+	err = db.Create(source).Error
+	require.NoError(t, err)
+	dir := &model.Directory{SourceID: source.ID, Name: tmp}
+	err = db.Create(dir).Error
+	require.NoError(t, err)
+	err = worker.Run(context.Background())
+	require.NoError(t, err)
+	var found model.Source
+	err = db.Model(&model.Source{}).First(&found).Error
+	require.NoError(t, err)
+	require.Equal(t, model.Complete, found.ScanningState)
+	require.Nil(t, found.ScanningWorkerID)
+	require.Equal(t, "", found.ErrorMessage)
+	require.Equal(t, "", found.LastScannedPath)
+	require.Greater(t, found.LastScannedTimestamp, int64(0))
 }
 
 func TestDatasetWorkerThread_pack(t *testing.T) {
@@ -43,13 +108,12 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	thread := DatasetWorkerThread{
+	thread := Thread{
 		id:                        uuid.New(),
 		db:                        db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
-		directoryCache:            map[string]uint64{},
-		config: DatasetWorkerConfig{
+		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
 			EnableScan:     true,
@@ -170,13 +234,12 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	thread := DatasetWorkerThread{
+	thread := Thread{
 		id:                        uuid.New(),
 		db:                        db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
-		directoryCache:            map[string]uint64{},
-		config: DatasetWorkerConfig{
+		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
 			EnableScan:     true,
@@ -226,12 +289,12 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	thread := DatasetWorkerThread{
+	thread := Thread{
 		id:                        uuid.New(),
 		db:                        db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
-		config: DatasetWorkerConfig{
+		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
 			EnableScan:     true,
@@ -331,12 +394,12 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	thread := DatasetWorkerThread{
+	thread := Thread{
 		id:                        uuid.New(),
 		db:                        db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
-		config: DatasetWorkerConfig{
+		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
 			EnableScan:     true,

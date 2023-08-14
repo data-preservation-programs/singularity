@@ -41,7 +41,7 @@ func TestHTTPServerStart(t *testing.T) {
 	select {
 	case <-time.After(1 * time.Second):
 		t.Fatal("http server did not stop")
-	case <-done:
+	case <-done[0]:
 	}
 }
 

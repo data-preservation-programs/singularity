@@ -7,7 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 )
 
-func (w *DatasetWorkerThread) pack(
+func (w *Thread) pack(
 	ctx context.Context, chunk model.Chunk,
 ) error {
 	_, err := datasource.Pack(ctx, w.db, chunk, w.datasourceHandlerResolver)
