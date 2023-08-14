@@ -1,18 +1,17 @@
 package store
 
 import (
-	"github.com/data-preservation-programs/singularity/pack"
-	"github.com/pkg/errors"
-)
-
-import (
 	"context"
 	"io"
 
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/pkg/errors"
+
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
+
 	format "github.com/ipfs/go-ipld-format"
 	"gorm.io/gorm"
 )
