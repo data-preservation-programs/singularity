@@ -22,7 +22,7 @@ import (
 var localMongoDB = "mongodb://localhost:27018"
 
 func TestMigrateDataset(t *testing.T) {
-	err := SetupMongoDB()
+	err := setupMongoDBDataset()
 	if err != nil {
 		t.Log(err)
 		t.Skip("Skipping test because MongoDB is not available")
@@ -124,7 +124,7 @@ func TestMigrateDataset(t *testing.T) {
 	require.EqualValues(t, 1, *cars[0].SourceID)
 }
 
-func SetupMongoDB() error {
+func setupMongoDBDataset() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	db, err := mongo.Connect(ctx, options.Client().ApplyURI(localMongoDB))
@@ -252,5 +252,5 @@ func SetupMongoDB() error {
 			End:   0,
 		}},
 	}})
-	return nil
+	return err
 }
