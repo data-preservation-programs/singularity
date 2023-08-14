@@ -55,10 +55,10 @@ func chunkHandler(
 				if err != nil {
 					return errors.Wrap(err, "failed to create chunk")
 				}
-				itemPartIDChunks := util.ChunkSlice(request.ItemIDs, util.BatchSize)
-				for _, itemPartIDChunks := range itemPartIDChunks {
-					err = db.Model(&model.ItemPart{}).
-						Where("id IN ?", itemPartIDChunks).Update("chunk_id", chunk.ID).Error
+				fileRangeIDChunks := util.ChunkSlice(request.ItemIDs, util.BatchSize)
+				for _, fileRangeIDChunks := range fileRangeIDChunks {
+					err = db.Model(&model.FileRange{}).
+						Where("id IN ?", fileRangeIDChunks).Update("chunk_id", chunk.ID).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update items")
 					}

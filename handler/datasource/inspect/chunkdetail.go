@@ -34,7 +34,7 @@ func getSourceChunkDetailHandler(
 		return nil, handler.NewInvalidParameterErr("invalid chunk id")
 	}
 	var chunk model.Chunk
-	err = db.Preload("Cars").Preload("ItemParts").Where("id = ?", chunkID).First(&chunk).Error
+	err = db.Preload("Cars").Preload("FileRanges").Where("id = ?", chunkID).First(&chunk).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr("chunk not found")
 	}
@@ -43,7 +43,7 @@ func getSourceChunkDetailHandler(
 	}
 
 	itemMap := make(map[uint64]*model.Item)
-	for _, part := range chunk.ItemParts {
+	for _, part := range chunk.FileRanges {
 		itemMap[part.ItemID] = nil
 	}
 
@@ -59,10 +59,10 @@ func getSourceChunkDetailHandler(
 		}
 	}
 
-	for i, part := range chunk.ItemParts {
+	for i, part := range chunk.FileRanges {
 		item, ok := itemMap[part.ItemID]
 		if ok {
-			chunk.ItemParts[i].Item = item
+			chunk.FileRanges[i].Item = item
 		}
 	}
 

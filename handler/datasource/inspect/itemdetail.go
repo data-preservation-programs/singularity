@@ -33,7 +33,7 @@ func getSourceItemDetailHandler(
 		return nil, handler.NewInvalidParameterErr("invalid item id")
 	}
 	var item model.Item
-	err = db.Preload("ItemParts").Where("id = ?", itemID).First(&item).Error
+	err = db.Preload("FileRanges").Where("id = ?", itemID).First(&item).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr("item not found")
 	}

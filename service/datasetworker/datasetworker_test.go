@@ -93,7 +93,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	require.NoError(t, err)
 	chunk := model.Chunk{
 		SourceID: source.ID,
-		ItemParts: []model.ItemPart{
+		FileRanges: []model.FileRange{
 			{
 				Item: &model.Item{
 					SourceID:                  source.ID,
@@ -109,7 +109,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	}
 	err = db.Create(&chunk).Error
 	require.NoError(t, err)
-	parts := []model.ItemPart{{
+	parts := []model.FileRange{{
 		ItemID:  item2.ID,
 		Offset:  0,
 		Length:  2,
@@ -123,7 +123,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	err = db.Create(&parts).Error
 	require.NoError(t, err)
 	chunk.Source = &source
-	err = db.Preload("ItemParts.Item").Find(&chunk).Error
+	err = db.Preload("FileRanges.Item").Find(&chunk).Error
 	require.NoError(t, err)
 	err = thread.pack(context.TODO(), chunk)
 	require.NoError(t, err)
@@ -142,11 +142,11 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	for _, item := range items {
 		require.NotEqual(t, item.CID.String(), "")
 	}
-	var itemParts []model.ItemPart
-	err = db.Find(&itemParts).Error
+	var fileRanges []model.FileRange
+	err = db.Find(&fileRanges).Error
 	require.NoError(t, err)
-	for _, itemPart := range itemParts {
-		require.NotEqual(t, itemPart.CID.String(), "")
+	for _, fileRange := range fileRanges {
+		require.NotEqual(t, fileRange.CID.String(), "")
 	}
 	var dirs []model.Directory
 	err = db.Find(&dirs).Error
@@ -216,10 +216,10 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 	err = db.Find(&items).Error
 	require.NoError(t, err)
 	require.Greater(t, len(items), 0)
-	var itemparts []model.ItemPart
-	err = db.Find(&itemparts).Error
+	var fileRanges []model.FileRange
+	err = db.Find(&fileRanges).Error
 	require.NoError(t, err)
-	require.Greater(t, len(itemparts), 0)
+	require.Greater(t, len(fileRanges), 0)
 }
 
 func TestDatasetWorkerThread_findPackWork(t *testing.T) {
@@ -271,7 +271,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	err = db.Create(&items).Error
 	require.NoError(t, err)
-	itemParts := []model.ItemPart{
+	fileRanges := []model.FileRange{
 		{
 			ItemID: items[0].ID,
 		},
@@ -282,7 +282,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			ItemID: items[1].ID,
 		},
 	}
-	err = db.Create(&itemParts).Error
+	err = db.Create(&fileRanges).Error
 	require.NoError(t, err)
 	chunks := map[*model.Chunk]bool{
 		{
@@ -304,9 +304,9 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		require.NoError(t, err)
 		chunk.SourceID = source.ID
 		err = db.Create(chunk).Error
-		for _, itemPart := range itemParts {
-			itemPart.ChunkID = &chunk.ID
-			err = db.Save(&itemPart).Error
+		for _, fileRanges := range fileRanges {
+			fileRanges.ChunkID = &chunk.ID
+			err = db.Save(&fileRanges).Error
 			require.NoError(t, err)
 		}
 		require.NoError(t, err)
@@ -316,8 +316,8 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			require.NotNil(t, ck)
 			require.NotNil(t, ck.Source)
 			require.NotNil(t, ck.Source.Dataset)
-			require.NotNil(t, ck.ItemParts)
-			require.NotNil(t, ck.ItemParts[0].Item)
+			require.NotNil(t, ck.FileRanges)
+			require.NotNil(t, ck.FileRanges[0].Item)
 		} else {
 			require.Nil(t, ck)
 		}

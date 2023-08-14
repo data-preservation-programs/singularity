@@ -206,7 +206,7 @@ func TestPushItem_DuplicateItem(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &newItem)
 	require.NoError(t, err)
 	require.Equal(t, "test.txt", newItem.Path)
-	require.Len(t, newItem.ItemParts, 1)
+	require.Len(t, newItem.FileRanges, 1)
 
 	req = httptest.NewRequest(http.MethodPost, "/api/source/1/push", bytes.NewBuffer([]byte(`{"path":"test.txt"}`)))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -261,5 +261,5 @@ func TestPushItem(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &newItem)
 	require.NoError(t, err)
 	require.Equal(t, "test.txt", newItem.Path)
-	require.Len(t, newItem.ItemParts, 1)
+	require.Len(t, newItem.FileRanges, 1)
 }

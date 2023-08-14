@@ -11,12 +11,12 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type ItemPartDetail struct {
+type FileRangeDetail struct {
 	ID                        uint64    `json:"id"`
 	ItemID                    uint64    `json:"itemId"`
 	Offset                    int64     `json:"offset"`
 	Length                    int64     `json:"length"`
-	ItemPartCID               model.CID `json:"itemPartCid"`
+	FileRangeCid              model.CID `json:"fileRangeCid"`
 	SourceID                  uint32    `json:"sourceId"`
 	Path                      string    `json:"path"`
 	Hash                      string    `json:"hash"`
@@ -54,13 +54,13 @@ var ChunkDetailCmd = &cli.Command{
 		fmt.Println("Pieces:")
 		cliutil.PrintToConsole(result.Cars, false, nil)
 		fmt.Println("Item Parts:")
-		cliutil.PrintToConsole(underscore.Map(result.ItemParts, func(i model.ItemPart) ItemPartDetail {
-			return ItemPartDetail{
+		cliutil.PrintToConsole(underscore.Map(result.FileRanges, func(i model.FileRange) FileRangeDetail {
+			return FileRangeDetail{
 				ID:                        i.ID,
 				ItemID:                    i.ItemID,
 				Offset:                    i.Offset,
 				Length:                    i.Length,
-				ItemPartCID:               i.CID,
+				FileRangeCid:              i.CID,
 				SourceID:                  i.Item.SourceID,
 				Path:                      i.Item.Path,
 				Hash:                      i.Item.Hash,

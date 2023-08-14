@@ -35,7 +35,7 @@ var ItemDetailCmd = &cli.Command{
 		fmt.Println("Item:")
 		cliutil.PrintToConsole(result, false, nil)
 		fmt.Println("Item Parts:")
-		cliutil.PrintToConsole(result.ItemParts, false, nil)
+		cliutil.PrintToConsole(result.FileRanges, false, nil)
 		return nil
 	},
 }

@@ -20,7 +20,7 @@ func TestAssembleCar_LargeItems(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader(data)), nil, nil)
-	items := []model.ItemPart{
+	items := []model.FileRange{
 		{
 			ID:     0,
 			Offset: 0,
@@ -53,7 +53,7 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	items := []model.ItemPart{
+	items := []model.FileRange{
 		{
 			Offset: 1,
 			Length: 4,
@@ -71,7 +71,7 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 	require.EqualValues(t, 1<<20, result.CarResults[0].PieceSize)
 	require.Len(t, result.CarResults[0].Header, 59)
 	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarResults[0].RootCID.String())
-	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.ItemPartCIDs[0].String())
+	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.FileRangeCIDs[0].String())
 	require.Len(t, result.CarResults[0].CarBlocks, 1)
 	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarResults[0].CarBlocks[0].CID.String())
 	require.EqualValues(t, 59, result.CarResults[0].CarBlocks[0].CarOffset)
@@ -85,7 +85,7 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	items := []model.ItemPart{
+	items := []model.FileRange{
 		{
 			Offset: 0,
 			Length: 5,

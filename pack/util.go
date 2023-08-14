@@ -10,15 +10,15 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/encryption"
-	"github.com/ipfs/go-block-format"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	chunk "github.com/ipfs/go-ipfs-chunker"
 	util "github.com/ipfs/go-ipfs-util"
 	cbor "github.com/ipfs/go-ipld-cbor"
-	"github.com/ipfs/go-ipld-format"
+	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-unixfs"
-	"github.com/ipfs/go-unixfs/pb"
+	unixfs_pb "github.com/ipfs/go-unixfs/pb"
 	"github.com/ipld/go-car"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
@@ -201,12 +201,12 @@ func IsSameEntry(ctx context.Context, item model.Item, object fs.Object) (bool, 
 // It returns a channel of blocks, the object, and an error if any.
 func GetBlockStreamFromItem(ctx context.Context,
 	handler datasource.ReadHandler,
-	itemPart model.ItemPart,
+	fileRange model.FileRange,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
-	if encryptor != nil && (itemPart.Offset != 0 || itemPart.Length != itemPart.Item.Size) {
+	if encryptor != nil && (fileRange.Offset != 0 || fileRange.Length != fileRange.Item.Size) {
 		return nil, nil, errors.New("encryption is not supported for partial reads")
 	}
-	readStream, object, err := handler.Read(ctx, itemPart.Item.Path, itemPart.Offset, itemPart.Length)
+	readStream, object, err := handler.Read(ctx, fileRange.Item.Path, fileRange.Offset, fileRange.Length)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to open stream")
 	}
@@ -224,17 +224,17 @@ func GetBlockStreamFromItem(ctx context.Context,
 			}
 		}
 		switch {
-		case hashValue != "" && hashValue != itemPart.Item.Hash:
+		case hashValue != "" && hashValue != fileRange.Item.Hash:
 			return nil, object, errors.Wrapf(ErrItemModified,
-				"itemPart has been modified: %s, oldHash: %s, newHash: %s",
-				itemPart.Item.Path, itemPart.Item.Hash, hashValue)
-		case hashValue == "" && lastModifiedReliable && (lastModified.UnixNano() != itemPart.Item.LastModifiedTimestampNano || size != itemPart.Item.Size):
+				"fileRange has been modified: %s, oldHash: %s, newHash: %s",
+				fileRange.Item.Path, fileRange.Item.Hash, hashValue)
+		case hashValue == "" && lastModifiedReliable && (lastModified.UnixNano() != fileRange.Item.LastModifiedTimestampNano || size != fileRange.Item.Size):
 			return nil, object, errors.Wrapf(ErrItemModified,
-				"itemPart has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %d, newLastModified: %d",
-				itemPart.Item.Path, itemPart.Item.Size, size, itemPart.Item.LastModifiedTimestampNano, lastModified.UnixNano())
-		case hashValue == "" && !lastModifiedReliable && size != itemPart.Item.Size:
-			return nil, object, errors.Wrapf(ErrItemModified, "itemPart has been modified: %s, oldSize: %d, newSize: %d",
-				itemPart.Item.Path, itemPart.Item.Size, size)
+				"fileRanage has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %d, newLastModified: %d",
+				fileRange.Item.Path, fileRange.Item.Size, size, fileRange.Item.LastModifiedTimestampNano, lastModified.UnixNano())
+		case hashValue == "" && !lastModifiedReliable && size != fileRange.Item.Size:
+			return nil, object, errors.Wrapf(ErrItemModified, "fileRange has been modified: %s, oldSize: %d, newSize: %d",
+				fileRange.Item.Path, fileRange.Item.Size, size)
 		}
 	}
 
@@ -255,7 +255,7 @@ func GetBlockStreamFromItem(ctx context.Context,
 		}
 		defer readCloser.Close()
 		defer close(blockChan)
-		offset := itemPart.Offset
+		offset := fileRange.Offset
 		firstChunk := true
 		for {
 			if ctx.Err() != nil {

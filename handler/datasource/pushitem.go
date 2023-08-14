@@ -74,7 +74,7 @@ func pushItemHandler(
 		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s is not an object", itemInfo.Path))
 	}
 
-	item, itemParts, err := PushItem(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
+	item, fileRanges, err := PushItem(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
 
 	if err != nil {
 		return nil, err
@@ -84,14 +84,14 @@ func pushItemHandler(
 		return nil, handler.NewDuplicateRecordError(fmt.Sprintf("%s already exists", obj.Remote()))
 	}
 
-	item.ItemParts = itemParts
+	item.FileRanges = fileRanges
 
 	return item, nil
 }
 
 func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	source model.Source, dataset model.Dataset,
-	directoryCache map[string]uint64) (*model.Item, []model.ItemPart, error) {
+	directoryCache map[string]uint64) (*model.Item, []model.FileRange, error) {
 	logger.Debugw("pushed item", "item", obj.Remote(), "source_id", source.ID, "dataset_id", dataset.ID)
 	db = db.WithContext(ctx)
 	splitSize := MaxSizeToSplitSize(dataset.MaxSize)
@@ -130,7 +130,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to ensure parent directories")
 	}
-	var itemParts []model.ItemPart
+	var fileRanges []model.FileRange
 	err = database.DoRetry(func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&item).Error
@@ -138,7 +138,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 				return errors.Wrap(err, "failed to create item")
 			}
 			if dataset.UseEncryption() {
-				itemParts = append(itemParts, model.ItemPart{
+				fileRanges = append(fileRanges, model.FileRange{
 					ItemID: item.ID,
 					Offset: 0,
 					Length: item.Size,
@@ -150,7 +150,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 					if item.Size-offset < length {
 						length = item.Size - offset
 					}
-					itemParts = append(itemParts, model.ItemPart{
+					fileRanges = append(fileRanges, model.FileRange{
 						ItemID: item.ID,
 						Offset: offset,
 						Length: length,
@@ -161,7 +161,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 					}
 				}
 			}
-			err = db.CreateInBatches(&itemParts, util.BatchSize).Error
+			err = db.CreateInBatches(&fileRanges, util.BatchSize).Error
 			if err != nil {
 				return errors.Wrap(err, "failed to create item parts")
 			}
@@ -171,7 +171,7 @@ func PushItem(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to create item")
 	}
-	return &item, itemParts, nil
+	return &item, fileRanges, nil
 }
 
 func EnsureParentDirectories(db *gorm.DB,

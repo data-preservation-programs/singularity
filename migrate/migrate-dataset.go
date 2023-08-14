@@ -167,7 +167,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						Path:      file.Path,
 						Size:      int64(file.Size),
 						CID:       model.CID(fileCID),
-						ItemParts: []model.ItemPart{
+						FileRanges: []model.FileRange{
 							{
 								Offset:  0,
 								Length:  int64(file.Size),
@@ -183,7 +183,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						Path:      file.Path,
 						Size:      int64(file.Size),
 						CID:       model.CID(cid.Undef),
-						ItemParts: []model.ItemPart{
+						FileRanges: []model.FileRange{
 							{
 								Offset:  0,
 								Length:  int64(file.End),
@@ -194,7 +194,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 					}
 					continue
 				} else {
-					lastItem.ItemParts = append(lastItem.ItemParts, model.ItemPart{
+					lastItem.FileRanges = append(lastItem.FileRanges, model.FileRange{
 						Offset:  int64(file.Start),
 						Length:  int64(file.End - file.Start),
 						CID:     model.CID(fileCID),
@@ -206,7 +206,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						item = lastItem
 						lastItem = model.Item{}
 						links := make([]format.Link, 0)
-						for _, part := range item.ItemParts {
+						for _, part := range item.FileRanges {
 							links = append(links, format.Link{
 								Size: uint64(part.Length),
 								Cid:  cid.Cid(part.CID),

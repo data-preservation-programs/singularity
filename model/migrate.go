@@ -25,7 +25,7 @@ var Tables = []any{
 	&Schedule{},
 	&Wallet{},
 	&WalletAssignment{},
-	&ItemPart{},
+	&FileRange{},
 }
 
 var logger = logging.Logger("model")

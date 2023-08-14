@@ -17,7 +17,7 @@ import (
 func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
 	dataset := *source.Dataset
 	var remaining = newRemain()
-	var remainingParts []model.ItemPart
+	var remainingParts []model.FileRange
 	err := w.db.Joins("Item").
 		Where("source_id = ? AND item_parts.chunk_id is null", source.ID).
 		Order("item_parts.id asc").
@@ -29,7 +29,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 	remaining.add(remainingParts)
 
 	if !scanSource {
-		for len(remaining.itemParts) > 0 {
+		for len(remaining.fileRanges) > 0 {
 			err = w.chunkOnce(source, dataset, remaining)
 			if err != nil {
 				return errors.Wrap(err, "failed to save chunking")
@@ -49,7 +49,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			continue
 		}
 
-		item, itemParts, err := datasource.PushItem(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
+		item, fileRanges, err := datasource.PushItem(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
 		if err != nil {
 			return errors.Wrap(err, "failed to push item")
 		}
@@ -65,7 +65,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			return errors.Wrap(err, "failed to update last scanned path")
 		}
 
-		remaining.add(itemParts)
+		remaining.add(fileRanges)
 		for remaining.carSize >= dataset.MaxSize {
 			err = w.chunkOnce(source, dataset, remaining)
 			if err != nil {
@@ -74,7 +74,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 		}
 	}
 
-	for len(remaining.itemParts) > 0 {
+	for len(remaining.fileRanges) > 0 {
 		err = w.chunkOnce(source, dataset, remaining)
 		if err != nil {
 			return errors.Wrap(err, "failed to save chunking")
@@ -103,9 +103,9 @@ func (w *DatasetWorkerThread) chunkOnce(
 	}
 	// size > maxSize, first, find the first item that makes it larger than maxSize
 	s := remaining.carSize
-	si := len(remaining.itemParts) - 1
+	si := len(remaining.fileRanges) - 1
 	for si >= 0 {
-		s -= toCarSize(remaining.itemParts[si].Length)
+		s -= toCarSize(remaining.fileRanges[si].Length)
 		if s <= dataset.MaxSize {
 			break
 		}
@@ -116,22 +116,22 @@ func (w *DatasetWorkerThread) chunkOnce(
 	// We will allow a single item to be more than sector size and handle it later during packing
 	if si == 0 {
 		si = 1
-		s += toCarSize(remaining.itemParts[0].Length)
+		s += toCarSize(remaining.fileRanges[0].Length)
 	}
 
 	// create a chunk for [0:si)
 	w.logger.Debugw("creating chunk", "size", s)
 
-	itemPartIDs := underscore.Map(remaining.itemParts[:si], func(item model.ItemPart) uint64 {
+	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(item model.FileRange) uint64 {
 		return item.ID
 	})
 	_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
-		ItemIDs: itemPartIDs,
+		ItemIDs: fileRangeIDs,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create chunk")
 	}
-	remaining.itemParts = remaining.itemParts[si:]
+	remaining.fileRanges = remaining.fileRanges[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize
 	return nil
 }

@@ -316,35 +316,35 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 }
 
 type remain struct {
-	itemParts []model.ItemPart
-	carSize   int64
+	fileRanges []model.FileRange
+	carSize    int64
 }
 
 const carHeaderSize = 59
 
 func newRemain() *remain {
 	return &remain{
-		itemParts: make([]model.ItemPart, 0),
+		fileRanges: make([]model.FileRange, 0),
 		// Some buffer for header
 		carSize: carHeaderSize,
 	}
 }
 
-func (r *remain) add(itemParts []model.ItemPart) {
-	r.itemParts = append(r.itemParts, itemParts...)
-	for _, itemPart := range itemParts {
-		r.carSize += toCarSize(itemPart.Length)
+func (r *remain) add(fileRanges []model.FileRange) {
+	r.fileRanges = append(r.fileRanges, fileRanges...)
+	for _, fileRanges := range fileRanges {
+		r.carSize += toCarSize(fileRanges.Length)
 	}
 }
 
 func (r *remain) reset() {
-	r.itemParts = make([]model.ItemPart, 0)
+	r.fileRanges = make([]model.FileRange, 0)
 	r.carSize = carHeaderSize
 }
 
 func (r *remain) itemIDs() []uint64 {
-	return underscore.Map(r.itemParts, func(itemPart model.ItemPart) uint64 {
-		return itemPart.ID
+	return underscore.Map(r.fileRanges, func(fileRanges model.FileRange) uint64 {
+		return fileRanges.ID
 	})
 }
 

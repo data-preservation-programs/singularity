@@ -262,33 +262,33 @@ type Source struct {
 
 // Chunk is a grouping of items that are packed into a single CAR.
 type Chunk struct {
-	ID              uint32     `gorm:"primaryKey"                                                            json:"id"`
-	CreatedAt       time.Time  `json:"createdAt"`
-	SourceID        uint32     `gorm:"index:source_summary_chunks"                                           json:"sourceId"`
-	Source          *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"                       json:"source,omitempty"          swaggerignore:"true"`
-	PackingState    WorkState  `gorm:"index:source_summary_chunks;index:chunk_cleanup"                       json:"packingState"`
-	PackingWorkerID *string    `gorm:"index:chunk_cleanup"                                                   json:"packingWorkerId,omitempty"`
-	PackingWorker   *Worker    `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty"   swaggerignore:"true"`
-	ErrorMessage    string     `json:"errorMessage"`
-	ItemParts       []ItemPart `gorm:"constraint:OnDelete:SET NULL"                                          json:"itemParts,omitempty"`
-	Cars            []Car      `gorm:"constraint:OnDelete:CASCADE"                                           json:"cars,omitempty"`
+	ID              uint32      `gorm:"primaryKey"                                                            json:"id"`
+	CreatedAt       time.Time   `json:"createdAt"`
+	SourceID        uint32      `gorm:"index:source_summary_chunks"                                           json:"sourceId"`
+	Source          *Source     `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"                       json:"source,omitempty"          swaggerignore:"true"`
+	PackingState    WorkState   `gorm:"index:source_summary_chunks;index:chunk_cleanup"                       json:"packingState"`
+	PackingWorkerID *string     `gorm:"index:chunk_cleanup"                                                   json:"packingWorkerId,omitempty"`
+	PackingWorker   *Worker     `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty"   swaggerignore:"true"`
+	ErrorMessage    string      `json:"errorMessage"`
+	FileRanges      []FileRange `gorm:"constraint:OnDelete:SET NULL"                                          json:"fileRanges,omitempty"`
+	Cars            []Car       `gorm:"constraint:OnDelete:CASCADE"                                           json:"cars,omitempty"`
 }
 
 // Item makes a reference to the data source item, i.e. a local file.
 type Item struct {
-	_                         struct{}   `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
-	ID                        uint64     `gorm:"primaryKey"                                                json:"id"`
-	CreatedAt                 time.Time  `json:"createdAt"`
-	CID                       CID        `gorm:"index:source_summary_items;column:cid;type:bytes;size:255" json:"cid"`
-	SourceID                  uint32     `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
-	Source                    *Source    `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"    swaggerignore:"true"`
-	Path                      string     `json:"path"`
-	Hash                      string     `json:"hash"`
-	Size                      int64      `json:"size"`
-	LastModifiedTimestampNano int64      `json:"lastModified"`
-	DirectoryID               *uint64    `gorm:"index"                                                     json:"directoryId"`
-	Directory                 *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty" swaggerignore:"true"`
-	ItemParts                 []ItemPart `gorm:"constraint:OnDelete:CASCADE"                               json:"itemParts,omitempty"`
+	_                         struct{}    `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
+	ID                        uint64      `gorm:"primaryKey"                                                json:"id"`
+	CreatedAt                 time.Time   `json:"createdAt"`
+	CID                       CID         `gorm:"index:source_summary_items;column:cid;type:bytes;size:255" json:"cid"`
+	SourceID                  uint32      `gorm:"index:check_existence;index:source_summary_items"          json:"sourceId"`
+	Source                    *Source     `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"    swaggerignore:"true"`
+	Path                      string      `json:"path"`
+	Hash                      string      `json:"hash"`
+	Size                      int64       `json:"size"`
+	LastModifiedTimestampNano int64       `json:"lastModified"`
+	DirectoryID               *uint64     `gorm:"index"                                                     json:"directoryId"`
+	Directory                 *Directory  `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty" swaggerignore:"true"`
+	FileRanges                []FileRange `gorm:"constraint:OnDelete:CASCADE"                               json:"fileRanges,omitempty"`
 }
 
 func CreateIndexes(db *gorm.DB) error {
@@ -312,7 +312,7 @@ func CreateIndexes(db *gorm.DB) error {
 	}
 }
 
-type ItemPart struct {
+type FileRange struct {
 	ID      uint64  `gorm:"primaryKey"                                      json:"id"`
 	ItemID  uint64  `gorm:"index:find_remaining"                            json:"itemId"`
 	Item    *Item   `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"   json:"item,omitempty"`

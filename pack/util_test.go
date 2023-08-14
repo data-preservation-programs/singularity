@@ -129,7 +129,7 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	item := model.ItemPart{
+	item := model.FileRange{
 		Offset: 0,
 		Length: 5,
 		Item: &model.Item{
