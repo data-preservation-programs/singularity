@@ -50,8 +50,8 @@ func TestMigrateDataset(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, datasets, 2)
 	require.Equal(t, "test", datasets[0].Name)
-	require.EqualValues(t, 18*1024*1024*1024, datasets[0].MaxSize)
-	require.EqualValues(t, 32*1024*1024*1024, datasets[0].PieceSize)
+	require.EqualValues(t, int64(18*1024*1024*1024), datasets[0].MaxSize)
+	require.EqualValues(t, int64(32*1024*1024*1024), datasets[0].PieceSize)
 	require.Equal(t, "test2", datasets[1].Name)
 	require.Equal(t, []string{filepath.Join("out", "dir")}, []string(datasets[0].OutputDirs))
 
@@ -117,8 +117,8 @@ func TestMigrateDataset(t *testing.T) {
 	err = db.Find(&cars).Error
 	require.NoError(t, err)
 	require.Len(t, cars, 2)
-	require.EqualValues(t, 32*1024*1024*1024, cars[0].PieceSize)
-	require.EqualValues(t, 20*1024*1024*1024, cars[0].FileSize)
+	require.EqualValues(t, int64(32*1024*1024*1024), cars[0].PieceSize)
+	require.EqualValues(t, int64(20*1024*1024*1024), cars[0].FileSize)
 	require.EqualValues(t, filepath.Join("out", "dir", "test.car"), cars[0].FilePath)
 	require.NotEmpty(t, cars[0].PieceCID.String())
 	require.NotEmpty(t, cars[0].RootCID.String())
@@ -142,8 +142,8 @@ func setupMongoDBDataset() error {
 		Name:                  "test",
 		Path:                  "/path",
 		OutDir:                filepath.Join("out", "dir"),
-		MinSize:               16 * 1024 * 1024 * 1024,
-		MaxSize:               18 * 1024 * 1024 * 1024,
+		MinSize:               uint64(16 * 1024 * 1024 * 1024),
+		MaxSize:               uint64(18 * 1024 * 1024 * 1024),
 		Status:                ScanningStatusCompleted,
 		ErrorMessage:          "error message",
 		TmpDir:                "/tmp/dir",
@@ -152,8 +152,8 @@ func setupMongoDBDataset() error {
 		Name:                  "test2",
 		Path:                  "s3://s3path",
 		OutDir:                filepath.Join("out", "dir"),
-		MinSize:               16 * 1024 * 1024 * 1024,
-		MaxSize:               18 * 1024 * 1024 * 1024,
+		MinSize:               uint64(16 * 1024 * 1024 * 1024),
+		MaxSize:               uint64(18 * 1024 * 1024 * 1024),
 		Status:                ScanningStatusCompleted,
 		ErrorMessage:          "error message",
 		TmpDir:                "/tmp/dir",
@@ -174,9 +174,9 @@ func setupMongoDBDataset() error {
 		Status:                GenerationStatusCompleted,
 		ErrorMessage:          "error message",
 		DataCID:               dataCID.String(),
-		CarSize:               20 * 1024 * 1024 * 1024,
+		CarSize:               uint64(20 * 1024 * 1024 * 1024),
 		PieceCID:              pieceCID.String(),
-		PieceSize:             32 * 1024 * 1024 * 1024,
+		PieceSize:             uint64(32 * 1024 * 1024 * 1024),
 		FilenameOverride:      "test.car",
 		TmpDir:                "/tmp/dir",
 		SkipInaccessibleFiles: false,
@@ -190,9 +190,9 @@ func setupMongoDBDataset() error {
 		Status:                GenerationStatusCompleted,
 		ErrorMessage:          "error message",
 		DataCID:               "unrecoverable",
-		CarSize:               20 * 1024 * 1024 * 1024,
+		CarSize:               uint64(20 * 1024 * 1024 * 1024),
 		PieceCID:              pieceCID.String(),
-		PieceSize:             32 * 1024 * 1024 * 1024,
+		PieceSize:             uint64(32 * 1024 * 1024 * 1024),
 		FilenameOverride:      "test2.car",
 		TmpDir:                "/tmp/dir",
 		SkipInaccessibleFiles: false,
