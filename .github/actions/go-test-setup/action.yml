@@ -31,3 +31,8 @@ runs:
       shell: bash
       run: |
           echo "GOMAXPROCS=1" >> $GITHUB_ENV
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.10.0
+      with:
+        mongodb-version: '6.0'
+        mongodb-port: 27018
