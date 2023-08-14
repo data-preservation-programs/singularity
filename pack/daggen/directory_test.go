@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/alecthomas/units"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-unixfs/io"
 	"github.com/stretchr/testify/require"

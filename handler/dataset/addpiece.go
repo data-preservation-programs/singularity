@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	util "github.com/ipfs/go-ipfs-util"
+	"github.com/ipfs/boxo/util"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
