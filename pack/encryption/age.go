@@ -36,6 +36,7 @@ func (e *AgeEncryptor) Encrypt(in io.Reader) (io.ReadCloser, error) {
 		_, err = io.Copy(e.target, in)
 		if err != nil {
 			writer.CloseWithError(err)
+			e.target.Close()
 			return
 		}
 		// Write final encryption block
