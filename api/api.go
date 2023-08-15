@@ -139,13 +139,11 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 		var inputParams []reflect.Value
 
 		var j int
-		var hasContext bool
 		// Get path parameters
 		for i := 0; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
 			if paramType.String() == "context.Context" {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
-				hasContext = true
 				continue
 			}
 			if paramType.String() == "*gorm.DB" {
@@ -207,10 +205,6 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 			}
 			inputParams = append(inputParams, bodyParam)
 			break
-		}
-
-		if !hasContext {
-			return c.JSON(http.StatusInternalServerError, HTTPError{Err: "handler function must have context.Context as input parameter"})
 		}
 
 		// Call the handler function
