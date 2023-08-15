@@ -20,14 +20,13 @@ import (
 var ValidateSource = true
 
 func CreateDatasourceHandler(
-	db *gorm.DB,
 	ctx context.Context,
-	datasourceHandlerResolver datasource.HandlerResolver,
+	db *gorm.DB,
 	sourceType string,
 	datasetName string,
 	sourceParameters map[string]any,
 ) (*model.Source, error) {
-	return createDatasourceHandler(db, ctx, sourceType, datasetName, sourceParameters)
+	return createDatasourceHandler(ctx, db, sourceType, datasetName, sourceParameters)
 }
 
 // @Summary Add acd source for a dataset
@@ -41,8 +40,8 @@ func CreateDatasourceHandler(
 // @Param request body AcdRequest true "Request body"
 // @Router /source/acd/dataset/{datasetName} [post]
 func createDatasourceHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	sourceType string,
 	datasetName string,
 	sourceParameters map[string]any,

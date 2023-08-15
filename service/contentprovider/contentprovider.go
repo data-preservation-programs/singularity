@@ -42,9 +42,9 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 
 	if config.HTTP.Enable {
 		s.servers = append(s.servers, &HTTPServer{
-			bind:     config.HTTP.Bind,
-			db:       db,
-			resolver: &datasource.DefaultHandlerResolver{},
+			bind:        config.HTTP.Bind,
+			dbNoContext: db,
+			resolver:    &datasource.DefaultHandlerResolver{},
 		})
 	}
 
@@ -87,8 +87,8 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 		}
 		logger.Info("peerID: " + h.ID().String())
 		s.servers = append(s.servers, &BitswapServer{
-			host: h,
-			db:   db,
+			host:        h,
+			dbNoContext: db,
 		})
 	}
 	return s, nil

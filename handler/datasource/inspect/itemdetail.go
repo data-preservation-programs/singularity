@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -10,10 +11,11 @@ import (
 )
 
 func GetSourceItemDetailHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.Item, error) {
-	return getSourceItemDetailHandler(db, id)
+	return getSourceItemDetailHandler(db.WithContext(ctx), id)
 }
 
 // @Summary Get details about an item

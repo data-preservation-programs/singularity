@@ -66,6 +66,7 @@ var UpdateCmd = &cli.Command{
 			encryptionScript = &s
 		}
 		dataset, err := dataset.UpdateHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			dataset.UpdateRequest{

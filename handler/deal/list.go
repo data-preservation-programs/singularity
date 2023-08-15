@@ -1,6 +1,8 @@
 package deal
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -12,8 +14,8 @@ type ListDealRequest struct {
 	States    []string `json:"states"`    // state filter
 }
 
-func ListHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
-	return listHandler(db, request)
+func ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
+	return listHandler(db.WithContext(ctx), request)
 }
 
 // @Summary List all deals

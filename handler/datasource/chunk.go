@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -16,11 +17,12 @@ type ChunkRequest struct {
 }
 
 func ChunkHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	sourceID string,
 	request ChunkRequest,
 ) (*model.Chunk, error) {
-	return chunkHandler(db, sourceID, request)
+	return chunkHandler(ctx, db.WithContext(ctx), sourceID, request)
 }
 
 // @Summary Create a chunk for the specified items
@@ -34,6 +36,7 @@ func ChunkHandler(
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /source/{id}/chunk [post]
 func chunkHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	sourceID string,
 	request ChunkRequest,
@@ -48,7 +51,7 @@ func chunkHandler(
 		PackingState: model.Ready,
 	}
 
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				err := db.Create(&chunk).Error
