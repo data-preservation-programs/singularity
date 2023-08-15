@@ -2,11 +2,8 @@ package encryption
 
 import (
 	"io"
-	"os/exec"
 
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/google/shlex"
-	"github.com/pkg/errors"
 )
 
 // Encryptor is an interface that defines the methods required to encrypt data in a resumable way.
@@ -22,16 +19,6 @@ type Encryptor interface {
 func GetEncryptor(dataset model.Dataset) (Encryptor, error) {
 	if len(dataset.EncryptionRecipients) > 0 {
 		return NewAgeEncryptor(dataset.EncryptionRecipients)
-	}
-
-	if dataset.EncryptionScript != "" {
-		parts, err := shlex.Split(dataset.EncryptionScript)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse encryption script")
-		}
-		//nolint:gosec
-		cmd := exec.Command(parts[0], parts[1:]...)
-		return NewCustomEncryptor(cmd), nil
 	}
 
 	return nil, nil

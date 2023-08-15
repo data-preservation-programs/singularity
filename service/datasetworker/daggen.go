@@ -9,7 +9,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
-	"github.com/data-preservation-programs/singularity/pack/device"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
@@ -24,12 +23,7 @@ func (w *Thread) dag(source model.Source) error {
 	var carBlocks []model.CarBlock
 	var car model.Car
 	if len(source.Dataset.OutputDirs) > 0 {
-		var err error
-		outDir, err = device.GetPathWithMostSpace(source.Dataset.OutputDirs)
-		if err != nil {
-			w.logger.Warnw("failed to get path with most space. using the first one", "error", err)
-			outDir = source.Dataset.OutputDirs[0]
-		}
+		outDir = source.Dataset.OutputDirs[0]
 	}
 
 	writeCloser, calc, filepath, err := pack.GetMultiWriter(outDir)

@@ -9,7 +9,6 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
-	"github.com/data-preservation-programs/singularity/pack/device"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
@@ -59,12 +58,7 @@ func Pack(
 ) ([]model.Car, error) {
 	var outDir string
 	if len(chunk.Source.Dataset.OutputDirs) > 0 {
-		var err error
-		outDir, err = device.GetPathWithMostSpace(chunk.Source.Dataset.OutputDirs)
-		if err != nil {
-			logger.Warnw("failed to get path with most space. using the first one", "error", err)
-			outDir = chunk.Source.Dataset.OutputDirs[0]
-		}
+		outDir = chunk.Source.Dataset.OutputDirs[0]
 	}
 	logger.Debugw("Use output dir", "dir", outDir)
 	handler, err := resolver.Resolve(ctx, *chunk.Source)

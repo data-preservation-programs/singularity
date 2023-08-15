@@ -3801,10 +3801,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "encryptionScript": {
-                    "description": "EncryptionScript command to run for custom encryption",
-                    "type": "string"
-                },
                 "maxSize": {
                     "description": "Maximum size of the CAR files to be created",
                     "type": "string",
@@ -3836,10 +3832,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "encryptionScript": {
-                    "description": "EncryptionScript command to run for custom encryption",
-                    "type": "string"
                 },
                 "maxSize": {
                     "description": "Maximum size of the CAR files to be created",
@@ -10055,9 +10047,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "encryptionScript": {
-                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
