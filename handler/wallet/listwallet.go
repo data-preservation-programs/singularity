@@ -1,6 +1,8 @@
 package wallet
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
@@ -8,10 +10,11 @@ import (
 )
 
 func ListWalletHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Wallet, error) {
-	return listWalletHandler(db, datasetName)
+	return listWalletHandler(db.WithContext(ctx), datasetName)
 }
 
 // @Summary List all wallets of a dataset.

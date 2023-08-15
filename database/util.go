@@ -19,8 +19,8 @@ func retryOn(err error) bool {
 	return strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
 }
 
-func DoRetry(f func() error) error {
-	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true))
+func DoRetry(ctx context.Context, f func() error) error {
+	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true), retry.Context(ctx))
 }
 
 type databaseLogger struct {

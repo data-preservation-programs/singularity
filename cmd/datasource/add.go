@@ -53,6 +53,7 @@ var AddCmd = &cli.Command{
 				return err
 			}
 			defer closer.Close()
+			db = db.WithContext(c.Context)
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
 				return handler.InvalidParameterError{Err: err}
@@ -106,7 +107,7 @@ var AddCmd = &cli.Command{
 				return errors.Wrap(err, "failed to check source")
 			}
 
-			err = database.DoRetry(func() error {
+			err = database.DoRetry(c.Context, func() error {
 				return db.Transaction(func(db *gorm.DB) error {
 					err := db.Create(&source).Error
 					if err != nil {

@@ -17,6 +17,7 @@ var ListDatasetCmd = &cli.Command{
 		}
 		defer closer.Close()
 		datasets, err := dataset.ListHandler(
+			c.Context,
 			db,
 		)
 		if err != nil {

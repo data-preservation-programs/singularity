@@ -19,7 +19,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
-	err := w.db.Joins("Item").
+	err := w.dbNoContext.Joins("Item").
 		Where("source_id = ? AND item_parts.chunk_id is null", source.ID).
 		Order("item_parts.id asc").
 		Find(&remainingParts).Error
@@ -31,7 +31,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 
 	if !scanSource {
 		for len(remaining.itemParts) > 0 {
-			err = w.chunkOnce(source, dataset, remaining)
+			err = w.chunkOnce(ctx, source, dataset, remaining)
 			if err != nil {
 				return errors.Wrap(err, "failed to save chunking")
 			}
@@ -50,7 +50,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 			continue
 		}
 
-		item, itemParts, err := datasource.PushItem(ctx, w.db, entry.Info, source, dataset, directoryCache)
+		item, itemParts, err := datasource.PushItem(ctx, w.dbNoContext, entry.Info, source, dataset, directoryCache)
 		if err != nil {
 			return errors.Wrap(err, "failed to push item")
 		}
@@ -58,8 +58,8 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 			w.logger.Infow("item already exists", "path", entry.Info.Remote())
 			continue
 		}
-		err = database.DoRetry(func() error {
-			return w.db.Model(&model.Source{}).Where("id = ?", source.ID).
+		err = database.DoRetry(ctx, func() error {
+			return w.dbNoContext.Model(&model.Source{}).Where("id = ?", source.ID).
 				Update("last_scanned_path", item.Path).Error
 		})
 		if err != nil {
@@ -68,7 +68,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 
 		remaining.add(itemParts)
 		for remaining.carSize >= dataset.MaxSize {
-			err = w.chunkOnce(source, dataset, remaining)
+			err = w.chunkOnce(ctx, source, dataset, remaining)
 			if err != nil {
 				return errors.Wrap(err, "failed to save chunking")
 			}
@@ -76,7 +76,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 	}
 
 	for len(remaining.itemParts) > 0 {
-		err = w.chunkOnce(source, dataset, remaining)
+		err = w.chunkOnce(ctx, source, dataset, remaining)
 		if err != nil {
 			return errors.Wrap(err, "failed to save chunking")
 		}
@@ -85,6 +85,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 }
 
 func (w *Thread) chunkOnce(
+	ctx context.Context,
 	source model.Source,
 	dataset model.Dataset,
 	remaining *remain,
@@ -92,7 +93,7 @@ func (w *Thread) chunkOnce(
 	// If everything fit, create a chunk. Usually this is the case for the last chunk
 	if remaining.carSize <= dataset.MaxSize {
 		w.logger.Debugw("creating chunk", "size", remaining.carSize)
-		_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
+		_, err := datasource.ChunkHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
 			ItemIDs: remaining.itemIDs(),
 		})
 
@@ -126,7 +127,7 @@ func (w *Thread) chunkOnce(
 	itemPartIDs := underscore.Map(remaining.itemParts[:si], func(item model.ItemPart) uint64 {
 		return item.ID
 	})
-	_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
+	_, err := datasource.ChunkHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
 		ItemIDs: itemPartIDs,
 	})
 	if err != nil {

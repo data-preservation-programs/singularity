@@ -3,6 +3,7 @@
 package database
 
 import (
+	"context"
 	"io"
 
 	"github.com/data-preservation-programs/singularity/model"
@@ -18,13 +19,14 @@ func OpenInMemory() (*gorm.DB, io.Closer, error) {
 		return nil, nil, err
 	}
 
-	err = DoRetry(func() error { return model.DropAll(db) })
+	ctx := context.Background()
+	err = DoRetry(ctx, func() error { return model.DropAll(db) })
 	if err != nil {
 		logger.Error(err)
 		closer.Close()
 		return nil, nil, err
 	}
-	err = DoRetry(func() error { return model.AutoMigrate(db) })
+	err = DoRetry(ctx, func() error { return model.AutoMigrate(db) })
 	if err != nil {
 		logger.Error(err)
 		closer.Close()

@@ -1,6 +1,7 @@
 package datasetworker
 
 import (
+	"context"
 	"os"
 	"path"
 	"time"
@@ -17,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (w *Thread) dag(source model.Source) error {
+func (w *Thread) dag(ctx context.Context, source model.Source) error {
 	var rootCID cid.Cid
 	var outDir string
 	var headerBytes []byte
@@ -38,7 +39,7 @@ func (w *Thread) dag(source model.Source) error {
 	}
 	defer writeCloser.Close()
 	offset := int64(0)
-	rows, err := w.db.Model(&model.Directory{}).Where("source_id = ? AND exported = ?", source.ID, false).Order("id asc").Rows()
+	rows, err := w.dbNoContext.Model(&model.Directory{}).Where("source_id = ? AND exported = ?", source.ID, false).Order("id asc").Rows()
 	if err != nil {
 		return errors.Wrap(err, "failed to get directories")
 	}
@@ -46,7 +47,7 @@ func (w *Thread) dag(source model.Source) error {
 	dirUpdateTimes := map[uint64]time.Time{}
 	for rows.Next() {
 		var dir model.Directory
-		err = w.db.ScanRows(rows, &dir)
+		err = w.dbNoContext.ScanRows(rows, &dir)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan directory")
 		}
@@ -113,8 +114,8 @@ func (w *Thread) dag(source model.Source) error {
 	car.DatasetID = source.DatasetID
 	car.SourceID = &source.ID
 	logger.Debugw("Saving car", "car", car)
-	err = database.DoRetry(func() error {
-		return w.db.Transaction(func(db *gorm.DB) error {
+	err = database.DoRetry(ctx, func() error {
+		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&car).Error
 			if err != nil {
 				return err

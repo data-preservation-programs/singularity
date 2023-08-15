@@ -23,10 +23,10 @@ var ErrNotImplemented = errors.New("not implemented")
 // It uses a GORM database for storage and a HandlerResolver to resolve data source handlers.
 //
 // Fields:
-// DB: The GORM database used for storage. This should be initialized and connected to a database before use.
+// DBNoContext: The GORM database used for storage. This should be initialized and connected to a database before use.
 // HandlerResolver: The HandlerResolver used to resolve data source handlers. This should be initialized with the appropriate handlers before use.
 type ItemReferenceBlockStore struct {
-	DB              *gorm.DB
+	DBNoContext     *gorm.DB
 	HandlerResolver datasource.HandlerResolver
 }
 
@@ -41,13 +41,13 @@ type ItemReferenceBlockStore struct {
 // A boolean indicating whether the block exists in the store, and an error if the operation failed.
 func (i *ItemReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var count int64
-	err := i.DB.WithContext(ctx).Model(&model.CarBlock{}).Select("cid").Where("cid = ?", model.CID(cid)).Count(&count).Error
+	err := i.DBNoContext.WithContext(ctx).Model(&model.CarBlock{}).Select("cid").Where("cid = ?", model.CID(cid)).Count(&count).Error
 	return count > 0, err
 }
 
 func (i *ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var carBlock model.CarBlock
-	err := i.DB.WithContext(ctx).Joins("Item.Source").Where("car_blocks.cid = ?", model.CID(cid)).First(&carBlock).Error
+	err := i.DBNoContext.WithContext(ctx).Joins("Item.Source").Where("car_blocks.cid = ?", model.CID(cid)).First(&carBlock).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, format.ErrNotFound{Cid: cid}
 	}
@@ -93,7 +93,7 @@ func (i *ItemReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.
 // The size of the block in bytes, and an error if the operation failed. If the block does not exist in the store, it returns a
 func (i *ItemReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 	var carBlock model.CarBlock
-	err := i.DB.WithContext(ctx).Where("cid = ?", model.CID(c)).First(&carBlock).Error
+	err := i.DBNoContext.WithContext(ctx).Where("cid = ?", model.CID(c)).First(&carBlock).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, format.ErrNotFound{Cid: c}

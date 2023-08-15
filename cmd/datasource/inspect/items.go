@@ -19,6 +19,7 @@ var ItemsCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetSourceItemsHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

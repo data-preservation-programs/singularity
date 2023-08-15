@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -79,8 +80,9 @@ func getSourceStatusHandler(
 }
 
 func GetSourceStatusHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*SourceStatus, error) {
-	return getSourceStatusHandler(db, id)
+	return getSourceStatusHandler(db.WithContext(ctx), id)
 }

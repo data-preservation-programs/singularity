@@ -26,9 +26,9 @@ func TestHTTPServerStart(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	s := HTTPServer{
-		db:       db,
-		bind:     "127.0.0.1:65432",
-		resolver: &datasource.DefaultHandlerResolver{},
+		dbNoContext: db,
+		bind:        "127.0.0.1:65432",
+		resolver:    &datasource.DefaultHandlerResolver{},
 	}
 	require.Equal(t, "HTTPServer", s.Name())
 	ctx, cancel := context.WithCancel(context.Background())
@@ -51,9 +51,9 @@ func TestHTTPServerHandler(t *testing.T) {
 	defer closer.Close()
 	e := echo.New()
 	s := HTTPServer{
-		db:       db,
-		bind:     ":0",
-		resolver: &datasource.DefaultHandlerResolver{},
+		dbNoContext: db,
+		bind:        ":0",
+		resolver:    &datasource.DefaultHandlerResolver{},
 	}
 
 	pieceCID := cid.NewCidV1(cid.FilCommitmentSealed, util.Hash([]byte("test")))

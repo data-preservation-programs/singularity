@@ -26,12 +26,12 @@ type Entry struct {
 }
 
 func CheckSourceHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	id string,
 	request CheckSourceRequest,
 ) ([]Entry, error) {
-	return checkSourceHandler(db, ctx, id, request)
+	return checkSourceHandler(ctx, db.WithContext(ctx), id, request)
 }
 
 // @Summary Check the connection of the data source by listing a path
@@ -45,8 +45,8 @@ func CheckSourceHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/check [post]
 func checkSourceHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	id string,
 	request CheckSourceRequest,
 ) ([]Entry, error) {

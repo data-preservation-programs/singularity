@@ -19,6 +19,7 @@ var RescanCmd = &cli.Command{
 		}
 		defer closer.Close()
 		source, err := datasource.RescanSourceHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

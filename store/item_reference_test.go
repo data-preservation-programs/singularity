@@ -23,7 +23,7 @@ func TestItemReferenceBlockStore_Has(t *testing.T) {
 	defer closer.Close()
 
 	store := ItemReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -63,7 +63,7 @@ func TestItemReferenceBlockStore_GetSize(t *testing.T) {
 	defer closer.Close()
 
 	store := ItemReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 	ctx := context.Background()
@@ -89,7 +89,7 @@ func TestItemReferenceBlockStore_Get_RawBlock(t *testing.T) {
 	defer closer.Close()
 
 	store := ItemReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -117,7 +117,7 @@ func TestItemReferenceBlockStore_Get_ItemBlock(t *testing.T) {
 	defer closer.Close()
 
 	store := ItemReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 

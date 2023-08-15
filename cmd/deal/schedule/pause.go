@@ -17,7 +17,7 @@ var PauseCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		schedule, err := schedule.PauseHandler(db, c.Args().Get(0))
+		schedule, err := schedule.PauseHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return err
 		}

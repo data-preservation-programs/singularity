@@ -235,7 +235,7 @@ var CreateCmd = &cli.Command{
 			AllowedPieceCIDs:     allowedPieceCIDs,
 		}
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		schedule, err := schedule.CreateHandler(db, c.Context, lotusClient, request)
+		schedule, err := schedule.CreateHandler(c.Context, db, lotusClient, request)
 		if err != nil {
 			return err
 		}

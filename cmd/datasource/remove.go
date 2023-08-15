@@ -22,6 +22,7 @@ var RemoveCmd = &cli.Command{
 		}
 		defer closer.Close()
 		return datasource.RemoveSourceHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

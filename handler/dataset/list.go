@@ -1,6 +1,8 @@
 package dataset
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -24,7 +26,8 @@ func listHandler(
 }
 
 func ListHandler(
+	ctx context.Context,
 	db *gorm.DB,
 ) ([]model.Dataset, error) {
-	return listHandler(db)
+	return listHandler(db.WithContext(ctx))
 }
