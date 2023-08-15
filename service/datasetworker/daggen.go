@@ -47,7 +47,7 @@ func (w *Thread) dag(source model.Source) error {
 		dirUpdateTimes[dir.ID] = dir.UpdatedAt
 
 		logger.Debugw("Reading content of directory", "dir_id", dir.ID, "name", dir.Name)
-		_, blks, err := daggen.UnmarshallToBlocks(dir.Data)
+		_, blks, err := daggen.UnmarshalToBlocks(dir.Data)
 		if err != nil {
 			return errors.Wrap(err, "failed to unmarshall to blocks")
 		}

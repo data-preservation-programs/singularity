@@ -71,6 +71,8 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to pack items")
 	}
 
+	// Update all ItemPart and Item CID that are not split
+	var splitItemIDs map[uint64]struct{}
 	for _, itemPart := range chunk.ItemParts {
 		itemPartID := itemPart.ID
 		itemPartCID, ok := result.ItemPartCIDs[itemPartID]
@@ -94,7 +96,41 @@ func Pack(
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to update cid of item")
 			}
+		} else {
+			splitItemIDs[itemPart.ItemID] = struct{}{}
 		}
+	}
+
+	// Now check if all item parts of an item are ready. If so, update item CID
+	for itemID := range splitItemIDs {
+		err = database.DoRetry(func() error {
+			return db.Transaction(func(db *gorm.DB) error {
+				var allParts []model.ItemPart
+				err = db.Where("item_id = ?", itemID).Order("offset asc").Find(&allParts).Error
+				if err != nil {
+					return errors.Wrap(err, "failed to get all item parts")
+				}
+				if underscore.All(allParts, func(p model.ItemPart) bool {
+					return p.CID != model.CID(cid.Undef)
+				}) {
+					links := underscore.Map(allParts, func(p model.ItemPart) format.Link {
+						return format.Link{
+							Size: uint64(p.Length),
+							Cid:  cid.Cid(p.CID),
+						}
+					})
+					_, node, err := pack.AssembleItemFromLinks(links)
+					if err != nil {
+						return errors.Wrap(err, "failed to assemble item from links")
+					}
+					err = db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", model.CID(node.Cid())).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to update cid of item")
+					}
+				}
+				return nil
+			})
+		})
 	}
 
 	logger.Debugw("create car for finished chunk", "chunkID", chunk.ID)
@@ -138,28 +174,21 @@ func Pack(
 	logger.Debugw("update directory data", "chunkID", chunk.ID)
 	err = database.DoRetry(func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			dirCache := make(map[uint64]*daggen.DirectoryData)
-			childrenCache := make(map[uint64][]uint64)
+			var err error
+			tree := daggen.NewDirectoryTree()
 			for _, itemPart := range chunk.ItemParts {
 				dirID := itemPart.Item.DirectoryID
 				for dirID != nil {
-					dirData, ok := dirCache[*dirID]
-					if !ok {
-						dirData = &daggen.DirectoryData{}
+					// Add the directory to tree if it's not there
+					if !tree.Has(*dirID) {
 						var dir model.Directory
-						err := db.Where("id = ?", dirID).First(&dir).Error
+						err = db.Where("id = ?", dirID).First(&dir).Error
 						if err != nil {
 							return errors.Wrap(err, "failed to get directory")
 						}
-
-						err = dirData.UnmarshallBinary(dir.Data)
+						err = tree.Add(&dir)
 						if err != nil {
-							return errors.Wrap(err, "failed to unmarshall directory data")
-						}
-						dirData.Directory = dir
-						dirCache[*dirID] = dirData
-						if dir.ParentID != nil {
-							childrenCache[*dir.ParentID] = append(childrenCache[*dir.ParentID], *dirID)
+							return errors.Wrap(err, "failed to add directory to tree")
 						}
 					}
 
@@ -182,12 +211,6 @@ func Pack(
 							if err != nil {
 								return errors.Wrap(err, "failed to add item to directory")
 							}
-							/*
-								err = db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).Update("cid", model.CID(itemPartCID)).Error
-								if err != nil {
-									return errors.Wrap(err, "failed to update cid of item")
-								}
-							*/
 						} else {
 							var allParts []model.ItemPart
 							err = db.Where("item_id = ?", itemPart.ItemID).Order("\"offset\" asc").Find(&allParts).Error
