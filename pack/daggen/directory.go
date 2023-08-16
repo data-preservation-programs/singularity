@@ -55,6 +55,14 @@ func (t DirectoryTree) Get(dirID uint64) *DirectoryDetail {
 	return t.cache[dirID]
 }
 
+// Add inserts a new directory into the DirectoryTree.
+//
+// Parameters:
+//   - ctx: Context that allows for asynchronous task cancellation.
+//   - dir: A pointer to a model.Directory object that needs to be added to the tree.
+//
+// Returns:
+//   - error: The error encountered during the operation, if any
 func (t DirectoryTree) Add(ctx context.Context, dir *model.Directory) error {
 	data := &DirectoryData{}
 	err := data.UnmarshalBinary(ctx, dir.Data)
@@ -71,6 +79,16 @@ func (t DirectoryTree) Add(ctx context.Context, dir *model.Directory) error {
 	return nil
 }
 
+// Resolve recursively constructs the IPLD (InterPlanetary Linked Data) structure for a directory and its subdirectories,
+// and returns a link pointing to the root of this structure.
+//
+// Parameters:
+//   - ctx: Context that allows for asynchronous task cancellation.
+//   - dirID: The ID of the directory that needs to be resolved.
+//
+// Returns:
+//   - *format.Link: A link that points to the root of the IPLD structure for the directory.
+//   - error: The error encountered during the operation, if any.
 func (t DirectoryTree) Resolve(ctx context.Context, dirID uint64) (*format.Link, error) {
 	detail, ok := t.cache[dirID]
 	if !ok {
@@ -219,6 +237,17 @@ func (d *DirectoryData) AddItemFromLinks(ctx context.Context, name string, links
 	return node.Cid(), nil
 }
 
+// AddBlocks adds an array of blocks to the underlying blockstore of the DirectoryData instance.
+//
+// Parameters:
+//   - ctx: Context that allows for asynchronous task cancellation.
+//   - blks: An array of blocks that need to be added to the blockstore.
+//
+// Returns:
+//   - error: The error encountered during the operation, if any.
+//
+// This function is a wrapper that delegates the block adding task to the blockstore instance
+// associated with the DirectoryData instance.
 func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) error {
 	return d.bstore.PutMany(ctx, blks)
 }
