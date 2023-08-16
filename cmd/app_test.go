@@ -258,7 +258,7 @@ func TestRunAPI(t *testing.T) {
 		}()
 		defer cancel()
 		go func() {
-			_, _, err := RunArgsInTest(ctx2, "singularity run api")
+			err := RunArgsInTestNoCapture(ctx2, "singularity run api")
 			require.ErrorContains(t, err, "Server closed")
 			close(serverClosed)
 		}()
@@ -875,7 +875,7 @@ func TestPieceDownload(t *testing.T) {
 		}()
 		defer cancel()
 		go func() {
-			_, _, _ = RunArgsInTest(ctx2, "singularity run content-provider")
+			RunArgsInTestNoCapture(ctx2, "singularity run content-provider")
 			close(serverClosed)
 		}()
 		// Wait for HTTP service to be ready
