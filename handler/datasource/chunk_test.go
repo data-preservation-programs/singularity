@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestChunk(t *testing.T) {
+func TestCreatePackingManifest(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test file to add
@@ -53,15 +53,15 @@ func TestChunk(t *testing.T) {
 		fileB, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: "b"})
 		require.NoError(t, err)
 
-		// Chunk
-		chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
+		// Create packing manifest
+		packingManifest, err := client.CreatePackingManifest(ctx, source.ID, datasource.PackingManifestRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
 		require.NoError(t, err)
-		fmt.Printf("%#v\n", chunk)
+		fmt.Printf("%#v\n", packingManifest)
 
-		// Check that chunk exists
-		chunks, err := client.GetSourceChunks(ctx, source.ID, inspect.GetSourceChunksRequest{})
+		// Check that packing manifest exists
+		packingManifests, err := client.GetSourcePackingManifests(ctx, source.ID, inspect.GetSourcePackingManifestsRequest{})
 		require.NoError(t, err)
 
-		require.Len(t, chunks, 1)
+		require.Len(t, packingManifests, 1)
 	})
 }

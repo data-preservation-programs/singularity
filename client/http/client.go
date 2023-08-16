@@ -144,8 +144,8 @@ func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo datasou
 	return &file, nil
 }
 
-func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {
-	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/chunks", request)
+func (c *Client) GetSourcePackingManifests(ctx context.Context, sourceID uint32, request inspect.GetSourcePackingManifestsRequest) ([]model.PackingManifest, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packingmanifests", request)
 	if err != nil {
 		return nil, err
 	}
@@ -156,16 +156,16 @@ func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request i
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var chunks []model.Chunk
-	err = json.NewDecoder(response.Body).Decode(&chunks)
+	var packingmanifests []model.PackingManifest
+	err = json.NewDecoder(response.Body).Decode(&packingmanifests)
 	if err != nil {
 		return nil, err
 	}
-	return chunks, nil
+	return packingmanifests, nil
 }
 
-func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) (*model.Chunk, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/chunk", request)
+func (c *Client) CreatePackingManifest(ctx context.Context, sourceID uint32, request datasource.PackingManifestRequest) (*model.PackingManifest, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packingmanifest", request)
 	if err != nil {
 		return nil, err
 	}
@@ -175,16 +175,16 @@ func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var chunk model.Chunk
-	err = json.NewDecoder(response.Body).Decode(&chunk)
+	var packingmanifest model.PackingManifest
+	err = json.NewDecoder(response.Body).Decode(&packingmanifest)
 	if err != nil {
 		return nil, err
 	}
-	return &chunk, nil
+	return &packingmanifest, nil
 }
 
-func (c *Client) Pack(ctx context.Context, chunkID uint64) ([]model.Car, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/chunk/"+strconv.FormatUint(chunkID, 10)+"/pack", nil)
+func (c *Client) Pack(ctx context.Context, packingManifestID uint64) ([]model.Car, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/packingmanifest/"+strconv.FormatUint(packingManifestID, 10)+"/pack", nil)
 	if err != nil {
 		return nil, err
 	}

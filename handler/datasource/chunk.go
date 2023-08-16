@@ -11,39 +11,39 @@ import (
 	"gorm.io/gorm"
 )
 
-type ChunkRequest struct {
+type PackingManifestRequest struct {
 	FileIDs []uint64 `json:"fileIDs" validation:"required"`
 }
 
-func ChunkHandler(
+func CreatePackingManifestHandler(
 	db *gorm.DB,
 	sourceID string,
-	request ChunkRequest,
-) (*model.Chunk, error) {
-	return chunkHandler(db, sourceID, request)
+	request PackingManifestRequest,
+) (*model.PackingManifest, error) {
+	return createPackingManifestHandler(db, sourceID, request)
 }
 
-// @Summary Create a chunk for the specified files
+// @Summary Create a packing manifest for the specified files
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Param request body ChunkRequest true "Request body"
+// @Param request body PackingManifestRequest true "Request body"
 // @Success 201 {object} model.File
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /source/{id}/chunk [post]
-func chunkHandler(
+// @Router /source/{id}/packingmanifest [post]
+func createPackingManifestHandler(
 	db *gorm.DB,
 	sourceID string,
-	request ChunkRequest,
-) (*model.Chunk, error) {
+	request PackingManifestRequest,
+) (*model.PackingManifest, error) {
 	sourceIDInt, err := strconv.Atoi(sourceID)
 	if err != nil {
 		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 
-	chunk := model.Chunk{
+	packingManifest := model.PackingManifest{
 		SourceID:     uint32(sourceIDInt),
 		PackingState: model.Ready,
 	}
@@ -51,14 +51,14 @@ func chunkHandler(
 	err = database.DoRetry(func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
-				err := db.Create(&chunk).Error
+				err := db.Create(&packingManifest).Error
 				if err != nil {
-					return errors.Wrap(err, "failed to create chunk")
+					return errors.Wrap(err, "failed to create packing manifest")
 				}
 				fileRangeIDChunks := util.ChunkSlice(request.FileIDs, util.BatchSize)
 				for _, fileRangeIDChunks := range fileRangeIDChunks {
 					err = db.Model(&model.FileRange{}).
-						Where("id IN ?", fileRangeIDChunks).Update("chunk_id", chunk.ID).Error
+						Where("id IN ?", fileRangeIDChunks).Update("packing_manifest_id", packingManifest.ID).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update files")
 					}
@@ -71,5 +71,5 @@ func chunkHandler(
 		return nil, err
 	}
 
-	return &chunk, nil
+	return &packingManifest, nil
 }

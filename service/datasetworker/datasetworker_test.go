@@ -91,7 +91,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	}
 	err = db.Create(file2).Error
 	require.NoError(t, err)
-	chunk := model.Chunk{
+	packingManifest := model.PackingManifest{
 		SourceID: source.ID,
 		FileRanges: []model.FileRange{
 			{
@@ -107,34 +107,34 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 			},
 		},
 	}
-	err = db.Create(&chunk).Error
+	err = db.Create(&packingManifest).Error
 	require.NoError(t, err)
 	parts := []model.FileRange{{
-		FileID:  file2.ID,
-		Offset:  0,
-		Length:  2,
-		ChunkID: &chunk.ID,
+		FileID:            file2.ID,
+		Offset:            0,
+		Length:            2,
+		PackingManifestID: &packingManifest.ID,
 	}, {
-		FileID:  file2.ID,
-		Offset:  2,
-		Length:  3,
-		ChunkID: &chunk.ID,
+		FileID:            file2.ID,
+		Offset:            2,
+		Length:            3,
+		PackingManifestID: &packingManifest.ID,
 	}}
 	err = db.Create(&parts).Error
 	require.NoError(t, err)
-	chunk.Source = &source
-	err = db.Preload("FileRanges.File").Find(&chunk).Error
+	packingManifest.Source = &source
+	err = db.Preload("FileRanges.File").Find(&packingManifest).Error
 	require.NoError(t, err)
-	err = thread.pack(context.TODO(), chunk)
+	err = thread.pack(context.TODO(), packingManifest)
 	require.NoError(t, err)
 	var cars []model.Car
 	err = db.Find(&cars).Error
 	require.NoError(t, err)
 	require.Greater(t, cars[0].PieceSize, int64(0))
-	require.Equal(t, *cars[0].ChunkID, chunk.ID)
+	require.Equal(t, *cars[0].PackingManifestID, packingManifest.ID)
 	require.NotEmpty(t, cars[0].FilePath)
-	var chunks []model.Chunk
-	err = db.Find(&chunks).Error
+	var packingManifests []model.PackingManifest
+	err = db.Find(&packingManifests).Error
 	require.NoError(t, err)
 	var files []model.File
 	err = db.Find(&files).Error
@@ -284,7 +284,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	err = db.Create(&fileRanges).Error
 	require.NoError(t, err)
-	chunks := map[*model.Chunk]bool{
+	packingManifests := map[*model.PackingManifest]bool{
 		{
 			PackingState: model.Ready,
 		}: true,
@@ -299,13 +299,13 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			PackingWorkerID: &worker.ID,
 		}: false,
 	}
-	for chunk, shouldBeFound := range chunks {
-		err := db.Where("1 = 1").Delete(&model.Chunk{}).Error
+	for packingManifest, shouldBeFound := range packingManifests {
+		err := db.Where("1 = 1").Delete(&model.PackingManifest{}).Error
 		require.NoError(t, err)
-		chunk.SourceID = source.ID
-		err = db.Create(chunk).Error
+		packingManifest.SourceID = source.ID
+		err = db.Create(packingManifest).Error
 		for _, fileRanges := range fileRanges {
-			fileRanges.ChunkID = &chunk.ID
+			fileRanges.PackingManifestID = &packingManifest.ID
 			err = db.Save(&fileRanges).Error
 			require.NoError(t, err)
 		}
@@ -321,7 +321,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		} else {
 			require.Nil(t, ck)
 		}
-		err = db.Where("1 = 1").Delete(&model.Chunk{}).Error
+		err = db.Where("1 = 1").Delete(&model.PackingManifest{}).Error
 		require.NoError(t, err)
 	}
 }

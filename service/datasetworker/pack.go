@@ -8,9 +8,9 @@ import (
 )
 
 func (w *DatasetWorkerThread) pack(
-	ctx context.Context, chunk model.Chunk,
+	ctx context.Context, packingManifest model.PackingManifest,
 ) error {
-	_, err := datasource.Pack(ctx, w.db, chunk, w.datasourceHandlerResolver)
+	_, err := datasource.Pack(ctx, w.db, packingManifest, w.datasourceHandlerResolver)
 	if err != nil {
 		return err
 	}

@@ -19,7 +19,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 	var remaining = newRemain()
 	var remainingParts []model.FileRange
 	err := w.db.Joins("File").
-		Where("source_id = ? AND file_ranges.chunk_id is null", source.ID).
+		Where("source_id = ? AND file_ranges.packing_manifest_id is null", source.ID).
 		Order("file_ranges.id asc").
 		Find(&remainingParts).Error
 	if err != nil {
@@ -88,15 +88,15 @@ func (w *DatasetWorkerThread) chunkOnce(
 	dataset model.Dataset,
 	remaining *remain,
 ) error {
-	// If everything fit, create a chunk. Usually this is the case for the last chunk
+	// If everything fit, create a packing manifest. Usually this is the case for the last packing manifest
 	if remaining.carSize <= dataset.MaxSize {
-		w.logger.Debugw("creating chunk", "size", remaining.carSize)
-		_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
+		w.logger.Debugw("creating packing manifest", "size", remaining.carSize)
+		_, err := datasource.CreatePackingManifestHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackingManifestRequest{
 			FileIDs: remaining.itemIDs(),
 		})
 
 		if err != nil {
-			return errors.Wrap(err, "failed to create chunk")
+			return errors.Wrap(err, "failed to create packing manifest")
 		}
 		remaining.reset()
 		return nil
@@ -119,17 +119,17 @@ func (w *DatasetWorkerThread) chunkOnce(
 		s += toCarSize(remaining.fileRanges[0].Length)
 	}
 
-	// create a chunk for [0:si)
-	w.logger.Debugw("creating chunk", "size", s)
+	// create a packing manifest for [0:si)
+	w.logger.Debugw("creating packing manifest", "size", s)
 
 	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(file model.FileRange) uint64 {
 		return file.ID
 	})
-	_, err := datasource.ChunkHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.ChunkRequest{
+	_, err := datasource.CreatePackingManifestHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackingManifestRequest{
 		FileIDs: fileRangeIDs,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to create chunk")
+		return errors.Wrap(err, "failed to create packing manifest")
 	}
 	remaining.fileRanges = remaining.fileRanges[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize

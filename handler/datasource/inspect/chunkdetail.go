@@ -10,40 +10,40 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetSourceChunkDetailHandler(
+func GetSourcePackingManifestDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Chunk, error) {
-	return getSourceChunkDetailHandler(db, id)
+) (*model.PackingManifest, error) {
+	return getSourcePackingManifestDetailHandler(db, id)
 }
 
-// @Summary Get detail of a specific chunk
+// @Summary Get detail of a specific packing manifest
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "Chunk ID"
-// @Success 200 {object} model.Chunk
+// @Param id path string true "Packing manifest ID"
+// @Success 200 {object} model.PackingManifest
 // @Failure 500 {object} api.HTTPError
-// @Router /chunk/{id} [get]
-func getSourceChunkDetailHandler(
+// @Router /packingmanifest/{id} [get]
+func getSourcePackingManifestDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.Chunk, error) {
-	chunkID, err := strconv.Atoi(id)
+) (*model.PackingManifest, error) {
+	packingManifestID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid chunk id")
+		return nil, handler.NewInvalidParameterErr("invalid packing manifest id")
 	}
-	var chunk model.Chunk
-	err = db.Preload("Cars").Preload("FileRanges").Where("id = ?", chunkID).First(&chunk).Error
+	var packingManifest model.PackingManifest
+	err = db.Preload("Cars").Preload("FileRanges").Where("id = ?", packingManifestID).First(&packingManifest).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("chunk not found")
+		return nil, handler.NewInvalidParameterErr("packing manifest not found")
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	fileMap := make(map[uint64]*model.File)
-	for _, part := range chunk.FileRanges {
+	for _, part := range packingManifest.FileRanges {
 		fileMap[part.FileID] = nil
 	}
 
@@ -59,12 +59,12 @@ func getSourceChunkDetailHandler(
 		}
 	}
 
-	for i, part := range chunk.FileRanges {
+	for i, part := range packingManifest.FileRanges {
 		file, ok := fileMap[part.FileID]
 		if ok {
-			chunk.FileRanges[i].File = file
+			packingManifest.FileRanges[i].File = file
 		}
 	}
 
-	return &chunk, nil
+	return &packingManifest, nil
 }

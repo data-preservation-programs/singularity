@@ -20,6 +20,6 @@ type Client interface {
 	ListSourcesByDataset(ctx context.Context, datasetName string) ([]model.Source, error)
 	GetFile(ctx context.Context, id uint64) (*model.File, error)
 	PushFile(ctx context.Context, sourceID uint32, fileInfo datasource.FileInfo) (*model.File, error)
-	GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error)
-	Chunk(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) (*model.Chunk, error)
+	GetSourcePackingManifests(ctx context.Context, sourceID uint32, request inspect.GetSourcePackingManifestsRequest) ([]model.PackingManifest, error)
+	CreatePackingManifest(ctx context.Context, sourceID uint32, request datasource.PackingManifestRequest) (*model.PackingManifest, error)
 }

@@ -480,7 +480,7 @@ func TestRunAPI(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `{`)
 
-		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/chunks").End()
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/source/1/packingmanifests").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, `[`)
@@ -505,7 +505,7 @@ func TestRunAPI(t *testing.T) {
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/chunk/1").End()
+		resp, body, errs = gorequest.New().Get("http://127.0.0.1:9090/api/packingmanifest/1").End()
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -850,10 +850,10 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=false --enable-dag=false --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
-		out, _, err := RunArgsInTest(ctx, "singularity datasource inspect chunks 1")
+		out, _, err := RunArgsInTest(ctx, "singularity datasource inspect packingmanifests 1")
 		require.NoError(t, err)
 		require.Contains(t, out, "ready")
-		// We should get 15 chunks
+		// We should get 15 packing manifests
 		require.Contains(t, out, "15")
 		err = os.WriteFile(filepath.Join(temp, "sub", "test5.txt"), generateRandomBytes(10000), 0777)
 		require.NoError(t, err)
@@ -861,13 +861,13 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=false --enable-dag=false --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
-		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect chunks 1")
+		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect packingmanifests 1")
 		require.NoError(t, err)
-		// We should get 29 chunks
+		// We should get 29 packingmanifests
 		require.Contains(t, out, "29")
 		_, _, err = RunArgsInTest(ctx, "singularity run dataset-worker --enable-pack=true --enable-dag=false --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
-		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect chunks 1")
+		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect packingmanifests 1")
 		require.NoError(t, err)
 		require.NotContains(t, out, "ready")
 		require.Contains(t, out, "complete")
@@ -875,7 +875,7 @@ func TestDatasourceRescan(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, out, "baf")
 		require.Contains(t, out, "test5.txt")
-		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect chunkdetail 1")
+		out, _, err = RunArgsInTest(ctx, "singularity datasource inspect packingmanifestdetail 1")
 		require.NoError(t, err)
 		require.Contains(t, out, "sub/test1.txt")
 		require.Contains(t, out, "sub/test3.txt")
@@ -1039,7 +1039,7 @@ func downloadPieceWithThreads(t *testing.T, ctx context.Context, pieceCID string
 			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 			require.NoError(t, err)
 
-			// Set the Range header to download a chunk
+			// Set the Range header to download a packing manifest
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
 			// t.Log("Downloading piece", pieceCID, "part", i, "bytes", start, "-", end)
 			resp, err := client.Do(req)

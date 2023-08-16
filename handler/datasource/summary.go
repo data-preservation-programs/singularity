@@ -9,9 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type ChunksByState struct {
-	Count int64           `json:"count"` // number of chunks in this state
-	State model.WorkState `json:"state"` // the state of the chunks
+type PackingManifestsByState struct {
+	Count int64           `json:"count"` // number of packing manifests in this state
+	State model.WorkState `json:"state"` // the state of the packing manifests
 }
 
 type FileSummary struct {
@@ -20,9 +20,9 @@ type FileSummary struct {
 }
 
 type SourceStatus struct {
-	ChunkSummary []ChunksByState `json:"chunkSummary"` // summary of the chunks
-	FileSummary  FileSummary     `json:"fileSummary"`  // summary of the files
-	FailedChunks []model.Chunk   `json:"failedChunks"` // failed chunks
+	PackingManifestSummary []PackingManifestsByState `json:"packingManifestSummary"` // summary of the packing manifests
+	FileSummary            FileSummary               `json:"fileSummary"`            // summary of the files
+	FailedPackingManifests []model.PackingManifest   `json:"failedPackingManifests"` // failed packing manifests
 }
 
 // @Summary Get the data preparation summary of a data source
@@ -30,7 +30,7 @@ type SourceStatus struct {
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Success 200 {object} ChunksByState
+// @Success 200 {object} PackingManifestsByState
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/summary [get]
@@ -52,10 +52,10 @@ func getSourceStatusHandler(
 	}
 
 	summary := SourceStatus{}
-	err = db.Model(&model.Chunk{}).
+	err = db.Model(&model.PackingManifest{}).
 		Select("count(*) as count, packing_state as state").
 		Where("source_id = ?", sourceID).
-		Group("packing_state").Find(&summary.ChunkSummary).Error
+		Group("packing_state").Find(&summary.PackingManifestSummary).Error
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func getSourceStatusHandler(
 		return nil, err
 	}
 
-	err = db.Model(&model.Chunk{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedChunks).Error
+	err = db.Model(&model.PackingManifest{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedPackingManifests).Error
 	if err != nil {
 		return nil, err
 	}

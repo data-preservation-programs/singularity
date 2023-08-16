@@ -26,17 +26,17 @@ type FileRangeDetail struct {
 	DirectoryID               uint64    `json:"directoryId"`
 }
 
-var ChunkDetailCmd = &cli.Command{
-	Name:      "chunkdetail",
-	Usage:     "Get details about a specific chunk",
-	ArgsUsage: "<chunk_id>",
+var PackingManifestDetailCmd = &cli.Command{
+	Name:      "packingmanifestdetail",
+	Usage:     "Get details about a specific packing manifest",
+	ArgsUsage: "<packing_manifest_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		result, err := inspect.GetSourceChunkDetailHandler(
+		result, err := inspect.GetSourcePackingManifestDetailHandler(
 			db,
 			c.Args().Get(0),
 		)
@@ -49,7 +49,7 @@ var ChunkDetailCmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println("Chunk:")
+		fmt.Println("Packing manifest:")
 		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
 		fmt.Println("Pieces:")
 		cliutil.PrintToConsole(result.Cars, false, nil)

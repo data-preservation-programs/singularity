@@ -245,15 +245,15 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 
 		// 2nd, find packing work
 		{
-			chunk, err := w.findPackWork()
+			packingManifest, err := w.findPackWork()
 			if err != nil {
 				w.logger.Errorw("failed to find pack work", "error", err)
 				goto errorLoop
 			}
-			if chunk != nil {
+			if packingManifest != nil {
 				err = w.pack(
 					ctx,
-					*chunk,
+					*packingManifest,
 				)
 				if err != nil {
 					w.logger.Errorw("failed to pack", "error", err)
@@ -268,7 +268,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 						w.db = w.db.WithContext(cancelCtx)
 					}
 					err = database.DoRetry(func() error {
-						return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
+						return w.db.Model(&model.PackingManifest{}).Where("id = ?", packingManifest.ID).Updates(
 							map[string]any{
 								"packing_state":     newState,
 								"packing_worker_id": nil,
@@ -277,13 +277,13 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 						).Error
 					})
 					if err != nil {
-						w.logger.Errorw("failed to update chunk with error", "error", err)
+						w.logger.Errorw("failed to update packing manifest with error", "error", err)
 					}
 					goto errorLoop
 				}
-				w.logger.Debugw("saving packing state to complete", "chunkID", chunk.ID)
+				w.logger.Debugw("saving packing state to complete", "packingManifestID", packingManifest.ID)
 				err = database.DoRetry(func() error {
-					return w.db.Model(&model.Chunk{}).Where("id = ?", chunk.ID).Updates(
+					return w.db.Model(&model.PackingManifest{}).Where("id = ?", packingManifest.ID).Updates(
 						map[string]any{
 							"packing_state":     model.Complete,
 							"packing_worker_id": nil,
@@ -291,7 +291,7 @@ func (w *DatasetWorkerThread) run(ctx context.Context, errChan chan<- error, wg 
 					).Error
 				})
 				if err != nil {
-					w.logger.Errorw("failed to update chunk to complete", "error", err)
+					w.logger.Errorw("failed to update packing manifest to complete", "error", err)
 					goto errorLoop
 				}
 				continue

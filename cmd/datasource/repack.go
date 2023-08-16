@@ -9,12 +9,12 @@ import (
 
 var RepackCmd = &cli.Command{
 	Name:      "repack",
-	Usage:     "Retry packing a chunk or all errored chunks of a data source",
-	ArgsUsage: "<source_id> or --chunk-id <chunk_id>",
+	Usage:     "Retry packing a packingmanifest or all errored packingmanifests of a data source",
+	ArgsUsage: "<source_id> or --packing-manifest-id <packing_manifest_id>",
 	Flags: []cli.Flag{
 		&cli.Uint64Flag{
-			Name:  "chunk-id",
-			Usage: "Chunk ID to retry packing",
+			Name:  "packing-manifest-id",
+			Usage: "Packing manifest ID to retry packing",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -23,23 +23,23 @@ var RepackCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		var chunkID *uint64
-		if c.IsSet("chunk-id") {
-			c2 := c.Uint64("chunk-id")
-			chunkID = &c2
+		var packingManifestID *uint64
+		if c.IsSet("packing-manifest-id") {
+			c2 := c.Uint64("packing-manifest-id")
+			packingManifestID = &c2
 		}
-		chunks, err := datasource.RepackHandler(
+		packingManifests, err := datasource.RepackHandler(
 			db,
 			c.Args().Get(0),
 			datasource.RepackRequest{
-				ChunkID: chunkID,
+				PackingManifestID: packingManifestID,
 			},
 		)
 		if err != nil {
 			return err
 		}
 
-		cliutil.PrintToConsole(chunks, c.Bool("json"), nil)
+		cliutil.PrintToConsole(packingManifests, c.Bool("json"), nil)
 		return nil
 	},
 }

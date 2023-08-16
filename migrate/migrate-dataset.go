@@ -87,17 +87,17 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			return errors.Wrap(err, "failed to decode generation request")
 		}
 
-		chunk := model.Chunk{
+		packingManifest := model.PackingManifest{
 			CreatedAt:    generation.CreatedAt,
 			SourceID:     src.ID,
 			PackingState: model.Complete,
 			ErrorMessage: generation.ErrorMessage,
 		}
-		err = db.Create(&chunk).Error
+		err = db.Create(&packingManifest).Error
 		if err != nil {
-			return errors.Wrap(err, "failed to create chunk")
+			return errors.Wrap(err, "failed to create packing manifest")
 		}
-		log.Printf("-- Created chunk %d for %s\n", chunk.ID, ds.Name)
+		log.Printf("-- Created packing manifest %d for %s\n", packingManifest.ID, ds.Name)
 
 		pieceCID, err := cid.Parse(generation.PieceCID)
 		if err != nil {
@@ -114,15 +114,15 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			fileName = generation.FilenameOverride
 		}
 		car := model.Car{
-			CreatedAt: generation.CreatedAt,
-			PieceCID:  model.CID(pieceCID),
-			PieceSize: int64(generation.PieceSize),
-			RootCID:   model.CID(dataCID),
-			FileSize:  int64(generation.CarSize),
-			FilePath:  filepath.Join(scanning.OutDir, fileName),
-			DatasetID: ds.ID,
-			SourceID:  &src.ID,
-			ChunkID:   &chunk.ID,
+			CreatedAt:         generation.CreatedAt,
+			PieceCID:          model.CID(pieceCID),
+			PieceSize:         int64(generation.PieceSize),
+			RootCID:           model.CID(dataCID),
+			FileSize:          int64(generation.CarSize),
+			FilePath:          filepath.Join(scanning.OutDir, fileName),
+			DatasetID:         ds.ID,
+			SourceID:          &src.ID,
+			PackingManifestID: &packingManifest.ID,
 		}
 		err = db.Create(&car).Error
 		if err != nil {
@@ -169,10 +169,10 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						CID:       model.CID(fileCID),
 						FileRanges: []model.FileRange{
 							{
-								Offset:  0,
-								Length:  int64(generatedFile.Size),
-								CID:     model.CID(fileCID),
-								ChunkID: &chunk.ID,
+								Offset:            0,
+								Length:            int64(generatedFile.Size),
+								CID:               model.CID(fileCID),
+								PackingManifestID: &packingManifest.ID,
 							},
 						},
 					}
@@ -185,20 +185,20 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 						CID:       model.CID(cid.Undef),
 						FileRanges: []model.FileRange{
 							{
-								Offset:  0,
-								Length:  int64(generatedFile.End),
-								CID:     model.CID(fileCID),
-								ChunkID: &chunk.ID,
+								Offset:            0,
+								Length:            int64(generatedFile.End),
+								CID:               model.CID(fileCID),
+								PackingManifestID: &packingManifest.ID,
 							},
 						},
 					}
 					continue
 				} else {
 					lastFile.FileRanges = append(lastFile.FileRanges, model.FileRange{
-						Offset:  int64(generatedFile.Start),
-						Length:  int64(generatedFile.End - generatedFile.Start),
-						CID:     model.CID(fileCID),
-						ChunkID: &chunk.ID,
+						Offset:            int64(generatedFile.Start),
+						Length:            int64(generatedFile.End - generatedFile.Start),
+						CID:               model.CID(fileCID),
+						PackingManifestID: &packingManifest.ID,
 					})
 					if generatedFile.End < generatedFile.Size {
 						continue

@@ -71,7 +71,7 @@ func HealthCheckCleanup(db *gorm.DB) {
 	}
 
 	err = database.DoRetry(func() error {
-		return db.Model(&model.Chunk{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
+		return db.Model(&model.PackingManifest{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
 			Updates(map[string]any{
 				"packing_worker_id": nil,
