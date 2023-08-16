@@ -15,6 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func PackHandler(
@@ -109,7 +110,7 @@ func Pack(
 		err = database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				var allParts []model.ItemPart
-				err = db.Where("item_id = ?", itemID).Order("offset asc").Find(&allParts).Error
+				err = db.Where("item_id = ?", itemID).Order(clause.OrderByColumn{Column: clause.Column{Name: "offset"}}).Find(&allParts).Error
 				if err != nil {
 					return errors.Wrap(err, "failed to get all item parts")
 				}

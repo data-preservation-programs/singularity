@@ -197,37 +197,6 @@ func TestExtractCar(t *testing.T) {
 	})
 }
 
-func listDirsFromRootNode(t *testing.T, dagServ format.DAGService, path string, rootCID cid.Cid) []string {
-	ctx := context.TODO()
-	segments := strings.Split(path, "/")
-	if path == "" {
-		segments = []string{}
-	}
-	for _, segment := range segments {
-		rootNode, err := dagServ.Get(context.Background(), rootCID)
-		require.NoError(t, err)
-		rootDir, err := uio.NewDirectoryFromNode(dagServ, rootNode)
-		require.NoError(t, err)
-		links, err := rootDir.Links(ctx)
-		require.NoError(t, err)
-		link, err := underscore.Find(links, func(link *format.Link) bool {
-			return link.Name == segment
-		})
-		require.NoError(t, err)
-		rootCID = link.Cid
-	}
-
-	rootNode, err := dagServ.Get(context.Background(), rootCID)
-	require.NoError(t, err)
-	rootDir, err := uio.NewDirectoryFromNode(dagServ, rootNode)
-	require.NoError(t, err)
-	links, err := rootDir.Links(ctx)
-	require.NoError(t, err)
-	return underscore.Map(links, func(link *format.Link) string {
-		return link.Name
-	})
-}
-
 func testWithAllBackendWithoutReset(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
 	testWithAllBackendWithResetArg(t, testFunc, false)
 }
