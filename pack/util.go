@@ -287,9 +287,11 @@ func GetBlockStreamFromItem(ctx context.Context,
 		return nil, nil, errors.Wrap(err, "failed to open stream")
 	}
 
-	same, detail := IsSameEntry(ctx, *itemPart.Item, object)
-	if !same {
-		return nil, nil, errors.Wrapf(ErrItemModified, "itemPart has been modified: %s, %s", itemPart.Item.Path, detail)
+	if object != nil {
+		same, detail := IsSameEntry(ctx, *itemPart.Item, object)
+		if !same {
+			return nil, nil, errors.Wrapf(ErrItemModified, "itemPart has been modified: %s, %s", itemPart.Item.Path, detail)
+		}
 	}
 
 	var readCloser io.ReadCloser

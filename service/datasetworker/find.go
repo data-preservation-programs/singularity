@@ -10,14 +10,15 @@ import (
 )
 
 func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
+	db := w.dbNoContext.WithContext(ctx)
 	if !w.config.EnableDag {
 		return nil, nil
 	}
-	w.logger.Debugw("finding dag work")
+	w.logger.Debugw("finding ExportDag work")
 	var sources []model.Source
 
 	err := database.DoRetry(ctx, func() error {
-		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
+		return db.Transaction(func(db *gorm.DB) error {
 			// First, find the id of the record to update
 			err := db.
 				Where("dag_gen_state = ? OR (dag_gen_state = ? AND dag_gen_worker_id is null)",
@@ -51,7 +52,7 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 		return nil, nil
 	}
 
-	err = w.dbNoContext.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	err = db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +61,7 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 }
 
 func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
+	db := w.dbNoContext.WithContext(ctx)
 	if !w.config.EnablePack {
 		return nil, nil
 	}
@@ -67,7 +69,7 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
 	var chunks []model.Chunk
 
 	err := database.DoRetry(ctx, func() error {
-		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
+		return db.Transaction(func(db *gorm.DB) error {
 			// First, find the id of the record to update
 			err := db.
 				Where("packing_state = ? OR (packing_state = ? AND packing_worker_id is null)", model.Ready, model.Processing).
@@ -101,14 +103,14 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
 	}
 
 	var src model.Source
-	err = w.dbNoContext.Joins("Dataset").Where("sources.id = ?", chunks[0].SourceID).First(&src).Error
+	err = db.Joins("Dataset").Where("sources.id = ?", chunks[0].SourceID).First(&src).Error
 	if err != nil {
 		return nil, err
 	}
 	chunks[0].Source = &src
 
 	var itemParts []model.ItemPart
-	err = w.dbNoContext.Joins("Item").Where("item_parts.chunk_id = ?", chunks[0].ID).Order("item_parts.id asc").Find(&itemParts).Error
+	err = db.Joins("Item").Where("item_parts.chunk_id = ?", chunks[0].ID).Order("item_parts.id asc").Find(&itemParts).Error
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +120,7 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
 }
 
 func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
+	db := w.dbNoContext.WithContext(ctx)
 	if !w.config.EnableScan {
 		return nil, nil
 	}
@@ -126,8 +129,8 @@ func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 	// Find all ready sources or sources that is being processed but does not have a worker id,
 	// or all source that is complete but needs rescanning
 	err := database.DoRetry(ctx, func() error {
-		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
-			err := w.dbNoContext.
+		return db.Transaction(func(db *gorm.DB) error {
+			err := db.
 				Where(
 					"(scanning_state = ? OR (scanning_state = ? AND scanning_worker_id is null)) OR "+
 						"(scanning_state = ? AND scan_interval_seconds > 0 AND last_scanned_timestamp + scan_interval_seconds < ?)",
@@ -164,7 +167,7 @@ func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 		return nil, nil
 	}
 
-	err = w.dbNoContext.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	err = db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
 	if err != nil {
 		return nil, err
 	}

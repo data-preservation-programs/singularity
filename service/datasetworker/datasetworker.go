@@ -167,7 +167,7 @@ const (
 	WorkTypeNone WorkType = ""
 	WorkTypeScan WorkType = "scan"
 	WorkTypePack WorkType = "pack"
-	WorkTypeDag  WorkType = "dag"
+	WorkTypeDag  WorkType = "ExportDag"
 )
 
 var WorkStateKey = map[WorkType]string{
@@ -234,7 +234,7 @@ func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint
 func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.Chunk, error) {
 	source, err := w.findDagWork(ctx)
 	if err != nil {
-		return "", nil, nil, errors.Wrap(err, "failed to find dag work")
+		return "", nil, nil, errors.Wrap(err, "failed to find ExportDag work")
 	}
 	if source != nil {
 		return WorkTypeDag, source, nil, nil
@@ -307,7 +307,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			err = w.pack(ctx, *chunk)
 			id = uint64(chunk.ID)
 		case WorkTypeDag:
-			err = w.dag(ctx, *source)
+			err = w.ExportDag(ctx, *source)
 			id = uint64(source.ID)
 		}
 		if err != nil {

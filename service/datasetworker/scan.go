@@ -15,11 +15,12 @@ import (
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned item, which is useful for resuming a failed scan
 func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool) error {
+	db := w.dbNoContext.WithContext(ctx)
 	directoryCache := make(map[string]uint64)
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.ItemPart
-	err := w.dbNoContext.Joins("Item").
+	err := db.Joins("Item").
 		Where("source_id = ? AND item_parts.chunk_id is null", source.ID).
 		Order("item_parts.id asc").
 		Find(&remainingParts).Error
@@ -59,7 +60,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 			continue
 		}
 		err = database.DoRetry(ctx, func() error {
-			return w.dbNoContext.Model(&model.Source{}).Where("id = ?", source.ID).
+			return db.Model(&model.Source{}).Where("id = ?", source.ID).
 				Update("last_scanned_path", item.Path).Error
 		})
 		if err != nil {

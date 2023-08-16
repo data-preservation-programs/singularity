@@ -124,6 +124,9 @@ type MockReadHandler struct {
 
 func (m *MockReadHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	args := m.Called(ctx, path, offset, length)
+	if args.Get(1) == nil {
+		return args.Get(0).(io.ReadCloser), nil, args.Error(2)
+	}
 	return args.Get(0).(io.ReadCloser), args.Get(1).(fs.Object), args.Error(2)
 }
 
