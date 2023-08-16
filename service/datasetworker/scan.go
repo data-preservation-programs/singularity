@@ -88,15 +88,15 @@ func (w *DatasetWorkerThread) chunkOnce(
 	dataset model.Dataset,
 	remaining *remain,
 ) error {
-	// If everything fit, create a packing manifest. Usually this is the case for the last packing manifest
+	// If everything fit, create a pack job. Usually this is the case for the last pack job
 	if remaining.carSize <= dataset.MaxSize {
-		w.logger.Debugw("creating packing manifest", "size", remaining.carSize)
-		_, err := datasource.CreatePackingManifestHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackingManifestRequest{
+		w.logger.Debugw("creating pack job", "size", remaining.carSize)
+		_, err := datasource.CreatePackJobHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackJobRequest{
 			FileIDs: remaining.itemIDs(),
 		})
 
 		if err != nil {
-			return errors.Wrap(err, "failed to create packing manifest")
+			return errors.Wrap(err, "failed to create pack job")
 		}
 		remaining.reset()
 		return nil
@@ -119,17 +119,17 @@ func (w *DatasetWorkerThread) chunkOnce(
 		s += toCarSize(remaining.fileRanges[0].Length)
 	}
 
-	// create a packing manifest for [0:si)
-	w.logger.Debugw("creating packing manifest", "size", s)
+	// create a pack job for [0:si)
+	w.logger.Debugw("creating pack job", "size", s)
 
 	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(file model.FileRange) uint64 {
 		return file.ID
 	})
-	_, err := datasource.CreatePackingManifestHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackingManifestRequest{
+	_, err := datasource.CreatePackJobHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackJobRequest{
 		FileIDs: fileRangeIDs,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to create packing manifest")
+		return errors.Wrap(err, "failed to create pack job")
 	}
 	remaining.fileRanges = remaining.fileRanges[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize

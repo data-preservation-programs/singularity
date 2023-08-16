@@ -9,9 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type PackingManifestsByState struct {
-	Count int64           `json:"count"` // number of packing manifests in this state
-	State model.WorkState `json:"state"` // the state of the packing manifests
+type PackJobsByState struct {
+	Count int64           `json:"count"` // number of pack jobs in this state
+	State model.WorkState `json:"state"` // the state of the pack jobs
 }
 
 type FileSummary struct {
@@ -20,9 +20,9 @@ type FileSummary struct {
 }
 
 type SourceStatus struct {
-	PackingManifestSummary []PackingManifestsByState `json:"packingManifestSummary"` // summary of the packing manifests
-	FileSummary            FileSummary               `json:"fileSummary"`            // summary of the files
-	FailedPackingManifests []model.PackingManifest   `json:"failedPackingManifests"` // failed packing manifests
+	PackJobSummary []PackJobsByState `json:"packJobSummary"` // summary of the pack jobs
+	FileSummary    FileSummary       `json:"fileSummary"`    // summary of the files
+	FailedPackJobs []model.PackJob   `json:"failedPackJobs"` // failed pack jobs
 }
 
 // @Summary Get the data preparation summary of a data source
@@ -30,7 +30,7 @@ type SourceStatus struct {
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Success 200 {object} PackingManifestsByState
+// @Success 200 {object} PackJobsByState
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/summary [get]
@@ -52,10 +52,10 @@ func getSourceStatusHandler(
 	}
 
 	summary := SourceStatus{}
-	err = db.Model(&model.PackingManifest{}).
+	err = db.Model(&model.PackJob{}).
 		Select("count(*) as count, packing_state as state").
 		Where("source_id = ?", sourceID).
-		Group("packing_state").Find(&summary.PackingManifestSummary).Error
+		Group("packing_state").Find(&summary.PackJobSummary).Error
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func getSourceStatusHandler(
 		return nil, err
 	}
 
-	err = db.Model(&model.PackingManifest{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedPackingManifests).Error
+	err = db.Model(&model.PackJob{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedPackJobs).Error
 	if err != nil {
 		return nil, err
 	}

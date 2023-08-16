@@ -10,21 +10,21 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary Trigger a repack of a packing manifest or all errored packing manifests of a data source
+// @Summary Trigger a repack of a pack job or all errored pack jobs of a data source
 // @Tags Data Source
 // @Produce json
 // @Param id path string true "Source ID"
 // @Param request body RepackRequest true "Request body"
-// @Success 200 {array} model.PackingManifest
+// @Success 200 {array} model.PackJob
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/repack [post]
 func repackHandler(
 	db *gorm.DB,
 	id string,
 	request RepackRequest,
-) ([]model.PackingManifest, error) {
-	if id == "" && request.PackingManifestID == nil {
-		return nil, handler.NewInvalidParameterErr("either source id or packing manifest id must be provided")
+) ([]model.PackJob, error) {
+	if id == "" && request.PackJobID == nil {
+		return nil, handler.NewInvalidParameterErr("either source id or pack job id must be provided")
 	}
 
 	var sourceID int
@@ -36,23 +36,23 @@ func repackHandler(
 		}
 	}
 
-	if request.PackingManifestID != nil {
-		packingManifestID := *request.PackingManifestID
-		var packingManifest model.PackingManifest
-		statement := db.Where("id = ?", packingManifestID)
+	if request.PackJobID != nil {
+		packJobID := *request.PackJobID
+		var packJob model.PackJob
+		statement := db.Where("id = ?", packJobID)
 		if sourceID != 0 {
 			statement = statement.Where("source_id = ?", sourceID)
 		}
-		err = statement.First(&packingManifest).Error
+		err = statement.First(&packJob).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, handler.NewInvalidParameterErr("packing manifest not found")
+			return nil, handler.NewInvalidParameterErr("pack job not found")
 		}
 		if err != nil {
 			return nil, err
 		}
-		if packingManifest.PackingState == model.Error || packingManifest.PackingState == model.Complete {
+		if packJob.PackingState == model.Error || packJob.PackingState == model.Complete {
 			err = database.DoRetry(func() error {
-				return db.Model(&packingManifest).Updates(map[string]any{
+				return db.Model(&packJob).Updates(map[string]any{
 					"packing_state": model.Ready,
 					"error_message": "",
 				}).Error
@@ -61,44 +61,44 @@ func repackHandler(
 				return nil, err
 			}
 		} else {
-			return nil, handler.NewInvalidParameterErr("packing manifest is not in error or complete state")
+			return nil, handler.NewInvalidParameterErr("pack job is not in error or complete state")
 		}
-		return []model.PackingManifest{packingManifest}, nil
+		return []model.PackJob{packJob}, nil
 	}
 
-	var packingManifests []model.PackingManifest
+	var packJobs []model.PackJob
 	err = db.Transaction(func(db *gorm.DB) error {
-		err = db.Where("source_id = ? and packing_state = ?", sourceID, model.Error).Find(&packingManifests).Error
+		err = db.Where("source_id = ? and packing_state = ?", sourceID, model.Error).Find(&packJobs).Error
 		if err != nil {
 			return err
 		}
-		err = db.Model(&model.PackingManifest{}).Where("source_id = ? and packing_state = ?", sourceID, model.Error).Updates(map[string]any{
+		err = db.Model(&model.PackJob{}).Where("source_id = ? and packing_state = ?", sourceID, model.Error).Updates(map[string]any{
 			"packing_state": model.Ready,
 			"error_message": "",
 		}).Error
 		if err != nil {
 			return err
 		}
-		for i := range packingManifests {
-			packingManifests[i].PackingState = model.Ready
-			packingManifests[i].ErrorMessage = ""
+		for i := range packJobs {
+			packJobs[i].PackingState = model.Ready
+			packJobs[i].ErrorMessage = ""
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return packingManifests, nil
+	return packJobs, nil
 }
 
 type RepackRequest struct {
-	PackingManifestID *uint64 `json:"packingManifestId"`
+	PackJobID *uint64 `json:"packJobId"`
 }
 
 func RepackHandler(
 	db *gorm.DB,
 	id string,
 	request RepackRequest,
-) ([]model.PackingManifest, error) {
+) ([]model.PackJob, error) {
 	return repackHandler(db, id, request)
 }

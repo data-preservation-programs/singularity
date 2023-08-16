@@ -50,8 +50,8 @@ func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, para
 	return dshandler.CreateDatasourceHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, "local", datasetName, paramsMap)
 }
 
-func (c *Client) GetSourcePackingManifests(ctx context.Context, sourceID uint32, request inspect.GetSourcePackingManifestsRequest) ([]model.PackingManifest, error) {
-	return inspect.GetSourcePackingManifestsHandler(c.db.WithContext(ctx), sourceID, request)
+func (c *Client) GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error) {
+	return inspect.GetSourcePackJobsHandler(c.db.WithContext(ctx), sourceID, request)
 }
 func (c *Client) GetSourceFiles(ctx context.Context, sourceID uint32) ([]model.File, error) {
 	return inspect.GetSourceFilesHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
@@ -65,12 +65,12 @@ func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandl
 	return dshandler.PushFileHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, sourceID, fileInfo)
 }
 
-func (c *Client) CreatePackingManifest(ctx context.Context, sourceID uint32, request dshandler.PackingManifestRequest) (*model.PackingManifest, error) {
-	return dshandler.CreatePackingManifestHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
+func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dshandler.PackJobRequest) (*model.PackJob, error) {
+	return dshandler.CreatePackJobHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
 }
 
-func (c *Client) Pack(ctx context.Context, packingManifestID uint64) ([]model.Car, error) {
-	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packingManifestID)
+func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {
+	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packJobID)
 }
 
 var _ client.Client = (*Client)(nil)

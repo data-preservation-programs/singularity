@@ -11,39 +11,39 @@ import (
 	"gorm.io/gorm"
 )
 
-type PackingManifestRequest struct {
+type PackJobRequest struct {
 	FileIDs []uint64 `json:"fileIDs" validation:"required"`
 }
 
-func CreatePackingManifestHandler(
+func CreatePackJobHandler(
 	db *gorm.DB,
 	sourceID string,
-	request PackingManifestRequest,
-) (*model.PackingManifest, error) {
-	return createPackingManifestHandler(db, sourceID, request)
+	request PackJobRequest,
+) (*model.PackJob, error) {
+	return createPackJobHandler(db, sourceID, request)
 }
 
-// @Summary Create a packing manifest for the specified files
+// @Summary Create a pack job for the specified files
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Param request body PackingManifestRequest true "Request body"
+// @Param request body PackJobRequest true "Request body"
 // @Success 201 {object} model.File
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /source/{id}/packingmanifest [post]
-func createPackingManifestHandler(
+// @Router /source/{id}/packjob [post]
+func createPackJobHandler(
 	db *gorm.DB,
 	sourceID string,
-	request PackingManifestRequest,
-) (*model.PackingManifest, error) {
+	request PackJobRequest,
+) (*model.PackJob, error) {
 	sourceIDInt, err := strconv.Atoi(sourceID)
 	if err != nil {
 		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 
-	packingManifest := model.PackingManifest{
+	packJob := model.PackJob{
 		SourceID:     uint32(sourceIDInt),
 		PackingState: model.Ready,
 	}
@@ -51,14 +51,14 @@ func createPackingManifestHandler(
 	err = database.DoRetry(func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
-				err := db.Create(&packingManifest).Error
+				err := db.Create(&packJob).Error
 				if err != nil {
-					return errors.Wrap(err, "failed to create packing manifest")
+					return errors.Wrap(err, "failed to create pack job")
 				}
 				fileRangeIDChunks := util.ChunkSlice(request.FileIDs, util.BatchSize)
 				for _, fileRangeIDChunks := range fileRangeIDChunks {
 					err = db.Model(&model.FileRange{}).
-						Where("id IN ?", fileRangeIDChunks).Update("packing_manifest_id", packingManifest.ID).Error
+						Where("id IN ?", fileRangeIDChunks).Update("packing_manifest_id", packJob.ID).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update files")
 					}
@@ -71,5 +71,5 @@ func createPackingManifestHandler(
 		return nil, err
 	}
 
-	return &packingManifest, nil
+	return &packJob, nil
 }

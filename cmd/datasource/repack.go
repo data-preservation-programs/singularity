@@ -9,11 +9,11 @@ import (
 
 var RepackCmd = &cli.Command{
 	Name:      "repack",
-	Usage:     "Retry packing a packingmanifest or all errored packingmanifests of a data source",
-	ArgsUsage: "<source_id> or --packing-manifest-id <packing_manifest_id>",
+	Usage:     "Retry packing a packjob or all errored packjobs of a data source",
+	ArgsUsage: "<source_id> or --pack-job-id <packing_manifest_id>",
 	Flags: []cli.Flag{
 		&cli.Uint64Flag{
-			Name:  "packing-manifest-id",
+			Name:  "pack-job-id",
 			Usage: "Packing manifest ID to retry packing",
 		},
 	},
@@ -23,23 +23,23 @@ var RepackCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		var packingManifestID *uint64
-		if c.IsSet("packing-manifest-id") {
-			c2 := c.Uint64("packing-manifest-id")
-			packingManifestID = &c2
+		var packJobID *uint64
+		if c.IsSet("pack-job-id") {
+			c2 := c.Uint64("pack-job-id")
+			packJobID = &c2
 		}
-		packingManifests, err := datasource.RepackHandler(
+		packJobs, err := datasource.RepackHandler(
 			db,
 			c.Args().Get(0),
 			datasource.RepackRequest{
-				PackingManifestID: packingManifestID,
+				PackJobID: packJobID,
 			},
 		)
 		if err != nil {
 			return err
 		}
 
-		cliutil.PrintToConsole(packingManifests, c.Bool("json"), nil)
+		cliutil.PrintToConsole(packJobs, c.Bool("json"), nil)
 		return nil
 	},
 }

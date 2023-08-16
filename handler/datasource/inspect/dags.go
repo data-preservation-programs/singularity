@@ -23,7 +23,7 @@ func GetDagsHandler(
 // @Param id path string true "Source ID"
 // @Success 200 {array} model.Car
 // @Failure 500 {object} api.HTTPError
-// @Router /source/{id}/packingmanifests [get]
+// @Router /source/{id}/packjobs [get]
 func getDagsHandler(
 	db *gorm.DB,
 	id string,

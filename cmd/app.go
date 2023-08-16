@@ -165,10 +165,10 @@ Network Support:
 					Name:  "inspect",
 					Usage: "Get preparation status of a data source",
 					Subcommands: []*cli.Command{
-						inspect.PackingManifestsCmd,
+						inspect.PackJobsCmd,
 						inspect.FilesCmd,
 						inspect.DagsCmd,
-						inspect.PackingManifestDetailCmd,
+						inspect.PackJobDetailCmd,
 						inspect.FileDetailCmd,
 						inspect.PathCmd,
 					},

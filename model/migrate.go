@@ -16,7 +16,7 @@ var Tables = []any{
 	&Worker{},
 	&Dataset{},
 	&Source{},
-	&PackingManifest{},
+	&PackJob{},
 	&File{},
 	&Directory{},
 	&Car{},

@@ -58,12 +58,12 @@ func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
 	return &sources[0], nil
 }
 
-func (w *DatasetWorkerThread) findPackWork() (*model.PackingManifest, error) {
+func (w *DatasetWorkerThread) findPackWork() (*model.PackJob, error) {
 	if !w.config.EnablePack {
 		return nil, nil
 	}
 	w.logger.Debugw("finding pack work")
-	var packingManifests []model.PackingManifest
+	var packJobs []model.PackJob
 
 	err := database.DoRetry(func() error {
 		return w.db.Transaction(func(db *gorm.DB) error {
@@ -72,17 +72,17 @@ func (w *DatasetWorkerThread) findPackWork() (*model.PackingManifest, error) {
 				Where("packing_state = ? OR (packing_state = ? AND packing_worker_id is null)", model.Ready, model.Processing).
 				Order("id asc").
 				Limit(1).
-				Find(&packingManifests).Error
+				Find(&packJobs).Error
 			if err != nil {
 				return err
 			}
 
-			if len(packingManifests) == 0 {
+			if len(packJobs) == 0 {
 				return nil
 			}
 
 			// Then, perform the update using the found id
-			return db.Model(&packingManifests[0]).
+			return db.Model(&packJobs[0]).
 				Updates(map[string]any{
 					"packing_state":     model.Processing,
 					"packing_worker_id": w.id,
@@ -94,26 +94,26 @@ func (w *DatasetWorkerThread) findPackWork() (*model.PackingManifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(packingManifests) == 0 {
+	if len(packJobs) == 0 {
 		//nolint: nilnil
 		return nil, nil
 	}
 
 	var src model.Source
-	err = w.db.Joins("Dataset").Where("sources.id = ?", packingManifests[0].SourceID).First(&src).Error
+	err = w.db.Joins("Dataset").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
 	if err != nil {
 		return nil, err
 	}
-	packingManifests[0].Source = &src
+	packJobs[0].Source = &src
 
 	var fileRanges []model.FileRange
-	err = w.db.Joins("File").Where("file_ranges.packing_manifest_id = ?", packingManifests[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
+	err = w.db.Joins("File").Where("file_ranges.packing_manifest_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
 	if err != nil {
 		return nil, err
 	}
-	packingManifests[0].FileRanges = fileRanges
+	packJobs[0].FileRanges = fileRanges
 
-	return &packingManifests[0], nil
+	return &packJobs[0], nil
 }
 
 func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {

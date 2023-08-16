@@ -91,7 +91,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	}
 	err = db.Create(file2).Error
 	require.NoError(t, err)
-	packingManifest := model.PackingManifest{
+	packJob := model.PackJob{
 		SourceID: source.ID,
 		FileRanges: []model.FileRange{
 			{
@@ -107,34 +107,34 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 			},
 		},
 	}
-	err = db.Create(&packingManifest).Error
+	err = db.Create(&packJob).Error
 	require.NoError(t, err)
 	parts := []model.FileRange{{
-		FileID:            file2.ID,
-		Offset:            0,
-		Length:            2,
-		PackingManifestID: &packingManifest.ID,
+		FileID:    file2.ID,
+		Offset:    0,
+		Length:    2,
+		PackJobID: &packJob.ID,
 	}, {
-		FileID:            file2.ID,
-		Offset:            2,
-		Length:            3,
-		PackingManifestID: &packingManifest.ID,
+		FileID:    file2.ID,
+		Offset:    2,
+		Length:    3,
+		PackJobID: &packJob.ID,
 	}}
 	err = db.Create(&parts).Error
 	require.NoError(t, err)
-	packingManifest.Source = &source
-	err = db.Preload("FileRanges.File").Find(&packingManifest).Error
+	packJob.Source = &source
+	err = db.Preload("FileRanges.File").Find(&packJob).Error
 	require.NoError(t, err)
-	err = thread.pack(context.TODO(), packingManifest)
+	err = thread.pack(context.TODO(), packJob)
 	require.NoError(t, err)
 	var cars []model.Car
 	err = db.Find(&cars).Error
 	require.NoError(t, err)
 	require.Greater(t, cars[0].PieceSize, int64(0))
-	require.Equal(t, *cars[0].PackingManifestID, packingManifest.ID)
+	require.Equal(t, *cars[0].PackJobID, packJob.ID)
 	require.NotEmpty(t, cars[0].FilePath)
-	var packingManifests []model.PackingManifest
-	err = db.Find(&packingManifests).Error
+	var packJobs []model.PackJob
+	err = db.Find(&packJobs).Error
 	require.NoError(t, err)
 	var files []model.File
 	err = db.Find(&files).Error
@@ -284,7 +284,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	err = db.Create(&fileRanges).Error
 	require.NoError(t, err)
-	packingManifests := map[*model.PackingManifest]bool{
+	packJobs := map[*model.PackJob]bool{
 		{
 			PackingState: model.Ready,
 		}: true,
@@ -299,13 +299,13 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			PackingWorkerID: &worker.ID,
 		}: false,
 	}
-	for packingManifest, shouldBeFound := range packingManifests {
-		err := db.Where("1 = 1").Delete(&model.PackingManifest{}).Error
+	for packJob, shouldBeFound := range packJobs {
+		err := db.Where("1 = 1").Delete(&model.PackJob{}).Error
 		require.NoError(t, err)
-		packingManifest.SourceID = source.ID
-		err = db.Create(packingManifest).Error
+		packJob.SourceID = source.ID
+		err = db.Create(packJob).Error
 		for _, fileRanges := range fileRanges {
-			fileRanges.PackingManifestID = &packingManifest.ID
+			fileRanges.PackJobID = &packJob.ID
 			err = db.Save(&fileRanges).Error
 			require.NoError(t, err)
 		}
@@ -321,7 +321,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		} else {
 			require.Nil(t, ck)
 		}
-		err = db.Where("1 = 1").Delete(&model.PackingManifest{}).Error
+		err = db.Where("1 = 1").Delete(&model.PackJob{}).Error
 		require.NoError(t, err)
 	}
 }

@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreatePackingManifest(t *testing.T) {
+func TestCreatePackJob(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test file to add
@@ -53,15 +53,15 @@ func TestCreatePackingManifest(t *testing.T) {
 		fileB, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: "b"})
 		require.NoError(t, err)
 
-		// Create packing manifest
-		packingManifest, err := client.CreatePackingManifest(ctx, source.ID, datasource.PackingManifestRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
+		// Create pack job
+		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.PackJobRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
 		require.NoError(t, err)
-		fmt.Printf("%#v\n", packingManifest)
+		fmt.Printf("%#v\n", packJob)
 
-		// Check that packing manifest exists
-		packingManifests, err := client.GetSourcePackingManifests(ctx, source.ID, inspect.GetSourcePackingManifestsRequest{})
+		// Check that pack job exists
+		packJobs, err := client.GetSourcePackJobs(ctx, source.ID, inspect.GetSourcePackJobsRequest{})
 		require.NoError(t, err)
 
-		require.Len(t, packingManifests, 1)
+		require.Len(t, packJobs, 1)
 	})
 }

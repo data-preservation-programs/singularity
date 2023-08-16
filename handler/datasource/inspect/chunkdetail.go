@@ -10,40 +10,40 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetSourcePackingManifestDetailHandler(
+func GetSourcePackJobDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.PackingManifest, error) {
-	return getSourcePackingManifestDetailHandler(db, id)
+) (*model.PackJob, error) {
+	return getSourcePackJobDetailHandler(db, id)
 }
 
-// @Summary Get detail of a specific packing manifest
+// @Summary Get detail of a specific pack job
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Packing manifest ID"
-// @Success 200 {object} model.PackingManifest
+// @Success 200 {object} model.PackJob
 // @Failure 500 {object} api.HTTPError
-// @Router /packingmanifest/{id} [get]
-func getSourcePackingManifestDetailHandler(
+// @Router /packjob/{id} [get]
+func getSourcePackJobDetailHandler(
 	db *gorm.DB,
 	id string,
-) (*model.PackingManifest, error) {
-	packingManifestID, err := strconv.Atoi(id)
+) (*model.PackJob, error) {
+	packJobID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid packing manifest id")
+		return nil, handler.NewInvalidParameterErr("invalid pack job id")
 	}
-	var packingManifest model.PackingManifest
-	err = db.Preload("Cars").Preload("FileRanges").Where("id = ?", packingManifestID).First(&packingManifest).Error
+	var packJob model.PackJob
+	err = db.Preload("Cars").Preload("FileRanges").Where("id = ?", packJobID).First(&packJob).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("packing manifest not found")
+		return nil, handler.NewInvalidParameterErr("pack job not found")
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	fileMap := make(map[uint64]*model.File)
-	for _, part := range packingManifest.FileRanges {
+	for _, part := range packJob.FileRanges {
 		fileMap[part.FileID] = nil
 	}
 
@@ -59,12 +59,12 @@ func getSourcePackingManifestDetailHandler(
 		}
 	}
 
-	for i, part := range packingManifest.FileRanges {
+	for i, part := range packJob.FileRanges {
 		file, ok := fileMap[part.FileID]
 		if ok {
-			packingManifest.FileRanges[i].File = file
+			packJob.FileRanges[i].File = file
 		}
 	}
 
-	return &packingManifest, nil
+	return &packJob, nil
 }

@@ -22,12 +22,12 @@ func PackHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	packingManifestID uint64,
+	packJobID uint64,
 ) ([]model.Car, error) {
-	return packHandler(db, ctx, resolver, packingManifestID)
+	return packHandler(db, ctx, resolver, packJobID)
 }
 
-// @Summary Pack a packing manifest into car files
+// @Summary Pack a pack job into car files
 // @Tags Data Source
 // @Accept json
 // @Produce json
@@ -35,49 +35,49 @@ func PackHandler(
 // @Success 201 {object} []model.Car
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /packingmanifest/{id}/pack [post]
+// @Router /packjob/{id}/pack [post]
 func packHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	packingManifestID uint64,
+	packJobID uint64,
 ) ([]model.Car, error) {
-	var packingManifest model.PackingManifest
-	err := db.Where("id = ?", packingManifestID).Find(&packingManifest).Error
+	var packJob model.PackJob
+	err := db.Where("id = ?", packJobID).Find(&packJob).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return Pack(ctx, db, packingManifest, resolver)
+	return Pack(ctx, db, packJob, resolver)
 }
 
 func Pack(
 	ctx context.Context,
 	db *gorm.DB,
-	packingManifest model.PackingManifest,
+	packJob model.PackJob,
 	resolver datasource.HandlerResolver,
 ) ([]model.Car, error) {
 	var outDir string
-	if len(packingManifest.Source.Dataset.OutputDirs) > 0 {
+	if len(packJob.Source.Dataset.OutputDirs) > 0 {
 		var err error
-		outDir, err = device.GetPathWithMostSpace(packingManifest.Source.Dataset.OutputDirs)
+		outDir, err = device.GetPathWithMostSpace(packJob.Source.Dataset.OutputDirs)
 		if err != nil {
 			logger.Warnw("failed to get path with most space. using the first one", "error", err)
-			outDir = packingManifest.Source.Dataset.OutputDirs[0]
+			outDir = packJob.Source.Dataset.OutputDirs[0]
 		}
 	}
 	logger.Debugw("Use output dir", "dir", outDir)
-	handler, err := resolver.Resolve(ctx, *packingManifest.Source)
+	handler, err := resolver.Resolve(ctx, *packJob.Source)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get datasource handler")
 	}
-	result, err := pack.AssembleCar(ctx, handler, *packingManifest.Source.Dataset,
-		packingManifest.FileRanges, outDir, packingManifest.Source.Dataset.PieceSize)
+	result, err := pack.AssembleCar(ctx, handler, *packJob.Source.Dataset,
+		packJob.FileRanges, outDir, packJob.Source.Dataset.PieceSize)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to pack files")
 	}
 
-	for _, fileRange := range packingManifest.FileRanges {
+	for _, fileRange := range packJob.FileRanges {
 		fileRangeID := fileRange.ID
 		fileRangeCID, ok := result.FileRangeCIDs[fileRangeID]
 		if !ok {
@@ -103,22 +103,22 @@ func Pack(
 		}
 	}
 
-	logger.Debugw("create car for finished packing manifest", "packingManifestID", packingManifest.ID)
+	logger.Debugw("create car for finished pack job", "packJobID", packJob.ID)
 	var cars []model.Car
 	err = database.DoRetry(func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				for _, result := range result.CarResults {
 					car := model.Car{
-						PieceCID:          model.CID(result.PieceCID),
-						PieceSize:         result.PieceSize,
-						RootCID:           model.CID(result.RootCID),
-						FileSize:          result.CarFileSize,
-						FilePath:          result.CarFilePath,
-						PackingManifestID: &packingManifest.ID,
-						DatasetID:         packingManifest.Source.DatasetID,
-						SourceID:          &packingManifest.SourceID,
-						Header:            result.Header,
+						PieceCID:  model.CID(result.PieceCID),
+						PieceSize: result.PieceSize,
+						RootCID:   model.CID(result.RootCID),
+						FileSize:  result.CarFileSize,
+						FilePath:  result.CarFilePath,
+						PackJobID: &packJob.ID,
+						DatasetID: packJob.Source.DatasetID,
+						SourceID:  &packJob.SourceID,
+						Header:    result.Header,
 					}
 					err := db.Create(&car).Error
 					if err != nil {
@@ -141,12 +141,12 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to save car")
 	}
 
-	logger.Debugw("update directory data", "packingManifestID", packingManifest.ID)
+	logger.Debugw("update directory data", "packJobID", packJob.ID)
 	err = database.DoRetry(func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			dirCache := make(map[uint64]*daggen.DirectoryData)
 			childrenCache := make(map[uint64][]uint64)
-			for _, fileRange := range packingManifest.FileRanges {
+			for _, fileRange := range packJob.FileRanges {
 				dirID := fileRange.File.DirectoryID
 				for dirID != nil {
 					dirData, ok := dirCache[*dirID]
@@ -226,7 +226,7 @@ func Pack(
 				}
 			}
 			// Recursively update all directory internal structure
-			rootDirID, err := packingManifest.Source.RootDirectoryID(db)
+			rootDirID, err := packJob.Source.RootDirectoryID(db)
 			if err != nil {
 				return errors.Wrap(err, "failed to get root directory id")
 			}
@@ -256,11 +256,11 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to update directory CIDs")
 	}
 
-	logger.With("packing_manifest_id", packingManifest.ID).Info("finished packing")
-	if packingManifest.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
+	logger.With("packing_manifest_id", packJob.ID).Info("finished packing")
+	if packJob.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		logger.Info("Deleting original data source")
 		handled := map[uint64]struct{}{}
-		for _, fileRange := range packingManifest.FileRanges {
+		for _, fileRange := range packJob.FileRanges {
 			if _, ok := handled[fileRange.FileID]; ok {
 				continue
 			}

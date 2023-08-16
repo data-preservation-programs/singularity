@@ -12,15 +12,15 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var PackingManifestsCmd = &cli.Command{
-	Name:      "packingmanifests",
-	Usage:     "Get all packing manifest details of a data source",
+var PackJobsCmd = &cli.Command{
+	Name:      "packjobs",
+	Usage:     "Get all pack job details of a data source",
 	ArgsUsage: "<source_id>",
 	Flags: []cli.Flag{
 		&cli.GenericFlag{
 			Name:        "state",
 			Value:       new(model.WorkState),
-			Usage:       "Filter packing manifests by state. Valid values are: " + strings.Join(model.WorkStateStrings, ", "),
+			Usage:       "Filter pack jobs by state. Valid values are: " + strings.Join(model.WorkStateStrings, ", "),
 			Aliases:     []string{"s"},
 			DefaultText: "All states",
 		},
@@ -35,10 +35,10 @@ var PackingManifestsCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		result, err := inspect.GetSourcePackingManifestsHandler(
+		result, err := inspect.GetSourcePackJobsHandler(
 			db,
 			uint32(sourceID),
-			inspect.GetSourcePackingManifestsRequest{State: *(c.Generic("state").(*model.WorkState))},
+			inspect.GetSourcePackJobsRequest{State: *(c.Generic("state").(*model.WorkState))},
 		)
 		if err != nil {
 			return err

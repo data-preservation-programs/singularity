@@ -26,9 +26,9 @@ type FileRangeDetail struct {
 	DirectoryID               uint64    `json:"directoryId"`
 }
 
-var PackingManifestDetailCmd = &cli.Command{
-	Name:      "packingmanifestdetail",
-	Usage:     "Get details about a specific packing manifest",
+var PackJobDetailCmd = &cli.Command{
+	Name:      "packjobdetail",
+	Usage:     "Get details about a specific pack job",
 	ArgsUsage: "<packing_manifest_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -36,7 +36,7 @@ var PackingManifestDetailCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		result, err := inspect.GetSourcePackingManifestDetailHandler(
+		result, err := inspect.GetSourcePackJobDetailHandler(
 			db,
 			c.Args().Get(0),
 		)

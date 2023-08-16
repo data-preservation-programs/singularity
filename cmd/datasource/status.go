@@ -38,12 +38,12 @@ var StatusCmd = &cli.Command{
 		}
 
 		fmt.Println("Packing manifests by state:")
-		cliutil.PrintToConsole(result.PackingManifestSummary, c.Bool("json"), nil)
+		cliutil.PrintToConsole(result.PackJobSummary, c.Bool("json"), nil)
 		fmt.Println("Files by state:")
 		cliutil.PrintToConsole(result.FileSummary, c.Bool("json"), nil)
-		if len(result.FailedPackingManifests) > 0 {
-			fmt.Println("Failed packing manifests:")
-			cliutil.PrintToConsole(result.FailedPackingManifests, c.Bool("json"), nil)
+		if len(result.FailedPackJobs) > 0 {
+			fmt.Println("Failed pack jobs:")
+			cliutil.PrintToConsole(result.FailedPackJobs, c.Bool("json"), nil)
 		}
 		return nil
 	},

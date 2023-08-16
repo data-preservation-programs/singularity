@@ -144,8 +144,8 @@ func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo datasou
 	return &file, nil
 }
 
-func (c *Client) GetSourcePackingManifests(ctx context.Context, sourceID uint32, request inspect.GetSourcePackingManifestsRequest) ([]model.PackingManifest, error) {
-	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packingmanifests", request)
+func (c *Client) GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packjobs", request)
 	if err != nil {
 		return nil, err
 	}
@@ -156,16 +156,16 @@ func (c *Client) GetSourcePackingManifests(ctx context.Context, sourceID uint32,
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var packingmanifests []model.PackingManifest
-	err = json.NewDecoder(response.Body).Decode(&packingmanifests)
+	var packJobs []model.PackJob
+	err = json.NewDecoder(response.Body).Decode(&packJobs)
 	if err != nil {
 		return nil, err
 	}
-	return packingmanifests, nil
+	return packJobs, nil
 }
 
-func (c *Client) CreatePackingManifest(ctx context.Context, sourceID uint32, request datasource.PackingManifestRequest) (*model.PackingManifest, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packingmanifest", request)
+func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request datasource.PackJobRequest) (*model.PackJob, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packjob", request)
 	if err != nil {
 		return nil, err
 	}
@@ -175,16 +175,16 @@ func (c *Client) CreatePackingManifest(ctx context.Context, sourceID uint32, req
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var packingmanifest model.PackingManifest
-	err = json.NewDecoder(response.Body).Decode(&packingmanifest)
+	var packjob model.PackJob
+	err = json.NewDecoder(response.Body).Decode(&packjob)
 	if err != nil {
 		return nil, err
 	}
-	return &packingmanifest, nil
+	return &packjob, nil
 }
 
-func (c *Client) Pack(ctx context.Context, packingManifestID uint64) ([]model.Car, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/packingmanifest/"+strconv.FormatUint(packingManifestID, 10)+"/pack", nil)
+func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/packjob/"+strconv.FormatUint(packJobID, 10)+"/pack", nil)
 	if err != nil {
 		return nil, err
 	}
