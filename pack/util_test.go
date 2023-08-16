@@ -233,7 +233,7 @@ func TestIsSameEntry(t *testing.T) {
 		same, detail := IsSameEntry(ctx, model.Item{
 			Size:                      5,
 			Hash:                      "hash",
-			LastModifiedTimestampNano: 100git a,
+			LastModifiedTimestampNano: 100,
 		}, mockObject)
 		require.False(t, same)
 		require.Contains(t, detail, "last modified mismatch")
