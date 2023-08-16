@@ -119,7 +119,10 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 	case <-allDone:
 		logger.Info("all services stopped")
 		cancel()
+		return err
 	}
 
+	<-allDone
+	logger.Info("all services stopped")
 	return err
 }

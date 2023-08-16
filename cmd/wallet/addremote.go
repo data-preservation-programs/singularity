@@ -21,8 +21,9 @@ var AddRemoteCmd = &cli.Command{
 		defer closer.Close()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		w, err2 := wallet.AddRemoteHandler(db,
+		w, err2 := wallet.AddRemoteHandler(
 			c.Context,
+			db,
 			lotusClient,
 			wallet.AddRemoteRequest{
 				Address:    c.Args().Get(0),

@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -288,6 +289,10 @@ type Item struct {
 	DirectoryID               *uint64    `gorm:"index"                                                     json:"directoryId"`
 	Directory                 *Directory `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty" swaggerignore:"true"`
 	ItemParts                 []ItemPart `gorm:"constraint:OnDelete:CASCADE"                               json:"itemParts,omitempty"`
+}
+
+func (i Item) Name() string {
+	return i.Path[strings.LastIndex(i.Path, "/")+1:]
 }
 
 func CreateIndexes(db *gorm.DB) error {

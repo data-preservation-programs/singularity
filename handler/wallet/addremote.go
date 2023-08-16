@@ -18,12 +18,12 @@ type AddRemoteRequest struct {
 }
 
 func AddRemoteHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
 	request AddRemoteRequest,
 ) (*model.Wallet, error) {
-	return addRemoteHandler(db, ctx, lotusClient, request)
+	return addRemoteHandler(ctx, db.WithContext(ctx), lotusClient, request)
 }
 
 // @Summary Add a remote wallet
@@ -36,8 +36,8 @@ func AddRemoteHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /wallet/remote [post]
 func addRemoteHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,
 	request AddRemoteRequest,
 ) (*model.Wallet, error) {
@@ -67,7 +67,7 @@ func addRemoteHandler(
 		RemotePeer: request.RemotePeer,
 	}
 
-	err = database.DoRetry(func() error { return db.Create(&wallet).Error })
+	err = database.DoRetry(ctx, func() error { return db.Create(&wallet).Error })
 	if err != nil {
 		return nil, err
 	}

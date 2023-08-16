@@ -26,7 +26,7 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	db                       *gorm.DB                      // Pointer to a gorm.DB object representing a database connection.
+	dbNoContext              *gorm.DB                      // Pointer to a gorm.DB object representing a database connection.
 	walletChooser            replication.WalletChooser     // Object responsible for choosing a wallet for replication.
 	dealMaker                replication.DealMaker         // Object responsible for making a deal in replication.
 	workerID                 uuid.UUID                     // UUID identifying the associated worker.
@@ -66,6 +66,7 @@ func (d *DealPusher) hasSchedule(scheduleID uint32) bool {
 }
 
 func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *model.Schedule) {
+	db := d.dbNoContext.WithContext(ctx)
 	state, err := d.runSchedule(ctx, schedule)
 	updates := make(map[string]any)
 	if err != nil {
@@ -79,7 +80,7 @@ func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *mo
 	}
 	if len(updates) > 0 {
 		Logger.Debugw("updating schedule", "schedule", schedule.ID, "updates", updates)
-		err = d.db.Model(schedule).Updates(updates).Error
+		err = db.Model(schedule).Updates(updates).Error
 		if err != nil {
 			Logger.Errorw("failed to update schedule", "schedule", schedule.ID, "error", err)
 		}
@@ -184,9 +185,10 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 }
 
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
+	db := d.dbNoContext.WithContext(ctx)
 	for {
 		var pending sumResult
-		err := d.db.WithContext(ctx).Model(&model.Deal{}).
+		err := db.Model(&model.Deal{}).
 			Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
 				model.DealProposed, model.DealPublished,
 			}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&pending).Error
@@ -194,7 +196,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			return model.ScheduleError, errors.Wrap(err, "failed to count pending deals")
 		}
 		var total sumResult
-		err = d.db.WithContext(ctx).Model(&model.Deal{}).
+		err = db.Model(&model.Deal{}).
 			Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
 				model.DealActive, model.DealProposed, model.DealPublished}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&total).Error
 		if err != nil {
@@ -237,9 +239,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", nil
 			}
 
-			err = d.db.WithContext(ctx).Where("dataset_id = ? AND piece_cid NOT IN (?)",
+			err = db.Where("dataset_id = ? AND piece_cid NOT IN (?)",
 				schedule.DatasetID,
-				d.db.Table("deals").Select("piece_cid").
+				db.Table("deals").Select("piece_cid").
 					Where("provider = ? AND state IN (?)",
 						schedule.Provider,
 						[]model.DealState{
@@ -286,7 +288,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			dealModel.ScheduleID = &schedule.ID
 
 			Logger.Debugw("save accepted deal", "deal", dealModel)
-			err = d.db.Create(dealModel).Error
+			err = database.DoRetry(ctx, func() error { return db.Create(dealModel).Error })
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to create deal")
 			}
@@ -323,7 +325,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		return nil, errors.Wrap(err, "failed to init deal maker")
 	}
 	return &DealPusher{
-		db:                       db,
+		dbNoContext:              db,
 		activeScheduleCancelFunc: make(map[uint32]context.CancelFunc),
 		activeSchedule:           make(map[uint32]*model.Schedule),
 		cronEntries:              make(map[uint32]cron.EntryID),
@@ -340,7 +342,8 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	var schedules []model.Schedule
 	scheduleMap := map[uint32]model.Schedule{}
 	Logger.Debugw("getting schedules")
-	err := d.db.WithContext(ctx).Preload("Dataset.Wallets").Where("state = ?",
+	db := d.dbNoContext.WithContext(ctx)
+	err := db.Preload("Dataset.Wallets").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
 		Logger.Errorw("failed to get schedules", "error", err)
@@ -383,7 +386,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	}
 
 	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.db, d.workerID, getState, false)
+		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, getState, false)
 		if err == nil && !alreadyRunning {
 			break
 		}
@@ -404,7 +407,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, d.db, d.workerID, getState)
+		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, getState)
 		Logger.Info("healthcheck stopped")
 	}()
 
@@ -430,7 +433,10 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	go func() {
 		defer close(cleanupDone)
 		<-ctx.Done()
-		err := d.cleanup()
+		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		//nolint:contextcheck
+		err := d.cleanup(ctx2)
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)
 		} else {
@@ -441,9 +447,9 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	return []service.Done{runDone, cleanupDone, healthcheckDone}, fail, nil
 }
 
-func (d *DealPusher) cleanup() error {
+func (d *DealPusher) cleanup(ctx context.Context) error {
 	d.cron.Stop()
-	return database.DoRetry(func() error {
-		return d.db.Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
+	return database.DoRetry(ctx, func() error {
+		return d.dbNoContext.WithContext(ctx).Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
 	})
 }

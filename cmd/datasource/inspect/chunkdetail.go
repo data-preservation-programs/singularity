@@ -37,6 +37,7 @@ var ChunkDetailCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetSourceChunkDetailHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

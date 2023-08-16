@@ -49,13 +49,7 @@ func TestDatasetWorker_HandleScanWork_Failure(t *testing.T) {
 	err = db.Create(dir).Error
 	require.NoError(t, err)
 	err = worker.Run(context.Background())
-	require.NoError(t, err)
-	var found model.Source
-	err = db.Model(&model.Source{}).First(&found).Error
-	require.NoError(t, err)
-	require.Equal(t, model.Error, found.ScanningState)
-	require.Contains(t, found.ErrorMessage, "failed to find rclone backend")
-	require.Nil(t, found.ScanningWorkerID)
+	require.ErrorContains(t, err, "didn't find backend")
 }
 
 func TestDatasetWorker_HandleScanWork_Success(t *testing.T) {
@@ -110,7 +104,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -236,7 +230,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -291,7 +285,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -374,7 +368,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 			require.NoError(t, err)
 		}
 		require.NoError(t, err)
-		ck, err := thread.findPackWork()
+		ck, err := thread.findPackWork(context.Background())
 		require.NoError(t, err)
 		if shouldBeFound {
 			require.NotNil(t, ck)
@@ -396,7 +390,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 	defer closer.Close()
 	thread := Thread{
 		id:                        uuid.New(),
-		db:                        db,
+		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
 		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
 		config: Config{
@@ -468,7 +462,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		}
 		err = db.Create(&root).Error
 		require.NoError(t, err)
-		src, err := thread.findScanWork()
+		src, err := thread.findScanWork(context.Background())
 		require.NoError(t, err)
 		if shouldBeFound {
 			require.NotNil(t, src)

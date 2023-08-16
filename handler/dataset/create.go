@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -84,10 +85,11 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 }
 
 func CreateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {
-	return createHandler(db, request)
+	return createHandler(ctx, db.WithContext(ctx), request)
 }
 
 // @Summary Create a new dataset
@@ -101,6 +103,7 @@ func CreateHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset [post]
 func createHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {
@@ -114,7 +117,7 @@ func createHandler(
 		return nil, err
 	}
 
-	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
+	err2 := database.DoRetry(ctx, func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) || (err2 != nil && strings.Contains(err2.Error(), "constraint failed")) {
 		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}

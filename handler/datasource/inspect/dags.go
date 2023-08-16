@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -10,10 +11,11 @@ import (
 )
 
 func GetDagsHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) ([]model.Car, error) {
-	return getDagsHandler(db, id)
+	return getDagsHandler(db.WithContext(ctx), id)
 }
 
 // @Summary Get all dag details of a data source

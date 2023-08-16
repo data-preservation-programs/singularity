@@ -37,8 +37,13 @@ type DirectoryTree struct {
 
 func NewDirectoryTree() DirectoryTree {
 	return DirectoryTree{
-		cache: make(map[uint64]*DirectoryDetail),
+		cache:         make(map[uint64]*DirectoryDetail),
+		childrenCache: make(map[uint64][]uint64),
 	}
+}
+
+func (t DirectoryTree) Cache() map[uint64]*DirectoryDetail {
+	return t.cache
 }
 
 func (t DirectoryTree) Has(dirID uint64) bool {
@@ -46,9 +51,13 @@ func (t DirectoryTree) Has(dirID uint64) bool {
 	return ok
 }
 
-func (t DirectoryTree) Add(dir *model.Directory) error {
+func (t DirectoryTree) Get(dirID uint64) *DirectoryDetail {
+	return t.cache[dirID]
+}
+
+func (t DirectoryTree) Add(ctx context.Context, dir *model.Directory) error {
 	data := &DirectoryData{}
-	err := data.UnmarshalBinary(dir.Data)
+	err := data.UnmarshalBinary(ctx, dir.Data)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal directory data")
 	}
@@ -148,7 +157,7 @@ func (d *DirectoryData) Node() (format.Node, error) {
 //	DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
 func NewDirectoryData() DirectoryData {
 	ds := datastore.NewMapDatastore()
-	bs := blockstore.NewBlockstore(ds)
+	bs := blockstore.NewBlockstore(ds, blockstore.WriteThrough())
 	dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
 	dir := uio.NewDirectory(dagServ)
 	dir.SetCidBuilder(merkledag.V1CidPrefix())
@@ -208,6 +217,10 @@ func (d *DirectoryData) AddItemFromLinks(ctx context.Context, name string, links
 		return cid.Undef, errors.Wrap(err, "failed to put blocks into blockstore")
 	}
 	return node.Cid(), nil
+}
+
+func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) error {
+	return d.bstore.PutMany(ctx, blks)
 }
 
 // MarshalBinary serializes the current state of the DirectoryData object into a binary format.
@@ -331,9 +344,9 @@ func UnmarshalToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
 //	error : An error is returned if unmarshalling the data, putting blocks into blockstore,
 //	        retrieving the root directory node, or creating a new directory from the node fails.
 //	        Otherwise, it returns nil.
-func (d *DirectoryData) UnmarshalBinary(data []byte) error {
+func (d *DirectoryData) UnmarshalBinary(ctx context.Context, data []byte) error {
 	ds := datastore.NewMapDatastore()
-	bs := blockstore.NewBlockstore(ds)
+	bs := blockstore.NewBlockstore(ds, blockstore.WriteThrough())
 	bs.HashOnRead(false)
 	dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
 	if len(data) == 0 {
@@ -347,7 +360,6 @@ func (d *DirectoryData) UnmarshalBinary(data []byte) error {
 		return nil
 	}
 
-	ctx := context.Background()
 	dirCID, blks, err := UnmarshalToBlocks(data)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshall data")

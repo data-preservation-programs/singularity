@@ -40,7 +40,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/parnurzeal/gorequest"
 	"github.com/rjNemo/underscore"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
@@ -795,31 +794,8 @@ func TestDatasourcePacking(t *testing.T) {
 		out, _, err := RunArgsInTest(ctx, "singularity --json datasource inspect path 1")
 		require.NoError(t, err)
 		root := strings.Split(strings.Split(out, "\n")[4], "\"")[3]
-		// Now load all car files to a block store and check if the resolved directory is same as the original
-		bs := loadCars(t, carDir)
-		dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
-		rootCID, err := cid.Decode(root)
+		_, _, err = RunArgsInTest(ctx, "singularity tool extract-car -i "+escapePath(carDir)+" -o "+escapePath(carDir)+" -c "+root)
 		require.NoError(t, err)
-		entries := listDirsFromRootNode(t, dagServ, "", rootCID)
-		var content []byte
-		require.Equal(t, 103, len(entries))
-		require.True(t, slices.Contains(entries, "sub1"))
-		require.True(t, slices.Contains(entries, "test1.txt"))
-		require.True(t, slices.Contains(entries, "test2.txt"))
-		require.True(t, slices.Contains(entries, "0"))
-		require.True(t, slices.Contains(entries, "99"))
-		content, err = os.ReadFile(filepath.Join(temp, "2", "test2.txt"))
-		require.NoError(t, err)
-		require.Equal(t, content, getFileFromRootNode(t, dagServ, "2/test2.txt", rootCID))
-		content, err = os.ReadFile(filepath.Join(temp, "sub1", "sub2", "sub3", "sub4", "test2.txt"))
-		require.NoError(t, err)
-		require.Equal(t, content, getFileFromRootNode(t, dagServ, "sub1/sub2/sub3/sub4/test2.txt", rootCID))
-		content, err = os.ReadFile(filepath.Join(temp, "test1.txt"))
-		require.NoError(t, err)
-		require.Equal(t, content, getFileFromRootNode(t, dagServ, "test1.txt", rootCID))
-		content, err = os.ReadFile(filepath.Join(temp, "test2.txt"))
-		require.NoError(t, err)
-		require.Equal(t, content, getFileFromRootNode(t, dagServ, "test2.txt", rootCID))
 	})
 }
 

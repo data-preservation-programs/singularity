@@ -20,8 +20,9 @@ var ImportCmd = &cli.Command{
 		defer closer.Close()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		w, err := wallet.ImportHandler(db,
+		w, err := wallet.ImportHandler(
 			c.Context,
+			db,
 			lotusClient,
 			wallet.ImportRequest{
 				PrivateKey: c.Args().Get(0),

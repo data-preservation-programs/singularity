@@ -29,6 +29,7 @@ var RepackCmd = &cli.Command{
 			chunkID = &c2
 		}
 		chunks, err := datasource.RepackHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			datasource.RepackRequest{

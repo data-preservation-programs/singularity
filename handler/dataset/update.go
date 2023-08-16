@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
@@ -21,11 +22,12 @@ type UpdateRequest struct {
 }
 
 func UpdateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
 ) (*model.Dataset, error) {
-	return updateHandler(db, datasetName, request)
+	return updateHandler(ctx, db.WithContext(ctx), datasetName, request)
 }
 
 // @Summary Update a dataset
@@ -39,6 +41,7 @@ func UpdateHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName} [patch]
 func updateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
@@ -58,7 +61,7 @@ func updateHandler(
 		return nil, err2
 	}
 
-	err = database.DoRetry(func() error { return db.Save(&dataset).Error })
+	err = database.DoRetry(ctx, func() error { return db.Save(&dataset).Error })
 	if err != nil {
 		return nil, err
 	}

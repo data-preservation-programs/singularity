@@ -85,7 +85,7 @@ var PrepCmd = &cli.Command{
 		defer closer.Close()
 
 		// Step 1, initialize the database
-		err = admin.InitHandler(db)
+		err = admin.InitHandler(c.Context, db)
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ var PrepCmd = &cli.Command{
 				return errors.Wrap(err, "failed to create output directory")
 			}
 		}
-		ds, err2 := dataset.CreateHandler(db, dataset.CreateRequest{
+		ds, err2 := dataset.CreateHandler(c.Context, db, dataset.CreateRequest{
 			Name:       "ez",
 			MaxSizeStr: c.String("max-size"),
 			OutputDirs: outputDirs,
@@ -151,7 +151,7 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 4, Initiate dag gen
-		_, err2 = datasource.DagGenHandler(db, strconv.Itoa(int(source.ID)))
+		_, err2 = datasource.DagGenHandler(c.Context, db, strconv.Itoa(int(source.ID)))
 		if err2 != nil {
 			return err2
 		}
@@ -164,7 +164,7 @@ var PrepCmd = &cli.Command{
 
 		// Step 6, print all information
 		cars, err2 := dataset.ListPiecesHandler(
-			db, ds.Name,
+			c.Context, db, ds.Name,
 		)
 		if err2 != nil {
 			return err2

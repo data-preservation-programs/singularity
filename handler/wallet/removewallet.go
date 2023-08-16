@@ -1,6 +1,8 @@
 package wallet
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -8,11 +10,12 @@ import (
 )
 
 func RemoveWalletHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
 ) error {
-	return removeWalletHandler(db, datasetName, wallet)
+	return removeWalletHandler(ctx, db.WithContext(ctx), datasetName, wallet)
 }
 
 // @Summary Remove an associated wallet from a dataset
@@ -24,6 +27,7 @@ func RemoveWalletHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName}/wallet/{wallet} [delete]
 func removeWalletHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
@@ -47,7 +51,7 @@ func removeWalletHandler(
 		return handler.NewInvalidParameterErr("failed to find wallet: " + err.Error())
 	}
 
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Where("dataset_id = ? AND wallet_id = ?", dataset.ID, w.ID).Delete(&model.WalletAssignment{}).Error
 	})
 

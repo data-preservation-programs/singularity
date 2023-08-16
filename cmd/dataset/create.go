@@ -48,6 +48,7 @@ var CreateCmd = &cli.Command{
 		}
 		defer closer.Close()
 		dataset, err := dataset.CreateHandler(
+			c.Context,
 			db,
 			dataset.CreateRequest{
 				Name:                 c.Args().Get(0),

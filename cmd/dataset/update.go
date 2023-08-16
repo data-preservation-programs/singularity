@@ -56,6 +56,7 @@ var UpdateCmd = &cli.Command{
 			pieceSizeStr = &s
 		}
 		dataset, err := dataset.UpdateHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			dataset.UpdateRequest{

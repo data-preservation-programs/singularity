@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -18,6 +19,7 @@ import (
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id} [delete]
 func removeSourceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) error {
@@ -33,7 +35,7 @@ func removeSourceHandler(
 	if err != nil {
 		return err
 	}
-	err = database.DoRetry(func() error { return db.Delete(&source).Error })
+	err = database.DoRetry(ctx, func() error { return db.Delete(&source).Error })
 	if err != nil {
 		return err
 	}
@@ -41,8 +43,9 @@ func removeSourceHandler(
 }
 
 func RemoveSourceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) error {
-	return removeSourceHandler(db, id)
+	return removeSourceHandler(ctx, db.WithContext(ctx), id)
 }

@@ -86,13 +86,13 @@ func (c CloserFunc) Close() error {
 var Logger = log.Logger("dealtracker")
 
 type DealTracker struct {
-	workerID   uuid.UUID
-	db         *gorm.DB
-	interval   time.Duration
-	dealZstURL string
-	lotusURL   string
-	lotusToken string
-	once       bool
+	workerID    uuid.UUID
+	dbNoContext *gorm.DB
+	interval    time.Duration
+	dealZstURL  string
+	lotusURL    string
+	lotusToken  string
+	once        bool
 }
 
 func NewDealTracker(
@@ -103,13 +103,13 @@ func NewDealTracker(
 	lotusToken string,
 	once bool) DealTracker {
 	return DealTracker{
-		workerID:   uuid.New(),
-		db:         db,
-		interval:   interval,
-		dealZstURL: dealZstURL,
-		lotusURL:   lotusURL,
-		lotusToken: lotusToken,
-		once:       once,
+		workerID:    uuid.New(),
+		dbNoContext: db,
+		interval:    interval,
+		dealZstURL:  dealZstURL,
+		lotusURL:    lotusURL,
+		lotusToken:  lotusToken,
+		once:        once,
 	}
 }
 
@@ -236,7 +236,7 @@ func (*DealTracker) Name() string {
 //
 // The Start method takes a context.Context as input and performs the following steps:
 // 1. Defines a getState function that returns a healthcheck.State with WorkType set to model.DealTracking.
-// 2. Registers the worker using healthcheck.Register with the provided context, db, workerID, getState function, and false for the force flag.
+// 2. Registers the worker using healthcheck.Register with the provided context, dbNoContext, workerID, getState function, and false for the force flag.
 //   - If an error occurs during registration, it returns nil for the service.Done channels, nil for the service.Fail channel, and the error wrapped with an appropriate message.
 //   - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels,
 //     nil for the service.Fail channel, and an error indicating that another worker is already running.
@@ -244,7 +244,7 @@ func (*DealTracker) Name() string {
 // 3. Logs a warning message and waits for 1 minute before retrying.
 //   - If the context is done during the wait, it returns nil for the service.Done channels, nil for the service.Fail channel, and the context error.
 //
-// 4. Starts reporting health using healthcheck.StartReportHealth with the provided context, db, workerID, and getState function in a separate goroutine.
+// 4. Starts reporting health using healthcheck.StartReportHealth with the provided context, dbNoContext, workerID, and getState function in a separate goroutine.
 // 5. Runs the main loop in a separate goroutine.
 //   - Calls d.runOnce to execute the main logic of the DealTracker.
 //   - If an error occurs during execution, it logs an error message.
@@ -267,7 +267,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 	}
 
 	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.db, d.workerID, getState, false)
+		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, getState, false)
 		if err == nil && !alreadyRunning {
 			break
 		}
@@ -294,7 +294,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, d.db, d.workerID, getState)
+		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, getState)
 		Logger.Info("health report stopped")
 	}()
 
@@ -326,7 +326,10 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 	go func() {
 		defer close(cleanupDone)
 		<-ctx.Done()
-		err := d.cleanup()
+		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		//nolint:contextcheck
+		err := d.cleanup(ctx2)
 		if err != nil {
 			Logger.Errorw("failed to cleanup", "error", err)
 		} else {
@@ -337,9 +340,9 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 	return []service.Done{healthcheckDone, runDone, cleanupDone}, fail, nil
 }
 
-func (d *DealTracker) cleanup() error {
-	return database.DoRetry(func() error {
-		return d.db.Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
+func (d *DealTracker) cleanup(ctx context.Context) error {
+	return database.DoRetry(ctx, func() error {
+		return d.dbNoContext.WithContext(ctx).Where("id = ?", d.workerID).Delete(&model.Worker{}).Error
 	})
 }
 
@@ -366,7 +369,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		delay = time.Since(lotusTime)
 	}
 
-	db := d.db.WithContext(ctx)
+	db := d.dbNoContext.WithContext(ctx)
 	var wallets []model.Wallet
 	err = db.Find(&wallets).Error
 	if err != nil {
@@ -440,7 +443,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			}
 
 			Logger.Infow("Deal state changed", "dealID", dealID, "oldState", current, "newState", newState)
-			err = database.DoRetry(func() error {
+			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.Deal{}).Where("deal_id = ?", dealID).Updates(
 					map[string]any{
 						"state":              newState,
@@ -458,7 +461,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if ok {
 			f := found[0]
 			Logger.Infow("Deal matched on-chain", "dealID", dealID, "state", newState)
-			err = database.DoRetry(func() error {
+			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.Deal{}).Where("id = ?", f.ID).Updates(map[string]any{
 					"deal_id":            dealID,
 					"state":              newState,
@@ -480,7 +483,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to parse piece CID")
 		}
-		err = database.DoRetry(func() error {
+		err = database.DoRetry(ctx, func() error {
 			return db.Create(&model.Deal{
 				DealID:           &dealID,
 				State:            newState,

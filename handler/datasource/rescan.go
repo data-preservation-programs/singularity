@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -18,6 +19,7 @@ import (
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/rescan [post]
 func rescanSourceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.Source, error) {
@@ -32,7 +34,7 @@ func rescanSourceHandler(
 			return err
 		}
 		if source.ScanningState == model.Error || source.ScanningState == model.Complete {
-			return database.DoRetry(func() error {
+			return database.DoRetry(ctx, func() error {
 				return db.Model(&source).Updates(map[string]any{
 					"scanning_state":         model.Ready,
 					"last_scanned_timestamp": 0,
@@ -54,8 +56,9 @@ func rescanSourceHandler(
 }
 
 func RescanSourceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.Source, error) {
-	return rescanSourceHandler(db, id)
+	return rescanSourceHandler(ctx, db.WithContext(ctx), id)
 }

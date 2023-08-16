@@ -2,7 +2,6 @@ package datasource
 
 import (
 	"context"
-	"strings"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
@@ -10,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/util"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/pkg/errors"
@@ -56,6 +56,7 @@ func Pack(
 	chunk model.Chunk,
 	resolver datasource.HandlerResolver,
 ) ([]model.Car, error) {
+	db = db.WithContext(ctx)
 	var outDir string
 	if len(chunk.Source.Dataset.OutputDirs) > 0 {
 		outDir = chunk.Source.Dataset.OutputDirs[0]
@@ -72,38 +73,40 @@ func Pack(
 	}
 
 	// Update all ItemPart and Item CID that are not split
-	var splitItemIDs map[uint64]struct{}
-	for _, itemPart := range chunk.ItemParts {
+	splitItemIDs := make(map[uint64]model.Item)
+	var updatedItems []model.Item
+	splitItemBlks := make(map[uint64][]blocks.Block)
+	for i, itemPart := range chunk.ItemParts {
 		itemPartID := itemPart.ID
-		itemPartCID, ok := result.ItemPartCIDs[itemPartID]
-		if !ok {
-			return nil, errors.New("item part not found in result")
-		}
+		itemPartCID := result.ItemPartCIDs[itemPartID]
+		chunk.ItemParts[i].CID = model.CID(itemPartCID)
 		logger.Debugw("update item part CID", "itemPartID", itemPartID, "CID", itemPartCID.String())
-		err = database.DoRetry(func() error {
+		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
 				Update("cid", model.CID(itemPartCID)).Error
 		})
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to update cid of item")
+			return nil, errors.Wrap(err, "failed to update cid of item part")
 		}
-		logger.Debugw("update item CID", "itemID", itemPart.ItemID, "CID", itemPartCID.String())
 		if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
-			err = database.DoRetry(func() error {
+			itemPart.Item.CID = model.CID(itemPartCID)
+			logger.Debugw("update item CID", "itemID", itemPart.ItemID, "CID", itemPartCID.String())
+			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).
 					Update("cid", model.CID(itemPartCID)).Error
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to update cid of item")
 			}
+			updatedItems = append(updatedItems, *itemPart.Item)
 		} else {
-			splitItemIDs[itemPart.ItemID] = struct{}{}
+			splitItemIDs[itemPart.ItemID] = *itemPart.Item
 		}
 	}
 
 	// Now check if all item parts of an item are ready. If so, update item CID
 	for itemID := range splitItemIDs {
-		err = database.DoRetry(func() error {
+		err = database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				var allParts []model.ItemPart
 				err = db.Where("item_id = ?", itemID).Order("offset asc").Find(&allParts).Error
@@ -119,14 +122,19 @@ func Pack(
 							Cid:  cid.Cid(p.CID),
 						}
 					})
-					_, node, err := pack.AssembleItemFromLinks(links)
+					blks, node, err := pack.AssembleItemFromLinks(links)
 					if err != nil {
 						return errors.Wrap(err, "failed to assemble item from links")
 					}
-					err = db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", model.CID(node.Cid())).Error
+					nodeCid := node.Cid()
+					err = db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", model.CID(nodeCid)).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update cid of item")
 					}
+					item := splitItemIDs[itemID]
+					item.CID = model.CID(nodeCid)
+					updatedItems = append(updatedItems, item)
+					splitItemBlks[itemID] = blks
 				}
 				return nil
 			})
@@ -135,7 +143,7 @@ func Pack(
 
 	logger.Debugw("create car for finished chunk", "chunkID", chunk.ID)
 	var cars []model.Car
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				for _, result := range result.CarResults {
@@ -172,93 +180,69 @@ func Pack(
 	}
 
 	logger.Debugw("update directory data", "chunkID", chunk.ID)
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
+		if len(updatedItems) == 0 {
+			return nil
+		}
 		return db.Transaction(func(db *gorm.DB) error {
 			var err error
 			tree := daggen.NewDirectoryTree()
-			for _, itemPart := range chunk.ItemParts {
-				dirID := itemPart.Item.DirectoryID
-				for dirID != nil {
-					// Add the directory to tree if it's not there
+			var rootDirID uint64
+			for _, item := range updatedItems {
+				dirID := item.DirectoryID
+				for {
+					// Add the directory to tree if it is not there
 					if !tree.Has(*dirID) {
 						var dir model.Directory
 						err = db.Where("id = ?", dirID).First(&dir).Error
 						if err != nil {
 							return errors.Wrap(err, "failed to get directory")
 						}
-						err = tree.Add(&dir)
+						err = tree.Add(ctx, &dir)
 						if err != nil {
 							return errors.Wrap(err, "failed to add directory to tree")
 						}
 					}
 
+					dirDetail := tree.Get(*dirID)
+
 					// Update the directory for first iteration
-					if dirID == itemPart.Item.DirectoryID {
-						itemPartID := itemPart.ID
-						itemPartCID, ok := result.ItemPartCIDs[itemPartID]
-						if !ok {
-							return errors.New("item part not found in result")
-						}
-						err = db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
-							Update("cid", model.CID(itemPartCID)).Error
+					if dirID == item.DirectoryID {
+						err = dirDetail.Data.AddItem(ctx, item.Name(), cid.Cid(item.CID), uint64(item.Size))
 						if err != nil {
-							return errors.Wrap(err, "failed to update cid of item")
+							return errors.Wrap(err, "failed to add item to directory")
 						}
-						name := itemPart.Item.Path[strings.LastIndex(itemPart.Item.Path, "/")+1:]
-						if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
-							partCID := result.ItemPartCIDs[itemPart.ID]
-							err = dirData.AddItem(name, partCID, uint64(itemPart.Length))
+						if blks, ok := splitItemBlks[item.ID]; ok {
+							err = dirDetail.Data.AddBlocks(ctx, blks)
 							if err != nil {
-								return errors.Wrap(err, "failed to add item to directory")
-							}
-						} else {
-							var allParts []model.ItemPart
-							err = db.Where("item_id = ?", itemPart.ItemID).Order("\"offset\" asc").Find(&allParts).Error
-							if err != nil {
-								return errors.Wrap(err, "failed to get all item parts")
-							}
-							if underscore.All(allParts, func(p model.ItemPart) bool {
-								return p.CID != model.CID(cid.Undef)
-							}) {
-								links := underscore.Map(allParts, func(p model.ItemPart) format.Link {
-									return format.Link{
-										Size: uint64(p.Length),
-										Cid:  cid.Cid(p.CID),
-									}
-								})
-								c, err := dirData.AddItemFromLinks(name, links)
-								if err != nil {
-									return errors.Wrap(err, "failed to add item to directory")
-								}
-								err = db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).Update("cid", model.CID(c)).Error
-								if err != nil {
-									return errors.Wrap(err, "failed to update cid of item")
-								}
+								return errors.Wrap(err, "failed to add blocks to directory")
 							}
 						}
 					}
 
 					// Next iteration
-					dirID = dirData.Directory.ParentID
+					dirID = dirDetail.Dir.ParentID
+					if dirID == nil {
+						rootDirID = dirDetail.Dir.ID
+						break
+					}
 				}
 			}
 			// Recursively update all directory internal structure
-			rootDirID, err := chunk.Source.RootDirectoryID(db)
-			if err != nil {
-				return errors.Wrap(err, "failed to get root directory id")
-			}
-			_, err = daggen.ResolveDirectoryTree(rootDirID, dirCache, childrenCache)
+			_, err = tree.Resolve(ctx, rootDirID)
 			if err != nil {
 				return errors.Wrap(err, "failed to resolve directory tree")
 			}
+
 			// Update all directories in the database
-			for dirID, dirData := range dirCache {
-				bytes, err := dirData.MarshalBinary()
+			for dirID, dirDetail := range tree.Cache() {
+				bytes, err := dirDetail.Data.MarshalBinary(ctx)
 				if err != nil {
 					return errors.Wrap(err, "failed to marshall directory data")
 				}
+				node, _ := dirDetail.Data.Node()
 				err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]any{
-					"cid":      model.CID(dirData.Node.Cid()),
+					"cid":      model.CID(node.Cid()),
 					"data":     bytes,
 					"exported": false,
 				}).Error
@@ -276,33 +260,8 @@ func Pack(
 	logger.With("chunk_id", chunk.ID).Info("finished packing")
 	if chunk.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		logger.Info("Deleting original data source")
-		handled := map[uint64]struct{}{}
-		for _, itemPart := range chunk.ItemParts {
-			if _, ok := handled[itemPart.ItemID]; ok {
-				continue
-			}
-			handled[itemPart.ItemID] = struct{}{}
-			object := result.Objects[itemPart.ItemID]
-			if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
-				logger.Debugw("removing object", "path", object.Remote())
-				err = object.Remove(ctx)
-				if err != nil {
-					logger.Warnw("failed to remove object", "error", err)
-				}
-				continue
-			}
-			// Make sure all parts of this file has been exported before deleting
-			var unfinishedCount int64
-			err = db.Model(&model.ItemPart{}).
-				Where("item_id = ? AND cid IS NULL", itemPart.ItemID).Count(&unfinishedCount).Error
-			if err != nil {
-				logger.Warnw("failed to get count for unfinished item parts", "error", err)
-				continue
-			}
-			if unfinishedCount > 0 {
-				logger.Info("not all items have been exported yet, skipping delete")
-				continue
-			}
+		for _, item := range updatedItems {
+			object := result.Objects[item.ID]
 			logger.Debugw("removing object", "path", object.Remote())
 			err = object.Remove(ctx)
 			if err != nil {
