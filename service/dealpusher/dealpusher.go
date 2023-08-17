@@ -65,6 +65,28 @@ func (d *DealPusher) hasSchedule(scheduleID uint32) bool {
 	return ok
 }
 
+// runScheduleAndUpdateState is a method of the DealPusher type.
+// It runs the specified Schedule, assesses the outcome, and updates the Schedule's state
+// accordingly in the database. If errors are encountered during the run, they are logged
+// and potentially saved to the Schedule's record in the database, depending on the Schedule's Cron setting.
+//
+// The steps it takes are as follows:
+// 1. Runs the Schedule using the runSchedule method, which attempts to make deals based on the Schedule's configuration.
+// 2. If runSchedule returns an error, logs the error and saves it to the Schedule's record if ScheduleCron is not set.
+// 3. If runSchedule returns a non-empty state (either ScheduleCompleted or ScheduleError), updates the Schedule's state in the database.
+// 4. Logs the Schedule's completion or error state, if applicable, and removes the Schedule from the DealPusher's active schedules.
+//
+// Parameters:
+//
+//	ctx:      The context for managing the lifecycle of this Schedule run.
+//	          If the context is Done, the function exits cleanly.
+//	schedule: A pointer to the Schedule that this function is processing.
+//
+// This function does not return any values but updates the Schedule's state in the database
+// based on the actions performed in the runSchedule function. It also handles errors and logs relevant information.
+//
+// Note: This function is designed to act as a controller that runs a Schedule,
+// handles the outcome, updates the Schedule's state, and logs the results.
 func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *model.Schedule) {
 	db := d.dbNoContext.WithContext(ctx)
 	state, err := d.runSchedule(ctx, schedule)
@@ -184,6 +206,30 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 	return nil
 }
 
+// runSchedule is a method of the DealPusher type. It processes a single Schedule,
+// and continuously attempts to make deals based on the information and constraints specified in the Schedule.
+//
+// The steps it takes in each iteration are as follows:
+// 1. Counts the number and size of pending and total active deals for the current schedule from the database.
+// 2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
+// 3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
+// 4. Chooses a wallet from the dataset’s associated wallets.
+// 5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
+// 6. Saves the newly created deal to the database.
+// 7. Updates the counts of pending, total, and current deals based on the new deal.
+// 8. If the context is done, returns immediately, otherwise waits for a specified interval before the next iteration.
+//
+// Parameters:
+//
+//	ctx:      The context for managing the lifecycle of this Schedule run.
+//	          If the context is Done, the function exits cleanly.
+//	schedule: A pointer to the Schedule that this function is processing.
+//
+// Returns:
+//  1. A ScheduleState which represents the new state of the Schedule
+//     based on the actions performed in this run.
+//     Possible values: ScheduleCompleted, ScheduleError, or an empty string.
+//  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
 	db := d.dbNoContext.WithContext(ctx)
 	for {
@@ -329,7 +375,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		activeScheduleCancelFunc: make(map[uint32]context.CancelFunc),
 		activeSchedule:           make(map[uint32]*model.Schedule),
 		cronEntries:              make(map[uint32]cron.EntryID),
-		walletChooser:            &replication.DefaultWalletChooser{},
+		walletChooser:            &replication.RandomWalletChooser{},
 		dealMaker:                dealMaker,
 		workerID:                 uuid.New(),
 		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
@@ -338,6 +384,24 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	}, nil
 }
 
+// runOnce is a method of the DealPusher type that runs a single iteration of the deal pushing logic.
+//
+// In each iteration, the method performs the following actions:
+//  1. Fetches all the active schedules from the database.
+//  2. Constructs a map of these schedules for quick lookup.
+//  3. Cancels all the jobs in the DealPusher that are no longer active (based on the latest fetched schedules).
+//  4. For each schedule in the fetched active schedules:
+//     a. If the schedule is already being processed, it updates that schedule's processing logic.
+//     b. If the schedule is new, it starts processing that schedule.
+//
+// Parameters:
+//
+//	ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
+//
+// This function is designed to be idempotent, meaning it can be run multiple times with the same effect.
+// It is called repeatedly by the main deal processing loop in DealPusher.Start.
+//
+// Note: Errors encountered during this process are logged but do not stop the function's execution.
 func (d *DealPusher) runOnce(ctx context.Context) {
 	var schedules []model.Schedule
 	scheduleMap := map[uint32]model.Schedule{}
@@ -378,6 +442,25 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	}
 }
 
+// Start initializes and starts the DealPusher service.
+//
+// It first attempts to register the worker with the health check system.
+// If another worker is already running, it waits and retries until it can register or the context is cancelled.
+// Once registered, it launches three main activities in separate goroutines:
+// 1. Reporting its health status.
+// 2. Running the deal processing loop.
+// 3. Handling cleanup when the service is stopped.
+//
+// Parameters:
+//
+//	ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
+//
+// Returns:
+//   - A slice of channels that the caller can select on to wait for the service to stop.
+//   - A channel for errors that may occur while the service is running.
+//   - An error if there was a problem starting the service.
+//
+// This function is intended to be called once at the start of the service lifecycle.
 func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	getState := func() healthcheck.State {
 		return healthcheck.State{

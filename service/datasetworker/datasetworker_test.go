@@ -49,13 +49,7 @@ func TestDatasetWorker_HandleScanWork_Failure(t *testing.T) {
 	err = db.Create(dir).Error
 	require.NoError(t, err)
 	err = worker.Run(context.Background())
-	require.NoError(t, err)
-	var found model.Source
-	err = db.Model(&model.Source{}).First(&found).Error
-	require.NoError(t, err)
-	require.Equal(t, model.Error, found.ScanningState)
-	require.Contains(t, found.ErrorMessage, "failed to find rclone backend")
-	require.Nil(t, found.ScanningWorkerID)
+	require.ErrorContains(t, err, "didn't find backend")
 }
 
 func TestDatasetWorker_HandleScanWork_Success(t *testing.T) {

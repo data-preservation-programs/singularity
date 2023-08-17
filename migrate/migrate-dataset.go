@@ -36,7 +36,6 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 		MaxSizeStr:           fmt.Sprintf("%d", scanning.MaxSize),
 		OutputDirs:           nil,
 		EncryptionRecipients: nil,
-		EncryptionScript:     "",
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create dataset")

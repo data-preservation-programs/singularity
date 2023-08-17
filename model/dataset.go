@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -225,13 +226,12 @@ type Dataset struct {
 	PieceSize            int64       `json:"pieceSize"`
 	OutputDirs           StringSlice `gorm:"type:JSON"                    json:"outputDirs"`
 	EncryptionRecipients StringSlice `gorm:"type:JSON"                    json:"encryptionRecipients"`
-	EncryptionScript     string      `json:"encryptionScript"`
 	Metadata             Metadata    `gorm:"type:JSON"                    json:"metadata"`
 	Wallets              []Wallet    `gorm:"many2many:wallet_assignments" json:"wallets,omitempty"    swaggerignore:"true"`
 }
 
 func (d Dataset) UseEncryption() bool {
-	return len(d.EncryptionRecipients) > 0 || d.EncryptionScript != ""
+	return len(d.EncryptionRecipients) > 0
 }
 
 // Source represents a source of data, i.e. a local file system directory.
@@ -289,6 +289,10 @@ type File struct {
 	DirectoryID               *uint64     `gorm:"index"                                                     json:"directoryId"`
 	Directory                 *Directory  `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty"  swaggerignore:"true"`
 	FileRanges                []FileRange `gorm:"constraint:OnDelete:CASCADE"                               json:"fileRanges,omitempty"`
+}
+
+func (i File) Name() string {
+	return i.Path[strings.LastIndex(i.Path, "/")+1:]
 }
 
 func CreateIndexes(db *gorm.DB) error {

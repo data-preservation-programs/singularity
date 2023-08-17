@@ -358,6 +358,32 @@ type UnknownDeal struct {
 	EndEpoch   int32
 }
 
+// runOnce is a method of the DealTracker type. It is responsible for performing a single cycle
+// of deal tracking. It queries the local database for known deals and wallets, compares the
+// local data with on-chain data, updates the local data to reflect any changes, inserts new deals
+// found on-chain but not in the local data, and marks expired deals and deal proposals as such.
+//
+// The steps it takes are as follows:
+// 1. Calculate the delay time based on Lotus head time if dealZstURL is empty, or default to 1 hour.
+// 2. Retrieve the wallets from the local database.
+// 3. Create a set of wallet IDs for lookup purposes.
+// 4. Retrieve the known deals from the local database.
+// 5. Retrieve the unknown deals from the local database.
+// 6. Invoke trackDeal function to compare and update the local deals with on-chain data.
+// 7. In trackDeal's callback, update existing deals if the state has changed.
+// 8. In trackDeal's callback, match unknown deals in the local database to known deals on-chain.
+// 9. In trackDeal's callback, insert new deals found on-chain that don't exist in the local database.
+// 10. Mark all expired active deals as 'expired' in the local database.
+// 11. Mark all expired deal proposals as 'proposal_expired' in the local database.
+//
+// Parameters:
+//
+//	ctx: The context to control the lifecycle of the run. If the context is done,
+//	     the function exits cleanly.
+//
+// Returns:
+//
+//	error: An error that represents the failure of the operation, or nil if the operation was successful.
 func (d *DealTracker) runOnce(ctx context.Context) error {
 	delay := time.Hour
 	var err error

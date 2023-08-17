@@ -72,15 +72,6 @@ func TestCreateHandler_OutDirDoesNotExist(t *testing.T) {
 	require.ErrorContains(t, err, "output directory does not exist")
 }
 
-func TestCreateHandler_RecipientsScriptCannotBeUsedTogether(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	defer model.DropAll(db)
-	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}, EncryptionScript: "test"})
-	require.ErrorContains(t, err, "encryption recipients and script cannot be used together")
-}
-
 func TestCreateHandler_EncryptionNeedsOutputDir(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)

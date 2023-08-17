@@ -22,13 +22,32 @@ type WalletChooser interface {
 	Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error)
 }
 
-type DefaultWalletChooser struct{}
+type RandomWalletChooser struct{}
 
 var ErrNoWallet = errors.New("no wallets to choose from")
 
 var ErrNoDatacap = errors.New("no wallets have enough datacap")
 
-func (w DefaultWalletChooser) Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error) {
+// Choose selects a random Wallet from the provided slice of Wallets.
+//
+// The Choose function of the RandomWalletChooser type randomly selects
+// a Wallet from a given slice of Wallets. If the slice is empty, the function
+// returns an error. It uses a cryptographically secure random number generator
+// to make the selection.
+//
+// Parameters:
+//   - ctx context.Context: The context to use for cancellation and deadlines,
+//     although it is not used in this implementation.
+//   - wallets []model.Wallet: A slice of Wallet objects from which a random Wallet
+//     will be chosen.
+//
+// Returns:
+//   - model.Wallet: The randomly chosen Wallet object from the provided slice.
+//   - error: An error that will be returned if any issues were encountered while trying
+//     to choose a Wallet. This includes the case when the input slice is empty,
+//     in which case ErrNoWallet will be returned, or if there is an issue generating
+//     a random number.
+func (w RandomWalletChooser) Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error) {
 	// Check if the wallets slice is empty
 	if len(wallets) == 0 {
 		return model.Wallet{}, ErrNoWallet
@@ -104,6 +123,29 @@ func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.
 	return totalPieceSize, nil
 }
 
+// Choose selects a random Wallet from the provided slice of Wallets based on certain criteria.
+//
+// The Choose function of the DatacapWalletChooser type filters the given slice of Wallets
+// based on a specific criterion, which is whether the datacap for the wallet minus
+// the pending deals for the wallet is greater or equal to a minimum threshold (w.min).
+// From the filtered eligible Wallets, the function then randomly selects one Wallet.
+// It uses a cryptographically secure random number generator to make the selection.
+// If the initial slice of Wallets is empty, or if no Wallets meet the criteria,
+// the function returns an error.
+//
+// Parameters:
+//   - ctx context.Context: The context to use for cancellation and deadlines, used
+//     in the datacap and pending deals fetching operations.
+//   - wallets []model.Wallet: A slice of Wallet objects from which a random Wallet
+//     will be chosen based on the criteria.
+//
+// Returns:
+//   - model.Wallet: The randomly chosen Wallet object from the filtered eligible Wallets.
+//   - error: An error that will be returned if any issues were encountered while trying
+//     to choose a Wallet. This includes the case when the input slice is empty,
+//     in which case ErrNoWallet will be returned, when no Wallets meet the criteria,
+//     in which case ErrNoDatacap will be returned, or if there is an issue generating
+//     a random number.
 func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet) (model.Wallet, error) {
 	if len(wallets) == 0 {
 		return model.Wallet{}, ErrNoWallet

@@ -29,9 +29,6 @@ definitions:
         items:
           type: string
         type: array
-      encryptionScript:
-        description: EncryptionScript command to run for custom encryption
-        type: string
       maxSize:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
@@ -59,9 +56,6 @@ definitions:
         items:
           type: string
         type: array
-      encryptionScript:
-        description: EncryptionScript command to run for custom encryption
-        type: string
       maxSize:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
@@ -2288,7 +2282,7 @@ definitions:
     type: object
   datasource.CreatePackJobRequest:
     properties:
-      fileIDs:
+      fileRangeIDs:
         items:
           type: integer
         type: array
@@ -4877,8 +4871,6 @@ definitions:
         items:
           type: string
         type: array
-      encryptionScript:
-        type: string
       id:
         type: integer
       maxSize:

@@ -19,7 +19,6 @@ type UpdateRequest struct {
 	PieceSizeStr         *string  `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
 	OutputDirs           []string `json:"outputDirs"           validate:"optional"`                     // Output directory for CAR files. Do not set if using inline preparation
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
-	EncryptionScript     *string  `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
 
 func UpdateHandler(
@@ -130,15 +129,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		dataset.EncryptionRecipients = request.EncryptionRecipients
 	}
 
-	if request.EncryptionScript != nil {
-		dataset.EncryptionScript = *request.EncryptionScript
-	}
-
-	if len(dataset.EncryptionRecipients) > 0 && dataset.EncryptionScript != "" {
-		return handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
-	}
-
-	if (len(dataset.EncryptionRecipients) > 0 || dataset.EncryptionScript != "") && len(dataset.OutputDirs) == 0 {
+	if len(dataset.EncryptionRecipients) > 0 && len(dataset.OutputDirs) == 0 {
 		return handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",

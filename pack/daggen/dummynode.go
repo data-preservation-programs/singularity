@@ -11,7 +11,7 @@ type DummyNode struct {
 	cid  cid.Cid
 }
 
-var ErrEmptyNode error = errors.New("fake fs Node")
+var ErrDummyNode error = errors.New("fake dummy Node")
 
 func NewDummyNode(size uint64, cid cid.Cid) DummyNode {
 	return DummyNode{size: size, cid: cid}
@@ -34,7 +34,7 @@ func (f DummyNode) Loggable() map[string]any {
 }
 
 func (f DummyNode) Resolve(path []string) (any, []string, error) {
-	return nil, nil, ErrEmptyNode
+	return nil, nil, ErrDummyNode
 }
 
 func (f DummyNode) Tree(path string, depth int) []string {
@@ -42,7 +42,7 @@ func (f DummyNode) Tree(path string, depth int) []string {
 }
 
 func (f DummyNode) ResolveLink(path []string) (*ipld.Link, []string, error) {
-	return nil, nil, ErrEmptyNode
+	return nil, nil, ErrDummyNode
 }
 
 func (f DummyNode) Copy() ipld.Node {
@@ -54,7 +54,7 @@ func (f DummyNode) Links() []*ipld.Link {
 }
 
 func (f DummyNode) Stat() (*ipld.NodeStat, error) {
-	return &ipld.NodeStat{}, nil
+	return nil, ErrDummyNode
 }
 
 func (f DummyNode) Size() (uint64, error) {

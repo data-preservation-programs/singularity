@@ -256,6 +256,18 @@ func SetupHelpPager() {
 	}
 }
 
+func RunArgsInTestNoCapture(ctx context.Context, args string) error {
+	App.ExitErrHandler = func(c *cli.Context, err error) {
+	}
+	parser := shellwords.NewParser()
+	parser.ParseEnv = true // Enable environment variable parsing
+	parsedArgs, err := parser.Parse(args)
+	if err != nil {
+		return err
+	}
+	return App.RunContext(ctx, parsedArgs)
+}
+
 func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
 	App.ExitErrHandler = func(c *cli.Context, err error) {
 	}

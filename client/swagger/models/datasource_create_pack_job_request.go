@@ -17,8 +17,8 @@ import (
 // swagger:model datasource.CreatePackJobRequest
 type DatasourceCreatePackJobRequest struct {
 
-	// file i ds
-	FileIDs []int64 `json:"fileIDs"`
+	// file range i ds
+	FileRangeIDs []int64 `json:"fileRangeIDs"`
 }
 
 // Validate validates this datasource create pack job request
