@@ -24,9 +24,6 @@ type ModelDataset struct {
 	// encryption recipients
 	EncryptionRecipients []string `json:"encryptionRecipients"`
 
-	// encryption script
-	EncryptionScript string `json:"encryptionScript,omitempty"`
-
 	// id
 	ID int64 `json:"id,omitempty"`
 

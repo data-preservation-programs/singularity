@@ -41,7 +41,7 @@ func TestNewLotusClient(t *testing.T) {
 	}
 }
 
-func TestChunkSlice(t *testing.T) {
+func TestPackJobSlice(t *testing.T) {
 	tests := []struct {
 		name      string
 		slice     []int

@@ -5,13 +5,16 @@ import (
 	"context"
 	"io"
 	"testing"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/boxo/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
+	"github.com/rclone/rclone/backend/s3"
 	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/fs/hash"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -40,7 +43,7 @@ func TestCreateParentNode(t *testing.T) {
 	require.Equal(t, "bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma", node.String())
 }
 
-func TestMind(t *testing.T) {
+func TestMin(t *testing.T) {
 	require.Equal(t, 1, Min(1, 2))
 	require.Equal(t, 1, Min(2, 1))
 	require.Equal(t, 1, Min(1, 1))
@@ -121,29 +124,187 @@ type MockReadHandler struct {
 
 func (m *MockReadHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	args := m.Called(ctx, path, offset, length)
-	return args.Get(0).(io.ReadCloser), nil, args.Error(2)
+	if args.Get(1) == nil {
+		return args.Get(0).(io.ReadCloser), nil, args.Error(2)
+	}
+	return args.Get(0).(io.ReadCloser), args.Get(1).(fs.Object), args.Error(2)
 }
 
-func TestGetBlockStreamFromFile(t *testing.T) {
+func TestGetBlockStreamFromFileRange(t *testing.T) {
 	ctx := context.Background()
+	mockObject := new(MockObject)
+	sizeCall := mockObject.On("Size").Return(int64(5))
+	mockObject.On("Fs").Return(&s3.Fs{})
+	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
+	tm := time.Now()
+	mockObject.On("ModTime", mock.Anything).Return(tm)
 	handler := new(MockReadHandler)
-	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	file := model.FileRange{
-		Offset: 0,
-		Length: 5,
-		File: &model.File{
+	readCall := handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), mockObject, nil)
+
+	t.Run("size mismatch", func(t *testing.T) {
+		fileRange := model.FileRange{
+			Offset: 0,
+			Length: 5,
+			File: &model.File{
+				Size:                      4,
+				Hash:                      "hash",
+				LastModifiedTimestampNano: tm.UnixNano(),
+			},
+		}
+		_, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
+		require.ErrorIs(t, err, ErrFileModified)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		fileRange := model.FileRange{
+			Offset: 0,
+			Length: 5,
+			File: &model.File{
+				Size:                      5,
+				Hash:                      "hash",
+				LastModifiedTimestampNano: tm.UnixNano(),
+			},
+		}
+		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
+		require.NoError(t, err)
+		blockResults := make([]BlockResult, 0)
+		for r := range blockResultChan {
+			blockResults = append(blockResults, r)
+		}
+		require.Len(t, blockResults, 1)
+		require.EqualValues(t, 0, blockResults[0].Offset)
+		require.Equal(t, []byte("hello"), blockResults[0].Raw)
+		require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", blockResults[0].CID.String())
+	})
+
+	t.Run("success with empty file", func(t *testing.T) {
+		sizeCall.Unset()
+		mockObject.On("Size").Return(int64(0))
+		readCall.Unset()
+		handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			Return(io.NopCloser(bytes.NewReader([]byte(""))), mockObject, nil)
+		fileRange := model.FileRange{
+			Offset: 0,
+			Length: 0,
+			File: &model.File{
+				Size:                      0,
+				Hash:                      "hash",
+				LastModifiedTimestampNano: tm.UnixNano(),
+			},
+		}
+		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
+		require.NoError(t, err)
+		blockResults := make([]BlockResult, 0)
+		for r := range blockResultChan {
+			blockResults = append(blockResults, r)
+		}
+		require.Len(t, blockResults, 1)
+		require.EqualValues(t, 0, blockResults[0].Offset)
+		require.Equal(t, []byte(nil), blockResults[0].Raw)
+		require.Equal(t, "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", blockResults[0].CID.String())
+	})
+}
+
+func TestIsSameEntry(t *testing.T) {
+	ctx := context.Background()
+	mockObject := new(MockObject)
+	mockObject.On("Size").Return(int64(5))
+	mockObject.On("Fs").Return(&s3.Fs{})
+	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
+	tm := time.Now()
+	mockObject.On("ModTime", mock.Anything).Return(tm)
+	t.Run("size mismatch", func(t *testing.T) {
+		same, detail := IsSameEntry(ctx, model.File{
+			Size: 4,
+		}, mockObject)
+		require.False(t, same)
+		require.Contains(t, detail, "size mismatch")
+	})
+	t.Run("hash mismatch", func(t *testing.T) {
+		same, detail := IsSameEntry(ctx, model.File{
 			Size: 5,
-		},
-	}
-	blockResultChan, _, err := GetBlockStreamFromFile(ctx, handler, file, nil)
-	require.NoError(t, err)
-	blockResults := make([]BlockResult, 0)
-	for r := range blockResultChan {
-		blockResults = append(blockResults, r)
-	}
-	require.Len(t, blockResults, 1)
-	require.EqualValues(t, 0, blockResults[0].Offset)
-	require.Equal(t, []byte("hello"), blockResults[0].Raw)
-	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", blockResults[0].CID.String())
+			Hash: "hash2",
+		}, mockObject)
+		require.False(t, same)
+		require.Contains(t, detail, "hash mismatch")
+	})
+	t.Run("last modified mismatch", func(t *testing.T) {
+		same, detail := IsSameEntry(ctx, model.File{
+			Size:                      5,
+			Hash:                      "hash",
+			LastModifiedTimestampNano: 100,
+		}, mockObject)
+		require.False(t, same)
+		require.Contains(t, detail, "last modified mismatch")
+	})
+	t.Run("all match", func(t *testing.T) {
+		same, _ := IsSameEntry(ctx, model.File{
+			Size:                      5,
+			Hash:                      "hash",
+			LastModifiedTimestampNano: tm.UnixNano(),
+		}, mockObject)
+		require.True(t, same)
+	})
+	t.Run("all match, ignoring empty hash", func(t *testing.T) {
+		same, _ := IsSameEntry(ctx, model.File{
+			Size:                      5,
+			LastModifiedTimestampNano: tm.UnixNano(),
+		}, mockObject)
+		require.True(t, same)
+	})
+}
+
+type MockObject struct {
+	mock.Mock
+}
+
+func (m *MockObject) Remote() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *MockObject) ModTime(ctx context.Context) time.Time {
+	args := m.Called(ctx)
+	return args.Get(0).(time.Time)
+}
+
+func (m *MockObject) Size() int64 {
+	args := m.Called()
+	return args.Get(0).(int64)
+}
+
+func (m *MockObject) Fs() fs.Info {
+	args := m.Called()
+	return args.Get(0).(fs.Info)
+}
+
+func (m *MockObject) Hash(ctx context.Context, ty hash.Type) (string, error) {
+	args := m.Called(ctx, ty)
+	return args.String(0), args.Error(1)
+}
+
+func (m *MockObject) Storable() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
+func (m *MockObject) SetModTime(ctx context.Context, t time.Time) error {
+	args := m.Called(ctx, t)
+	return args.Error(0)
+}
+
+func (m *MockObject) Open(ctx context.Context, options ...fs.OpenOption) (io.ReadCloser, error) {
+	args := m.Called(ctx, options)
+	return args.Get(0).(io.ReadCloser), args.Error(1)
+}
+
+func (m *MockObject) Update(ctx context.Context, in io.Reader, src fs.ObjectInfo, options ...fs.OpenOption) error {
+	args := m.Called(ctx, in, src, options)
+	return args.Error(0)
+}
+
+func (m *MockObject) Remove(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
 }

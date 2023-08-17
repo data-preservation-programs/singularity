@@ -13,15 +13,25 @@ import (
 	"gorm.io/gorm"
 )
 
+// BitswapServer represents a server instance for handling Bitswap protocol interactions.
+// Bitswap is a peer-to-peer data trading protocol in which peers request the data they need,
+// and respond to other peers' requests based on certain policies.
 type BitswapServer struct {
+	// dbNoContext is a GORM database instance that doesn't use context for managing database connections.
 	dbNoContext *gorm.DB
-	host        host.Host
+
+	// host is a libp2p host used to build and configure a new Bitswap instance.
+	host host.Host
 }
 
 func (BitswapServer) Name() string {
 	return "Bitswap"
 }
 
+// Start initializes the Bitswap server with the provided context.
+// It sets up the necessary routing and networking components,
+// and starts serving Bitswap requests.
+// It returns channels that signal when the service has stopped or encountered an error.
 func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
 	if err != nil {

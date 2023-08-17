@@ -84,12 +84,12 @@ func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (
 }
 
 // ChunkMapKeys is a generic function that takes a map with keys of any comparable type and values of any type, and an integer as input.
-// It divides the keys of the input map into chunks of size 'chunkSize' and returns a 2D slice of keys.
-// It uses the ChunkSlice function to divide the keys into chunks.
+// It divides the keys of the input map into packJobs of size 'chunkSize' and returns a 2D slice of keys.
+// It uses the ChunkSlice function to divide the keys into packJobs.
 //
 // Parameters:
 // m: A map with keys of any comparable type and values of any type. The keys of this map will be chunked.
-// chunkSize: The size of each chunk. Must be a positive integer.
+// chunkSize: The size of each packJob. Must be a positive integer.
 //
 // Returns:
 // A 2D slice where each inner slice is of length 'chunkSize'. The last inner slice may be shorter if the number of keys in 'm' is not a multiple of 'chunkSize'.
@@ -102,20 +102,20 @@ func ChunkMapKeys[T1 comparable, T2 any](m map[T1]T2, chunkSize int) [][]T1 {
 }
 
 // ChunkSlice is a generic function that takes a slice of any type and an integer as input.
-// It divides the input slice into chunks of size 'chunkSize' and returns a 2D slice.
+// It divides the input slice into packJobs of size 'chunkSize' and returns a 2D slice.
 // If 'chunkSize' is less than or equal to zero, it returns an empty 2D slice.
 //
 // Parameters:
 // slice: A slice of any type that needs to be chunked.
-// chunkSize: The size of each chunk. Must be a positive integer.
+// chunkSize: The size of each packJob. Must be a positive integer.
 //
 // Returns:
 // A 2D slice where each inner slice is of length 'chunkSize'.
 // The last inner slice may be shorter if the length of 'slice' is not a multiple of 'chunkSize'.
 func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
-	var chunks [][]T
+	var packJobs [][]T
 	if chunkSize <= 0 {
-		return chunks
+		return packJobs
 	}
 
 	for i := 0; i < len(slice); i += chunkSize {
@@ -123,10 +123,10 @@ func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
 		if end > len(slice) {
 			end = len(slice)
 		}
-		chunks = append(chunks, slice[i:end])
+		packJobs = append(packJobs, slice[i:end])
 	}
 
-	return chunks
+	return packJobs
 }
 
 const BatchSize = 100

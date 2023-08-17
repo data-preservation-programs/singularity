@@ -11,29 +11,30 @@ import (
 	"github.com/rjNemo/underscore"
 )
 
-// scan scans the data source and inserts the chunking strategy back to database
+// scan scans the data source and inserts the packJobing strategy back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned file, which is useful for resuming a failed scan
 func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool) error {
+	db := w.dbNoContext.WithContext(ctx)
 	directoryCache := make(map[string]uint64)
 	dataset := *source.Dataset
 	var remaining = newRemain()
-	var remainingParts []model.FileRange
-	err := w.dbNoContext.Joins("File").
+	var remainingFileRanges []model.FileRange
+	err := db.Joins("File").
 		Where("source_id = ? AND file_ranges.pack_job_id is null", source.ID).
 		Order("file_ranges.id asc").
-		Find(&remainingParts).Error
+		Find(&remainingFileRanges).Error
 	if err != nil {
 		return err
 	}
-	w.logger.With("remaining", len(remainingParts)).Info("remaining files")
-	remaining.add(remainingParts)
+	w.logger.With("remaining", len(remainingFileRanges)).Info("remaining file ranges")
+	remaining.add(remainingFileRanges)
 
 	if !scanSource {
 		for len(remaining.fileRanges) > 0 {
-			err = w.chunkOnce(ctx, source, dataset, remaining)
+			err = w.packJobOnce(ctx, source, dataset, remaining)
 			if err != nil {
-				return errors.Wrap(err, "failed to save chunking")
+				return errors.Wrap(err, "failed to save packJobing")
 			}
 		}
 		return nil
@@ -59,7 +60,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 			continue
 		}
 		err = database.DoRetry(ctx, func() error {
-			return w.dbNoContext.Model(&model.Source{}).Where("id = ?", source.ID).
+			return db.Model(&model.Source{}).Where("id = ?", source.ID).
 				Update("last_scanned_path", file.Path).Error
 		})
 		if err != nil {
@@ -68,42 +69,42 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 
 		remaining.add(fileRanges)
 		for remaining.carSize >= dataset.MaxSize {
-			err = w.chunkOnce(ctx, source, dataset, remaining)
+			err = w.packJobOnce(ctx, source, dataset, remaining)
 			if err != nil {
-				return errors.Wrap(err, "failed to save chunking")
+				return errors.Wrap(err, "failed to save packJobing")
 			}
 		}
 	}
 
 	for len(remaining.fileRanges) > 0 {
-		err = w.chunkOnce(ctx, source, dataset, remaining)
+		err = w.packJobOnce(ctx, source, dataset, remaining)
 		if err != nil {
-			return errors.Wrap(err, "failed to save chunking")
+			return errors.Wrap(err, "failed to save packJobing")
 		}
 	}
 	return nil
 }
 
-func (w *Thread) chunkOnce(
+func (w *Thread) packJobOnce(
 	ctx context.Context,
 	source model.Source,
 	dataset model.Dataset,
 	remaining *remain,
 ) error {
-	// If everything fit, create a pack job. Usually this is the case for the last pack job
+	// If everything fit, create a packJob. Usually this is the case for the last packJob
 	if remaining.carSize <= dataset.MaxSize {
-		w.logger.Debugw("creating pack job", "size", remaining.carSize)
+		w.logger.Debugw("creating packJob", "size", remaining.carSize)
 		_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
-			FileIDs: remaining.itemIDs(),
+			FileRangeIDs: remaining.fileRangeIDs(),
 		})
 
 		if err != nil {
-			return errors.Wrap(err, "failed to create pack job")
+			return errors.Wrap(err, "failed to create packJob")
 		}
 		remaining.reset()
 		return nil
 	}
-	// size > maxSize, first, find the first file that makes it larger than maxSize
+	// size > maxSize, first, find the first file range that makes it larger than maxSize
 	s := remaining.carSize
 	si := len(remaining.fileRanges) - 1
 	for si >= 0 {
@@ -114,24 +115,24 @@ func (w *Thread) chunkOnce(
 		si--
 	}
 
-	// In case si == 0, this is the case where a single file is more than sector size for encryption
-	// We will allow a single file to be more than sector size and handle it later during packing
+	// In case si == 0, this is the case where a single item is more than sector size for encryption
+	// We will allow a single item to be more than sector size and handle it later during packing
 	if si == 0 {
 		si = 1
 		s += toCarSize(remaining.fileRanges[0].Length)
 	}
 
-	// create a pack job for [0:si)
-	w.logger.Debugw("creating pack job", "size", s)
+	// create a packJob for [0:si)
+	w.logger.Debugw("creating packJob", "size", s)
 
-	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(file model.FileRange) uint64 {
-		return file.ID
+	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(fileRange model.FileRange) uint64 {
+		return fileRange.ID
 	})
 	_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
-		FileIDs: fileRangeIDs,
+		FileRangeIDs: fileRangeIDs,
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to create pack job")
+		return errors.Wrap(err, "failed to create packJob")
 	}
 	remaining.fileRanges = remaining.fileRanges[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize
@@ -153,10 +154,10 @@ func newRemain() *remain {
 	}
 }
 
-func (r *remain) add(itemParts []model.FileRange) {
-	r.fileRanges = append(r.fileRanges, itemParts...)
-	for _, itemPart := range itemParts {
-		r.carSize += toCarSize(itemPart.Length)
+func (r *remain) add(fileRanges []model.FileRange) {
+	r.fileRanges = append(r.fileRanges, fileRanges...)
+	for _, fileRange := range fileRanges {
+		r.carSize += toCarSize(fileRange.Length)
 	}
 }
 
@@ -165,9 +166,9 @@ func (r *remain) reset() {
 	r.carSize = carHeaderSize
 }
 
-func (r *remain) itemIDs() []uint64 {
-	return underscore.Map(r.fileRanges, func(itemPart model.FileRange) uint64 {
-		return itemPart.ID
+func (r *remain) fileRangeIDs() []uint64 {
+	return underscore.Map(r.fileRanges, func(fileRange model.FileRange) uint64 {
+		return fileRange.ID
 	})
 }
 

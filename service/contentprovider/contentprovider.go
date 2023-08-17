@@ -37,6 +37,28 @@ type BitswapConfig struct {
 	ListenMultiAddrs []string
 }
 
+// NewService creates a new Service instance with the provided database and configuration.
+//
+// The NewService function takes the following parameters:
+// - db: The gorm.DB instance for database operations.
+// - config: The Config struct containing the service configuration.
+//
+// The function performs the following steps:
+// 1. Creates an empty Service instance.
+// 2. If the HTTP server is enabled in the configuration, creates an HTTPServer instance and adds it to the servers slice.
+//   - The HTTPServer is configured with the bind address, database without context, and a DefaultHandlerResolver.
+//
+// 3. If the Bitswap server is enabled in the configuration, initializes the identity key based on the configuration.
+//   - If the identity key is not provided, generates a new peer identity key.
+//   - If the identity key is provided, decodes it from base64.
+//   - Unmarshals the private key from the identity key bytes.
+//   - If no listen multiaddresses are provided, sets a default listen multiaddress.
+//   - Converts each listen multiaddress string to a Multiaddr instance.
+//   - Initializes a libp2p host with the identity key and listen multiaddresses.
+//   - Logs the libp2p listening addresses and peer ID.
+//   - Creates a BitswapServer instance with the libp2p host and database without context, and adds it to the servers slice.
+//
+// 4. Returns the created Service instance and nil for the error if all steps are executed successfully.
 func NewService(db *gorm.DB, config Config) (*Service, error) {
 	s := &Service{}
 

@@ -40,11 +40,6 @@ var CreateCmd = &cli.Command{
 			Usage:    "Public key of the encryption recipient",
 			Category: "Encryption",
 		},
-		&cli.StringFlag{
-			Name:     "encryption-script",
-			Usage:    "[WIP] EncryptionScript command to run for custom encryption",
-			Category: "Encryption",
-		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -61,7 +56,7 @@ var CreateCmd = &cli.Command{
 				PieceSizeStr:         c.String("piece-size"),
 				OutputDirs:           c.StringSlice("output-dir"),
 				EncryptionRecipients: c.StringSlice("encryption-recipient"),
-				EncryptionScript:     c.String("encryption-script")},
+			},
 		)
 		if err != nil {
 			return err

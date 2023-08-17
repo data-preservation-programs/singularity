@@ -51,10 +51,34 @@ type WriteCloser struct {
 	io.Closer
 }
 
-var emptyFileCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
+var EmptyFileCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
 
 var logger = log.Logger("pack")
 
+// GetMultiWriter constructs a writer that writes to multiple outputs
+// (i.e., a MultiWriter) based on the specified output directory.
+// This function is designed to handle the use case where you want
+// to calculate a piece commitment (via a commp.Calc instance) while
+// writing data, and potentially write that data to a file at the same
+// time.
+//
+// Parameters:
+//   - outDir: A string representing the path of the output directory. If this
+//     string is empty, the function will return a writer that only writes to
+//     the commp.Calc instance.
+//
+// Returns:
+//   - io.WriteCloser: An interface that groups the basic Write and Close methods.
+//     The Write method is implemented by an io.MultiWriter that writes to both
+//     a commp.Calc instance and an os.File (if an output directory was specified).
+//     The Close method is implemented by the os.File, or a nopCloser if no output
+//     directory was specified.
+//   - *commp.Calc: A pointer to a commp.Calc instance. This is used to calculate
+//     the piece commitment of the data that is written.
+//   - string: The path of the file that the data is being written to. This is an
+//     empty string if no output directory was specified.
+//   - error: An error that can occur when creating the file at the specified path,
+//     or nil if the operation was successful.
 func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) {
 	calc := &commp.Calc{}
 	if outDir == "" {
@@ -71,6 +95,24 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 	return WriteCloser{Writer: writer, Closer: file}, calc, filepath, nil
 }
 
+// AssembleCar assembles a Content Addressable aRchive (CAR) file from a list of data blocks.
+// It writes these blocks to the specified output directory, and it attempts to ensure that
+// the size of the CAR file matches a given target piece size. The function can handle
+// assembling multiple CAR files if the blocks don't fit into a single CAR file of the
+// target size.
+//
+// Parameters:
+// - ctx: Context used to handle cancellation and deadlines.
+// - handler: The ReadHandler interface which handles reading data from a data source.
+// - dataset: Information about the dataset being processed.
+// - fileRanges: List of data blocks that need to be included in the CAR file.
+// - outDir: Directory where the CAR file(s) will be written.
+// - pieceSize: Target size of each CAR file, in bytes.
+//
+// Returns:
+//   - *Result: A structure that contains results of the CAR file creation,
+//     including CIDs of the items, file paths, and sizes.
+//   - error: An error that occurred during the CAR assembly process, or nil if the operation was successful.
 func AssembleCar(
 	ctx context.Context,
 	handler datasource.ReadHandler,
@@ -158,7 +200,7 @@ func AssembleCar(
 		if encryptor != nil && outDir == "" {
 			return nil, errors.New("encryption is not supported without an output directory")
 		}
-		blockChan, object, err := GetBlockStreamFromFile(ctx, handler, fileRange, encryptor)
+		blockChan, object, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, encryptor)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to stream fileRange")
 		}
@@ -218,7 +260,7 @@ func AssembleCar(
 		}
 
 		if len(links) == 0 {
-			result.FileRangeCIDs[fileRange.ID] = emptyFileCid
+			result.FileRangeCIDs[fileRange.ID] = EmptyFileCid
 			continue
 		}
 		if len(links) == 1 {
@@ -268,6 +310,21 @@ func AssembleCar(
 	return result, nil
 }
 
+// GetCommp calculates the data commitment (CommP) and the piece size based on the
+// provided commp.Calc instance and target piece size. It ensures that the
+// calculated piece size matches the target piece size specified. If necessary,
+// it pads the data to meet the target piece size.
+//
+// Parameters:
+//   - calc: A pointer to a commp.Calc instance, which has been used to write data
+//     and will be used to calculate the piece commitment for that data.
+//   - targetPieceSize: The desired size of the piece, specified in bytes.
+//
+// Returns:
+//   - cid.Cid: A CID (Content Identifier) representing the data commitment (CommP).
+//   - uint64: The size of the piece, in bytes, after potential padding.
+//   - error: An error indicating issues during the piece commitment calculation,
+//     padding, or CID conversion, or nil if the operation was successful.
 func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error) {
 	rawCommp, rawPieceSize, err := calc.Digest()
 	if err != nil {

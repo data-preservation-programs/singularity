@@ -186,6 +186,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output file %s", outPath)
 			}
+			defer f.Close()
 			_, err = reader.WriteTo(f)
 			if err != nil {
 				return errors.Wrapf(err, "failed to write to output file %s", outPath)
