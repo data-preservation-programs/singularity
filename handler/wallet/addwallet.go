@@ -22,7 +22,7 @@ func AddWalletHandler(
 // @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Param wallet path string true "Wallet Address"
 // @Success 200 {object} model.WalletAssignment
 // @Failure 400 {object} api.HTTPError

@@ -19,7 +19,7 @@ import (
 
 //nolint:lll
 type CreateRequest struct {
-	DatasetName          string   `json:"datasetName"          validation:"required"`  // Dataset name
+	DatasetName          string   `json:"datasetName"          validation:"required"`  // Preparation name
 	Provider             string   `json:"provider"             validation:"required"`  // Provider
 	HTTPHeaders          []string `json:"httpHeaders"`                                 // http headers to be passed with the request (i.e. key=value)
 	URLTemplate          string   `json:"urlTemplate"`                                 // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car

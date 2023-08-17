@@ -16,7 +16,7 @@ type Encryptor interface {
 	Encrypt(in io.Reader) (io.ReadCloser, error)
 }
 
-func GetEncryptor(dataset model.Dataset) (Encryptor, error) {
+func GetEncryptor(dataset model.Preparation) (Encryptor, error) {
 	if len(dataset.EncryptionRecipients) > 0 {
 		return NewAgeEncryptor(dataset.EncryptionRecipients)
 	}

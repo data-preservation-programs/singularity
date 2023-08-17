@@ -629,7 +629,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Metadata"
+                    "Options"
                 ],
                 "summary": "Get metadata for a piece",
                 "parameters": [
@@ -10035,7 +10035,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "metadata": {
-                    "$ref": "#/definitions/model.Metadata"
+                    "$ref": "#/definitions/model.Options"
                 },
                 "name": {
                     "type": "string"
@@ -10229,7 +10229,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Metadata": {
+        "model.Options": {
             "type": "object",
             "additionalProperties": {
                 "type": "string"
@@ -10408,7 +10408,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "metadata": {
-                    "$ref": "#/definitions/model.Metadata"
+                    "$ref": "#/definitions/model.Options"
                 },
                 "path": {
                     "type": "string"

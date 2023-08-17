@@ -32,7 +32,7 @@ func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	var deals []model.Deal
 	statement := db
 	if len(request.Datasets) > 0 {
-		statement = statement.Where("dataset_id IN (?)", statement.Model(&model.Dataset{}).Select("id").Where("name in ?", request.Datasets))
+		statement = statement.Where("dataset_id IN (?)", statement.Model(&model.Preparation{}).Select("id").Where("name in ?", request.Datasets))
 	}
 
 	if len(request.Schedules) > 0 {

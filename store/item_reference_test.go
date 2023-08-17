@@ -35,7 +35,7 @@ func TestFileReferenceBlockStore_Has(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Dataset{},
+			Dataset: &model.Preparation{},
 		},
 		CID: model.CID(cidValue),
 	}).Error
@@ -72,7 +72,7 @@ func TestFileReferenceBlockStore_GetSize(t *testing.T) {
 	require.ErrorIs(t, err, format.ErrNotFound{})
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Dataset{},
+			Dataset: &model.Preparation{},
 		},
 		CID:      model.CID(cidValue),
 		RawBlock: []byte("test"),
@@ -100,7 +100,7 @@ func TestFileReferenceBlockStore_Get_RawBlock(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Dataset{},
+			Dataset: &model.Preparation{},
 		},
 		CID:      model.CID(cidValue),
 		RawBlock: []byte("test"),
@@ -131,14 +131,14 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Dataset{},
+			Dataset: &model.Preparation{},
 		},
 		CID: model.CID(cidValue),
 		File: &model.File{
 			Source: &model.Source{
 				Path: tmp,
 				Type: "local",
-				Dataset: &model.Dataset{
+				Dataset: &model.Preparation{
 					Name: "1",
 				},
 			},

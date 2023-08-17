@@ -45,7 +45,7 @@ func TestMigrateDataset(t *testing.T) {
 	err = MigrateDataset(cctx)
 	require.NoError(t, err)
 
-	var datasets []model.Dataset
+	var datasets []model.Preparation
 	err = db.Find(&datasets).Error
 	require.NoError(t, err)
 	require.Len(t, datasets, 2)

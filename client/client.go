@@ -15,7 +15,7 @@ type InvalidParameterError = handler.InvalidParameterError
 type NotFoundError = handler.NotFoundError
 
 type Client interface {
-	CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error)
+	CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Preparation, error)
 	CreateLocalSource(ctx context.Context, datasetName string, params datasource.LocalRequest) (*model.Source, error)
 	ListSourcesByDataset(ctx context.Context, datasetName string) ([]model.Source, error)
 	GetFile(ctx context.Context, id uint64) (*model.File, error)

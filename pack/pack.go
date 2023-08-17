@@ -116,7 +116,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 func AssembleCar(
 	ctx context.Context,
 	handler datasource.ReadHandler,
-	dataset model.Dataset,
+	dataset model.Preparation,
 	fileRanges []model.FileRange,
 	outDir string,
 	pieceSize int64,

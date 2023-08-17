@@ -117,7 +117,7 @@ var PrepCmd = &cli.Command{
 			DatasetID:     ds.ID,
 			Type:          "local",
 			Path:          path,
-			Metadata:      model.Metadata(nil),
+			Metadata:      model.StringMap(nil),
 			ScanningState: model.Ready,
 			DagGenState:   model.Created,
 		}

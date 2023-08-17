@@ -44,7 +44,7 @@ func TestHandlePostSource(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = db.Create(&model.Dataset{
+	err = db.Create(&model.Preparation{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,
@@ -145,7 +145,7 @@ func TestPushFile_EntryNotFound(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = db.Create(&model.Dataset{
+	err = db.Create(&model.Preparation{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,
@@ -182,7 +182,7 @@ func TestPushFile_Duplicate(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = db.Create(&model.Dataset{
+	err = db.Create(&model.Preparation{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,
@@ -237,7 +237,7 @@ func TestPushFile(t *testing.T) {
 		db:                        db,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
-	err = db.Create(&model.Dataset{
+	err = db.Create(&model.Preparation{
 		Name:      "test",
 		MaxSize:   3 * 1024 * 1024,
 		PieceSize: 4 * 1024 * 1024,

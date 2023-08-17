@@ -10,10 +10,10 @@ import (
 )
 
 // @Summary List all pieces for the dataset that are available for deal making
-// @Tags Dataset
+// @Tags Preparation
 // @Produce json
 // @Accept json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {array} model.Car
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

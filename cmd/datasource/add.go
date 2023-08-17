@@ -18,7 +18,7 @@ import (
 )
 
 var exclude = []string{
-	"CreatedAt", "UpdatedAt", "ScanningWorkerID", "LastScannedTimestamp", "DagGenWorkerID", "Metadata",
+	"CreatedAt", "UpdatedAt", "ScanningWorkerID", "LastScannedTimestamp", "DagGenWorkerID", "Options",
 }
 
 var AddCmd = &cli.Command{
@@ -90,7 +90,7 @@ var AddCmd = &cli.Command{
 				DatasetID:           dataset.ID,
 				Type:                r.Prefix,
 				Path:                path,
-				Metadata:            model.Metadata(result),
+				Metadata:            model.StringMap(result),
 				ScanIntervalSeconds: 0,
 				ScanningState:       ws,
 				DeleteAfterExport:   deleteAfterExport,

@@ -37,7 +37,7 @@ func ListSourcesByDatasetHandler(
 // @Summary List all sources for a dataset
 // @Tags Data Source
 // @Produce json
-// @Param dataset query string false "Dataset name"
+// @Param dataset query string false "Preparation name"
 // @Success 200 {array} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

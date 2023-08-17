@@ -89,8 +89,8 @@ func DropAll(db *gorm.DB) error {
 	return model.DropAll(db)
 }
 
-func FindDatasetByName(db *gorm.DB, name string) (model.Dataset, error) {
-	var dataset model.Dataset
+func FindDatasetByName(db *gorm.DB, name string) (model.Preparation, error) {
+	var dataset model.Preparation
 	err := db.Where("name = ?", name).First(&dataset).Error
 	return dataset, err
 }

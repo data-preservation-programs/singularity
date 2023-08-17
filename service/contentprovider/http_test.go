@@ -63,13 +63,13 @@ func TestHTTPServerHandler(t *testing.T) {
 		FileSize:  6 + 1 + 36 + 5,
 		FilePath:  "",
 		Source: &model.Source{
-			Dataset: &model.Dataset{
+			Dataset: &model.Preparation{
 				Name: "test",
 			},
 			Type: "local",
 			Path: "/",
 		},
-		Dataset: &model.Dataset{},
+		Dataset: &model.Preparation{},
 		Header:  []byte("header"),
 	}).Error
 	require.NoError(t, err)

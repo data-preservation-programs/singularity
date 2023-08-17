@@ -20,7 +20,7 @@ func ListWalletHandler(
 // @Summary List all wallets of a dataset.
 // @Tags Wallet
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {array} model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -33,7 +33,7 @@ func listWalletHandler(
 		return nil, handler.NewInvalidParameterErr("dataset name is required")
 	}
 
-	var dataset model.Dataset
+	var dataset model.Preparation
 	err := db.Preload("Wallets").Where("name = ?", datasetName).First(&dataset).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr("dataset not found")

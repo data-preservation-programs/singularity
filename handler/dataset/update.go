@@ -26,17 +26,17 @@ func UpdateHandler(
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
-) (*model.Dataset, error) {
+) (*model.Preparation, error) {
 	return updateHandler(ctx, db.WithContext(ctx), datasetName, request)
 }
 
 // @Summary Update a dataset
-// @Tags Dataset
+// @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Param request body UpdateRequest true "Request body"
-// @Success 200 {object} model.Dataset
+// @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName} [patch]
@@ -45,7 +45,7 @@ func updateHandler(
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
-) (*model.Dataset, error) {
+) (*model.Preparation, error) {
 	logger := log.Logger("cli")
 	if datasetName == "" {
 		return nil, handler.NewInvalidParameterErr("name is required")
@@ -66,11 +66,11 @@ func updateHandler(
 		return nil, err
 	}
 
-	logger.Infof("Dataset created with ID: %d", dataset.ID)
+	logger.Infof("Preparation created with ID: %d", dataset.ID)
 	return &dataset, nil
 }
 
-func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
+func parseUpdateRequest(request UpdateRequest, dataset *model.Preparation) error {
 	if request.MaxSizeStr != nil {
 		maxSize, err := humanize.ParseBytes(*request.MaxSizeStr)
 		if err != nil {

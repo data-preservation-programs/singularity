@@ -50,7 +50,7 @@ type Server struct {
 
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Metadata
+// @Tags Options
 // @Produce json
 // @Param id path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
@@ -242,7 +242,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/admin/reset", s.toEchoHandler(admin.ResetHandler))
 	e.POST("/api/admin/init", s.toEchoHandler(admin.InitHandler))
 
-	// Dataset
+	// Preparation
 	e.POST("/api/dataset", s.toEchoHandler(dataset.CreateHandler))
 	e.GET("/api/dataset/:datasetName/sources", s.toEchoHandler(datasource2.ListSourcesByDatasetHandler))
 	e.PATCH("/api/dataset/:datasetName", s.toEchoHandler(dataset.UpdateHandler))

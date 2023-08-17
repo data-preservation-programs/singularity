@@ -39,7 +39,7 @@ func TestFindPackWork(t *testing.T) {
 
 	err = db.Create(&model.PackJob{
 		Source: &model.Source{
-			Dataset: &model.Dataset{},
+			Dataset: &model.Preparation{},
 		},
 		PackingState: model.Ready,
 	}).Error
@@ -83,7 +83,7 @@ func TestFindDagWork(t *testing.T) {
 	require.Nil(t, found)
 
 	err = db.Create(&model.Source{
-		Dataset:     &model.Dataset{},
+		Dataset:     &model.Preparation{},
 		DagGenState: model.Ready,
 	}).Error
 	require.NoError(t, err)
@@ -126,7 +126,7 @@ func TestFindScanWork(t *testing.T) {
 	require.Nil(t, found)
 
 	err = db.Create(&model.Source{
-		Dataset:       &model.Dataset{},
+		Dataset:       &model.Preparation{},
 		ScanningState: model.Ready,
 	}).Error
 	require.NoError(t, err)

@@ -38,7 +38,7 @@ func TestDatasetWorker_HandleScanWork_Failure(t *testing.T) {
 		EnableScan:     true,
 	})
 	source := &model.Source{
-		Dataset:       &model.Dataset{},
+		Dataset:       &model.Preparation{},
 		Type:          "invalid",
 		Path:          "",
 		ScanningState: model.Ready,
@@ -64,7 +64,7 @@ func TestDatasetWorker_HandleScanWork_Success(t *testing.T) {
 		EnableScan:     true,
 	})
 	source := &model.Source{
-		Dataset:       &model.Dataset{},
+		Dataset:       &model.Preparation{},
 		Type:          "local",
 		Path:          tmp,
 		ScanningState: model.Ready,
@@ -116,7 +116,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 			ExitOnError:    true,
 		},
 	}
-	dataset := model.Dataset{
+	dataset := model.Preparation{
 		Name:       "test",
 		MaxSize:    1024,
 		OutputDirs: []string{temp},
@@ -242,7 +242,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 			ExitOnError:    true,
 		},
 	}
-	dataset := model.Dataset{
+	dataset := model.Preparation{
 		Name:    "test",
 		MaxSize: 1024,
 	}
@@ -303,7 +303,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 	}
 	err = db.Create(&worker).Error
 	require.NoError(t, err)
-	dataset := model.Dataset{
+	dataset := model.Preparation{
 		Name: "test",
 	}
 	err = db.Create(&dataset).Error
@@ -408,7 +408,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 	}
 	err = db.Create(&worker).Error
 	require.NoError(t, err)
-	dataset := model.Dataset{
+	dataset := model.Preparation{
 		Name: "test",
 	}
 	err = db.Create(&dataset).Error

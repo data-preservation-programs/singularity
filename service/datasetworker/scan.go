@@ -88,7 +88,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 func (w *Thread) packJobOnce(
 	ctx context.Context,
 	source model.Source,
-	dataset model.Dataset,
+	dataset model.Preparation,
 	remaining *remain,
 ) error {
 	// If everything fit, create a packJob. Usually this is the case for the last packJob

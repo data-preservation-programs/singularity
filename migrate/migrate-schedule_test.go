@@ -34,7 +34,7 @@ func TestMigrateSchedule_DatasetNotExist(t *testing.T) {
 	flagSet.String("database-connection-string", database.TestConnectionString, "")
 	cctx := cli.NewContext(nil, flagSet, nil)
 
-	err = db.Create(&model.Dataset{
+	err = db.Create(&model.Preparation{
 		Name: "test",
 	}).Error
 	require.NoError(t, err)

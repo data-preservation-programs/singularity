@@ -25,7 +25,7 @@ type CreateRequest struct {
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
 }
 
-func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
+func parseCreateRequest(request CreateRequest) (*model.Preparation, error) {
 	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
 	if err != nil {
 		return nil, handler.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
@@ -75,7 +75,7 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		)
 	}
 
-	return &model.Dataset{
+	return &model.Preparation{
 		Name:                 request.Name,
 		MaxSize:              int64(maxSize),
 		PieceSize:            int64(pieceSize),
@@ -88,17 +88,17 @@ func CreateHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
-) (*model.Dataset, error) {
+) (*model.Preparation, error) {
 	return createHandler(ctx, db.WithContext(ctx), request)
 }
 
 // @Summary Create a new dataset
-// @Tags Dataset
+// @Tags Preparation
 // @Accept json
 // @Produce json
 // @Description The dataset is a top level object to distinguish different dataset.
 // @Param request body CreateRequest true "Request body"
-// @Success 200 {object} model.Dataset
+// @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset [post]
@@ -106,7 +106,7 @@ func createHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
-) (*model.Dataset, error) {
+) (*model.Preparation, error) {
 	logger := log.Logger("cli")
 	if request.Name == "" {
 		return nil, handler.NewInvalidParameterErr("name is required")
@@ -126,6 +126,6 @@ func createHandler(
 		return nil, err2
 	}
 
-	logger.Infof("Dataset created with ID: %d", dataset.ID)
+	logger.Infof("Preparation created with ID: %d", dataset.ID)
 	return dataset, nil
 }

@@ -123,7 +123,7 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 }
 
 func (w *Thread) Name() string {
-	return "Dataset Worker Thread - " + w.id.String()
+	return "Preparation Worker Thread - " + w.id.String()
 }
 
 func (w *Thread) cleanup(ctx context.Context) error {

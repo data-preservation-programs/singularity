@@ -52,7 +52,7 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 		return nil, nil
 	}
 
-	err = db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	err = db.Model(&sources[0]).Association("Preparation").Find(&sources[0].Dataset)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 	}
 
 	var src model.Source
-	err = db.Joins("Dataset").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
+	err = db.Joins("Preparation").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 		return nil, nil
 	}
 
-	err = db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	err = db.Model(&sources[0]).Association("Preparation").Find(&sources[0].Dataset)
 	if err != nil {
 		return nil, err
 	}

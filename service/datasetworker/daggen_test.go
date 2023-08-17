@@ -27,7 +27,7 @@ func TestExportDag(t *testing.T) {
 	}
 
 	source := model.Source{
-		Dataset: &model.Dataset{},
+		Dataset: &model.Preparation{},
 	}
 	err = db.Create(&source).Error
 	require.NoError(t, err)

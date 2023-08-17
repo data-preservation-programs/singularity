@@ -78,7 +78,7 @@ func MigrateSchedule(cctx *cli.Context) error {
 			return errors.Wrapf(err, "failed to decode dataset %s", replication.DatasetID)
 		}
 
-		var dataset model.Dataset
+		var dataset model.Preparation
 		err = db.Where("name = ?", scanning.Name).First(&dataset).Error
 		if err != nil {
 			return errors.Wrapf(err, "failed to find dataset %s", scanning.Name)

@@ -12,20 +12,20 @@ import (
 )
 
 var Tables = []any{
-	&Global{},
 	&Worker{},
-	&Dataset{},
-	&Source{},
-	&PackJob{},
+	&Global{},
+	&Preparation{},
+	&Storage{},
+	&PreparationSourceAttachment{},
+	&Job{},
 	&File{},
+	&FileRange{},
 	&Directory{},
 	&Car{},
 	&CarBlock{},
 	&Deal{},
 	&Schedule{},
 	&Wallet{},
-	&WalletAssignment{},
-	&FileRange{},
 }
 
 var logger = logging.Logger("model")
@@ -35,11 +35,6 @@ func AutoMigrate(db *gorm.DB) error {
 	err := db.AutoMigrate(Tables...)
 	if err != nil {
 		return errors.Wrap(err, "failed to auto migrate")
-	}
-
-	err = CreateIndexes(db)
-	if err != nil {
-		return errors.Wrap(err, "failed to create indexes")
 	}
 
 	logger.Debug("Creating instance id")

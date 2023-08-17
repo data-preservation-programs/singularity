@@ -38,7 +38,7 @@ func TestAssembleCar_LargeFiles(t *testing.T) {
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{}, files, "", 1<<30)
+	result, err := AssembleCar(ctx, handler, model.Preparation{}, files, "", 1<<30)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -62,7 +62,7 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{}, files, "", 1<<20)
+	result, err := AssembleCar(ctx, handler, model.Preparation{}, files, "", 1<<20)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -94,7 +94,7 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{
+	result, err := AssembleCar(ctx, handler, model.Preparation{
 		EncryptionRecipients: []string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"},
 	}, files, t.TempDir(), 1<<20)
 	require.NoError(t, err)

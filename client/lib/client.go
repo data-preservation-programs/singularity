@@ -29,7 +29,7 @@ func NewClient(db *gorm.DB) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error) {
+func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Preparation, error) {
 	return dataset.CreateHandler(ctx, c.db.WithContext(ctx), request)
 }
 

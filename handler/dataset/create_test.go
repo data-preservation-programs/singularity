@@ -88,7 +88,7 @@ func TestCreateHandler_Success(t *testing.T) {
 	defer model.DropAll(db)
 	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB"})
 	require.NoError(t, err)
-	dataset := model.Dataset{}
+	dataset := model.Preparation{}
 	db.Where("name = ?", "test").First(&dataset)
 	require.Equal(t, "test", dataset.Name)
 }

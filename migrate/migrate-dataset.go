@@ -283,15 +283,15 @@ func MigrateDataset(cctx *cli.Context) error {
 
 	for _, scanning := range scannings {
 		var datasetExists int64
-		err = db.Model(&model.Dataset{}).Where("name = ?", scanning.Name).Count(&datasetExists).Error
+		err = db.Model(&model.Preparation{}).Where("name = ?", scanning.Name).Count(&datasetExists).Error
 		if err != nil {
 			return errors.Wrapf(err, "failed to query for dataset %s", scanning.Name)
 		}
 		if datasetExists > 0 {
-			log.Printf("Dataset %s already exists, skipping\n", scanning.Name)
+			log.Printf("Preparation %s already exists, skipping\n", scanning.Name)
 			continue
 		}
-		log.Printf("Migrating Dataset: %s\n", scanning.Name)
+		log.Printf("Migrating Preparation: %s\n", scanning.Name)
 		err = migrateDataset(ctx, mg, db, scanning, skipFiles)
 		if err != nil {
 			return errors.Wrapf(err, "failed to migrate dataset %s", scanning.Name)

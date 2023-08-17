@@ -110,7 +110,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Dataset{Name: "test", Wallets: []model.Wallet{
+		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -160,7 +160,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Dataset{Name: "test", Wallets: []model.Wallet{
+		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -247,7 +247,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Dataset{Name: "test", Wallets: []model.Wallet{
+		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -352,7 +352,7 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Dataset{Name: "test", Wallets: []model.Wallet{
+		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},

@@ -34,10 +34,10 @@ func AddPieceHandler(
 }
 
 // @Summary Manually register a piece (CAR file) with the dataset for deal making purpose
-// @Tags Dataset
+// @Tags Preparation
 // @Produce json
 // @Accept json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Param request body AddPieceRequest true "Request body"
 // @Success 200 {object} model.Car
 // @Failure 400 {object} api.HTTPError

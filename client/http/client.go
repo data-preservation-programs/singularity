@@ -42,7 +42,7 @@ func (c *Client) jsonRequest(ctx context.Context, method string, endpoint string
 	return c.client.Do(httpRequest)
 }
 
-func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error) {
+func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Preparation, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset", request)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (c *Client) CreateDataset(ctx context.Context, request dataset.CreateReques
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var dataset model.Dataset
+	var dataset model.Preparation
 	err = json.NewDecoder(response.Body).Decode(&dataset)
 	if err != nil {
 		return nil, err

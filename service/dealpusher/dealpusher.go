@@ -407,7 +407,7 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	scheduleMap := map[uint32]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
-	err := db.Preload("Dataset.Wallets").Where("state = ?",
+	err := db.Preload("Preparation.Wallets").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
 		Logger.Errorw("failed to get schedules", "error", err)

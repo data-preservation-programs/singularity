@@ -27,7 +27,7 @@ type AcdRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -78,7 +78,7 @@ type AzureblobRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -113,7 +113,7 @@ type B2Request struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -146,7 +146,7 @@ type BoxRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -208,7 +208,7 @@ type DriveRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -241,7 +241,7 @@ type DropboxRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -265,7 +265,7 @@ type FichierRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -291,7 +291,7 @@ type FilefabricRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -330,7 +330,7 @@ type FtpRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -368,7 +368,7 @@ type GcsRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -397,7 +397,7 @@ type GphotosRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -421,7 +421,7 @@ type HdfsRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -454,7 +454,7 @@ type HidriveRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -477,7 +477,7 @@ type HttpRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -503,7 +503,7 @@ type InternetarchiveRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -528,7 +528,7 @@ type JottacloudRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -554,7 +554,7 @@ type KoofrRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -587,7 +587,7 @@ type LocalRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -616,7 +616,7 @@ type MailruRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -641,7 +641,7 @@ type MegaRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -664,7 +664,7 @@ type NetstorageRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -704,7 +704,7 @@ type OnedriveRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -727,7 +727,7 @@ type OpendriveRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -768,7 +768,7 @@ type OosRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -797,7 +797,7 @@ type PcloudRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -818,7 +818,7 @@ type PremiumizemeRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -838,7 +838,7 @@ type PutioRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -867,7 +867,7 @@ type QingstorRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -935,7 +935,7 @@ type S3Request struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -963,7 +963,7 @@ type SeafileRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1013,7 +1013,7 @@ type SftpRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1037,7 +1037,7 @@ type SharefileRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1060,7 +1060,7 @@ type SiaRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1089,7 +1089,7 @@ type SmbRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1113,7 +1113,7 @@ type StorjRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1143,7 +1143,7 @@ type SugarsyncRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1185,7 +1185,7 @@ type SwiftRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1206,7 +1206,7 @@ type UptoboxRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1233,7 +1233,7 @@ type WebdavRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1259,7 +1259,7 @@ type YandexRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -1285,7 +1285,7 @@ type ZohoRequest struct {
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

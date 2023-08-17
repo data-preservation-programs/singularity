@@ -51,7 +51,7 @@ func pushFileHandler(
 	fileInfo FileInfo,
 ) (*model.File, error) {
 	var source model.Source
-	err := db.Joins("Dataset").Where("sources.id = ?", sourceID).First(&source).Error
+	err := db.Joins("Preparation").Where("sources.id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("source %d not found.", sourceID))
 	}
@@ -90,7 +90,7 @@ func pushFileHandler(
 }
 
 func PushFile(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
-	source model.Source, dataset model.Dataset,
+	source model.Source, dataset model.Preparation,
 	directoryCache map[string]uint64) (*model.File, []model.FileRange, error) {
 	logger.Debugw("pushed file", "file", obj.Remote(), "source_id", source.ID, "dataset_id", dataset.ID)
 	db = db.WithContext(ctx)

@@ -33,7 +33,7 @@ func CreateDatasourceHandler(
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param datasetName path string true "Dataset name"
+// @Param datasetName path string true "Preparation name"
 // @Success 200 {object} model.Source
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -124,7 +124,7 @@ func createDatasourceHandler(
 		DatasetID:           dataset.ID,
 		Type:                r.Prefix,
 		Path:                path,
-		Metadata:            model.Metadata(config),
+		Metadata:            model.StringMap(config),
 		ScanIntervalSeconds: uint64(rescan.Seconds()),
 		ScanningState:       ws,
 		DeleteAfterExport:   deleteAfterExport,
