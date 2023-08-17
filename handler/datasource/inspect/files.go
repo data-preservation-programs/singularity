@@ -10,27 +10,27 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetSourceItemsHandler(
+func GetSourceFilesHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id string,
-) ([]model.Item, error) {
-	return getSourceItemsHandler(db.WithContext(ctx), id)
+) ([]model.File, error) {
+	return getSourceFilesHandler(db.WithContext(ctx), id)
 }
 
-// @Summary Get all item details of a data source
+// @Summary Get all file details of a data source
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Success 200 {array} model.Item
+// @Success 200 {array} model.File
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /source/{id}/items [get]
-func getSourceItemsHandler(
+// @Router /source/{id}/files [get]
+func getSourceFilesHandler(
 	db *gorm.DB,
 	id string,
-) ([]model.Item, error) {
+) ([]model.File, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
 		return nil, handler.NewInvalidParameterErr("invalid source id")
@@ -44,11 +44,11 @@ func getSourceItemsHandler(
 		return nil, err
 	}
 
-	var items []model.Item
-	err = db.Where("source_id = ?", sourceID).Find(&items).Error
+	var files []model.File
+	err = db.Where("source_id = ?", sourceID).Find(&files).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return items, nil
+	return files, nil
 }

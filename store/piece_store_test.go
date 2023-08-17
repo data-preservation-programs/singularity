@@ -40,11 +40,11 @@ func TestPieceReader_FileChanged(t *testing.T) {
 			CarOffset:      6,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			ItemID:         ptr.Of(uint64(1)),
+			FileID:         ptr.Of(uint64(1)),
 			CID:            model.CID(cidValue),
 		},
 	}
-	items := []model.Item{{
+	files := []model.File{{
 		ID:                        1,
 		SourceID:                  1,
 		Path:                      "1.txt",
@@ -52,7 +52,7 @@ func TestPieceReader_FileChanged(t *testing.T) {
 		Size:                      20,
 	}}
 	reader, err := NewPieceReader(ctx, car, source,
-		carBlocks, items,
+		carBlocks, files,
 		datasource.DefaultHandlerResolver{})
 	require.NoError(t, err)
 	require.NotNil(t, reader)
@@ -94,11 +94,11 @@ func TestPieceReader_LargeFile(t *testing.T) {
 			CarOffset:      6,
 			CarBlockLength: int32(size - 6),
 			Varint:         varint.ToUvarint(36 + 1024*1024),
-			ItemID:         ptr.Of(uint64(1)),
+			FileID:         ptr.Of(uint64(1)),
 			CID:            model.CID(cidValue),
 		},
 	}
-	items := []model.Item{{
+	files := []model.File{{
 		ID:                        1,
 		SourceID:                  1,
 		Path:                      "1.txt",
@@ -106,7 +106,7 @@ func TestPieceReader_LargeFile(t *testing.T) {
 		Size:                      1024 * 1024,
 	}}
 	reader, err := NewPieceReader(ctx, car, source,
-		carBlocks, items,
+		carBlocks, files,
 		datasource.DefaultHandlerResolver{})
 	require.NoError(t, err)
 	require.NotNil(t, reader)
@@ -143,21 +143,21 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 			CarOffset:      6,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			ItemID:         ptr.Of(uint64(1)),
+			FileID:         ptr.Of(uint64(1)),
 			CID:            model.CID(cidValue),
 		},
 		{
 			CarOffset:      63,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			ItemID:         ptr.Of(uint64(2)),
+			FileID:         ptr.Of(uint64(2)),
 			CID:            model.CID(cidValue),
 		},
 		{
 			CarOffset:      120,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			ItemID:         ptr.Of(uint64(3)),
+			FileID:         ptr.Of(uint64(3)),
 			CID:            model.CID(cidValue),
 		},
 		{
@@ -168,7 +168,7 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 			RawBlock:       testFileContent,
 		},
 	}
-	items := []model.Item{{
+	files := []model.File{{
 		ID:                        1,
 		SourceID:                  1,
 		Path:                      "1.txt",
@@ -188,7 +188,7 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 		Size:                      20,
 	}}
 	reader, err := NewPieceReader(ctx, car, source,
-		carBlocks, items,
+		carBlocks, files,
 		datasource.DefaultHandlerResolver{})
 	require.NoError(t, err)
 	require.NotNil(t, reader)
@@ -273,12 +273,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 
 	tests := []struct {
 		carBlocks []model.CarBlock
-		items     []model.Item
+		files     []model.File
 		err       error
 	}{
 		{
 			carBlocks: []model.CarBlock{},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 999,
 				Path:     testFilename,
@@ -288,7 +288,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 		},
 		{
 			carBlocks: []model.CarBlock{},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
@@ -302,7 +302,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					CarOffset: 11,
 				},
 			},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
@@ -317,7 +317,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					CarBlockLength: 1000,
 				},
 			},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
@@ -336,7 +336,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					CarBlockLength: 3,
 				},
 			},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
@@ -351,7 +351,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					CarBlockLength: 57,
 				},
 			},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
@@ -367,7 +367,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					Varint:         []byte{100},
 				},
 			},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
@@ -381,23 +381,23 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					CarOffset:      6,
 					CarBlockLength: 57,
 					Varint:         []byte{56},
-					ItemID:         ptr.Of(uint64(100)),
+					FileID:         ptr.Of(uint64(100)),
 				},
 			},
-			items: []model.Item{{
+			files: []model.File{{
 				ID:       1,
 				SourceID: 1,
 				Path:     testFilename,
 				Size:     20,
 			}},
-			err: ErrItemNotProvided,
+			err: ErrFileNotProvided,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.err.Error(), func(t *testing.T) {
 			_, err := NewPieceReader(ctx, car, source,
-				test.carBlocks, test.items,
+				test.carBlocks, test.files,
 				datasource.DefaultHandlerResolver{})
 			require.ErrorIs(t, err, test.err)
 		})

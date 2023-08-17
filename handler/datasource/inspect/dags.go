@@ -25,7 +25,7 @@ func GetDagsHandler(
 // @Param id path string true "Source ID"
 // @Success 200 {array} model.Car
 // @Failure 500 {object} api.HTTPError
-// @Router /source/{id}/chunks [get]
+// @Router /source/{id}/packjobs [get]
 func getDagsHandler(
 	db *gorm.DB,
 	id string,
@@ -44,7 +44,7 @@ func getDagsHandler(
 	}
 
 	var cars []model.Car
-	err = db.Where("source_id = ? AND chunk_id IS NULL", sourceID).Find(&cars).Error
+	err = db.Where("source_id = ? AND pack_job_id IS NULL", sourceID).Find(&cars).Error
 	if err != nil {
 		return nil, err
 	}

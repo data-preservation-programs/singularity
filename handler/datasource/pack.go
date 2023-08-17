@@ -22,88 +22,88 @@ func PackHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	chunkID uint64,
+	packJobID uint64,
 ) ([]model.Car, error) {
-	return packHandler(db, ctx, resolver, chunkID)
+	return packHandler(db, ctx, resolver, packJobID)
 }
 
-// @Summary Pack a chunk into car files
+// @Summary Pack a pack job into car files
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "Chunk ID"
+// @Param id path string true "Pack job ID"
 // @Success 201 {object} []model.Car
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /chunk/{id}/pack [post]
+// @Router /packjob/{id}/pack [post]
 func packHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	chunkID uint64,
+	packJobID uint64,
 ) ([]model.Car, error) {
-	var chunk model.Chunk
-	err := db.Where("id = ?", chunkID).Find(&chunk).Error
+	var packJob model.PackJob
+	err := db.Where("id = ?", packJobID).Find(&packJob).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return Pack(ctx, db, chunk, resolver)
+	return Pack(ctx, db, packJob, resolver)
 }
 
 func Pack(
 	ctx context.Context,
 	db *gorm.DB,
-	chunk model.Chunk,
+	packJob model.PackJob,
 	resolver datasource.HandlerResolver,
 ) ([]model.Car, error) {
 	var outDir string
-	if len(chunk.Source.Dataset.OutputDirs) > 0 {
+	if len(packJob.Source.Dataset.OutputDirs) > 0 {
 		var err error
-		outDir, err = device.GetPathWithMostSpace(chunk.Source.Dataset.OutputDirs)
+		outDir, err = device.GetPathWithMostSpace(packJob.Source.Dataset.OutputDirs)
 		if err != nil {
 			logger.Warnw("failed to get path with most space. using the first one", "error", err)
-			outDir = chunk.Source.Dataset.OutputDirs[0]
+			outDir = packJob.Source.Dataset.OutputDirs[0]
 		}
 	}
 	logger.Debugw("Use output dir", "dir", outDir)
-	handler, err := resolver.Resolve(ctx, *chunk.Source)
+	handler, err := resolver.Resolve(ctx, *packJob.Source)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get datasource handler")
 	}
-	result, err := pack.AssembleCar(ctx, handler, *chunk.Source.Dataset,
-		chunk.ItemParts, outDir, chunk.Source.Dataset.PieceSize)
+	result, err := pack.AssembleCar(ctx, handler, *packJob.Source.Dataset,
+		packJob.FileRanges, outDir, packJob.Source.Dataset.PieceSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to pack items")
+		return nil, errors.Wrap(err, "failed to pack files")
 	}
 
-	for _, itemPart := range chunk.ItemParts {
-		itemPartID := itemPart.ID
-		itemPartCID, ok := result.ItemPartCIDs[itemPartID]
+	for _, fileRange := range packJob.FileRanges {
+		fileRangeID := fileRange.ID
+		fileRangeCID, ok := result.FileRangeCIDs[fileRangeID]
 		if !ok {
-			return nil, errors.New("item part not found in result")
+			return nil, errors.New("file part not found in result")
 		}
-		logger.Debugw("update item part CID", "itemPartID", itemPartID, "CID", itemPartCID.String())
+		logger.Debugw("update file part CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
 		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
-				Update("cid", model.CID(itemPartCID)).Error
+			return db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
+				Update("cid", model.CID(fileRangeCID)).Error
 		})
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to update cid of item")
+			return nil, errors.Wrap(err, "failed to update cid of file")
 		}
-		logger.Debugw("update item CID", "itemID", itemPart.ItemID, "CID", itemPartCID.String())
-		if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
+		logger.Debugw("update file CID", "fileID", fileRange.FileID, "CID", fileRangeCID.String())
+		if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 			err = database.DoRetry(ctx, func() error {
-				return db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).
-					Update("cid", model.CID(itemPartCID)).Error
+				return db.Model(&model.File{}).Where("id = ?", fileRange.FileID).
+					Update("cid", model.CID(fileRangeCID)).Error
 			})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to update cid of item")
+				return nil, errors.Wrap(err, "failed to update cid of file")
 			}
 		}
 	}
 
-	logger.Debugw("create car for finished chunk", "chunkID", chunk.ID)
+	logger.Debugw("create car for finished pack job", "packJobID", packJob.ID)
 	var cars []model.Car
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
@@ -115,9 +115,9 @@ func Pack(
 						RootCID:   model.CID(result.RootCID),
 						FileSize:  result.CarFileSize,
 						FilePath:  result.CarFilePath,
-						ChunkID:   &chunk.ID,
-						DatasetID: chunk.Source.DatasetID,
-						SourceID:  &chunk.SourceID,
+						PackJobID: &packJob.ID,
+						DatasetID: packJob.Source.DatasetID,
+						SourceID:  &packJob.SourceID,
 						Header:    result.Header,
 					}
 					err := db.Create(&car).Error
@@ -141,13 +141,13 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to save car")
 	}
 
-	logger.Debugw("update directory data", "chunkID", chunk.ID)
+	logger.Debugw("update directory data", "packJobID", packJob.ID)
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			dirCache := make(map[uint64]*daggen.DirectoryData)
 			childrenCache := make(map[uint64][]uint64)
-			for _, itemPart := range chunk.ItemParts {
-				dirID := itemPart.Item.DirectoryID
+			for _, fileRange := range packJob.FileRanges {
+				dirID := fileRange.File.DirectoryID
 				for dirID != nil {
 					dirData, ok := dirCache[*dirID]
 					if !ok {
@@ -170,52 +170,52 @@ func Pack(
 					}
 
 					// Update the directory for first iteration
-					if dirID == itemPart.Item.DirectoryID {
-						itemPartID := itemPart.ID
-						itemPartCID, ok := result.ItemPartCIDs[itemPartID]
+					if dirID == fileRange.File.DirectoryID {
+						fileRangeID := fileRange.ID
+						fileRangeCID, ok := result.FileRangeCIDs[fileRangeID]
 						if !ok {
-							return errors.New("item part not found in result")
+							return errors.New("file part not found in result")
 						}
-						err = db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
-							Update("cid", model.CID(itemPartCID)).Error
+						err = db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
+							Update("cid", model.CID(fileRangeCID)).Error
 						if err != nil {
-							return errors.Wrap(err, "failed to update cid of item")
+							return errors.Wrap(err, "failed to update cid of file")
 						}
-						name := itemPart.Item.Path[strings.LastIndex(itemPart.Item.Path, "/")+1:]
-						if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
-							partCID := result.ItemPartCIDs[itemPart.ID]
-							err = dirData.AddItem(name, partCID, uint64(itemPart.Length))
+						name := fileRange.File.Path[strings.LastIndex(fileRange.File.Path, "/")+1:]
+						if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
+							partCID := result.FileRangeCIDs[fileRange.ID]
+							err = dirData.AddFile(name, partCID, uint64(fileRange.Length))
 							if err != nil {
-								return errors.Wrap(err, "failed to add item to directory")
+								return errors.Wrap(err, "failed to add file to directory")
 							}
 							/*
-								err = db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).Update("cid", model.CID(itemPartCID)).Error
+								err = db.Model(&model.File{}).Where("id = ?", fileRange.FileID).Update("cid", model.CID(fileRangeCID)).Error
 								if err != nil {
-									return errors.Wrap(err, "failed to update cid of item")
+									return errors.Wrap(err, "failed to update cid of file")
 								}
 							*/
 						} else {
-							var allParts []model.ItemPart
-							err = db.Where("item_id = ?", itemPart.ItemID).Order("\"offset\" asc").Find(&allParts).Error
+							var allParts []model.FileRange
+							err = db.Where("file_id = ?", fileRange.FileID).Order("\"offset\" asc").Find(&allParts).Error
 							if err != nil {
-								return errors.Wrap(err, "failed to get all item parts")
+								return errors.Wrap(err, "failed to get all file parts")
 							}
-							if underscore.All(allParts, func(p model.ItemPart) bool {
+							if underscore.All(allParts, func(p model.FileRange) bool {
 								return p.CID != model.CID(cid.Undef)
 							}) {
-								links := underscore.Map(allParts, func(p model.ItemPart) format.Link {
+								links := underscore.Map(allParts, func(p model.FileRange) format.Link {
 									return format.Link{
 										Size: uint64(p.Length),
 										Cid:  cid.Cid(p.CID),
 									}
 								})
-								c, err := dirData.AddItemFromLinks(name, links)
+								c, err := dirData.AddFileFromLinks(name, links)
 								if err != nil {
-									return errors.Wrap(err, "failed to add item to directory")
+									return errors.Wrap(err, "failed to add file to directory")
 								}
-								err = db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).Update("cid", model.CID(c)).Error
+								err = db.Model(&model.File{}).Where("id = ?", fileRange.FileID).Update("cid", model.CID(c)).Error
 								if err != nil {
-									return errors.Wrap(err, "failed to update cid of item")
+									return errors.Wrap(err, "failed to update cid of file")
 								}
 							}
 						}
@@ -226,7 +226,7 @@ func Pack(
 				}
 			}
 			// Recursively update all directory internal structure
-			rootDirID, err := chunk.Source.RootDirectoryID(db)
+			rootDirID, err := packJob.Source.RootDirectoryID(db)
 			if err != nil {
 				return errors.Wrap(err, "failed to get root directory id")
 			}
@@ -256,17 +256,17 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to update directory CIDs")
 	}
 
-	logger.With("chunk_id", chunk.ID).Info("finished packing")
-	if chunk.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
+	logger.With("pack_job_id", packJob.ID).Info("finished packing")
+	if packJob.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		logger.Info("Deleting original data source")
 		handled := map[uint64]struct{}{}
-		for _, itemPart := range chunk.ItemParts {
-			if _, ok := handled[itemPart.ItemID]; ok {
+		for _, fileRange := range packJob.FileRanges {
+			if _, ok := handled[fileRange.FileID]; ok {
 				continue
 			}
-			handled[itemPart.ItemID] = struct{}{}
-			object := result.Objects[itemPart.ItemID]
-			if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
+			handled[fileRange.FileID] = struct{}{}
+			object := result.Objects[fileRange.FileID]
+			if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 				logger.Debugw("removing object", "path", object.Remote())
 				err = object.Remove(ctx)
 				if err != nil {
@@ -276,14 +276,14 @@ func Pack(
 			}
 			// Make sure all parts of this file has been exported before deleting
 			var unfinishedCount int64
-			err = db.Model(&model.ItemPart{}).
-				Where("item_id = ? AND cid IS NULL", itemPart.ItemID).Count(&unfinishedCount).Error
+			err = db.Model(&model.FileRange{}).
+				Where("file_id = ? AND cid IS NULL", fileRange.FileID).Count(&unfinishedCount).Error
 			if err != nil {
-				logger.Warnw("failed to get count for unfinished item parts", "error", err)
+				logger.Warnw("failed to get count for unfinished file parts", "error", err)
 				continue
 			}
 			if unfinishedCount > 0 {
-				logger.Info("not all items have been exported yet, skipping delete")
+				logger.Info("not all files have been exported yet, skipping delete")
 				continue
 			}
 			logger.Debugw("removing object", "path", object.Remote())

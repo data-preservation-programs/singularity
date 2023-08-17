@@ -9,13 +9,13 @@ USAGE:
    singularity datasource inspect command [command options] [arguments...]
 
 COMMANDS:
-   chunks       Get all chunk details of a data source
-   items        Get all item details of a data source
-   dags         Get all piece details for generated dags
-   chunkdetail  Get details about a specific chunk
-   itemdetail   Get details about a specific item
-   path         Get details about a path within a data source
-   help, h      Shows a list of commands or help for one command
+   packjobs       Get all pack job details of a data source
+   files          Get all file details of a data source
+   dags           Get all piece details for generated dags
+   packjobdetail  Get details about a specific pack job
+   filedetail     Get details about a specific file
+   path           Get details about a path within a data source
+   help, h        Shows a list of commands or help for one command
 
 OPTIONS:
    --help, -h  show help

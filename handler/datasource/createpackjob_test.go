@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestChunk(t *testing.T) {
+func TestCreatePackJob(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test file to add
@@ -46,22 +46,22 @@ func TestChunk(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		// Push items
-		itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "a"})
+		// Push files
+		fileA, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: "a"})
 		require.NoError(t, err)
 
-		itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "b"})
+		fileB, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: "b"})
 		require.NoError(t, err)
 
-		// Chunk
-		chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{ItemIDs: []uint64{itemA.ID, itemB.ID}})
+		// Create pack job
+		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.CreatePackJobRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
 		require.NoError(t, err)
-		fmt.Printf("%#v\n", chunk)
+		fmt.Printf("%#v\n", packJob)
 
-		// Check that chunk exists
-		chunks, err := client.GetSourceChunks(ctx, source.ID, inspect.GetSourceChunksRequest{})
+		// Check that pack job exists
+		packJobs, err := client.GetSourcePackJobs(ctx, source.ID, inspect.GetSourcePackJobsRequest{})
 		require.NoError(t, err)
 
-		require.Len(t, chunks, 1)
+		require.Len(t, packJobs, 1)
 	})
 }

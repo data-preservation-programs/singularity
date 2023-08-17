@@ -38,7 +38,7 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	}
 }
 
-// HealthCheckCleanup is a function that cleans up stale workers and work items in the database.
+// HealthCheckCleanup is a function that cleans up stale workers and work files in the database.
 //
 // It first removes all workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
 // If there's an error removing the workers, it logs the error and continues.
@@ -46,8 +46,8 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // Then, it resets the state of any sources that are marked as being processed by a worker that no longer exists.
 // If there's an error updating the sources, it logs the error and continues.
 //
-// Finally, it resets the state of any chunks that are marked as being packed by a worker that no longer exists.
-// If there's an error updating the chunks, it logs the error.
+// Finally, it resets the state of any pack jobs that are marked as being packed by a worker that no longer exists.
+// If there's an error updating the pack jobs, it logs the error.
 //
 // All database operations are retried on failure using the DoRetry function.
 //
@@ -90,7 +90,7 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Chunk{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
+		return db.Model(&model.PackJob{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
 			Updates(map[string]any{
 				"packing_worker_id": nil,

@@ -69,7 +69,7 @@ type DatasourceLocalRequest struct {
 	// Don't warn about skipped symlinks.
 	SkipLinks *string `json:"skipLinks,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

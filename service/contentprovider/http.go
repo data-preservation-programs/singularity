@@ -127,16 +127,16 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
 	}
-	var items []model.Item
-	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("item_id").Where("car_id = ?", car.ID)).Find(&items).Error
+	var files []model.File
+	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to query for items: %w", err)
+		return nil, fmt.Errorf("failed to query for files: %w", err)
 	}
 	return &PieceMetadata{
 		Car:       car,
 		Source:    source,
 		CarBlocks: carBlocks,
-		Items:     items,
+		Files:     files,
 	}, nil
 }
 
@@ -201,7 +201,7 @@ type PieceMetadata struct {
 	Car       model.Car        `json:"car"`
 	Source    model.Source     `json:"source"`
 	CarBlocks []model.CarBlock `json:"carBlocks"`
-	Items     []model.Item     `json:"items"`
+	Files     []model.File     `json:"files"`
 }
 
 // findPiece is a method on the HTTPServer struct that finds a piece by its CID.
@@ -278,7 +278,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 			errs = append(errs, errors.Wrap(err, "failed to get piece metadata"))
 			continue
 		}
-		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Items, s.resolver)
+		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Files, s.resolver)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to create piece reader"))
 			continue

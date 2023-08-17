@@ -37,9 +37,9 @@ func getRandomStringByWeight(pathMap map[string]uint64) (string, error) {
 }
 
 func getUsage(path string) (*disk.UsageStat, error) {
-	item := deviceCache.Get(path)
-	if item != nil && !item.IsExpired() {
-		return item.Value(), nil
+	file := deviceCache.Get(path)
+	if file != nil && !file.IsExpired() {
+		return file.Value(), nil
 	}
 
 	logging.Logger("device").Debugf("getting disk usage for path %s", path)

@@ -50,27 +50,27 @@ func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, para
 	return dshandler.CreateDatasourceHandler(ctx, c.db.WithContext(ctx), "local", datasetName, paramsMap)
 }
 
-func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {
-	return inspect.GetSourceChunksHandler(ctx, c.db.WithContext(ctx), sourceID, request)
+func (c *Client) GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error) {
+	return inspect.GetSourcePackJobsHandler(ctx, c.db.WithContext(ctx), sourceID, request)
 }
-func (c *Client) GetSourceItems(ctx context.Context, sourceID uint32) ([]model.Item, error) {
-	return inspect.GetSourceItemsHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
-}
-
-func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
-	return inspect.GetSourceItemDetailHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(id, 10))
+func (c *Client) GetSourceFiles(ctx context.Context, sourceID uint32) ([]model.File, error) {
+	return inspect.GetSourceFilesHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10))
 }
 
-func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo dshandler.ItemInfo) (*model.Item, error) {
-	return dshandler.PushItemHandler(ctx, c.db.WithContext(ctx), c.datasourceHandlerResolver, sourceID, itemInfo)
+func (c *Client) GetFile(ctx context.Context, id uint64) (*model.File, error) {
+	return inspect.GetSourceFileDetailHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(id, 10))
 }
 
-func (c *Client) Chunk(ctx context.Context, sourceID uint32, request dshandler.ChunkRequest) (*model.Chunk, error) {
-	return dshandler.ChunkHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
+func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandler.FileInfo) (*model.File, error) {
+	return dshandler.PushFileHandler(ctx, c.db.WithContext(ctx), c.datasourceHandlerResolver, sourceID, fileInfo)
 }
 
-func (c *Client) Pack(ctx context.Context, chunkID uint64) ([]model.Car, error) {
-	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, chunkID)
+func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dshandler.CreatePackJobRequest) (*model.PackJob, error) {
+	return dshandler.CreatePackJobHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
+}
+
+func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {
+	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packJobID)
 }
 
 var _ client.Client = (*Client)(nil)
