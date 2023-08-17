@@ -70,10 +70,10 @@ func Pack(
 	result, err := pack.AssembleCar(ctx, handler, *packJob.Source.Dataset,
 		packJob.FileRanges, outDir, packJob.Source.Dataset.PieceSize)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to pack items")
+		return nil, errors.Wrap(err, "failed to pack files")
 	}
 
-	// Update all FileRange and Item CID that are not split
+	// Update all FileRange and file CID that are not split
 	splitFileIDs := make(map[uint64]model.File)
 	var updatedFiles []model.File
 	splitFileBlks := make(map[uint64][]blocks.Block)
@@ -87,7 +87,7 @@ func Pack(
 				Update("cid", model.CID(fileRangeCID)).Error
 		})
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to update cid of file part")
+			return nil, errors.Wrap(err, "failed to update cid of file range")
 		}
 		if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 			fileRange.File.CID = model.CID(fileRangeCID)
@@ -112,7 +112,7 @@ func Pack(
 				var allParts []model.FileRange
 				err = db.Where("file_id = ?", fileID).Order(clause.OrderByColumn{Column: clause.Column{Name: "offset"}}).Find(&allParts).Error
 				if err != nil {
-					return errors.Wrap(err, "failed to get all item parts")
+					return errors.Wrap(err, "failed to get all file ranges")
 				}
 				if underscore.All(allParts, func(p model.FileRange) bool {
 					return p.CID != model.CID(cid.Undef)
@@ -209,7 +209,7 @@ func Pack(
 
 					// Update the directory for first iteration
 					if dirID == file.DirectoryID {
-						err = dirDetail.Data.AddItem(ctx, file.Name(), cid.Cid(file.CID), uint64(file.Size))
+						err = dirDetail.Data.AddFile(ctx, file.Name(), cid.Cid(file.CID), uint64(file.Size))
 						if err != nil {
 							return errors.Wrap(err, "failed to add file to directory")
 						}

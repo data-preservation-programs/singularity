@@ -27,7 +27,7 @@ func TestMarshalling(t *testing.T) {
 	err := dirData.UnmarshalBinary(ctx, initial)
 	require.NoError(t, err)
 	for i := 0; i < 100; i++ {
-		err = dirData.AddItem(ctx, strconv.Itoa(i), cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i)))), 4)
+		err = dirData.AddFile(ctx, strconv.Itoa(i), cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i)))), 4)
 		require.NoError(t, err)
 	}
 	root, err := dirData.Node()
@@ -52,9 +52,9 @@ func TestDirectoryData(t *testing.T) {
 	require.NoError(t, err)
 	err = d.UnmarshalBinary(ctx, binary)
 	require.NoError(t, err)
-	err = d.AddItem(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
+	err = d.AddFile(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
 	require.NoError(t, err)
-	_, err = d.AddItemFromLinks(ctx, "test2", []format.Link{
+	_, err = d.AddFileFromLinks(ctx, "test2", []format.Link{
 		{
 			Cid:  cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))),
 			Size: 5,
@@ -69,7 +69,7 @@ func TestDirectoryData(t *testing.T) {
 	require.NoError(t, err)
 	err = d.UnmarshalBinary(ctx, binary)
 	require.NoError(t, err)
-	err = d.AddItem(ctx, "test4", cid.NewCidV1(cid.Raw, util.Hash([]byte("test4"))), 5)
+	err = d.AddFile(ctx, "test4", cid.NewCidV1(cid.Raw, util.Hash([]byte("test4"))), 5)
 	require.NoError(t, err)
 	_, err = d.MarshalBinary(ctx)
 	require.NoError(t, err)
@@ -100,9 +100,9 @@ func TestResolveDirectoryTree(t *testing.T) {
 	children := map[uint64][]uint64{
 		1: {2},
 	}
-	err := root.AddItem(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
+	err := root.AddFile(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
 	require.NoError(t, err)
-	err = dir.AddItem(ctx, "test2", cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))), 5)
+	err = dir.AddFile(ctx, "test2", cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))), 5)
 	require.NoError(t, err)
 	_, err = DirectoryTree{cache: cache, childrenCache: children}.Resolve(ctx, 1)
 	require.NoError(t, err)

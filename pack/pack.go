@@ -51,7 +51,7 @@ type WriteCloser struct {
 	io.Closer
 }
 
-var EmptyItemCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
+var EmptyFileCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
 
 var logger = log.Logger("pack")
 
@@ -200,7 +200,7 @@ func AssembleCar(
 		if encryptor != nil && outDir == "" {
 			return nil, errors.New("encryption is not supported without an output directory")
 		}
-		blockChan, object, err := GetBlockStreamFromItem(ctx, handler, fileRange, encryptor)
+		blockChan, object, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, encryptor)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to stream fileRange")
 		}
@@ -260,7 +260,7 @@ func AssembleCar(
 		}
 
 		if len(links) == 0 {
-			result.FileRangeCIDs[fileRange.ID] = EmptyItemCid
+			result.FileRangeCIDs[fileRange.ID] = EmptyFileCid
 			continue
 		}
 		if len(links) == 1 {

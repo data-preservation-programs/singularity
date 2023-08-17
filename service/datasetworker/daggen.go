@@ -43,7 +43,7 @@ import (
 // - error: Standard error interface, returns nil if no error occurred during execution.
 func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
 	db := w.dbNoContext.WithContext(ctx)
-	rootCID := pack.EmptyItemCid
+	rootCID := pack.EmptyFileCid
 	var outDir string
 	var headerBytes []byte
 	var carBlocks []model.CarBlock
@@ -83,7 +83,7 @@ func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
 			return errors.Wrap(err, "failed to unmarshall to blocks")
 		}
 		for _, blk := range blks {
-			if len(blk.RawData()) == 0 && blk.Cid() != pack.EmptyItemCid {
+			if len(blk.RawData()) == 0 && blk.Cid() != pack.EmptyFileCid {
 				// This is dummy node. skip putting into car file
 				continue
 			}

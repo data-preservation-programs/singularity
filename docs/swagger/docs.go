@@ -6640,7 +6640,7 @@ const docTemplate = `{
         "datasource.CreatePackJobRequest": {
             "type": "object",
             "properties": {
-                "fileIDs": {
+                "fileRangeIDs": {
                     "type": "array",
                     "items": {
                         "type": "integer"

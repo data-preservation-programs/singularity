@@ -13,7 +13,7 @@ import (
 )
 
 type CreatePackJobRequest struct {
-	FileIDs []uint64 `json:"fileIDs" validation:"required"`
+	FileRangeIDs []uint64 `json:"fileRangeIDs" validation:"required"`
 }
 
 func CreatePackJobHandler(
@@ -58,7 +58,7 @@ func createPackJobHandler(
 				if err != nil {
 					return errors.Wrap(err, "failed to create pack job")
 				}
-				fileRangeIDChunks := util.ChunkSlice(request.FileIDs, util.BatchSize)
+				fileRangeIDChunks := util.ChunkSlice(request.FileRangeIDs, util.BatchSize)
 				for _, fileRangeIDChunks := range fileRangeIDChunks {
 					err = db.Model(&model.FileRange{}).
 						Where("id IN ?", fileRangeIDChunks).Update("pack_job_id", packJob.ID).Error

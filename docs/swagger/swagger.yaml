@@ -2282,7 +2282,7 @@ definitions:
     type: object
   datasource.CreatePackJobRequest:
     properties:
-      fileIDs:
+      fileRangeIDs:
         items:
           type: integer
         type: array

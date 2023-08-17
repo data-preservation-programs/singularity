@@ -100,7 +100,7 @@ func (t DirectoryTree) Resolve(ctx context.Context, dirID uint64) (*format.Link,
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to resolve child %d", child)
 		}
-		err = detail.Data.AddItem(ctx, link.Name, link.Cid, link.Size)
+		err = detail.Data.AddFile(ctx, link.Name, link.Cid, link.Size)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to add child %d to directory", child)
 		}
@@ -186,45 +186,45 @@ func NewDirectoryData() DirectoryData {
 	}
 }
 
-// AddItem adds a new item to the directory with the specified name, content identifier (CID), and length.
+// AddFile adds a new file to the directory with the specified name, content identifier (CID), and length.
 // It creates a new dummy node with the provided length and CID, and then adds this node as a child
 // to the current directory under the given name.
 //
 // Parameters:
 //
 //	ctx    : Context used to control cancellations or timeouts.
-//	name   : Name of the item to be added to the directory.
-//	c      : Content Identifier (CID) of the item to be added.
-//	length : The length of the item in bytes.
+//	name   : Name of the file to be added to the directory.
+//	c      : Content Identifier (CID) of the file to be added.
+//	length : The length of the file in bytes.
 //
 // Returns:
 //
 //	error  : An error is returned if adding the child to the directory fails, otherwise it returns nil.
-func (d *DirectoryData) AddItem(ctx context.Context, name string, c cid.Cid, length uint64) error {
+func (d *DirectoryData) AddFile(ctx context.Context, name string, c cid.Cid, length uint64) error {
 	return d.dir.AddChild(ctx, name, NewDummyNode(length, c))
 }
 
-// AddItemFromLinks constructs a new item from a set of links and adds it to the directory.
-// It first assembles the item from the provided links, then adds this item as a child to
-// the current directory with the specified name. The assembled item and its constituent
+// AddFileFromLinks constructs a new file from a set of links and adds it to the directory.
+// It first assembles the file from the provided links, then adds this file as a child to
+// the current directory with the specified name. The assembled file and its constituent
 // blocks are stored in the associated blockstore.
 //
 // Parameters:
 //
 //	ctx   : Context used to control cancellations or timeouts.
-//	name  : Name of the item to be added to the directory.
-//	links : Slice of format.Link that define the item to be assembled and added.
+//	name  : Name of the file to be added to the directory.
+//	links : Slice of format.Link that define the file to be assembled and added.
 //
 // Returns:
 //
-//	cid.Cid : Content Identifier (CID) of the added item if successful.
-//	error   : An error is returned if assembling the item from links fails,
+//	cid.Cid : Content Identifier (CID) of the added file if successful.
+//	error   : An error is returned if assembling the file from links fails,
 //	          adding the child to the directory fails, or putting blocks into the blockstore fails.
 //	          Otherwise, it returns nil.
-func (d *DirectoryData) AddItemFromLinks(ctx context.Context, name string, links []format.Link) (cid.Cid, error) {
+func (d *DirectoryData) AddFileFromLinks(ctx context.Context, name string, links []format.Link) (cid.Cid, error) {
 	blks, node, err := pack.AssembleFileFromLinks(links)
 	if err != nil {
-		return cid.Undef, errors.Wrap(err, "failed to assemble item from links")
+		return cid.Undef, errors.Wrap(err, "failed to assemble file from links")
 	}
 	err = d.dir.AddChild(ctx, name, node)
 	if err != nil {

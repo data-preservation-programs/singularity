@@ -33,7 +33,7 @@ func TestExportDag(t *testing.T) {
 	require.NoError(t, err)
 
 	rootData := daggen.NewDirectoryData()
-	err = rootData.AddItem(ctx, "test1.txt", cid.NewCidV1(cid.Raw, util.Hash([]byte("test1"))), 5)
+	err = rootData.AddFile(ctx, "test1.txt", cid.NewCidV1(cid.Raw, util.Hash([]byte("test1"))), 5)
 	require.NoError(t, err)
 	rootDataBytes, err := rootData.MarshalBinary(ctx)
 	require.NoError(t, err)

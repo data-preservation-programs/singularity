@@ -13,22 +13,22 @@ import (
 
 // scan scans the data source and inserts the packJobing strategy back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
-// resume is true if the scan will be resumed from the last scanned item, which is useful for resuming a failed scan
+// resume is true if the scan will be resumed from the last scanned file, which is useful for resuming a failed scan
 func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool) error {
 	db := w.dbNoContext.WithContext(ctx)
 	directoryCache := make(map[string]uint64)
 	dataset := *source.Dataset
 	var remaining = newRemain()
-	var remainingParts []model.FileRange
+	var remainingFileRanges []model.FileRange
 	err := db.Joins("File").
 		Where("source_id = ? AND file_ranges.pack_job_id is null", source.ID).
 		Order("file_ranges.id asc").
-		Find(&remainingParts).Error
+		Find(&remainingFileRanges).Error
 	if err != nil {
 		return err
 	}
-	w.logger.With("remaining", len(remainingParts)).Info("remaining items")
-	remaining.add(remainingParts)
+	w.logger.With("remaining", len(remainingFileRanges)).Info("remaining file ranges")
+	remaining.add(remainingFileRanges)
 
 	if !scanSource {
 		for len(remaining.fileRanges) > 0 {
@@ -51,17 +51,17 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 			continue
 		}
 
-		item, fileRanges, err := datasource.PushFile(ctx, w.dbNoContext, entry.Info, source, dataset, directoryCache)
+		file, fileRanges, err := datasource.PushFile(ctx, w.dbNoContext, entry.Info, source, dataset, directoryCache)
 		if err != nil {
-			return errors.Wrap(err, "failed to push item")
+			return errors.Wrap(err, "failed to push file")
 		}
-		if item == nil {
-			w.logger.Infow("item already exists", "path", entry.Info.Remote())
+		if file == nil {
+			w.logger.Infow("file already exists", "path", entry.Info.Remote())
 			continue
 		}
 		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.Source{}).Where("id = ?", source.ID).
-				Update("last_scanned_path", item.Path).Error
+				Update("last_scanned_path", file.Path).Error
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to update last scanned path")
@@ -95,7 +95,7 @@ func (w *Thread) packJobOnce(
 	if remaining.carSize <= dataset.MaxSize {
 		w.logger.Debugw("creating packJob", "size", remaining.carSize)
 		_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
-			FileIDs: remaining.itemIDs(),
+			FileRangeIDs: remaining.fileRangeIDs(),
 		})
 
 		if err != nil {
@@ -104,7 +104,7 @@ func (w *Thread) packJobOnce(
 		remaining.reset()
 		return nil
 	}
-	// size > maxSize, first, find the first item that makes it larger than maxSize
+	// size > maxSize, first, find the first file range that makes it larger than maxSize
 	s := remaining.carSize
 	si := len(remaining.fileRanges) - 1
 	for si >= 0 {
@@ -125,11 +125,11 @@ func (w *Thread) packJobOnce(
 	// create a packJob for [0:si)
 	w.logger.Debugw("creating packJob", "size", s)
 
-	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(item model.FileRange) uint64 {
-		return item.ID
+	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(fileRange model.FileRange) uint64 {
+		return fileRange.ID
 	})
 	_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
-		FileIDs: fileRangeIDs,
+		FileRangeIDs: fileRangeIDs,
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create packJob")
@@ -166,7 +166,7 @@ func (r *remain) reset() {
 	r.carSize = carHeaderSize
 }
 
-func (r *remain) itemIDs() []uint64 {
+func (r *remain) fileRangeIDs() []uint64 {
 	return underscore.Map(r.fileRanges, func(fileRange model.FileRange) uint64 {
 		return fileRange.ID
 	})

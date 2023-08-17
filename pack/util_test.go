@@ -49,7 +49,7 @@ func TestMin(t *testing.T) {
 	require.Equal(t, 1, Min(1, 1))
 }
 
-func TestAssembleItemFromLinks(t *testing.T) {
+func TestAssembleFileFromLinks(t *testing.T) {
 	links := []format.Link{
 		{
 			Name: "",
@@ -74,7 +74,7 @@ func TestAssembleItemFromLinks(t *testing.T) {
 	require.Equal(t, "bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma", blocks[0].Cid().String())
 }
 
-func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
+func TestAssembleFileFromLinks_LargeFile(t *testing.T) {
 	links := []format.Link{}
 	for i := 0; i < 2_000; i++ {
 		links = append(links, format.Link{
@@ -130,7 +130,7 @@ func (m *MockReadHandler) Read(ctx context.Context, path string, offset int64, l
 	return args.Get(0).(io.ReadCloser), args.Get(1).(fs.Object), args.Error(2)
 }
 
-func TestGetBlockStreamFromItem(t *testing.T) {
+func TestGetBlockStreamFromFileRange(t *testing.T) {
 	ctx := context.Background()
 	mockObject := new(MockObject)
 	sizeCall := mockObject.On("Size").Return(int64(5))
@@ -143,7 +143,7 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), mockObject, nil)
 
 	t.Run("size mismatch", func(t *testing.T) {
-		item := model.FileRange{
+		fileRange := model.FileRange{
 			Offset: 0,
 			Length: 5,
 			File: &model.File{
@@ -152,12 +152,12 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 				LastModifiedTimestampNano: tm.UnixNano(),
 			},
 		}
-		_, _, err := GetBlockStreamFromItem(ctx, handler, item, nil)
-		require.ErrorIs(t, err, ErrItemModified)
+		_, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
+		require.ErrorIs(t, err, ErrFileModified)
 	})
 
 	t.Run("success", func(t *testing.T) {
-		item := model.FileRange{
+		fileRange := model.FileRange{
 			Offset: 0,
 			Length: 5,
 			File: &model.File{
@@ -166,7 +166,7 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 				LastModifiedTimestampNano: tm.UnixNano(),
 			},
 		}
-		blockResultChan, _, err := GetBlockStreamFromItem(ctx, handler, item, nil)
+		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
 		require.NoError(t, err)
 		blockResults := make([]BlockResult, 0)
 		for r := range blockResultChan {
@@ -178,13 +178,13 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 		require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", blockResults[0].CID.String())
 	})
 
-	t.Run("success with empty item", func(t *testing.T) {
+	t.Run("success with empty file", func(t *testing.T) {
 		sizeCall.Unset()
 		mockObject.On("Size").Return(int64(0))
 		readCall.Unset()
 		handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(io.NopCloser(bytes.NewReader([]byte(""))), mockObject, nil)
-		item := model.FileRange{
+		fileRange := model.FileRange{
 			Offset: 0,
 			Length: 0,
 			File: &model.File{
@@ -193,7 +193,7 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 				LastModifiedTimestampNano: tm.UnixNano(),
 			},
 		}
-		blockResultChan, _, err := GetBlockStreamFromItem(ctx, handler, item, nil)
+		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
 		require.NoError(t, err)
 		blockResults := make([]BlockResult, 0)
 		for r := range blockResultChan {

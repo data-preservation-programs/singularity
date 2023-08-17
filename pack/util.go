@@ -214,14 +214,14 @@ type BlockResult struct {
 	Error error
 }
 
-var ErrItemModified = errors.New("item has been modified")
+var ErrFileModified = errors.New("file has been modified")
 
 // IsSameEntry checks if a given model.File and a given fs.Object represent the same entry,
 // based on their size, hash, and last modification time.
 //
 // Parameters:
 //   - ctx: Context that allows for asynchronous task cancellation.
-//   - item: A model.File instance representing an item in the model.
+//   - file: A model.File instance representing a file in the model.
 //   - object: An fs.Object instance representing a file or object in the filesystem.
 //
 // Returns:
@@ -229,24 +229,24 @@ var ErrItemModified = errors.New("item has been modified")
 //   - string: A string providing details in case of a mismatch.
 //
 // The function performs the following checks:
-//  1. Compares the sizes of 'item' and 'object'. If there is a mismatch, it returns false along with a
+//  1. Compares the sizes of 'file' and 'object'. If there is a mismatch, it returns false along with a
 //     formatted string that shows the mismatched sizes.
 //  2. Retrieves the last modified time of 'object'.
 //  3. Identifies a supported hash type for the storage backend of 'object' and computes its hash value.
 //  4. The hash computation is skipped if the storage backend is a local file system or does not support any hash types.
-//  5. If both 'item' and 'object' have non-empty hash values and these values do not match,
+//  5. If both 'file' and 'object' have non-empty hash values and these values do not match,
 //     it returns false along with a formatted string that shows the mismatched hash values.
-//  6. Compares the last modified times of 'item' and 'object' at the nanosecond precision.
+//  6. Compares the last modified times of 'file' and 'object' at the nanosecond precision.
 //     If there is a mismatch, it returns false along with a formatted string that shows the mismatched times.
 //  7. If all the checks pass (sizes, hashes, and last modified times match), the function returns true,
-//     indicating that 'item' and 'object' are considered to be the same entry.
+//     indicating that 'file' and 'object' are considered to be the same entry.
 //
 // Note:
 // - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
 // - For local file systems, hash computation is skipped to avoid inefficient operations.
-func IsSameEntry(ctx context.Context, item model.File, object fs.Object) (bool, string) {
-	if item.Size != object.Size() {
-		return false, fmt.Sprintf("size mismatch: %d != %d", item.Size, object.Size())
+func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, string) {
+	if file.Size != object.Size() {
+		return false, fmt.Sprintf("size mismatch: %d != %d", file.Size, object.Size())
 	}
 	var err error
 	// last modified can be time.Now() if fetch failed so it may not be reliable.
@@ -264,18 +264,18 @@ func IsSameEntry(ctx context.Context, item model.File, object fs.Object) (bool, 
 			logger.Errorw("failed to hash", "error", err)
 		}
 	}
-	if item.Hash != "" && hashValue != "" && item.Hash != hashValue {
-		return false, fmt.Sprintf("hash mismatch: %s != %s", item.Hash, hashValue)
+	if file.Hash != "" && hashValue != "" && file.Hash != hashValue {
+		return false, fmt.Sprintf("hash mismatch: %s != %s", file.Hash, hashValue)
 	}
-	return lastModified.UnixNano() == item.LastModifiedTimestampNano,
+	return lastModified.UnixNano() == file.LastModifiedTimestampNano,
 		fmt.Sprintf("last modified mismatch: %d != %d",
 			lastModified.UnixNano(),
-			item.LastModifiedTimestampNano)
+			file.LastModifiedTimestampNano)
 }
 
-// GetBlockStreamFromItem streams an item from the handler and encrypts it.
+// GetBlockStreamFromFileRange streams a file range from the handler and encrypts it.
 // It returns a channel of blocks, the object, and an error if any.
-func GetBlockStreamFromItem(ctx context.Context,
+func GetBlockStreamFromFileRange(ctx context.Context,
 	handler datasource.ReadHandler,
 	fileRange model.FileRange,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
@@ -290,7 +290,7 @@ func GetBlockStreamFromItem(ctx context.Context,
 	if object != nil {
 		same, detail := IsSameEntry(ctx, *fileRange.File, object)
 		if !same {
-			return nil, nil, errors.Wrapf(ErrItemModified, "fileRange has been modified: %s, %s", fileRange.File.Path, detail)
+			return nil, nil, errors.Wrapf(ErrFileModified, "fileRange has been modified: %s, %s", fileRange.File.Path, detail)
 		}
 	}
 
@@ -312,29 +312,29 @@ func GetBlockStreamFromItem(ctx context.Context,
 		}
 		defer readCloser.Close()
 		offset := fileRange.Offset
-		firstPackJob := true
+		firstChunk := true
 		for {
 			if ctx.Err() != nil {
 				return
 			}
-			packJoberBytes, err := chunker.NextBytes()
+			chunkerBytes, err := chunker.NextBytes()
 			var result BlockResult
-			if err != nil && !(errors.Is(err, io.EOF) && firstPackJob) {
+			if err != nil && !(errors.Is(err, io.EOF) && firstChunk) {
 				if errors.Is(err, io.EOF) {
 					return
 				}
 				result = BlockResult{Error: errors.Wrap(err, "failed to read packJob")}
 			} else {
-				firstPackJob = false
-				hash := util.Hash(packJoberBytes)
+				firstChunk = false
+				hash := util.Hash(chunkerBytes)
 				c := cid.NewCidV1(cid.Raw, hash)
 				result = BlockResult{
 					CID:    c,
 					Offset: offset,
-					Raw:    packJoberBytes,
+					Raw:    chunkerBytes,
 					Error:  nil,
 				}
-				offset += int64(len(packJoberBytes))
+				offset += int64(len(chunkerBytes))
 			}
 			select {
 			case <-ctx.Done():
