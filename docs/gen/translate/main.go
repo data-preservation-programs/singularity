@@ -51,13 +51,13 @@ func main() {
 				panic(err)
 			}
 			lines := strings.Split(string(content), "\n")
-			packJobSize := 10000
-			numPackJobs := (len(lines) + packJobSize - 1) / packJobSize
-			packJobs := make([][]string, numPackJobs)
-			// Split the lines into packJobs
+			chunkSize := 10000
+			numChunks := (len(lines) + chunkSize - 1) / chunkSize
+			chunks := make([][]string, numChunks)
+			// Split the lines into chunks
 			for i, line := range lines {
-				packJobIndex := i / packJobSize
-				packJobs[packJobIndex] = append(packJobs[packJobIndex], line)
+				chunkIndex := i / chunkSize
+				chunks[chunkIndex] = append(chunks[chunkIndex], line)
 			}
 			outPath := filepath.Join("../..", dir, path[len("../../en/"):])
 			if _, err := os.Stat(outPath); err == nil {
@@ -69,9 +69,9 @@ func main() {
 
 			fmt.Printf("Translating %s to %s\n", path, outPath)
 
-			results := make([]string, len(packJobs))
-			for i, packJob := range packJobs {
-				content := strings.Join(packJob, "\n")
+			results := make([]string, len(chunks))
+			for i, chunk := range chunks {
+				content := strings.Join(chunk, "\n")
 				messages := []openai.ChatCompletionMessage{
 					{
 						Role: openai.ChatMessageRoleSystem,

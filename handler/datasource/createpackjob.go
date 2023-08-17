@@ -58,10 +58,10 @@ func createPackJobHandler(
 				if err != nil {
 					return errors.Wrap(err, "failed to create pack job")
 				}
-				fileRangeIDPackJobs := util.PackJobSlice(request.FileIDs, util.BatchSize)
-				for _, fileRangeIDPackJobs := range fileRangeIDPackJobs {
+				fileRangeIDChunks := util.ChunkSlice(request.FileIDs, util.BatchSize)
+				for _, fileRangeIDChunks := range fileRangeIDChunks {
 					err = db.Model(&model.FileRange{}).
-						Where("id IN ?", fileRangeIDPackJobs).Update("pack_job_id", packJob.ID).Error
+						Where("id IN ?", fileRangeIDChunks).Update("pack_job_id", packJob.ID).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update files")
 					}

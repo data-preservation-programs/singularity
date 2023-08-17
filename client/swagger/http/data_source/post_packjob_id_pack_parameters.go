@@ -63,7 +63,7 @@ type PostPackjobIDPackParams struct {
 
 	/* ID.
 
-	   PackJob ID
+	   Pack job ID
 	*/
 	ID string
 

@@ -49,10 +49,10 @@ func getSourcePackJobDetailHandler(
 		fileMap[part.FileID] = nil
 	}
 
-	fileIDPackJobs := util.PackJobMapKeys(fileMap, util.BatchSize)
-	for _, fileIDPackJob := range fileIDPackJobs {
+	fileIDChunks := util.ChunkMapKeys(fileMap, util.BatchSize)
+	for _, fileIDChunk := range fileIDChunks {
 		var files []model.File
-		err = db.Where("id IN ?", fileIDPackJob).Find(&files).Error
+		err = db.Where("id IN ?", fileIDChunk).Find(&files).Error
 		if err != nil {
 			return nil, err
 		}

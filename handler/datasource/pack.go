@@ -27,11 +27,11 @@ func PackHandler(
 	return packHandler(db, ctx, resolver, packJobID)
 }
 
-// @Summary Pack a packJob into car files
+// @Summary Pack a pack job into car files
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "PackJob ID"
+// @Param id path string true "Pack job ID"
 // @Success 201 {object} []model.Car
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"

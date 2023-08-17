@@ -304,7 +304,7 @@ func GetBlockStreamFromItem(ctx context.Context,
 		return nil, object, errors.Wrap(err, "failed to encrypt stream")
 	}
 	blockChan := make(chan BlockResult)
-	packJober := packJob.NewSizeSplitter(readCloser, ChunkSize)
+	chunker := packJob.NewSizeSplitter(readCloser, ChunkSize)
 	go func() {
 		defer close(blockChan)
 		if readStream != readCloser {
@@ -317,7 +317,7 @@ func GetBlockStreamFromItem(ctx context.Context,
 			if ctx.Err() != nil {
 				return
 			}
-			packJoberBytes, err := packJober.NextBytes()
+			packJoberBytes, err := chunker.NextBytes()
 			var result BlockResult
 			if err != nil && !(errors.Is(err, io.EOF) && firstPackJob) {
 				if errors.Is(err, io.EOF) {

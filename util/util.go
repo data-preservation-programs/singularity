@@ -83,9 +83,9 @@ func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (
 	return time.Unix(resp.Blocks[0].Timestamp, 0), nil
 }
 
-// PackJobMapKeys is a generic function that takes a map with keys of any comparable type and values of any type, and an integer as input.
+// ChunkMapKeys is a generic function that takes a map with keys of any comparable type and values of any type, and an integer as input.
 // It divides the keys of the input map into packJobs of size 'packJobSize' and returns a 2D slice of keys.
-// It uses the PackJobSlice function to divide the keys into packJobs.
+// It uses the ChunkSlice function to divide the keys into packJobs.
 //
 // Parameters:
 // m: A map with keys of any comparable type and values of any type. The keys of this map will be packJobed.
@@ -93,15 +93,15 @@ func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (
 //
 // Returns:
 // A 2D slice where each inner slice is of length 'packJobSize'. The last inner slice may be shorter if the number of keys in 'm' is not a multiple of 'packJobSize'.
-func PackJobMapKeys[T1 comparable, T2 any](m map[T1]T2, packJobSize int) [][]T1 {
+func ChunkMapKeys[T1 comparable, T2 any](m map[T1]T2, packJobSize int) [][]T1 {
 	keys := make([]T1, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)
 	}
-	return PackJobSlice(keys, packJobSize)
+	return ChunkSlice(keys, packJobSize)
 }
 
-// PackJobSlice is a generic function that takes a slice of any type and an integer as input.
+// ChunkSlice is a generic function that takes a slice of any type and an integer as input.
 // It divides the input slice into packJobs of size 'packJobSize' and returns a 2D slice.
 // If 'packJobSize' is less than or equal to zero, it returns an empty 2D slice.
 //
@@ -112,7 +112,7 @@ func PackJobMapKeys[T1 comparable, T2 any](m map[T1]T2, packJobSize int) [][]T1 
 // Returns:
 // A 2D slice where each inner slice is of length 'packJobSize'.
 // The last inner slice may be shorter if the length of 'slice' is not a multiple of 'packJobSize'.
-func PackJobSlice[T any](slice []T, packJobSize int) [][]T {
+func ChunkSlice[T any](slice []T, packJobSize int) [][]T {
 	var packJobs [][]T
 	if packJobSize <= 0 {
 		return packJobs

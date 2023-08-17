@@ -587,11 +587,11 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Pack a packJob into car files",
+                "summary": "Pack a pack job into car files",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "PackJob ID",
+                        "description": "Pack job ID",
                         "name": "id",
                         "in": "path",
                         "required": true

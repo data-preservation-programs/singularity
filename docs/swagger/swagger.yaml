@@ -5673,7 +5673,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: PackJob ID
+      - description: Pack job ID
         in: path
         name: id
         required: true
@@ -5695,7 +5695,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Pack a packJob into car files
+      summary: Pack a pack job into car files
       tags:
       - Data Source
   /piece/{id}/metadata:
