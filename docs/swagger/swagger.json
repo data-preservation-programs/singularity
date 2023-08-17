@@ -55,89 +55,6 @@
                 }
             }
         },
-        "/chunk/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get detail of a specific chunk",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Chunk ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Chunk"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chunk/{id}/pack": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Pack a chunk into car files",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Chunk ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/dataset": {
             "get": {
                 "produces": [
@@ -578,7 +495,7 @@
                 }
             }
         },
-        "/item/{id}": {
+        "/file/{id}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -589,11 +506,11 @@
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get details about an item",
+                "summary": "Get details about an file",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Item ID",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -603,13 +520,96 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Item"
+                            "$ref": "#/definitions/model.File"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/packjob/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get detail of a specific pack job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PackJob"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/packjob/{id}/pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Pack a pack job into car files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Car"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -3181,98 +3181,6 @@
                 }
             }
         },
-        "/source/{id}/chunk": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Create a chunk for the specified items",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.ChunkRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Item"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/chunks": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get all dag details of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/source/{id}/daggen": {
             "post": {
                 "produces": [
@@ -3313,7 +3221,7 @@
                 }
             }
         },
-        "/source/{id}/items": {
+        "/source/{id}/files": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -3324,7 +3232,7 @@
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get all item details of a data source",
+                "summary": "Get all file details of a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -3340,7 +3248,114 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Item"
+                                "$ref": "#/definitions/model.File"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/packjob": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Create a pack job for the specified files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.CreatePackJobRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.File"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/packjobs": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get all pack job details of a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "GetSourcePackJobsRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/inspect.GetSourcePackJobsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.PackJob"
                             }
                         }
                     },
@@ -3370,7 +3385,7 @@
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get all item details inside a data source path",
+                "summary": "Get all file details inside a data source path",
                 "parameters": [
                     {
                         "type": "string",
@@ -3423,7 +3438,7 @@
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Push an item to be queued",
+                "summary": "Push a file to be queued",
                 "parameters": [
                     {
                         "type": "string",
@@ -3433,12 +3448,12 @@
                         "required": true
                     },
                     {
-                        "description": "Item",
-                        "name": "item",
+                        "description": "File",
+                        "name": "file",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.ItemInfo"
+                            "$ref": "#/definitions/datasource.FileInfo"
                         }
                     }
                 ],
@@ -3446,7 +3461,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.Item"
+                            "$ref": "#/definitions/model.File"
                         }
                     },
                     "400": {
@@ -3456,7 +3471,7 @@
                         }
                     },
                     "409": {
-                        "description": "Item already exists",
+                        "description": "File already exists",
                         "schema": {
                             "type": "string"
                         }
@@ -3478,7 +3493,7 @@
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Trigger a repack of a chunk or all errored chunks of a data source",
+                "summary": "Trigger a repack of a pack job or all errored pack jobs of a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -3503,7 +3518,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Chunk"
+                                "$ref": "#/definitions/model.PackJob"
                             }
                         }
                     },
@@ -3575,7 +3590,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/datasource.ChunksByState"
+                            "$ref": "#/definitions/datasource.PackJobsByState"
                         }
                     },
                     "400": {
@@ -3899,7 +3914,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "templinkThreshold": {
@@ -5970,7 +5985,7 @@
                     "default": "$USER"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "storjAccessGrant": {
@@ -6384,7 +6399,7 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "tenant": {
@@ -6498,7 +6513,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "testMode": {
@@ -6596,7 +6611,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -6623,31 +6638,14 @@
                 }
             }
         },
-        "datasource.ChunkRequest": {
+        "datasource.CreatePackJobRequest": {
             "type": "object",
             "properties": {
-                "itemIDs": {
+                "fileIDs": {
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
-                }
-            }
-        },
-        "datasource.ChunksByState": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "description": "number of chunks in this state",
-                    "type": "integer"
-                },
-                "state": {
-                    "description": "the state of the chunks",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
                 }
             }
         },
@@ -6821,7 +6819,7 @@
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "starredOnly": {
@@ -6965,7 +6963,7 @@
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -7025,7 +7023,16 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.FileInfo": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "Path to the new file, relative to the source",
                     "type": "string"
                 }
             }
@@ -7069,7 +7076,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -7194,7 +7201,7 @@
                     "default": "1m0s"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "tls": {
@@ -7315,7 +7322,7 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "storageClass": {
@@ -7390,7 +7397,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "startYear": {
@@ -7451,7 +7458,7 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "username": {
@@ -7533,7 +7540,7 @@
                     "default": "user"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -7596,7 +7603,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "url": {
@@ -7659,22 +7666,13 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "waitArchive": {
                     "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
                     "type": "string",
                     "default": "0s"
-                }
-            }
-        },
-        "datasource.ItemInfo": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "description": "Path to the new item, relative to the source",
-                    "type": "string"
                 }
             }
         },
@@ -7724,7 +7722,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "trashedOnly": {
@@ -7791,7 +7789,7 @@
                     "default": "true"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "user": {
@@ -7886,7 +7884,7 @@
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "unicodeNormalization": {
@@ -7945,7 +7943,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "speedupEnable": {
@@ -8023,7 +8021,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "useHttps": {
@@ -8080,7 +8078,7 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -8199,7 +8197,7 @@
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -8304,7 +8302,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "sseCustomerAlgorithm": {
@@ -8384,12 +8382,29 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "username": {
                     "description": "Username.",
                     "type": "string"
+                }
+            }
+        },
+        "datasource.PackJobsByState": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "number of pack jobs in this state",
+                    "type": "integer"
+                },
+                "state": {
+                    "description": "the state of the pack jobs",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 }
             }
         },
@@ -8450,7 +8465,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -8502,7 +8517,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -8538,7 +8553,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -8601,7 +8616,7 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "uploadConcurrency": {
@@ -8623,7 +8638,7 @@
         "datasource.RepackRequest": {
             "type": "object",
             "properties": {
-                "chunkId": {
+                "packJobId": {
                     "type": "integer"
                 }
             }
@@ -8811,7 +8826,7 @@
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "sseCustomerAlgorithm": {
@@ -8941,7 +8956,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "url": {
@@ -9099,7 +9114,7 @@
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "subsystem": {
@@ -9168,7 +9183,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "uploadCutoff": {
@@ -9218,7 +9233,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "userAgent": {
@@ -9292,7 +9307,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "spn": {
@@ -9354,7 +9369,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -9427,7 +9442,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "user": {
@@ -9534,7 +9549,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "storagePolicy": {
@@ -9602,7 +9617,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -9653,7 +9668,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "url": {
@@ -9718,7 +9733,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -9778,7 +9793,7 @@
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -9934,10 +9949,10 @@
                         "$ref": "#/definitions/model.Directory"
                     }
                 },
-                "items": {
+                "files": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Item"
+                        "$ref": "#/definitions/model.File"
                     }
                 }
             }
@@ -9950,7 +9965,7 @@
                 }
             }
         },
-        "inspect.GetSourceChunksRequest": {
+        "inspect.GetSourcePackJobsRequest": {
             "type": "object",
             "properties": {
                 "state": {
@@ -9964,9 +9979,6 @@
         "model.Car": {
             "type": "object",
             "properties": {
-                "chunkId": {
-                    "type": "integer"
-                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -9988,6 +10000,9 @@
                 "id": {
                     "type": "integer"
                 },
+                "packJobId": {
+                    "type": "integer"
+                },
                 "pieceCid": {
                     "$ref": "#/definitions/model.CID"
                 },
@@ -9996,41 +10011,6 @@
                 },
                 "rootCid": {
                     "$ref": "#/definitions/model.CID"
-                },
-                "sourceId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.Chunk": {
-            "type": "object",
-            "properties": {
-                "cars": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Car"
-                    }
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "errorMessage": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "itemParts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.ItemPart"
-                    }
-                },
-                "packingState": {
-                    "$ref": "#/definitions/model.WorkState"
-                },
-                "packingWorkerId": {
-                    "type": "string"
                 },
                 "sourceId": {
                     "type": "integer"
@@ -10189,7 +10169,7 @@
                 }
             }
         },
-        "model.Item": {
+        "model.File": {
             "type": "object",
             "properties": {
                 "cid": {
@@ -10201,17 +10181,17 @@
                 "directoryId": {
                     "type": "integer"
                 },
+                "fileRanges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FileRange"
+                    }
+                },
                 "hash": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
-                },
-                "itemParts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.ItemPart"
-                    }
                 },
                 "lastModified": {
                     "type": "integer"
@@ -10227,28 +10207,28 @@
                 }
             }
         },
-        "model.ItemPart": {
+        "model.FileRange": {
             "type": "object",
             "properties": {
-                "chunkId": {
-                    "type": "integer"
-                },
                 "cid": {
                     "$ref": "#/definitions/model.CID"
                 },
-                "id": {
+                "file": {
+                    "$ref": "#/definitions/model.File"
+                },
+                "fileId": {
                     "type": "integer"
                 },
-                "item": {
-                    "$ref": "#/definitions/model.Item"
-                },
-                "itemId": {
+                "id": {
                     "type": "integer"
                 },
                 "length": {
                     "type": "integer"
                 },
                 "offset": {
+                    "type": "integer"
+                },
+                "packJobId": {
                     "type": "integer"
                 }
             }
@@ -10257,6 +10237,41 @@
             "type": "object",
             "additionalProperties": {
                 "type": "string"
+            }
+        },
+        "model.PackJob": {
+            "type": "object",
+            "properties": {
+                "cars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Car"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "fileRanges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FileRange"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "packingState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "packingWorkerID": {
+                    "type": "string"
+                },
+                "sourceId": {
+                    "type": "integer"
+                }
             }
         },
         "model.Schedule": {

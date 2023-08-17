@@ -48,7 +48,7 @@ type DatasourceFichierRequest struct {
 	// If you want to download a shared folder, add this parameter.
 	SharedFolder string `json:"sharedFolder,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 }

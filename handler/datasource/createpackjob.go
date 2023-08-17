@@ -30,7 +30,7 @@ func CreatePackJobHandler(
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Param request body PackJobRequest true "Request body"
+// @Param request body CreatePackJobRequest true "Request body"
 // @Success 201 {object} model.File
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
