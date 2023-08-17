@@ -3,7 +3,6 @@ package client_test
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -107,17 +106,8 @@ func TestClients(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, filepath.Base(name), fileB.Path)
 
-		// Create pack job
-		var fileRanges []model.FileRange
-		fileRanges = append(fileRanges, fileA.FileRanges...)
-		fileRanges = append(fileRanges, fileB.FileRanges...)
-		var fileRangeIDs []uint64
-		for _, fileRange := range fileRanges {
-			fileRangeIDs = append(fileRangeIDs, fileRange.ID)
-		}
-		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.CreatePackJobRequest{FileRangeIDs: fileRangeIDs})
-		require.NoError(t, err)
-		fmt.Printf("%#v\n", packJob)
+		// Prepare the source (create pack jobs)
+		client.PrepareToPackSource(ctx, source.ID)
 
 		// Check that pack job exists
 		packJobs, err := client.GetSourcePackJobs(ctx, source.ID, inspect.GetSourcePackJobsRequest{})

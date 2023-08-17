@@ -271,7 +271,8 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
 	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushFileHandler))
 	e.POST("/api/source/:id/repack", s.toEchoHandler(datasource2.RepackHandler))
-	e.POST("/api/source/:id/packjob", s.toEchoHandler(datasource2.CreatePackJobHandler))
+	e.POST("/api/source/:id/prepare_to_pack", s.toEchoHandler(datasource2.PrepareToPackSourceHandler))
+	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(datasource2.PrepareToPackFileHandler))
 	e.POST("/api/packjob/:id/pack", s.toEchoHandler(datasource2.PackHandler))
 
 	// Piece metadata

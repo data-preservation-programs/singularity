@@ -69,8 +69,12 @@ func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandl
 	return dshandler.PushFileHandler(ctx, c.db.WithContext(ctx), c.datasourceHandlerResolver, sourceID, fileInfo)
 }
 
-func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dshandler.CreatePackJobRequest) (*model.PackJob, error) {
-	return dshandler.CreatePackJobHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
+func (c *Client) PrepareToPackFile(ctx context.Context, fileID uint64) (int64, error) {
+	return dshandler.PrepareToPackFileHandler(ctx, c.db.WithContext(ctx), fileID)
+}
+
+func (c *Client) PrepareToPackSource(ctx context.Context, sourceID uint32) error {
+	return dshandler.PrepareToPackSourceHandler(ctx, c.db.WithContext(ctx), c.datasourceHandlerResolver, sourceID)
 }
 
 func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error) {
