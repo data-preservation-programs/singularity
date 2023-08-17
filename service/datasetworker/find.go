@@ -110,7 +110,7 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 	packJobs[0].Source = &src
 
 	var fileRanges []model.FileRange
-	err = db.Joins("Item").Where("file_ranges.pack_job = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
+	err = db.Joins("File").Where("file_ranges.pack_job_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
 	if err != nil {
 		return nil, err
 	}

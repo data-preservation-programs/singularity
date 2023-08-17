@@ -214,7 +214,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 								Cid:  cid.Cid(part.CID),
 							})
 						}
-						_, root, err := pack.AssembleItemFromLinks(links)
+						_, root, err := pack.AssembleFileFromLinks(links)
 						if err != nil {
 							return errors.Wrap(err, "failed to assemble file from links")
 						}

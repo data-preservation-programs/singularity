@@ -222,7 +222,7 @@ func (d *DirectoryData) AddItem(ctx context.Context, name string, c cid.Cid, len
 //	          adding the child to the directory fails, or putting blocks into the blockstore fails.
 //	          Otherwise, it returns nil.
 func (d *DirectoryData) AddItemFromLinks(ctx context.Context, name string, links []format.Link) (cid.Cid, error) {
-	blks, node, err := pack.AssembleItemFromLinks(links)
+	blks, node, err := pack.AssembleFileFromLinks(links)
 	if err != nil {
 		return cid.Undef, errors.Wrap(err, "failed to assemble item from links")
 	}

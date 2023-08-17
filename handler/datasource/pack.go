@@ -74,43 +74,43 @@ func Pack(
 	}
 
 	// Update all FileRange and Item CID that are not split
-	splitItemIDs := make(map[uint64]model.File)
-	var updatedItems []model.File
-	splitItemBlks := make(map[uint64][]blocks.Block)
+	splitFileIDs := make(map[uint64]model.File)
+	var updatedFiles []model.File
+	splitFileBlks := make(map[uint64][]blocks.Block)
 	for i, fileRange := range packJob.FileRanges {
 		fileRangeID := fileRange.ID
 		fileRangeCID := result.FileRangeCIDs[fileRangeID]
 		packJob.FileRanges[i].CID = model.CID(fileRangeCID)
-		logger.Debugw("update item part CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
+		logger.Debugw("update file range CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
 		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
 				Update("cid", model.CID(fileRangeCID)).Error
 		})
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to update cid of item part")
+			return nil, errors.Wrap(err, "failed to update cid of file part")
 		}
 		if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
 			fileRange.File.CID = model.CID(fileRangeCID)
-			logger.Debugw("update item CID", "itemID", fileRange.FileID, "CID", fileRangeCID.String())
+			logger.Debugw("update file CID", "fileID", fileRange.FileID, "CID", fileRangeCID.String())
 			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.File{}).Where("id = ?", fileRange.FileID).
 					Update("cid", model.CID(fileRangeCID)).Error
 			})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to update cid of item")
+				return nil, errors.Wrap(err, "failed to update cid of file")
 			}
-			updatedItems = append(updatedItems, *fileRange.File)
+			updatedFiles = append(updatedFiles, *fileRange.File)
 		} else {
-			splitItemIDs[fileRange.FileID] = *fileRange.File
+			splitFileIDs[fileRange.FileID] = *fileRange.File
 		}
 	}
 
-	// Now check if all item parts of an item are ready. If so, update item CID
-	for itemID := range splitItemIDs {
+	// Now check if all file ranges of a file are ready. If so, update file CID
+	for fileID := range splitFileIDs {
 		err = database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				var allParts []model.FileRange
-				err = db.Where("item_id = ?", itemID).Order(clause.OrderByColumn{Column: clause.Column{Name: "offset"}}).Find(&allParts).Error
+				err = db.Where("file_id = ?", fileID).Order(clause.OrderByColumn{Column: clause.Column{Name: "offset"}}).Find(&allParts).Error
 				if err != nil {
 					return errors.Wrap(err, "failed to get all item parts")
 				}
@@ -123,19 +123,19 @@ func Pack(
 							Cid:  cid.Cid(p.CID),
 						}
 					})
-					blks, node, err := pack.AssembleItemFromLinks(links)
+					blks, node, err := pack.AssembleFileFromLinks(links)
 					if err != nil {
-						return errors.Wrap(err, "failed to assemble item from links")
+						return errors.Wrap(err, "failed to assemble file from links")
 					}
 					nodeCid := node.Cid()
-					err = db.Model(&model.File{}).Where("id = ?", itemID).Update("cid", model.CID(nodeCid)).Error
+					err = db.Model(&model.File{}).Where("id = ?", fileID).Update("cid", model.CID(nodeCid)).Error
 					if err != nil {
-						return errors.Wrap(err, "failed to update cid of item")
+						return errors.Wrap(err, "failed to update cid of file")
 					}
-					item := splitItemIDs[itemID]
-					item.CID = model.CID(nodeCid)
-					updatedItems = append(updatedItems, item)
-					splitItemBlks[itemID] = blks
+					file := splitFileIDs[fileID]
+					file.CID = model.CID(nodeCid)
+					updatedFiles = append(updatedFiles, file)
+					splitFileBlks[fileID] = blks
 				}
 				return nil
 			})
@@ -182,15 +182,15 @@ func Pack(
 
 	logger.Debugw("update directory data", "packJobID", packJob.ID)
 	err = database.DoRetry(ctx, func() error {
-		if len(updatedItems) == 0 {
+		if len(updatedFiles) == 0 {
 			return nil
 		}
 		return db.Transaction(func(db *gorm.DB) error {
 			var err error
 			tree := daggen.NewDirectoryTree()
 			var rootDirID uint64
-			for _, item := range updatedItems {
-				dirID := item.DirectoryID
+			for _, file := range updatedFiles {
+				dirID := file.DirectoryID
 				for {
 					// Add the directory to tree if it is not there
 					if !tree.Has(*dirID) {
@@ -208,12 +208,12 @@ func Pack(
 					dirDetail := tree.Get(*dirID)
 
 					// Update the directory for first iteration
-					if dirID == item.DirectoryID {
-						err = dirDetail.Data.AddItem(ctx, item.Name(), cid.Cid(item.CID), uint64(item.Size))
+					if dirID == file.DirectoryID {
+						err = dirDetail.Data.AddItem(ctx, file.Name(), cid.Cid(file.CID), uint64(file.Size))
 						if err != nil {
-							return errors.Wrap(err, "failed to add item to directory")
+							return errors.Wrap(err, "failed to add file to directory")
 						}
-						if blks, ok := splitItemBlks[item.ID]; ok {
+						if blks, ok := splitFileBlks[file.ID]; ok {
 							err = dirDetail.Data.AddBlocks(ctx, blks)
 							if err != nil {
 								return errors.Wrap(err, "failed to add blocks to directory")
@@ -261,8 +261,8 @@ func Pack(
 	logger.With("pack_job", packJob.ID).Info("finished packing")
 	if packJob.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		logger.Info("Deleting original data source")
-		for _, item := range updatedItems {
-			object := result.Objects[item.ID]
+		for _, file := range updatedFiles {
+			object := result.Objects[file.ID]
 			logger.Debugw("removing object", "path", object.Remote())
 			err = object.Remove(ctx)
 			if err != nil {

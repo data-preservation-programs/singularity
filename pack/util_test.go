@@ -63,7 +63,7 @@ func TestAssembleItemFromLinks(t *testing.T) {
 		},
 	}
 
-	blocks, node, err := AssembleItemFromLinks(links)
+	blocks, node, err := AssembleFileFromLinks(links)
 	require.NoError(t, err)
 	require.NotNil(t, node)
 	size, err := node.Size()
@@ -84,7 +84,7 @@ func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
 		})
 	}
 
-	blocks, node, err := AssembleItemFromLinks(links)
+	blocks, node, err := AssembleFileFromLinks(links)
 	require.NoError(t, err)
 	require.NotNil(t, node)
 	size, err := node.Size()

@@ -76,7 +76,7 @@ func Min(i int, i2 int) int {
 	return i2
 }
 
-// AssembleItemFromLinks constructs a MerkleDAG from a list of links.
+// AssembleFileFromLinks constructs a MerkleDAG from a list of links.
 // It organizes the links into a tree structure where each internal node
 // can have up to NumLinkPerNode children. This function assembles the DAG
 // and returns the blocks that make up the DAG and the root node of the DAG.
@@ -92,7 +92,7 @@ func Min(i int, i2 int) int {
 //     provides a starting point to navigate through the rest of the DAG.
 //   - error: An error that can occur during the MerkleDAG creation process,
 //     or nil if the operation was successful.
-func AssembleItemFromLinks(links []format.Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
+func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
 	if len(links) <= 1 {
 		return nil, nil, errors.New("links must be more than 1")
 	}

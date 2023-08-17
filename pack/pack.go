@@ -268,7 +268,7 @@ func AssembleCar(
 			continue
 		}
 
-		blks, rootNode, err := AssembleItemFromLinks(links)
+		blks, rootNode, err := AssembleFileFromLinks(links)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to assemble fileRange")
 		}

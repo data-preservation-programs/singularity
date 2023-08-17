@@ -20,8 +20,8 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.FileRange
-	err := db.Joins("Item").
-		Where("source_id = ? AND file_ranges.pack_job is null", source.ID).
+	err := db.Joins("File").
+		Where("source_id = ? AND file_ranges.pack_job_id is null", source.ID).
 		Order("file_ranges.id asc").
 		Find(&remainingParts).Error
 	if err != nil {
