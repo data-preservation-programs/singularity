@@ -63,7 +63,7 @@ func TestDealTracker_MultipleRunning_Once(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
-	tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
+	tracker2 := NewDealTracker(db, time.Minute, "", "", "", true)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	dones, _, err := tracker1.Start(ctx)
