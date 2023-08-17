@@ -143,10 +143,10 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), mockObject, nil)
 
 	t.Run("size mismatch", func(t *testing.T) {
-		item := model.ItemPart{
+		item := model.FileRange{
 			Offset: 0,
 			Length: 5,
-			Item: &model.Item{
+			File: &model.File{
 				Size:                      4,
 				Hash:                      "hash",
 				LastModifiedTimestampNano: tm.UnixNano(),
@@ -157,10 +157,10 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
-		item := model.ItemPart{
+		item := model.FileRange{
 			Offset: 0,
 			Length: 5,
-			Item: &model.Item{
+			File: &model.File{
 				Size:                      5,
 				Hash:                      "hash",
 				LastModifiedTimestampNano: tm.UnixNano(),
@@ -184,10 +184,10 @@ func TestGetBlockStreamFromItem(t *testing.T) {
 		readCall.Unset()
 		handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 			Return(io.NopCloser(bytes.NewReader([]byte(""))), mockObject, nil)
-		item := model.ItemPart{
+		item := model.FileRange{
 			Offset: 0,
 			Length: 0,
-			Item: &model.Item{
+			File: &model.File{
 				Size:                      0,
 				Hash:                      "hash",
 				LastModifiedTimestampNano: tm.UnixNano(),
@@ -215,14 +215,14 @@ func TestIsSameEntry(t *testing.T) {
 	tm := time.Now()
 	mockObject.On("ModTime", mock.Anything).Return(tm)
 	t.Run("size mismatch", func(t *testing.T) {
-		same, detail := IsSameEntry(ctx, model.Item{
+		same, detail := IsSameEntry(ctx, model.File{
 			Size: 4,
 		}, mockObject)
 		require.False(t, same)
 		require.Contains(t, detail, "size mismatch")
 	})
 	t.Run("hash mismatch", func(t *testing.T) {
-		same, detail := IsSameEntry(ctx, model.Item{
+		same, detail := IsSameEntry(ctx, model.File{
 			Size: 5,
 			Hash: "hash2",
 		}, mockObject)
@@ -230,7 +230,7 @@ func TestIsSameEntry(t *testing.T) {
 		require.Contains(t, detail, "hash mismatch")
 	})
 	t.Run("last modified mismatch", func(t *testing.T) {
-		same, detail := IsSameEntry(ctx, model.Item{
+		same, detail := IsSameEntry(ctx, model.File{
 			Size:                      5,
 			Hash:                      "hash",
 			LastModifiedTimestampNano: 100,
@@ -239,7 +239,7 @@ func TestIsSameEntry(t *testing.T) {
 		require.Contains(t, detail, "last modified mismatch")
 	})
 	t.Run("all match", func(t *testing.T) {
-		same, _ := IsSameEntry(ctx, model.Item{
+		same, _ := IsSameEntry(ctx, model.File{
 			Size:                      5,
 			Hash:                      "hash",
 			LastModifiedTimestampNano: tm.UnixNano(),
@@ -247,7 +247,7 @@ func TestIsSameEntry(t *testing.T) {
 		require.True(t, same)
 	})
 	t.Run("all match, ignoring empty hash", func(t *testing.T) {
-		same, _ := IsSameEntry(ctx, model.Item{
+		same, _ := IsSameEntry(ctx, model.File{
 			Size:                      5,
 			LastModifiedTimestampNano: tm.UnixNano(),
 		}, mockObject)

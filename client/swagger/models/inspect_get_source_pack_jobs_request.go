@@ -13,17 +13,17 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// InspectGetSourceChunksRequest inspect get source chunks request
+// InspectGetSourcePackJobsRequest inspect get source pack jobs request
 //
-// swagger:model inspect.GetSourceChunksRequest
-type InspectGetSourceChunksRequest struct {
+// swagger:model inspect.GetSourcePackJobsRequest
+type InspectGetSourcePackJobsRequest struct {
 
 	// state
 	State ModelWorkState `json:"state,omitempty"`
 }
 
-// Validate validates this inspect get source chunks request
-func (m *InspectGetSourceChunksRequest) Validate(formats strfmt.Registry) error {
+// Validate validates this inspect get source pack jobs request
+func (m *InspectGetSourcePackJobsRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -36,7 +36,7 @@ func (m *InspectGetSourceChunksRequest) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *InspectGetSourceChunksRequest) validateState(formats strfmt.Registry) error {
+func (m *InspectGetSourcePackJobsRequest) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
@@ -53,8 +53,8 @@ func (m *InspectGetSourceChunksRequest) validateState(formats strfmt.Registry) e
 	return nil
 }
 
-// ContextValidate validate this inspect get source chunks request based on the context it is used
-func (m *InspectGetSourceChunksRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this inspect get source pack jobs request based on the context it is used
+func (m *InspectGetSourcePackJobsRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -67,7 +67,7 @@ func (m *InspectGetSourceChunksRequest) ContextValidate(ctx context.Context, for
 	return nil
 }
 
-func (m *InspectGetSourceChunksRequest) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *InspectGetSourcePackJobsRequest) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	if swag.IsZero(m.State) { // not required
 		return nil
@@ -86,7 +86,7 @@ func (m *InspectGetSourceChunksRequest) contextValidateState(ctx context.Context
 }
 
 // MarshalBinary interface implementation
-func (m *InspectGetSourceChunksRequest) MarshalBinary() ([]byte, error) {
+func (m *InspectGetSourcePackJobsRequest) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -94,8 +94,8 @@ func (m *InspectGetSourceChunksRequest) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *InspectGetSourceChunksRequest) UnmarshalBinary(b []byte) error {
-	var res InspectGetSourceChunksRequest
+func (m *InspectGetSourcePackJobsRequest) UnmarshalBinary(b []byte) error {
+	var res InspectGetSourcePackJobsRequest
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

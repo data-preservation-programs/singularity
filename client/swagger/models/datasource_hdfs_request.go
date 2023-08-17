@@ -45,7 +45,7 @@ type DatasourceHdfsRequest struct {
 	// Kerberos service principal name for the namenode.
 	ServicePrincipalName string `json:"servicePrincipalName,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

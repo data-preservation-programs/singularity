@@ -60,13 +60,13 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 	return &sources[0], nil
 }
 
-func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
+func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 	db := w.dbNoContext.WithContext(ctx)
 	if !w.config.EnablePack {
 		return nil, nil
 	}
 	w.logger.Debugw("finding pack work")
-	var chunks []model.Chunk
+	var packJobs []model.PackJob
 
 	err := database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
@@ -75,17 +75,17 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
 				Where("packing_state = ? OR (packing_state = ? AND packing_worker_id is null)", model.Ready, model.Processing).
 				Order("id asc").
 				Limit(1).
-				Find(&chunks).Error
+				Find(&packJobs).Error
 			if err != nil {
 				return err
 			}
 
-			if len(chunks) == 0 {
+			if len(packJobs) == 0 {
 				return nil
 			}
 
 			// Then, perform the update using the found id
-			return db.Model(&chunks[0]).
+			return db.Model(&packJobs[0]).
 				Updates(map[string]any{
 					"packing_state":     model.Processing,
 					"packing_worker_id": w.id,
@@ -97,26 +97,26 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.Chunk, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(chunks) == 0 {
+	if len(packJobs) == 0 {
 		//nolint: nilnil
 		return nil, nil
 	}
 
 	var src model.Source
-	err = db.Joins("Dataset").Where("sources.id = ?", chunks[0].SourceID).First(&src).Error
+	err = db.Joins("Dataset").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
 	if err != nil {
 		return nil, err
 	}
-	chunks[0].Source = &src
+	packJobs[0].Source = &src
 
-	var itemParts []model.ItemPart
-	err = db.Joins("Item").Where("item_parts.chunk_id = ?", chunks[0].ID).Order("item_parts.id asc").Find(&itemParts).Error
+	var fileRanges []model.FileRange
+	err = db.Joins("Item").Where("file_ranges.pack_job = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
 	if err != nil {
 		return nil, err
 	}
-	chunks[0].ItemParts = itemParts
+	packJobs[0].FileRanges = fileRanges
 
-	return &chunks[0], nil
+	return &packJobs[0], nil
 }
 
 func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {

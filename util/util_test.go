@@ -41,48 +41,48 @@ func TestNewLotusClient(t *testing.T) {
 	}
 }
 
-func TestChunkSlice(t *testing.T) {
+func TestPackJobSlice(t *testing.T) {
 	tests := []struct {
-		name      string
-		slice     []int
-		chunkSize int
-		expected  [][]int
+		name        string
+		slice       []int
+		packJobSize int
+		expected    [][]int
 	}{
 		{
-			name:      "basic case",
-			slice:     []int{1, 2, 3, 4, 5, 6, 7},
-			chunkSize: 3,
-			expected:  [][]int{{1, 2, 3}, {4, 5, 6}, {7}},
+			name:        "basic case",
+			slice:       []int{1, 2, 3, 4, 5, 6, 7},
+			packJobSize: 3,
+			expected:    [][]int{{1, 2, 3}, {4, 5, 6}, {7}},
 		},
 		{
-			name:      "chunkSize greater than slice length",
-			slice:     []int{1, 2, 3},
-			chunkSize: 5,
-			expected:  [][]int{{1, 2, 3}},
+			name:        "packJobSize greater than slice length",
+			slice:       []int{1, 2, 3},
+			packJobSize: 5,
+			expected:    [][]int{{1, 2, 3}},
 		},
 		{
-			name:      "empty slice",
-			slice:     []int{},
-			chunkSize: 2,
-			expected:  [][]int(nil),
+			name:        "empty slice",
+			slice:       []int{},
+			packJobSize: 2,
+			expected:    [][]int(nil),
 		},
 		{
-			name:      "chunkSize zero",
-			slice:     []int{1, 2, 3, 4, 5},
-			chunkSize: 0,
-			expected:  [][]int(nil),
+			name:        "packJobSize zero",
+			slice:       []int{1, 2, 3, 4, 5},
+			packJobSize: 0,
+			expected:    [][]int(nil),
 		},
 		{
-			name:      "chunkSize equals slice length",
-			slice:     []int{1, 2, 3, 4, 5},
-			chunkSize: 5,
-			expected:  [][]int{{1, 2, 3, 4, 5}},
+			name:        "packJobSize equals slice length",
+			slice:       []int{1, 2, 3, 4, 5},
+			packJobSize: 5,
+			expected:    [][]int{{1, 2, 3, 4, 5}},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ChunkSlice(tt.slice, tt.chunkSize)
+			result := PackJobSlice(tt.slice, tt.packJobSize)
 			if !reflect.DeepEqual(result, tt.expected) {
 				t.Errorf("got %v, want %v", result, tt.expected)
 			}
@@ -90,43 +90,43 @@ func TestChunkSlice(t *testing.T) {
 	}
 }
 
-func TestChunkMapKeys(t *testing.T) {
+func TestPackJobMapKeys(t *testing.T) {
 	tests := []struct {
-		name      string
-		m         map[string]int
-		chunkSize int
+		name        string
+		m           map[string]int
+		packJobSize int
 	}{
 		{
-			name:      "basic case",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5, "f": 6, "g": 7},
-			chunkSize: 3,
+			name:        "basic case",
+			m:           map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5, "f": 6, "g": 7},
+			packJobSize: 3,
 		},
 		{
-			name:      "chunkSize greater than map size",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3},
-			chunkSize: 5,
+			name:        "packJobSize greater than map size",
+			m:           map[string]int{"a": 1, "b": 2, "c": 3},
+			packJobSize: 5,
 		},
 		{
-			name:      "empty map",
-			m:         map[string]int{},
-			chunkSize: 2,
+			name:        "empty map",
+			m:           map[string]int{},
+			packJobSize: 2,
 		},
 		{
-			name:      "chunkSize zero",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5},
-			chunkSize: 0,
+			name:        "packJobSize zero",
+			m:           map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5},
+			packJobSize: 0,
 		},
 		{
-			name:      "chunkSize equals map size",
-			m:         map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5},
-			chunkSize: 5,
+			name:        "packJobSize equals map size",
+			m:           map[string]int{"a": 1, "b": 2, "c": 3, "d": 4, "e": 5},
+			packJobSize: 5,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ChunkMapKeys(tt.m, tt.chunkSize)
-			if tt.chunkSize <= 0 {
+			result := PackJobMapKeys(tt.m, tt.packJobSize)
+			if tt.packJobSize <= 0 {
 				require.Equal(t, [][]string(nil), result)
 				return
 			}

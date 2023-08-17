@@ -39,7 +39,7 @@ func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail,
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := &store.ItemReferenceBlockStore{DBNoContext: s.dbNoContext, HandlerResolver: datasource.DefaultHandlerResolver{}}
+	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext, HandlerResolver: datasource.DefaultHandlerResolver{}}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
 	done := make(chan struct{})

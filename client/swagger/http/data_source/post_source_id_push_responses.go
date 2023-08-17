@@ -63,7 +63,7 @@ PostSourceIDPushCreated describes a response with status code 201, with default 
 Created
 */
 type PostSourceIDPushCreated struct {
-	Payload *models.ModelItem
+	Payload *models.ModelFile
 }
 
 // IsSuccess returns true when this post source Id push created response has a 2xx status code
@@ -104,13 +104,13 @@ func (o *PostSourceIDPushCreated) String() string {
 	return fmt.Sprintf("[POST /source/{id}/push][%d] postSourceIdPushCreated  %+v", 201, o.Payload)
 }
 
-func (o *PostSourceIDPushCreated) GetPayload() *models.ModelItem {
+func (o *PostSourceIDPushCreated) GetPayload() *models.ModelFile {
 	return o.Payload
 }
 
 func (o *PostSourceIDPushCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ModelItem)
+	o.Payload = new(models.ModelFile)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -194,7 +194,7 @@ func NewPostSourceIDPushConflict() *PostSourceIDPushConflict {
 /*
 PostSourceIDPushConflict describes a response with status code 409, with default header values.
 
-Item already exists
+File already exists
 */
 type PostSourceIDPushConflict struct {
 	Payload string

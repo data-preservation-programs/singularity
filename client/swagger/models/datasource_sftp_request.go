@@ -114,7 +114,7 @@ type DatasourceSftpRequest struct {
 	// Set to skip any symlinks and any other non regular files.
 	SkipLinks *string `json:"skipLinks,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

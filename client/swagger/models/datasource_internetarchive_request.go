@@ -51,7 +51,7 @@ type DatasourceInternetarchiveRequest struct {
 	// IAS3 Secret Key (password).
 	SecretAccessKey string `json:"secretAccessKey,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

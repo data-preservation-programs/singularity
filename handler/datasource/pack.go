@@ -22,86 +22,86 @@ func PackHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	chunkID uint64,
+	packJobID uint64,
 ) ([]model.Car, error) {
-	return packHandler(db, ctx, resolver, chunkID)
+	return packHandler(db, ctx, resolver, packJobID)
 }
 
-// @Summary Pack a chunk into car files
+// @Summary Pack a packJob into car files
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "Chunk ID"
+// @Param id path string true "PackJob ID"
 // @Success 201 {object} []model.Car
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /chunk/{id}/pack [post]
+// @Router /packjob/{id}/pack [post]
 func packHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	chunkID uint64,
+	packJobID uint64,
 ) ([]model.Car, error) {
-	var chunk model.Chunk
-	err := db.Where("id = ?", chunkID).Find(&chunk).Error
+	var packJob model.PackJob
+	err := db.Where("id = ?", packJobID).Find(&packJob).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return Pack(ctx, db, chunk, resolver)
+	return Pack(ctx, db, packJob, resolver)
 }
 
 func Pack(
 	ctx context.Context,
 	db *gorm.DB,
-	chunk model.Chunk,
+	packJob model.PackJob,
 	resolver datasource.HandlerResolver,
 ) ([]model.Car, error) {
 	db = db.WithContext(ctx)
 	var outDir string
-	if len(chunk.Source.Dataset.OutputDirs) > 0 {
-		outDir = chunk.Source.Dataset.OutputDirs[0]
+	if len(packJob.Source.Dataset.OutputDirs) > 0 {
+		outDir = packJob.Source.Dataset.OutputDirs[0]
 	}
 	logger.Debugw("Use output dir", "dir", outDir)
-	handler, err := resolver.Resolve(ctx, *chunk.Source)
+	handler, err := resolver.Resolve(ctx, *packJob.Source)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get datasource handler")
 	}
-	result, err := pack.AssembleCar(ctx, handler, *chunk.Source.Dataset,
-		chunk.ItemParts, outDir, chunk.Source.Dataset.PieceSize)
+	result, err := pack.AssembleCar(ctx, handler, *packJob.Source.Dataset,
+		packJob.FileRanges, outDir, packJob.Source.Dataset.PieceSize)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to pack items")
 	}
 
-	// Update all ItemPart and Item CID that are not split
-	splitItemIDs := make(map[uint64]model.Item)
-	var updatedItems []model.Item
+	// Update all FileRange and Item CID that are not split
+	splitItemIDs := make(map[uint64]model.File)
+	var updatedItems []model.File
 	splitItemBlks := make(map[uint64][]blocks.Block)
-	for i, itemPart := range chunk.ItemParts {
-		itemPartID := itemPart.ID
-		itemPartCID := result.ItemPartCIDs[itemPartID]
-		chunk.ItemParts[i].CID = model.CID(itemPartCID)
-		logger.Debugw("update item part CID", "itemPartID", itemPartID, "CID", itemPartCID.String())
+	for i, fileRange := range packJob.FileRanges {
+		fileRangeID := fileRange.ID
+		fileRangeCID := result.FileRangeCIDs[fileRangeID]
+		packJob.FileRanges[i].CID = model.CID(fileRangeCID)
+		logger.Debugw("update item part CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
 		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.ItemPart{}).Where("id = ?", itemPartID).
-				Update("cid", model.CID(itemPartCID)).Error
+			return db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
+				Update("cid", model.CID(fileRangeCID)).Error
 		})
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to update cid of item part")
 		}
-		if itemPart.Offset == 0 && itemPart.Length == itemPart.Item.Size {
-			itemPart.Item.CID = model.CID(itemPartCID)
-			logger.Debugw("update item CID", "itemID", itemPart.ItemID, "CID", itemPartCID.String())
+		if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
+			fileRange.File.CID = model.CID(fileRangeCID)
+			logger.Debugw("update item CID", "itemID", fileRange.FileID, "CID", fileRangeCID.String())
 			err = database.DoRetry(ctx, func() error {
-				return db.Model(&model.Item{}).Where("id = ?", itemPart.ItemID).
-					Update("cid", model.CID(itemPartCID)).Error
+				return db.Model(&model.File{}).Where("id = ?", fileRange.FileID).
+					Update("cid", model.CID(fileRangeCID)).Error
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to update cid of item")
 			}
-			updatedItems = append(updatedItems, *itemPart.Item)
+			updatedItems = append(updatedItems, *fileRange.File)
 		} else {
-			splitItemIDs[itemPart.ItemID] = *itemPart.Item
+			splitItemIDs[fileRange.FileID] = *fileRange.File
 		}
 	}
 
@@ -109,15 +109,15 @@ func Pack(
 	for itemID := range splitItemIDs {
 		err = database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
-				var allParts []model.ItemPart
+				var allParts []model.FileRange
 				err = db.Where("item_id = ?", itemID).Order(clause.OrderByColumn{Column: clause.Column{Name: "offset"}}).Find(&allParts).Error
 				if err != nil {
 					return errors.Wrap(err, "failed to get all item parts")
 				}
-				if underscore.All(allParts, func(p model.ItemPart) bool {
+				if underscore.All(allParts, func(p model.FileRange) bool {
 					return p.CID != model.CID(cid.Undef)
 				}) {
-					links := underscore.Map(allParts, func(p model.ItemPart) format.Link {
+					links := underscore.Map(allParts, func(p model.FileRange) format.Link {
 						return format.Link{
 							Size: uint64(p.Length),
 							Cid:  cid.Cid(p.CID),
@@ -128,7 +128,7 @@ func Pack(
 						return errors.Wrap(err, "failed to assemble item from links")
 					}
 					nodeCid := node.Cid()
-					err = db.Model(&model.Item{}).Where("id = ?", itemID).Update("cid", model.CID(nodeCid)).Error
+					err = db.Model(&model.File{}).Where("id = ?", itemID).Update("cid", model.CID(nodeCid)).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update cid of item")
 					}
@@ -142,7 +142,7 @@ func Pack(
 		})
 	}
 
-	logger.Debugw("create car for finished chunk", "chunkID", chunk.ID)
+	logger.Debugw("create car for finished packJob", "packJobID", packJob.ID)
 	var cars []model.Car
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
@@ -154,9 +154,9 @@ func Pack(
 						RootCID:   model.CID(result.RootCID),
 						FileSize:  result.CarFileSize,
 						FilePath:  result.CarFilePath,
-						ChunkID:   &chunk.ID,
-						DatasetID: chunk.Source.DatasetID,
-						SourceID:  &chunk.SourceID,
+						PackJobID: &packJob.ID,
+						DatasetID: packJob.Source.DatasetID,
+						SourceID:  &packJob.SourceID,
 						Header:    result.Header,
 					}
 					err := db.Create(&car).Error
@@ -180,7 +180,7 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to save car")
 	}
 
-	logger.Debugw("update directory data", "chunkID", chunk.ID)
+	logger.Debugw("update directory data", "packJobID", packJob.ID)
 	err = database.DoRetry(ctx, func() error {
 		if len(updatedItems) == 0 {
 			return nil
@@ -258,8 +258,8 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to update directory CIDs")
 	}
 
-	logger.With("chunk_id", chunk.ID).Info("finished packing")
-	if chunk.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
+	logger.With("pack_job", packJob.ID).Info("finished packing")
+	if packJob.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		logger.Info("Deleting original data source")
 		for _, item := range updatedItems {
 			object := result.Objects[item.ID]

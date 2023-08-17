@@ -57,7 +57,7 @@ GetSourceIDSummaryOK describes a response with status code 200, with default hea
 OK
 */
 type GetSourceIDSummaryOK struct {
-	Payload *models.DatasourceChunksByState
+	Payload *models.DatasourcePackJobsByState
 }
 
 // IsSuccess returns true when this get source Id summary o k response has a 2xx status code
@@ -98,13 +98,13 @@ func (o *GetSourceIDSummaryOK) String() string {
 	return fmt.Sprintf("[GET /source/{id}/summary][%d] getSourceIdSummaryOK  %+v", 200, o.Payload)
 }
 
-func (o *GetSourceIDSummaryOK) GetPayload() *models.DatasourceChunksByState {
+func (o *GetSourceIDSummaryOK) GetPayload() *models.DatasourcePackJobsByState {
 	return o.Payload
 }
 
 func (o *GetSourceIDSummaryOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.DatasourceChunksByState)
+	o.Payload = new(models.DatasourcePackJobsByState)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

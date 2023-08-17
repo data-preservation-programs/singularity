@@ -12,41 +12,41 @@ import (
 	"gorm.io/gorm"
 )
 
-type ChunkRequest struct {
-	ItemIDs []uint64 `json:"itemIDs" validation:"required"`
+type CreatePackJobRequest struct {
+	FileIDs []uint64 `json:"fileIDs" validation:"required"`
 }
 
-func ChunkHandler(
+func CreatePackJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	sourceID string,
-	request ChunkRequest,
-) (*model.Chunk, error) {
-	return chunkHandler(ctx, db.WithContext(ctx), sourceID, request)
+	request CreatePackJobRequest,
+) (*model.PackJob, error) {
+	return createPackJobHandler(ctx, db.WithContext(ctx), sourceID, request)
 }
 
-// @Summary Create a chunk for the specified items
+// @Summary Create a pack job for the specified files
 // @Tags Data Source
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Param request body ChunkRequest true "Request body"
-// @Success 201 {object} model.Item
+// @Param request body CreatePackJobRequest true "Request body"
+// @Success 201 {object} model.File
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
-// @Router /source/{id}/chunk [post]
-func chunkHandler(
+// @Router /source/{id}/packjob [post]
+func createPackJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	sourceID string,
-	request ChunkRequest,
-) (*model.Chunk, error) {
+	request CreatePackJobRequest,
+) (*model.PackJob, error) {
 	sourceIDInt, err := strconv.Atoi(sourceID)
 	if err != nil {
 		return nil, handler.NewInvalidParameterErr("invalid source id")
 	}
 
-	chunk := model.Chunk{
+	packJob := model.PackJob{
 		SourceID:     uint32(sourceIDInt),
 		PackingState: model.Ready,
 	}
@@ -54,16 +54,16 @@ func chunkHandler(
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
-				err := db.Create(&chunk).Error
+				err := db.Create(&packJob).Error
 				if err != nil {
-					return errors.Wrap(err, "failed to create chunk")
+					return errors.Wrap(err, "failed to create pack job")
 				}
-				itemPartIDChunks := util.ChunkSlice(request.ItemIDs, util.BatchSize)
-				for _, itemPartIDChunks := range itemPartIDChunks {
-					err = db.Model(&model.ItemPart{}).
-						Where("id IN ?", itemPartIDChunks).Update("chunk_id", chunk.ID).Error
+				fileRangeIDPackJobs := util.PackJobSlice(request.FileIDs, util.BatchSize)
+				for _, fileRangeIDPackJobs := range fileRangeIDPackJobs {
+					err = db.Model(&model.FileRange{}).
+						Where("id IN ?", fileRangeIDPackJobs).Update("pack_job_id", packJob.ID).Error
 					if err != nil {
-						return errors.Wrap(err, "failed to update items")
+						return errors.Wrap(err, "failed to update files")
 					}
 				}
 				return nil
@@ -74,5 +74,5 @@ func chunkHandler(
 		return nil, err
 	}
 
-	return &chunk, nil
+	return &packJob, nil
 }

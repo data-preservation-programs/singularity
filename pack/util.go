@@ -12,7 +12,7 @@ import (
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	chunk "github.com/ipfs/go-ipfs-chunker"
+	packJob "github.com/ipfs/go-ipfs-chunker"
 	cbor "github.com/ipfs/go-ipld-cbor"
 	"github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
@@ -216,16 +216,16 @@ type BlockResult struct {
 
 var ErrItemModified = errors.New("item has been modified")
 
-// IsSameEntry checks if a given model.Item and a given fs.Object represent the same entry,
+// IsSameEntry checks if a given model.File and a given fs.Object represent the same entry,
 // based on their size, hash, and last modification time.
 //
 // Parameters:
 //   - ctx: Context that allows for asynchronous task cancellation.
-//   - item: A model.Item instance representing an item in the model.
+//   - item: A model.File instance representing an item in the model.
 //   - object: An fs.Object instance representing a file or object in the filesystem.
 //
 // Returns:
-//   - bool: A boolean indicating whether the given model.Item and fs.Object are considered the same entry.
+//   - bool: A boolean indicating whether the given model.File and fs.Object are considered the same entry.
 //   - string: A string providing details in case of a mismatch.
 //
 // The function performs the following checks:
@@ -244,7 +244,7 @@ var ErrItemModified = errors.New("item has been modified")
 // Note:
 // - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
 // - For local file systems, hash computation is skipped to avoid inefficient operations.
-func IsSameEntry(ctx context.Context, item model.Item, object fs.Object) (bool, string) {
+func IsSameEntry(ctx context.Context, item model.File, object fs.Object) (bool, string) {
 	if item.Size != object.Size() {
 		return false, fmt.Sprintf("size mismatch: %d != %d", item.Size, object.Size())
 	}
@@ -277,20 +277,20 @@ func IsSameEntry(ctx context.Context, item model.Item, object fs.Object) (bool, 
 // It returns a channel of blocks, the object, and an error if any.
 func GetBlockStreamFromItem(ctx context.Context,
 	handler datasource.ReadHandler,
-	itemPart model.ItemPart,
+	fileRange model.FileRange,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
-	if encryptor != nil && (itemPart.Offset != 0 || itemPart.Length != itemPart.Item.Size) {
+	if encryptor != nil && (fileRange.Offset != 0 || fileRange.Length != fileRange.File.Size) {
 		return nil, nil, errors.New("encryption is not supported for partial reads")
 	}
-	readStream, object, err := handler.Read(ctx, itemPart.Item.Path, itemPart.Offset, itemPart.Length)
+	readStream, object, err := handler.Read(ctx, fileRange.File.Path, fileRange.Offset, fileRange.Length)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to open stream")
 	}
 
 	if object != nil {
-		same, detail := IsSameEntry(ctx, *itemPart.Item, object)
+		same, detail := IsSameEntry(ctx, *fileRange.File, object)
 		if !same {
-			return nil, nil, errors.Wrapf(ErrItemModified, "itemPart has been modified: %s, %s", itemPart.Item.Path, detail)
+			return nil, nil, errors.Wrapf(ErrItemModified, "fileRange has been modified: %s, %s", fileRange.File.Path, detail)
 		}
 	}
 
@@ -304,37 +304,37 @@ func GetBlockStreamFromItem(ctx context.Context,
 		return nil, object, errors.Wrap(err, "failed to encrypt stream")
 	}
 	blockChan := make(chan BlockResult)
-	chunker := chunk.NewSizeSplitter(readCloser, ChunkSize)
+	packJober := packJob.NewSizeSplitter(readCloser, ChunkSize)
 	go func() {
 		defer close(blockChan)
 		if readStream != readCloser {
 			defer readStream.Close()
 		}
 		defer readCloser.Close()
-		offset := itemPart.Offset
-		firstChunk := true
+		offset := fileRange.Offset
+		firstPackJob := true
 		for {
 			if ctx.Err() != nil {
 				return
 			}
-			chunkerBytes, err := chunker.NextBytes()
+			packJoberBytes, err := packJober.NextBytes()
 			var result BlockResult
-			if err != nil && !(errors.Is(err, io.EOF) && firstChunk) {
+			if err != nil && !(errors.Is(err, io.EOF) && firstPackJob) {
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				result = BlockResult{Error: errors.Wrap(err, "failed to read chunk")}
+				result = BlockResult{Error: errors.Wrap(err, "failed to read packJob")}
 			} else {
-				firstChunk = false
-				hash := util.Hash(chunkerBytes)
+				firstPackJob = false
+				hash := util.Hash(packJoberBytes)
 				c := cid.NewCidV1(cid.Raw, hash)
 				result = BlockResult{
 					CID:    c,
 					Offset: offset,
-					Raw:    chunkerBytes,
+					Raw:    packJoberBytes,
 					Error:  nil,
 				}
-				offset += int64(len(chunkerBytes))
+				offset += int64(len(packJoberBytes))
 			}
 			select {
 			case <-ctx.Done():

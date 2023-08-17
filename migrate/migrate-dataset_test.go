@@ -78,40 +78,40 @@ func TestMigrateDataset(t *testing.T) {
 	require.EqualValues(t, 2, dirs[2].SourceID)
 	require.EqualValues(t, 1, *dirs[1].ParentID)
 
-	var items []model.Item
-	err = db.Find(&items).Error
+	var files []model.File
+	err = db.Find(&files).Error
 	require.NoError(t, err)
-	require.Len(t, items, 3)
-	require.Equal(t, "1.txt", items[0].Path)
-	require.Equal(t, "2.txt", items[1].Path)
-	require.Equal(t, "dir/3.txt", items[2].Path)
-	require.EqualValues(t, 1, items[0].SourceID)
-	require.EqualValues(t, 1, items[1].SourceID)
-	require.EqualValues(t, 1, items[2].SourceID)
-	require.EqualValues(t, 1, *items[0].DirectoryID)
-	require.EqualValues(t, 1, *items[1].DirectoryID)
-	require.EqualValues(t, 2, *items[2].DirectoryID)
+	require.Len(t, files, 3)
+	require.Equal(t, "1.txt", files[0].Path)
+	require.Equal(t, "2.txt", files[1].Path)
+	require.Equal(t, "dir/3.txt", files[2].Path)
+	require.EqualValues(t, 1, files[0].SourceID)
+	require.EqualValues(t, 1, files[1].SourceID)
+	require.EqualValues(t, 1, files[2].SourceID)
+	require.EqualValues(t, 1, *files[0].DirectoryID)
+	require.EqualValues(t, 1, *files[1].DirectoryID)
+	require.EqualValues(t, 2, *files[2].DirectoryID)
 
-	var itemParts []model.ItemPart
-	err = db.Find(&itemParts).Error
+	var fileRanges []model.FileRange
+	err = db.Find(&fileRanges).Error
 	require.NoError(t, err)
-	require.Len(t, itemParts, 5)
-	require.EqualValues(t, 0, itemParts[0].Offset)
-	require.EqualValues(t, 100, itemParts[0].Length)
-	require.EqualValues(t, 0, itemParts[1].Offset)
-	require.EqualValues(t, 20, itemParts[1].Length)
-	require.EqualValues(t, 20, itemParts[2].Offset)
-	require.EqualValues(t, 60, itemParts[2].Length)
-	require.EqualValues(t, 80, itemParts[3].Offset)
-	require.EqualValues(t, 20, itemParts[3].Length)
+	require.Len(t, fileRanges, 5)
+	require.EqualValues(t, 0, fileRanges[0].Offset)
+	require.EqualValues(t, 100, fileRanges[0].Length)
+	require.EqualValues(t, 0, fileRanges[1].Offset)
+	require.EqualValues(t, 20, fileRanges[1].Length)
+	require.EqualValues(t, 20, fileRanges[2].Offset)
+	require.EqualValues(t, 60, fileRanges[2].Length)
+	require.EqualValues(t, 80, fileRanges[3].Offset)
+	require.EqualValues(t, 20, fileRanges[3].Length)
 
-	var chunks []model.Chunk
-	err = db.Find(&chunks).Error
+	var packJobs []model.PackJob
+	err = db.Find(&packJobs).Error
 	require.NoError(t, err)
-	require.Len(t, chunks, 2)
-	require.EqualValues(t, 1, chunks[0].SourceID)
-	require.Equal(t, model.Complete, chunks[0].PackingState)
-	require.Equal(t, "error message", chunks[0].ErrorMessage)
+	require.Len(t, packJobs, 2)
+	require.EqualValues(t, 1, packJobs[0].SourceID)
+	require.Equal(t, model.Complete, packJobs[0].PackingState)
+	require.Equal(t, "error message", packJobs[0].ErrorMessage)
 
 	var cars []model.Car
 	err = db.Find(&cars).Error
@@ -122,7 +122,7 @@ func TestMigrateDataset(t *testing.T) {
 	require.EqualValues(t, filepath.Join("out", "dir", "test.car"), cars[0].FilePath)
 	require.NotEmpty(t, cars[0].PieceCID.String())
 	require.NotEmpty(t, cars[0].RootCID.String())
-	require.EqualValues(t, 1, *cars[0].ChunkID)
+	require.EqualValues(t, 1, *cars[0].PackJobID)
 	require.EqualValues(t, 1, *cars[0].SourceID)
 }
 

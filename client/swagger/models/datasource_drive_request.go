@@ -126,7 +126,7 @@ type DatasourceDriveRequest struct {
 	// If set skip shortcut files.
 	SkipShortcuts *string `json:"skipShortcuts,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

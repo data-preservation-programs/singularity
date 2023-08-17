@@ -14,10 +14,10 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ModelItem model item
+// ModelFile model file
 //
-// swagger:model model.Item
-type ModelItem struct {
+// swagger:model model.File
+type ModelFile struct {
 
 	// cid
 	Cid ModelCID `json:"cid,omitempty"`
@@ -28,14 +28,14 @@ type ModelItem struct {
 	// directory Id
 	DirectoryID int64 `json:"directoryId,omitempty"`
 
+	// file ranges
+	FileRanges []*ModelFileRange `json:"fileRanges"`
+
 	// hash
 	Hash string `json:"hash,omitempty"`
 
 	// id
 	ID int64 `json:"id,omitempty"`
-
-	// item parts
-	ItemParts []*ModelItemPart `json:"itemParts"`
 
 	// last modified
 	LastModified int64 `json:"lastModified,omitempty"`
@@ -50,11 +50,11 @@ type ModelItem struct {
 	SourceID int64 `json:"sourceId,omitempty"`
 }
 
-// Validate validates this model item
-func (m *ModelItem) Validate(formats strfmt.Registry) error {
+// Validate validates this model file
+func (m *ModelFile) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateItemParts(formats); err != nil {
+	if err := m.validateFileRanges(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,22 +64,22 @@ func (m *ModelItem) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ModelItem) validateItemParts(formats strfmt.Registry) error {
-	if swag.IsZero(m.ItemParts) { // not required
+func (m *ModelFile) validateFileRanges(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileRanges) { // not required
 		return nil
 	}
 
-	for i := 0; i < len(m.ItemParts); i++ {
-		if swag.IsZero(m.ItemParts[i]) { // not required
+	for i := 0; i < len(m.FileRanges); i++ {
+		if swag.IsZero(m.FileRanges[i]) { // not required
 			continue
 		}
 
-		if m.ItemParts[i] != nil {
-			if err := m.ItemParts[i].Validate(formats); err != nil {
+		if m.FileRanges[i] != nil {
+			if err := m.FileRanges[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("itemParts" + "." + strconv.Itoa(i))
+					return ve.ValidateName("fileRanges" + "." + strconv.Itoa(i))
 				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("itemParts" + "." + strconv.Itoa(i))
+					return ce.ValidateName("fileRanges" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -90,11 +90,11 @@ func (m *ModelItem) validateItemParts(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this model item based on the context it is used
-func (m *ModelItem) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this model file based on the context it is used
+func (m *ModelFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateItemParts(ctx, formats); err != nil {
+	if err := m.contextValidateFileRanges(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -104,21 +104,21 @@ func (m *ModelItem) ContextValidate(ctx context.Context, formats strfmt.Registry
 	return nil
 }
 
-func (m *ModelItem) contextValidateItemParts(ctx context.Context, formats strfmt.Registry) error {
+func (m *ModelFile) contextValidateFileRanges(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.ItemParts); i++ {
+	for i := 0; i < len(m.FileRanges); i++ {
 
-		if m.ItemParts[i] != nil {
+		if m.FileRanges[i] != nil {
 
-			if swag.IsZero(m.ItemParts[i]) { // not required
+			if swag.IsZero(m.FileRanges[i]) { // not required
 				return nil
 			}
 
-			if err := m.ItemParts[i].ContextValidate(ctx, formats); err != nil {
+			if err := m.FileRanges[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("itemParts" + "." + strconv.Itoa(i))
+					return ve.ValidateName("fileRanges" + "." + strconv.Itoa(i))
 				} else if ce, ok := err.(*errors.CompositeError); ok {
-					return ce.ValidateName("itemParts" + "." + strconv.Itoa(i))
+					return ce.ValidateName("fileRanges" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -130,7 +130,7 @@ func (m *ModelItem) contextValidateItemParts(ctx context.Context, formats strfmt
 }
 
 // MarshalBinary interface implementation
-func (m *ModelItem) MarshalBinary() ([]byte, error) {
+func (m *ModelFile) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -138,8 +138,8 @@ func (m *ModelItem) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ModelItem) UnmarshalBinary(b []byte) error {
-	var res ModelItem
+func (m *ModelFile) UnmarshalBinary(b []byte) error {
+	var res ModelFile
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

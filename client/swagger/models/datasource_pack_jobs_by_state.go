@@ -13,22 +13,22 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// DatasourceChunksByState datasource chunks by state
+// DatasourcePackJobsByState datasource pack jobs by state
 //
-// swagger:model datasource.ChunksByState
-type DatasourceChunksByState struct {
+// swagger:model datasource.PackJobsByState
+type DatasourcePackJobsByState struct {
 
-	// number of chunks in this state
+	// number of pack jobs in this state
 	Count int64 `json:"count,omitempty"`
 
-	// the state of the chunks
+	// the state of the pack jobs
 	State struct {
 		ModelWorkState
 	} `json:"state,omitempty"`
 }
 
-// Validate validates this datasource chunks by state
-func (m *DatasourceChunksByState) Validate(formats strfmt.Registry) error {
+// Validate validates this datasource pack jobs by state
+func (m *DatasourcePackJobsByState) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateState(formats); err != nil {
@@ -41,7 +41,7 @@ func (m *DatasourceChunksByState) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DatasourceChunksByState) validateState(formats strfmt.Registry) error {
+func (m *DatasourcePackJobsByState) validateState(formats strfmt.Registry) error {
 	if swag.IsZero(m.State) { // not required
 		return nil
 	}
@@ -49,8 +49,8 @@ func (m *DatasourceChunksByState) validateState(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this datasource chunks by state based on the context it is used
-func (m *DatasourceChunksByState) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this datasource pack jobs by state based on the context it is used
+func (m *DatasourcePackJobsByState) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateState(ctx, formats); err != nil {
@@ -63,13 +63,13 @@ func (m *DatasourceChunksByState) ContextValidate(ctx context.Context, formats s
 	return nil
 }
 
-func (m *DatasourceChunksByState) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
+func (m *DatasourcePackJobsByState) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *DatasourceChunksByState) MarshalBinary() ([]byte, error) {
+func (m *DatasourcePackJobsByState) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -77,8 +77,8 @@ func (m *DatasourceChunksByState) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DatasourceChunksByState) UnmarshalBinary(b []byte) error {
-	var res DatasourceChunksByState
+func (m *DatasourcePackJobsByState) UnmarshalBinary(b []byte) error {
+	var res DatasourcePackJobsByState
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

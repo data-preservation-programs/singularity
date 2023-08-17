@@ -37,7 +37,7 @@ func TestFindPackWork(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, found)
 
-	err = db.Create(&model.Chunk{
+	err = db.Create(&model.PackJob{
 		Source: &model.Source{
 			Dataset: &model.Dataset{},
 		},
@@ -49,7 +49,7 @@ func TestFindPackWork(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, found)
 
-	var existing model.Chunk
+	var existing model.PackJob
 	err = db.First(&existing, found.ID).Error
 	require.NoError(t, err)
 	require.Equal(t, model.Processing, existing.PackingState)

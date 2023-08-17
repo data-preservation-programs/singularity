@@ -24,9 +24,9 @@ import (
 )
 
 type Result struct {
-	ItemPartCIDs map[uint64]cid.Cid
-	Objects      map[uint64]fs.Object
-	CarResults   []CarResult
+	FileRangeCIDs map[uint64]cid.Cid
+	Objects       map[uint64]fs.Object
+	CarResults    []CarResult
 }
 
 type CarResult struct {
@@ -105,7 +105,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 // - ctx: Context used to handle cancellation and deadlines.
 // - handler: The ReadHandler interface which handles reading data from a data source.
 // - dataset: Information about the dataset being processed.
-// - itemParts: List of data blocks that need to be included in the CAR file.
+// - fileRanges: List of data blocks that need to be included in the CAR file.
 // - outDir: Directory where the CAR file(s) will be written.
 // - pieceSize: Target size of each CAR file, in bytes.
 //
@@ -117,12 +117,12 @@ func AssembleCar(
 	ctx context.Context,
 	handler datasource.ReadHandler,
 	dataset model.Dataset,
-	itemParts []model.ItemPart,
+	fileRanges []model.FileRange,
 	outDir string,
 	pieceSize int64,
 ) (*Result, error) {
 	logger.Debugw("assembling car", "dataset",
-		dataset.ID, "itemParts", len(itemParts), "outDir", outDir, "pieceSize", pieceSize)
+		dataset.ID, "fileRanges", len(fileRanges), "outDir", outDir, "pieceSize", pieceSize)
 	var writeCloser io.WriteCloser
 	var calc *commp.Calc
 	var filepath string
@@ -134,8 +134,8 @@ func AssembleCar(
 	}()
 
 	result := &Result{
-		ItemPartCIDs: make(map[uint64]cid.Cid),
-		Objects:      make(map[uint64]fs.Object),
+		FileRangeCIDs: make(map[uint64]cid.Cid),
+		Objects:       make(map[uint64]fs.Object),
 	}
 	offset := int64(0)
 	current := CarResult{}
@@ -190,8 +190,8 @@ func AssembleCar(
 		return nil
 	}
 
-	for _, itemPart := range itemParts {
-		itemPart := itemPart
+	for _, fileRange := range fileRanges {
+		fileRange := fileRange
 		links := make([]format.Link, 0)
 		encryptor, err := encryption.GetEncryptor(dataset)
 		if err != nil {
@@ -200,12 +200,12 @@ func AssembleCar(
 		if encryptor != nil && outDir == "" {
 			return nil, errors.New("encryption is not supported without an output directory")
 		}
-		blockChan, object, err := GetBlockStreamFromItem(ctx, handler, itemPart, encryptor)
+		blockChan, object, err := GetBlockStreamFromItem(ctx, handler, fileRange, encryptor)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to stream itemPart")
+			return nil, errors.Wrap(err, "failed to stream fileRange")
 		}
 
-		result.Objects[itemPart.ItemID] = object
+		result.Objects[fileRange.FileID] = object
 
 	blockChanLoop:
 		for {
@@ -237,9 +237,9 @@ func AssembleCar(
 							CarBlockLength: int32(len(block.Raw)) + int32(block.CID.ByteLen()) + int32(varint.UvarintSize(uint64(len(block.Raw))+uint64(block.CID.ByteLen()))),
 							Varint:         varint.ToUvarint(uint64(len(block.Raw)) + uint64(block.CID.ByteLen())),
 							// nolint:exportloopref
-							ItemID:        &itemPart.ItemID,
-							ItemOffset:    block.Offset,
-							ItemEncrypted: encryptor != nil,
+							FileID:        &fileRange.FileID,
+							FileOffset:    block.Offset,
+							FileEncrypted: encryptor != nil,
 						},
 					)
 				}
@@ -260,17 +260,17 @@ func AssembleCar(
 		}
 
 		if len(links) == 0 {
-			result.ItemPartCIDs[itemPart.ID] = EmptyItemCid
+			result.FileRangeCIDs[fileRange.ID] = EmptyItemCid
 			continue
 		}
 		if len(links) == 1 {
-			result.ItemPartCIDs[itemPart.ID] = links[0].Cid
+			result.FileRangeCIDs[fileRange.ID] = links[0].Cid
 			continue
 		}
 
 		blks, rootNode, err := AssembleItemFromLinks(links)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to assemble itemPart")
+			return nil, errors.Wrap(err, "failed to assemble fileRange")
 		}
 		for _, blk := range blks {
 			err = addHeaderIfNeeded(blk.Cid())
@@ -300,7 +300,7 @@ func AssembleCar(
 			}
 		}
 
-		result.ItemPartCIDs[itemPart.ID] = rootNode.Cid()
+		result.FileRangeCIDs[fileRange.ID] = rootNode.Cid()
 	}
 
 	err = checkResult(true)
