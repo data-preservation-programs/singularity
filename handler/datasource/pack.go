@@ -43,12 +43,40 @@ func packHandler(
 	chunkID uint32,
 ) ([]model.Car, error) {
 	var chunk model.Chunk
-	err := db.Where("id = ?", chunkID).Preload("Source.Dataset").Preload("ItemParts.Item").Find(&chunk).Error
+	err := db.Where("id = ?", chunkID).Find(&chunk).Error
 	if err != nil {
 		return nil, err
 	}
 
+	if err := LoadSource(db, &chunk); err != nil {
+		return nil, err
+	}
+	if err := LoadItemParts(db, &chunk); err != nil {
+		return nil, err
+	}
 	return Pack(ctx, db, chunk, resolver)
+}
+
+func LoadSource(db *gorm.DB, chunk *model.Chunk) error {
+
+	var src model.Source
+	err := db.Joins("Dataset").Where("sources.id = ?", chunk.SourceID).First(&src).Error
+	if err != nil {
+		return err
+	}
+
+	chunk.Source = &src
+	return nil
+}
+
+func LoadItemParts(db *gorm.DB, chunk *model.Chunk) error {
+	var itemParts []model.ItemPart
+	err := db.Joins("Item").Where("item_parts.chunk_id = ?", chunk.ID).Order("item_parts.id asc").Find(&itemParts).Error
+	if err != nil {
+		return err
+	}
+	chunk.ItemParts = itemParts
+	return nil
 }
 
 func Pack(

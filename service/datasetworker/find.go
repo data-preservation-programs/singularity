@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -98,20 +99,12 @@ func (w *DatasetWorkerThread) findPackWork() (*model.Chunk, error) {
 		//nolint: nilnil
 		return nil, nil
 	}
-
-	var src model.Source
-	err = w.db.Joins("Dataset").Where("sources.id = ?", chunks[0].SourceID).First(&src).Error
-	if err != nil {
+	if err := datasource.LoadSource(w.db, &chunks[0]); err != nil {
 		return nil, err
 	}
-	chunks[0].Source = &src
-
-	var itemParts []model.ItemPart
-	err = w.db.Joins("Item").Where("item_parts.chunk_id = ?", chunks[0].ID).Order("item_parts.id asc").Find(&itemParts).Error
-	if err != nil {
+	if err := datasource.LoadItemParts(w.db, &chunks[0]); err != nil {
 		return nil, err
 	}
-	chunks[0].ItemParts = itemParts
 
 	return &chunks[0], nil
 }

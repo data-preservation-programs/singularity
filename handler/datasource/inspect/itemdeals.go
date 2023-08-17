@@ -7,7 +7,7 @@ import (
 
 func GetItemDealsHandler(
 	db *gorm.DB,
-	id string,
+	id uint64,
 ) ([]model.Deal, error) {
 	return getItemDealsHandler(db, id)
 }
@@ -22,7 +22,7 @@ func GetItemDealsHandler(
 // @Router /item/{id}/deals [get]
 func getItemDealsHandler(
 	db *gorm.DB,
-	id string,
+	id uint64,
 ) ([]model.Deal, error) {
 	var deals []model.Deal
 	query := db.

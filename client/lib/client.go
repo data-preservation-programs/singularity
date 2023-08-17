@@ -62,7 +62,7 @@ func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 }
 
 func (c *Client) GetItemDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
-	return inspect.GetItemDealsHandler(c.db.WithContext(ctx), strconv.FormatUint(id, 10))
+	return inspect.GetItemDealsHandler(c.db.WithContext(ctx), id)
 }
 
 func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo dshandler.ItemInfo) (*model.Item, error) {
@@ -70,7 +70,7 @@ func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo dshandl
 }
 
 func (c *Client) Chunk(ctx context.Context, sourceID uint32, request dshandler.ChunkRequest) (*model.Chunk, error) {
-	return dshandler.ChunkHandler(c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
+	return dshandler.ChunkHandler(c.db.WithContext(ctx), sourceID, request)
 }
 
 func (c *Client) Pack(ctx context.Context, chunkID uint32) ([]model.Car, error) {

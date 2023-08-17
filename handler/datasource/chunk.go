@@ -1,10 +1,7 @@
 package datasource
 
 import (
-	"strconv"
-
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/pkg/errors"
@@ -17,7 +14,7 @@ type ChunkRequest struct {
 
 func ChunkHandler(
 	db *gorm.DB,
-	sourceID string,
+	sourceID uint32,
 	request ChunkRequest,
 ) (*model.Chunk, error) {
 	return chunkHandler(db, sourceID, request)
@@ -35,20 +32,16 @@ func ChunkHandler(
 // @Router /source/{id}/chunk [post]
 func chunkHandler(
 	db *gorm.DB,
-	sourceID string,
+	sourceID uint32,
 	request ChunkRequest,
 ) (*model.Chunk, error) {
-	sourceIDInt, err := strconv.Atoi(sourceID)
-	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid source id")
-	}
 
 	chunk := model.Chunk{
-		SourceID:     uint32(sourceIDInt),
+		SourceID:     sourceID,
 		PackingState: model.Ready,
 	}
 
-	err = database.DoRetry(func() error {
+	err := database.DoRetry(func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				err := db.Create(&chunk).Error

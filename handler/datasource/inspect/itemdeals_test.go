@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"testing"
 
-	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
-	"github.com/data-preservation-programs/singularity/handler/datasource"
+	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
@@ -26,42 +26,45 @@ func TestItemDeals(t *testing.T) {
 	require.NoError(t, os.WriteFile(path.Join(testSourcePath, "a"), []byte("test file a"), 0744))
 	require.NoError(t, os.WriteFile(path.Join(testSourcePath, "b"), []byte("test file b"), 0744))
 
-	db, closer, err := database.OpenWithLogger("sqlite:" + filepath.Join(t.TempDir(), "singularity.db"))
+	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
 
-	client, err := libclient.NewClient(db)
+	err = model.AutoMigrate(db)
 	require.NoError(t, err)
+
+	datasourceHandlerResolver := &datasource.DefaultHandlerResolver{}
 
 	datasetName := "test"
 
-	_, err = client.CreateDataset(ctx, dataset.CreateRequest{
+	_, err = dataset.CreateHandler(db.WithContext(ctx), dataset.CreateRequest{
 		Name:       datasetName,
 		MaxSizeStr: "31GiB",
 	})
 	require.NoError(t, err)
 
 	// Create datasource
-	source, err := client.CreateLocalSource(ctx, datasetName, datasource.LocalRequest{
-		SourcePath:     testSourcePath,
-		RescanInterval: "10s",
-		ScanningState:  model.Ready,
+	source, err := dshandler.CreateDatasourceHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, "local", datasetName, map[string]any{
+		"sourcePath":        testSourcePath,
+		"rescanInterval":    "10s",
+		"scanningState":     string(model.Ready),
+		"deleteAfterExport": false,
 	})
 	require.NoError(t, err)
 
 	// Push items
-	itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "a"})
+	itemA, err := dshandler.PushItemHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, source.ID, dshandler.ItemInfo{Path: "a"})
 	require.NoError(t, err)
 
-	itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: "b"})
+	itemB, err := dshandler.PushItemHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, source.ID, dshandler.ItemInfo{Path: "b"})
 	require.NoError(t, err)
 
-	chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{
+	chunk, err := dshandler.ChunkHandler(db.WithContext(ctx), source.ID, dshandler.ChunkRequest{
 		ItemIDs: append(underscore.Map(itemA.ItemParts, func(itemPart model.ItemPart) uint64 { return itemPart.ID }),
 			underscore.Map(itemB.ItemParts, func(itemPart model.ItemPart) uint64 { return itemPart.ID })...),
 	})
 	require.NoError(t, err)
-	cars, err := client.Pack(ctx, chunk.ID)
+	cars, err := dshandler.PackHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, chunk.ID)
 	require.NoError(t, err)
 
 	// Manually add fake deals
@@ -79,12 +82,12 @@ func TestItemDeals(t *testing.T) {
 	}
 
 	// Test item deals
-	deals, err := client.GetItemDeals(ctx, itemA.ID)
+	deals, err := inspect.GetItemDealsHandler(db.WithContext(ctx), itemA.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 	fmt.Printf("%#v\n", deals)
 
-	deals, err = client.GetItemDeals(ctx, itemB.ID)
+	deals, err = inspect.GetItemDealsHandler(db.WithContext(ctx), itemB.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 }

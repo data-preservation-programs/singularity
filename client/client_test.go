@@ -3,6 +3,7 @@ package client_test
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,13 +85,37 @@ func TestClients(t *testing.T) {
 		name := file.Name()
 		err = file.Close()
 		require.NoError(t, err)
-		item, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: filepath.Base(name)})
+		itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: filepath.Base(name)})
 		require.NoError(t, err)
-		require.Equal(t, filepath.Base(name), item.Path)
+		require.Equal(t, filepath.Base(name), itemA.Path)
 
 		// get item
-		returnedItem, err := client.GetItem(ctx, item.ID)
+		returnedItem, err := client.GetItem(ctx, itemA.ID)
 		require.NoError(t, err)
-		require.Equal(t, item.Path, returnedItem.Path)
+		require.Equal(t, itemA.Path, returnedItem.Path)
+
+		// push another item
+		file, err = os.CreateTemp(path, "push-*")
+		require.NoError(t, err)
+		buf = make([]byte, 1000)
+		_, _ = rand.Read(buf)
+		file.Write(buf)
+		name = file.Name()
+		err = file.Close()
+		require.NoError(t, err)
+		itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: filepath.Base(name)})
+		require.NoError(t, err)
+		require.Equal(t, filepath.Base(name), itemB.Path)
+
+		// Chunk
+		chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{ItemIDs: []uint64{itemA.ID, itemB.ID}})
+		require.NoError(t, err)
+		fmt.Printf("%#v\n", chunk)
+
+		// Check that chunk exists
+		chunks, err := client.GetSourceChunks(ctx, source.ID, inspect.GetSourceChunksRequest{})
+		require.NoError(t, err)
+
+		require.Len(t, chunks, 1)
 	})
 }
