@@ -29,7 +29,7 @@ type FileRangeDetail struct {
 var PackJobDetailCmd = &cli.Command{
 	Name:      "packjobdetail",
 	Usage:     "Get details about a specific pack job",
-	ArgsUsage: "<packing_manifest_id>",
+	ArgsUsage: "<pack_job_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -37,6 +37,7 @@ var PackJobDetailCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetSourcePackJobDetailHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)
@@ -49,7 +50,7 @@ var PackJobDetailCmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println("Packing manifest:")
+		fmt.Println("Pack jobs:")
 		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
 		fmt.Println("Pieces:")
 		cliutil.PrintToConsole(result.Cars, false, nil)

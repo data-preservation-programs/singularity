@@ -1,6 +1,8 @@
 package dataset
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"gorm.io/gorm"
@@ -15,6 +17,7 @@ import (
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName} [delete]
 func removeHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 ) error {
@@ -22,7 +25,7 @@ func removeHandler(
 	if err != nil {
 		return handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
-	err = database.DoRetry(func() error { return db.Delete(&dataset).Error })
+	err = database.DoRetry(ctx, func() error { return db.Delete(&dataset).Error })
 	if err != nil {
 		return err
 	}
@@ -30,8 +33,9 @@ func removeHandler(
 }
 
 func RemoveHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 ) error {
-	return removeHandler(db, datasetName)
+	return removeHandler(ctx, db.WithContext(ctx), datasetName)
 }

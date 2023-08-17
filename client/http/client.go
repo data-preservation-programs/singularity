@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
@@ -164,7 +165,7 @@ func (c *Client) GetSourcePackJobs(ctx context.Context, sourceID uint32, request
 	return packJobs, nil
 }
 
-func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request datasource.PackJobRequest) (*model.PackJob, error) {
+func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request datasource.CreatePackJobRequest) (*model.PackJob, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packjob", request)
 	if err != nil {
 		return nil, err

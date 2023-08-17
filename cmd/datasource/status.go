@@ -21,6 +21,7 @@ var StatusCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := datasource.GetSourceStatusHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)
@@ -37,7 +38,7 @@ var StatusCmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println("Packing manifests by state:")
+		fmt.Println("Pack jobs by state:")
 		cliutil.PrintToConsole(result.PackJobSummary, c.Bool("json"), nil)
 		fmt.Println("Files by state:")
 		cliutil.PrintToConsole(result.FileSummary, c.Bool("json"), nil)

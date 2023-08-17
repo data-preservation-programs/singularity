@@ -54,7 +54,7 @@ func TestCreatePackJob(t *testing.T) {
 		require.NoError(t, err)
 
 		// Create pack job
-		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.PackJobRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
+		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.CreatePackJobRequest{FileIDs: []uint64{fileA.ID, fileB.ID}})
 		require.NoError(t, err)
 		fmt.Printf("%#v\n", packJob)
 

@@ -38,7 +38,7 @@ var AddPieceCmd = &cli.Command{
 		defer closer.Close()
 
 		car, err := dataset.AddPieceHandler(
-			db, c.Args().Get(0), dataset.AddPieceRequest{
+			c.Context, db, c.Args().Get(0), dataset.AddPieceRequest{
 				PieceCID:  c.Args().Get(1),
 				PieceSize: c.Args().Get(2),
 				FilePath:  c.String("file-path"),

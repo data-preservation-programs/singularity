@@ -14,12 +14,13 @@ import (
 // scan scans the data source and inserts the chunking strategy back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned file, which is useful for resuming a failed scan
-func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, scanSource bool) error {
+func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool) error {
+	directoryCache := make(map[string]uint64)
 	dataset := *source.Dataset
 	var remaining = newRemain()
 	var remainingParts []model.FileRange
-	err := w.db.Joins("File").
-		Where("source_id = ? AND file_ranges.packing_manifest_id is null", source.ID).
+	err := w.dbNoContext.Joins("File").
+		Where("source_id = ? AND file_ranges.pack_job_id is null", source.ID).
 		Order("file_ranges.id asc").
 		Find(&remainingParts).Error
 	if err != nil {
@@ -30,7 +31,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 
 	if !scanSource {
 		for len(remaining.fileRanges) > 0 {
-			err = w.chunkOnce(source, dataset, remaining)
+			err = w.chunkOnce(ctx, source, dataset, remaining)
 			if err != nil {
 				return errors.Wrap(err, "failed to save chunking")
 			}
@@ -49,7 +50,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			continue
 		}
 
-		file, fileRanges, err := datasource.PushFile(ctx, w.db, entry.Info, source, dataset, w.directoryCache)
+		file, fileRanges, err := datasource.PushFile(ctx, w.dbNoContext, entry.Info, source, dataset, directoryCache)
 		if err != nil {
 			return errors.Wrap(err, "failed to push file")
 		}
@@ -57,8 +58,8 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 			w.logger.Infow("file already exists", "path", entry.Info.Remote())
 			continue
 		}
-		err = database.DoRetry(func() error {
-			return w.db.Model(&model.Source{}).Where("id = ?", source.ID).
+		err = database.DoRetry(ctx, func() error {
+			return w.dbNoContext.Model(&model.Source{}).Where("id = ?", source.ID).
 				Update("last_scanned_path", file.Path).Error
 		})
 		if err != nil {
@@ -67,7 +68,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 
 		remaining.add(fileRanges)
 		for remaining.carSize >= dataset.MaxSize {
-			err = w.chunkOnce(source, dataset, remaining)
+			err = w.chunkOnce(ctx, source, dataset, remaining)
 			if err != nil {
 				return errors.Wrap(err, "failed to save chunking")
 			}
@@ -75,7 +76,7 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 	}
 
 	for len(remaining.fileRanges) > 0 {
-		err = w.chunkOnce(source, dataset, remaining)
+		err = w.chunkOnce(ctx, source, dataset, remaining)
 		if err != nil {
 			return errors.Wrap(err, "failed to save chunking")
 		}
@@ -83,7 +84,8 @@ func (w *DatasetWorkerThread) scan(ctx context.Context, source model.Source, sca
 	return nil
 }
 
-func (w *DatasetWorkerThread) chunkOnce(
+func (w *Thread) chunkOnce(
+	ctx context.Context,
 	source model.Source,
 	dataset model.Dataset,
 	remaining *remain,
@@ -91,7 +93,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 	// If everything fit, create a pack job. Usually this is the case for the last pack job
 	if remaining.carSize <= dataset.MaxSize {
 		w.logger.Debugw("creating pack job", "size", remaining.carSize)
-		_, err := datasource.CreatePackJobHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackJobRequest{
+		_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
 			FileIDs: remaining.itemIDs(),
 		})
 
@@ -125,7 +127,7 @@ func (w *DatasetWorkerThread) chunkOnce(
 	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(file model.FileRange) uint64 {
 		return file.ID
 	})
-	_, err := datasource.CreatePackJobHandler(w.db, strconv.FormatUint(uint64(source.ID), 10), datasource.PackJobRequest{
+	_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
 		FileIDs: fileRangeIDs,
 	})
 	if err != nil {
@@ -134,4 +136,56 @@ func (w *DatasetWorkerThread) chunkOnce(
 	remaining.fileRanges = remaining.fileRanges[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize
 	return nil
+}
+
+type remain struct {
+	fileRanges []model.FileRange
+	carSize    int64
+}
+
+const carHeaderSize = 59
+
+func newRemain() *remain {
+	return &remain{
+		fileRanges: make([]model.FileRange, 0),
+		// Some buffer for header
+		carSize: carHeaderSize,
+	}
+}
+
+func (r *remain) add(itemParts []model.FileRange) {
+	r.fileRanges = append(r.fileRanges, itemParts...)
+	for _, itemPart := range itemParts {
+		r.carSize += toCarSize(itemPart.Length)
+	}
+}
+
+func (r *remain) reset() {
+	r.fileRanges = make([]model.FileRange, 0)
+	r.carSize = carHeaderSize
+}
+
+func (r *remain) itemIDs() []uint64 {
+	return underscore.Map(r.fileRanges, func(itemPart model.FileRange) uint64 {
+		return itemPart.ID
+	})
+}
+
+func toCarSize(size int64) int64 {
+	out := size
+	nBlocks := size / 1024 / 1024
+	if size%(1024*1024) != 0 {
+		nBlocks++
+	}
+
+	// For each block, we need to add the bytes for the CID as well as varint
+	out += nBlocks * (36 + 9)
+
+	// For every 256 blocks, we need to add another block.
+	// The block stores up to 256 CIDs and integers, estimate it to be 12kb
+	if nBlocks > 1 {
+		out += (((nBlocks - 1) / 256) + 1) * 12000
+	}
+
+	return out
 }

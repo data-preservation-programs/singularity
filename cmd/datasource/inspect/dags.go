@@ -18,6 +18,7 @@ var DagsCmd = &cli.Command{
 		}
 		defer closer.Close()
 		cars, err := inspect.GetDagsHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

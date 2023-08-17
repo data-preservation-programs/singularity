@@ -9,12 +9,12 @@ import (
 var InitCmd = &cli.Command{
 	Name:  "init",
 	Usage: "Initialize the database",
-	Action: func(context *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(context)
+	Action: func(c *cli.Context) error {
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		return admin.InitHandler(db)
+		return admin.InitHandler(c.Context, db)
 	},
 }

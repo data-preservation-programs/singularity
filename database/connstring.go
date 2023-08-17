@@ -1,4 +1,4 @@
-//go:build !cgo
+//go:build !cgo && !(windows && 386)
 
 package database
 

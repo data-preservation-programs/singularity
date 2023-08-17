@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -25,6 +27,6 @@ func resetHandler(db *gorm.DB) error {
 	return nil
 }
 
-func ResetHandler(db *gorm.DB) error {
-	return resetHandler(db)
+func ResetHandler(ctx context.Context, db *gorm.DB) error {
+	return resetHandler(db.WithContext(ctx))
 }

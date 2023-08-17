@@ -246,15 +246,15 @@ type Source struct {
 	Path                 string     `json:"path"`
 	Metadata             Metadata   `gorm:"type:JSON"                                                              json:"metadata"`
 	ScanIntervalSeconds  uint64     `json:"scanIntervalSeconds"`
-	ScanningState        WorkState  `gorm:"index:source_cleanup"                                                   json:"scanningState"`
-	ScanningWorkerID     *string    `gorm:"index:source_cleanup"                                                   json:"scanningWorkerId,omitempty"`
+	ScanningState        WorkState  `gorm:"index"                                                                  json:"scanningState"`
+	ScanningWorkerID     *string    `gorm:"size:63"                                                                json:"scanningWorkerId,omitempty"`
 	ScanningWorker       *Worker    `gorm:"foreignKey:ScanningWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"scanningWorker,omitempty"   swaggerignore:"true"`
 	LastScannedTimestamp int64      `json:"lastScannedTimestamp"`
 	LastScannedPath      string     `json:"lastScannedPath"`
 	ErrorMessage         string     `json:"errorMessage"`
 	DeleteAfterExport    bool       `json:"deleteAfterExport"`
-	DagGenState          WorkState  `gorm:"index:daggen_cleanup"                                                   json:"dagGenState"`
-	DagGenWorkerID       *string    `gorm:"index:daggen_cleanup"                                                   json:"dagGenWorkerId,omitempty"`
+	DagGenState          WorkState  `gorm:"index"                                                                  json:"dagGenState"`
+	DagGenWorkerID       *string    `gorm:"size:63"                                                                json:"dagGenWorkerId,omitempty"`
 	DagGenWorker         *Worker    `gorm:"foreignKey:DagGenWorkerID;references:ID;constraint:OnDelete:SET NULL"   json:"dagGenWorker,omitempty"     swaggerignore:"true"`
 	DagGenErrorMessage   string     `json:"dagGenErrorMessage"`
 	rootDirectory        *Directory
@@ -264,10 +264,10 @@ type Source struct {
 type PackJob struct {
 	ID              uint32      `gorm:"primaryKey"                                                            json:"id"`
 	CreatedAt       time.Time   `json:"createdAt"`
-	SourceID        uint32      `gorm:"index:source_summary_packing_manifests"                                json:"sourceId"`
+	SourceID        uint32      `gorm:"index:source_summary_pack_jobs"                                        json:"sourceId"`
 	Source          *Source     `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"                       json:"source,omitempty"          swaggerignore:"true"`
-	PackingState    WorkState   `gorm:"index:source_summary_packing_manifests;index:packing_manifest_cleanup" json:"packingState"`
-	PackingWorkerID *string     `gorm:"index:packing_manifest_cleanup"                                        json:"packingWorkerId,omitempty"`
+	PackingState    WorkState   `gorm:"index:source_summary_pack_jobs;index" 						          json:"packingState"`
+	PackingWorkerID *string     `gorm:"size:63"                                        						  json:"packingWorkerId,omitempty"`
 	PackingWorker   *Worker     `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty"   swaggerignore:"true"`
 	ErrorMessage    string      `json:"errorMessage"`
 	FileRanges      []FileRange `gorm:"constraint:OnDelete:SET NULL"                                          json:"fileRanges,omitempty"`

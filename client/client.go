@@ -21,5 +21,5 @@ type Client interface {
 	GetFile(ctx context.Context, id uint64) (*model.File, error)
 	PushFile(ctx context.Context, sourceID uint32, fileInfo datasource.FileInfo) (*model.File, error)
 	GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error)
-	CreatePackJob(ctx context.Context, sourceID uint32, request datasource.PackJobRequest) (*model.PackJob, error)
+	CreatePackJob(ctx context.Context, sourceID uint32, request datasource.CreatePackJobRequest) (*model.PackJob, error)
 }

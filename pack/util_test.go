@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/boxo/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/rclone/rclone/fs"
 	"github.com/stretchr/testify/mock"

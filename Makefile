@@ -9,11 +9,12 @@ generate:
 
 lint:
 	gofmt -s -w .
+	golangci-lint run --no-config --fix --disable-all -E tagalign
 	golangci-lint run --fix
 	staticcheck ./...
 
 test:
-	go test -coverprofile=coverage.out -coverpkg=./... ./...
+	go run gotest.tools/gotestsum@latest --format testname ./...
 
 diagram: build
 	./singularity admin init

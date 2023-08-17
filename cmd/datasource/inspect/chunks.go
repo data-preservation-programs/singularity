@@ -36,6 +36,7 @@ var PackJobsCmd = &cli.Command{
 			return err
 		}
 		result, err := inspect.GetSourcePackJobsHandler(
+			c.Context,
 			db,
 			uint32(sourceID),
 			inspect.GetSourcePackJobsRequest{State: *(c.Generic("state").(*model.WorkState))},
@@ -48,7 +49,7 @@ var PackJobsCmd = &cli.Command{
 			cliutil.PrintToConsole(result, true, nil)
 			return nil
 		}
-		fmt.Println("Packing manifests:")
+		fmt.Println("Pack jobs:")
 		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
 
 		return nil

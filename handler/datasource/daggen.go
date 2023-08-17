@@ -1,8 +1,10 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
@@ -10,10 +12,11 @@ import (
 )
 
 func DagGenHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.Source, error) {
-	return dagGenHandler(db, id)
+	return dagGenHandler(ctx, db.WithContext(ctx), id)
 }
 
 // @Summary Mark a source as ready for DAG generation
@@ -25,6 +28,7 @@ func DagGenHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/daggen [post]
 func dagGenHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.Source, error) {
@@ -41,7 +45,9 @@ func dagGenHandler(
 		return nil, err
 	}
 
-	err = db.Model(&source).Update("dag_gen_state", model.Ready).Error
+	err = database.DoRetry(ctx, func() error {
+		return db.Model(&source).Update("dag_gen_state", model.Ready).Error
+	})
 	if err != nil {
 		return nil, err
 	}

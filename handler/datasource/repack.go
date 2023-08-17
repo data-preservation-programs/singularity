@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -19,6 +20,7 @@ import (
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/repack [post]
 func repackHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 	request RepackRequest,
@@ -51,7 +53,7 @@ func repackHandler(
 			return nil, err
 		}
 		if packJob.PackingState == model.Error || packJob.PackingState == model.Complete {
-			err = database.DoRetry(func() error {
+			err = database.DoRetry(ctx, func() error {
 				return db.Model(&packJob).Updates(map[string]any{
 					"packing_state": model.Ready,
 					"error_message": "",
@@ -96,9 +98,10 @@ type RepackRequest struct {
 }
 
 func RepackHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 	request RepackRequest,
 ) ([]model.PackJob, error) {
-	return repackHandler(db, id, request)
+	return repackHandler(ctx, db.WithContext(ctx), id, request)
 }

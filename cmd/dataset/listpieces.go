@@ -19,6 +19,7 @@ var ListPiecesCmd = &cli.Command{
 		defer closer.Close()
 
 		car, err := dataset.ListPiecesHandler(
+			c.Context,
 			db, c.Args().Get(0),
 		)
 		if err != nil {

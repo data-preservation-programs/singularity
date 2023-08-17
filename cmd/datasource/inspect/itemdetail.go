@@ -20,6 +20,7 @@ var FileDetailCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetSourceFileDetailHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

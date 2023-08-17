@@ -1,6 +1,7 @@
 package datasetworker
 
 import (
+	"context"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -8,15 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
+func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 	if !w.config.EnableDag {
 		return nil, nil
 	}
 	w.logger.Debugw("finding dag work")
 	var sources []model.Source
 
-	err := database.DoRetry(func() error {
-		return w.db.Transaction(func(db *gorm.DB) error {
+	err := database.DoRetry(ctx, func() error {
+		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
 			// First, find the id of the record to update
 			err := db.
 				Where("dag_gen_state = ? OR (dag_gen_state = ? AND dag_gen_worker_id is null)",
@@ -50,7 +51,7 @@ func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
 		return nil, nil
 	}
 
-	err = w.db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	err = w.dbNoContext.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
 	if err != nil {
 		return nil, err
 	}
@@ -58,15 +59,15 @@ func (w *DatasetWorkerThread) findDagWork() (*model.Source, error) {
 	return &sources[0], nil
 }
 
-func (w *DatasetWorkerThread) findPackWork() (*model.PackJob, error) {
+func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 	if !w.config.EnablePack {
 		return nil, nil
 	}
 	w.logger.Debugw("finding pack work")
 	var packJobs []model.PackJob
 
-	err := database.DoRetry(func() error {
-		return w.db.Transaction(func(db *gorm.DB) error {
+	err := database.DoRetry(ctx, func() error {
+		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
 			// First, find the id of the record to update
 			err := db.
 				Where("packing_state = ? OR (packing_state = ? AND packing_worker_id is null)", model.Ready, model.Processing).
@@ -100,14 +101,14 @@ func (w *DatasetWorkerThread) findPackWork() (*model.PackJob, error) {
 	}
 
 	var src model.Source
-	err = w.db.Joins("Dataset").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
+	err = w.dbNoContext.Joins("Dataset").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
 	if err != nil {
 		return nil, err
 	}
 	packJobs[0].Source = &src
 
 	var fileRanges []model.FileRange
-	err = w.db.Joins("File").Where("file_ranges.packing_manifest_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
+	err = w.dbNoContext.Joins("File").Where("file_ranges.pack_job_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +117,7 @@ func (w *DatasetWorkerThread) findPackWork() (*model.PackJob, error) {
 	return &packJobs[0], nil
 }
 
-func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
+func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 	if !w.config.EnableScan {
 		return nil, nil
 	}
@@ -124,9 +125,9 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 	var sources []model.Source
 	// Find all ready sources or sources that is being processed but does not have a worker id,
 	// or all source that is complete but needs rescanning
-	err := database.DoRetry(func() error {
-		return w.db.Transaction(func(db *gorm.DB) error {
-			err := w.db.
+	err := database.DoRetry(ctx, func() error {
+		return w.dbNoContext.Transaction(func(db *gorm.DB) error {
+			err := w.dbNoContext.
 				Where(
 					"(scanning_state = ? OR (scanning_state = ? AND scanning_worker_id is null)) OR "+
 						"(scanning_state = ? AND scan_interval_seconds > 0 AND last_scanned_timestamp + scan_interval_seconds < ?)",
@@ -163,7 +164,7 @@ func (w *DatasetWorkerThread) findScanWork() (*model.Source, error) {
 		return nil, nil
 	}
 
-	err = w.db.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
+	err = w.dbNoContext.Model(&sources[0]).Association("Dataset").Find(&sources[0].Dataset)
 	if err != nil {
 		return nil, err
 	}

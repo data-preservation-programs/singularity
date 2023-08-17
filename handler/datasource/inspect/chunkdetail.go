@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -11,17 +12,18 @@ import (
 )
 
 func GetSourcePackJobDetailHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.PackJob, error) {
-	return getSourcePackJobDetailHandler(db, id)
+	return getSourcePackJobDetailHandler(db.WithContext(ctx), id)
 }
 
 // @Summary Get detail of a specific pack job
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "Packing manifest ID"
+// @Param id path string true "Pack job ID"
 // @Success 200 {object} model.PackJob
 // @Failure 500 {object} api.HTTPError
 // @Router /packjob/{id} [get]

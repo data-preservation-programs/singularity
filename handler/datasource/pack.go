@@ -31,7 +31,7 @@ func PackHandler(
 // @Tags Data Source
 // @Accept json
 // @Produce json
-// @Param id path string true "Packing manifest ID"
+// @Param id path string true "Pack job ID"
 // @Success 201 {object} []model.Car
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
@@ -84,7 +84,7 @@ func Pack(
 			return nil, errors.New("file part not found in result")
 		}
 		logger.Debugw("update file part CID", "fileRangeID", fileRangeID, "CID", fileRangeCID.String())
-		err = database.DoRetry(func() error {
+		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.FileRange{}).Where("id = ?", fileRangeID).
 				Update("cid", model.CID(fileRangeCID)).Error
 		})
@@ -93,7 +93,7 @@ func Pack(
 		}
 		logger.Debugw("update file CID", "fileID", fileRange.FileID, "CID", fileRangeCID.String())
 		if fileRange.Offset == 0 && fileRange.Length == fileRange.File.Size {
-			err = database.DoRetry(func() error {
+			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.File{}).Where("id = ?", fileRange.FileID).
 					Update("cid", model.CID(fileRangeCID)).Error
 			})
@@ -105,7 +105,7 @@ func Pack(
 
 	logger.Debugw("create car for finished pack job", "packJobID", packJob.ID)
 	var cars []model.Car
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				for _, result := range result.CarResults {
@@ -142,7 +142,7 @@ func Pack(
 	}
 
 	logger.Debugw("update directory data", "packJobID", packJob.ID)
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			dirCache := make(map[uint64]*daggen.DirectoryData)
 			childrenCache := make(map[uint64][]uint64)
@@ -256,7 +256,7 @@ func Pack(
 		return nil, errors.Wrap(err, "failed to update directory CIDs")
 	}
 
-	logger.With("packing_manifest_id", packJob.ID).Info("finished packing")
+	logger.With("pack_job_id", packJob.ID).Info("finished packing")
 	if packJob.Source.DeleteAfterExport && result.CarResults[0].CarFilePath != "" {
 		logger.Info("Deleting original data source")
 		handled := map[uint64]struct{}{}

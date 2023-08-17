@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -11,16 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type PackJobRequest struct {
+type CreatePackJobRequest struct {
 	FileIDs []uint64 `json:"fileIDs" validation:"required"`
 }
 
 func CreatePackJobHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	sourceID string,
-	request PackJobRequest,
+	request CreatePackJobRequest,
 ) (*model.PackJob, error) {
-	return createPackJobHandler(db, sourceID, request)
+	return createPackJobHandler(ctx, db.WithContext(ctx), sourceID, request)
 }
 
 // @Summary Create a pack job for the specified files
@@ -34,9 +36,10 @@ func CreatePackJobHandler(
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /source/{id}/packjob [post]
 func createPackJobHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	sourceID string,
-	request PackJobRequest,
+	request CreatePackJobRequest,
 ) (*model.PackJob, error) {
 	sourceIDInt, err := strconv.Atoi(sourceID)
 	if err != nil {
@@ -48,7 +51,7 @@ func createPackJobHandler(
 		PackingState: model.Ready,
 	}
 
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				err := db.Create(&packJob).Error
@@ -58,7 +61,7 @@ func createPackJobHandler(
 				fileRangeIDChunks := util.ChunkSlice(request.FileIDs, util.BatchSize)
 				for _, fileRangeIDChunks := range fileRangeIDChunks {
 					err = db.Model(&model.FileRange{}).
-						Where("id IN ?", fileRangeIDChunks).Update("packing_manifest_id", packJob.ID).Error
+						Where("id IN ?", fileRangeIDChunks).Update("pack_job_id", packJob.ID).Error
 					if err != nil {
 						return errors.Wrap(err, "failed to update files")
 					}

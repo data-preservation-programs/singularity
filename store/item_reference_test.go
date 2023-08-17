@@ -10,8 +10,8 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/rclone/rclone/fs"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func TestFileReferenceBlockStore_Has(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -63,7 +63,7 @@ func TestFileReferenceBlockStore_GetSize(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 	ctx := context.Background()
@@ -89,7 +89,7 @@ func TestFileReferenceBlockStore_Get_RawBlock(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -117,7 +117,7 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DB:              db,
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 

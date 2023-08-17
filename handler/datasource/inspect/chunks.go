@@ -1,6 +1,8 @@
 package inspect
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
@@ -12,11 +14,12 @@ type GetSourcePackJobsRequest struct {
 }
 
 func GetSourcePackJobsHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
 	request GetSourcePackJobsRequest,
 ) ([]model.PackJob, error) {
-	return getSourcePackJobsHandler(db, id, request)
+	return getSourcePackJobsHandler(db.WithContext(ctx), id, request)
 }
 
 // @Summary Get all pack job details of a data source

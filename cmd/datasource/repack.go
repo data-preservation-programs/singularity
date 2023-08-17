@@ -10,11 +10,11 @@ import (
 var RepackCmd = &cli.Command{
 	Name:      "repack",
 	Usage:     "Retry packing a packjob or all errored packjobs of a data source",
-	ArgsUsage: "<source_id> or --pack-job-id <packing_manifest_id>",
+	ArgsUsage: "<source_id> or --pack-job-id <pack_job_id>",
 	Flags: []cli.Flag{
 		&cli.Uint64Flag{
 			Name:  "pack-job-id",
-			Usage: "Packing manifest ID to retry packing",
+			Usage: "Pack job ID to retry packing",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -29,6 +29,7 @@ var RepackCmd = &cli.Command{
 			packJobID = &c2
 		}
 		packJobs, err := datasource.RepackHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			datasource.RepackRequest{

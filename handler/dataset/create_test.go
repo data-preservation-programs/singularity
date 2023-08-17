@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"context"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -13,7 +14,7 @@ func TestCreateHandler_NoDatasetName(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{})
 	require.ErrorContains(t, err, "name is required")
 }
 
@@ -22,7 +23,7 @@ func TestCreateHandler_MaxSizeNotValid(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "not valid"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "not valid"})
 	require.ErrorContains(t, err, "invalid value for max-size")
 }
 
@@ -31,7 +32,7 @@ func TestCreateHandler_PieceSizeNotValid(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", PieceSizeStr: "not valid"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", PieceSizeStr: "not valid"})
 	require.ErrorContains(t, err, "invalid value for piece-size")
 }
 
@@ -40,7 +41,7 @@ func TestCreateHandler_PieceSizeNotPowerOfTwo(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", PieceSizeStr: "3GB"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", PieceSizeStr: "3GB"})
 	require.ErrorContains(t, err, "piece size must be a power of two")
 }
 
@@ -49,7 +50,7 @@ func TestCreateHandler_PieceSizeTooLarge(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", PieceSizeStr: "128GiB"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", PieceSizeStr: "128GiB"})
 	require.ErrorContains(t, err, "piece size cannot be larger than 64 GiB")
 }
 
@@ -58,7 +59,7 @@ func TestCreateHandler_MaxSizeTooLarge(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "63.9GiB"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "63.9GiB"})
 	require.ErrorContains(t, err, "max size needs to be reduced to leave space for padding")
 }
 
@@ -67,7 +68,7 @@ func TestCreateHandler_OutDirDoesNotExist(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", OutputDirs: []string{"not exist"}})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", OutputDirs: []string{"not exist"}})
 	require.ErrorContains(t, err, "output directory does not exist")
 }
 
@@ -76,7 +77,7 @@ func TestCreateHandler_RecipientsScriptCannotBeUsedTogether(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}, EncryptionScript: "test"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}, EncryptionScript: "test"})
 	require.ErrorContains(t, err, "encryption recipients and script cannot be used together")
 }
 
@@ -85,7 +86,7 @@ func TestCreateHandler_EncryptionNeedsOutputDir(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB", EncryptionRecipients: []string{"test"}})
 	require.ErrorContains(t, err, "encryption is not compatible with inline preparation")
 }
 
@@ -94,7 +95,7 @@ func TestCreateHandler_Success(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	defer model.DropAll(db)
-	_, err = CreateHandler(db, CreateRequest{Name: "test", MaxSizeStr: "2GB"})
+	_, err = CreateHandler(context.Background(), db, CreateRequest{Name: "test", MaxSizeStr: "2GB"})
 	require.NoError(t, err)
 	dataset := model.Dataset{}
 	db.Where("name = ?", "test").First(&dataset)

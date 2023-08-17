@@ -19,6 +19,7 @@ var FilesCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetSourceFilesHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

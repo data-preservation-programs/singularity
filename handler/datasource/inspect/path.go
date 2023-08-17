@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
@@ -22,11 +23,12 @@ type GetPathRequest struct {
 }
 
 func GetPathHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 	request GetPathRequest,
 ) (*DirDetail, error) {
-	return getPathHandler(db, id, request)
+	return getPathHandler(db.WithContext(ctx), id, request)
 }
 
 // @Summary Get all file details inside a data source path

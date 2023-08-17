@@ -22,13 +22,13 @@ type FileInfo struct {
 }
 
 func PushFileHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	datasourceHandlerResolver datasource.HandlerResolver,
 	sourceID uint32,
 	fileInfo FileInfo,
 ) (*model.File, error) {
-	return pushFileHandler(db, ctx, datasourceHandlerResolver, sourceID, fileInfo)
+	return pushFileHandler(ctx, db.WithContext(ctx), datasourceHandlerResolver, sourceID, fileInfo)
 }
 
 // @Summary Push a file to be queued
@@ -44,8 +44,8 @@ func PushFileHandler(
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /source/{id}/push [post]
 func pushFileHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	datasourceHandlerResolver datasource.HandlerResolver,
 	sourceID uint32,
 	fileInfo FileInfo,
@@ -126,12 +126,12 @@ func PushFile(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 		Hash:                      hashValue,
 	}
 	logger.Debugw("new file", "file", file)
-	err = EnsureParentDirectories(db, &file, rootID, directoryCache)
+	err = EnsureParentDirectories(ctx, db, &file, rootID, directoryCache)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to ensure parent directories")
 	}
 	var fileRanges []model.FileRange
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&file).Error
 			if err != nil {
@@ -174,7 +174,9 @@ func PushFile(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 	return &file, fileRanges, nil
 }
 
-func EnsureParentDirectories(db *gorm.DB,
+func EnsureParentDirectories(
+	ctx context.Context,
+	db *gorm.DB,
 	file *model.File, rootDirID uint64,
 	directoryCache map[string]uint64) error {
 	if file.DirectoryID != nil {
@@ -194,7 +196,7 @@ func EnsureParentDirectories(db *gorm.DB,
 			ParentID: &last,
 		}
 		logger.Debugw("creating directory", "path", p, "dir", newDir)
-		err := database.DoRetry(func() error {
+		err := database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				return db.
 					Where("parent_id = ? AND name = ?", last, segment).

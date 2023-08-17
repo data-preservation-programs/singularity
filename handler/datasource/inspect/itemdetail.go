@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -10,10 +11,11 @@ import (
 )
 
 func GetSourceFileDetailHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*model.File, error) {
-	return getSourceFileDetailHandler(db, id)
+	return getSourceFileDetailHandler(db.WithContext(ctx), id)
 }
 
 // @Summary Get details about an file

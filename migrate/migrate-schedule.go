@@ -86,6 +86,9 @@ func MigrateSchedule(cctx *cli.Context) error {
 
 		var urlTemplate string
 		if replication.URLPrefix != "" {
+			if !strings.HasSuffix(replication.URLPrefix, "/") {
+				replication.URLPrefix += "/"
+			}
 			urlTemplate = replication.URLPrefix + "{PIECE_CID}"
 		}
 		totalDealNumber := replication.MaxNumberOfDeals

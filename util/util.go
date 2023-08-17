@@ -1,6 +1,15 @@
 package util
 
-import "github.com/ybbus/jsonrpc/v3"
+import (
+	"context"
+	"crypto/rand"
+	"time"
+
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/pkg/errors"
+	"github.com/ybbus/jsonrpc/v3"
+)
 
 // NextPowerOfTwo calculates the smallest power of two that is greater than or equal to x.
 // If x is already a power of two, it returns x. For x equal to 0, the result is 1.
@@ -52,6 +61,28 @@ func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
 	}
 }
 
+// GetLotusHeadTime retrieves the timestamp of the latest block in the Lotus API and returns it as a time.Time value.
+//
+//nolint:tagliatelle
+func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (time.Time, error) {
+	client := NewLotusClient(lotusAPI, lotusToken)
+	var resp struct {
+		Blocks []struct {
+			Timestamp int64 `json:"Timestamp"`
+		} `json:"Blocks"`
+	}
+	err := client.CallFor(ctx, &resp, "Filecoin.ChainHead")
+	if err != nil {
+		return time.Time{}, errors.Wrap(err, "failed to get chain head")
+	}
+
+	if len(resp.Blocks) == 0 {
+		return time.Time{}, errors.New("chain head is empty")
+	}
+
+	return time.Unix(resp.Blocks[0].Timestamp, 0), nil
+}
+
 // ChunkMapKeys is a generic function that takes a map with keys of any comparable type and values of any type, and an integer as input.
 // It divides the keys of the input map into chunks of size 'chunkSize' and returns a 2D slice of keys.
 // It uses the ChunkSlice function to divide the keys into chunks.
@@ -99,3 +130,33 @@ func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
 }
 
 const BatchSize = 100
+
+// GenerateNewPeer is a function that generates a new peer for the IPFS network.
+// It generates a new Ed25519 key pair using a secure random source and derives a peer ID from the public key.
+// It then marshals the private and public keys into byte slices.
+//
+// Returns:
+// The private key as a byte slice, the public key as a byte slice, the peer ID, and an error if the operation failed.
+// If any of the operations (key generation, peer ID derivation, key marshalling) fail, it returns an error wrapped with a descriptive message.
+func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
+	private, public, err := crypto.GenerateEd25519Key(rand.Reader)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot generate new peer")
+	}
+
+	peerID, err := peer.IDFromPublicKey(public)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot generate peer id")
+	}
+
+	privateBytes, err := crypto.MarshalPrivateKey(private)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot marshal private key")
+	}
+
+	publicBytes, err := crypto.MarshalPublicKey(public)
+	if err != nil {
+		return nil, nil, "", errors.Wrap(err, "cannot marshal public key")
+	}
+	return privateBytes, publicBytes, peerID, nil
+}

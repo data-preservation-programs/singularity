@@ -1,11 +1,12 @@
 package dataset
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/glebarez/go-sqlite"
 	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -90,10 +91,11 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 }
 
 func CreateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {
-	return createHandler(db, request)
+	return createHandler(ctx, db.WithContext(ctx), request)
 }
 
 // @Summary Create a new dataset
@@ -107,6 +109,7 @@ func CreateHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset [post]
 func createHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {
@@ -120,16 +123,8 @@ func createHandler(
 		return nil, err
 	}
 
-	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
-	if errors.Is(err2, gorm.ErrDuplicatedKey) {
-		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
-	}
-
-	// This is thrown by sqlite when cgo is not enabled
-	// https://www.sqlite.org/rescode.html#:~:text=(2067)%20SQLITE_CONSTRAINT_UNIQUE,that%20a%20UNIQUE%20constraint%20failed.
-	// TODO: the error check logic also needs to be tested against mysql and postgres
-	var sqliteError *sqlite.Error
-	if errors.As(err2, &sqliteError) && sqliteError.Code() == 2067 {
+	err2 := database.DoRetry(ctx, func() error { return db.Create(dataset).Error })
+	if errors.Is(err2, gorm.ErrDuplicatedKey) || (err2 != nil && strings.Contains(err2.Error(), "constraint failed")) {
 		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}
 

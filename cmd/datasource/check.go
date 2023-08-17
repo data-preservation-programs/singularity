@@ -20,8 +20,8 @@ var CheckCmd = &cli.Command{
 		}
 		defer closer.Close()
 		entries, err := datasource.CheckSourceHandler(
-			db,
 			c.Context,
+			db,
 			c.Args().Get(0),
 			datasource.CheckSourceRequest{
 				Path: c.Args().Get(1),
