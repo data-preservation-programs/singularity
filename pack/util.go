@@ -273,8 +273,26 @@ func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, 
 			file.LastModifiedTimestampNano)
 }
 
-// GetBlockStreamFromFileRange streams a file range from the handler and encrypts it.
-// It returns a channel of blocks, the object, and an error if any.
+// GetBlockStreamFromFileRange reads a file (or a part of a file) identified by fileRange
+// from a specified data source. Optionally, it applies encryption to the file's content.
+// It then streams the resulting data blocks to the caller through a Go channel.
+//
+// Parameters:
+//   - ctx: A context.Context used to control the lifecycle of the function.
+//   - handler: A datasource.ReadHandler interface implementation that is capable of reading files from a data source.
+//   - fileRange: A model.FileRange struct that specifies the file to read and the range of bytes to read.
+//   - encryptor: An encryption.Encryptor interface implementation that is capable of encrypting the stream.
+//     If this is nil, the file's content is streamed without encryption.
+//
+// Returns:
+// - A channel that the caller can range over to receive data blocks from the file.
+// - An fs.Object representing the metadata of the file being read.
+// - An error if any error occurs while processing.
+//
+// Note:
+//   - If encryption is requested (i.e., encryptor is not nil), partial reads (i.e., reading a subrange of the file)
+//     are not supported and the function will return an error in this case.
+//   - The function is designed to be used concurrently, as it runs a goroutine to read blocks from the file.
 func GetBlockStreamFromFileRange(ctx context.Context,
 	handler datasource.ReadHandler,
 	fileRange model.FileRange,

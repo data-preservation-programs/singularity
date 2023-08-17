@@ -106,3 +106,14 @@ func TestDatacapWalletChooser_Choose(t *testing.T) {
 		require.ErrorAs(t, err, &ErrNoDatacap)
 	})
 }
+
+func TestRandomWalletChooser(t *testing.T) {
+	chooser := &RandomWalletChooser{}
+	ctx := context.Background()
+	wallet, err := chooser.Choose(ctx, []model.Wallet{
+		{ID: "1", Address: "address1"},
+		{ID: "2", Address: "address2"},
+	})
+	require.NoError(t, err)
+	require.Contains(t, wallet.Address, "address")
+}

@@ -231,6 +231,20 @@ func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint
 	})
 }
 
+// findWork searches for available work that the Thread can perform.
+// It sequentially looks for different types of work, returning when it finds a
+// type of work that needs to be performed or determines that no work is available.
+// It first looks for Dag work, then Scan work, and finally Pack work.
+//
+// Parameters:
+// - ctx context.Context: The context to use for cancellation and deadlines.
+//
+// Returns:
+//   - WorkType: The type of work that was found. This will be one of the WorkType constants.
+//   - *model.Source: A pointer to the Source object associated with the found work, or nil if no source work was found.
+//   - *model.PackJob: A pointer to the PackJob object associated with the found work, or nil if no pack job work was found.
+//   - error: An error that will be returned if any issues were encountered while trying to find work.
+//     This will be nil if the function was successful or if no work was found.
 func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.PackJob, error) {
 	source, err := w.findDagWork(ctx)
 	if err != nil {

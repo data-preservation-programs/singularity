@@ -26,6 +26,20 @@ type State struct {
 
 var logger = log.Logger("healthcheck")
 
+// StartHealthCheckCleanup continuously runs the HealthCheckCleanup function
+// at intervals specified by the cleanupInterval. The function cleans up resources
+// or updates the health status of various components in your application, as
+// implemented by HealthCheckCleanup.
+//
+// It is designed to be run as a background task and will continue to run
+// until the passed context is cancelled.
+//
+// Parameters:
+//   - ctx context.Context: The context that controls cancellations and timeouts.
+//     When the context is cancelled (e.g. during shutdown), the function returns,
+//     stopping its background cleaning task.
+//   - db *gorm.DB: The database connection object used by HealthCheckCleanup to interact with
+//     the database.
 func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	for {
 		HealthCheckCleanup(ctx, db)
@@ -189,6 +203,26 @@ func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState
 	}
 }
 
+// StartReportHealth continuously runs the ReportHealth function at intervals
+// specified by the reportInterval. This function is responsible for reporting
+// the health status of a worker to a centralized store (e.g., a database).
+//
+// The health status of the worker is determined by calling the provided getState
+// function, which should return the current state of the worker.
+//
+// This function is designed to be run as a background task and will continue to
+// run until the passed context is cancelled.
+//
+// Parameters:
+//   - ctx context.Context: The context that controls cancellations and timeouts.
+//     When the context is cancelled (e.g. during shutdown), the function returns,
+//     stopping its background health reporting task.
+//   - db *gorm.DB: The database connection object used by ReportHealth to interact with
+//     the database.
+//   - workerID uuid.UUID: The unique identifier for the worker whose health is being reported.
+//   - getState func() State: A function that, when called, returns the current health
+//     state of the worker. The returned State object is expected to contain the
+//     necessary information for the ReportHealth function.
 func StartReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
 	for {
 		select {

@@ -176,7 +176,7 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
 	proposal := testProposal(t)
-	resp, err := maker.makeDeal111(
+	resp, err := maker.MakeDeal111(
 		ctx,
 		proposal,
 		DealConfig{
@@ -234,7 +234,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
 	proposal := testProposal(t)
-	resp, err := maker.makeDeal120(
+	resp, err := maker.MakeDeal120(
 		ctx,
 		proposal,
 		uuid.New(),
@@ -271,7 +271,7 @@ func TestDealMaker_GetCollateral(t *testing.T) {
 			Max: "2000000000000000000000",
 		}
 	})
-	result, err := maker.getMinCollateral(context.Background(), 34359738368, false)
+	result, err := maker.GetMinCollateral(context.Background(), 34359738368, false)
 	require.NoError(t, err)
 	require.Equal(t, "8649874114492479", result.String())
 }
@@ -286,7 +286,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	time.Sleep(100 * time.Millisecond)
-	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
+	protocols, err := maker.GetProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
 		Addrs: server.Addrs(),
 	})
@@ -310,7 +310,7 @@ func TestDealMaker_GetProviderInfo(t *testing.T) {
 		}
 	})
 
-	info, err := maker.getProviderInfo(context.Background(), "address1")
+	info, err := maker.GetProviderInfo(context.Background(), "address1")
 	require.NoError(t, err)
 	require.Len(t, info.Multiaddrs, 1)
 	require.Contains(t, info.Multiaddrs[0].String(), "/tcp/24001")
