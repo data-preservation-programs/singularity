@@ -69,7 +69,7 @@ type DatasourceDropboxRequest struct {
 	// Instructs rclone to work on shared folders.
 	SharedFolders *string `json:"sharedFolders,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

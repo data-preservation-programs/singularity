@@ -38,13 +38,13 @@ var StatusCmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println("Chunks by state:")
-		cliutil.PrintToConsole(result.ChunkSummary, c.Bool("json"), nil)
-		fmt.Println("Items by state:")
-		cliutil.PrintToConsole(result.ItemSummary, c.Bool("json"), nil)
-		if len(result.FailedChunks) > 0 {
-			fmt.Println("Failed chunks:")
-			cliutil.PrintToConsole(result.FailedChunks, c.Bool("json"), nil)
+		fmt.Println("Pack jobs by state:")
+		cliutil.PrintToConsole(result.PackJobSummary, c.Bool("json"), nil)
+		fmt.Println("Files by state:")
+		cliutil.PrintToConsole(result.FileSummary, c.Bool("json"), nil)
+		if len(result.FailedPackJobs) > 0 {
+			fmt.Println("Failed pack jobs:")
+			cliutil.PrintToConsole(result.FailedPackJobs, c.Bool("json"), nil)
 		}
 		return nil
 	},

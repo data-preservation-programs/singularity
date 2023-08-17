@@ -74,22 +74,22 @@ func TestClients(t *testing.T) {
 		require.ErrorAs(t, err, &asNotFoundError)
 		require.Nil(t, notFoundSource)
 
-		// push item
-		file, err := os.CreateTemp(path, "push-*")
+		// push osFile
+		osFile, err := os.CreateTemp(path, "push-*")
 		require.NoError(t, err)
 		buf := make([]byte, 1000)
 		_, _ = rand.Read(buf)
-		file.Write(buf)
-		name := file.Name()
-		err = file.Close()
+		osFile.Write(buf)
+		name := osFile.Name()
+		err = osFile.Close()
 		require.NoError(t, err)
-		item, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: filepath.Base(name)})
+		file, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: filepath.Base(name)})
 		require.NoError(t, err)
-		require.Equal(t, filepath.Base(name), item.Path)
+		require.Equal(t, filepath.Base(name), file.Path)
 
-		// get item
-		returnedItem, err := client.GetItem(ctx, item.ID)
+		// get file
+		returnedFile, err := client.GetFile(ctx, file.ID)
 		require.NoError(t, err)
-		require.Equal(t, item.Path, returnedItem.Path)
+		require.Equal(t, file.Path, returnedFile.Path)
 	})
 }

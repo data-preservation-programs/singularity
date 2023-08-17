@@ -46,7 +46,7 @@ func TestMind(t *testing.T) {
 	require.Equal(t, 1, Min(1, 1))
 }
 
-func TestAssembleItemFromLinks(t *testing.T) {
+func TestAssembleFileFromLinks(t *testing.T) {
 	links := []format.Link{
 		{
 			Name: "",
@@ -60,7 +60,7 @@ func TestAssembleItemFromLinks(t *testing.T) {
 		},
 	}
 
-	blocks, node, err := AssembleItemFromLinks(links)
+	blocks, node, err := AssembleFileFromLinks(links)
 	require.NoError(t, err)
 	require.NotNil(t, node)
 	size, err := node.Size()
@@ -71,7 +71,7 @@ func TestAssembleItemFromLinks(t *testing.T) {
 	require.Equal(t, "bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma", blocks[0].Cid().String())
 }
 
-func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
+func TestAssembleFileFromLinks_LargeFile(t *testing.T) {
 	links := []format.Link{}
 	for i := 0; i < 2_000; i++ {
 		links = append(links, format.Link{
@@ -81,7 +81,7 @@ func TestAssembleItemFromLinks_LargeFile(t *testing.T) {
 		})
 	}
 
-	blocks, node, err := AssembleItemFromLinks(links)
+	blocks, node, err := AssembleFileFromLinks(links)
 	require.NoError(t, err)
 	require.NotNil(t, node)
 	size, err := node.Size()
@@ -124,19 +124,19 @@ func (m *MockReadHandler) Read(ctx context.Context, path string, offset int64, l
 	return args.Get(0).(io.ReadCloser), nil, args.Error(2)
 }
 
-func TestGetBlockStreamFromItem(t *testing.T) {
+func TestGetBlockStreamFromFile(t *testing.T) {
 	ctx := context.Background()
 	handler := new(MockReadHandler)
 	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	item := model.ItemPart{
+	file := model.FileRange{
 		Offset: 0,
 		Length: 5,
-		Item: &model.Item{
+		File: &model.File{
 			Size: 5,
 		},
 	}
-	blockResultChan, _, err := GetBlockStreamFromItem(ctx, handler, item, nil)
+	blockResultChan, _, err := GetBlockStreamFromFile(ctx, handler, file, nil)
 	require.NoError(t, err)
 	blockResults := make([]BlockResult, 0)
 	for r := range blockResultChan {

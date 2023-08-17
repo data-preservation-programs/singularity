@@ -111,7 +111,7 @@ type DatasourceAzureblobRequest struct {
 	// Path to file containing credentials for use with a service principal.
 	ServicePrincipalFile string `json:"servicePrincipalFile,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

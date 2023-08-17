@@ -11,14 +11,14 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/encryption"
 	"github.com/ipfs/boxo/util"
-	"github.com/ipfs/go-block-format"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	chunk "github.com/ipfs/go-ipfs-chunker"
 	cbor "github.com/ipfs/go-ipld-cbor"
-	"github.com/ipfs/go-ipld-format"
+	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-unixfs"
-	"github.com/ipfs/go-unixfs/pb"
+	unixfs_pb "github.com/ipfs/go-unixfs/pb"
 	"github.com/ipld/go-car"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
@@ -63,10 +63,10 @@ func Min(i int, i2 int) int {
 	return i2
 }
 
-// AssembleItemFromLinks creates a new UnixFS parent node from child links.
+// AssembleFileFromLinks creates a new UnixFS parent node from child links.
 // This function handles constructing layers of parent nodes.
 // It returns the additional blocks, the root node, and an error if any.
-func AssembleItemFromLinks(links []format.Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
+func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
 	if len(links) <= 1 {
 		return nil, nil, errors.New("links must be more than 1")
 	}
@@ -161,11 +161,11 @@ type BlockResult struct {
 	Error error
 }
 
-var ErrItemModified = errors.New("item has been modified")
+var ErrFileModified = errors.New("file has been modified")
 
-func IsSameEntry(ctx context.Context, item model.Item, object fs.Object) (bool, string) {
-	if item.Size != object.Size() {
-		return false, fmt.Sprintf("size mismatch: %d != %d", item.Size, object.Size())
+func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, string) {
+	if file.Size != object.Size() {
+		return false, fmt.Sprintf("size mismatch: %d != %d", file.Size, object.Size())
 	}
 	var err error
 	// last modified can be time.Now() if fetch failed so it may not be reliable.
@@ -185,28 +185,28 @@ func IsSameEntry(ctx context.Context, item model.Item, object fs.Object) (bool, 
 			logger.Errorw("failed to hash", "error", err)
 		}
 	}
-	if item.Hash != "" && hashValue != "" && item.Hash != hashValue {
-		return false, fmt.Sprintf("hash mismatch: %s != %s", item.Hash, hashValue)
+	if file.Hash != "" && hashValue != "" && file.Hash != hashValue {
+		return false, fmt.Sprintf("hash mismatch: %s != %s", file.Hash, hashValue)
 	}
 	if lastModifiedReliable {
-		return lastModified.UnixNano() == item.LastModifiedTimestampNano,
+		return lastModified.UnixNano() == file.LastModifiedTimestampNano,
 			fmt.Sprintf("last modified mismatch: %d != %d",
 				lastModified.UnixNano(),
-				item.LastModifiedTimestampNano)
+				file.LastModifiedTimestampNano)
 	}
 	return true, ""
 }
 
-// GetBlockStreamFromItem streams an item from the handler and encrypts it.
+// GetBlockStreamFromFile streams a file from the handler and encrypts it.
 // It returns a channel of blocks, the object, and an error if any.
-func GetBlockStreamFromItem(ctx context.Context,
+func GetBlockStreamFromFile(ctx context.Context,
 	handler datasource.ReadHandler,
-	itemPart model.ItemPart,
+	fileRange model.FileRange,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
-	if encryptor != nil && (itemPart.Offset != 0 || itemPart.Length != itemPart.Item.Size) {
+	if encryptor != nil && (fileRange.Offset != 0 || fileRange.Length != fileRange.File.Size) {
 		return nil, nil, errors.New("encryption is not supported for partial reads")
 	}
-	readStream, object, err := handler.Read(ctx, itemPart.Item.Path, itemPart.Offset, itemPart.Length)
+	readStream, object, err := handler.Read(ctx, fileRange.File.Path, fileRange.Offset, fileRange.Length)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to open stream")
 	}
@@ -224,17 +224,17 @@ func GetBlockStreamFromItem(ctx context.Context,
 			}
 		}
 		switch {
-		case hashValue != "" && hashValue != itemPart.Item.Hash:
-			return nil, object, errors.Wrapf(ErrItemModified,
-				"itemPart has been modified: %s, oldHash: %s, newHash: %s",
-				itemPart.Item.Path, itemPart.Item.Hash, hashValue)
-		case hashValue == "" && lastModifiedReliable && (lastModified.UnixNano() != itemPart.Item.LastModifiedTimestampNano || size != itemPart.Item.Size):
-			return nil, object, errors.Wrapf(ErrItemModified,
-				"itemPart has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %d, newLastModified: %d",
-				itemPart.Item.Path, itemPart.Item.Size, size, itemPart.Item.LastModifiedTimestampNano, lastModified.UnixNano())
-		case hashValue == "" && !lastModifiedReliable && size != itemPart.Item.Size:
-			return nil, object, errors.Wrapf(ErrItemModified, "itemPart has been modified: %s, oldSize: %d, newSize: %d",
-				itemPart.Item.Path, itemPart.Item.Size, size)
+		case hashValue != "" && hashValue != fileRange.File.Hash:
+			return nil, object, errors.Wrapf(ErrFileModified,
+				"fileRange has been modified: %s, oldHash: %s, newHash: %s",
+				fileRange.File.Path, fileRange.File.Hash, hashValue)
+		case hashValue == "" && lastModifiedReliable && (lastModified.UnixNano() != fileRange.File.LastModifiedTimestampNano || size != fileRange.File.Size):
+			return nil, object, errors.Wrapf(ErrFileModified,
+				"fileRanage has been modified: %s, oldSize: %d, newSize: %d, oldLastModified: %d, newLastModified: %d",
+				fileRange.File.Path, fileRange.File.Size, size, fileRange.File.LastModifiedTimestampNano, lastModified.UnixNano())
+		case hashValue == "" && !lastModifiedReliable && size != fileRange.File.Size:
+			return nil, object, errors.Wrapf(ErrFileModified, "fileRange has been modified: %s, oldSize: %d, newSize: %d",
+				fileRange.File.Path, fileRange.File.Size, size)
 		}
 	}
 
@@ -255,7 +255,7 @@ func GetBlockStreamFromItem(ctx context.Context,
 		}
 		defer readCloser.Close()
 		defer close(blockChan)
-		offset := itemPart.Offset
+		offset := fileRange.Offset
 		firstChunk := true
 		for {
 			if ctx.Err() != nil {

@@ -51,7 +51,7 @@ PostSourceIDRepackOK describes a response with status code 200, with default hea
 OK
 */
 type PostSourceIDRepackOK struct {
-	Payload []*models.ModelChunk
+	Payload []*models.ModelPackJob
 }
 
 // IsSuccess returns true when this post source Id repack o k response has a 2xx status code
@@ -92,7 +92,7 @@ func (o *PostSourceIDRepackOK) String() string {
 	return fmt.Sprintf("[POST /source/{id}/repack][%d] postSourceIdRepackOK  %+v", 200, o.Payload)
 }
 
-func (o *PostSourceIDRepackOK) GetPayload() []*models.ModelChunk {
+func (o *PostSourceIDRepackOK) GetPayload() []*models.ModelPackJob {
 	return o.Payload
 }
 

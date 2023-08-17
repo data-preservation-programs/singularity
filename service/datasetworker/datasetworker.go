@@ -161,7 +161,7 @@ var ErrorMessageKey = map[WorkType]string{
 
 var WorkModel = map[WorkType]func() any{
 	WorkTypeScan: func() any { return &model.Source{} },
-	WorkTypePack: func() any { return &model.Chunk{} },
+	WorkTypePack: func() any { return &model.PackJob{} },
 	WorkTypeDag:  func() any { return &model.Source{} },
 }
 
@@ -202,7 +202,7 @@ func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint
 	})
 }
 
-func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.Chunk, error) {
+func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.PackJob, error) {
 	source, err := w.findDagWork(ctx)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "failed to find dag work")
@@ -219,12 +219,12 @@ func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.
 		return WorkTypeScan, source, nil, nil
 	}
 
-	chunk, err := w.findPackWork(ctx)
+	packJob, err := w.findPackWork(ctx)
 	if err != nil {
 		return "", nil, nil, errors.Wrap(err, "failed to find pack work")
 	}
-	if chunk != nil {
-		return WorkTypePack, nil, chunk, nil
+	if packJob != nil {
+		return WorkTypePack, nil, packJob, nil
 	}
 
 	return WorkTypeNone, nil, nil, nil
@@ -238,7 +238,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 	}()
 	for {
 		var id uint64
-		workType, source, chunk, err := w.findWork(ctx)
+		workType, source, packJob, err := w.findWork(ctx)
 		if err != nil {
 			goto errorLoop
 		}
@@ -259,8 +259,8 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			err = w.scan(ctx, *source, source.Type != "manual")
 			id = uint64(source.ID)
 		case WorkTypePack:
-			err = w.pack(ctx, *chunk)
-			id = uint64(chunk.ID)
+			err = w.pack(ctx, *packJob)
+			id = uint64(packJob.ID)
 		case WorkTypeDag:
 			err = w.dag(ctx, *source)
 			id = uint64(source.ID)

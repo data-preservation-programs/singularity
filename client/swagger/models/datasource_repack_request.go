@@ -17,8 +17,8 @@ import (
 // swagger:model datasource.RepackRequest
 type DatasourceRepackRequest struct {
 
-	// chunk Id
-	ChunkID int64 `json:"chunkId,omitempty"`
+	// pack job Id
+	PackJobID int64 `json:"packJobId,omitempty"`
 }
 
 // Validate validates this datasource repack request
