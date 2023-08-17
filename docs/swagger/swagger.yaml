@@ -5038,7 +5038,7 @@ definitions:
         type: integer
       packingState:
         $ref: '#/definitions/model.WorkState'
-      packingWorkerID:
+      packingWorkerId:
         type: string
       sourceId:
         type: integer

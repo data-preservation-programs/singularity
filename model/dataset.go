@@ -266,8 +266,8 @@ type PackJob struct {
 	CreatedAt       time.Time   `json:"createdAt"`
 	SourceID        uint32      `gorm:"index:source_summary_pack_jobs"                                        json:"sourceId"`
 	Source          *Source     `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"                       json:"source,omitempty"          swaggerignore:"true"`
-	PackingState    WorkState   `gorm:"index:source_summary_pack_jobs;index" 						          json:"packingState"`
-	PackingWorkerID *string     `gorm:"size:63"                                        						  json:"packingWorkerId,omitempty"`
+	PackingState    WorkState   `gorm:"index:source_summary_pack_jobs;index"                                  json:"packingState"`
+	PackingWorkerID *string     `gorm:"size:63"                                                               json:"packingWorkerId,omitempty"`
 	PackingWorker   *Worker     `gorm:"foreignKey:PackingWorkerID;references:ID;constraint:OnDelete:SET NULL" json:"packingWorker,omitempty"   swaggerignore:"true"`
 	ErrorMessage    string      `json:"errorMessage"`
 	FileRanges      []FileRange `gorm:"constraint:OnDelete:SET NULL"                                          json:"fileRanges,omitempty"`
@@ -276,18 +276,18 @@ type PackJob struct {
 
 // File makes a reference to the data source file, i.e. a local file.
 type File struct {
-	_                         struct{}    `cbor:",toarray"                                                  json:"-"                   swaggerignore:"true"`
+	_                         struct{}    `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
 	ID                        uint64      `gorm:"primaryKey"                                                json:"id"`
 	CreatedAt                 time.Time   `json:"createdAt"`
 	CID                       CID         `gorm:"index:source_summary_files;column:cid;type:bytes;size:255" json:"cid"`
 	SourceID                  uint32      `gorm:"index:check_existence;index:source_summary_files"          json:"sourceId"`
-	Source                    *Source     `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"    swaggerignore:"true"`
+	Source                    *Source     `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"           json:"source,omitempty"     swaggerignore:"true"`
 	Path                      string      `json:"path"`
 	Hash                      string      `json:"hash"`
 	Size                      int64       `json:"size"`
 	LastModifiedTimestampNano int64       `json:"lastModified"`
 	DirectoryID               *uint64     `gorm:"index"                                                     json:"directoryId"`
-	Directory                 *Directory  `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty" swaggerignore:"true"`
+	Directory                 *Directory  `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"        json:"directory,omitempty"  swaggerignore:"true"`
 	FileRanges                []FileRange `gorm:"constraint:OnDelete:CASCADE"                               json:"fileRanges,omitempty"`
 }
 
@@ -313,13 +313,13 @@ func CreateIndexes(db *gorm.DB) error {
 }
 
 type FileRange struct {
-	ID        uint64   `gorm:"primaryKey"                                                json:"id"`
-	FileID    uint64   `gorm:"index:find_remaining"                                      json:"fileId"`
-	File      *File    `gorm:"foreignKey:FileID;constraint:OnDelete:CASCADE"             json:"file,omitempty"`
+	ID        uint64   `gorm:"primaryKey"                                        json:"id"`
+	FileID    uint64   `gorm:"index:find_remaining"                              json:"fileId"`
+	File      *File    `gorm:"foreignKey:FileID;constraint:OnDelete:CASCADE"     json:"file,omitempty"`
 	Offset    int64    `json:"offset"`
 	Length    int64    `json:"length"`
-	CID       CID      `gorm:"column:cid;type:bytes"                                     json:"cid"`
-	PackJobID *uint32  `gorm:"index:find_remaining"                                      json:"packJobId"`
+	CID       CID      `gorm:"column:cid;type:bytes"                             json:"cid"`
+	PackJobID *uint32  `gorm:"index:find_remaining"                              json:"packJobId"`
 	PackJob   *PackJob `gorm:"foreignKey:PackJobID;constraint:OnDelete:SET NULL" json:"packJob,omitempty" swaggerignore:"true"`
 }
 
@@ -368,20 +368,20 @@ func (s *Source) RootDirectoryID(db *gorm.DB) (uint64, error) {
 // In the case of inline preparation, the path may be empty so the Car should be constructed
 // on the fly using CarBlock, FileBlock and RawBlock tables.
 type Car struct {
-	_         struct{}  `cbor:",toarray"                                                   json:"-"                 swaggerignore:"true"`
-	ID        uint32    `gorm:"primaryKey"                                                 json:"id"`
+	_         struct{}  `cbor:",toarray"                                         json:"-"                 swaggerignore:"true"`
+	ID        uint32    `gorm:"primaryKey"                                       json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
-	PieceCID  CID       `gorm:"column:piece_cid;index;type:bytes;size:255"                 json:"pieceCid"`
+	PieceCID  CID       `gorm:"column:piece_cid;index;type:bytes;size:255"       json:"pieceCid"`
 	PieceSize int64     `json:"pieceSize"`
-	RootCID   CID       `gorm:"column:root_cid;type:bytes"                                 json:"rootCid"`
+	RootCID   CID       `gorm:"column:root_cid;type:bytes"                       json:"rootCid"`
 	FileSize  int64     `json:"fileSize"`
 	FilePath  string    `json:"filePath"`
-	DatasetID uint32    `gorm:"index"                                                      json:"datasetId"`
-	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE"           json:"dataset,omitempty" swaggerignore:"true"`
-	SourceID  *uint32   `gorm:"index"                                                      json:"sourceId"`
-	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"            json:"source,omitempty"  swaggerignore:"true"`
-	PackJobID *uint32   `gorm:"index"                                                      json:"packJobId"`
-	PackJob   *PackJob  `gorm:"foreignKey:PackJobID;constraint:OnDelete:CASCADE"   json:"packJob,omitempty"   swaggerignore:"true"`
+	DatasetID uint32    `gorm:"index"                                            json:"datasetId"`
+	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
+	SourceID  *uint32   `gorm:"index"                                            json:"sourceId"`
+	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"  json:"source,omitempty"  swaggerignore:"true"`
+	PackJobID *uint32   `gorm:"index"                                            json:"packJobId"`
+	PackJob   *PackJob  `gorm:"foreignKey:PackJobID;constraint:OnDelete:CASCADE" json:"packJob,omitempty" swaggerignore:"true"`
 	Header    []byte    `json:"header"`
 }
 

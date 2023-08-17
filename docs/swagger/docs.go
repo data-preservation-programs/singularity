@@ -10273,7 +10273,7 @@ const docTemplate = `{
                 "packingState": {
                     "$ref": "#/definitions/model.WorkState"
                 },
-                "packingWorkerID": {
+                "packingWorkerId": {
                     "type": "string"
                 },
                 "sourceId": {
