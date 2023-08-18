@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/data-preservation-programs/singularity/pack/encryption"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/ipfs/boxo/util"
 	"github.com/rclone/rclone/fs"
 
@@ -88,7 +89,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 	filepath = path.Join(outDir, filename)
 	file, err := os.Create(filepath)
 	if err != nil {
-		return nil, nil, "", errors.Wrap(err, "failed to create file at "+filepath)
+		return nil, nil, "", errors.Wrapf(err, "failed to create file at %s", filepath)
 	}
 	writer := io.MultiWriter(calc, file)
 	return WriteCloser{Writer: writer, Closer: file}, calc, filepath, nil
@@ -102,7 +103,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 //
 // Parameters:
 // - ctx: Context used to handle cancellation and deadlines.
-// - handler: The ReadHandler interface which handles reading data from a data source.
+// - handlerMap: The handler map used to retrieve the data blocks. The key is the storage ID.
 // - dataset: Information about the dataset being processed.
 // - fileRanges: List of data blocks that need to be included in the CAR file.
 // - outDir: Directory where the CAR file(s) will be written.
@@ -114,7 +115,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 //   - error: An error that occurred during the CAR assembly process, or nil if the operation was successful.
 func AssembleCar(
 	ctx context.Context,
-	handler storagesystem.ReadHandler,
+	handlerMap map[uint32]storagesystem.Reader,
 	dataset model.Preparation,
 	fileRanges []model.FileRange,
 	outDir string,
@@ -142,12 +143,12 @@ func AssembleCar(
 		if offset == 0 {
 			writeCloser, calc, filepath, err = GetMultiWriter(outDir)
 			if err != nil {
-				return errors.Wrap(err, "failed to get multi writer")
+				return errors.WithStack(err)
 			}
 			current.RootCID = c
 			headerBytes, err := WriteCarHeader(writeCloser, c)
 			if err != nil {
-				return errors.Wrap(err, "failed to write header")
+				return errors.WithStack(err)
 			}
 
 			offset += int64(len(headerBytes))
@@ -164,7 +165,7 @@ func AssembleCar(
 		}
 		pieceCid, finalPieceSize, err := GetCommp(calc, uint64(pieceSize))
 		if err != nil {
-			return errors.Wrap(err, "failed to get commp")
+			return errors.WithStack(err)
 		}
 		current.PieceCID = pieceCid
 		current.PieceSize = int64(finalPieceSize)
@@ -178,7 +179,7 @@ func AssembleCar(
 		if filepath != "" {
 			err = os.Rename(filepath, current.CarFilePath)
 			if err != nil {
-				return errors.Wrap(err, "failed to create symlink")
+				return errors.Wrapf(err, "failed to rename from %s to %s", filepath, current.CarFilePath)
 			}
 		}
 		result.CarResults = append(result.CarResults, current)
@@ -194,14 +195,14 @@ func AssembleCar(
 		links := make([]format.Link, 0)
 		encryptor, err := encryption.GetEncryptor(dataset)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get encryptor")
+			return nil, errors.WithStack(err)
 		}
 		if encryptor != nil && outDir == "" {
 			return nil, errors.New("encryption is not supported without an output directory")
 		}
-		blockChan, object, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, encryptor)
+		blockChan, object, err := GetBlockStreamFromFileRange(ctx, handlerMap[fileRange.File.SourceStorageID], fileRange, encryptor)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to stream fileRange")
+			return nil, errors.WithStack(err)
 		}
 
 		result.Objects[fileRange.FileID] = object
@@ -216,16 +217,16 @@ func AssembleCar(
 					break blockChanLoop
 				}
 				if block.Error != nil {
-					return nil, errors.Wrap(block.Error, "failed to stream block")
+					return nil, errors.WithStack(block.Error)
 				}
 				basicBlock, _ := blocks.NewBlockWithCid(block.Raw, block.CID)
 				err = addHeaderIfNeeded(basicBlock.Cid())
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to add header")
+					return nil, errors.WithStack(err)
 				}
 				written, err := WriteCarBlock(writeCloser, basicBlock)
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to write block")
+					return nil, errors.WithStack(err)
 				}
 
 				if !dataset.UseEncryption() {
@@ -253,7 +254,7 @@ func AssembleCar(
 				)
 				err = checkResult(false)
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to check result")
+					return nil, errors.WithStack(err)
 				}
 			}
 		}
@@ -269,16 +270,16 @@ func AssembleCar(
 
 		blks, rootNode, err := AssembleFileFromLinks(links)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to assemble fileRange")
+			return nil, errors.WithStack(err)
 		}
 		for _, blk := range blks {
 			err = addHeaderIfNeeded(blk.Cid())
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to add header")
+				return nil, errors.WithStack(err)
 			}
 			written, err := WriteCarBlock(writeCloser, blk)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to write block")
+				return nil, errors.WithStack(err)
 			}
 
 			if !dataset.UseEncryption() {
@@ -295,7 +296,7 @@ func AssembleCar(
 			offset += written
 			err = checkResult(false)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to check result")
+				return nil, errors.WithStack(err)
 			}
 		}
 
@@ -304,7 +305,7 @@ func AssembleCar(
 
 	err = checkResult(true)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to check result")
+		return nil, errors.WithStack(err)
 	}
 	return result, nil
 }
@@ -327,13 +328,13 @@ func AssembleCar(
 func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error) {
 	rawCommp, rawPieceSize, err := calc.Digest()
 	if err != nil {
-		return cid.Undef, 0, errors.Wrap(err, "failed to calculate commp")
+		return cid.Undef, 0, errors.WithStack(err)
 	}
 
 	if rawPieceSize < targetPieceSize {
 		rawCommp, err = commp.PadCommP(rawCommp, rawPieceSize, targetPieceSize)
 		if err != nil {
-			return cid.Undef, 0, errors.Wrap(err, "failed to pad commp")
+			return cid.Undef, 0, errors.WithStack(err)
 		}
 
 		rawPieceSize = targetPieceSize
@@ -343,7 +344,7 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 
 	commCid, err := commcid.DataCommitmentV1ToCID(rawCommp)
 	if err != nil {
-		return cid.Undef, 0, errors.Wrap(err, "failed to convert commp to cid")
+		return cid.Undef, 0, errors.WithStack(err)
 	}
 
 	return commCid, rawPieceSize, nil

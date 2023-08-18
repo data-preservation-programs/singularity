@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/multiformats/go-varint"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -38,7 +39,7 @@ func TestAssembleCar_LargeFiles(t *testing.T) {
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Preparation{}, files, "", 1<<30)
+	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{0: handler}, model.Preparation{}, files, "", 1<<30)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -62,7 +63,7 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Preparation{}, files, "", 1<<20)
+	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{0: handler}, model.Preparation{}, files, "", 1<<20)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -94,7 +95,7 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Preparation{
+	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{0: handler}, model.Preparation{
 		EncryptionRecipients: []string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"},
 	}, files, t.TempDir(), 1<<20)
 	require.NoError(t, err)

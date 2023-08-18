@@ -31,7 +31,7 @@ func NewAgeEncryptor(recipients []string) (Encryptor, error) {
 	for _, recipient := range recipients {
 		r, err := age.ParseX25519Recipient(recipient)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse recipient")
+			return nil, errors.Wrapf(err, "failed to parse recipient %s", recipient)
 		}
 		rs = append(rs, r)
 	}

@@ -50,17 +50,17 @@ func createParentNode(links []format.Link) (*merkledag.ProtoNode, uint64, error)
 	}
 	nodeBytes, err := node.GetBytes()
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "failed to get bytes from node")
+		return nil, 0, errors.WithStack(err)
 	}
 	pbNode := merkledag.NodeWithData(nodeBytes)
 	err = pbNode.SetCidBuilder(merkledag.V1CidPrefix())
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "failed to set cid builder")
+		return nil, 0, errors.WithStack(err)
 	}
 	for i := range links {
 		err = pbNode.AddRawLink("", &links[i])
 		if err != nil {
-			return nil, 0, errors.Wrap(err, "failed to add link to node")
+			return nil, 0, errors.WithStack(err)
 		}
 	}
 	return pbNode, total, nil
@@ -100,12 +100,12 @@ func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.Prot
 		for start := 0; start < len(links); start += NumLinkPerNode {
 			newNode, total, err := createParentNode(links[start:Min(start+NumLinkPerNode, len(links))])
 			if err != nil {
-				return nil, nil, errors.Wrap(err, "failed to create parent node")
+				return nil, nil, errors.WithStack(err)
 			}
 
 			basicBlock, err := blocks.NewBlockWithCid(newNode.RawData(), newNode.Cid())
 			if err != nil {
-				return nil, nil, errors.Wrap(err, "failed to create block")
+				return nil, nil, errors.WithStack(err)
 			}
 			result = append(result, basicBlock)
 			newLinks = append(
@@ -135,11 +135,11 @@ func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.Prot
 func WriteCarHeader(writer io.Writer, root cid.Cid) ([]byte, error) {
 	headerBytes, err := util2.GenerateCarHeader(root)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to generate header")
+		return nil, errors.WithStack(err)
 	}
 	_, err = io.Copy(writer, bytes.NewReader(headerBytes))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to write header")
+		return nil, errors.WithStack(err)
 	}
 
 	return headerBytes, nil
@@ -159,19 +159,19 @@ func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 	varintBytes := varint.ToUvarint(uint64(len(block.RawData()) + block.Cid().ByteLen()))
 	n, err := io.Copy(writer, bytes.NewReader(varintBytes))
 	if err != nil {
-		return written, errors.Wrap(err, "failed to write varint")
+		return written, errors.WithStack(err)
 	}
 	written += n
 
 	n, err = io.Copy(writer, bytes.NewReader(block.Cid().Bytes()))
 	if err != nil {
-		return written, errors.Wrap(err, "failed to write cid")
+		return written, errors.WithStack(err)
 	}
 	written += n
 
 	n, err = io.Copy(writer, bytes.NewReader(block.RawData()))
 	if err != nil {
-		return written, errors.Wrap(err, "failed to write raw")
+		return written, errors.WithStack(err)
 	}
 	written += n
 	return written, nil
@@ -195,7 +195,7 @@ var ErrFileModified = errors.New("file has been modified")
 //
 // Parameters:
 //   - ctx: A context.Context used to control the lifecycle of the function.
-//   - handler: A datasource.ReadHandler interface implementation that is capable of reading files from a data source.
+//   - handler: A storagesystem.Reader interface implementation that is capable of reading files from a data source.
 //   - fileRange: A model.FileRange struct that specifies the file to read and the range of bytes to read.
 //   - encryptor: An encryption.Encryptor interface implementation that is capable of encrypting the stream.
 //     If this is nil, the file's content is streamed without encryption.
@@ -210,7 +210,7 @@ var ErrFileModified = errors.New("file has been modified")
 //     are not supported and the function will return an error in this case.
 //   - The function is designed to be used concurrently, as it runs a goroutine to read blocks from the file.
 func GetBlockStreamFromFileRange(ctx context.Context,
-	handler storagesystem.ReadHandler,
+	handler storagesystem.Reader,
 	fileRange model.FileRange,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
 	if encryptor != nil && (fileRange.Offset != 0 || fileRange.Length != fileRange.File.Size) {
@@ -218,7 +218,7 @@ func GetBlockStreamFromFileRange(ctx context.Context,
 	}
 	readStream, object, err := handler.Read(ctx, fileRange.File.Path, fileRange.Offset, fileRange.Length)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to open stream")
+		return nil, nil, errors.Wrapf(err, "failed to open stream for %s at %d with length %d", fileRange.File.Path, fileRange.Offset, fileRange.Length)
 	}
 
 	if object != nil {
@@ -235,7 +235,7 @@ func GetBlockStreamFromFileRange(ctx context.Context,
 		readCloser, err = encryptor.Encrypt(readStream)
 	}
 	if err != nil {
-		return nil, object, errors.Wrap(err, "failed to encrypt stream")
+		return nil, object, errors.WithStack(err)
 	}
 	blockChan := make(chan BlockResult)
 	chunker := packJob.NewSizeSplitter(readCloser, ChunkSize)
@@ -257,7 +257,7 @@ func GetBlockStreamFromFileRange(ctx context.Context,
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				result = BlockResult{Error: errors.Wrap(err, "failed to read packJob")}
+				result = BlockResult{Error: errors.Wrap(err, "failed to read chunk")}
 			} else {
 				firstChunk = false
 				hash := util.Hash(chunkerBytes)
