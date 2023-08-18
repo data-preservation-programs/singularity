@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ipfs/boxo/util"
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,3 +23,5 @@ func GetFileTimestamp(t *testing.T, path string) int64 {
 	require.NoError(t, err)
 	return info.ModTime().UnixNano()
 }
+
+var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))

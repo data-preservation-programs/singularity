@@ -13,7 +13,7 @@ var RemoveWalletCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		return wallet.RemoveWalletHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))

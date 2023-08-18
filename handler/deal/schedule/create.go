@@ -7,12 +7,12 @@ import (
 
 	"github.com/robfig/cron/v3"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
@@ -85,7 +85,7 @@ func createHandler(
 		return nil, handler.NewInvalidParameterErr("dataset not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	startDelay, err := argToDuration(request.StartDelay)
@@ -137,7 +137,7 @@ func createHandler(
 	var walletCount int64
 	err = db.Model(&model.WalletAssignment{}).Where("dataset_id = ?", dataset.ID).Count(&walletCount).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	if walletCount == 0 {
@@ -147,7 +147,7 @@ func createHandler(
 	var providerActor string
 	err = lotusClient.CallFor(ctx, &providerActor, "Filecoin.StateLookupID", request.Provider, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	schedule := model.Schedule{
@@ -178,7 +178,7 @@ func createHandler(
 	if err := database.DoRetry(ctx, func() error {
 		return db.Create(&schedule).Error
 	}); err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &schedule, nil
 }

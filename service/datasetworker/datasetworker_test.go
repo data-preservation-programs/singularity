@@ -106,7 +106,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		id:                        uuid.New(),
 		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
-		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: storagesystem.DefaultHandlerResolver{},
 		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
@@ -141,11 +141,11 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	stat1, _ := os.Stat(temp + "/test.txt")
 	stat2, _ := os.Stat(temp + "/test2.txt")
 	file2 := &model.File{
-		SourceID:                  source.ID,
-		Path:                      "test2.txt",
-		Size:                      5,
-		DirectoryID:               &root.ID,
-		LastModifiedTimestampNano: stat2.ModTime().UTC().UnixNano(),
+		SourceID:         source.ID,
+		Path:             "test2.txt",
+		Size:             5,
+		DirectoryID:      &root.ID,
+		LastModifiedNano: stat2.ModTime().UTC().UnixNano(),
 	}
 	err = db.Create(file2).Error
 	require.NoError(t, err)
@@ -154,11 +154,11 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 		FileRanges: []model.FileRange{
 			{
 				File: &model.File{
-					SourceID:                  source.ID,
-					Path:                      "test.txt",
-					Size:                      4,
-					DirectoryID:               &root.ID,
-					LastModifiedTimestampNano: stat1.ModTime().UTC().UnixNano(),
+					SourceID:         source.ID,
+					Path:             "test.txt",
+					Size:             4,
+					DirectoryID:      &root.ID,
+					LastModifiedNano: stat1.ModTime().UTC().UnixNano(),
 				},
 				Offset: 0,
 				Length: 4,
@@ -232,7 +232,7 @@ func TestDatasetWorkerThread_scan(t *testing.T) {
 		id:                        uuid.New(),
 		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
-		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: storagesystem.DefaultHandlerResolver{},
 		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
@@ -287,7 +287,7 @@ func TestDatasetWorkerThread_findPackWork(t *testing.T) {
 		id:                        uuid.New(),
 		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
-		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: storagesystem.DefaultHandlerResolver{},
 		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,
@@ -392,7 +392,7 @@ func TestDatasetWorkerThread_findScanWork(t *testing.T) {
 		id:                        uuid.New(),
 		dbNoContext:               db,
 		logger:                    logger.With("key", "value"),
-		datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: storagesystem.DefaultHandlerResolver{},
 		config: Config{
 			Concurrency:    1,
 			ExitOnComplete: true,

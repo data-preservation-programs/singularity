@@ -3,10 +3,10 @@ package schedule
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -37,7 +37,7 @@ func pauseHandler(
 		return nil, handler.NewInvalidParameterErr("schedule not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	if schedule.State == model.ScheduleCompleted {
@@ -49,7 +49,7 @@ func pauseHandler(
 		return db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.SchedulePaused).Error
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &schedule, nil

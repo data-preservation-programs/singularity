@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
@@ -27,17 +26,17 @@ func TestPieceReader_FileChanged(t *testing.T) {
 	require.NoError(t, err)
 
 	car := model.Car{
-		Header:   []byte("header"),
-		FileSize: 63,
+		RootCID:  model.CID(testutil.TestCid),
+		FileSize: 116,
 	}
-	source := model.Source{
+	storages := []model.Storage{{
 		ID:   1,
 		Type: "local",
 		Path: tmp,
-	}
+	}}
 	carBlocks := []model.CarBlock{
 		{
-			CarOffset:      6,
+			CarOffset:      59,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
 			FileID:         ptr.Of(uint64(1)),
@@ -45,15 +44,13 @@ func TestPieceReader_FileChanged(t *testing.T) {
 		},
 	}
 	files := []model.File{{
-		ID:                        1,
-		SourceID:                  1,
-		Path:                      "1.txt",
-		LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
-		Size:                      20,
+		ID:               1,
+		SourceStorageID:  1,
+		Path:             "1.txt",
+		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
+		Size:             20,
 	}}
-	reader, err := NewPieceReader(ctx, car, source,
-		carBlocks, files,
-		datasource.DefaultHandlerResolver{})
+	reader, err := NewPieceReader(ctx, car, storages, carBlocks, files)
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	defer require.NoError(t, reader.Close())
@@ -79,35 +76,34 @@ func TestPieceReader_LargeFile(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tmp, "1.txt"), testFileContent, 0644)
 	require.NoError(t, err)
 	ctx := context.Background()
-	size := int64(6 + 39 + 1024*1024)
+	size := int64(59 + 39 + 1024*1024)
 	car := model.Car{
-		Header:   []byte("header"),
+		RootCID:  model.CID(testutil.TestCid),
 		FileSize: size,
 	}
-	source := model.Source{
+	storages := []model.Storage{{
 		ID:   1,
 		Type: "local",
 		Path: tmp,
-	}
+	}}
 	carBlocks := []model.CarBlock{
 		{
-			CarOffset:      6,
-			CarBlockLength: int32(size - 6),
+			CarOffset:      59,
+			CarBlockLength: int32(size - 59),
 			Varint:         varint.ToUvarint(36 + 1024*1024),
 			FileID:         ptr.Of(uint64(1)),
 			CID:            model.CID(cidValue),
 		},
 	}
 	files := []model.File{{
-		ID:                        1,
-		SourceID:                  1,
-		Path:                      "1.txt",
-		LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
-		Size:                      1024 * 1024,
+		ID:               1,
+		SourceStorageID:  1,
+		Path:             "1.txt",
+		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
+		Size:             1024 * 1024,
 	}}
-	reader, err := NewPieceReader(ctx, car, source,
-		carBlocks, files,
-		datasource.DefaultHandlerResolver{})
+	reader, err := NewPieceReader(ctx, car, storages,
+		carBlocks, files)
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	read, err := io.ReadAll(reader)
@@ -127,41 +123,41 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tmp, "3.txt"), testFileContent, 0644)
 	require.NoError(t, err)
 	ctx := context.Background()
-	size := int64(234)
+	size := int64(287)
 
 	car := model.Car{
-		Header:   []byte("header"),
+		RootCID:  model.CID(testutil.TestCid),
 		FileSize: size,
 	}
-	source := model.Source{
+	storages := []model.Storage{{
 		ID:   1,
 		Type: "local",
 		Path: tmp,
-	}
+	}}
 	carBlocks := []model.CarBlock{
 		{
-			CarOffset:      6,
+			CarOffset:      59,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
 			FileID:         ptr.Of(uint64(1)),
 			CID:            model.CID(cidValue),
 		},
 		{
-			CarOffset:      63,
+			CarOffset:      116,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
 			FileID:         ptr.Of(uint64(2)),
 			CID:            model.CID(cidValue),
 		},
 		{
-			CarOffset:      120,
+			CarOffset:      173,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
 			FileID:         ptr.Of(uint64(3)),
 			CID:            model.CID(cidValue),
 		},
 		{
-			CarOffset:      177,
+			CarOffset:      230,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
 			CID:            model.CID(cidValue),
@@ -169,27 +165,26 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 		},
 	}
 	files := []model.File{{
-		ID:                        1,
-		SourceID:                  1,
-		Path:                      "1.txt",
-		LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
-		Size:                      20,
+		ID:               1,
+		SourceStorageID:  1,
+		Path:             "1.txt",
+		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
+		Size:             20,
 	}, {
-		ID:                        2,
-		SourceID:                  1,
-		Path:                      "2.txt",
-		LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "2.txt")),
-		Size:                      20,
+		ID:               2,
+		SourceStorageID:  1,
+		Path:             "2.txt",
+		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "2.txt")),
+		Size:             20,
 	}, {
-		ID:                        3,
-		SourceID:                  1,
-		Path:                      "3.txt",
-		LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "3.txt")),
-		Size:                      20,
+		ID:               3,
+		SourceStorageID:  1,
+		Path:             "3.txt",
+		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "3.txt")),
+		Size:             20,
 	}}
-	reader, err := NewPieceReader(ctx, car, source,
-		carBlocks, files,
-		datasource.DefaultHandlerResolver{})
+	reader, err := NewPieceReader(ctx, car, storages,
+		carBlocks, files)
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	defer require.NoError(t, reader.Close())
@@ -201,7 +196,7 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 	require.EqualValues(t, 2, pos)
 	pos, err = reader.Seek(-1, io.SeekEnd)
 	require.NoError(t, err)
-	require.EqualValues(t, 233, pos)
+	require.EqualValues(t, 286, pos)
 	_, err = reader.Seek(-1, io.SeekStart)
 	require.ErrorIs(t, err, ErrNegativeOffset)
 	_, err = reader.Seek(0, 100)
@@ -211,15 +206,15 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 
 	posMap := map[int64]int{
 		1:    -1,
-		5:    -1,
-		6:    0,
-		62:   0,
-		63:   1,
-		119:  1,
-		120:  2,
-		176:  2,
-		177:  3,
-		233:  3,
+		58:   -1,
+		59:   0,
+		115:  0,
+		116:  1,
+		172:  1,
+		173:  2,
+		229:  2,
+		230:  3,
+		286:  3,
 		size: 3,
 	}
 
@@ -227,7 +222,7 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 		_, err = reader.Seek(pos, io.SeekStart)
 		require.NoError(t, err)
 		require.EqualValues(t, blockIndex, reader.blockIndex)
-		cloned := reader.Clone(context.Background())
+		cloned := reader.Clone()
 		defer require.NoError(t, cloned.Close())
 		require.EqualValues(t, -1, cloned.blockIndex)
 		require.EqualValues(t, 0, cloned.pos)
@@ -262,14 +257,14 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 	testFilename := "test.txt"
 	ctx := context.Background()
 	car := model.Car{
-		Header:   []byte("header"),
-		FileSize: 63,
+		RootCID:  model.CID(testutil.TestCid),
+		FileSize: 116,
 	}
-	source := model.Source{
+	storages := []model.Storage{{
 		ID:   1,
 		Type: "local",
 		Path: tmp,
-	}
+	}}
 
 	tests := []struct {
 		carBlocks []model.CarBlock
@@ -279,20 +274,20 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 		{
 			carBlocks: []model.CarBlock{},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 999,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 999,
+				Path:            testFilename,
+				Size:            20,
 			}},
-			err: ErrSourceMismatch,
+			err: ErrStorageMismatch,
 		},
 		{
 			carBlocks: []model.CarBlock{},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: ErrNoCarBlocks,
 		},
@@ -303,92 +298,92 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: ErrInvalidStartOffset,
 		},
 		{
 			carBlocks: []model.CarBlock{
 				{
-					CarOffset:      6,
+					CarOffset:      59,
 					CarBlockLength: 1000,
 				},
 			},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: ErrInvalidEndOffset,
 		},
 		{
 			carBlocks: []model.CarBlock{
 				{
-					CarOffset:      6,
+					CarOffset:      59,
 					CarBlockLength: 30,
 				},
 				{
 					CarOffset:      60,
-					CarBlockLength: 3,
+					CarBlockLength: 56,
 				},
 			},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: ErrIncontiguousBlocks,
 		},
 		{
 			carBlocks: []model.CarBlock{
 				{
-					CarOffset:      6,
+					CarOffset:      59,
 					CarBlockLength: 57,
 				},
 			},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: varint.ErrUnderflow,
 		},
 		{
 			carBlocks: []model.CarBlock{
 				{
-					CarOffset:      6,
+					CarOffset:      59,
 					CarBlockLength: 57,
 					Varint:         []byte{100},
 				},
 			},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: ErrVarintDoesNotMatchBlockLength,
 		},
 		{
 			carBlocks: []model.CarBlock{
 				{
-					CarOffset:      6,
+					CarOffset:      59,
 					CarBlockLength: 57,
 					Varint:         []byte{56},
 					FileID:         ptr.Of(uint64(100)),
 				},
 			},
 			files: []model.File{{
-				ID:       1,
-				SourceID: 1,
-				Path:     testFilename,
-				Size:     20,
+				ID:              1,
+				SourceStorageID: 1,
+				Path:            testFilename,
+				Size:            20,
 			}},
 			err: ErrFileNotProvided,
 		},
@@ -396,9 +391,8 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.err.Error(), func(t *testing.T) {
-			_, err := NewPieceReader(ctx, car, source,
-				test.carBlocks, test.files,
-				datasource.DefaultHandlerResolver{})
+			_, err := NewPieceReader(ctx, car, storages,
+				test.carBlocks, test.files)
 			require.ErrorIs(t, err, test.err)
 		})
 	}

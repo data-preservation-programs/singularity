@@ -7,11 +7,11 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -54,7 +54,7 @@ func updateSourceHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	t := source.Type
 	reg, err := fs.Find(t)
@@ -108,9 +108,9 @@ func updateSourceHandler(
 		source.Metadata[name] = v
 	}
 
-	h, err := datasource.DefaultHandlerResolver{}.Resolve(ctx, source)
+	h, err := storagesystem.DefaultHandlerResolver{}.Resolve(ctx, source)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	_, err = h.List(ctx, "")
@@ -126,7 +126,7 @@ func updateSourceHandler(
 		}).Error
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &source, nil

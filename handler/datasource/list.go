@@ -19,7 +19,7 @@ func ListSourcesByDatasetHandler(
 	if datasetName == "" {
 		err := db.Find(&sources).Error
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		return sources, nil
 	}
@@ -29,7 +29,7 @@ func ListSourcesByDatasetHandler(
 	}
 	err = db.Where("dataset_id = ?", dataset.ID).Find(&sources).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return sources, nil
 }

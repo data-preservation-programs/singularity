@@ -5,11 +5,11 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -191,14 +191,14 @@ var CreateCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		cids := map[string]struct{}{}
 		for _, f := range c.StringSlice("allowed-piece-cid-file") {
 			cidsFromFile, err := readCIDsFromFile(f)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			for _, cid := range cidsFromFile {
 				cids[cid] = struct{}{}
@@ -237,7 +237,7 @@ var CreateCmd = &cli.Command{
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
 		schedule, err := schedule.CreateHandler(c.Context, db, lotusClient, request)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)

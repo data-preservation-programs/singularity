@@ -13,11 +13,11 @@ var ResetCmd = &cli.Command{
 	Flags: []cli.Flag{cliutil.ReallyDotItFlag},
 	Action: func(c *cli.Context) error {
 		if err := cliutil.HandleReallyDoIt(c); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		return admin.ResetHandler(c.Context, db)

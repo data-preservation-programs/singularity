@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -60,19 +60,19 @@ func checkSourceHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
-	resolver := datasource.DefaultHandlerResolver{}
+	resolver := storagesystem.DefaultHandlerResolver{}
 	h, err := resolver.Resolve(ctx, source)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	obj, err := h.Check(ctx, request.Path)
 	if errors.Is(err, fs.ErrorIsDir) {
 		entries, err := h.List(ctx, request.Path)
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		return underscore.Map(entries, func(entry fs.DirEntry) Entry {
 			_, isDir := entry.(fs.Directory)
@@ -86,7 +86,7 @@ func checkSourceHandler(
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return []Entry{

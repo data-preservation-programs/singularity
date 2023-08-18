@@ -27,7 +27,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"golang.org/x/exp/slices"
 )

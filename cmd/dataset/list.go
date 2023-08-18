@@ -13,7 +13,7 @@ var ListDatasetCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		datasets, err := dataset.ListHandler(
@@ -21,7 +21,7 @@ var ListDatasetCmd = &cli.Command{
 			db,
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		cliutil.PrintToConsole(datasets, c.Bool("json"), nil)
 		return nil

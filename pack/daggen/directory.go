@@ -19,7 +19,7 @@ import (
 	"github.com/ipld/go-car"
 	"github.com/ipld/go-car/util"
 	"github.com/klauspost/compress/zstd"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 )
 
 var encoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))

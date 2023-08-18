@@ -28,12 +28,12 @@ var PackJobsCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		sourceID, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		result, err := inspect.GetSourcePackJobsHandler(
 			c.Context,
@@ -42,7 +42,7 @@ var PackJobsCmd = &cli.Command{
 			inspect.GetSourcePackJobsRequest{State: *(c.Generic("state").(*model.WorkState))},
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		if c.Bool("json") {

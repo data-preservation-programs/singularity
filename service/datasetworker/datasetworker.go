@@ -11,7 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -45,7 +45,7 @@ type Thread struct {
 	logger                    *zap.SugaredLogger
 	workType                  model.WorkType
 	workingOn                 string
-	datasourceHandlerResolver datasource.HandlerResolver
+	datasourceHandlerResolver storagesystem.HandlerResolver
 	config                    Config
 }
 
@@ -153,7 +153,7 @@ func (w Worker) Run(ctx context.Context) error {
 			id:                        id,
 			dbNoContext:               w.dbNoContext,
 			logger:                    logger.With("workerID", id.String()),
-			datasourceHandlerResolver: datasource.DefaultHandlerResolver{},
+			datasourceHandlerResolver: storagesystem.DefaultHandlerResolver{},
 			config:                    w.config,
 		}
 		threads[i] = thread

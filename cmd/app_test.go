@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	"filippo.io/age"

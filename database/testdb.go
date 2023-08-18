@@ -6,6 +6,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ func OpenInMemory() (*gorm.DB, io.Closer, error) {
 	db, closer, err := OpenWithLogger(TestConnectionString)
 	if err != nil {
 		logger.Error(err)
-		return nil, nil, err
+		return nil, nil, errors.WithStack(err)
 	}
 
 	ctx := context.Background()
@@ -24,13 +25,13 @@ func OpenInMemory() (*gorm.DB, io.Closer, error) {
 	if err != nil {
 		logger.Error(err)
 		closer.Close()
-		return nil, nil, err
+		return nil, nil, errors.WithStack(err)
 	}
 	err = DoRetry(ctx, func() error { return model.AutoMigrate(db) })
 	if err != nil {
 		logger.Error(err)
 		closer.Close()
-		return nil, nil, err
+		return nil, nil, errors.WithStack(err)
 	}
 
 	return db, closer, nil

@@ -12,7 +12,7 @@ func (w *Thread) pack(
 ) error {
 	_, err := datasource.Pack(ctx, w.dbNoContext, packJob, w.datasourceHandlerResolver)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

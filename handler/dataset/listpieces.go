@@ -34,7 +34,7 @@ func listPiecesHandler(
 	var cars []model.Car
 	err = db.Where("dataset_id = ?", dataset.ID).Find(&cars).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return cars, nil

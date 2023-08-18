@@ -95,7 +95,7 @@ func main() {
 						Messages: messages,
 					})
 					if err != nil {
-						return err
+						return errors.WithStack(err)
 					}
 					return nil
 				}, retry.RetryIf(func(err error) bool {

@@ -35,11 +35,11 @@ func (BitswapServer) Name() string {
 func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.WithStack(err)
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext, HandlerResolver: datasource.DefaultHandlerResolver{}}
+	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext, HandlerResolver: storagesystem.DefaultHandlerResolver{}}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
 	done := make(chan struct{})

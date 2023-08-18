@@ -131,12 +131,12 @@ func setupMongoDBDataset() error {
 	defer cancel()
 	db, err := mongo.Connect(ctx, options.Client().ApplyURI(localMongoDB))
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer db.Disconnect(context.Background())
 	err = db.Database("singularity").Drop(ctx)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	insertScanningResult, err := db.Database("singularity").Collection("scanningrequests").InsertMany(ctx, []any{ScanningRequest{
 		Name:                  "test",
@@ -160,7 +160,7 @@ func setupMongoDBDataset() error {
 		SkipInaccessibleFiles: false,
 	}})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	dataCID := cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
@@ -199,7 +199,7 @@ func setupMongoDBDataset() error {
 		CreatedAt:             time.Now(),
 	}})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	_, err = db.Database("singularity").Collection("outputfilelists").InsertMany(ctx, []any{OutputFileList{
 		GenerationID: insertGenerationResult.InsertedIDs[0].(primitive.ObjectID).Hex(),
@@ -254,5 +254,5 @@ func setupMongoDBDataset() error {
 			End:   0,
 		}},
 	}})
-	return err
+	return errors.WithStack(err)
 }

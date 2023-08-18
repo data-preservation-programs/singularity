@@ -67,18 +67,18 @@ func setupMongoDBSchedule() error {
 	defer cancel()
 	db, err := mongo.Connect(ctx, options.Client().ApplyURI(localMongoDB))
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer db.Disconnect(context.Background())
 	err = db.Database("singularity").Drop(ctx)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	insertedDatasetResult, err := db.Database("singularity").Collection("scanningrequests").InsertOne(ctx, ScanningRequest{
 		Name: "test",
 	})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	_, err = db.Database("singularity").Collection("replicationrequests").InsertMany(ctx, []any{ReplicationRequest{
 		DatasetID:           insertedDatasetResult.InsertedID.(primitive.ObjectID).Hex(),
@@ -101,7 +101,7 @@ func setupMongoDBSchedule() error {
 		ErrorMessage:        "error message",
 	}})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/ipfs/boxo/util"
 	"github.com/rclone/rclone/fs"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	commcid "github.com/filecoin-project/go-fil-commcid"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
@@ -20,7 +20,6 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-varint"
-	"github.com/pkg/errors"
 )
 
 type Result struct {
@@ -115,7 +114,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 //   - error: An error that occurred during the CAR assembly process, or nil if the operation was successful.
 func AssembleCar(
 	ctx context.Context,
-	handler datasource.ReadHandler,
+	handler storagesystem.ReadHandler,
 	dataset model.Preparation,
 	fileRanges []model.FileRange,
 	outDir string,

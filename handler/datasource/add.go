@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
@@ -132,7 +132,7 @@ func createDatasourceHandler(
 	}
 
 	if ValidateSource {
-		dsHandler, err := datasource.DefaultHandlerResolver{}.Resolve(ctx, source)
+		dsHandler, err := storagesystem.DefaultHandlerResolver{}.Resolve(ctx, source)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve handler: %w", err)
 		}

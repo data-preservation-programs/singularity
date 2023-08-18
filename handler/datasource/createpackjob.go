@@ -4,11 +4,11 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -71,7 +71,7 @@ func createPackJobHandler(
 		)
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &packJob, nil

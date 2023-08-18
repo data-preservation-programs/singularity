@@ -31,7 +31,7 @@ var ListCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		deals, err := deal.ListHandler(c.Context, db, deal.ListDealRequest{
@@ -41,7 +41,7 @@ var ListCmd = &cli.Command{
 			States:    c.StringSlice("state"),
 		})
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		cliutil.PrintToConsole(deals, c.Bool("json"), nil)
 		return nil

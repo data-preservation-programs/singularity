@@ -4,12 +4,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
@@ -28,7 +28,7 @@ var AddCmd = &cli.Command{
 		return !slices.Contains([]string{"crypt", "memory", "tardigrade"}, r.Prefix)
 	}), func(r *fs.RegInfo) *cli.Command {
 		ws := model.Ready
-		cmd := datasource.OptionsToCLIFlags(r)
+		cmd := storagesystem.OptionsToCLIFlags(r)
 		cmd.Flags = append(cmd.Flags, &cli.BoolFlag{
 			Name:     "delete-after-export",
 			Usage:    "[Dangerous] Delete the files of the dataset after exporting it to CAR files. ",
@@ -50,7 +50,7 @@ var AddCmd = &cli.Command{
 			path := c.Args().Get(1)
 			db, closer, err := database.OpenFromCLI(c)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			defer closer.Close()
 			db = db.WithContext(c.Context)
@@ -97,7 +97,7 @@ var AddCmd = &cli.Command{
 				DagGenState:         model.Created,
 			}
 
-			handler, err := datasource.DefaultHandlerResolver{}.Resolve(c.Context, source)
+			handler, err := storagesystem.DefaultHandlerResolver{}.Resolve(c.Context, source)
 			if err != nil {
 				return errors.Wrap(err, "failed to resolve handler")
 			}

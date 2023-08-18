@@ -51,11 +51,11 @@ var DatasetWorkerCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		if err := model.AutoMigrate(db); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		worker := datasetworker.NewWorker(
 			db,
@@ -69,7 +69,7 @@ var DatasetWorkerCmd = &cli.Command{
 			})
 		err = worker.Run(c.Context)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		return nil
 	},

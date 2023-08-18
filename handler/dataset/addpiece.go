@@ -97,11 +97,11 @@ func addPieceHandler(
 
 	pCid, err := cid.Decode(request.PieceCID)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	rCid, err := cid.Decode(rootCID)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	mCar := model.Car{
 		PieceCID:  model.CID(pCid),
@@ -113,7 +113,7 @@ func addPieceHandler(
 
 	err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &mCar, nil
 }

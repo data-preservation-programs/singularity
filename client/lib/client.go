@@ -16,16 +16,16 @@ import (
 
 type Client struct {
 	db                        *gorm.DB
-	datasourceHandlerResolver datasource.HandlerResolver
+	datasourceHandlerResolver storagesystem.HandlerResolver
 }
 
 func NewClient(db *gorm.DB) (*Client, error) {
 	if err := model.AutoMigrate(db); err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &Client{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}, nil
 }
 
@@ -40,12 +40,12 @@ func (c *Client) ListSourcesByDataset(ctx context.Context, datasetName string) (
 func (c *Client) CreateLocalSource(ctx context.Context, datasetName string, params dshandler.LocalRequest) (*model.Source, error) {
 	paramJSON, err := json.Marshal(params)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	paramsMap := map[string]interface{}{}
 	err = json.Unmarshal(paramJSON, &paramsMap)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return dshandler.CreateDatasourceHandler(ctx, c.db.WithContext(ctx), "local", datasetName, paramsMap)
 }

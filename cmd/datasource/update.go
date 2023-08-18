@@ -40,7 +40,7 @@ var UpdateCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		config := map[string]any{}
@@ -68,7 +68,7 @@ var UpdateCmd = &cli.Command{
 			config,
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		cliutil.PrintToConsole(source, c.Bool("json"), nil)

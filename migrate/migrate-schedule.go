@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -29,7 +29,7 @@ func MigrateSchedule(cctx *cli.Context) error {
 	log.Printf("Using sql connection string: %s\n", sqlConnectionString)
 	db, closer, err := database.OpenFromCLI(cctx)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer closer.Close()
 	ctx := cctx.Context

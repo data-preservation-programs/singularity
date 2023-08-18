@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/bcicen/jstream"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
@@ -23,7 +24,6 @@ import (
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
 	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -559,7 +559,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64, deal Deal) error) error {
 	kvstream, counter, closer, err := d.dealStateStream(ctx)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer closer.Close()
 	countingCtx, cancel := context.WithCancel(ctx)

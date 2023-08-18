@@ -14,12 +14,12 @@ var AddWalletCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		wallet, err := wallet.AddWalletHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		cliutil.PrintToConsole(wallet, c.Bool("json"), nil)
 		return nil

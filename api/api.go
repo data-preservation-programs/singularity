@@ -24,6 +24,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ybbus/jsonrpc/v3"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/dashboard"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
@@ -33,7 +34,6 @@ import (
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/pkg/errors"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -42,7 +42,7 @@ import (
 type Server struct {
 	db                        *gorm.DB
 	listener                  net.Listener
-	datasourceHandlerResolver datasource.HandlerResolver
+	datasourceHandlerResolver storagesystem.HandlerResolver
 	lotusClient               jsonrpc.RPCClient
 	dealMaker                 replication.DealMaker
 	closer                    io.Closer
@@ -72,7 +72,7 @@ func Run(c *cli.Context) error {
 
 	listener, err := net.Listen("tcp", bind)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	server, err := InitServer(APIParams{
 		ConnString: connString,
@@ -81,7 +81,7 @@ func Run(c *cli.Context) error {
 		LotusToken: lotusToken,
 	})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	logger.Info("Starting Singularity API server...")
@@ -110,7 +110,7 @@ func InitServer(params APIParams) (Server, error) {
 	}
 
 	return Server{db: db, listener: params.Listener,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 		lotusClient:               util.NewLotusClient(params.LotusAPI, params.LotusToken),
 		dealMaker: replication.NewDealMaker(
 			util.NewLotusClient(params.LotusAPI, params.LotusToken),
@@ -330,7 +330,7 @@ func (s Server) Run(ctx context.Context) error {
 	s.setupRoutes(e) //nolint: contextcheck
 	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

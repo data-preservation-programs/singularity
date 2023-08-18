@@ -17,7 +17,7 @@ var StatusCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		result, err := datasource.GetSourceStatusHandler(
@@ -26,13 +26,13 @@ var StatusCmd = &cli.Command{
 			c.Args().Get(0),
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		if c.Bool("json") {
 			objJSON, err := json.MarshalIndent(result, "", "  ")
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			fmt.Println(string(objJSON))
 			return nil

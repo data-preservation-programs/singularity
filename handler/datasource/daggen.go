@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -42,14 +42,14 @@ func dagGenHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	err = database.DoRetry(ctx, func() error {
 		return db.Model(&source).Update("dag_gen_state", model.Ready).Error
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	source.DagGenState = model.Ready
 	return &source, nil

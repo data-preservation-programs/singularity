@@ -3,6 +3,7 @@ package datasource
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
@@ -12,7 +13,6 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
-	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -21,7 +21,7 @@ import (
 func PackHandler(
 	db *gorm.DB,
 	ctx context.Context,
-	resolver datasource.HandlerResolver,
+	resolver storagesystem.HandlerResolver,
 	packJobID uint64,
 ) ([]model.Car, error) {
 	return packHandler(db, ctx, resolver, packJobID)
@@ -39,13 +39,13 @@ func PackHandler(
 func packHandler(
 	db *gorm.DB,
 	ctx context.Context,
-	resolver datasource.HandlerResolver,
+	resolver storagesystem.HandlerResolver,
 	packJobID uint64,
 ) ([]model.Car, error) {
 	var packJob model.PackJob
 	err := db.Where("id = ?", packJobID).Find(&packJob).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return Pack(ctx, db, packJob, resolver)
@@ -55,7 +55,7 @@ func Pack(
 	ctx context.Context,
 	db *gorm.DB,
 	packJob model.PackJob,
-	resolver datasource.HandlerResolver,
+	resolver storagesystem.HandlerResolver,
 ) ([]model.Car, error) {
 	db = db.WithContext(ctx)
 	var outDir string

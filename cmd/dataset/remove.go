@@ -17,11 +17,11 @@ var RemoveDatasetCmd = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		if err := cliutil.HandleReallyDoIt(c); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		return dataset.RemoveHandler(

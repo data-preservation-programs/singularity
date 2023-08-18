@@ -3,26 +3,23 @@ package pack
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/encryption"
+	"github.com/data-preservation-programs/singularity/storagesystem"
+	util2 "github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	packJob "github.com/ipfs/go-ipfs-chunker"
-	cbor "github.com/ipfs/go-ipld-cbor"
 	"github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-unixfs"
 	"github.com/ipfs/go-unixfs/pb"
-	"github.com/ipld/go-car"
 	"github.com/multiformats/go-varint"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
-	"github.com/rclone/rclone/fs/hash"
 )
 
 const ChunkSize int64 = 1 << 20
@@ -126,30 +123,6 @@ func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.Prot
 	return result, rootNode, nil
 }
 
-// GenerateCarHeader generates the CAR (Content Addressable aRchive) format header
-// based on the given root CID (Content Identifier).
-//
-// Parameters:
-//   - root: The root CID of the MerkleDag that the CAR file represents.
-//
-// Returns:
-//   - []byte: The byte representation of the CAR header.
-//   - error: An error that can occur during the header generation process, or nil if successful.
-func GenerateCarHeader(root cid.Cid) ([]byte, error) {
-	header := car.CarHeader{
-		Roots:   []cid.Cid{root},
-		Version: 1,
-	}
-
-	headerBytes, err := cbor.DumpObject(&header)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to dump header")
-	}
-	headerBytesVarint := varint.ToUvarint(uint64(len(headerBytes)))
-	headerBytes = append(headerBytesVarint, headerBytes...)
-	return headerBytes, nil
-}
-
 // WriteCarHeader writes the CAR (Content Addressable aRchive) format header to a given io.Writer.
 //
 // Parameters:
@@ -160,7 +133,7 @@ func GenerateCarHeader(root cid.Cid) ([]byte, error) {
 //   - []byte: The byte representation of the CAR header.
 //   - error: An error that can occur during the write process, or nil if the write was successful.
 func WriteCarHeader(writer io.Writer, root cid.Cid) ([]byte, error) {
-	headerBytes, err := GenerateCarHeader(root)
+	headerBytes, err := util2.GenerateCarHeader(root)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate header")
 	}
@@ -216,63 +189,6 @@ type BlockResult struct {
 
 var ErrFileModified = errors.New("file has been modified")
 
-// IsSameEntry checks if a given model.File and a given fs.Object represent the same entry,
-// based on their size, hash, and last modification time.
-//
-// Parameters:
-//   - ctx: Context that allows for asynchronous task cancellation.
-//   - file: A model.File instance representing a file in the model.
-//   - object: An fs.Object instance representing a file or object in the filesystem.
-//
-// Returns:
-//   - bool: A boolean indicating whether the given model.File and fs.Object are considered the same entry.
-//   - string: A string providing details in case of a mismatch.
-//
-// The function performs the following checks:
-//  1. Compares the sizes of 'file' and 'object'. If there is a mismatch, it returns false along with a
-//     formatted string that shows the mismatched sizes.
-//  2. Retrieves the last modified time of 'object'.
-//  3. Identifies a supported hash type for the storage backend of 'object' and computes its hash value.
-//  4. The hash computation is skipped if the storage backend is a local file system or does not support any hash types.
-//  5. If both 'file' and 'object' have non-empty hash values and these values do not match,
-//     it returns false along with a formatted string that shows the mismatched hash values.
-//  6. Compares the last modified times of 'file' and 'object' at the nanosecond precision.
-//     If there is a mismatch, it returns false along with a formatted string that shows the mismatched times.
-//  7. If all the checks pass (sizes, hashes, and last modified times match), the function returns true,
-//     indicating that 'file' and 'object' are considered to be the same entry.
-//
-// Note:
-// - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
-// - For local file systems, hash computation is skipped to avoid inefficient operations.
-func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, string) {
-	if file.Size != object.Size() {
-		return false, fmt.Sprintf("size mismatch: %d != %d", file.Size, object.Size())
-	}
-	var err error
-	// last modified can be time.Now() if fetch failed so it may not be reliable.
-	// This usually won't happen for most cloud provider i.e. S3
-	// Because during scanning, the modified time is already fetched.
-	lastModified := object.ModTime(ctx)
-	supportedHash := object.Fs().Hashes().GetOne()
-	// For local file system, rclone is actually hashing the file stream which is not efficient.
-	// So we skip hashing for local file system.
-	// For some of the remote storage, there may not have any supported hash type.
-	var hashValue string
-	if supportedHash != hash.None && object.Fs().Name() != "local" {
-		hashValue, err = object.Hash(ctx, supportedHash)
-		if err != nil {
-			logger.Errorw("failed to hash", "error", err)
-		}
-	}
-	if file.Hash != "" && hashValue != "" && file.Hash != hashValue {
-		return false, fmt.Sprintf("hash mismatch: %s != %s", file.Hash, hashValue)
-	}
-	return lastModified.UnixNano() == file.LastModifiedTimestampNano,
-		fmt.Sprintf("last modified mismatch: %d != %d",
-			lastModified.UnixNano(),
-			file.LastModifiedTimestampNano)
-}
-
 // GetBlockStreamFromFileRange reads a file (or a part of a file) identified by fileRange
 // from a specified data source. Optionally, it applies encryption to the file's content.
 // It then streams the resulting data blocks to the caller through a Go channel.
@@ -294,7 +210,7 @@ func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, 
 //     are not supported and the function will return an error in this case.
 //   - The function is designed to be used concurrently, as it runs a goroutine to read blocks from the file.
 func GetBlockStreamFromFileRange(ctx context.Context,
-	handler datasource.ReadHandler,
+	handler storagesystem.ReadHandler,
 	fileRange model.FileRange,
 	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
 	if encryptor != nil && (fileRange.Offset != 0 || fileRange.Length != fileRange.File.Size) {
@@ -306,7 +222,7 @@ func GetBlockStreamFromFileRange(ctx context.Context,
 	}
 
 	if object != nil {
-		same, detail := IsSameEntry(ctx, *fileRange.File, object)
+		same, detail := storagesystem.IsSameEntry(ctx, *fileRange.File, object)
 		if !same {
 			return nil, nil, errors.Wrapf(ErrFileModified, "fileRange has been modified: %s, %s", fileRange.File.Path, detail)
 		}

@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -31,7 +31,7 @@ func rescanSourceHandler(
 	err = db.Transaction(func(db *gorm.DB) error {
 		err = db.Where("id = ?", sourceID).First(&source).Error
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		if source.ScanningState == model.Error || source.ScanningState == model.Complete {
 			return database.DoRetry(ctx, func() error {
@@ -49,7 +49,7 @@ func rescanSourceHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &source, nil

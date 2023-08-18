@@ -14,12 +14,12 @@ var PauseCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		schedule, err := schedule.PauseHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
 		return nil

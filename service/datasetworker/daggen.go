@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
@@ -14,7 +15,6 @@ import (
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -147,14 +147,14 @@ func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
 		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&car).Error
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			for i := range carBlocks {
 				carBlocks[i].CarID = car.ID
 			}
 			err = db.CreateInBatches(carBlocks, util.BatchSize).Error
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			for dirID, dirCID := range dirCIDs {
 				result := db.Model(&model.Directory{}).Where("id = ? AND cid = ?", dirID, model.CID(dirCID)).Update("exported", true)

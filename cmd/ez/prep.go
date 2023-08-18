@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
@@ -15,7 +16,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -87,7 +87,7 @@ var PrepCmd = &cli.Command{
 		// Step 1, initialize the database
 		err = admin.InitHandler(c.Context, db)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		// Step 2, create a dataset
@@ -147,7 +147,7 @@ var PrepCmd = &cli.Command{
 			})
 		err = worker.Run(c.Context)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		// Step 4, Initiate dag gen
@@ -159,7 +159,7 @@ var PrepCmd = &cli.Command{
 		// Step 5, start dataset worker again
 		err = worker.Run(c.Context)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		// Step 6, print all information

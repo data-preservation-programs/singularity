@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -33,11 +33,11 @@ func removeSourceHandler(
 		return handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	err = database.DoRetry(ctx, func() error { return db.Delete(&source).Error })
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }

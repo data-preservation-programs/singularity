@@ -16,12 +16,12 @@ import (
 func resetHandler(db *gorm.DB) error {
 	err := model.DropAll(db)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	err = model.AutoMigrate(db)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

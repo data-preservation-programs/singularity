@@ -4,9 +4,13 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 
+	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
 )
+
+var ErrInvalidCIDEntry = errors.New("invalid CID entry in the database")
+var ErrInvalidStringSliceEntry = errors.New("invalid string slice entry in the database")
+var ErrInvalidStringMapEntry = errors.New("invalid string map entry in the database")
 
 type StringSlice []string
 
@@ -22,7 +26,7 @@ func (c *CID) UnmarshalBinary(b []byte) error {
 	var c2 cid.Cid
 	err := c2.UnmarshalBinary(b)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	*c = CID(c2)
 	return nil
@@ -47,7 +51,7 @@ func (c *CID) UnmarshalJSON(b []byte) error {
 	var s string
 	err := json.Unmarshal(b, &s)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal CID")
+		return errors.WithStack(err)
 	}
 
 	if s == "" {
@@ -55,7 +59,7 @@ func (c *CID) UnmarshalJSON(b []byte) error {
 	} else {
 		cid, err := cid.Decode(s)
 		if err != nil {
-			return errors.Wrap(err, "failed to decode CID")
+			return errors.WithStack(err)
 		}
 		*c = CID(cid)
 	}
@@ -78,7 +82,7 @@ func (c *CID) Scan(src any) error {
 
 	source, ok := src.([]byte)
 	if !ok {
-		return errors.New("failed to scan CID")
+		return ErrInvalidCIDEntry
 	}
 
 	if len(source) == 0 {
@@ -110,7 +114,7 @@ func (ss *StringSlice) Scan(src any) error {
 
 	source, ok := src.([]byte)
 	if !ok {
-		return errors.New("failed to scan StringSlice")
+		return ErrInvalidStringSliceEntry
 	}
 
 	return json.Unmarshal(source, ss)
@@ -124,7 +128,7 @@ func (m *StringMap) Scan(src any) error {
 
 	source, ok := src.([]byte)
 	if !ok {
-		return errors.New("failed to scan Options")
+		return ErrInvalidStringMapEntry
 	}
 
 	return json.Unmarshal(source, m)

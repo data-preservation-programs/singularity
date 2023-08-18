@@ -4,9 +4,9 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -41,13 +41,13 @@ func getSourceFilesHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var files []model.File
 	err = db.Where("source_id = ?", sourceID).Find(&files).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return files, nil

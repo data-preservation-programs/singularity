@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 )
@@ -57,13 +57,13 @@ func getPathHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	segments := underscore.Filter(strings.Split(path, "/"), func(s string) bool { return s != "" })
 	err = source.LoadRootDirectory(db)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	dirID := source.RootDirectory().ID
 	for i, segment := range segments {
@@ -75,7 +75,7 @@ func getPathHandler(
 				var files []model.File
 				err = db.Where("source_id = ? AND path = ?", sourceID, strings.Join(segments, "/")).Find(&files).Error
 				if err != nil {
-					return nil, err
+					return nil, errors.WithStack(err)
 				}
 				if len(files) == 0 {
 					return nil, handler.NewInvalidParameterErr("entry not found with given path")
@@ -89,7 +89,7 @@ func getPathHandler(
 			return nil, handler.NewInvalidParameterErr("entry not found with given path")
 		}
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		dirID = subdir.ID
 	}
@@ -99,15 +99,15 @@ func getPathHandler(
 	var files []model.File
 	err = db.Where("id = ?", dirID).First(&current).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	err = db.Where("parent_id = ?", dirID).Find(&dirs).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	err = db.Where("directory_id = ?", dirID).Find(&files).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &DirDetail{

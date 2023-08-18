@@ -45,11 +45,11 @@ var ContentProviderCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		if err := model.AutoMigrate(db); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		config := contentprovider.Config{

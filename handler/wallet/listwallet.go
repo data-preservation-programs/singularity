@@ -3,9 +3,9 @@ package wallet
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -39,7 +39,7 @@ func listWalletHandler(
 		return nil, handler.NewInvalidParameterErr("dataset not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return dataset.Wallets, nil

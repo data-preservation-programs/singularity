@@ -6,12 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/hash"
 	"gorm.io/gorm"
@@ -24,7 +23,7 @@ type FileInfo struct {
 func PushFileHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	datasourceHandlerResolver datasource.HandlerResolver,
+	datasourceHandlerResolver storagesystem.HandlerResolver,
 	sourceID uint32,
 	fileInfo FileInfo,
 ) (*model.File, error) {
@@ -46,7 +45,7 @@ func PushFileHandler(
 func pushFileHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	datasourceHandlerResolver datasource.HandlerResolver,
+	datasourceHandlerResolver storagesystem.HandlerResolver,
 	sourceID uint32,
 	fileInfo FileInfo,
 ) (*model.File, error) {
@@ -56,12 +55,12 @@ func pushFileHandler(
 		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("source %d not found.", sourceID))
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	dsHandler, err := datasourceHandlerResolver.Resolve(ctx, source)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	entry, err := dsHandler.Check(ctx, fileInfo.Path)
@@ -77,7 +76,7 @@ func pushFileHandler(
 	file, fileRanges, err := PushFile(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	if file == nil {
@@ -119,11 +118,11 @@ func PushFile(ctx context.Context, db *gorm.DB, obj fs.ObjectInfo,
 		return nil, nil, nil
 	}
 	file := model.File{
-		SourceID:                  source.ID,
-		Path:                      obj.Remote(),
-		Size:                      size,
-		LastModifiedTimestampNano: lastModified.UnixNano(),
-		Hash:                      hashValue,
+		SourceID:         source.ID,
+		Path:             obj.Remote(),
+		Size:             size,
+		LastModifiedNano: lastModified.UnixNano(),
+		Hash:             hashValue,
 	}
 	logger.Debugw("new file", "file", file)
 	err = EnsureParentDirectories(ctx, db, &file, rootID, directoryCache)

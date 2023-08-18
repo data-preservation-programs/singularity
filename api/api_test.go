@@ -42,7 +42,7 @@ func TestHandlePostSource(t *testing.T) {
 	c.SetParamValues("local", "test")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = db.Create(&model.Preparation{
 		Name:      "test",
@@ -77,7 +77,7 @@ func TestPushFile_InvalidID(t *testing.T) {
 	c.SetParamValues("a")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestPushFile_InvalidPayload(t *testing.T) {
 	c.SetParamValues("1")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
@@ -121,7 +121,7 @@ func TestPushFile_SourceNotFound(t *testing.T) {
 	c.SetParamValues("1")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = server.toEchoHandler(dshandler.PushFileHandler)(c)
 	require.NoError(t, err)
@@ -143,7 +143,7 @@ func TestPushFile_EntryNotFound(t *testing.T) {
 	c.SetParamValues("1")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = db.Create(&model.Preparation{
 		Name:      "test",
@@ -180,7 +180,7 @@ func TestPushFile_Duplicate(t *testing.T) {
 	c.SetParamValues("1")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = db.Create(&model.Preparation{
 		Name:      "test",
@@ -235,7 +235,7 @@ func TestPushFile(t *testing.T) {
 	c.SetParamValues("1")
 	server := Server{
 		db:                        db,
-		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
+		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
 	}
 	err = db.Create(&model.Preparation{
 		Name:      "test",

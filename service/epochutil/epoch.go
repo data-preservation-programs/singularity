@@ -7,7 +7,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-state-types/abi"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 )
 
 var GenesisTimestamp = int32(1598306400)

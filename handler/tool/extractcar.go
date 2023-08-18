@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -15,7 +16,6 @@ import (
 	"github.com/ipfs/go-unixfs"
 	"github.com/ipfs/go-unixfs/io"
 	carblockstore "github.com/ipld/go-car/v2/blockstore"
-	"github.com/pkg/errors"
 )
 
 type multiBlockstore struct {
@@ -46,7 +46,7 @@ func (m multiBlockstore) Get(ctx context.Context, c cid.Cid) (blocks.Block, erro
 			continue
 		}
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		if block != nil {
 			return block, nil

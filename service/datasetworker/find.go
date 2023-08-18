@@ -27,7 +27,7 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 				Limit(1).
 				Find(&sources).Error
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 
 			if len(sources) == 0 {
@@ -45,7 +45,7 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if len(sources) == 0 {
 		//nolint: nilnil
@@ -54,7 +54,7 @@ func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
 
 	err = db.Model(&sources[0]).Association("Preparation").Find(&sources[0].Dataset)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &sources[0], nil
@@ -77,7 +77,7 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 				Limit(1).
 				Find(&packJobs).Error
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 
 			if len(packJobs) == 0 {
@@ -95,7 +95,7 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if len(packJobs) == 0 {
 		//nolint: nilnil
@@ -105,14 +105,14 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 	var src model.Source
 	err = db.Joins("Preparation").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	packJobs[0].Source = &src
 
 	var fileRanges []model.FileRange
 	err = db.Joins("File").Where("file_ranges.pack_job_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	packJobs[0].FileRanges = fileRanges
 
@@ -141,7 +141,7 @@ func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 				Order("id asc").
 				Limit(1).Find(&sources).Error
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			if len(sources) == 0 {
 				return nil
@@ -153,14 +153,14 @@ func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 					"error_message":      "",
 				}).Error
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			return nil
 		})
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if len(sources) == 0 {
 		//nolint: nilnil
@@ -169,7 +169,7 @@ func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
 
 	err = db.Model(&sources[0]).Association("Preparation").Find(&sources[0].Dataset)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &sources[0], nil

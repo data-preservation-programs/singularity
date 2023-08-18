@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -50,7 +50,7 @@ func repackHandler(
 			return nil, handler.NewInvalidParameterErr("pack job not found")
 		}
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		if packJob.PackingState == model.Error || packJob.PackingState == model.Complete {
 			err = database.DoRetry(ctx, func() error {
@@ -60,7 +60,7 @@ func repackHandler(
 				}).Error
 			})
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 		} else {
 			return nil, handler.NewInvalidParameterErr("pack job is not in error or complete state")
@@ -72,14 +72,14 @@ func repackHandler(
 	err = db.Transaction(func(db *gorm.DB) error {
 		err = db.Where("source_id = ? and packing_state = ?", sourceID, model.Error).Find(&packJobs).Error
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		err = db.Model(&model.PackJob{}).Where("source_id = ? and packing_state = ?", sourceID, model.Error).Updates(map[string]any{
 			"packing_state": model.Ready,
 			"error_message": "",
 		}).Error
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		for i := range packJobs {
 			packJobs[i].PackingState = model.Ready
@@ -88,7 +88,7 @@ func repackHandler(
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return packJobs, nil
 }

@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"github.com/rjNemo/underscore"
 )
 
@@ -25,7 +25,7 @@ func (w *Thread) scan(ctx context.Context, source model.Source, scanSource bool)
 		Order("file_ranges.id asc").
 		Find(&remainingFileRanges).Error
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	w.logger.With("remaining", len(remainingFileRanges)).Info("remaining file ranges")
 	remaining.add(remainingFileRanges)

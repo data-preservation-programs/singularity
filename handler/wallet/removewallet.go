@@ -56,7 +56,7 @@ func removeWalletHandler(
 	})
 
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

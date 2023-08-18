@@ -20,7 +20,7 @@ func listHandler(
 	var datasets []model.Preparation
 	err := db.Find(&datasets).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return datasets, nil
 }

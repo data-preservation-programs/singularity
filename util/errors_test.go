@@ -1,9 +1,11 @@
 package util
 
 import (
+	"fmt"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAggregateError(t *testing.T) {
@@ -37,4 +39,33 @@ func TestAggregateError(t *testing.T) {
 			}
 		})
 	}
+}
+
+type TestError struct {
+	msg string
+}
+
+func (e TestError) Error() string {
+	return e.msg
+}
+
+func TestAggregateErrorOthers(t *testing.T) {
+	err1 := errors.New("error1")
+	err2 := errors.New("error2")
+	err3 := errors.New("error3")
+	testError := TestError{msg: "test error"}
+	agg := AggregateError{Errors: []error{err1, err2, err3}}
+	err := agg.Unwrap()
+	require.ErrorContains(t, err, "error3")
+	require.True(t, errors.Is(err, err3))
+	require.True(t, errors.As(err, &err3))
+	require.Equal(t, "error1, error2, error3", fmt.Sprintf("%v", agg))
+	require.Contains(t, fmt.Sprintf("%+v", agg), "error1, error2, error3\n")
+	require.Equal(t, "error1, error2, error3", fmt.Sprintf("%s", agg))
+	require.Equal(t, "\"error1, error2, error3\"", fmt.Sprintf("%q", agg))
+
+	require.True(t, agg.Is(err1))
+	require.True(t, agg.As(&err1))
+	require.False(t, agg.Is(testError))
+	require.False(t, agg.As(&testError))
 }

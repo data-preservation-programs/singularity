@@ -3,7 +3,7 @@ package daggen
 import (
 	"github.com/ipfs/go-cid"
 	ipld "github.com/ipfs/go-ipld-format"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 )
 
 type DummyNode struct {

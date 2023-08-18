@@ -28,7 +28,7 @@ func listHandler(
 
 	err := db.Find(&wallets).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return wallets, nil

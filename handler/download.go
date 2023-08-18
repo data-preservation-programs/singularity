@@ -9,11 +9,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 )
@@ -25,7 +25,7 @@ func DownloadHandler(ctx context.Context,
 	outDir string,
 	concurrency int,
 ) error {
-	resolver := datasource.DefaultHandlerResolver{}
+	resolver := storagesystem.DefaultHandlerResolver{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/piece/metadata/"+piece, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to create request")
@@ -92,7 +92,7 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 
 	file, err := os.Create(outPath)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	var wg sync.WaitGroup
@@ -171,6 +171,6 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 		return file.Close()
 	case err := <-errChan:
 		file.Close()
-		return err
+		return errors.WithStack(err)
 	}
 }

@@ -20,7 +20,7 @@ var RepackCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		var packJobID *uint64
@@ -37,7 +37,7 @@ var RepackCmd = &cli.Command{
 			},
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		cliutil.PrintToConsole(packJobs, c.Bool("json"), nil)

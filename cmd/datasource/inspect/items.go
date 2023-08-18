@@ -15,7 +15,7 @@ var FilesCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		result, err := inspect.GetSourceFilesHandler(
@@ -24,7 +24,7 @@ var FilesCmd = &cli.Command{
 			c.Args().Get(0),
 		)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		cliutil.PrintToConsole(result, c.Bool("json"), nil)

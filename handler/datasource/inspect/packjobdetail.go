@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -41,7 +41,7 @@ func getSourcePackJobDetailHandler(
 		return nil, handler.NewInvalidParameterErr("pack job not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	fileMap := make(map[uint64]*model.File)
@@ -54,7 +54,7 @@ func getSourcePackJobDetailHandler(
 		var files []model.File
 		err = db.Where("id IN ?", fileIDChunk).Find(&files).Error
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		for i, file := range files {
 			fileMap[file.ID] = &files[i]

@@ -11,7 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )

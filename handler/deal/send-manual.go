@@ -7,11 +7,11 @@ import (
 
 	"github.com/dustin/go-humanize"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -79,7 +79,7 @@ func sendManualHandler(
 		return nil, handler.NewInvalidParameterErr("client address not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	pieceCID, err := cid.Parse(request.PieceCID)
@@ -128,7 +128,7 @@ func sendManualHandler(
 
 	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return dealModel, nil
 }

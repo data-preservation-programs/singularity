@@ -19,7 +19,7 @@ func InitHandler(ctx context.Context, db *gorm.DB) error {
 func initHandler(db *gorm.DB) error {
 	err := model.AutoMigrate(db)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

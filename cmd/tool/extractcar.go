@@ -3,7 +3,7 @@ package tool
 import (
 	"github.com/data-preservation-programs/singularity/handler/tool"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	"github.com/urfave/cli/v2"
 )
 

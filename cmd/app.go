@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/admin"
 	"github.com/data-preservation-programs/singularity/cmd/dataset"
 	"github.com/data-preservation-programs/singularity/cmd/datasource"
@@ -21,7 +22,6 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/mattn/go-shellwords"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/lib/terminal"
 	"github.com/urfave/cli/v2"
 )
@@ -263,7 +263,7 @@ func RunArgsInTestNoCapture(ctx context.Context, args string) error {
 	parser.ParseEnv = true // Enable environment variable parsing
 	parsedArgs, err := parser.Parse(args)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return App.RunContext(ctx, parsedArgs)
 }

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
@@ -17,7 +18,6 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -255,7 +255,7 @@ func MigrateDataset(cctx *cli.Context) error {
 	log.Printf("Using sql connection string: %s\n", sqlConnectionString)
 	db, closer, err := database.OpenFromCLI(cctx)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer closer.Close()
 	ctx := cctx.Context

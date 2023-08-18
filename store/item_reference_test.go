@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ipfs/boxo/util"
@@ -23,25 +22,23 @@ func TestFileReferenceBlockStore_Has(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DBNoContext:     db,
-		HandlerResolver: &datasource.DefaultHandlerResolver{},
+		DBNoContext: db,
 	}
 
 	ctx := context.Background()
-	cidValue := cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
-	has, err := store.Has(ctx, cidValue)
+	has, err := store.Has(ctx, testutil.TestCid)
 	require.NoError(t, err)
 	require.False(t, has)
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Preparation{},
+			Preparation: &model.Preparation{},
 		},
-		CID: model.CID(cidValue),
+		CID: model.CID(testutil.TestCid),
 	}).Error
 	require.NoError(t, err)
 
-	has, err = store.Has(ctx, cidValue)
+	has, err = store.Has(ctx, testutil.TestCid)
 	require.NoError(t, err)
 	require.True(t, has)
 }
@@ -63,16 +60,15 @@ func TestFileReferenceBlockStore_GetSize(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DBNoContext:     db,
-		HandlerResolver: &datasource.DefaultHandlerResolver{},
+		DBNoContext: db,
 	}
 	ctx := context.Background()
-	cidValue := cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
+	cidValue := testutil.TestCid
 	_, err = store.GetSize(ctx, cidValue)
 	require.ErrorIs(t, err, format.ErrNotFound{})
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Preparation{},
+			Preparation: &model.Preparation{},
 		},
 		CID:      model.CID(cidValue),
 		RawBlock: []byte("test"),
@@ -89,18 +85,17 @@ func TestFileReferenceBlockStore_Get_RawBlock(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DBNoContext:     db,
-		HandlerResolver: &datasource.DefaultHandlerResolver{},
+		DBNoContext: db,
 	}
 
 	ctx := context.Background()
-	cidValue := cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
+	cidValue := testutil.TestCid
 	_, err = store.Get(ctx, cidValue)
 	require.ErrorIs(t, err, format.ErrNotFound{})
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Preparation{},
+			Preparation: &model.Preparation{},
 		},
 		CID:      model.CID(cidValue),
 		RawBlock: []byte("test"),
@@ -117,8 +112,7 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 	defer closer.Close()
 
 	store := FileReferenceBlockStore{
-		DBNoContext:     db,
-		HandlerResolver: &datasource.DefaultHandlerResolver{},
+		DBNoContext: db,
 	}
 
 	ctx := context.Background()
@@ -131,20 +125,17 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Dataset: &model.Preparation{},
+			Preparation: &model.Preparation{},
 		},
 		CID: model.CID(cidValue),
 		File: &model.File{
-			Source: &model.Source{
+			SourceStorage: &model.Storage{
 				Path: tmp,
 				Type: "local",
-				Dataset: &model.Preparation{
-					Name: "1",
-				},
 			},
-			Path:                      "1.txt",
-			Size:                      4,
-			LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
+			Path:             "1.txt",
+			Size:             4,
+			LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
 		},
 		FileOffset:     0,
 		CarBlockLength: 36 + 1 + 4,

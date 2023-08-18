@@ -3,9 +3,9 @@ package inspect
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +43,7 @@ func getSourcePackJobsHandler(
 		return nil, handler.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var packJobs []model.PackJob
@@ -54,7 +54,7 @@ func getSourcePackJobsHandler(
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return packJobs, nil

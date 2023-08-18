@@ -30,7 +30,7 @@ func removeHandler(
 ) error {
 	err := database.DoRetry(ctx, func() error { return db.Where("address = ? OR id = ?", address, address).Delete(&model.Wallet{}).Error })
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }

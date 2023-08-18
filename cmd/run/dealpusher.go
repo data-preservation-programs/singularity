@@ -23,18 +23,18 @@ var DealPusherCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		if err := model.AutoMigrate(db); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		lotusAPI := c.String("lotus-api")
 		lotusToken := c.String("lotus-token")
 		err = epochutil.Initialize(c.Context, lotusAPI, lotusToken)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		dm, err := dealpusher.NewDealPusher(db, c.String("lotus-api"), c.String("lotus-token"), c.Uint("deal-attempts"))

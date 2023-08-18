@@ -27,7 +27,7 @@ func removeHandler(
 	}
 	err = database.DoRetry(ctx, func() error { return db.Delete(&dataset).Error })
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }

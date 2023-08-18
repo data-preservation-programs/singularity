@@ -95,12 +95,6 @@ func TestAssembleFileFromLinks_LargeFile(t *testing.T) {
 	require.Equal(t, "bafybeidci5xcdskgvefhv3x6kp6zpyxkbiqshqjbpsdgmk2k3mexzaggwi", blocks[0].Cid().String())
 }
 
-func TestGenerateCarHeader(t *testing.T) {
-	header, err := GenerateCarHeader(cid.NewCidV1(cid.Raw, util.Hash([]byte("hello"))))
-	require.NoError(t, err)
-	require.Len(t, header, 59)
-}
-
 func TestWriteCarHeader(t *testing.T) {
 	buf := new(bytes.Buffer)
 	header, err := WriteCarHeader(buf, cid.NewCidV1(cid.Raw, util.Hash([]byte("hello"))))
@@ -147,9 +141,9 @@ func TestGetBlockStreamFromFileRange(t *testing.T) {
 			Offset: 0,
 			Length: 5,
 			File: &model.File{
-				Size:                      4,
-				Hash:                      "hash",
-				LastModifiedTimestampNano: tm.UnixNano(),
+				Size:             4,
+				Hash:             "hash",
+				LastModifiedNano: tm.UnixNano(),
 			},
 		}
 		_, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
@@ -161,9 +155,9 @@ func TestGetBlockStreamFromFileRange(t *testing.T) {
 			Offset: 0,
 			Length: 5,
 			File: &model.File{
-				Size:                      5,
-				Hash:                      "hash",
-				LastModifiedTimestampNano: tm.UnixNano(),
+				Size:             5,
+				Hash:             "hash",
+				LastModifiedNano: tm.UnixNano(),
 			},
 		}
 		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
@@ -188,9 +182,9 @@ func TestGetBlockStreamFromFileRange(t *testing.T) {
 			Offset: 0,
 			Length: 0,
 			File: &model.File{
-				Size:                      0,
-				Hash:                      "hash",
-				LastModifiedTimestampNano: tm.UnixNano(),
+				Size:             0,
+				Hash:             "hash",
+				LastModifiedNano: tm.UnixNano(),
 			},
 		}
 		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
@@ -203,55 +197,6 @@ func TestGetBlockStreamFromFileRange(t *testing.T) {
 		require.EqualValues(t, 0, blockResults[0].Offset)
 		require.Equal(t, []byte(nil), blockResults[0].Raw)
 		require.Equal(t, "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", blockResults[0].CID.String())
-	})
-}
-
-func TestIsSameEntry(t *testing.T) {
-	ctx := context.Background()
-	mockObject := new(MockObject)
-	mockObject.On("Size").Return(int64(5))
-	mockObject.On("Fs").Return(&s3.Fs{})
-	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
-	tm := time.Now()
-	mockObject.On("ModTime", mock.Anything).Return(tm)
-	t.Run("size mismatch", func(t *testing.T) {
-		same, detail := IsSameEntry(ctx, model.File{
-			Size: 4,
-		}, mockObject)
-		require.False(t, same)
-		require.Contains(t, detail, "size mismatch")
-	})
-	t.Run("hash mismatch", func(t *testing.T) {
-		same, detail := IsSameEntry(ctx, model.File{
-			Size: 5,
-			Hash: "hash2",
-		}, mockObject)
-		require.False(t, same)
-		require.Contains(t, detail, "hash mismatch")
-	})
-	t.Run("last modified mismatch", func(t *testing.T) {
-		same, detail := IsSameEntry(ctx, model.File{
-			Size:                      5,
-			Hash:                      "hash",
-			LastModifiedTimestampNano: 100,
-		}, mockObject)
-		require.False(t, same)
-		require.Contains(t, detail, "last modified mismatch")
-	})
-	t.Run("all match", func(t *testing.T) {
-		same, _ := IsSameEntry(ctx, model.File{
-			Size:                      5,
-			Hash:                      "hash",
-			LastModifiedTimestampNano: tm.UnixNano(),
-		}, mockObject)
-		require.True(t, same)
-	})
-	t.Run("all match, ignoring empty hash", func(t *testing.T) {
-		same, _ := IsSameEntry(ctx, model.File{
-			Size:                      5,
-			LastModifiedTimestampNano: tm.UnixNano(),
-		}, mockObject)
-		require.True(t, same)
 	})
 }
 

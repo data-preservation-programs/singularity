@@ -69,7 +69,7 @@ func addRemoteHandler(
 
 	err = database.DoRetry(ctx, func() error { return db.Create(&wallet).Error })
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &wallet, nil

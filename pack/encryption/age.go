@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"filippo.io/age"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 )
 
 // AgeEncryptor implements the Encryptor interface using age

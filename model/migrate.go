@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -72,7 +72,7 @@ func DropAll(db *gorm.DB) error {
 	for _, table := range Tables {
 		err := db.Migrator().DropTable(table)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to drop table")
 		}
 	}
 	return nil

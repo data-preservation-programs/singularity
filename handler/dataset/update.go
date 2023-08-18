@@ -63,7 +63,7 @@ func updateHandler(
 
 	err = database.DoRetry(ctx, func() error { return db.Save(&dataset).Error })
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	logger.Infof("Preparation created with ID: %d", dataset.ID)

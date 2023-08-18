@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 	logger2 "gorm.io/gorm/logger"
@@ -47,7 +47,6 @@ func (d *databaseLogger) Error(ctx context.Context, s string, i ...any) {
 func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	sql, rowsAffected := fc()
 	elapsed := time.Since(begin)
-	isNotFound := errors.Is(err, gorm.ErrRecordNotFound)
 	lvl := logging.LevelDebug
 	if len(sql) > 1000 {
 		sql = sql[:1000] + "...(trimmed)"
@@ -56,7 +55,7 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		lvl = logging.LevelWarn
 		sql = "[SLOW!] " + sql
 	}
-	if err != nil && !isNotFound {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		lvl = logging.LevelError
 	}
 
@@ -87,10 +86,4 @@ func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 
 func DropAll(db *gorm.DB) error {
 	return model.DropAll(db)
-}
-
-func FindDatasetByName(db *gorm.DB, name string) (model.Preparation, error) {
-	var dataset model.Preparation
-	err := db.Where("name = ?", name).First(&dataset).Error
-	return dataset, err
 }

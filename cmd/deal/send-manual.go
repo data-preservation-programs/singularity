@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal"
@@ -114,7 +114,7 @@ Notes:
 		lotusToken := c.String("lotus-token")
 		err := epochutil.Initialize(c.Context, lotusAPI, lotusToken)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		proposal := deal.Proposal{
 			HTTPHeaders:     c.StringSlice("http-header"),
@@ -137,7 +137,7 @@ Notes:
 		timeout := c.Duration("timeout")
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		ctx, cancel := context.WithTimeout(c.Context, timeout)

@@ -17,14 +17,14 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 	"gorm.io/gorm"
 )
 
 type HTTPServer struct {
 	dbNoContext *gorm.DB
 	bind        string
-	resolver    datasource.HandlerResolver
+	resolver    storagesystem.HandlerResolver
 }
 
 func (*HTTPServer) Name() string {
