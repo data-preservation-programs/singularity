@@ -275,7 +275,7 @@ func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
 	parser.ParseEnv = true // Enable environment variable parsing
 	parsedArgs, err := parser.Parse(args)
 	if err != nil {
-		return "", "", err
+		return "", "", errors.WithStack(err)
 	}
 
 	// Create pipes
@@ -321,5 +321,5 @@ func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
 	outputOut := <-outC
 	outputErr := <-errC
 
-	return outputOut, outputErr, err
+	return outputOut, outputErr, errors.WithStack(err)
 }

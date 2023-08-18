@@ -29,19 +29,7 @@ var ErrInvalidWhence = errors.New("invalid whence")
 var ErrNegativeOffset = errors.New("negative offset")
 var ErrOffsetOutOfRange = errors.New("position past end of file")
 var ErrTruncated = errors.New("original file has been truncated")
-
-type FileHasChangedError struct {
-	Message string
-}
-
-func (e *FileHasChangedError) Error() string {
-	return e.Message
-}
-func (e *FileHasChangedError) Is(target error) bool {
-	var errFileHasChanged *FileHasChangedError
-	ok := errors.As(target, &errFileHasChanged)
-	return ok
-}
+var ErrFileHasChanged = errors.New("file has changed")
 
 // PieceReader is a struct that represents a reader for pieces of data.
 //
@@ -190,18 +178,18 @@ func NewPieceReader(
 	}
 
 	if carBlocks[0].CarOffset != int64(len(header)) {
-		return nil, errors.WithDetailf(ErrInvalidStartOffset, "expected %d, got %d", len(header), carBlocks[0].CarOffset)
+		return nil, errors.Wrapf(ErrInvalidStartOffset, "expected %d, got %d", len(header), carBlocks[0].CarOffset)
 	}
 
 	lastBlock := carBlocks[len(carBlocks)-1]
 	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
-		return nil, errors.WithDetailf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
+		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
 	}
 
 	for i := 0; i < len(carBlocks); i++ {
 		if i != len(carBlocks)-1 {
 			if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
-				return nil, errors.WithDetailf(ErrIncontiguousBlocks, "previous offset %d, next offset %d", carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength), carBlocks[i+1].CarOffset)
+				return nil, errors.Wrapf(ErrIncontiguousBlocks, "previous offset %d, next offset %d", carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength), carBlocks[i+1].CarOffset)
 			}
 		}
 		vint, read, err := varint.FromUvarint(carBlocks[i].Varint)
@@ -209,10 +197,10 @@ func NewPieceReader(
 			return nil, errors.Wrap(err, "failed to parse varint")
 		}
 		if read != len(carBlocks[i].Varint) {
-			return nil, errors.WithDetailf(ErrInvalidVarintLength, "expected %d, got %d", len(carBlocks[i].Varint), read)
+			return nil, errors.Wrapf(ErrInvalidVarintLength, "expected %d, got %d", len(carBlocks[i].Varint), read)
 		}
 		if uint64(carBlocks[i].BlockLength()) != vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()) {
-			return nil, errors.WithDetailf(ErrVarintDoesNotMatchBlockLength, "expected %d, got %d", carBlocks[i].BlockLength(), vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()))
+			return nil, errors.Wrapf(ErrVarintDoesNotMatchBlockLength, "expected %d, got %d", carBlocks[i].BlockLength(), vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()))
 		}
 		if carBlocks[i].RawBlock == nil {
 			_, ok := filesMap[*carBlocks[i].FileID]
@@ -226,7 +214,7 @@ func NewPieceReader(
 	for _, s := range storages {
 		handler, err := storagesystem.NewRCloneHandler(ctx, s)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get rclone handler")
+			return nil, errors.WithStack(err)
 		}
 		handlerMap[s.ID] = handler
 	}
@@ -318,7 +306,7 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		}
 		isSameEntry, explanation := storagesystem.IsSameEntry(pr.ctx, file, obj)
 		if !isSameEntry {
-			return 0, &FileHasChangedError{Message: "file has changed: " + explanation}
+			return 0, errors.Wrap(ErrFileHasChanged, explanation)
 		}
 
 		pr.readerFor = file.ID

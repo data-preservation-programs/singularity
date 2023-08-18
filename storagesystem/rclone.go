@@ -37,7 +37,7 @@ func (h RCloneHandler) About(ctx context.Context) (*fs.Usage, error) {
 		return h.fs.Features().About(ctx)
 	}
 
-	return nil, errors.WithDetailf(ErrGetUsageNotSupported, "backend: %s", h.fs.String())
+	return nil, errors.Wrapf(ErrGetUsageNotSupported, "backend: %s", h.fs.String())
 }
 
 func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, error) {
@@ -49,6 +49,7 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 	logger.Debugw("Scan: listing path", "type", h.fs.String(), "root", h.fs.Root(), "path", path, "last", last)
 	entries, err := h.fs.List(ctx, path)
 	if err != nil {
+		err = errors.Wrapf(err, "list path: %s", path)
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -116,26 +117,26 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 	logger.Debugw("Read: reading path", "type", h.fs.Name(), "root", h.fs.Root(), "path", path, "offset", offset, "length", length)
 	object, err := h.fs.NewObject(ctx, path)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to open object")
+		return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
 	}
 	if length == 0 {
 		return &EmptyReadCloser{}, object, nil
 	}
 	option := &fs.RangeOption{Start: offset, End: offset + length - 1}
 	reader, err := object.Open(ctx, option)
-	return reader, object, err
+	return reader, object, errors.WithStack(err)
 }
 
 func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
 	_, ok := BackendMap[s.Type]
 	registry, err := fs.Find(s.Type)
 	if !ok || err != nil {
-		return nil, errors.WithDetailf(ErrBackendNotSupported, "type: %s", s.Type)
+		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
 	}
 
 	f, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(s.Metadata))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create rclone backend")
+		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
 	return &RCloneHandler{f}, nil

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
@@ -15,7 +16,6 @@ import (
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
-	"github.com/cockroachdb/errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -50,7 +50,7 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	}
 	err := args.Error(1)
 	if err != nil {
-		return &deal, err
+		return &deal, errors.WithStack(err)
 	}
 	return &deal, nil
 }

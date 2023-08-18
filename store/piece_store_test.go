@@ -58,7 +58,7 @@ func TestPieceReader_FileChanged(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tmp, "1.txt"), []byte("changed"), 0644)
 	require.NoError(t, err)
 	_, err = io.ReadAll(reader)
-	require.ErrorIs(t, err, &FileHasChangedError{})
+	require.ErrorIs(t, err, ErrFileHasChanged)
 	// Remove the file
 	_, err = reader.Seek(0, io.SeekStart)
 	require.NoError(t, err)

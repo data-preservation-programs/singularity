@@ -149,7 +149,7 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tmp, "1.txt"), []byte("test2"), 0644)
 	require.NoError(t, err)
 	_, err = store.Get(ctx, cidValue)
-	require.ErrorIs(t, err, &FileHasChangedError{})
+	require.ErrorIs(t, err, ErrFileHasChanged)
 
 	// File removed
 	err = os.Remove(filepath.Join(tmp, "1.txt"))

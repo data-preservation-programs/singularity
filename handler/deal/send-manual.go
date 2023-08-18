@@ -42,7 +42,7 @@ func argToDuration(s string) (time.Duration, error) {
 	}
 	epochs, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	return time.Duration(epochs) * 30 * time.Second, nil
 }

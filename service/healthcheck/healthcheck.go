@@ -163,7 +163,7 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState fun
 		return db.WithContext(ctx).Create(&worker).Error
 	})
 
-	return alreadyRunning, err
+	return alreadyRunning, errors.WithStack(err)
 }
 
 // ReportHealth reports the health of a worker to the database. It uses the provided context and database connection.

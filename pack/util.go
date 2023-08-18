@@ -278,5 +278,5 @@ func GetBlockStreamFromFileRange(ctx context.Context,
 		}
 	}()
 
-	return blockChan, object, err
+	return blockChan, object, errors.WithStack(err)
 }

@@ -27,7 +27,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/dashboard"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	_ "github.com/data-preservation-programs/singularity/docs/swagger"
 	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
@@ -99,10 +98,10 @@ type APIParams struct {
 func InitServer(params APIParams) (Server, error) {
 	db, closer, err := database.OpenWithLogger(params.ConnString)
 	if err != nil {
-		return Server{}, err
+		return Server{}, errors.WithStack(err)
 	}
 	if err := model.AutoMigrate(db); err != nil {
-		return Server{}, err
+		return Server{}, errors.WithStack(err)
 	}
 	h, err := util.InitHost(nil)
 	if err != nil {

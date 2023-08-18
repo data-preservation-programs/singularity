@@ -91,7 +91,7 @@ type Deal struct {
 	ErrorMessage     string    `json:"errorMessage"`
 
 	// Associations
-	PreparationID uint32       `json:"preparationId"`
+	PreparationID *uint32      `json:"preparationId"`
 	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:SET NULL" json:"preparation,omitempty" swaggerignore:"true"`
 	ScheduleID    *uint32      `json:"scheduleId"`
 	Schedule      *Schedule    `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL"    json:"schedule,omitempty"    swaggerignore:"true"`

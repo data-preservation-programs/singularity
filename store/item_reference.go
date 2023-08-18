@@ -37,7 +37,7 @@ type FileReferenceBlockStore struct {
 func (i *FileReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var count int64
 	err := i.DBNoContext.WithContext(ctx).Model(&model.CarBlock{}).Select("cid").Where("cid = ?", model.CID(cid)).Count(&count).Error
-	return count > 0, err
+	return count > 0, errors.WithStack(err)
 }
 
 func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
@@ -69,7 +69,7 @@ func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.
 	defer reader.Close()
 	same, explanation := storagesystem.IsSameEntry(ctx, *carBlock.File, obj)
 	if !same {
-		return nil, &FileHasChangedError{Message: "file has changed: " + explanation}
+		return nil, errors.Wrap(ErrFileHasChanged, explanation)
 	}
 	readBytes, err := io.ReadAll(reader)
 	if err != nil {
@@ -94,7 +94,7 @@ func (i *FileReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, format.ErrNotFound{Cid: c}
 		}
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	return int(carBlock.BlockLength()), nil
 }

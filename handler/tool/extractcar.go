@@ -30,7 +30,7 @@ func (m multiBlockstore) Has(ctx context.Context, c cid.Cid) (bool, error) {
 	for _, bs := range m.bss {
 		has, err := bs.Has(ctx, c)
 		if err != nil {
-			return false, err
+			return false, errors.WithStack(err)
 		}
 		if has {
 			return true, nil
@@ -62,7 +62,7 @@ func (m multiBlockstore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 			continue
 		}
 		if err != nil {
-			return 0, err
+			return 0, errors.WithStack(err)
 		}
 		if size > 0 {
 			return size, nil
