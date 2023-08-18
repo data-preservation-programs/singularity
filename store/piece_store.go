@@ -161,7 +161,7 @@ func NewPieceReader(
 	}
 	for _, file := range files {
 		filesMap[file.ID] = file
-		_, ok := storageIDs[file.SourceStorageID]
+		_, ok := storageIDs[file.Attachment.StorageID]
 		if !ok {
 			return nil, ErrStorageMismatch
 		}
@@ -298,9 +298,9 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		file := pr.files[*carBlock.FileID]
 		fileOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
 		fileOffset += carBlock.FileOffset
-		logger.Infow("reading file", "sourceStorageID", file.SourceStorageID, "path", file.Path, "offset", fileOffset)
+		logger.Infow("reading file", "sourceStorageID", file.Attachment.StorageID, "path", file.Path, "offset", fileOffset)
 		var obj fs.Object
-		pr.reader, obj, err = pr.handlerMap[file.SourceStorageID].Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
+		pr.reader, obj, err = pr.handlerMap[file.Attachment.StorageID].Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to read file")
 		}

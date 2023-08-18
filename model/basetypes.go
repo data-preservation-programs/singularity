@@ -141,30 +141,27 @@ type JobState string
 type JobType string
 
 const (
-	DealTracker  WorkerType = "deal_tracker"
-	DealPusher   WorkerType = "deal_pusher"
-	DataPreparer WorkerType = "data_preparer"
+	DealTracker   WorkerType = "deal_tracker"
+	DealPusher    WorkerType = "deal_pusher"
+	DatasetWorker WorkerType = "dataset_worker"
 )
 
 const (
-	Scan         JobType = "scan"
-	DealMaking   JobType = "deal_making"
-	DealTracking JobType = "deal_tracking"
-	Packing      JobType = "packing"
+	Scan   JobType = "scan"
+	Pack   JobType = "pack"
+	DagGen JobType = "daggen"
 )
 
 var JobTypes = []JobType{
 	Scan,
-	DealMaking,
-	DealTracking,
-	Packing,
+	Pack,
+	DagGen,
 }
 
 var JobTypeStrings = []string{
 	string(Scan),
-	string(DealMaking),
-	string(DealTracking),
-	string(Packing),
+	string(Pack),
+	string(DagGen),
 }
 
 var JobStates = []JobState{

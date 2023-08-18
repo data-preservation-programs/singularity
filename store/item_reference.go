@@ -42,7 +42,7 @@ func (i *FileReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, e
 
 func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var carBlock model.CarBlock
-	err := i.DBNoContext.WithContext(ctx).Joins("File.SourceStorage").Where("car_blocks.cid = ?", model.CID(cid)).First(&carBlock).Error
+	err := i.DBNoContext.WithContext(ctx).Joins("File.Attachment.Storage").Where("car_blocks.cid = ?", model.CID(cid)).First(&carBlock).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, format.ErrNotFound{Cid: cid}
 	}
@@ -54,7 +54,7 @@ func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.
 	}
 
 	// TODO: Performance can be improved by caching the handler
-	handler, err := storagesystem.NewRCloneHandler(ctx, *carBlock.File.SourceStorage)
+	handler, err := storagesystem.NewRCloneHandler(ctx, *carBlock.File.Attachment.Storage)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

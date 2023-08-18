@@ -32,7 +32,10 @@ func TestFileReferenceBlockStore_Has(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Preparation: &model.Preparation{},
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{},
+				Storage:     &model.Storage{},
+			},
 		},
 		CID: model.CID(testutil.TestCid),
 	}).Error
@@ -68,7 +71,10 @@ func TestFileReferenceBlockStore_GetSize(t *testing.T) {
 	require.ErrorIs(t, err, format.ErrNotFound{})
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Preparation: &model.Preparation{},
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{},
+				Storage:     &model.Storage{},
+			},
 		},
 		CID:      model.CID(cidValue),
 		RawBlock: []byte("test"),
@@ -95,7 +101,10 @@ func TestFileReferenceBlockStore_Get_RawBlock(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Preparation: &model.Preparation{},
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{},
+				Storage:     &model.Storage{},
+			},
 		},
 		CID:      model.CID(cidValue),
 		RawBlock: []byte("test"),
@@ -123,16 +132,22 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 	_, err = store.Get(ctx, cidValue)
 	require.ErrorIs(t, err, format.ErrNotFound{})
 
+	err = db.Create(&model.SourceAttachment{
+		Preparation: &model.Preparation{},
+		Storage: &model.Storage{
+			Type: "local",
+			Path: tmp,
+		},
+	}).Error
+	require.NoError(t, err)
+
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			Preparation: &model.Preparation{},
+			AttachmentID: 1,
 		},
 		CID: model.CID(cidValue),
 		File: &model.File{
-			SourceStorage: &model.Storage{
-				Path: tmp,
-				Type: "local",
-			},
+			AttachmentID:     1,
 			Path:             "1.txt",
 			Size:             4,
 			LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),

@@ -591,17 +591,16 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 
 	dealModel := &model.Deal{
-		PreparationID: &car.PreparationID,
-		State:         model.DealProposed,
-		ClientID:      walletObj.ID,
-		Provider:      dealConfig.Provider,
-		Label:         cid.Cid(car.RootCID).String(),
-		PieceCID:      car.PieceCID,
-		PieceSize:     car.PieceSize,
-		StartEpoch:    int32(startEpoch),
-		EndEpoch:      int32(endEpoch),
-		Price:         dealConfig.GetPrice(car.PieceSize, dealConfig.Duration).String(),
-		Verified:      dealConfig.Verified,
+		State:      model.DealProposed,
+		ClientID:   walletObj.ID,
+		Provider:   dealConfig.Provider,
+		Label:      cid.Cid(car.RootCID).String(),
+		PieceCID:   car.PieceCID,
+		PieceSize:  car.PieceSize,
+		StartEpoch: int32(startEpoch),
+		EndEpoch:   int32(endEpoch),
+		Price:      dealConfig.GetPrice(car.PieceSize, dealConfig.Duration).String(),
+		Verified:   dealConfig.Verified,
 	}
 	if slices.Contains(protocols, StorageProposalV120) {
 		dealID := uuid.New()

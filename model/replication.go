@@ -91,12 +91,10 @@ type Deal struct {
 	ErrorMessage     string    `json:"errorMessage"`
 
 	// Associations
-	PreparationID *uint32      `json:"preparationId"`
-	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:SET NULL" json:"preparation,omitempty" swaggerignore:"true"`
-	ScheduleID    *uint32      `json:"scheduleId"`
-	Schedule      *Schedule    `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL"    json:"schedule,omitempty"    swaggerignore:"true"`
-	ClientID      string       `gorm:"index:idx_pending"                                     json:"clientId"`
-	Wallet        *Wallet      `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"      json:"wallet,omitempty"      swaggerignore:"true"`
+	ScheduleID *uint32   `json:"scheduleId"`
+	Schedule   *Schedule `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL"    json:"schedule,omitempty"    swaggerignore:"true"`
+	ClientID   string    `gorm:"index:idx_pending"                                     json:"clientId"`
+	Wallet     *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"      json:"wallet,omitempty"      swaggerignore:"true"`
 }
 
 // Key returns a mostly unique key to match deal from locally proposed deals and deals from the chain.

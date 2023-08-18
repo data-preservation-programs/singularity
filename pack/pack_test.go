@@ -28,6 +28,9 @@ func TestAssembleCar_LargeFiles(t *testing.T) {
 			Length: 10 * 1 << 20,
 			File: &model.File{
 				Size: 10 * 1 << 20,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
 			},
 		},
 		{
@@ -36,10 +39,13 @@ func TestAssembleCar_LargeFiles(t *testing.T) {
 			Length: 10 * 1 << 20,
 			File: &model.File{
 				Size: 10 * 1 << 20,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{0: handler}, model.Preparation{}, files, "", 1<<30)
+	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{1: handler}, model.Preparation{}, files, "", 1<<30)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -60,10 +66,13 @@ func TestAssembleCar_NoEncryption(t *testing.T) {
 			Length: 4,
 			File: &model.File{
 				Size: 5,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{0: handler}, model.Preparation{}, files, "", 1<<20)
+	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{1: handler}, model.Preparation{}, files, "", 1<<20)
 	require.NoError(t, err)
 	require.NotNil(t, result)
 	require.Equal(t, "", result.CarResults[0].CarFilePath)
@@ -92,10 +101,13 @@ func TestAssembleCar_WithEncryption(t *testing.T) {
 			Length: 5,
 			File: &model.File{
 				Size: 5,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{0: handler}, model.Preparation{
+	result, err := AssembleCar(ctx, map[uint32]storagesystem.Reader{1: handler}, model.Preparation{
 		EncryptionRecipients: []string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"},
 	}, files, t.TempDir(), 1<<20)
 	require.NoError(t, err)

@@ -122,13 +122,13 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 		return nil, errors.WithStack(err)
 	}
 	var files []model.File
-	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
+	err = db.Preload("Attachment").Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	storageIDSet := make(map[uint32]struct{})
 	for _, file := range files {
-		storageIDSet[file.SourceStorageID] = struct{}{}
+		storageIDSet[file.Attachment.StorageID] = struct{}{}
 	}
 	var storageIDs []uint32
 	for storageID := range storageIDSet {

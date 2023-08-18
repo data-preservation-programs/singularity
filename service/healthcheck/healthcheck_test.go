@@ -37,7 +37,7 @@ func TestHealthCheckReport(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() {
-		StartReportHealth(ctx, db, uuid.New(), model.DataPreparer)
+		StartReportHealth(ctx, db, uuid.New(), model.DatasetWorker)
 		close(done)
 	}()
 	time.Sleep(time.Second)
@@ -58,26 +58,26 @@ func TestHealthCheck(t *testing.T) {
 	id := uuid.New()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	alreadyRunning, err := Register(ctx, db, id, model.DataPreparer, false)
+	alreadyRunning, err := Register(ctx, db, id, model.DatasetWorker, false)
 	req.NoError(err)
 	req.False(alreadyRunning)
-	alreadyRunning, err = Register(ctx, db, uuid.New(), model.DataPreparer, false)
+	alreadyRunning, err = Register(ctx, db, uuid.New(), model.DatasetWorker, false)
 	req.NoError(err)
 	req.True(alreadyRunning)
 
 	var worker model.Worker
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
-	req.Equal(model.DataPreparer, worker.Type)
+	req.Equal(model.DatasetWorker, worker.Type)
 	req.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
 	time.Sleep(time.Second)
-	ReportHealth(context.Background(), db, id, model.DataPreparer)
+	ReportHealth(context.Background(), db, id, model.DatasetWorker)
 
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
-	req.Equal(model.DataPreparer, worker.Type)
+	req.Equal(model.DatasetWorker, worker.Type)
 	req.NotEmpty(worker.Hostname)
 	req.NotEqual(lastHeatbeat, worker.LastHeartbeat)
 

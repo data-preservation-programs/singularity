@@ -16,7 +16,7 @@ var Tables = []any{
 	&Global{},
 	&Preparation{},
 	&Storage{},
-	&PreparationSourceAttachment{},
+	&SourceAttachment{},
 	&Job{},
 	&File{},
 	&FileRange{},

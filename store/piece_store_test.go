@@ -44,8 +44,10 @@ func TestPieceReader_FileChanged(t *testing.T) {
 		},
 	}
 	files := []model.File{{
-		ID:               1,
-		SourceStorageID:  1,
+		ID: 1,
+		Attachment: &model.SourceAttachment{
+			StorageID: 1,
+		},
 		Path:             "1.txt",
 		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
 		Size:             20,
@@ -96,8 +98,10 @@ func TestPieceReader_LargeFile(t *testing.T) {
 		},
 	}
 	files := []model.File{{
-		ID:               1,
-		SourceStorageID:  1,
+		ID: 1,
+		Attachment: &model.SourceAttachment{
+			StorageID: 1,
+		},
 		Path:             "1.txt",
 		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
 		Size:             1024 * 1024,
@@ -165,20 +169,26 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 		},
 	}
 	files := []model.File{{
-		ID:               1,
-		SourceStorageID:  1,
+		ID: 1,
+		Attachment: &model.SourceAttachment{
+			StorageID: 1,
+		},
 		Path:             "1.txt",
 		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
 		Size:             20,
 	}, {
-		ID:               2,
-		SourceStorageID:  1,
+		ID: 2,
+		Attachment: &model.SourceAttachment{
+			StorageID: 1,
+		},
 		Path:             "2.txt",
 		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "2.txt")),
 		Size:             20,
 	}, {
-		ID:               3,
-		SourceStorageID:  1,
+		ID: 3,
+		Attachment: &model.SourceAttachment{
+			StorageID: 1,
+		},
 		Path:             "3.txt",
 		LastModifiedNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "3.txt")),
 		Size:             20,
@@ -274,20 +284,24 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 		{
 			carBlocks: []model.CarBlock{},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 999,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 999,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrStorageMismatch,
 		},
 		{
 			carBlocks: []model.CarBlock{},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrNoCarBlocks,
 		},
@@ -298,10 +312,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrInvalidStartOffset,
 		},
@@ -313,10 +329,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrInvalidEndOffset,
 		},
@@ -332,10 +350,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrIncontiguousBlocks,
 		},
@@ -347,10 +367,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: varint.ErrUnderflow,
 		},
@@ -363,10 +385,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrVarintDoesNotMatchBlockLength,
 		},
@@ -380,10 +404,12 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 				},
 			},
 			files: []model.File{{
-				ID:              1,
-				SourceStorageID: 1,
-				Path:            testFilename,
-				Size:            20,
+				ID: 1,
+				Attachment: &model.SourceAttachment{
+					StorageID: 1,
+				},
+				Path: testFilename,
+				Size: 20,
 			}},
 			err: ErrFileNotProvided,
 		},

@@ -59,6 +59,8 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		lvl = logging.LevelError
 	}
 
+	// Uncomment for logging everything in testing
+	// lvl = logging.LevelError
 	switch lvl {
 	case logging.LevelDebug:
 		logger.Debugw(sql, "rowsAffected", rowsAffected, "elapsed", elapsed, "err", err)

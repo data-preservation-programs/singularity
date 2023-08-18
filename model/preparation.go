@@ -31,8 +31,8 @@ type Preparation struct {
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                                         json:"wallets,omitempty"        swaggerignore:"true"`
-	SourceStorages []Storage `gorm:"many2many:preparation_source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" swaggerignore:"true"`
-	OutputStorages []Storage `gorm:"many2many:preparation_output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" swaggerignore:"true"`
+	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" swaggerignore:"true"`
+	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" swaggerignore:"true"`
 }
 
 func (d Preparation) UseEncryption() bool {
@@ -54,8 +54,19 @@ type Storage struct {
 	_ struct{} `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
 }
 
-// PreparationSourceAttachment is a link between a Preparation and a Storage that is used as a source.
-type PreparationSourceAttachment struct {
+// SourceAttachment is a link between a Preparation and a Storage that is used as a source.
+type SourceAttachment struct {
+	ID uint32 `gorm:"primaryKey" json:"id"`
+
+	// Associations
+	PreparationID uint32       `json:"preparationId"`
+	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
+	StorageID     uint32       `json:"storageId"`
+	Storage       *Storage     `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
+}
+
+// OutputAttachment is a link between a Preparation and a Storage that is used as an output.
+type OutputAttachment struct {
 	ID uint32 `gorm:"primaryKey" json:"id"`
 
 	// Associations
@@ -74,10 +85,11 @@ type Job struct {
 	ErrorMessage string   `json:"errorMessage"`
 
 	// Associations
-	WorkerID      *string      `gorm:"size:63"                                                        json:"workerId,omitempty"`
-	Worker        *Worker      `gorm:"foreignKey:WorkerID;references:ID;constraint:OnDelete:SET NULL" json:"worker,omitempty"        swaggerignore:"true"`
-	PreparationID uint32       `json:"preparationId"`
-	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE"           json:"sourceStorage,omitempty" swaggerignore:"true"`
+	WorkerID     *string           `gorm:"size:63"                                                        json:"workerId,omitempty"`
+	Worker       *Worker           `gorm:"foreignKey:WorkerID;references:ID;constraint:OnDelete:SET NULL" json:"worker,omitempty"        swaggerignore:"true"`
+	AttachmentID uint32            `json:"attachmentId"`
+	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
+	FileRanges   []FileRange       `gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"                                     json:"fileRanges,omitempty"    swaggerignore:"true"`
 }
 
 // File makes a reference to the source storage file, e.g., a local file.
@@ -92,11 +104,11 @@ type File struct {
 	LastModifiedNano int64  `json:"lastModifiedNano"`
 
 	// Associations
-	SourceStorageID uint32      `json:"sourceStorageId"`
-	SourceStorage   *Storage    `gorm:"foreignKey:SourceStorageID;constraint:OnDelete:CASCADE" json:"sourceStorage,omitempty" swaggerignore:"true"`
-	DirectoryID     *uint64     `gorm:"index"                                                  json:"directoryId"`
-	Directory       *Directory  `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"     json:"directory,omitempty"     swaggerignore:"true"`
-	FileRanges      []FileRange `gorm:"constraint:OnDelete:CASCADE"                            json:"fileRanges,omitempty"    swaggerignore:"true"`
+	AttachmentID uint32            `json:"attachmentId"`
+	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
+	DirectoryID  *uint64           `gorm:"index"                                                  json:"directoryId"`
+	Directory    *Directory        `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"     json:"directory,omitempty"     swaggerignore:"true"`
+	FileRanges   []FileRange       `gorm:"constraint:OnDelete:CASCADE"                            json:"fileRanges,omitempty"    swaggerignore:"true"`
 
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
@@ -107,23 +119,24 @@ func (i File) FileName() string {
 }
 
 // Directory is a link between parent and child directories.
-// The index on PreparationSourceAttachmentID and ParentID is used to find all root directories, as well as all directories in a directory.
+// The index on AttachmentID and ParentID is used to find all root directories, as well as all directories in a directory.
 type Directory struct {
 	ID       uint64 `gorm:"primaryKey"            json:"id"`
 	CID      CID    `gorm:"column:cid;type:bytes" json:"cid"`                           // CID is the CID of the directory.
 	Data     []byte `gorm:"column:data"           json:"-"        swaggerignore:"true"` // Data is the serialized directory data.
 	Name     string `json:"name"`                                                       // Name is the name of the directory.
-	Exported bool   `gorm:"index:daggen"          json:"exported"`                      // Exported is a flag that indicates whether the directory has been exported to the DAG.
+	Exported bool   `          json:"exported"`                                         // Exported is a flag that indicates whether the directory has been exported to the DAG.
 
 	// Associations
-	PreparationSourceAttachmentID uint32                       `gorm:"index:directory_source_parent"                                        json:"preparationSourceAttachmentId"`
-	PreparationSourceAttachment   *PreparationSourceAttachment `gorm:"foreignKey:PreparationSourceAttachmentID;constraint:OnDelete:CASCADE" json:"preparationSourceAttachment,omitempty" swaggerignore:"true"`
-	ParentID                      *uint64                      `gorm:"index:directory_source_parent"                                        json:"parentId"`
-	Parent                        *Directory                   `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE"                      json:"parent,omitempty"                      swaggerignore:"true"`
+	AttachmentID uint32            `gorm:"index:directory_source_parent" json:"attachmentId"`
+	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
+	ParentID     *uint64           `gorm:"index:directory_source_parent"                                        json:"parentId"`
+	Parent       *Directory        `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE"                      json:"parent,omitempty"                      swaggerignore:"true"`
 }
 
 // FileRange is a range of bytes inside File.
 // The index on FileID is used to find all FileRange in a file.
+// The index on JobID is used to find all FileRange in a job.
 type FileRange struct {
 	ID     uint64 `gorm:"primaryKey"            json:"id"`
 	Offset int64  `json:"offset"`                           // Offset is the offset of the range inside the file.
@@ -140,17 +153,17 @@ type FileRange struct {
 // Car makes a reference to a CAR file that has been potentially exported to the disk.
 // In the case of inline preparation, the path may be empty so the Car should be constructed
 // on the fly using CarBlock.
-// The index on PreparationID is used to find all CAR files in a preparation.
+// The index on PieceCID is to find all CARs that can matches the PieceCID
 type Car struct {
-	ID            uint32       `gorm:"primaryKey"                                           json:"id"`
-	CreatedAt     time.Time    `json:"createdAt"`
-	PieceCID      CID          `gorm:"column:piece_cid;index;type:bytes;size:255"           json:"pieceCid"`
-	PieceSize     int64        `json:"pieceSize"`
-	RootCID       CID          `gorm:"column:root_cid;type:bytes"                           json:"rootCid"`
-	FileSize      int64        `json:"fileSize"`
-	FilePath      string       `json:"filePath"`
-	PreparationID uint32       `gorm:"index"                                                json:"preparationID"`
-	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
+	ID           uint32            `gorm:"primaryKey"                                           json:"id"`
+	CreatedAt    time.Time         `json:"createdAt"`
+	PieceCID     CID               `gorm:"column:piece_cid;index;type:bytes;size:255"           json:"pieceCid"`
+	PieceSize    int64             `json:"pieceSize"`
+	RootCID      CID               `gorm:"column:root_cid;type:bytes"                           json:"rootCid"`
+	FileSize     int64             `json:"fileSize"`
+	FilePath     string            `json:"filePath"`
+	AttachmentID uint32            `json:"attachmentId"`
+	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
 
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
@@ -161,7 +174,7 @@ type Car struct {
 // Or we can determine how to assemble a CAR file from blocks from File.
 // It is also possible to get all Car that are associated with File.
 // The index on CarID is used to find all blocks in a Car.
-// The index on FileID is used to find all blocks in a File.
+// The index on CID is used to find a specific block with CID.
 type CarBlock struct {
 	ID             uint64 `gorm:"primaryKey"                           json:"id"`
 	CID            CID    `gorm:"index;column:cid;type:bytes;size:255" json:"cid"` // CID is the CID of the block.

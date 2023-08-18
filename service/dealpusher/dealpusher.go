@@ -8,6 +8,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
 
 	"github.com/cockroachdb/errors"
@@ -232,9 +233,15 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 //  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
 	db := d.dbNoContext.WithContext(ctx)
+	// Find all attachment IDs for this schedule
+	var attachments []model.SourceAttachment
+	err := db.Model(&model.SourceAttachment{}).Where("preparation_id = ?", schedule.PreparationID).Find(&attachments).Error
+	if err != nil {
+		return model.ScheduleError, errors.Wrap(err, "failed to find attachments")
+	}
 	for {
 		var pending sumResult
-		err := db.Model(&model.Deal{}).
+		err = db.Model(&model.Deal{}).
 			Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
 				model.DealProposed, model.DealPublished,
 			}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&pending).Error
@@ -285,8 +292,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", nil
 			}
 
-			err = db.Where("preparation_id = ? AND piece_cid NOT IN (?)",
-				schedule.PreparationID,
+			err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
+				underscore.Map(attachments, func(a model.SourceAttachment) uint32 { return a.ID }),
 				db.Table("deals").Select("piece_cid").
 					Where("provider = ? AND state IN (?)",
 						schedule.Provider,

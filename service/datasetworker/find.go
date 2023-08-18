@@ -2,175 +2,62 @@ package datasetworker
 
 import (
 	"context"
-	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
 
-func (w *Thread) findDagWork(ctx context.Context) (*model.Source, error) {
+func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*model.Job, error) {
 	db := w.dbNoContext.WithContext(ctx)
 	if !w.config.EnableDag {
 		return nil, nil
 	}
-	w.logger.Debugw("finding ExportDag work")
-	var sources []model.Source
 
-	err := database.DoRetry(ctx, func() error {
-		return db.Transaction(func(db *gorm.DB) error {
-			// First, find the id of the record to update
-			err := db.
-				Where("dag_gen_state = ? OR (dag_gen_state = ? AND dag_gen_worker_id is null)",
-					model.Ready, model.Processing).
-				Order("id asc").
-				Limit(1).
-				Find(&sources).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
+	var job model.Job
+	for _, jobType := range typesOrdered {
+		err := database.DoRetry(ctx, func() error {
+			return db.Transaction(func(db *gorm.DB) error {
+				err := db.Preload("Preparation.SourceStorages").Preload("Preparation.OutputStorages").
+					Where("type = ? AND state = ? OR (state = ? AND worker_id is null)", jobType, model.Ready, model.Processing).
+					First(&job).Error
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return nil
+				}
 
-			if len(sources) == 0 {
-				return nil
-			}
+				if err != nil {
+					return errors.WithStack(err)
+				}
 
-			// Then, perform the update using the found id
-			return db.Model(&sources[0]).
-				Updates(map[string]any{
-					"dag_gen_state":         model.Processing,
-					"dag_gen_worker_id":     w.id,
-					"dag_gen_error_message": "",
-				}).Error
+				return db.Model(&job).
+					Updates(map[string]any{
+						"state":         model.Processing,
+						"worker_id":     w.id,
+						"error_message": "",
+					}).Error
+			})
 		})
-	})
-
-	if err != nil {
-		return nil, errors.WithStack(err)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		if job.ID == 0 {
+			continue
+		}
 	}
-	if len(sources) == 0 {
+
+	if job.ID == 0 {
 		//nolint: nilnil
 		return nil, nil
 	}
 
-	err = db.Model(&sources[0]).Association("Preparation").Find(&sources[0].Dataset)
-	if err != nil {
-		return nil, errors.WithStack(err)
+	if job.Type == model.Pack {
+		var fileRanges []model.FileRange
+		err := db.Joins("File").Where("file_ranges.job_id = ?", job.ID).Order("file_ranges.id asc").Find(&fileRanges).Error
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		job.FileRanges = fileRanges
 	}
-
-	return &sources[0], nil
-}
-
-func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
-	db := w.dbNoContext.WithContext(ctx)
-	if !w.config.EnablePack {
-		return nil, nil
-	}
-	w.logger.Debugw("finding pack work")
-	var packJobs []model.PackJob
-
-	err := database.DoRetry(ctx, func() error {
-		return db.Transaction(func(db *gorm.DB) error {
-			// First, find the id of the record to update
-			err := db.
-				Where("packing_state = ? OR (packing_state = ? AND packing_worker_id is null)", model.Ready, model.Processing).
-				Order("id asc").
-				Limit(1).
-				Find(&packJobs).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			if len(packJobs) == 0 {
-				return nil
-			}
-
-			// Then, perform the update using the found id
-			return db.Model(&packJobs[0]).
-				Updates(map[string]any{
-					"packing_state":     model.Processing,
-					"packing_worker_id": w.id,
-					"error_message":     "",
-				}).Error
-		})
-	})
-
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	if len(packJobs) == 0 {
-		//nolint: nilnil
-		return nil, nil
-	}
-
-	var src model.Source
-	err = db.Joins("Preparation").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	packJobs[0].Source = &src
-
-	var fileRanges []model.FileRange
-	err = db.Joins("File").Where("file_ranges.pack_job_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	packJobs[0].FileRanges = fileRanges
-
-	return &packJobs[0], nil
-}
-
-func (w *Thread) findScanWork(ctx context.Context) (*model.Source, error) {
-	db := w.dbNoContext.WithContext(ctx)
-	if !w.config.EnableScan {
-		return nil, nil
-	}
-	w.logger.Debugw("finding scan work")
-	var sources []model.Source
-	// Find all ready sources or sources that is being processed but does not have a worker id,
-	// or all source that is complete but needs rescanning
-	err := database.DoRetry(ctx, func() error {
-		return db.Transaction(func(db *gorm.DB) error {
-			err := db.
-				Where(
-					"(scanning_state = ? OR (scanning_state = ? AND scanning_worker_id is null)) OR "+
-						"(scanning_state = ? AND scan_interval_seconds > 0 AND last_scanned_timestamp + scan_interval_seconds < ?)",
-					model.Ready,
-					model.Processing,
-					model.Complete,
-					time.Now().UTC().Unix()).
-				Order("id asc").
-				Limit(1).Find(&sources).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			if len(sources) == 0 {
-				return nil
-			}
-			err = db.Model(&sources[0]).
-				Updates(map[string]any{
-					"scanning_state":     model.Processing,
-					"scanning_worker_id": w.id,
-					"error_message":      "",
-				}).Error
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			return nil
-		})
-	})
-
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	if len(sources) == 0 {
-		//nolint: nilnil
-		return nil, nil
-	}
-
-	err = db.Model(&sources[0]).Association("Preparation").Find(&sources[0].Dataset)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	return &sources[0], nil
+	return &job, nil
 }

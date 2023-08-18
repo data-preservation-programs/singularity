@@ -200,7 +200,7 @@ func AssembleCar(
 		if encryptor != nil && outDir == "" {
 			return nil, errors.New("encryption is not supported without an output directory")
 		}
-		blockChan, object, err := GetBlockStreamFromFileRange(ctx, handlerMap[fileRange.File.SourceStorageID], fileRange, encryptor)
+		blockChan, object, err := GetBlockStreamFromFileRange(ctx, handlerMap[fileRange.File.Attachment.StorageID], fileRange, encryptor)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
