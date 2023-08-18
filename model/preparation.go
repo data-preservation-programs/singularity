@@ -8,9 +8,10 @@ import (
 )
 
 type Worker struct {
-	ID            string    `gorm:"primaryKey"    json:"id"`
-	LastHeartbeat time.Time `json:"lastHeartbeat"`
-	Hostname      string    `json:"hostname"`
+	ID            string     `gorm:"primaryKey"    json:"id"`
+	LastHeartbeat time.Time  `json:"lastHeartbeat"`
+	Hostname      string     `json:"hostname"`
+	Type          WorkerType `json:"type"`
 }
 
 type Global struct {

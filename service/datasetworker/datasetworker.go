@@ -4,14 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
-	"github.com/cockroachdb/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -70,7 +69,7 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 	ctx, cancel = context.WithCancel(ctx)
 	getState := func() healthcheck.State {
 		return healthcheck.State{
-			WorkType:  w.workType,
+			JobType:   w.workType,
 			WorkingOn: w.workingOn,
 		}
 	}

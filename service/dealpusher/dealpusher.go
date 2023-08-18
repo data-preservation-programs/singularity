@@ -137,7 +137,7 @@ func (d *DealPusher) addSchedule(ctx context.Context, schedule model.Schedule) e
 		cancel()
 		delete(d.activeSchedule, schedule.ID)
 		delete(d.activeScheduleCancelFunc, schedule.ID)
-		return errors.Wrap(err, "failed to add cron job")
+		return errors.Wrapf(err, "failed to add cron job for schedule %d: %s", schedule.ID, schedule.ScheduleCron)
 	}
 	d.cronEntries[schedule.ID] = entryID
 	return nil
@@ -198,7 +198,7 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 			cancel()
 			delete(d.activeSchedule, schedule.ID)
 			delete(d.activeScheduleCancelFunc, schedule.ID)
-			return errors.Wrap(err, "failed to add cron job")
+			return errors.Wrapf(err, "failed to add cron job for schedule %d: %s", schedule.ID, schedule.ScheduleCron)
 		}
 		d.cronEntries[schedule.ID] = entryID
 	}
@@ -213,7 +213,7 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 // 1. Counts the number and size of pending and total active deals for the current schedule from the database.
 // 2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
 // 3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
-// 4. Chooses a wallet from the dataset’s associated wallets.
+// 4. Chooses a wallet from the preparation’s associated wallets.
 // 5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
 // 6. Saves the newly created deal to the database.
 // 7. Updates the counts of pending, total, and current deals based on the new deal.
@@ -285,8 +285,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", nil
 			}
 
-			err = db.Where("dataset_id = ? AND piece_cid NOT IN (?)",
-				schedule.DatasetID,
+			err = db.Where("preparation_id = ? AND piece_cid NOT IN (?)",
+				schedule.PreparationID,
 				db.Table("deals").Select("piece_cid").
 					Where("provider = ? AND state IN (?)",
 						schedule.Provider,
@@ -301,7 +301,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return model.ScheduleError, errors.Wrap(err, "failed to find car")
 			}
 
-			walletObj, err = d.walletChooser.Choose(ctx, schedule.Dataset.Wallets)
+			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Wallets)
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
@@ -462,14 +462,8 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 //
 // This function is intended to be called once at the start of the service lifecycle.
 func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			WorkType: model.DealMaking,
-		}
-	}
-
 	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, getState, false)
+		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealPusher, false)
 		if err == nil && !alreadyRunning {
 			break
 		}
@@ -490,7 +484,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, getState)
+		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, model.DealPusher)
 		Logger.Info("healthcheck stopped")
 	}()
 

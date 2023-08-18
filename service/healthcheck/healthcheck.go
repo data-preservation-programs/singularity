@@ -20,7 +20,7 @@ var reportInterval = time.Minute
 var cleanupInterval = time.Minute * 5
 
 type State struct {
-	WorkType  model.WorkType
+	JobType   model.JobType
 	WorkingOn string
 }
 
@@ -57,11 +57,8 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // It first removes all workers that haven't sent a heartbeat for a certain threshold (staleThreshold).
 // If there's an error removing the workers, it logs the error and continues.
 //
-// Then, it resets the state of any sources that are marked as being processed by a worker that no longer exists.
+// Then, it resets the state of any jobs that are marked as being processed by a worker that no longer exists.
 // If there's an error updating the sources, it logs the error and continues.
-//
-// Finally, it resets the state of any pack jobs that are marked as being packed by a worker that no longer exists.
-// If there's an error updating the pack jobs, it logs the error.
 //
 // All database operations are retried on failure using the DoRetry function.
 //
@@ -70,7 +67,7 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
 	logger.Debugw("running healthcheck cleanup")
-	// Remove all workers that haven't sent heartbeat for 5 minutes
+	// Remove all workers that haven't sent heartbeat for 5 minutes.
 	err := database.DoRetry(ctx, func() error {
 		return db.Where("last_heartbeat < ?", time.Now().UTC().Add(-staleThreshold)).Delete(&model.Worker{}).Error
 	})
@@ -80,44 +77,20 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 
 	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Source{}).Where("(dag_gen_worker_id NOT IN (?) OR dag_gen_worker_id IS NULL) AND dag_gen_state = ?",
+		return db.Model(&model.Job{}).Where("(worker_id NOT IN (?) OR worker_id IS NULL) AND dag_gen_state = ?",
 			db.Table("workers").Select("id"), model.Processing).
 			Updates(map[string]any{
-				"dag_gen_worker_id": nil,
-				"dag_gen_state":     model.Ready,
+				"worker_id": nil,
+				"state":     model.Ready,
 			}).Error
 	})
 	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove stale daggen worker", "error", err)
-	}
-
-	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Source{}).Where("(scanning_worker_id NOT IN (?) OR scanning_worker_id IS NULL) AND scanning_state = ?",
-			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]any{
-				"scanning_worker_id": nil,
-				"scanning_state":     model.Ready,
-			}).Error
-	})
-	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove stale scanning worker", "error", err)
-	}
-
-	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.PackJob{}).Where("(packing_worker_id NOT IN (?) OR packing_worker_id IS NULL) AND packing_state = ?",
-			db.Table("workers").Select("id"), model.Processing).
-			Updates(map[string]any{
-				"packing_worker_id": nil,
-				"packing_state":     model.Ready,
-			}).Error
-	})
-	if err != nil && !errors.Is(err, context.Canceled) {
-		log.Logger("healthcheck").Errorw("failed to remove stale packing worker", "error", err)
+		log.Logger("healthcheck").Errorw("failed to remove stale workers", "error", err)
 	}
 }
 
 // Register registers a new worker in the database. It uses the provided context and database connection.
-// The workerID is used to uniquely identify the worker. The getState function is used to get the current state of the worker.
+// The workerID is used to uniquely identify the worker. The workerType is the type of the worker.
 // If allowDuplicate is set to true, it allows the registration of duplicate workers.
 //
 // The function returns two values:
@@ -132,24 +105,22 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // If there are such workers, it sets alreadyRunning to true and returns.
 //
 // Finally, it tries to create the worker in the database. If it fails, it returns an error.
-func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State, allowDuplicate bool) (alreadyRunning bool, err error) {
+func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerType model.WorkerType, allowDuplicate bool) (alreadyRunning bool, err error) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get hostname")
+		return false, errors.WithStack(err)
 	}
-	state := getState()
 	worker := model.Worker{
 		ID:            workerID.String(),
 		LastHeartbeat: time.Now().UTC(),
 		Hostname:      hostname,
-		WorkType:      state.WorkType,
-		WorkingOn:     state.WorkingOn,
+		Type:          workerType,
 	}
 	logger.Debugw("registering worker", "worker", worker)
 	err = database.DoRetry(ctx, func() error {
 		if !allowDuplicate {
 			var activeWorkerCount int64
-			err := db.WithContext(ctx).Model(&model.Worker{}).Where("work_type = ? AND last_heartbeat > ?", state.WorkType, time.Now().UTC().Add(-staleThreshold)).
+			err := db.WithContext(ctx).Model(&model.Worker{}).Where("type = ? AND last_heartbeat > ?", workerType, time.Now().UTC().Add(-staleThreshold)).
 				Count(&activeWorkerCount).Error
 			if err != nil {
 				return errors.Wrap(err, "failed to count active workers")
@@ -167,7 +138,7 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState fun
 }
 
 // ReportHealth reports the health of a worker to the database. It uses the provided context and database connection.
-// The workerID is used to uniquely identify the worker. The getState function is used to get the current state of the worker.
+// The workerID is used to uniquely identify the worker.
 //
 // The function first gets the hostname of the machine where it's running. If it fails to get the hostname, it logs an error and returns.
 // Then it gets the current state of the worker using the getState function.
@@ -176,25 +147,23 @@ func Register(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState fun
 // The function then tries to create the worker in the database or update the existing worker if one with the same ID already exists.
 // The update will set the last heartbeat, work type, working on, and hostname fields to the values from the worker model.
 // If the database operation fails, it logs an error.
-func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
+func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerType model.WorkerType) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		logger.Errorw("failed to get hostname", "error", err)
 		return
 	}
-	state := getState()
 	worker := model.Worker{
 		ID:            workerID.String(),
 		LastHeartbeat: time.Now().UTC(),
 		Hostname:      hostname,
-		WorkType:      state.WorkType,
-		WorkingOn:     state.WorkingOn,
+		Type:          workerType,
 	}
 	logger.Debugw("sending heartbeat", "worker", worker)
 	err = database.DoRetry(ctx, func() error {
 		return db.WithContext(ctx).Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"last_heartbeat", "work_type", "working_on", "hostname"}),
+			DoUpdates: clause.AssignmentColumns([]string{"last_heartbeat", "type", "hostname"}),
 		}).Create(&worker).Error
 	})
 
@@ -220,16 +189,13 @@ func ReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState
 //   - db *gorm.DB: The database connection object used by ReportHealth to interact with
 //     the database.
 //   - workerID uuid.UUID: The unique identifier for the worker whose health is being reported.
-//   - getState func() State: A function that, when called, returns the current health
-//     state of the worker. The returned State object is expected to contain the
-//     necessary information for the ReportHealth function.
-func StartReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, getState func() State) {
+func StartReportHealth(ctx context.Context, db *gorm.DB, workerID uuid.UUID, workerType model.WorkerType) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-time.After(reportInterval):
-			ReportHealth(ctx, db, workerID, getState)
+			ReportHealth(ctx, db, workerID, workerType)
 		}
 	}
 }

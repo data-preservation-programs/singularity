@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/libp2p/go-libp2p"
@@ -66,7 +66,6 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 		s.servers = append(s.servers, &HTTPServer{
 			bind:        config.HTTP.Bind,
 			dbNoContext: db,
-			resolver:    &storagesystem.DefaultHandlerResolver{},
 		})
 	}
 

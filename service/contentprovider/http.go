@@ -8,7 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
+	"github.com/cockroachdb/errors/oserror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
@@ -17,14 +18,12 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/cockroachdb/errors"
 	"gorm.io/gorm"
 )
 
 type HTTPServer struct {
 	dbNoContext *gorm.DB
 	bind        string
-	resolver    storagesystem.HandlerResolver
 }
 
 func (*HTTPServer) Name() string {
@@ -117,24 +116,32 @@ func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, e
 
 func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
 	db = db.WithContext(ctx)
-	var source model.Source
-	err := db.Where("id = ?", car.SourceID).Find(&source).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to query for source: %w", err)
-	}
 	var carBlocks []model.CarBlock
-	err = db.Where("car_id = ?", car.ID).Find(&carBlocks).Error
+	err := db.Where("car_id = ?", car.ID).Find(&carBlocks).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
+		return nil, errors.WithStack(err)
 	}
 	var files []model.File
 	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to query for files: %w", err)
+		return nil, errors.WithStack(err)
+	}
+	storageIDSet := make(map[uint32]struct{})
+	for _, file := range files {
+		storageIDSet[file.SourceStorageID] = struct{}{}
+	}
+	var storageIDs []uint32
+	for storageID := range storageIDSet {
+		storageIDs = append(storageIDs, storageID)
+	}
+	var storages []model.Storage
+	err = db.Where("id IN ?", storageIDs).Find(&storages).Error
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
 	return &PieceMetadata{
 		Car:       car,
-		Source:    source,
+		Storages:  storages,
 		CarBlocks: carBlocks,
 		Files:     files,
 	}, nil
@@ -179,7 +186,9 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 	}
 
 	// Remove all relevant credentials
-	metadata.Source.Metadata = nil
+	for i := range metadata.Storages {
+		metadata.Storages[i].Metadata = nil
+	}
 
 	acceptHeader := c.Request().Header.Get("Accept")
 	switch acceptHeader {
@@ -199,7 +208,7 @@ func (s *HTTPServer) getMetadataHandler(c echo.Context) error {
 
 type PieceMetadata struct {
 	Car       model.Car        `json:"car"`
-	Source    model.Source     `json:"source"`
+	Storages  []model.Storage  `json:"storages"`
 	CarBlocks []model.CarBlock `json:"carBlocks"`
 	Files     []model.File     `json:"files"`
 }
@@ -240,11 +249,11 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	var cars []model.Car
 	err := db.Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
 	if err != nil {
-		return nil, time.Time{}, errors.Wrap(err, "failed to query for CARs")
+		return nil, time.Time{}, errors.WithStack(err)
 	}
 
 	if len(cars) == 0 {
-		return nil, time.Time{}, os.ErrNotExist
+		return nil, time.Time{}, oserror.ErrNotExist
 	}
 
 	var errs []error
@@ -255,18 +264,18 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 
 		file, err := os.Open(car.FilePath)
 		if err != nil {
-			errs = append(errs, errors.Wrap(err, "failed to open file"))
+			errs = append(errs, errors.Wrapf(err, "failed to open file %s", car.FilePath))
 			continue
 		}
 		fileInfo, err := file.Stat()
 		if err != nil {
 			file.Close()
-			errs = append(errs, errors.Wrap(err, "failed to stat file"))
+			errs = append(errs, errors.Wrapf(err, "failed to stat file %s", car.FilePath))
 			continue
 		}
 		if fileInfo.Size() != car.FileSize {
 			file.Close()
-			errs = append(errs, errors.Wrap(err, "failed to stat file"))
+			errs = append(errs, errors.Wrapf(err, "CAR file size mismatch for %s. expected %d, actual %d.", car.FilePath, car.FileSize, fileInfo.Size()))
 			continue
 		}
 		return file, fileInfo.ModTime(), nil
@@ -278,7 +287,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 			errs = append(errs, errors.Wrap(err, "failed to get piece metadata"))
 			continue
 		}
-		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Files, s.resolver)
+		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Storages, metadata.CarBlocks, metadata.Files)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to create piece reader"))
 			continue
@@ -319,7 +328,7 @@ func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	}
 
 	reader, lastModified, err := s.findPiece(c.Request().Context(), pieceCid)
-	if os.IsNotExist(err) {
+	if oserror.IsNotExist(err) {
 		return c.String(http.StatusNotFound, "piece not found")
 	}
 	if err != nil {

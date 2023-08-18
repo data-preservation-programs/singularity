@@ -27,7 +27,7 @@ func TestFindPackWork(t *testing.T) {
 	ctx := context.Background()
 	getState := func() healthcheck.State {
 		return healthcheck.State{
-			WorkType:  model.Packing,
+			JobType:   model.Packing,
 			WorkingOn: "something",
 		}
 	}
@@ -72,7 +72,7 @@ func TestFindDagWork(t *testing.T) {
 	ctx := context.Background()
 	getState := func() healthcheck.State {
 		return healthcheck.State{
-			WorkType:  model.Packing,
+			JobType:   model.Packing,
 			WorkingOn: "something",
 		}
 	}
@@ -115,7 +115,7 @@ func TestFindScanWork(t *testing.T) {
 	ctx := context.Background()
 	getState := func() healthcheck.State {
 		return healthcheck.State{
-			WorkType:  model.Packing,
+			JobType:   model.Packing,
 			WorkingOn: "something",
 		}
 	}

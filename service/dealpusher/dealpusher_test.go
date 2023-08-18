@@ -33,7 +33,7 @@ func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, ca
 	deal.ID = 0
 	deal.PieceCID = car.PieceCID
 	deal.PieceSize = car.PieceSize
-	deal.DatasetID = &car.DatasetID
+	deal.PreparationID = &car.PreparationID
 	deal.ClientID = walletObj.ID
 	deal.Provider = dealConfig.Provider
 	deal.Verified = dealConfig.Verified
@@ -110,7 +110,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
+		Preparation: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -129,10 +129,10 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 	}
 	err = db.Create([]model.Car{
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[0],
-			PieceSize: 1024,
-			FilePath:  "0",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			FilePath:      "0",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -160,7 +160,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
+		Preparation: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -179,19 +179,19 @@ func TestDealMakerService_Cron(t *testing.T) {
 
 	err = db.Create([]model.Car{
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			PieceSize: 1024,
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			PieceSize:     1024,
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			PieceSize: 1024,
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			PieceSize:     1024,
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			PieceSize: 1024,
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			PieceSize:     1024,
 		},
 	}).Error
 
@@ -247,7 +247,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
+		Preparation: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -272,34 +272,34 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 	}
 	err = db.Create([]model.Car{
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[0],
-			PieceSize: 1024,
-			FilePath:  "0",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			FilePath:      "0",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[1],
-			PieceSize: 1024,
-			FilePath:  "1",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[1],
+			PieceSize:     1024,
+			FilePath:      "1",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[2],
-			PieceSize: 2048,
-			FilePath:  "2",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[2],
+			PieceSize:     2048,
+			FilePath:      "2",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[3],
-			PieceSize: 1024,
-			FilePath:  "3",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[3],
+			PieceSize:     1024,
+			FilePath:      "3",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[4],
-			PieceSize: 1024,
-			FilePath:  "4",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[4],
+			PieceSize:     1024,
+			FilePath:      "4",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -352,7 +352,7 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	provider := "f0miner"
 	client := "f0client"
 	schedule := model.Schedule{
-		Dataset: &model.Preparation{Name: "test", Wallets: []model.Wallet{
+		Preparation: &model.Preparation{Name: "test", Wallets: []model.Wallet{
 			{
 				ID: client, Address: "f0xx",
 			},
@@ -376,34 +376,34 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	}
 	err = db.Create([]model.Car{
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[0],
-			PieceSize: 1024,
-			FilePath:  "0",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			FilePath:      "0",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[1],
-			PieceSize: 1024,
-			FilePath:  "1",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[1],
+			PieceSize:     1024,
+			FilePath:      "1",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[2],
-			PieceSize: 1024,
-			FilePath:  "2",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[2],
+			PieceSize:     1024,
+			FilePath:      "2",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[3],
-			PieceSize: 1024,
-			FilePath:  "3",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[3],
+			PieceSize:     1024,
+			FilePath:      "3",
 		},
 		{
-			DatasetID: schedule.Dataset.ID,
-			PieceCID:  pieceCIDs[4],
-			PieceSize: 1024,
-			FilePath:  "4",
+			PreparationID: schedule.Preparation.ID,
+			PieceCID:      pieceCIDs[4],
+			PieceSize:     1024,
+			FilePath:      "4",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -415,39 +415,39 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	// Test5 is not proposed
 	err = db.Create([]model.Deal{
 		{
-			DatasetID:  &schedule.Dataset.ID,
-			ScheduleID: &schedule.ID,
-			Provider:   provider,
-			ClientID:   client,
-			PieceCID:   pieceCIDs[0],
-			PieceSize:  1024,
-			State:      model.DealProposed,
+			PreparationID: &schedule.Preparation.ID,
+			ScheduleID:    &schedule.ID,
+			Provider:      provider,
+			ClientID:      client,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			State:         model.DealProposed,
 		},
 		{
-			DatasetID:  &schedule.Dataset.ID,
-			ScheduleID: &schedule.ID,
-			Provider:   provider,
-			ClientID:   client,
-			PieceCID:   pieceCIDs[1],
-			PieceSize:  1024,
-			State:      model.DealProposalExpired,
+			PreparationID: &schedule.Preparation.ID,
+			ScheduleID:    &schedule.ID,
+			Provider:      provider,
+			ClientID:      client,
+			PieceCID:      pieceCIDs[1],
+			PieceSize:     1024,
+			State:         model.DealProposalExpired,
 		},
 		{
-			DatasetID:  &schedule.Dataset.ID,
-			ScheduleID: &schedule.ID,
-			Provider:   provider,
-			ClientID:   client,
-			PieceCID:   pieceCIDs[2],
-			PieceSize:  1024,
-			State:      model.DealActive,
+			PreparationID: &schedule.Preparation.ID,
+			ScheduleID:    &schedule.ID,
+			Provider:      provider,
+			ClientID:      client,
+			PieceCID:      pieceCIDs[2],
+			PieceSize:     1024,
+			State:         model.DealActive,
 		},
 		{
-			DatasetID: &schedule.Dataset.ID,
-			Provider:  provider,
-			ClientID:  client,
-			PieceCID:  pieceCIDs[3],
-			PieceSize: 1024,
-			State:     model.DealProposed,
+			PreparationID: &schedule.Preparation.ID,
+			Provider:      provider,
+			ClientID:      client,
+			PieceCID:      pieceCIDs[3],
+			PieceSize:     1024,
+			State:         model.DealProposed,
 		},
 	}).Error
 	require.NoError(t, err)

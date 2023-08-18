@@ -37,12 +37,7 @@ func TestHealthCheckReport(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() {
-		StartReportHealth(ctx, db, uuid.New(), func() State {
-			return State{
-				WorkType:  model.Packing,
-				WorkingOn: "something",
-			}
-		})
+		StartReportHealth(ctx, db, uuid.New(), model.DataPreparer)
 		close(done)
 	}()
 	time.Sleep(time.Second)
@@ -63,43 +58,26 @@ func TestHealthCheck(t *testing.T) {
 	id := uuid.New()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	alreadyRunning, err := Register(ctx, db, id, func() State {
-		return State{
-			WorkType:  model.Packing,
-			WorkingOn: "something",
-		}
-	}, false)
+	alreadyRunning, err := Register(ctx, db, id, model.DataPreparer, false)
 	req.NoError(err)
 	req.False(alreadyRunning)
-	alreadyRunning, err = Register(ctx, db, uuid.New(), func() State {
-		return State{
-			WorkType:  model.Packing,
-			WorkingOn: "something",
-		}
-	}, false)
+	alreadyRunning, err = Register(ctx, db, uuid.New(), model.DataPreparer, false)
 	req.NoError(err)
 	req.True(alreadyRunning)
 
 	var worker model.Worker
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
-	req.Equal(model.Packing, worker.WorkType)
-	req.Equal("something", worker.WorkingOn)
+	req.Equal(model.DataPreparer, worker.Type)
 	req.NotEmpty(worker.Hostname)
 	lastHeatbeat := worker.LastHeartbeat
 
 	time.Sleep(time.Second)
-	ReportHealth(context.Background(), db, id, func() State {
-		return State{
-			WorkType:  model.Packing,
-			WorkingOn: "something else",
-		}
-	})
+	ReportHealth(context.Background(), db, id, model.DataPreparer)
 
 	err = db.Where("id = ?", id.String()).First(&worker).Error
 	req.Nil(err)
-	req.Equal(model.Packing, worker.WorkType)
-	req.Equal("something else", worker.WorkingOn)
+	req.Equal(model.DataPreparer, worker.Type)
 	req.NotEmpty(worker.Hostname)
 	req.NotEqual(lastHeatbeat, worker.LastHeartbeat)
 

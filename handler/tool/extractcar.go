@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
+	"github.com/cockroachdb/errors/oserror"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -130,7 +131,7 @@ func ExtractCarHandler(ctx context.Context, inputDir string, output string, c ci
 func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
 	stat, err := os.Stat(outPath)
 	// If the user supply /a/b.txt but the file does not exist, then we need to mkdir -p /a
-	if errors.Is(err, os.ErrNotExist) {
+	if errors.Is(err, oserror.ErrNotExist) {
 		err = os.MkdirAll(filepath.Dir(outPath), 0755)
 		if err != nil {
 			return "", errors.Wrapf(err, "failed to create output directory %s", filepath.Dir(outPath))

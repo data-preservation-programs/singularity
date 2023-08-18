@@ -264,7 +264,7 @@ func TestRunOnce(t *testing.T) {
 
 	// Deal 1 : Active -> Slashed
 	// Deal 2 : Published -> Active
-	// Deal 3 : Proposed -> Published
+	// Deal 3 : Proposed -> Proposal_expired
 	// Deal 4 : Active -> Expired
 	// Deal 5 : Active -> Expired
 	// Deal 6 : Published -> Expired
@@ -283,7 +283,7 @@ func TestRunOnce(t *testing.T) {
 			},
 			State: DealState{
 				SectorStartEpoch: 0,
-				LastUpdatedEpoch: 0,
+				LastUpdatedEpoch: 999999999,
 				SlashEpoch:       100,
 			},
 		},
@@ -355,7 +355,7 @@ func TestRunOnce(t *testing.T) {
 	require.Len(t, allDeals, 7)
 	require.Equal(t, model.DealSlashed, allDeals[0].State)
 	require.Equal(t, model.DealActive, allDeals[1].State)
-	require.Equal(t, model.DealPublished, allDeals[2].State)
+	require.Equal(t, model.DealProposalExpired, allDeals[2].State)
 	require.Equal(t, model.DealExpired, allDeals[3].State)
 	require.Equal(t, model.DealExpired, allDeals[4].State)
 	require.Equal(t, model.DealProposalExpired, allDeals[5].State)

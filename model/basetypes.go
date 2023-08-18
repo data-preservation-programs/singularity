@@ -134,9 +134,17 @@ func (m *StringMap) Scan(src any) error {
 	return json.Unmarshal(source, m)
 }
 
+type WorkerType string
+
 type JobState string
 
 type JobType string
+
+const (
+	DealTracker  WorkerType = "deal_tracker"
+	DealPusher   WorkerType = "deal_pusher"
+	DataPreparer WorkerType = "data_preparer"
+)
 
 const (
 	Scan         JobType = "scan"

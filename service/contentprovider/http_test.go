@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ipfs/boxo/util"
@@ -28,7 +27,6 @@ func TestHTTPServerStart(t *testing.T) {
 	s := HTTPServer{
 		dbNoContext: db,
 		bind:        "127.0.0.1:65432",
-		resolver:    &storagesystem.DefaultHandlerResolver{},
 	}
 	require.Equal(t, "HTTPServer", s.Name())
 	ctx, cancel := context.WithCancel(context.Background())
@@ -53,30 +51,22 @@ func TestHTTPServerHandler(t *testing.T) {
 	s := HTTPServer{
 		dbNoContext: db,
 		bind:        ":0",
-		resolver:    &storagesystem.DefaultHandlerResolver{},
 	}
 
 	pieceCID := cid.NewCidV1(cid.FilCommitmentSealed, util.Hash([]byte("test")))
 	err = db.Create(&model.Car{
-		PieceCID:  model.CID(pieceCID),
-		PieceSize: 64,
-		FileSize:  6 + 1 + 36 + 5,
-		FilePath:  "",
-		Source: &model.Source{
-			Dataset: &model.Preparation{
-				Name: "test",
-			},
-			Type: "local",
-			Path: "/",
-		},
-		Dataset: &model.Preparation{},
-		Header:  []byte("header"),
+		PieceCID:    model.CID(pieceCID),
+		PieceSize:   128,
+		FileSize:    59 + 1 + 36 + 5,
+		FilePath:    "",
+		Preparation: &model.Preparation{},
+		RootCID:     model.CID(testutil.TestCid),
 	}).Error
 	require.NoError(t, err)
 	err = db.Create(&model.CarBlock{
 		CarID:          1,
-		CID:            model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("hello")))),
-		CarOffset:      6,
+		CID:            model.CID(testutil.TestCid),
+		CarOffset:      59,
 		CarBlockLength: 1 + 36 + 5,
 		Varint:         varint.ToUvarint(36 + 5),
 		RawBlock:       []byte("hello"),
@@ -163,7 +153,7 @@ func TestHTTPServerHandler(t *testing.T) {
 		err = s.handleGetPiece(c)
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, rec.Code)
-		require.EqualValues(t, 48, rec.Body.Len())
+		require.EqualValues(t, 101, rec.Body.Len())
 	}
 	t.Run("car file deleted, fail back to inline", testfunc)
 
