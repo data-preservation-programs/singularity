@@ -69,7 +69,12 @@ type Handler interface {
 	fs.Abouter
 }
 
+type Name interface {
+	Name() string
+}
+
 type Lister interface {
+	Name
 	// List lists the files at the given path.
 	List(ctx context.Context, path string) ([]fs.DirEntry, error)
 
@@ -83,11 +88,17 @@ type Lister interface {
 }
 
 type Writer interface {
+	Name
 	// Write writes data to the output storage file.
 	Write(ctx context.Context, path string, in io.Reader) (fs.Object, error)
+	// Move moves the given object to the given path.
+	Move(ctx context.Context, from fs.Object, to string) (fs.Object, error)
+	// Remove removes the given object.
+	Remove(ctx context.Context, obj fs.Object) error
 }
 
 type Reader interface {
+	Name
 	// Read reads data from the source storage file starting at the given path and offset, and returns a ReadCloser.
 	// The `length` parameter specifies the number of bytes to read.
 	// This method is most likely used for retrieving a single block of data.

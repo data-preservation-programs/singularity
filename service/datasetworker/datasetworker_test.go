@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -190,7 +189,7 @@ func TestDatasetWorkerThread_pack(t *testing.T) {
 	require.NoError(t, err)
 	require.Greater(t, cars[0].PieceSize, int64(0))
 	require.Equal(t, *cars[0].PackJobID, packJob.ID)
-	require.NotEmpty(t, cars[0].FilePath)
+	require.NotEmpty(t, cars[0].StoragePath)
 	var packJobs []model.PackJob
 	err = db.Find(&packJobs).Error
 	require.NoError(t, err)

@@ -8,20 +8,21 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/pack/push"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/rjNemo/underscore"
 )
 
-// scan scans the data source and inserts the packJobing strategy back to database
+// scan scans the data source and inserts the model.Job back to database
 // scanSource is true if the source will be actually scanned in addition to just picking up remaining ones
 // resume is true if the scan will be resumed from the last scanned file, which is useful for resuming a failed scan
 func (w *Thread) scan(ctx context.Context, job model.Job, scanSource bool) error {
 	db := w.dbNoContext.WithContext(ctx)
 	directoryCache := make(map[string]uint64)
-	preparation := *job.Preparation
 	var remaining = newRemain()
 	var remainingFileRanges []model.FileRange
 	err := db.Joins("File").
-		Where("source_id = ? AND file_ranges.pack_job_id is null", source.ID).
+		Where("attachment_id = ? AND file_ranges.job_id is null", job.AttachmentID).
 		Order("file_ranges.id asc").
 		Find(&remainingFileRanges).Error
 	if err != nil {
@@ -32,7 +33,7 @@ func (w *Thread) scan(ctx context.Context, job model.Job, scanSource bool) error
 
 	if !scanSource {
 		for len(remaining.fileRanges) > 0 {
-			err = w.packJobOnce(ctx, source, dataset, remaining)
+			err = w.chunkOnce(ctx, *job.Attachment, remaining)
 			if err != nil {
 				return errors.Wrap(err, "failed to save packJobing")
 			}
@@ -40,66 +41,65 @@ func (w *Thread) scan(ctx context.Context, job model.Job, scanSource bool) error
 		return nil
 	}
 
-	sourceScanner, err := w.datasourceHandlerResolver.Resolve(ctx, source)
+	sourceScanner, err := storagesystem.NewRCloneHandler(ctx, *job.Attachment.Storage)
 	if err != nil {
-		return errors.Wrap(err, "failed to get source scanner")
+		return errors.WithStack(err)
 	}
-	entryChan := sourceScanner.Scan(ctx, "", source.LastScannedPath)
+	entryChan := sourceScanner.Scan(ctx, "", job.Attachment.LastScannedPath)
 	for entry := range entryChan {
 		if entry.Error != nil {
 			w.logger.Errorw("failed to scan", "error", entry.Error)
 			continue
 		}
 
-		file, fileRanges, err := datasource.PushFile(ctx, w.dbNoContext, entry.Info, source, dataset, directoryCache)
+		file, fileRanges, err := push.PushFile(ctx, w.dbNoContext, entry.Info, *job.Attachment, directoryCache)
 		if err != nil {
-			return errors.Wrap(err, "failed to push file")
+			return errors.Wrapf(err, "failed to push file %s", entry.Info.Remote())
 		}
 		if file == nil {
 			w.logger.Infow("file already exists", "path", entry.Info.Remote())
 			continue
 		}
 		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.Source{}).Where("id = ?", source.ID).
+			return db.Model(&model.SourceAttachment{}).Where("id = ?", job.AttachmentID).
 				Update("last_scanned_path", file.Path).Error
 		})
 		if err != nil {
-			return errors.Wrap(err, "failed to update last scanned path")
+			return errors.Wrapf(err, "failed to update last scanned path to %s", file.Path)
 		}
 
 		remaining.add(fileRanges)
-		for remaining.carSize >= dataset.MaxSize {
-			err = w.packJobOnce(ctx, source, dataset, remaining)
+		for remaining.carSize >= job.Attachment.Preparation.MaxSize {
+			err = w.chunkOnce(ctx, *job.Attachment, remaining)
 			if err != nil {
-				return errors.Wrap(err, "failed to save packJobing")
+				return errors.WithStack(err)
 			}
 		}
 	}
 
 	for len(remaining.fileRanges) > 0 {
-		err = w.packJobOnce(ctx, source, dataset, remaining)
+		err = w.chunkOnce(ctx, *job.Attachment, remaining)
 		if err != nil {
-			return errors.Wrap(err, "failed to save packJobing")
+			return errors.WithStack(err)
 		}
 	}
 	return nil
 }
 
-func (w *Thread) packJobOnce(
+func (w *Thread) chunkOnce(
 	ctx context.Context,
-	source model.Source,
-	dataset model.Preparation,
+	attachment model.SourceAttachment,
 	remaining *remain,
 ) error {
 	// If everything fit, create a packJob. Usually this is the case for the last packJob
-	if remaining.carSize <= dataset.MaxSize {
+	if remaining.carSize <= attachment.Preparation.MaxSize {
 		w.logger.Debugw("creating packJob", "size", remaining.carSize)
-		_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
+		_, err := datasource.CreateJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(attachment.ID), 10), datasource.CreatePackJobRequest{
 			FileRangeIDs: remaining.fileRangeIDs(),
 		})
 
 		if err != nil {
-			return errors.Wrap(err, "failed to create packJob")
+			return errors.WithStack(err)
 		}
 		remaining.reset()
 		return nil
@@ -109,7 +109,7 @@ func (w *Thread) packJobOnce(
 	si := len(remaining.fileRanges) - 1
 	for si >= 0 {
 		s -= toCarSize(remaining.fileRanges[si].Length)
-		if s <= dataset.MaxSize {
+		if s <= attachment.Preparation.MaxSize {
 			break
 		}
 		si--
@@ -128,11 +128,9 @@ func (w *Thread) packJobOnce(
 	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(fileRange model.FileRange) uint64 {
 		return fileRange.ID
 	})
-	_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
-		FileRangeIDs: fileRangeIDs,
-	})
+	_, err := push.CreatePackJob(ctx, w.dbNoContext, attachment.ID, fileRangeIDs)
 	if err != nil {
-		return errors.Wrap(err, "failed to create packJob")
+		return errors.WithStack(err)
 	}
 	remaining.fileRanges = remaining.fileRanges[si:]
 	remaining.carSize = remaining.carSize - s + carHeaderSize

@@ -258,24 +258,24 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 
 	var errs []error
 	for _, car := range cars {
-		if car.FilePath == "" {
+		if car.StoragePath == "" {
 			continue
 		}
 
-		file, err := os.Open(car.FilePath)
+		file, err := os.Open(car.StoragePath)
 		if err != nil {
-			errs = append(errs, errors.Wrapf(err, "failed to open file %s", car.FilePath))
+			errs = append(errs, errors.Wrapf(err, "failed to open file %s", car.StoragePath))
 			continue
 		}
 		fileInfo, err := file.Stat()
 		if err != nil {
 			file.Close()
-			errs = append(errs, errors.Wrapf(err, "failed to stat file %s", car.FilePath))
+			errs = append(errs, errors.Wrapf(err, "failed to stat file %s", car.StoragePath))
 			continue
 		}
 		if fileInfo.Size() != car.FileSize {
 			file.Close()
-			errs = append(errs, errors.Wrapf(err, "CAR file size mismatch for %s. expected %d, actual %d.", car.FilePath, car.FileSize, fileInfo.Size()))
+			errs = append(errs, errors.Wrapf(err, "CAR file size mismatch for %s. expected %d, actual %d.", car.StoragePath, car.FileSize, fileInfo.Size()))
 			continue
 		}
 		return file, fileInfo.ModTime(), nil

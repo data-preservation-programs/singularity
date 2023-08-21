@@ -1,25 +1,18 @@
-package pack
+package util
 
 import (
 	"bytes"
-	"context"
 	"io"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack/encryption"
-	"github.com/data-preservation-programs/singularity/storagesystem"
 	util2 "github.com/data-preservation-programs/singularity/util"
-	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	packJob "github.com/ipfs/go-ipfs-chunker"
 	"github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-unixfs"
 	"github.com/ipfs/go-unixfs/pb"
 	"github.com/multiformats/go-varint"
-	"github.com/rclone/rclone/fs"
 )
 
 const ChunkSize int64 = 1 << 20
@@ -73,6 +66,8 @@ func Min(i int, i2 int) int {
 	return i2
 }
 
+var errLinkLessThanTwo = errors.New("links must be more than 1")
+
 // AssembleFileFromLinks constructs a MerkleDAG from a list of links.
 // It organizes the links into a tree structure where each internal node
 // can have up to NumLinkPerNode children. This function assembles the DAG
@@ -91,7 +86,7 @@ func Min(i int, i2 int) int {
 //     or nil if the operation was successful.
 func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.ProtoNode, error) {
 	if len(links) <= 1 {
-		return nil, nil, errors.New("links must be more than 1")
+		return nil, nil, errLinkLessThanTwo
 	}
 	result := make([]blocks.Block, 0)
 	var rootNode *merkledag.ProtoNode
@@ -175,108 +170,4 @@ func WriteCarBlock(writer io.Writer, block blocks.Block) (int64, error) {
 	}
 	written += n
 	return written, nil
-}
-
-type BlockResult struct {
-	// Offset is the offset of the block in the potentially encrypted stream
-	Offset int64
-	// Raw is the block data which is potentially encrypted
-	Raw []byte
-	// CID is the CID of the block
-	CID   cid.Cid
-	Error error
-}
-
-var ErrFileModified = errors.New("file has been modified")
-
-// GetBlockStreamFromFileRange reads a file (or a part of a file) identified by fileRange
-// from a specified data source. Optionally, it applies encryption to the file's content.
-// It then streams the resulting data blocks to the caller through a Go channel.
-//
-// Parameters:
-//   - ctx: A context.Context used to control the lifecycle of the function.
-//   - handler: A storagesystem.Reader interface implementation that is capable of reading files from a data source.
-//   - fileRange: A model.FileRange struct that specifies the file to read and the range of bytes to read.
-//   - encryptor: An encryption.Encryptor interface implementation that is capable of encrypting the stream.
-//     If this is nil, the file's content is streamed without encryption.
-//
-// Returns:
-// - A channel that the caller can range over to receive data blocks from the file.
-// - An fs.Object representing the metadata of the file being read.
-// - An error if any error occurs while processing.
-//
-// Note:
-//   - If encryption is requested (i.e., encryptor is not nil), partial reads (i.e., reading a subrange of the file)
-//     are not supported and the function will return an error in this case.
-//   - The function is designed to be used concurrently, as it runs a goroutine to read blocks from the file.
-func GetBlockStreamFromFileRange(ctx context.Context,
-	handler storagesystem.Reader,
-	fileRange model.FileRange,
-	encryptor encryption.Encryptor) (<-chan BlockResult, fs.Object, error) {
-	if encryptor != nil && (fileRange.Offset != 0 || fileRange.Length != fileRange.File.Size) {
-		return nil, nil, errors.New("encryption is not supported for partial reads")
-	}
-	readStream, object, err := handler.Read(ctx, fileRange.File.Path, fileRange.Offset, fileRange.Length)
-	if err != nil {
-		return nil, nil, errors.Wrapf(err, "failed to open stream for %s at %d with length %d", fileRange.File.Path, fileRange.Offset, fileRange.Length)
-	}
-
-	if object != nil {
-		same, detail := storagesystem.IsSameEntry(ctx, *fileRange.File, object)
-		if !same {
-			return nil, nil, errors.Wrapf(ErrFileModified, "fileRange has been modified: %s, %s", fileRange.File.Path, detail)
-		}
-	}
-
-	var readCloser io.ReadCloser
-	if encryptor == nil {
-		readCloser = readStream
-	} else {
-		readCloser, err = encryptor.Encrypt(readStream)
-	}
-	if err != nil {
-		return nil, object, errors.WithStack(err)
-	}
-	blockChan := make(chan BlockResult)
-	chunker := packJob.NewSizeSplitter(readCloser, ChunkSize)
-	go func() {
-		defer close(blockChan)
-		if readStream != readCloser {
-			defer readStream.Close()
-		}
-		defer readCloser.Close()
-		offset := fileRange.Offset
-		firstChunk := true
-		for {
-			if ctx.Err() != nil {
-				return
-			}
-			chunkerBytes, err := chunker.NextBytes()
-			var result BlockResult
-			if err != nil && !(errors.Is(err, io.EOF) && firstChunk) {
-				if errors.Is(err, io.EOF) {
-					return
-				}
-				result = BlockResult{Error: errors.Wrap(err, "failed to read chunk")}
-			} else {
-				firstChunk = false
-				hash := util.Hash(chunkerBytes)
-				c := cid.NewCidV1(cid.Raw, hash)
-				result = BlockResult{
-					CID:    c,
-					Offset: offset,
-					Raw:    chunkerBytes,
-					Error:  nil,
-				}
-				offset += int64(len(chunkerBytes))
-			}
-			select {
-			case <-ctx.Done():
-				return
-			case blockChan <- result:
-			}
-		}
-	}()
-
-	return blockChan, object, errors.WithStack(err)
 }

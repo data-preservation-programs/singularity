@@ -8,7 +8,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
+	util2 "github.com/data-preservation-programs/singularity/pack/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -222,7 +222,7 @@ func (d *DirectoryData) AddFile(ctx context.Context, name string, c cid.Cid, len
 //	          adding the child to the directory fails, or putting blocks into the blockstore fails.
 //	          Otherwise, it returns nil.
 func (d *DirectoryData) AddFileFromLinks(ctx context.Context, name string, links []format.Link) (cid.Cid, error) {
-	blks, node, err := pack.AssembleFileFromLinks(links)
+	blks, node, err := util2.AssembleFileFromLinks(links)
 	if err != nil {
 		return cid.Undef, errors.WithStack(err)
 	}
@@ -278,7 +278,7 @@ func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	_, err = pack.WriteCarHeader(buf, newNode.Cid())
+	_, err = util2.WriteCarHeader(buf, newNode.Cid())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -301,7 +301,7 @@ func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		_, err = pack.WriteCarBlock(buf, data)
+		_, err = util2.WriteCarBlock(buf, data)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}

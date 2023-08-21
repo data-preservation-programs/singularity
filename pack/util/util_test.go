@@ -1,4 +1,4 @@
-package pack
+package util
 
 import (
 	"bytes"
@@ -7,12 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/boxo/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
-	"github.com/rclone/rclone/backend/s3"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/hash"
 	"github.com/stretchr/testify/mock"
@@ -47,6 +45,18 @@ func TestMin(t *testing.T) {
 	require.Equal(t, 1, Min(1, 2))
 	require.Equal(t, 1, Min(2, 1))
 	require.Equal(t, 1, Min(1, 1))
+}
+
+func TestAssembleFileFromLinks_SingleLink(t *testing.T) {
+	links := []format.Link{
+		{
+			Name: "",
+			Size: 5,
+			Cid:  cid.NewCidV1(cid.Raw, util.Hash([]byte("hello"))),
+		},
+	}
+	_, _, err := AssembleFileFromLinks(links)
+	require.ErrorIs(t, err, errLinkLessThanTwo)
 }
 
 func TestAssembleFileFromLinks(t *testing.T) {
@@ -116,88 +126,16 @@ type MockReadHandler struct {
 	mock.Mock
 }
 
+func (m *MockReadHandler) Name() string {
+	return "mock"
+}
+
 func (m *MockReadHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	args := m.Called(ctx, path, offset, length)
 	if args.Get(1) == nil {
 		return args.Get(0).(io.ReadCloser), nil, args.Error(2)
 	}
 	return args.Get(0).(io.ReadCloser), args.Get(1).(fs.Object), args.Error(2)
-}
-
-func TestGetBlockStreamFromFileRange(t *testing.T) {
-	ctx := context.Background()
-	mockObject := new(MockObject)
-	sizeCall := mockObject.On("Size").Return(int64(5))
-	mockObject.On("Fs").Return(&s3.Fs{})
-	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
-	tm := time.Now()
-	mockObject.On("ModTime", mock.Anything).Return(tm)
-	handler := new(MockReadHandler)
-	readCall := handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), mockObject, nil)
-
-	t.Run("size mismatch", func(t *testing.T) {
-		fileRange := model.FileRange{
-			Offset: 0,
-			Length: 5,
-			File: &model.File{
-				Size:             4,
-				Hash:             "hash",
-				LastModifiedNano: tm.UnixNano(),
-			},
-		}
-		_, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
-		require.ErrorIs(t, err, ErrFileModified)
-	})
-
-	t.Run("success", func(t *testing.T) {
-		fileRange := model.FileRange{
-			Offset: 0,
-			Length: 5,
-			File: &model.File{
-				Size:             5,
-				Hash:             "hash",
-				LastModifiedNano: tm.UnixNano(),
-			},
-		}
-		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
-		require.NoError(t, err)
-		blockResults := make([]BlockResult, 0)
-		for r := range blockResultChan {
-			blockResults = append(blockResults, r)
-		}
-		require.Len(t, blockResults, 1)
-		require.EqualValues(t, 0, blockResults[0].Offset)
-		require.Equal(t, []byte("hello"), blockResults[0].Raw)
-		require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", blockResults[0].CID.String())
-	})
-
-	t.Run("success with empty file", func(t *testing.T) {
-		sizeCall.Unset()
-		mockObject.On("Size").Return(int64(0))
-		readCall.Unset()
-		handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-			Return(io.NopCloser(bytes.NewReader([]byte(""))), mockObject, nil)
-		fileRange := model.FileRange{
-			Offset: 0,
-			Length: 0,
-			File: &model.File{
-				Size:             0,
-				Hash:             "hash",
-				LastModifiedNano: tm.UnixNano(),
-			},
-		}
-		blockResultChan, _, err := GetBlockStreamFromFileRange(ctx, handler, fileRange, nil)
-		require.NoError(t, err)
-		blockResults := make([]BlockResult, 0)
-		for r := range blockResultChan {
-			blockResults = append(blockResults, r)
-		}
-		require.Len(t, blockResults, 1)
-		require.EqualValues(t, 0, blockResults[0].Offset)
-		require.Equal(t, []byte(nil), blockResults[0].Raw)
-		require.Equal(t, "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku", blockResults[0].CID.String())
-	})
 }
 
 type MockObject struct {

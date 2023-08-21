@@ -104,11 +104,11 @@ func addPieceHandler(
 		return nil, errors.WithStack(err)
 	}
 	mCar := model.Car{
-		PieceCID:  model.CID(pCid),
-		PieceSize: pieceSize,
-		RootCID:   model.CID(rCid),
-		FilePath:  request.FilePath,
-		DatasetID: dataset.ID,
+		PieceCID:    model.CID(pCid),
+		PieceSize:   pieceSize,
+		RootCID:     model.CID(rCid),
+		StoragePath: request.FilePath,
+		DatasetID:   dataset.ID,
 	}
 
 	err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })

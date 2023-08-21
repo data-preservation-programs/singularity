@@ -3,8 +3,11 @@ package storagesystem
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/gotidy/ptr"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/hash"
 )
@@ -64,4 +67,86 @@ func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, 
 		fmt.Sprintf("last modified mismatch: %d != %d",
 			lastModified.UnixNano(),
 			file.LastModifiedNano)
+}
+
+var ErrStorageNotAvailable = errors.New("storage not available")
+
+var freeSpaceWarningThreshold = 0.05
+var freeSpaceErrorThreshold = 0.01
+
+func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*uint32, Writer, error) {
+	if len(storages) == 0 {
+		return nil, nil, nil
+	}
+
+	var handlersWithWeight []struct {
+		id      uint32
+		handler Writer
+		weight  float64
+	}
+
+	for _, storage := range storages {
+		handler, err := NewRCloneHandler(ctx, storage)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to get storage handler for %s", storage.Name)
+		}
+		usage, err := handler.About(ctx)
+
+		if usage != nil && usage.Free != nil && usage.Total != nil {
+			weight := float64(*usage.Free) / float64(*usage.Total)
+			if weight <= freeSpaceWarningThreshold {
+				logger.Warnf("storage %s is almost full - free: %.2f%%", storage.Name, weight*100)
+			}
+			if weight <= freeSpaceErrorThreshold {
+				logger.Errorf("storage %s is full - free: %.2f%%", storage.Name, weight*100)
+				continue
+			}
+			handlersWithWeight = append(handlersWithWeight, struct {
+				id      uint32
+				handler Writer
+				weight  float64
+			}{
+				id:      storage.ID,
+				handler: handler,
+				weight:  float64(*usage.Free) / float64(*usage.Total),
+			})
+			continue
+		}
+
+		// If the getting usage request failed, it could be because the storage is not available.
+		if err != nil && !errors.Is(err, ErrGetUsageNotSupported) {
+			logger.Errorf("failed to get usage for storage %s: %v", storage.Name, err)
+			continue
+		}
+
+		handlersWithWeight = append(handlersWithWeight, struct {
+			id      uint32
+			handler Writer
+			weight  float64
+		}{
+			id:      storage.ID,
+			handler: handler,
+			weight:  1.0,
+		})
+	}
+
+	// If there is no space left in any of the output storages, return an error.
+	if len(handlersWithWeight) == 0 {
+		return nil, nil, ErrStorageNotAvailable
+	}
+
+	totalWeight := 0.0
+	for _, item := range handlersWithWeight {
+		totalWeight += item.weight
+	}
+
+	r := rand.Float64() * totalWeight
+	for _, item := range handlersWithWeight {
+		r -= item.weight
+		if r <= 0 {
+			return ptr.Of(item.id), item.handler, nil
+		}
+	}
+
+	return nil, nil, errors.New("this line should never be reached")
 }

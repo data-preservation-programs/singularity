@@ -14,7 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
+	util2 "github.com/data-preservation-programs/singularity/pack/util"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
@@ -116,15 +116,15 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 			fileName = generation.FilenameOverride
 		}
 		car := model.Car{
-			CreatedAt: generation.CreatedAt,
-			PieceCID:  model.CID(pieceCID),
-			PieceSize: int64(generation.PieceSize),
-			RootCID:   model.CID(dataCID),
-			FileSize:  int64(generation.CarSize),
-			FilePath:  filepath.Join(scanning.OutDir, fileName),
-			DatasetID: ds.ID,
-			SourceID:  &src.ID,
-			PackJobID: &packJob.ID,
+			CreatedAt:   generation.CreatedAt,
+			PieceCID:    model.CID(pieceCID),
+			PieceSize:   int64(generation.PieceSize),
+			RootCID:     model.CID(dataCID),
+			FileSize:    int64(generation.CarSize),
+			StoragePath: filepath.Join(scanning.OutDir, fileName),
+			DatasetID:   ds.ID,
+			SourceID:    &src.ID,
+			PackJobID:   &packJob.ID,
 		}
 		err = db.Create(&car).Error
 		if err != nil {
@@ -214,7 +214,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 								Cid:  cid.Cid(part.CID),
 							})
 						}
-						_, root, err := pack.AssembleFileFromLinks(links)
+						_, root, err := util2.AssembleFileFromLinks(links)
 						if err != nil {
 							return errors.Wrap(err, "failed to assemble file from links")
 						}

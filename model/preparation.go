@@ -1,10 +1,13 @@
 package model
 
 import (
+	"context"
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
+	"gorm.io/gorm"
 )
 
 type Worker struct {
@@ -28,6 +31,8 @@ type Preparation struct {
 	Enabled              bool        `json:"enabled"`                                       // Enabled is a flag that indicates whether the preparation is enabled.
 	EncryptionRecipients StringSlice `gorm:"type:JSON"         json:"encryptionRecipients"` // EncryptionRecipients is a list of public keys that are used to encrypt the output.
 	DeleteAfterExport    bool        `json:"deleteAfterExport"`                             // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
+	MaxSize              int64       `json:"maxSize"`
+	PieceSize            int64       `json:"pieceSize"`
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                                         json:"wallets,omitempty"        swaggerignore:"true"`
@@ -59,10 +64,25 @@ type SourceAttachment struct {
 	ID uint32 `gorm:"primaryKey" json:"id"`
 
 	// Associations
-	PreparationID uint32       `json:"preparationId"`
-	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
-	StorageID     uint32       `json:"storageId"`
-	Storage       *Storage     `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
+	PreparationID   uint32       `json:"preparationId"`
+	Preparation     *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
+	StorageID       uint32       `json:"storageId"`
+	Storage         *Storage     `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
+	LastScannedPath string       `json:"lastScannedPath"`
+}
+
+func (s SourceAttachment) RootDirectory(ctx context.Context, db *gorm.DB) (*Directory, error) {
+	db = db.WithContext(ctx)
+	var root Directory
+	err := db.Where("attachment_id = ? AND parent_id is null", s.ID).First(&root).Error
+	return &root, errors.WithStack(err)
+}
+
+func (s SourceAttachment) RootDirectoryID(ctx context.Context, db *gorm.DB) (uint64, error) {
+	db = db.WithContext(ctx)
+	var root Directory
+	err := db.Select("id").Where("attachment_id = ? AND parent_id is null", s.ID).First(&root).Error
+	return root.ID, errors.WithStack(err)
 }
 
 // OutputAttachment is a link between a Preparation and a Storage that is used as an output.
@@ -79,10 +99,11 @@ type OutputAttachment struct {
 // Job is a job that is executed by a worker.
 // The composite index on Type and State is used to find jobs that are ready to be executed.
 type Job struct {
-	ID           uint64   `gorm:"primaryKey"           json:"id"`
-	Type         JobType  `gorm:"index:job_type_state" json:"type"`
-	State        JobState `gorm:"index:job_type_state" json:"state"`
-	ErrorMessage string   `json:"errorMessage"`
+	ID              uint64   `gorm:"primaryKey"           json:"id"`
+	Type            JobType  `gorm:"index:job_type_state" json:"type"`
+	State           JobState `gorm:"index:job_type_state" json:"state"`
+	ErrorMessage    string   `json:"errorMessage"`
+	ErrorStackTrace string   `json:"errorStackTrace"`
 
 	// Associations
 	WorkerID     *string           `gorm:"size:63"                                                        json:"workerId,omitempty"`
@@ -161,7 +182,9 @@ type Car struct {
 	PieceSize    int64             `json:"pieceSize"`
 	RootCID      CID               `gorm:"column:root_cid;type:bytes"                           json:"rootCid"`
 	FileSize     int64             `json:"fileSize"`
-	FilePath     string            `json:"filePath"`
+	StorageID    *uint32           `json:"storageId"`
+	Storage      *Storage          `gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty" swaggerignore:"true"`
+	StoragePath  string            `json:"storagePath"`
 	AttachmentID uint32            `json:"attachmentId"`
 	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
 

@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/client"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
@@ -66,7 +65,7 @@ func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandl
 }
 
 func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dshandler.CreatePackJobRequest) (*model.PackJob, error) {
-	return dshandler.CreatePackJobHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
+	return dshandler.CreateJobHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
 }
 
 func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {

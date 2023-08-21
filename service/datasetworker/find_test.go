@@ -32,14 +32,20 @@ func TestFindPackWork(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, found)
 
+	err = db.Create(&model.Preparation{
+		SourceStorages: []model.Storage{{
+			Name: "source",
+		}},
+		OutputStorages: []model.Storage{{
+			Name: "output",
+		}},
+	}).Error
+	require.NoError(t, err)
+
 	err = db.Create(&model.Job{
-		Preparation: &model.Preparation{
-			SourceStorages: []model.Storage{
-				{Name: "source"},
-			},
-			OutputStorages: []model.Storage{
-				{Name: "output"},
-			},
+		Attachment: &model.SourceAttachment{
+			PreparationID: 1,
+			StorageID:     1,
 		},
 		State: model.Ready,
 	}).Error
@@ -47,7 +53,7 @@ func TestFindPackWork(t *testing.T) {
 	err = db.Create(&model.FileRange{
 		JobID: ptr.Of(uint64(1)),
 		File: &model.File{
-			SourceStorageID: 1,
+			AttachmentID: 1,
 		},
 	}).Error
 	require.NoError(t, err)

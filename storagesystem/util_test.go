@@ -116,3 +116,68 @@ func (m *MockObject) Remove(ctx context.Context) error {
 	args := m.Called(ctx)
 	return args.Error(0)
 }
+
+func TestGetRandomOutputWriter(t *testing.T) {
+	ctx := context.Background()
+	s1 := model.Storage{
+		ID:   1,
+		Type: "local",
+		Path: t.TempDir(),
+	}
+	s2 := model.Storage{
+		ID:   1,
+		Type: "local",
+		Path: t.TempDir(),
+	}
+	s3 := model.Storage{
+		ID:       3,
+		Type:     "s3",
+		Path:     "commoncrawl",
+		Metadata: map[string]string{"chunk_size": "5MiB"},
+	}
+	t.Run("no storages", func(t *testing.T) {
+		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{})
+		require.NoError(t, err)
+		require.Nil(t, id)
+		require.Nil(t, writer)
+	})
+	t.Run("single local storage", func(t *testing.T) {
+		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{s1})
+		require.NoError(t, err)
+		require.EqualValues(t, 1, *id)
+		require.NotNil(t, writer)
+	})
+	t.Run("single s3 storage", func(t *testing.T) {
+		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{s3})
+		require.NoError(t, err)
+		require.EqualValues(t, 3, *id)
+		require.NotNil(t, writer)
+	})
+	t.Run("all storage", func(t *testing.T) {
+		_, writer, err := GetRandomOutputWriter(ctx, []model.Storage{s1, s2, s3})
+		require.NoError(t, err)
+		require.NotNil(t, writer)
+	})
+	t.Run("space warning", func(t *testing.T) {
+		current := freeSpaceWarningThreshold
+		freeSpaceWarningThreshold = 1.0
+		defer func() {
+			freeSpaceWarningThreshold = current
+		}()
+
+		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{s1})
+		require.NoError(t, err)
+		require.EqualValues(t, 1, *id)
+		require.NotNil(t, writer)
+	})
+	t.Run("space error", func(t *testing.T) {
+		current := freeSpaceErrorThreshold
+		freeSpaceErrorThreshold = 1.0
+		defer func() {
+			freeSpaceErrorThreshold = current
+		}()
+
+		_, _, err := GetRandomOutputWriter(ctx, []model.Storage{s1})
+		require.ErrorIs(t, err, ErrStorageNotAvailable)
+	})
+}

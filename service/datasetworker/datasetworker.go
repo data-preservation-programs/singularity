@@ -2,6 +2,7 @@ package datasetworker
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -39,13 +40,10 @@ func NewWorker(db *gorm.DB, config Config) *Worker {
 }
 
 type Thread struct {
-	id                        uuid.UUID
-	dbNoContext               *gorm.DB
-	logger                    *zap.SugaredLogger
-	workType                  model.WorkType
-	workingOn                 string
-	datasourceHandlerResolver storagesystem.HandlerResolver
-	config                    Config
+	id          uuid.UUID
+	dbNoContext *gorm.DB
+	logger      *zap.SugaredLogger
+	config      Config
 }
 
 // Start initializes and starts the execution of a worker thread.
@@ -67,14 +65,8 @@ type Thread struct {
 func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			JobType:   w.workType,
-			WorkingOn: w.workingOn,
-		}
-	}
 
-	_, err := healthcheck.Register(ctx, w.dbNoContext, w.id, getState, true)
+	_, err := healthcheck.Register(ctx, w.dbNoContext, w.id, model.DatasetWorker, true)
 	if err != nil {
 		cancel()
 		return nil, nil, errors.Wrap(err, "failed to register worker")
@@ -83,7 +75,7 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, w.dbNoContext, w.id, getState)
+		healthcheck.StartReportHealth(ctx, w.dbNoContext, w.id, model.DatasetWorker)
 		w.logger.Info("health report stopped")
 	}()
 
@@ -149,127 +141,47 @@ func (w Worker) Run(ctx context.Context) error {
 	for i := 0; i < w.config.Concurrency; i++ {
 		id := uuid.New()
 		thread := &Thread{
-			id:                        id,
-			dbNoContext:               w.dbNoContext,
-			logger:                    logger.With("workerID", id.String()),
-			datasourceHandlerResolver: storagesystem.DefaultHandlerResolver{},
-			config:                    w.config,
+			id:          id,
+			dbNoContext: w.dbNoContext,
+			logger:      logger.With("workerID", id.String()),
+			config:      w.config,
 		}
 		threads[i] = thread
 	}
 	return service.StartServers(ctx, logger, threads...)
 }
 
-type WorkType string
-
-const (
-	WorkTypeNone WorkType = ""
-	WorkTypeScan WorkType = "scan"
-	WorkTypePack WorkType = "pack"
-	WorkTypeDag  WorkType = "ExportDag"
-)
-
-var WorkStateKey = map[WorkType]string{
-	WorkTypeScan: "scanning_state",
-	WorkTypePack: "packing_state",
-	WorkTypeDag:  "dag_gen_state",
-}
-
-var WorkerIDKey = map[WorkType]string{
-	WorkTypeScan: "scanning_worker_id",
-	WorkTypePack: "packing_worker_id",
-	WorkTypeDag:  "dag_gen_worker_id",
-}
-
-var ErrorMessageKey = map[WorkType]string{
-	WorkTypeScan: "error_message",
-	WorkTypePack: "error_message",
-	WorkTypeDag:  "dag_gen_error_message",
-}
-
-var WorkModel = map[WorkType]func() any{
-	WorkTypeScan: func() any { return &model.Source{} },
-	WorkTypePack: func() any { return &model.PackJob{} },
-	WorkTypeDag:  func() any { return &model.Source{} },
-}
-
-func (w *Thread) handleWorkComplete(ctx context.Context, workType WorkType, id uint64, updates map[string]any) error {
-	if workType == WorkTypeNone {
-		return nil
-	}
-	w.logger.Infow("finished "+string(workType), "id", id)
-	updates[WorkerIDKey[workType]] = nil
-	updates[ErrorMessageKey[workType]] = ""
-	updates[WorkStateKey[workType]] = model.Complete
+func (w *Thread) handleWorkComplete(ctx context.Context, jobID uint64) error {
 	return database.DoRetry(ctx, func() error {
-		return w.dbNoContext.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
+		return w.dbNoContext.WithContext(ctx).Model(&model.Job{}).Where("id = ?", jobID).Updates(map[string]any{
+			"worker_id":         nil,
+			"error_message":     "",
+			"error_stack_trace": "",
+			"state":             model.Complete,
+		}).Error
 	})
 }
 
-func (w *Thread) handleWorkError(ctx context.Context, workType WorkType, id uint64, err error) error {
-	if err == nil || workType == WorkTypeNone {
-		return nil
-	}
-	w.logger.Errorw("failed to "+string(workType), "id", id, "error", err)
+func (w *Thread) handleWorkError(ctx context.Context, jobID uint64, err error) error {
 	updates := make(map[string]any)
-	updates[WorkerIDKey[workType]] = nil
+	updates["worker_id"] = nil
 	// reset the state to ready if the context was canceled
 	if errors.Is(err, context.Canceled) {
-		updates[ErrorMessageKey[workType]] = ""
-		updates[WorkStateKey[workType]] = model.Ready
+		updates["error_message"] = ""
+		updates["error_stack_trace"] = ""
+		updates["state"] = model.Ready
 		var cancel context.CancelFunc
 		//nolint:contextcheck
 		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 	} else {
-		updates[ErrorMessageKey[workType]] = err.Error()
-		updates[WorkStateKey[workType]] = model.Error
+		updates["error_message"] = err.Error()
+		updates["error_stack_trace"] = fmt.Sprintf("%+v", err)
+		updates["state"] = model.Error
 	}
 	return database.DoRetry(ctx, func() error {
-		return w.dbNoContext.WithContext(ctx).Model(WorkModel[workType]()).Where("id = ?", id).Updates(updates).Error
+		return w.dbNoContext.WithContext(ctx).Model(&model.Job{}).Where("id = ?", jobID).Updates(updates).Error
 	})
-}
-
-// findWork searches for available work that the Thread can perform.
-// It sequentially looks for different types of work, returning when it finds a
-// type of work that needs to be performed or determines that no work is available.
-// It first looks for Dag work, then Scan work, and finally Pack work.
-//
-// Parameters:
-// - ctx context.Context: The context to use for cancellation and deadlines.
-//
-// Returns:
-//   - WorkType: The type of work that was found. This will be one of the WorkType constants.
-//   - *model.Source: A pointer to the Source object associated with the found work, or nil if no source work was found.
-//   - *model.PackJob: A pointer to the PackJob object associated with the found work, or nil if no pack job work was found.
-//   - error: An error that will be returned if any issues were encountered while trying to find work.
-//     This will be nil if the function was successful or if no work was found.
-func (w *Thread) findWork(ctx context.Context) (WorkType, *model.Source, *model.PackJob, error) {
-	source, err := w.findDagWork(ctx)
-	if err != nil {
-		return "", nil, nil, errors.Wrap(err, "failed to find ExportDag work")
-	}
-	if source != nil {
-		return WorkTypeDag, source, nil, nil
-	}
-
-	source, err = w.findScanWork(ctx)
-	if err != nil {
-		return "", nil, nil, errors.Wrap(err, "failed to find scan work")
-	}
-	if source != nil {
-		return WorkTypeScan, source, nil, nil
-	}
-
-	packJob, err := w.findPackWork(ctx)
-	if err != nil {
-		return "", nil, nil, errors.Wrap(err, "failed to find pack work")
-	}
-	if packJob != nil {
-		return WorkTypePack, nil, packJob, nil
-	}
-
-	return WorkTypeNone, nil, nil, nil
 }
 
 // run is the core loop that a Thread executes when started.
@@ -294,66 +206,76 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			errChan <- errors.Errorf("panic: %v", err)
 		}
 	}()
+
+	var jobTypes []model.JobType
+	if w.config.EnableDag {
+		jobTypes = append(jobTypes, model.DagGen)
+	}
+	if w.config.EnableScan {
+		jobTypes = append(jobTypes, model.Scan)
+	}
+	if w.config.EnablePack {
+		jobTypes = append(jobTypes, model.Pack)
+	}
+	minInterval := 5 * time.Second
+	maxInterval := 160 * time.Second
+	interval := minInterval
 	for {
-		var id uint64
-		workType, source, packJob, err := w.findWork(ctx)
+		job, err := w.findJob(ctx, jobTypes)
 		if err != nil {
 			goto errorLoop
 		}
 
-		switch workType {
-		case WorkTypeNone:
+		if job == nil {
 			if w.config.ExitOnComplete {
 				w.logger.Info("no work found, exiting")
 				return
 			}
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(15 * time.Second):
-				continue
-			}
-		case WorkTypeScan:
-			err = w.scan(ctx, *source, source.Type != "manual")
-			id = uint64(source.ID)
-		case WorkTypePack:
-			err = w.pack(ctx, *packJob)
-			id = uint64(packJob.ID)
-		case WorkTypeDag:
-			err = w.ExportDag(ctx, *source)
-			id = uint64(source.ID)
+			w.logger.Info("no work found")
+			goto loop
+		}
+
+		switch job.Type {
+		case model.Scan:
+			err = w.scan(ctx, *job, true)
+		case model.Pack:
+			err = w.pack(ctx, *job)
+		case model.DagGen:
+			err = w.ExportDag(ctx, *job)
 		}
 		if err != nil {
-			err2 := w.handleWorkError(ctx, workType, id, err)
+			err2 := w.handleWorkError(ctx, job.ID, err)
 			if err2 != nil {
 				w.logger.Errorw("failed to update state to error",
-					"type", workType, "id", id, "error", err2)
+					"type", job.Type, "jobID", job.ID, "error", err2)
 			}
 			goto errorLoop
 		} else {
-			updates := make(map[string]any)
-			if workType == WorkTypeScan {
-				updates["last_scanned_timestamp"] = time.Now().UTC().Unix()
-				updates["last_scanned_path"] = ""
-			}
-			err2 := w.handleWorkComplete(ctx, workType, id, updates)
+			err2 := w.handleWorkComplete(ctx, job.ID)
 			if err2 != nil {
 				w.logger.Errorw("failed to update state to complete",
-					"type", workType, "id", id, "error", err2)
+					"type", job.Type, "jobID", job.ID, "error", err2)
 				goto errorLoop
 			}
+			interval = minInterval
 			continue
 		}
 	errorLoop:
+		w.logger.Errorw("error encountered", "error", err)
 		if w.config.ExitOnError {
 			errChan <- err
 			return
 		}
-		w.logger.Info("sleeping for a minute")
+	loop:
+		w.logger.Infof("sleeping for %s", interval)
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(time.Minute):
+		case <-time.After(interval):
+			interval = interval * 2
+			if interval > maxInterval {
+				interval = maxInterval
+			}
 		}
 	}
 }

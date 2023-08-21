@@ -21,14 +21,31 @@ var _ Handler = &RCloneHandler{}
 
 var ErrGetUsageNotSupported = errors.New("The backend does not support getting usage quota")
 var ErrBackendNotSupported = errors.New("This backend is not supported")
+var ErrMoveNotSupported = errors.New("The backend does not support moving files")
 
 type RCloneHandler struct {
-	fs fs.Fs
+	name string
+	fs   fs.Fs
+}
+
+func (h RCloneHandler) Name() string {
+	return h.name
 }
 
 func (h RCloneHandler) Write(ctx context.Context, path string, in io.Reader) (fs.Object, error) {
 	objInfo := object.NewStaticObjectInfo(path, time.Now(), -1, true, nil, nil)
 	return h.fs.Put(ctx, in, objInfo)
+}
+
+func (h RCloneHandler) Move(ctx context.Context, from fs.Object, to string) (fs.Object, error) {
+	if h.fs.Features().Move != nil {
+		return h.fs.Features().Move(ctx, from, to)
+	}
+	return nil, errors.Wrapf(ErrMoveNotSupported, "backend: %s", h.fs.String())
+}
+
+func (h RCloneHandler) Remove(ctx context.Context, obj fs.Object) error {
+	return obj.Remove(ctx)
 }
 
 func (h RCloneHandler) About(ctx context.Context) (*fs.Usage, error) {
@@ -139,5 +156,5 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
-	return &RCloneHandler{f}, nil
+	return &RCloneHandler{s.Name, f}, nil
 }

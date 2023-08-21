@@ -55,10 +55,10 @@ func TestHTTPServerHandler(t *testing.T) {
 
 	pieceCID := cid.NewCidV1(cid.FilCommitmentSealed, util.Hash([]byte("test")))
 	err = db.Create(&model.Car{
-		PieceCID:  model.CID(pieceCID),
-		PieceSize: 128,
-		FileSize:  59 + 1 + 36 + 5,
-		FilePath:  "",
+		PieceCID:    model.CID(pieceCID),
+		PieceSize:   128,
+		FileSize:    59 + 1 + 36 + 5,
+		StoragePath: "",
 		Attachment: &model.SourceAttachment{
 			Preparation: &model.Preparation{},
 			Storage:     &model.Storage{},

@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
+	util2 "github.com/data-preservation-programs/singularity/pack/util"
 	"github.com/data-preservation-programs/singularity/util"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/ipfs/go-cid"
@@ -41,7 +42,7 @@ import (
 //
 // Returns:
 // - error: Standard error interface, returns nil if no error occurred during execution.
-func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
+func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	db := w.dbNoContext.WithContext(ctx)
 	rootCID := pack.EmptyFileCid
 	var outDir string
@@ -94,14 +95,14 @@ func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
 					return errors.Wrap(err, "failed to get multi writer")
 				}
 				defer writeCloser.Close()
-				headerBytes, err = pack.WriteCarHeader(writeCloser, rootCID)
+				headerBytes, err = util2.WriteCarHeader(writeCloser, rootCID)
 				if err != nil {
 					return errors.Wrap(err, "failed to write header")
 				}
 
 				offset += int64(len(headerBytes))
 			}
-			written, err := pack.WriteCarBlock(writeCloser, blk)
+			written, err := util2.WriteCarBlock(writeCloser, blk)
 			if err != nil {
 				return errors.Wrap(err, "failed to write block")
 			}
@@ -126,11 +127,11 @@ func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
 		return errors.Wrap(err, "failed to get commp")
 	}
 	if outDir != "" {
-		car.FilePath = path.Join(outDir, pieceCid.String()+".car")
+		car.StoragePath = path.Join(outDir, pieceCid.String()+".car")
 	}
-	if car.FilePath != "" {
+	if car.StoragePath != "" {
 		writeCloser.Close()
-		err = os.Rename(filepath, car.FilePath)
+		err = os.Rename(filepath, car.StoragePath)
 		if err != nil {
 			return errors.Wrap(err, "failed to rename car file")
 		}

@@ -119,7 +119,7 @@ func TestMigrateDataset(t *testing.T) {
 	require.Len(t, cars, 2)
 	require.EqualValues(t, int64(32*1024*1024*1024), cars[0].PieceSize)
 	require.EqualValues(t, int64(20*1024*1024*1024), cars[0].FileSize)
-	require.EqualValues(t, filepath.Join("out", "dir", "test.car"), cars[0].FilePath)
+	require.EqualValues(t, filepath.Join("out", "dir", "test.car"), cars[0].StoragePath)
 	require.NotEmpty(t, cars[0].PieceCID.String())
 	require.NotEmpty(t, cars[0].RootCID.String())
 	require.EqualValues(t, 1, *cars[0].PackJobID)

@@ -133,7 +133,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[0],
 			PieceSize:    1024,
-			FilePath:     "0",
+			StoragePath:  "0",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -280,31 +280,31 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[0],
 			PieceSize:    1024,
-			FilePath:     "0",
+			StoragePath:  "0",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[1],
 			PieceSize:    1024,
-			FilePath:     "1",
+			StoragePath:  "1",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[2],
 			PieceSize:    2048,
-			FilePath:     "2",
+			StoragePath:  "2",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[3],
 			PieceSize:    1024,
-			FilePath:     "3",
+			StoragePath:  "3",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[4],
 			PieceSize:    1024,
-			FilePath:     "4",
+			StoragePath:  "4",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -387,31 +387,31 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[0],
 			PieceSize:    1024,
-			FilePath:     "0",
+			StoragePath:  "0",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[1],
 			PieceSize:    1024,
-			FilePath:     "1",
+			StoragePath:  "1",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[2],
 			PieceSize:    1024,
-			FilePath:     "2",
+			StoragePath:  "2",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[3],
 			PieceSize:    1024,
-			FilePath:     "3",
+			StoragePath:  "3",
 		},
 		{
 			AttachmentID: 1,
 			PieceCID:     pieceCIDs[4],
 			PieceSize:    1024,
-			FilePath:     "4",
+			StoragePath:  "4",
 		},
 	}).Error
 	require.NoError(t, err)

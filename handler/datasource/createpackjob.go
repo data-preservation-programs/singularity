@@ -16,13 +16,13 @@ type CreatePackJobRequest struct {
 	FileRangeIDs []uint64 `json:"fileRangeIDs" validation:"required"`
 }
 
-func CreatePackJobHandler(
+func CreateJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	sourceID string,
+	attachmentID string,
 	request CreatePackJobRequest,
-) (*model.PackJob, error) {
-	return createPackJobHandler(ctx, db.WithContext(ctx), sourceID, request)
+) (*model.Job, error) {
+	return createPackJobHandler(ctx, db.WithContext(ctx), attachmentID, request)
 }
 
 // @Summary Create a pack job for the specified files

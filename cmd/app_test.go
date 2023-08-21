@@ -22,6 +22,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	util2 "github.com/data-preservation-programs/singularity/pack/util"
 	"github.com/stretchr/testify/require"
 
 	"filippo.io/age"
@@ -587,9 +588,9 @@ func TestDatasetAddPiece(t *testing.T) {
 		require.NoError(t, err)
 		blk := blocks.NewBlock([]byte("test"))
 		root := blk.Cid()
-		_, err = pack.WriteCarHeader(newFile, root)
+		_, err = util2.WriteCarHeader(newFile, root)
 		require.NoError(t, err)
-		_, err = pack.WriteCarBlock(newFile, blk)
+		_, err = util2.WriteCarBlock(newFile, blk)
 		require.NoError(t, err)
 		newFile.Close()
 		content, err := os.ReadFile(filepath.Join(temp, "test.car"))
