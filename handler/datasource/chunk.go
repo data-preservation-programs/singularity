@@ -35,7 +35,6 @@ func chunkHandler(
 	sourceID uint32,
 	request ChunkRequest,
 ) (*model.Chunk, error) {
-
 	chunk := model.Chunk{
 		SourceID:     sourceID,
 		PackingState: model.Ready,

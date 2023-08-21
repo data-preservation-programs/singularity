@@ -314,12 +314,12 @@ func CreateIndexes(db *gorm.DB) error {
 
 type ItemPart struct {
 	ID      uint64  `gorm:"primaryKey"                                      json:"id"`
-	ItemID  uint64  `gorm:"index:find_remaining"                            json:"itemId"`
+	ItemID  uint64  `gorm:"index:find_remaining;index:get_item_deals"                            json:"itemId"`
 	Item    *Item   `gorm:"foreignKey:ItemID;constraint:OnDelete:CASCADE"   json:"item,omitempty"`
 	Offset  int64   `json:"offset"`
 	Length  int64   `json:"length"`
 	CID     CID     `gorm:"column:cid;type:bytes"                           json:"cid"`
-	ChunkID *uint32 `gorm:"index:find_remaining"                            json:"chunkId"`
+	ChunkID *uint32 `gorm:"index:find_remaining;index:get_item_deals"                            json:"chunkId"`
 	Chunk   *Chunk  `gorm:"foreignKey:ChunkID;constraint:OnDelete:SET NULL" json:"chunk,omitempty" swaggerignore:"true"`
 }
 
@@ -371,7 +371,7 @@ type Car struct {
 	_         struct{}  `cbor:",toarray"                                         json:"-"                 swaggerignore:"true"`
 	ID        uint32    `gorm:"primaryKey"                                       json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
-	PieceCID  CID       `gorm:"column:piece_cid;index;type:bytes;size:255"       json:"pieceCid"`
+	PieceCID  CID       `gorm:"column:piece_cid;index;index:get_item_deals;type:bytes;size:255"       json:"pieceCid"`
 	PieceSize int64     `json:"pieceSize"`
 	RootCID   CID       `gorm:"column:root_cid;type:bytes"                       json:"rootCid"`
 	FileSize  int64     `json:"fileSize"`
@@ -380,7 +380,7 @@ type Car struct {
 	Dataset   *Dataset  `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty" swaggerignore:"true"`
 	SourceID  *uint32   `gorm:"index"                                            json:"sourceId"`
 	Source    *Source   `gorm:"foreignKey:SourceID;constraint:OnDelete:CASCADE"  json:"source,omitempty"  swaggerignore:"true"`
-	ChunkID   *uint32   `gorm:"index"                                            json:"chunkId"`
+	ChunkID   *uint32   `gorm:"index;index:get_item_deals"                                            json:"chunkId"`
 	Chunk     *Chunk    `gorm:"foreignKey:ChunkID;constraint:OnDelete:CASCADE"   json:"chunk,omitempty"   swaggerignore:"true"`
 	Header    []byte    `json:"header"`
 }

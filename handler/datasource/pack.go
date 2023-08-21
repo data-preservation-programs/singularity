@@ -58,7 +58,6 @@ func packHandler(
 }
 
 func LoadSource(db *gorm.DB, chunk *model.Chunk) error {
-
 	var src model.Source
 	err := db.Joins("Dataset").Where("sources.id = ?", chunk.SourceID).First(&src).Error
 	if err != nil {
