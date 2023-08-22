@@ -13,11 +13,11 @@ COMMANDS:
    list     List all sources
    status   Get the data preparation summary of a data source
    remove   Remove a data source
-   check    Check a data source by listing its entries. This is not to list prepared items but a direct listing of the data source to verify datasource connection
+   check    Check a data source by listing its entries. This is not to list prepared files but a direct listing of the data source to verify datasource connection
    update   Update the config options of a source
    rescan   Rescan a data source
    daggen   Generate and export the DAG which represents the full folder structure of the data source
-   repack   Retry packing a chunk or all errored chunks of a data source
+   repack   Retry packing a packjob or all errored packjobs of a data source
    inspect  Get preparation status of a data source
    help, h  Shows a list of commands or help for one command
 

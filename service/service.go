@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/pkg/errors"
@@ -18,36 +19,32 @@ type Fail = <-chan error
 
 // Server is an interface that represents a server that can be started and has a name.
 type Server interface {
-	// Start Starts the server and returns two channels. The Done channel is closed when the server is done running,
+	// Start Starts the server and returns two channels. The Done channels are closed when the server is done running,
 	//	and the Fail channel receives an error if the server fails. The method also returns an error immediately
 	//	if the server fails to start. The server runs until the provided context is cancelled.
-	Start(ctx context.Context) (Done, Fail, error)
+	Start(ctx context.Context) ([]Done, Fail, error)
 	// Name returns the name of the server.
 	Name() string
 }
 
 var ErrNoService = errors.New("no service is running")
 
-// StartServers is a function that starts multiple servers concurrently.
-// It takes a context, a logger, and a variadic slice of servers as arguments.
-// If no servers are provided, it returns an ErrNoService error.
-// For each server, it calls the server's Start method and logs the start of the service.
-// If any server fails to start, it cancels the context, logs the error, and returns the error.
-// It also sets up a signal handler to handle os.Interrupt and syscall.SIGTERM signals.
-// If a signal is received, it stops the signal handler, resets the signal handling to the default behavior,
-// cancels the context, and returns an error.
-// If any server fails while running, it logs the error, cancels the context, and returns the error.
-// If the context is cancelled, it logs this event, cancels the context, and returns the context's error.
-// After the context is cancelled or a signal is received or a server fails,
-// it waits for all servers to stop before returning.
+// StartServers is responsible for starting the provided servers concurrently and
+// managing their lifecycle events such as interrupts or failures. The function
+// will ensure that if any server fails or if there is an external interrupt, all
+// servers will be gracefully shut down.
 //
 // Parameters:
-// ctx: The context for the servers. This can be used to cancel the servers or set a deadline.
-// logger: The logger to log events.
-// servers: The servers to start.
+//   - ctx: Context that allows for asynchronous task cancellation.
+//   - logger: A pointer to a logging instance of type *log.ZapEventLogger.
+//   - servers: A variadic parameter that lists all the server instances that need to be started.
 //
 // Returns:
-// An error if any server fails to start, or if a signal is received, or if any server fails while running.
+//   - error: The error encountered during the operation, if any.
+//
+// The function uses channels to listen for events like server failure or external
+// interrupts (like Ctrl+C) and ensures all servers are gracefully terminated
+// before exiting.
 func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Server) error {
 	if len(servers) == 0 {
 		return ErrNoService
@@ -68,7 +65,7 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 			logger.Errorw("failed to start service "+server.Name(), "error", err)
 			return err
 		}
-		dones = append(dones, done)
+		dones = append(dones, done...)
 		fails = append(fails, fail)
 	}
 
@@ -86,6 +83,20 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 		}(fail)
 	}
 
+	var wg sync.WaitGroup
+	var allDone = make(chan struct{})
+	for _, done := range dones {
+		wg.Add(1)
+		go func(done Done) {
+			<-done
+			wg.Done()
+		}(done)
+	}
+	go func() {
+		wg.Wait()
+		close(allDone)
+	}()
+
 	var err error
 	select {
 	case <-ctx.Done():
@@ -101,12 +112,13 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 	case err = <-anyFail:
 		logger.Errorw("service failed", "error", err)
 		cancel()
+	case <-allDone:
+		logger.Info("all services stopped")
+		cancel()
+		return err
 	}
 
-	logger.Info("waiting for services to stop")
-	for _, done := range dones {
-		<-done
-	}
-
+	<-allDone
+	logger.Info("all services stopped")
 	return err
 }

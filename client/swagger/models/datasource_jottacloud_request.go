@@ -45,7 +45,7 @@ type DatasourceJottacloudRequest struct {
 		ModelWorkState
 	} `json:"scanningState"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

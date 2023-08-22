@@ -1,6 +1,7 @@
 package inspect
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -10,10 +11,11 @@ import (
 )
 
 func GetDagsHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) ([]model.Car, error) {
-	return getDagsHandler(db, id)
+	return getDagsHandler(db.WithContext(ctx), id)
 }
 
 // @Summary Get all dag details of a data source
@@ -23,7 +25,7 @@ func GetDagsHandler(
 // @Param id path string true "Source ID"
 // @Success 200 {array} model.Car
 // @Failure 500 {object} api.HTTPError
-// @Router /source/{id}/chunks [get]
+// @Router /source/{id}/packjobs [get]
 func getDagsHandler(
 	db *gorm.DB,
 	id string,
@@ -42,7 +44,7 @@ func getDagsHandler(
 	}
 
 	var cars []model.Car
-	err = db.Where("source_id = ? AND chunk_id IS NULL", sourceID).Find(&cars).Error
+	err = db.Where("source_id = ? AND pack_job_id IS NULL", sourceID).Find(&cars).Error
 	if err != nil {
 		return nil, err
 	}

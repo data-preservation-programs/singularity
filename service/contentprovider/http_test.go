@@ -13,8 +13,8 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	"github.com/labstack/echo/v4"
 	"github.com/multiformats/go-varint"
 	"github.com/parnurzeal/gorequest"
@@ -26,9 +26,9 @@ func TestHTTPServerStart(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	s := HTTPServer{
-		db:       db,
-		bind:     "127.0.0.1:65432",
-		resolver: &datasource.DefaultHandlerResolver{},
+		dbNoContext: db,
+		bind:        "127.0.0.1:65432",
+		resolver:    &datasource.DefaultHandlerResolver{},
 	}
 	require.Equal(t, "HTTPServer", s.Name())
 	ctx, cancel := context.WithCancel(context.Background())
@@ -41,7 +41,7 @@ func TestHTTPServerStart(t *testing.T) {
 	select {
 	case <-time.After(1 * time.Second):
 		t.Fatal("http server did not stop")
-	case <-done:
+	case <-done[0]:
 	}
 }
 
@@ -51,9 +51,9 @@ func TestHTTPServerHandler(t *testing.T) {
 	defer closer.Close()
 	e := echo.New()
 	s := HTTPServer{
-		db:       db,
-		bind:     ":0",
-		resolver: &datasource.DefaultHandlerResolver{},
+		dbNoContext: db,
+		bind:        ":0",
+		resolver:    &datasource.DefaultHandlerResolver{},
 	}
 
 	pieceCID := cid.NewCidV1(cid.FilCommitmentSealed, util.Hash([]byte("test")))

@@ -16,8 +16,8 @@ var Tables = []any{
 	&Worker{},
 	&Dataset{},
 	&Source{},
-	&Chunk{},
-	&Item{},
+	&PackJob{},
+	&File{},
 	&Directory{},
 	&Car{},
 	&CarBlock{},
@@ -25,7 +25,7 @@ var Tables = []any{
 	&Schedule{},
 	&Wallet{},
 	&WalletAssignment{},
-	&ItemPart{},
+	&FileRange{},
 }
 
 var logger = logging.Logger("model")

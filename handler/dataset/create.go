@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,7 +23,6 @@ type CreateRequest struct {
 	PieceSizeStr         string   `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
 	OutputDirs           []string `json:"outputDirs"           validate:"optional"`                     // Output directory for CAR files. Do not set if using inline preparation
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
-	EncryptionScript     string   `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
 
 func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
@@ -68,11 +68,7 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		outDirs[i] = abs
 	}
 
-	if len(request.EncryptionRecipients) > 0 && request.EncryptionScript != "" {
-		return nil, handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
-	}
-
-	if (len(request.EncryptionRecipients) > 0 || request.EncryptionScript != "") && len(request.OutputDirs) == 0 {
+	if len(request.EncryptionRecipients) > 0 && len(request.OutputDirs) == 0 {
 		return nil, handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
@@ -85,15 +81,15 @@ func parseCreateRequest(request CreateRequest) (*model.Dataset, error) {
 		PieceSize:            int64(pieceSize),
 		OutputDirs:           outDirs,
 		EncryptionRecipients: request.EncryptionRecipients,
-		EncryptionScript:     request.EncryptionScript,
 	}, nil
 }
 
 func CreateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {
-	return createHandler(db, request)
+	return createHandler(ctx, db.WithContext(ctx), request)
 }
 
 // @Summary Create a new dataset
@@ -107,6 +103,7 @@ func CreateHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset [post]
 func createHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,
 ) (*model.Dataset, error) {
@@ -120,7 +117,7 @@ func createHandler(
 		return nil, err
 	}
 
-	err2 := database.DoRetry(func() error { return db.Create(dataset).Error })
+	err2 := database.DoRetry(ctx, func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) || (err2 != nil && strings.Contains(err2.Error(), "constraint failed")) {
 		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
 	}

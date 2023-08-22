@@ -16,6 +16,6 @@ var RemoveWalletCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		return wallet.RemoveWalletHandler(db, c.Args().Get(0), c.Args().Get(1))
+		return wallet.RemoveWalletHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 	},
 }

@@ -8,15 +8,15 @@ import (
 	"github.com/rclone/rclone/fs"
 )
 
-// Entry is a struct that represents a single item during a data source scan
+// Entry is a struct that represents a single file during a data source scan
 type Entry struct {
 	Error error
 	Info  fs.Object
 }
 
-// Handler is an interface for scanning, reading, opening, and checking items in a data source.
+// Handler is an interface for scanning, reading, opening, and checking files in a data source.
 type Handler interface {
-	// List lists the items at the given path.
+	// List lists the files at the given path.
 	List(ctx context.Context, path string) ([]fs.DirEntry, error)
 
 	// Scan scans the data source starting at the given path and returns a channel of entries.
@@ -24,7 +24,7 @@ type Handler interface {
 	// The returned entries must be sorted by path in ascending order.
 	Scan(ctx context.Context, path string, last string) <-chan Entry
 
-	// Check checks the size and last modified time of the item at the given path.
+	// Check checks the size and last modified time of the file at the given path.
 	Check(ctx context.Context, path string) (fs.DirEntry, error)
 
 	ReadHandler

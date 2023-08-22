@@ -17,8 +17,8 @@ func TestBitswapServer(t *testing.T) {
 	h, err := util.InitHost(nil)
 	require.NoError(t, err)
 	s := BitswapServer{
-		db:   db,
-		host: h,
+		dbNoContext: db,
+		host:        h,
 	}
 	require.Equal(t, "Bitswap", s.Name())
 	ctx, cancel := context.WithCancel(context.Background())
@@ -29,6 +29,6 @@ func TestBitswapServer(t *testing.T) {
 	select {
 	case <-time.After(1 * time.Second):
 		t.Fatal("bitswap server did not stop")
-	case <-done:
+	case <-done[0]:
 	}
 }

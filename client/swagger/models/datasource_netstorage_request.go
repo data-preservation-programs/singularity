@@ -45,7 +45,7 @@ type DatasourceNetstorageRequest struct {
 	// Set the NetStorage account secret/G2O key for authentication.
 	Secret string `json:"secret,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 }

@@ -20,7 +20,7 @@ var DagGenCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		source, err := datasource.DagGenHandler(db, c.Args().Get(0))
+		source, err := datasource.DagGenHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return err
 		}

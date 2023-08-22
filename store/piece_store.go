@@ -18,13 +18,13 @@ import (
 
 var logger = log.Logger("piece_store")
 var ErrNoCarBlocks = errors.New("no Blocks provided")
-var ErrSourceMismatch = errors.New("item source does not match source")
+var ErrSourceMismatch = errors.New("file source does not match source")
 var ErrInvalidStartOffset = errors.New("first block must start at car Header")
 var ErrInvalidEndOffset = errors.New("last block must end at car end")
 var ErrIncontiguousBlocks = errors.New("Blocks must be contiguous")
 var ErrInvalidVarintLength = errors.New("varint read does not match varint length")
 var ErrVarintDoesNotMatchBlockLength = errors.New("varint does not match block length")
-var ErrItemNotProvided = errors.New("item not provided")
+var ErrFileNotProvided = errors.New("file not provided")
 var ErrInvalidWhence = errors.New("invalid whence")
 var ErrNegativeOffset = errors.New("negative offset")
 var ErrOffsetOutOfRange = errors.New("position past end of file")
@@ -51,9 +51,9 @@ func (e *FileHasChangedError) Is(target error) bool {
 // header: A byte slice representing the header of the file.
 // sourceHandler: A Handler from the datasource package that is used to handle the source of the data.
 // carBlocks: A slice of CarBlocks. These represent the blocks of data in the CAR (Content Addressable Archive) format.
-// items: A map where the keys are item ID. This represents the items of data being read.
+// files: A map where the keys are file ID. This represents the files of data being read.
 // reader: An io.ReadCloser that is used to read the data and close the reader when done.
-// readerFor: A uint64 item ID that represents the current item being read.
+// readerFor: A uint64 file ID that represents the current file being read.
 // pos: An int64 that represents the current position in the data being read.
 // blockIndex: An integer that represents the index of the current block being read.
 type PieceReader struct {
@@ -62,7 +62,7 @@ type PieceReader struct {
 	header        []byte
 	sourceHandler datasource.Handler
 	carBlocks     []model.CarBlock
-	items         map[uint64]model.Item
+	files         map[uint64]model.File
 	reader        io.ReadCloser
 	readerFor     uint64
 	pos           int64
@@ -134,7 +134,7 @@ func (pr *PieceReader) Clone(ctx context.Context) *PieceReader {
 		header:        pr.header,
 		sourceHandler: pr.sourceHandler,
 		carBlocks:     pr.carBlocks,
-		items:         pr.items,
+		files:         pr.files,
 		reader:        pr.reader,
 		readerFor:     pr.readerFor,
 		pos:           pr.pos,
@@ -146,7 +146,7 @@ func (pr *PieceReader) Clone(ctx context.Context) *PieceReader {
 }
 
 // NewPieceReader is a function that creates a new PieceReader.
-// It takes a context, a Car model, a Source model, a slice of CarBlock models, a slice of Item models, and a HandlerResolver as input.
+// It takes a context, a Car model, a Source model, a slice of CarBlock models, a slice of File models, and a HandlerResolver as input.
 // It validates the input data and returns an error if any of it is invalid.
 // The returned PieceReader starts at the beginning of the data (position 0).
 //
@@ -155,7 +155,7 @@ func (pr *PieceReader) Clone(ctx context.Context) *PieceReader {
 // car: A Car model that represents the CAR (Content Addressable Archive) file being read.
 // source: A Source model that represents the source of the data.
 // carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
-// items: A slice of Item models that represent the items of data being read.
+// files: A slice of File models that represent the files of data being read.
 // resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
 //
 // Returns:
@@ -165,16 +165,16 @@ func NewPieceReader(
 	car model.Car,
 	source model.Source,
 	carBlocks []model.CarBlock,
-	items []model.Item,
+	files []model.File,
 	resolver datasource.HandlerResolver,
 ) (
 	*PieceReader,
 	error,
 ) {
-	itemsMap := make(map[uint64]model.Item)
-	for _, item := range items {
-		itemsMap[item.ID] = item
-		if item.SourceID != source.ID {
+	filesMap := make(map[uint64]model.File)
+	for _, file := range files {
+		filesMap[file.ID] = file
+		if file.SourceID != source.ID {
 			return nil, ErrSourceMismatch
 		}
 	}
@@ -210,9 +210,9 @@ func NewPieceReader(
 			return nil, ErrVarintDoesNotMatchBlockLength
 		}
 		if carBlocks[i].RawBlock == nil {
-			_, ok := itemsMap[*carBlocks[i].ItemID]
+			_, ok := filesMap[*carBlocks[i].FileID]
 			if !ok {
-				return nil, ErrItemNotProvided
+				return nil, ErrFileNotProvided
 			}
 		}
 	}
@@ -228,7 +228,7 @@ func NewPieceReader(
 		fileSize:      car.FileSize,
 		sourceHandler: sourceHandler,
 		carBlocks:     carBlocks,
-		items:         itemsMap,
+		files:         filesMap,
 		blockIndex:    -1,
 	}, nil
 }
@@ -240,7 +240,7 @@ func NewPieceReader(
 // If the PieceReader is currently at a block boundary, it advances to the next block before reading data.
 // If the PieceReader is currently at a varint or CID boundary within a block, it reads the varint or CID data.
 // If the PieceReader is currently at a raw block boundary within a block, it reads the raw block data.
-// If the PieceReader is currently at an item boundary within a block, it reads the item data.
+// If the PieceReader is currently at an file boundary within a block, it reads the file data.
 // If the PieceReader encounters an error while reading data, it returns the error.
 //
 // Parameters:
@@ -292,27 +292,27 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		return
 	}
 
-	if pr.reader != nil && pr.readerFor != *carBlock.ItemID {
+	if pr.reader != nil && pr.readerFor != *carBlock.FileID {
 		pr.reader.Close()
 		pr.reader = nil
 	}
 
 	if pr.reader == nil {
-		item := pr.items[*carBlock.ItemID]
-		itemOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
-		itemOffset += carBlock.ItemOffset
-		logger.Infow("reading item", "sourceID", item.SourceID, "path", item.Path, "offset", itemOffset)
+		file := pr.files[*carBlock.FileID]
+		fileOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
+		fileOffset += carBlock.FileOffset
+		logger.Infow("reading file", "sourceID", file.SourceID, "path", file.Path, "offset", fileOffset)
 		var obj fs.Object
-		pr.reader, obj, err = pr.sourceHandler.Read(pr.ctx, item.Path, itemOffset, item.Size-itemOffset)
+		pr.reader, obj, err = pr.sourceHandler.Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to read file")
 		}
-		isSameEntry, explanation := pack.IsSameEntry(pr.ctx, item, obj)
+		isSameEntry, explanation := pack.IsSameEntry(pr.ctx, file, obj)
 		if !isSameEntry {
 			return 0, &FileHasChangedError{Message: "file has changed: " + explanation}
 		}
 
-		pr.readerFor = item.ID
+		pr.readerFor = file.ID
 	}
 
 	maxToRead := carBlock.CarOffset + int64(carBlock.CarBlockLength) - pr.pos

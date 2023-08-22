@@ -109,54 +109,54 @@ Notes:
 			DefaultText: "1m",
 		},
 	},
-	Action: func(cctx *cli.Context) error {
-		lotusAPI := cctx.String("lotus-api")
-		lotusToken := cctx.String("lotus-token")
-		err := epochutil.Initialize(cctx.Context, lotusAPI, lotusToken)
+	Action: func(c *cli.Context) error {
+		lotusAPI := c.String("lotus-api")
+		lotusToken := c.String("lotus-token")
+		err := epochutil.Initialize(c.Context, lotusAPI, lotusToken)
 		if err != nil {
 			return err
 		}
 		proposal := deal.Proposal{
-			HTTPHeaders:     cctx.StringSlice("http-header"),
-			URLTemplate:     cctx.String("url-template"),
-			PricePerGBEpoch: cctx.Float64("price-per-gb-epoch"),
-			PricePerGB:      cctx.Float64("price-per-gb"),
-			PricePerDeal:    cctx.Float64("price-per-deal"),
-			RootCID:         cctx.String("root-cid"),
-			Verified:        cctx.Bool("verified"),
-			IPNI:            cctx.Bool("ipni"),
-			KeepUnsealed:    cctx.Bool("keep-unsealed"),
-			StartDelay:      cctx.String("start-delay"),
-			Duration:        cctx.String("duration"),
-			ClientAddress:   cctx.Args().Get(0),
-			ProviderID:      cctx.Args().Get(1),
-			PieceCID:        cctx.Args().Get(2),
-			PieceSize:       cctx.Args().Get(3),
-			FileSize:        cctx.Uint64("file-size"),
+			HTTPHeaders:     c.StringSlice("http-header"),
+			URLTemplate:     c.String("url-template"),
+			PricePerGBEpoch: c.Float64("price-per-gb-epoch"),
+			PricePerGB:      c.Float64("price-per-gb"),
+			PricePerDeal:    c.Float64("price-per-deal"),
+			RootCID:         c.String("root-cid"),
+			Verified:        c.Bool("verified"),
+			IPNI:            c.Bool("ipni"),
+			KeepUnsealed:    c.Bool("keep-unsealed"),
+			StartDelay:      c.String("start-delay"),
+			Duration:        c.String("duration"),
+			ClientAddress:   c.Args().Get(0),
+			ProviderID:      c.Args().Get(1),
+			PieceCID:        c.Args().Get(2),
+			PieceSize:       c.Args().Get(3),
+			FileSize:        c.Uint64("file-size"),
 		}
-		timeout := cctx.Duration("timeout")
-		db, closer, err := database.OpenFromCLI(cctx)
+		timeout := c.Duration("timeout")
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		ctx, cancel := context.WithTimeout(cctx.Context, timeout)
+		ctx, cancel := context.WithTimeout(c.Context, timeout)
 		defer cancel()
 		h, err := util.InitHost(nil)
 		if err != nil {
 			return errors.Wrap(err, "failed to init host")
 		}
 		dealMaker := replication.NewDealMaker(
-			util.NewLotusClient(cctx.String("lotus-api"), cctx.String("lotus-token")),
+			util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token")),
 			h,
 			10*timeout,
 			timeout,
 		)
-		dealModel, err2 := deal.SendManualHandler(db.WithContext(ctx), ctx, dealMaker, proposal)
+		dealModel, err2 := deal.SendManualHandler(ctx, db, dealMaker, proposal)
 		if err2 != nil {
 			return err2
 		}
-		cliutil.PrintToConsole(dealModel, cctx.Bool("json"), []string{
+		cliutil.PrintToConsole(dealModel, c.Bool("json"), []string{
 			"CreatedAt", "UpdatedAt", "DealID", "DatasetID", "SectorStartEpoch",
 			"ID", "State", "ErrorMessage", "ScheduleID"})
 		return nil

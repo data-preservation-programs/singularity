@@ -1,69 +1,99 @@
 package datasetworker
 
 import (
+	"context"
+	"io"
 	"os"
 	"path"
-	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
-	"github.com/data-preservation-programs/singularity/pack/device"
 	"github.com/data-preservation-programs/singularity/util"
+	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
-func (w *DatasetWorkerThread) dag(source model.Source) error {
-	var rootCID cid.Cid
+// ExportDag exports a Directed Acyclic Graph (DAG) for a given source.
+// The function takes a source, iterates through the related directories
+// (as rows from the database), and constructs the DAG in the form of a
+// CAR (Content Addressable Archive) file. This CAR file represents the
+// block structure of the data.
+//
+// The function:
+// - Initializes necessary components like writers and calculators
+// - Iterates through the directories linked with the source and fetches blocks
+// - Writes the blocks into a CAR file
+// - Closes the CAR file and renames it appropriately
+// - Saves the CAR meta-information into the database
+//
+// Parameters:
+// - ctx context.Context: The context to control cancellations and timeouts.
+// - source model.Source: The source for which the DAG needs to be generated.
+//
+// The function performs several database and file system operations,
+// each of which might result in an error. Errors are wrapped with context
+// information and returned.
+//
+// Returns:
+// - error: Standard error interface, returns nil if no error occurred during execution.
+func (w *Thread) ExportDag(ctx context.Context, source model.Source) error {
+	db := w.dbNoContext.WithContext(ctx)
+	rootCID := pack.EmptyFileCid
 	var outDir string
 	var headerBytes []byte
 	var carBlocks []model.CarBlock
 	var car model.Car
 	if len(source.Dataset.OutputDirs) > 0 {
-		var err error
-		outDir, err = device.GetPathWithMostSpace(source.Dataset.OutputDirs)
-		if err != nil {
-			w.logger.Warnw("failed to get path with most space. using the first one", "error", err)
-			outDir = source.Dataset.OutputDirs[0]
-		}
+		outDir = source.Dataset.OutputDirs[0]
 	}
 
-	writeCloser, calc, filepath, err := pack.GetMultiWriter(outDir)
-	if err != nil {
-		return errors.Wrap(err, "failed to get multi writer")
-	}
-	defer writeCloser.Close()
+	var writeCloser io.WriteCloser
+	var calc *commp.Calc
+	var filepath string
+	var err error
 	offset := int64(0)
-	rows, err := w.db.Model(&model.Directory{}).Where("source_id = ? AND exported = ?", source.ID, false).Order("id asc").Rows()
+	rows, err := db.Model(&model.Directory{}).Where("source_id = ? AND exported = ?", source.ID, false).Order("id asc").Rows()
 	if err != nil {
 		return errors.Wrap(err, "failed to get directories")
 	}
 	defer rows.Close()
-	dirUpdateTimes := map[uint64]time.Time{}
+	dirCIDs := make(map[uint64]cid.Cid)
 	for rows.Next() {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		var dir model.Directory
-		err = w.db.ScanRows(rows, &dir)
+		err = db.ScanRows(rows, &dir)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan directory")
 		}
-		dirUpdateTimes[dir.ID] = dir.UpdatedAt
+		dirCIDs[dir.ID] = cid.Cid(dir.CID)
+		if dir.ParentID == nil && dir.CID != model.CID(cid.Undef) {
+			rootCID = cid.Cid(dir.CID)
+		}
 
 		logger.Debugw("Reading content of directory", "dir_id", dir.ID, "name", dir.Name)
-		_, blks, err := daggen.UnmarshallToBlocks(dir.Data)
+		_, blks, err := daggen.UnmarshalToBlocks(dir.Data)
 		if err != nil {
 			return errors.Wrap(err, "failed to unmarshall to blocks")
 		}
 		for _, blk := range blks {
-			if len(blk.RawData()) == 0 {
+			if len(blk.RawData()) == 0 && blk.Cid() != pack.EmptyFileCid {
 				// This is dummy node. skip putting into car file
 				continue
 			}
 			if offset == 0 {
 				rootCID = blk.Cid()
+				writeCloser, calc, filepath, err = pack.GetMultiWriter(outDir)
+				if err != nil {
+					return errors.Wrap(err, "failed to get multi writer")
+				}
+				defer writeCloser.Close()
 				headerBytes, err = pack.WriteCarHeader(writeCloser, rootCID)
 				if err != nil {
 					return errors.Wrap(err, "failed to write header")
@@ -113,8 +143,8 @@ func (w *DatasetWorkerThread) dag(source model.Source) error {
 	car.DatasetID = source.DatasetID
 	car.SourceID = &source.ID
 	logger.Debugw("Saving car", "car", car)
-	err = database.DoRetry(func() error {
-		return w.db.Transaction(func(db *gorm.DB) error {
+	err = database.DoRetry(ctx, func() error {
+		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&car).Error
 			if err != nil {
 				return err
@@ -126,8 +156,8 @@ func (w *DatasetWorkerThread) dag(source model.Source) error {
 			if err != nil {
 				return err
 			}
-			for dirID, updatedAt := range dirUpdateTimes {
-				result := db.Model(&model.Directory{}).Where("id = ? AND updated_at = ?", dirID, updatedAt).Update("exported", true)
+			for dirID, dirCID := range dirCIDs {
+				result := db.Model(&model.Directory{}).Where("id = ? AND cid = ?", dirID, model.CID(dirCID)).Update("exported", true)
 				if result.Error != nil {
 					return errors.Wrap(result.Error, "failed to update directory")
 				}

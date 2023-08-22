@@ -63,17 +63,17 @@ PostSourceIDPushParams contains all the parameters to send to the API endpoint
 */
 type PostSourceIDPushParams struct {
 
+	/* File.
+
+	   File
+	*/
+	File *models.DatasourceFileInfo
+
 	/* ID.
 
 	   Source ID
 	*/
 	ID string
-
-	/* Item.
-
-	   Item
-	*/
-	Item *models.DatasourceItemInfo
 
 	timeout    time.Duration
 	Context    context.Context
@@ -128,6 +128,17 @@ func (o *PostSourceIDPushParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithFile adds the file to the post source ID push params
+func (o *PostSourceIDPushParams) WithFile(file *models.DatasourceFileInfo) *PostSourceIDPushParams {
+	o.SetFile(file)
+	return o
+}
+
+// SetFile adds the file to the post source ID push params
+func (o *PostSourceIDPushParams) SetFile(file *models.DatasourceFileInfo) {
+	o.File = file
+}
+
 // WithID adds the id to the post source ID push params
 func (o *PostSourceIDPushParams) WithID(id string) *PostSourceIDPushParams {
 	o.SetID(id)
@@ -139,17 +150,6 @@ func (o *PostSourceIDPushParams) SetID(id string) {
 	o.ID = id
 }
 
-// WithItem adds the item to the post source ID push params
-func (o *PostSourceIDPushParams) WithItem(item *models.DatasourceItemInfo) *PostSourceIDPushParams {
-	o.SetItem(item)
-	return o
-}
-
-// SetItem adds the item to the post source ID push params
-func (o *PostSourceIDPushParams) SetItem(item *models.DatasourceItemInfo) {
-	o.Item = item
-}
-
 // WriteToRequest writes these params to a swagger request
 func (o *PostSourceIDPushParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {
 
@@ -157,15 +157,15 @@ func (o *PostSourceIDPushParams) WriteToRequest(r runtime.ClientRequest, reg str
 		return err
 	}
 	var res []error
+	if o.File != nil {
+		if err := r.SetBodyParam(o.File); err != nil {
+			return err
+		}
+	}
 
 	// path param id
 	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
-	}
-	if o.Item != nil {
-		if err := r.SetBodyParam(o.Item); err != nil {
-			return err
-		}
 	}
 
 	if len(res) > 0 {

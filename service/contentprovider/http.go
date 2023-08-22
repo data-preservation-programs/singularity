@@ -22,9 +22,9 @@ import (
 )
 
 type HTTPServer struct {
-	db       *gorm.DB
-	bind     string
-	resolver datasource.HandlerResolver
+	dbNoContext *gorm.DB
+	bind        string
+	resolver    datasource.HandlerResolver
 }
 
 func (*HTTPServer) Name() string {
@@ -46,10 +46,10 @@ func (*HTTPServer) Name() string {
 // ctx: The context for the server. This can be used to cancel the server or set a deadline.
 //
 // Returns:
-// A Done channel that is closed when the server has stopped.
+// A Done channel slice that are closed when the server has stopped.
 // A Fail channel that receives an error if the server fails to start or stop.
 // An error if the server fails to start.
-func (s *HTTPServer) Start(ctx context.Context) (service.Done, service.Fail, error) {
+func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
 	e.Use(
@@ -112,7 +112,7 @@ func (s *HTTPServer) Start(ctx context.Context) (service.Done, service.Fail, err
 		}
 		close(done)
 	}()
-	return done, fail, nil
+	return []service.Done{done}, fail, nil
 }
 
 func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
@@ -127,21 +127,21 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 	if err != nil {
 		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
 	}
-	var items []model.Item
-	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("item_id").Where("car_id = ?", car.ID)).Find(&items).Error
+	var files []model.File
+	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to query for items: %w", err)
+		return nil, fmt.Errorf("failed to query for files: %w", err)
 	}
 	return &PieceMetadata{
 		Car:       car,
 		Source:    source,
 		CarBlocks: carBlocks,
-		Items:     items,
+		Files:     files,
 	}, nil
 }
 
 // GetMetadataHandler is a function that handles HTTP requests to get the metadata of a piece.
-// It takes an Echo context and a Gorm DB connection as arguments.
+// It takes an Echo context and a Gorm DBNoContext connection as arguments.
 //
 // The function first parses the piece CID from the URL parameters. If the CID is invalid, it returns a 400 Bad Request response.
 //
@@ -155,7 +155,7 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 //
 // Parameters:
 // c: The Echo context for the HTTP request.
-// db: The Gorm DB connection to use for database queries.
+// dbNoContext: The Gorm DBNoContext connection to use for database queries.
 //
 // Returns:
 // An error if there was a problem handling the request.
@@ -194,14 +194,14 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 }
 
 func (s *HTTPServer) getMetadataHandler(c echo.Context) error {
-	return GetMetadataHandler(c, s.db)
+	return GetMetadataHandler(c, s.dbNoContext.WithContext(c.Request().Context()))
 }
 
 type PieceMetadata struct {
 	Car       model.Car        `json:"car"`
 	Source    model.Source     `json:"source"`
 	CarBlocks []model.CarBlock `json:"carBlocks"`
-	Items     []model.Item     `json:"items"`
+	Files     []model.File     `json:"files"`
 }
 
 // findPiece is a method on the HTTPServer struct that finds a piece by its CID.
@@ -236,7 +236,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	time.Time,
 	error,
 ) {
-	db := s.db.WithContext(ctx)
+	db := s.dbNoContext.WithContext(ctx)
 	var cars []model.Car
 	err := db.Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
 	if err != nil {
@@ -273,12 +273,12 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	}
 
 	for _, car := range cars {
-		metadata, err := getPieceMetadata(ctx, s.db, car)
+		metadata, err := getPieceMetadata(ctx, s.dbNoContext.WithContext(ctx), car)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to get piece metadata"))
 			continue
 		}
-		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Items, s.resolver)
+		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Files, s.resolver)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to create piece reader"))
 			continue

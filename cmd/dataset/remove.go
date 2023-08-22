@@ -25,6 +25,7 @@ var RemoveDatasetCmd = &cli.Command{
 		}
 		defer closer.Close()
 		return dataset.RemoveHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

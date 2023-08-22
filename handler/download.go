@@ -71,7 +71,7 @@ func DownloadHandler(ctx context.Context,
 		pieceMetadata.Source.Metadata[name] = value
 	}
 
-	pieceReader, err := store.NewPieceReader(ctx, pieceMetadata.Car, pieceMetadata.Source, pieceMetadata.CarBlocks, pieceMetadata.Items, resolver)
+	pieceReader, err := store.NewPieceReader(ctx, pieceMetadata.Car, pieceMetadata.Source, pieceMetadata.CarBlocks, pieceMetadata.Files, resolver)
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")
 	}

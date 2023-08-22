@@ -10,20 +10,20 @@ import (
 	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/rclone/rclone/fs"
 	"github.com/stretchr/testify/require"
 )
 
-func TestItemReferenceBlockStore_Has(t *testing.T) {
+func TestFileReferenceBlockStore_Has(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
 
-	store := ItemReferenceBlockStore{
-		DB:              db,
+	store := FileReferenceBlockStore{
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -46,8 +46,8 @@ func TestItemReferenceBlockStore_Has(t *testing.T) {
 	require.True(t, has)
 }
 
-func TestItemReferenceBlockStore_NotImplemented(t *testing.T) {
-	store := &ItemReferenceBlockStore{}
+func TestFileReferenceBlockStore_NotImplemented(t *testing.T) {
+	store := &FileReferenceBlockStore{}
 	require.ErrorIs(t, store.Put(context.Background(), nil), ErrNotImplemented)
 	require.ErrorIs(t, store.PutMany(context.Background(), nil), ErrNotImplemented)
 	c, err := store.AllKeysChan(context.Background())
@@ -57,13 +57,13 @@ func TestItemReferenceBlockStore_NotImplemented(t *testing.T) {
 	store.HashOnRead(true)
 }
 
-func TestItemReferenceBlockStore_GetSize(t *testing.T) {
+func TestFileReferenceBlockStore_GetSize(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
 
-	store := ItemReferenceBlockStore{
-		DB:              db,
+	store := FileReferenceBlockStore{
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 	ctx := context.Background()
@@ -83,13 +83,13 @@ func TestItemReferenceBlockStore_GetSize(t *testing.T) {
 	require.EqualValues(t, 4, size)
 }
 
-func TestItemReferenceBlockStore_Get_RawBlock(t *testing.T) {
+func TestFileReferenceBlockStore_Get_RawBlock(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
 
-	store := ItemReferenceBlockStore{
-		DB:              db,
+	store := FileReferenceBlockStore{
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -111,13 +111,13 @@ func TestItemReferenceBlockStore_Get_RawBlock(t *testing.T) {
 	require.Equal(t, []byte("test"), blk.RawData())
 }
 
-func TestItemReferenceBlockStore_Get_ItemBlock(t *testing.T) {
+func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
 
-	store := ItemReferenceBlockStore{
-		DB:              db,
+	store := FileReferenceBlockStore{
+		DBNoContext:     db,
 		HandlerResolver: &datasource.DefaultHandlerResolver{},
 	}
 
@@ -134,7 +134,7 @@ func TestItemReferenceBlockStore_Get_ItemBlock(t *testing.T) {
 			Dataset: &model.Dataset{},
 		},
 		CID: model.CID(cidValue),
-		Item: &model.Item{
+		File: &model.File{
 			Source: &model.Source{
 				Path: tmp,
 				Type: "local",
@@ -146,7 +146,7 @@ func TestItemReferenceBlockStore_Get_ItemBlock(t *testing.T) {
 			Size:                      4,
 			LastModifiedTimestampNano: testutil.GetFileTimestamp(t, filepath.Join(tmp, "1.txt")),
 		},
-		ItemOffset:     0,
+		FileOffset:     0,
 		CarBlockLength: 36 + 1 + 4,
 	}).Error
 	require.NoError(t, err)

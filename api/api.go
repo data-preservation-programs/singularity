@@ -128,20 +128,26 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 		handlerFuncType := handlerFuncValue.Type()
 
 		// Check the number of input parameters
-		if handlerFuncType.NumIn() == 0 || handlerFuncType.In(0) != reflect.TypeOf(s.db) {
+		if handlerFuncType.NumIn() == 0 ||
+			handlerFuncType.In(1).String() != "*gorm.DB" ||
+			handlerFuncType.In(0).String() != "context.Context" {
 			logger.Error("Invalid handler function signature.")
 			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
 		}
 
 		// Prepare input parameters
-		inputParams := []reflect.Value{reflect.ValueOf(s.db.WithContext(c.Request().Context()))}
+		var inputParams []reflect.Value
 
 		var j int
 		// Get path parameters
-		for i := 1; i < handlerFuncType.NumIn(); i++ {
+		for i := 0; i < handlerFuncType.NumIn(); i++ {
 			paramType := handlerFuncType.In(i)
 			if paramType.String() == "context.Context" {
 				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
+				continue
+			}
+			if paramType.String() == "*gorm.DB" {
+				inputParams = append(inputParams, reflect.ValueOf(s.db.WithContext(c.Request().Context())))
 				continue
 			}
 			if paramType.String() == "datasource.HandlerResolver" {
@@ -263,10 +269,10 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
 	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
 	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
-	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushItemHandler))
+	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushFileHandler))
 	e.POST("/api/source/:id/repack", s.toEchoHandler(datasource2.RepackHandler))
-	e.POST("/api/source/:id/chunk", s.toEchoHandler(datasource2.ChunkHandler))
-	e.POST("/api/chunk/:id/pack", s.toEchoHandler(datasource2.PackHandler))
+	e.POST("/api/source/:id/packjob", s.toEchoHandler(datasource2.CreatePackJobHandler))
+	e.POST("/api/packjob/:id/pack", s.toEchoHandler(datasource2.PackHandler))
 
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
@@ -274,12 +280,12 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	// Data source status
 	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))
 	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
-	e.GET("/api/source/:id/chunks", s.toEchoHandler(inspect.GetSourceChunksHandler))
-	e.GET("/api/source/:id/items", s.toEchoHandler(inspect.GetSourceItemsHandler))
+	e.GET("/api/source/:id/packjobs", s.toEchoHandler(inspect.GetSourcePackJobsHandler))
+	e.GET("/api/source/:id/files", s.toEchoHandler(inspect.GetSourceFilesHandler))
 	e.GET("/api/source/:id/dags", s.toEchoHandler(inspect.GetDagsHandler))
 	e.GET("/api/source/:id/path", s.toEchoHandler(inspect.GetPathHandler))
-	e.GET("/api/chunk/:id", s.toEchoHandler(inspect.GetSourceChunkDetailHandler))
-	e.GET("/api/item/:id", s.toEchoHandler(inspect.GetSourceItemDetailHandler))
+	e.GET("/api/packjob/:id", s.toEchoHandler(inspect.GetSourcePackJobDetailHandler))
+	e.GET("/api/file/:id", s.toEchoHandler(inspect.GetSourceFileDetailHandler))
 
 	// Deal Schedule
 	e.POST("/api/send_deal", s.toEchoHandler(deal.SendManualHandler))

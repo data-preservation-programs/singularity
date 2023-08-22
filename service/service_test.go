@@ -16,9 +16,9 @@ type MockServer struct {
 	mock.Mock
 }
 
-func (m *MockServer) Start(ctx context.Context) (Done, Fail, error) {
+func (m *MockServer) Start(ctx context.Context) ([]Done, Fail, error) {
 	args := m.Called(ctx)
-	return args.Get(0).(Done), args.Get(1).(Fail), args.Error(2)
+	return args.Get(0).([]Done), args.Get(1).(Fail), args.Error(2)
 }
 
 func (m *MockServer) Name() string {
@@ -40,7 +40,7 @@ func TestStartServers_Timeout(t *testing.T) {
 
 	done := make(chan struct{})
 	// Set up expectations.
-	server.On("Start", mock.Anything).Return(Done(done), Fail(nil), nil)
+	server.On("Start", mock.Anything).Return([]Done{done}, Fail(nil), nil)
 
 	go func() {
 		// Send done once context is cancelled
@@ -69,7 +69,7 @@ func TestStartServers_FailToStart(t *testing.T) {
 	serverError := errors.New("fail to start")
 
 	// Set up expectations.
-	server.On("Start", mock.Anything).Return(Done(done), Fail(fail), serverError)
+	server.On("Start", mock.Anything).Return([]Done{done}, Fail(fail), serverError)
 
 	// Call the function with the mock server.
 	err := StartServers(ctx, logger, server)
@@ -90,7 +90,10 @@ func TestStartServers_ServerError(t *testing.T) {
 
 	// Server is always done
 	done := make(chan struct{})
-	close(done)
+	go func() {
+		time.Sleep(time.Second)
+		close(done)
+	}()
 
 	fail := make(chan error)
 	serverError := errors.New("server error")
@@ -99,7 +102,7 @@ func TestStartServers_ServerError(t *testing.T) {
 	}()
 
 	// Set up expectations.
-	server.On("Start", mock.Anything).Return(Done(done), Fail(fail), nil)
+	server.On("Start", mock.Anything).Return([]Done{done}, Fail(fail), nil)
 
 	// Call the function with the mock server.
 	err := StartServers(ctx, logger, server)

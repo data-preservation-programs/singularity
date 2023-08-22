@@ -12,15 +12,15 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ChunksCmd = &cli.Command{
-	Name:      "chunks",
-	Usage:     "Get all chunk details of a data source",
+var PackJobsCmd = &cli.Command{
+	Name:      "packjobs",
+	Usage:     "Get all pack job details of a data source",
 	ArgsUsage: "<source_id>",
 	Flags: []cli.Flag{
 		&cli.GenericFlag{
 			Name:        "state",
 			Value:       new(model.WorkState),
-			Usage:       "Filter chunks by state. Valid values are: " + strings.Join(model.WorkStateStrings, ", "),
+			Usage:       "Filter pack jobs by state. Valid values are: " + strings.Join(model.WorkStateStrings, ", "),
 			Aliases:     []string{"s"},
 			DefaultText: "All states",
 		},
@@ -35,10 +35,11 @@ var ChunksCmd = &cli.Command{
 		if err != nil {
 			return err
 		}
-		result, err := inspect.GetSourceChunksHandler(
+		result, err := inspect.GetSourcePackJobsHandler(
+			c.Context,
 			db,
 			uint32(sourceID),
-			inspect.GetSourceChunksRequest{State: *(c.Generic("state").(*model.WorkState))},
+			inspect.GetSourcePackJobsRequest{State: *(c.Generic("state").(*model.WorkState))},
 		)
 		if err != nil {
 			return err
@@ -48,7 +49,7 @@ var ChunksCmd = &cli.Command{
 			cliutil.PrintToConsole(result, true, nil)
 			return nil
 		}
-		fmt.Println("Chunks:")
+		fmt.Println("Pack jobs:")
 		cliutil.PrintToConsole(result, false, []string{"PackingWorkerID"})
 
 		return nil

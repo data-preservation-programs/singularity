@@ -8,7 +8,7 @@ import (
 )
 
 type AcdRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`           // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`           // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`        // Starting state for scanning
@@ -36,7 +36,7 @@ type AcdRequest struct {
 func handleAcd() {}
 
 type AzureblobRequest struct {
-	SourcePath                 string          `validate:"required" json:"sourcePath"`                                     // The path of the source to scan items
+	SourcePath                 string          `validate:"required" json:"sourcePath"`                                     // The path of the source to scan files
 	DeleteAfterExport          bool            `validate:"required" json:"deleteAfterExport"`                              // Delete the source after exporting to CAR files
 	RescanInterval             string          `validate:"required" json:"rescanInterval"`                                 // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState              model.WorkState `validate:"required" json:"scanningState"`                                  // Starting state for scanning
@@ -87,7 +87,7 @@ type AzureblobRequest struct {
 func handleAzureblob() {}
 
 type B2Request struct {
-	SourcePath           string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
+	SourcePath           string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan files
 	DeleteAfterExport    bool            `validate:"required" json:"deleteAfterExport"`                      // Delete the source after exporting to CAR files
 	RescanInterval       string          `validate:"required" json:"rescanInterval"`                         // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState        model.WorkState `validate:"required" json:"scanningState"`                          // Starting state for scanning
@@ -122,7 +122,7 @@ type B2Request struct {
 func handleB2() {}
 
 type BoxRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                        // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                        // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                 // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                     // Starting state for scanning
@@ -155,7 +155,7 @@ type BoxRequest struct {
 func handleBox() {}
 
 type DriveRequest struct {
-	SourcePath                string          `validate:"required" json:"sourcePath"`             // The path of the source to scan items
+	SourcePath                string          `validate:"required" json:"sourcePath"`             // The path of the source to scan files
 	DeleteAfterExport         bool            `validate:"required" json:"deleteAfterExport"`      // Delete the source after exporting to CAR files
 	RescanInterval            string          `validate:"required" json:"rescanInterval"`         // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState             model.WorkState `validate:"required" json:"scanningState"`          // Starting state for scanning
@@ -217,7 +217,7 @@ type DriveRequest struct {
 func handleDrive() {}
 
 type DropboxRequest struct {
-	SourcePath         string          `validate:"required" json:"sourcePath"`                                    // The path of the source to scan items
+	SourcePath         string          `validate:"required" json:"sourcePath"`                                    // The path of the source to scan files
 	DeleteAfterExport  bool            `validate:"required" json:"deleteAfterExport"`                             // Delete the source after exporting to CAR files
 	RescanInterval     string          `validate:"required" json:"rescanInterval"`                                // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState      model.WorkState `validate:"required" json:"scanningState"`                                 // Starting state for scanning
@@ -250,7 +250,7 @@ type DropboxRequest struct {
 func handleDropbox() {}
 
 type FichierRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                                // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                                // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                                                                         // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                                                                            // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                                                                             // Starting state for scanning
@@ -274,7 +274,7 @@ type FichierRequest struct {
 func handleFichier() {}
 
 type FilefabricRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                   // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                   // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`            // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`               // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                // Starting state for scanning
@@ -300,7 +300,7 @@ type FilefabricRequest struct {
 func handleFilefabric() {}
 
 type FtpRequest struct {
-	SourcePath         string          `validate:"required" json:"sourcePath"`                  // The path of the source to scan items
+	SourcePath         string          `validate:"required" json:"sourcePath"`                  // The path of the source to scan files
 	DeleteAfterExport  bool            `validate:"required" json:"deleteAfterExport"`           // Delete the source after exporting to CAR files
 	RescanInterval     string          `validate:"required" json:"rescanInterval"`              // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState      model.WorkState `validate:"required" json:"scanningState"`               // Starting state for scanning
@@ -339,7 +339,7 @@ type FtpRequest struct {
 func handleFtp() {}
 
 type GcsRequest struct {
-	SourcePath                string          `validate:"required" json:"sourcePath"`                // The path of the source to scan items
+	SourcePath                string          `validate:"required" json:"sourcePath"`                // The path of the source to scan files
 	DeleteAfterExport         bool            `validate:"required" json:"deleteAfterExport"`         // Delete the source after exporting to CAR files
 	RescanInterval            string          `validate:"required" json:"rescanInterval"`            // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState             model.WorkState `validate:"required" json:"scanningState"`             // Starting state for scanning
@@ -377,7 +377,7 @@ type GcsRequest struct {
 func handleGcs() {}
 
 type GphotosRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`         // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`            // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`             // Starting state for scanning
@@ -406,7 +406,7 @@ type GphotosRequest struct {
 func handleGphotos() {}
 
 type HdfsRequest struct {
-	SourcePath             string          `validate:"required" json:"sourcePath"`                         // The path of the source to scan items
+	SourcePath             string          `validate:"required" json:"sourcePath"`                         // The path of the source to scan files
 	DeleteAfterExport      bool            `validate:"required" json:"deleteAfterExport"`                  // Delete the source after exporting to CAR files
 	RescanInterval         string          `validate:"required" json:"rescanInterval"`                     // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState          model.WorkState `validate:"required" json:"scanningState"`                      // Starting state for scanning
@@ -430,7 +430,7 @@ type HdfsRequest struct {
 func handleHdfs() {}
 
 type HidriveRequest struct {
-	SourcePath                 string          `validate:"required" json:"sourcePath"`                        // The path of the source to scan items
+	SourcePath                 string          `validate:"required" json:"sourcePath"`                        // The path of the source to scan files
 	DeleteAfterExport          bool            `validate:"required" json:"deleteAfterExport"`                 // Delete the source after exporting to CAR files
 	RescanInterval             string          `validate:"required" json:"rescanInterval"`                    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState              model.WorkState `validate:"required" json:"scanningState"`                     // Starting state for scanning
@@ -463,7 +463,7 @@ type HidriveRequest struct {
 func handleHidrive() {}
 
 type HttpRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`        // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`        // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`     // Starting state for scanning
@@ -486,7 +486,7 @@ type HttpRequest struct {
 func handleHttp() {}
 
 type InternetarchiveRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                      // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                         // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                          // Starting state for scanning
@@ -512,7 +512,7 @@ type InternetarchiveRequest struct {
 func handleInternetarchive() {}
 
 type JottacloudRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                 // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                 // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                                          // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                                             // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                                              // Starting state for scanning
@@ -537,7 +537,7 @@ type JottacloudRequest struct {
 func handleJottacloud() {}
 
 type KoofrRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                      // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                         // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                          // Starting state for scanning
@@ -563,7 +563,7 @@ type KoofrRequest struct {
 func handleKoofr() {}
 
 type LocalRequest struct {
-	SourcePath           string          `validate:"required" json:"sourcePath"`        // The path of the source to scan items
+	SourcePath           string          `validate:"required" json:"sourcePath"`        // The path of the source to scan files
 	DeleteAfterExport    bool            `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
 	RescanInterval       string          `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState        model.WorkState `validate:"required" json:"scanningState"`     // Starting state for scanning
@@ -596,7 +596,7 @@ type LocalRequest struct {
 func handleLocal() {}
 
 type MailruRequest struct {
-	SourcePath          string          `validate:"required" json:"sourcePath"`                                                                           // The path of the source to scan items
+	SourcePath          string          `validate:"required" json:"sourcePath"`                                                                           // The path of the source to scan files
 	DeleteAfterExport   bool            `validate:"required" json:"deleteAfterExport"`                                                                    // Delete the source after exporting to CAR files
 	RescanInterval      string          `validate:"required" json:"rescanInterval"`                                                                       // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState       model.WorkState `validate:"required" json:"scanningState"`                                                                        // Starting state for scanning
@@ -625,7 +625,7 @@ type MailruRequest struct {
 func handleMailru() {}
 
 type MegaRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`           // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`           // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`        // Starting state for scanning
@@ -650,7 +650,7 @@ type MegaRequest struct {
 func handleMega() {}
 
 type NetstorageRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`        // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`        // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`     // Starting state for scanning
@@ -673,7 +673,7 @@ type NetstorageRequest struct {
 func handleNetstorage() {}
 
 type OnedriveRequest struct {
-	SourcePath              string          `validate:"required" json:"sourcePath"`                                                                                                                      // The path of the source to scan items
+	SourcePath              string          `validate:"required" json:"sourcePath"`                                                                                                                      // The path of the source to scan files
 	DeleteAfterExport       bool            `validate:"required" json:"deleteAfterExport"`                                                                                                               // Delete the source after exporting to CAR files
 	RescanInterval          string          `validate:"required" json:"rescanInterval"`                                                                                                                  // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState           model.WorkState `validate:"required" json:"scanningState"`                                                                                                                   // Starting state for scanning
@@ -713,7 +713,7 @@ type OnedriveRequest struct {
 func handleOnedrive() {}
 
 type OpendriveRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                                                   // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                                                   // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                                                                                            // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                                                                                               // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                                                                                                // Starting state for scanning
@@ -736,7 +736,7 @@ type OpendriveRequest struct {
 func handleOpendrive() {}
 
 type OosRequest struct {
-	SourcePath           string          `validate:"required" json:"sourcePath"`           // The path of the source to scan items
+	SourcePath           string          `validate:"required" json:"sourcePath"`           // The path of the source to scan files
 	DeleteAfterExport    bool            `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
 	RescanInterval       string          `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState        model.WorkState `validate:"required" json:"scanningState"`        // Starting state for scanning
@@ -777,7 +777,7 @@ type OosRequest struct {
 func handleOos() {}
 
 type PcloudRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                      // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                         // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                          // Starting state for scanning
@@ -806,7 +806,7 @@ type PcloudRequest struct {
 func handlePcloud() {}
 
 type PremiumizemeRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                         // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                         // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                  // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                     // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                      // Starting state for scanning
@@ -827,7 +827,7 @@ type PremiumizemeRequest struct {
 func handlePremiumizeme() {}
 
 type PutioRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                             // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                      // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                         // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                          // Starting state for scanning
@@ -847,7 +847,7 @@ type PutioRequest struct {
 func handlePutio() {}
 
 type QingstorRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`           // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`           // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`        // Starting state for scanning
@@ -876,7 +876,7 @@ type QingstorRequest struct {
 func handleQingstor() {}
 
 type S3Request struct {
-	SourcePath            string          `validate:"required" json:"sourcePath"`           // The path of the source to scan items
+	SourcePath            string          `validate:"required" json:"sourcePath"`           // The path of the source to scan files
 	DeleteAfterExport     bool            `validate:"required" json:"deleteAfterExport"`    // Delete the source after exporting to CAR files
 	RescanInterval        string          `validate:"required" json:"rescanInterval"`       // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState         model.WorkState `validate:"required" json:"scanningState"`        // Starting state for scanning
@@ -944,7 +944,7 @@ type S3Request struct {
 func handleS3() {}
 
 type SeafileRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                 // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                 // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                          // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                             // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                              // Starting state for scanning
@@ -972,7 +972,7 @@ type SeafileRequest struct {
 func handleSeafile() {}
 
 type SftpRequest struct {
-	SourcePath              string          `validate:"required" json:"sourcePath"`          // The path of the source to scan items
+	SourcePath              string          `validate:"required" json:"sourcePath"`          // The path of the source to scan files
 	DeleteAfterExport       bool            `validate:"required" json:"deleteAfterExport"`   // Delete the source after exporting to CAR files
 	RescanInterval          string          `validate:"required" json:"rescanInterval"`      // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState           model.WorkState `validate:"required" json:"scanningState"`       // Starting state for scanning
@@ -1022,7 +1022,7 @@ type SftpRequest struct {
 func handleSftp() {}
 
 type SharefileRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                                                   // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                                                   // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                                                                                            // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                                                                                               // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                                                                                                // Starting state for scanning
@@ -1046,7 +1046,7 @@ type SharefileRequest struct {
 func handleSharefile() {}
 
 type SiaRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                         // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                         // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                  // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                     // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                      // Starting state for scanning
@@ -1069,7 +1069,7 @@ type SiaRequest struct {
 func handleSia() {}
 
 type SmbRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                              // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                                                                              // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                                                                       // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                                                                          // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                                                                           // Starting state for scanning
@@ -1098,7 +1098,7 @@ type SmbRequest struct {
 func handleSmb() {}
 
 type StorjRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`          // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`          // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`   // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`      // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`       // Starting state for scanning
@@ -1122,7 +1122,7 @@ type StorjRequest struct {
 func handleStorj() {}
 
 type SugarsyncRequest struct {
-	SourcePath          string          `validate:"required" json:"sourcePath"`               // The path of the source to scan items
+	SourcePath          string          `validate:"required" json:"sourcePath"`               // The path of the source to scan files
 	DeleteAfterExport   bool            `validate:"required" json:"deleteAfterExport"`        // Delete the source after exporting to CAR files
 	RescanInterval      string          `validate:"required" json:"rescanInterval"`           // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState       model.WorkState `validate:"required" json:"scanningState"`            // Starting state for scanning
@@ -1152,7 +1152,7 @@ type SugarsyncRequest struct {
 func handleSugarsync() {}
 
 type SwiftRequest struct {
-	SourcePath                  string          `validate:"required" json:"sourcePath"`        // The path of the source to scan items
+	SourcePath                  string          `validate:"required" json:"sourcePath"`        // The path of the source to scan files
 	DeleteAfterExport           bool            `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
 	RescanInterval              string          `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState               model.WorkState `validate:"required" json:"scanningState"`     // Starting state for scanning
@@ -1194,7 +1194,7 @@ type SwiftRequest struct {
 func handleSwift() {}
 
 type UptoboxRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                                                        // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                                                        // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`                                                 // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`                                                    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                                                     // Starting state for scanning
@@ -1215,7 +1215,7 @@ type UptoboxRequest struct {
 func handleUptobox() {}
 
 type WebdavRequest struct {
-	SourcePath         string          `validate:"required" json:"sourcePath"`        // The path of the source to scan items
+	SourcePath         string          `validate:"required" json:"sourcePath"`        // The path of the source to scan files
 	DeleteAfterExport  bool            `validate:"required" json:"deleteAfterExport"` // Delete the source after exporting to CAR files
 	RescanInterval     string          `validate:"required" json:"rescanInterval"`    // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState      model.WorkState `validate:"required" json:"scanningState"`     // Starting state for scanning
@@ -1242,7 +1242,7 @@ type WebdavRequest struct {
 func handleWebdav() {}
 
 type YandexRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`                   // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`                   // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`            // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`               // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`                // Starting state for scanning
@@ -1268,7 +1268,7 @@ type YandexRequest struct {
 func handleYandex() {}
 
 type ZohoRequest struct {
-	SourcePath        string          `validate:"required" json:"sourcePath"`         // The path of the source to scan items
+	SourcePath        string          `validate:"required" json:"sourcePath"`         // The path of the source to scan files
 	DeleteAfterExport bool            `validate:"required" json:"deleteAfterExport"`  // Delete the source after exporting to CAR files
 	RescanInterval    string          `validate:"required" json:"rescanInterval"`     // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState     model.WorkState `validate:"required" json:"scanningState"`      // Starting state for scanning
@@ -1294,7 +1294,7 @@ type ZohoRequest struct {
 func handleZoho() {}
 
 type AllConfig struct {
-	SourcePath                          string          `validate:"required" json:"sourcePath"`                                                                                                                              // The path of the source to scan items
+	SourcePath                          string          `validate:"required" json:"sourcePath"`                                                                                                                              // The path of the source to scan files
 	DeleteAfterExport                   bool            `validate:"optional" json:"deleteAfterExport"`                                                                                                                       // Delete the source after exporting to CAR files
 	RescanInterval                      string          `validate:"optional" json:"rescanInterval"`                                                                                                                          // Automatically rescan the source directory when this interval has passed from last successful scan
 	ScanningState                       model.WorkState `validate:"optional" json:"scanningState"`                                                                                                                           // Starting state for scanning

@@ -127,7 +127,7 @@ Network Support:
 				run.DatasetWorkerCmd,
 				run.ContentProviderCmd,
 				run.DealTrackerCmd,
-				run.DealMakerCmd,
+				run.DealPusherCmd,
 			},
 		},
 		{
@@ -164,11 +164,11 @@ Network Support:
 					Name:  "inspect",
 					Usage: "Get preparation status of a data source",
 					Subcommands: []*cli.Command{
-						inspect.ChunksCmd,
-						inspect.ItemsCmd,
+						inspect.PackJobsCmd,
+						inspect.FilesCmd,
 						inspect.DagsCmd,
-						inspect.ChunkDetailCmd,
-						inspect.ItemDetailCmd,
+						inspect.PackJobDetailCmd,
+						inspect.FileDetailCmd,
 						inspect.PathCmd,
 					},
 				},
@@ -254,6 +254,18 @@ func SetupHelpPager() {
 		pagerIn.Close()
 		cmd.Wait()
 	}
+}
+
+func RunArgsInTestNoCapture(ctx context.Context, args string) error {
+	App.ExitErrHandler = func(c *cli.Context, err error) {
+	}
+	parser := shellwords.NewParser()
+	parser.ParseEnv = true // Enable environment variable parsing
+	parsedArgs, err := parser.Parse(args)
+	if err != nil {
+		return err
+	}
+	return App.RunContext(ctx, parsedArgs)
 }
 
 func RunArgsInTest(ctx context.Context, args string) (string, string, error) {

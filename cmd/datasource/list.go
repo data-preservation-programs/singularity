@@ -24,6 +24,7 @@ var ListCmd = &cli.Command{
 		defer closer.Close()
 		datasetName := c.String("dataset")
 		sources, err := datasource.ListSourcesByDatasetHandler(
+			c.Context,
 			db,
 			datasetName,
 		)

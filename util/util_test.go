@@ -4,11 +4,19 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 )
+
+func TestGetLotusHeadTime(t *testing.T) {
+	head, err := GetLotusHeadTime(context.Background(), "https://api.node.glif.io/", "")
+	require.NoError(t, err)
+	require.Greater(t, time.Since(head).Seconds(), float64(0))
+	require.Less(t, time.Since(head).Seconds(), float64(3600))
+}
 
 func TestNextPowerOfTwo(t *testing.T) {
 	require.Equal(t, uint64(1), NextPowerOfTwo(0))
@@ -33,7 +41,7 @@ func TestNewLotusClient(t *testing.T) {
 	}
 }
 
-func TestChunkSlice(t *testing.T) {
+func TestPackJobSlice(t *testing.T) {
 	tests := []struct {
 		name      string
 		slice     []int

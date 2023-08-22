@@ -30,15 +30,15 @@ var ExtractCarCmd = &cli.Command{
 			Aliases:  []string{"c"},
 		},
 	},
-	Action: func(context *cli.Context) error {
-		inputDir := context.String("input-dir")
-		output := context.String("output")
-		id := context.String("cid")
-		c, err := cid.Decode(id)
+	Action: func(c *cli.Context) error {
+		inputDir := c.String("input-dir")
+		output := c.String("output")
+		id := c.String("cid")
+		cidValue, err := cid.Decode(id)
 		if err != nil {
 			return errors.Wrap(err, "failed to decode CID")
 		}
 
-		return tool.ExtractCarHandler(context.Context, inputDir, output, c)
+		return tool.ExtractCarHandler(c.Context, inputDir, output, cidValue)
 	},
 }

@@ -1,6 +1,8 @@
 package wallet
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -8,11 +10,12 @@ import (
 )
 
 func AddWalletHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
 ) (*model.WalletAssignment, error) {
-	return addWalletHandler(db, datasetName, wallet)
+	return addWalletHandler(ctx, db.WithContext(ctx), datasetName, wallet)
 }
 
 // @Summary Associate a new wallet with a dataset
@@ -26,6 +29,7 @@ func AddWalletHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName}/wallet/{wallet} [post]
 func addWalletHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	wallet string,
@@ -54,7 +58,7 @@ func addWalletHandler(
 		WalletID:  w.ID,
 	}
 
-	err = database.DoRetry(func() error {
+	err = database.DoRetry(ctx, func() error {
 		return db.Create(&a).Error
 	})
 

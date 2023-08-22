@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/data-preservation-programs/singularity/handler"
@@ -9,20 +10,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type ChunksByState struct {
-	Count int64           `json:"count"` // number of chunks in this state
-	State model.WorkState `json:"state"` // the state of the chunks
+type PackJobsByState struct {
+	Count int64           `json:"count"` // number of pack jobs in this state
+	State model.WorkState `json:"state"` // the state of the pack jobs
 }
 
-type ItemSummary struct {
-	Total    int64 `json:"total"`    // number of items in the source
-	Prepared int64 `json:"prepared"` // number of items prepared
+type FileSummary struct {
+	Total    int64 `json:"total"`    // number of files in the source
+	Prepared int64 `json:"prepared"` // number of files prepared
 }
 
 type SourceStatus struct {
-	ChunkSummary []ChunksByState `json:"chunkSummary"` // summary of the chunks
-	ItemSummary  ItemSummary     `json:"itemSummary"`  // summary of the items
-	FailedChunks []model.Chunk   `json:"failedChunks"` // failed chunks
+	PackJobSummary []PackJobsByState `json:"packJobSummary"` // summary of the pack jobs
+	FileSummary    FileSummary       `json:"fileSummary"`    // summary of the files
+	FailedPackJobs []model.PackJob   `json:"failedPackJobs"` // failed pack jobs
 }
 
 // @Summary Get the data preparation summary of a data source
@@ -30,7 +31,7 @@ type SourceStatus struct {
 // @Accept json
 // @Produce json
 // @Param id path string true "Source ID"
-// @Success 200 {object} ChunksByState
+// @Success 200 {object} PackJobsByState
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /source/{id}/summary [get]
@@ -52,25 +53,25 @@ func getSourceStatusHandler(
 	}
 
 	summary := SourceStatus{}
-	err = db.Model(&model.Chunk{}).
+	err = db.Model(&model.PackJob{}).
 		Select("count(*) as count, packing_state as state").
 		Where("source_id = ?", sourceID).
-		Group("packing_state").Find(&summary.ChunkSummary).Error
+		Group("packing_state").Find(&summary.PackJobSummary).Error
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Model(&model.Item{}).Where("source_id = ?", sourceID).Count(&summary.ItemSummary.Total).Error
+	err = db.Model(&model.File{}).Where("source_id = ?", sourceID).Count(&summary.FileSummary.Total).Error
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Model(&model.Item{}).Where("source_id = ? AND cid IS NOT NULL", sourceID).Count(&summary.ItemSummary.Prepared).Error
+	err = db.Model(&model.File{}).Where("source_id = ? AND cid IS NOT NULL", sourceID).Count(&summary.FileSummary.Prepared).Error
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.Model(&model.Chunk{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedChunks).Error
+	err = db.Model(&model.PackJob{}).Where("source_id = ? AND packing_state = ?", sourceID, model.Error).Find(&summary.FailedPackJobs).Error
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +80,9 @@ func getSourceStatusHandler(
 }
 
 func GetSourceStatusHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	id string,
 ) (*SourceStatus, error) {
-	return getSourceStatusHandler(db, id)
+	return getSourceStatusHandler(db.WithContext(ctx), id)
 }

@@ -18,7 +18,6 @@ OPTIONS:
    Encryption
 
    --encryption-recipient value [ --encryption-recipient value ]  Public key of the encryption recipient
-   --encryption-script value                                      [WIP] EncryptionScript command to run for custom encryption
 
    Inline Preparation
 

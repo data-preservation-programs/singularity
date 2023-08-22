@@ -48,12 +48,12 @@ func argToDuration(s string) (time.Duration, error) {
 }
 
 func SendManualHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {
-	return sendManualHandler(db, ctx, dealMaker, request)
+	return sendManualHandler(ctx, db.WithContext(ctx), dealMaker, request)
 }
 
 // @Summary Send a manual deal proposal
@@ -67,8 +67,8 @@ func SendManualHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /send_deal [post]
 func sendManualHandler(
-	db *gorm.DB,
 	ctx context.Context,
+	db *gorm.DB,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {

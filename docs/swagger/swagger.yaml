@@ -29,9 +29,6 @@ definitions:
         items:
           type: string
         type: array
-      encryptionScript:
-        description: EncryptionScript command to run for custom encryption
-        type: string
       maxSize:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
@@ -59,9 +56,6 @@ definitions:
         items:
           type: string
         type: array
-      encryptionScript:
-        description: EncryptionScript command to run for custom encryption
-        type: string
       maxSize:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
@@ -106,7 +100,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       templinkThreshold:
         default: 9Gi
@@ -1777,7 +1771,7 @@ definitions:
         description: SMB username.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       storjAccessGrant:
         description: Access grant.
@@ -2098,7 +2092,7 @@ definitions:
         description: Path to file containing credentials for use with a service principal.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       tenant:
         description: ID of the service principal's tenant. Also called its directory
@@ -2188,7 +2182,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       testMode:
         description: A flag string for X-Bz-Test-Mode header for debugging.
@@ -2262,7 +2256,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -2286,22 +2280,12 @@ definitions:
         description: Path relative to the data source root
         type: string
     type: object
-  datasource.ChunkRequest:
+  datasource.CreatePackJobRequest:
     properties:
-      itemIDs:
+      fileRangeIDs:
         items:
           type: integer
         type: array
-    type: object
-  datasource.ChunksByState:
-    properties:
-      count:
-        description: number of chunks in this state
-        type: integer
-      state:
-        allOf:
-        - $ref: '#/definitions/model.WorkState'
-        description: the state of the chunks
     type: object
   datasource.DriveRequest:
     properties:
@@ -2434,7 +2418,7 @@ definitions:
         description: If set skip shortcut files.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       starredOnly:
         default: "false"
@@ -2545,7 +2529,7 @@ definitions:
         description: Instructs rclone to work on shared folders.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -2591,13 +2575,19 @@ definitions:
         description: If you want to download a shared folder, add this parameter.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
     required:
     - deleteAfterExport
     - rescanInterval
     - scanningState
     - sourcePath
+    type: object
+  datasource.FileInfo:
+    properties:
+      path:
+        description: Path to the new file, relative to the source
+        type: string
     type: object
   datasource.FilefabricRequest:
     properties:
@@ -2623,7 +2613,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: Session Token.
@@ -2720,7 +2710,7 @@ definitions:
         description: Maximum time to wait for data connection closing status.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       tls:
         default: "false"
@@ -2813,7 +2803,7 @@ definitions:
         description: Service Account Credentials JSON file path.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       storageClass:
         description: The storage class to use when storing objects in Google Cloud
@@ -2870,7 +2860,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       startYear:
         default: "2000"
@@ -2916,7 +2906,7 @@ definitions:
         description: Kerberos service principal name for the namenode.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       username:
         description: Hadoop user name.
@@ -2981,7 +2971,7 @@ definitions:
           HiDrive.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -3028,7 +3018,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       url:
         description: URL of HTTP host to connect to.
@@ -3076,7 +3066,7 @@ definitions:
         description: IAS3 Secret Key (password).
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       waitArchive:
         default: 0s
@@ -3088,12 +3078,6 @@ definitions:
     - rescanInterval
     - scanningState
     - sourcePath
-    type: object
-  datasource.ItemInfo:
-    properties:
-      path:
-        description: Path to the new item, relative to the source
-        type: string
     type: object
   datasource.JottacloudRequest:
     properties:
@@ -3127,7 +3111,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       trashedOnly:
         default: "false"
@@ -3177,7 +3161,7 @@ definitions:
         description: Does the backend support setting modification time.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       user:
         description: Your user name.
@@ -3251,7 +3235,7 @@ definitions:
         description: Don't warn about skipped symlinks.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       unicodeNormalization:
         default: "false"
@@ -3296,7 +3280,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       speedupEnable:
         default: "true"
@@ -3358,7 +3342,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       useHttps:
         default: "false"
@@ -3400,7 +3384,7 @@ definitions:
         description: Set the NetStorage account secret/G2O key for authentication.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
     required:
     - deleteAfterExport
@@ -3494,7 +3478,7 @@ definitions:
           onedrive configs.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -3575,7 +3559,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       sseCustomerAlgorithm:
         description: If using SSE-C, the optional header that specifies "AES256" as
@@ -3641,7 +3625,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       username:
         description: Username.
@@ -3651,6 +3635,16 @@ definitions:
     - rescanInterval
     - scanningState
     - sourcePath
+    type: object
+  datasource.PackJobsByState:
+    properties:
+      count:
+        description: number of pack jobs in this state
+        type: integer
+      state:
+        allOf:
+        - $ref: '#/definitions/model.WorkState'
+        description: the state of the pack jobs
     type: object
   datasource.PcloudRequest:
     properties:
@@ -3690,7 +3684,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -3728,7 +3722,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
     required:
     - deleteAfterExport
@@ -3754,7 +3748,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
     required:
     - deleteAfterExport
@@ -3801,7 +3795,7 @@ definitions:
         description: QingStor Secret Access Key (password).
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       uploadConcurrency:
         default: "1"
@@ -3822,7 +3816,7 @@ definitions:
     type: object
   datasource.RepackRequest:
     properties:
-      chunkId:
+      packJobId:
         type: integer
     type: object
   datasource.S3Request:
@@ -3966,7 +3960,7 @@ definitions:
         description: Path to the shared credentials file.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       sseCustomerAlgorithm:
         description: If using SSE-C, the server-side encryption algorithm used when
@@ -4070,7 +4064,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       url:
         description: URL of seafile host to connect to.
@@ -4194,7 +4188,7 @@ definitions:
         description: Set to skip any symlinks and any other non regular files.
         type: string
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       subsystem:
         default: sftp
@@ -4246,7 +4240,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       uploadCutoff:
         default: 128Mi
@@ -4283,7 +4277,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       userAgent:
         default: Sia-Agent
@@ -4340,7 +4334,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       spn:
         description: Service principal name.
@@ -4386,7 +4380,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
     required:
     - deleteAfterExport
@@ -4440,7 +4434,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       user:
         description: Sugarsync user.
@@ -4523,7 +4517,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       storagePolicy:
         description: The storage policy to use when creating a new container.
@@ -4576,7 +4570,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
     required:
     - deleteAfterExport
@@ -4613,7 +4607,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       url:
         description: URL of http host to connect to.
@@ -4661,7 +4655,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -4705,7 +4699,7 @@ definitions:
         - $ref: '#/definitions/model.WorkState'
         description: Starting state for scanning
       sourcePath:
-        description: The path of the source to scan items
+        description: The path of the source to scan files
         type: string
       token:
         description: OAuth Access Token as a JSON blob.
@@ -4825,9 +4819,9 @@ definitions:
         items:
           $ref: '#/definitions/model.Directory'
         type: array
-      items:
+      files:
         items:
-          $ref: '#/definitions/model.Item'
+          $ref: '#/definitions/model.File'
         type: array
     type: object
   inspect.GetPathRequest:
@@ -4835,7 +4829,7 @@ definitions:
       path:
         type: string
     type: object
-  inspect.GetSourceChunksRequest:
+  inspect.GetSourcePackJobsRequest:
     properties:
       state:
         $ref: '#/definitions/model.WorkState'
@@ -4844,8 +4838,6 @@ definitions:
     type: object
   model.Car:
     properties:
-      chunkId:
-        type: integer
       createdAt:
         type: string
       datasetId:
@@ -4860,35 +4852,14 @@ definitions:
         type: array
       id:
         type: integer
+      packJobId:
+        type: integer
       pieceCid:
         $ref: '#/definitions/model.CID'
       pieceSize:
         type: integer
       rootCid:
         $ref: '#/definitions/model.CID'
-      sourceId:
-        type: integer
-    type: object
-  model.Chunk:
-    properties:
-      cars:
-        items:
-          $ref: '#/definitions/model.Car'
-        type: array
-      createdAt:
-        type: string
-      errorMessage:
-        type: string
-      id:
-        type: integer
-      itemParts:
-        items:
-          $ref: '#/definitions/model.ItemPart'
-        type: array
-      packingState:
-        $ref: '#/definitions/model.WorkState'
-      packingWorkerId:
-        type: string
       sourceId:
         type: integer
     type: object
@@ -4900,8 +4871,6 @@ definitions:
         items:
           type: string
         type: array
-      encryptionScript:
-        type: string
       id:
         type: integer
       maxSize:
@@ -4997,7 +4966,7 @@ definitions:
       updatedAt:
         type: string
     type: object
-  model.Item:
+  model.File:
     properties:
       cid:
         $ref: '#/definitions/model.CID'
@@ -5005,14 +4974,14 @@ definitions:
         type: string
       directoryId:
         type: integer
+      fileRanges:
+        items:
+          $ref: '#/definitions/model.FileRange'
+        type: array
       hash:
         type: string
       id:
         type: integer
-      itemParts:
-        items:
-          $ref: '#/definitions/model.ItemPart'
-        type: array
       lastModified:
         type: integer
       path:
@@ -5022,26 +4991,49 @@ definitions:
       sourceId:
         type: integer
     type: object
-  model.ItemPart:
+  model.FileRange:
     properties:
-      chunkId:
-        type: integer
       cid:
         $ref: '#/definitions/model.CID'
-      id:
+      file:
+        $ref: '#/definitions/model.File'
+      fileId:
         type: integer
-      item:
-        $ref: '#/definitions/model.Item'
-      itemId:
+      id:
         type: integer
       length:
         type: integer
       offset:
         type: integer
+      packJobId:
+        type: integer
     type: object
   model.Metadata:
     additionalProperties:
       type: string
+    type: object
+  model.PackJob:
+    properties:
+      cars:
+        items:
+          $ref: '#/definitions/model.Car'
+        type: array
+      createdAt:
+        type: string
+      errorMessage:
+        type: string
+      fileRanges:
+        items:
+          $ref: '#/definitions/model.FileRange'
+        type: array
+      id:
+        type: integer
+      packingState:
+        $ref: '#/definitions/model.WorkState'
+      packingWorkerId:
+        type: string
+      sourceId:
+        type: integer
     type: object
   model.Schedule:
     properties:
@@ -5337,60 +5329,6 @@ paths:
       summary: Reset the database
       tags:
       - Admin
-  /chunk/{id}:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: Chunk ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Chunk'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: Get detail of a specific chunk
-      tags:
-      - Data Source
-  /chunk/{id}/pack:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Chunk ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            items:
-              $ref: '#/definitions/model.Car'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: Pack a chunk into car files
-      tags:
-      - Data Source
   /dataset:
     get:
       produces:
@@ -5682,12 +5620,12 @@ paths:
       summary: List all deals
       tags:
       - Deal
-  /item/{id}:
+  /file/{id}:
     get:
       consumes:
       - application/json
       parameters:
-      - description: Item ID
+      - description: File ID
         in: path
         name: id
         required: true
@@ -5698,12 +5636,66 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Item'
+            $ref: '#/definitions/model.File'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Get details about an item
+      summary: Get details about an file
+      tags:
+      - Data Source
+  /packjob/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PackJob'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get detail of a specific pack job
+      tags:
+      - Data Source
+  /packjob/{id}/pack:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/model.Car'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Pack a pack job into car files
       tags:
       - Data Source
   /piece/{id}/metadata:
@@ -5990,66 +5982,6 @@ paths:
       summary: Check the connection of the data source by listing a path
       tags:
       - Data Source
-  /source/{id}/chunk:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Source ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.ChunkRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/model.Item'
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: Create a chunk for the specified items
-      tags:
-      - Data Source
-  /source/{id}/chunks:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: Source ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Car'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: Get all dag details of a data source
-      tags:
-      - Data Source
   /source/{id}/daggen:
     post:
       parameters:
@@ -6076,7 +6008,7 @@ paths:
       summary: Mark a source as ready for DAG generation
       tags:
       - Data Source
-  /source/{id}/items:
+  /source/{id}/files:
     get:
       consumes:
       - application/json
@@ -6093,7 +6025,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Item'
+              $ref: '#/definitions/model.File'
             type: array
         "400":
           description: Bad Request
@@ -6103,7 +6035,77 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Get all item details of a data source
+      summary: Get all file details of a data source
+      tags:
+      - Data Source
+  /source/{id}/packjob:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/datasource.CreatePackJobRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.File'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a pack job for the specified files
+      tags:
+      - Data Source
+  /source/{id}/packjobs:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: GetSourcePackJobsRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/inspect.GetSourcePackJobsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.PackJob'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get all pack job details of a data source
       tags:
       - Data Source
   /source/{id}/path:
@@ -6137,7 +6139,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Get all item details inside a data source path
+      summary: Get all file details inside a data source path
       tags:
       - Data Source
   /source/{id}/push:
@@ -6152,32 +6154,32 @@ paths:
         name: id
         required: true
         type: string
-      - description: Item
+      - description: File
         in: body
-        name: item
+        name: file
         required: true
         schema:
-          $ref: '#/definitions/datasource.ItemInfo'
+          $ref: '#/definitions/datasource.FileInfo'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.Item'
+            $ref: '#/definitions/model.File'
         "400":
           description: Bad Request
           schema:
             type: string
         "409":
-          description: Item already exists
+          description: File already exists
           schema:
             type: string
         "500":
           description: Internal Server Error
           schema:
             type: string
-      summary: Push an item to be queued
+      summary: Push a file to be queued
       tags:
       - Data Source
   /source/{id}/repack:
@@ -6201,13 +6203,13 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Chunk'
+              $ref: '#/definitions/model.PackJob'
             type: array
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Trigger a repack of a chunk or all errored chunks of a data source
+      summary: Trigger a repack of a pack job or all errored pack jobs of a data source
       tags:
       - Data Source
   /source/{id}/rescan:
@@ -6248,7 +6250,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/datasource.ChunksByState'
+            $ref: '#/definitions/datasource.PackJobsByState'
         "400":
           description: Bad Request
           schema:

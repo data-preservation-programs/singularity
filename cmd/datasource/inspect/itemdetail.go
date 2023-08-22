@@ -9,17 +9,18 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ItemDetailCmd = &cli.Command{
-	Name:      "itemdetail",
-	Usage:     "Get details about a specific item",
-	ArgsUsage: "<item_id>",
+var FileDetailCmd = &cli.Command{
+	Name:      "filedetail",
+	Usage:     "Get details about a specific file",
+	ArgsUsage: "<file_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		result, err := inspect.GetSourceItemDetailHandler(
+		result, err := inspect.GetSourceFileDetailHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)
@@ -32,10 +33,10 @@ var ItemDetailCmd = &cli.Command{
 			return nil
 		}
 
-		fmt.Println("Item:")
+		fmt.Println("File:")
 		cliutil.PrintToConsole(result, false, nil)
-		fmt.Println("Item Parts:")
-		cliutil.PrintToConsole(result.ItemParts, false, nil)
+		fmt.Println("File Parts:")
+		cliutil.PrintToConsole(result.FileRanges, false, nil)
 		return nil
 	},
 }
