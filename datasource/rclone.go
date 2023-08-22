@@ -82,8 +82,8 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 		return err
 	}
 
-	slices.SortFunc(entries, func(i, j fs.DirEntry) bool {
-		return strings.Compare(i.Remote(), j.Remote()) < 0
+	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
+		return strings.Compare(i.Remote(), j.Remote())
 	})
 
 	startScanning := last == "" // Start scanning immediately if 'last' is empty.
@@ -265,7 +265,7 @@ func OptionsToCLIFlags(regInfo *fs.RegInfo) *cli.Command {
 		}
 	}
 
-	slices.SortFunc(flags, func(i, j cli.Flag) bool { return i.Names()[0] < j.Names()[0] })
+	slices.SortFunc(flags, func(i, j cli.Flag) int { return strings.Compare(i.Names()[0], j.Names()[0]) })
 	cmd.Flags = flags
 	cmd.Description = strings.Join(usageLines, "\n")
 	return cmd
