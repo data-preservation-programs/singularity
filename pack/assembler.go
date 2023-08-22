@@ -22,23 +22,42 @@ import (
 
 var ErrFileModified = errors.New("file has been modified")
 
+// Assembler assembles various objects and data streams into a coherent output stream.
+// It uses the provided encryption, file ranges, and internal buffers to produce the desired output.
 type Assembler struct {
-	objects         map[uint64]fs.Object
-	ctx             context.Context
-	reader          storagesystem.Reader
-	encryptor       encryption.Encryptor
-	fileRanges      []model.FileRange
-	index           int
-	buffer          io.Reader
-	fileReader      io.Reader
-	closers         []io.Closer
-	buf             []byte
-	maxSize         int64
-	fileOffset      int64
-	carOffset       int64
-	pendingLinks    []format.Link
-	carBlocks       []model.CarBlock
-	hasBoundary     bool
+	// objects represents a map of object IDs to their corresponding fs.Object representations.
+	objects map[uint64]fs.Object
+	// ctx provides the context for the assembler's operations.
+	ctx context.Context
+	// reader is the storage system reader used to read file data.
+	reader storagesystem.Reader
+	// encryptor handles the encryption of the data if needed.
+	encryptor encryption.Encryptor
+	// fileRanges contains the ranges of the files that should be read and processed.
+	fileRanges []model.FileRange
+	// index is the current position in the fileRanges slice.
+	index int
+	// buffer is a reader that holds data that's ready to be read out.
+	buffer io.Reader
+	// fileReader reads the actual content from files.
+	fileReader io.Reader
+	// closers contains a list of io.Closers that need to be closed.
+	closers []io.Closer
+	// buf is a buffer for temporarily holding data.
+	buf []byte
+	// maxSize defines the maximum size of the output.
+	maxSize int64
+	// fileOffset tracks the offset into the current file being read.
+	fileOffset int64
+	// carOffset tracks the offset within a CAR (Content Addressable Archive).
+	carOffset int64
+	// pendingLinks contains a list of links waiting to be assembled.
+	pendingLinks []format.Link
+	// carBlocks is a slice of CAR blocks that are used in the assembly process.
+	carBlocks []model.CarBlock
+	// hasBoundary indicates if a boundary exists in the CAR.
+	hasBoundary bool
+	// assembleLinkFor is a pointer to the index in fileRanges for which links need to be assembled.
 	assembleLinkFor *int
 }
 
@@ -58,6 +77,7 @@ func (a *Assembler) Close() error {
 	return nil
 }
 
+// NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader, encryptor encryption.Encryptor,
 	fileRanges []model.FileRange, maxSize int64) *Assembler {
 	return &Assembler{
@@ -71,7 +91,8 @@ func NewAssembler(ctx context.Context, reader storagesystem.Reader, encryptor en
 	}
 }
 
-// Next returns true if there is another chunk to read. This method should only be called after hitting io.EOF
+// Next checks if there are more chunks to read from the fileRanges or buffer.
+// This method should only be called after hitting an io.EOF.
 func (a *Assembler) Next() bool {
 	if a.index >= len(a.fileRanges) && a.buffer == nil {
 		return false
@@ -80,6 +101,8 @@ func (a *Assembler) Next() bool {
 	return true
 }
 
+// readBuffer reads data from the internal buffer, handling buffer-related flags and states.
+// It returns the number of bytes read and any errors encountered.
 func (a *Assembler) readBuffer(p []byte) (int, error) {
 	n, err := a.buffer.Read(p)
 
@@ -99,7 +122,7 @@ func (a *Assembler) readBuffer(p []byte) (int, error) {
 	}
 }
 
-// populateBuffer will set the buffer to a MultiReader of the given content
+// populateBuffer sets the buffer to a MultiReader containing the provided CAR blocks.
 func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 	var readers []io.Reader
 	if a.carOffset == 0 {
@@ -122,12 +145,7 @@ func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 		a.carOffset += int64(carBlockLength)
 	}
 
-	if a.buffer == nil {
-		a.buffer = io.MultiReader(readers...)
-	} else {
-		readers = append([]io.Reader{a.buffer}, readers...)
-		a.buffer = io.MultiReader(readers...)
-	}
+	a.buffer = io.MultiReader(readers...)
 
 	if a.carOffset > a.maxSize {
 		a.hasBoundary = true
@@ -137,6 +155,7 @@ func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 	return nil
 }
 
+// assembleLinks assembles links from pendingLinks and populates the buffer with CAR blocks.
 func (a *Assembler) assembleLinks() error {
 	defer func() {
 		a.assembleLinkFor = nil
@@ -175,9 +194,9 @@ func (a *Assembler) assembleLinks() error {
 	return nil
 }
 
-// prefetch reads the next chunk from the fileRanges and populates the buffer
-// This method should only be used when the buffer is empty
-// This method may return without populating the buffer when there is no more file to read
+// prefetch reads the next chunk from fileRanges and fills the buffer.
+// This method should only be called when the buffer is empty.
+// It might return without populating the buffer if there's no more data to read.
 func (a *Assembler) prefetch() error {
 	firstChunk := false
 	if a.fileReader == nil {
@@ -270,6 +289,8 @@ func (a *Assembler) prefetch() error {
 	return errors.WithStack(err)
 }
 
+// Read reads data from the buffer, or fetches the next chunk from fileRanges if the buffer is empty.
+// It will assemble links if needed and respect the context's cancellation or deadline.
 func (a *Assembler) Read(p []byte) (int, error) {
 	if a.ctx.Err() != nil {
 		return 0, a.ctx.Err()

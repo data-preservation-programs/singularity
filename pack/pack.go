@@ -12,7 +12,6 @@ import (
 	util2 "github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/boxo/util"
-	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -27,35 +26,6 @@ import (
 	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-varint"
 )
-
-type Result struct {
-	FileRangeCIDs map[uint64]cid.Cid
-	Objects       map[uint64]fs.Object
-	CarResults    []CarResult
-}
-
-type CarResult struct {
-	StorageID   uint32
-	StoragePath string
-	CarFileSize int64
-	PieceCID    cid.Cid
-	PieceSize   int64
-	RootCID     cid.Cid
-	Header      []byte
-	CarBlocks   []model.CarBlock
-}
-
-type nopCloser struct {
-}
-
-func (n nopCloser) Close() error {
-	return nil
-}
-
-type WriteCloser struct {
-	io.Writer
-	io.Closer
-}
 
 var EmptyFileCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
 
@@ -103,6 +73,19 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 	return commCid, rawPieceSize, nil
 }
 
+// Pack takes in a Job and processes its attachment by reading it, possibly encrypting it,
+// splitting it into manageable chunks, and then storing those chunks into a designated storage.
+// If the job's attachment requires encryption, it will be encrypted using the specified encryption method.
+// The function returns a slice of Car objects which represent the stored chunks and an error if any occurred.
+//
+// Parameters:
+// - ctx: The context which controls the lifetime of the operation.
+// - db: The gorm database instance used for querying and updating database records.
+// - job: The Job model instance which contains information about the attachment to be processed.
+//
+// Returns:
+// - A slice of model.Car instances representing stored chunks.
+// - An error, if any occurred during the operation.
 func Pack(
 	ctx context.Context,
 	db *gorm.DB,
@@ -159,7 +142,7 @@ func Pack(
 				filename = pieceCid.String() + ".car"
 			}
 		} else {
-			_, err = io.Copy(calc, assembler)
+			fileSize, err = io.Copy(calc, assembler)
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}
@@ -212,7 +195,7 @@ func Pack(
 		err = database.DoRetry(ctx, func() error {
 			return db.Transaction(func(db *gorm.DB) error {
 				var allParts []model.FileRange
-				err = db.Where("file_id = ?", fileID).Order(clause.OrderByColumn{Column: clause.Column{Name: "carOffset"}}).Find(&allParts).Error
+				err = db.Where("file_id = ?", fileID).Order(clause.OrderByColumn{Column: clause.Column{Name: "offset"}}).Find(&allParts).Error
 				if err != nil {
 					return errors.WithStack(err)
 				}
@@ -242,6 +225,9 @@ func Pack(
 				return nil
 			})
 		})
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
 	}
 
 	err = database.DoRetry(ctx, func() error {

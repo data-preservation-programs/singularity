@@ -78,6 +78,13 @@ func (s SourceAttachment) RootDirectory(ctx context.Context, db *gorm.DB) (*Dire
 	return &root, errors.WithStack(err)
 }
 
+func (s SourceAttachment) RootDirectoryCID(ctx context.Context, db *gorm.DB) (cid.Cid, error) {
+	db = db.WithContext(ctx)
+	var root Directory
+	err := db.Select("cid").Where("attachment_id = ? AND parent_id is null", s.ID).First(&root).Error
+	return cid.Cid(root.CID), errors.WithStack(err)
+}
+
 func (s SourceAttachment) RootDirectoryID(ctx context.Context, db *gorm.DB) (uint64, error) {
 	db = db.WithContext(ctx)
 	var root Directory

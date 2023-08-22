@@ -2,15 +2,15 @@ package datasetworker
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/rjNemo/underscore"
+	"gorm.io/gorm"
 )
 
 // scan scans the data source and inserts the model.Job back to database
@@ -94,10 +94,32 @@ func (w *Thread) chunkOnce(
 	// If everything fit, create a packJob. Usually this is the case for the last packJob
 	if remaining.carSize <= attachment.Preparation.MaxSize {
 		w.logger.Debugw("creating packJob", "size", remaining.carSize)
-		_, err := datasource.CreateJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(attachment.ID), 10), datasource.CreatePackJobRequest{
-			FileRangeIDs: remaining.fileRangeIDs(),
-		})
 
+		db := w.dbNoContext.WithContext(ctx)
+		err := database.DoRetry(ctx, func() error {
+			return db.Transaction(
+				func(db *gorm.DB) error {
+					job := model.Job{
+						AttachmentID: attachment.ID,
+						Type:         model.Pack,
+						State:        model.Ready,
+					}
+					err := db.Create(&job).Error
+					if err != nil {
+						return errors.WithStack(err)
+					}
+					fileRangeIDChunks := util.ChunkSlice(remaining.fileRangeIDs(), util.BatchSize)
+					for _, fileRangeIDChunks := range fileRangeIDChunks {
+						err = db.Model(&model.FileRange{}).
+							Where("id IN ?", fileRangeIDChunks).Update("job_id", job.ID).Error
+						if err != nil {
+							return errors.WithStack(err)
+						}
+					}
+					return nil
+				},
+			)
+		})
 		if err != nil {
 			return errors.WithStack(err)
 		}

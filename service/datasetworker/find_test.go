@@ -48,6 +48,7 @@ func TestFindPackWork(t *testing.T) {
 			StorageID:     1,
 		},
 		State: model.Ready,
+		Type:  model.Pack,
 	}).Error
 	require.NoError(t, err)
 	err = db.Create(&model.FileRange{
@@ -61,6 +62,8 @@ func TestFindPackWork(t *testing.T) {
 	found, err = thread.findJob(ctx, []model.JobType{model.Pack})
 	require.NoError(t, err)
 	require.NotNil(t, found)
+	require.Len(t, found.FileRanges, 1)
+	require.NotNil(t, found.FileRanges[0].File)
 
 	var existing model.Job
 	err = db.First(&existing, found.ID).Error

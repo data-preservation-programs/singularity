@@ -9,11 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
+// findJob searches for a Job from the database based on the ordered list of job types provided.
+// It iterates through the typesOrdered list, and for each type, it attempts to find a Job of that type which is
+// either Ready or is marked as Processing but hasn't been claimed by any worker yet. Once a suitable Job is found,
+// it marks that Job as being processed by the current worker thread.
+//
+// Parameters:
+// - ctx: The context which controls the lifetime of the operation.
+// - typesOrdered: A slice of model.JobType values representing the job types to search for in order of preference.
+//
+// Returns:
+// - A pointer to the found model.Job instance or nil if no suitable Job was found.
+// - An error, if any occurred during the operation.
 func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*model.Job, error) {
 	db := w.dbNoContext.WithContext(ctx)
-	if !w.config.EnableDag {
-		return nil, nil
-	}
 
 	var job model.Job
 	for _, jobType := range typesOrdered {

@@ -1,23 +1,127 @@
 package datasetworker
 
 import (
+	"bytes"
 	"context"
+	"database/sql"
 	"io"
-	"os"
-	"path"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
-	util2 "github.com/data-preservation-programs/singularity/pack/util"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
+	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-varint"
 	"gorm.io/gorm"
 )
+
+type DagGenerator struct {
+	ctx          context.Context
+	db           *gorm.DB
+	attachmentID uint32
+	rows         *sql.Rows
+	root         cid.Cid
+	dirCIDs      map[uint64]model.CID
+	buffer       io.Reader
+	done         bool
+	carBlocks    []model.CarBlock
+	offset       int64
+}
+
+func (d *DagGenerator) Read(p []byte) (int, error) {
+	if d.ctx.Err() != nil {
+		return 0, d.ctx.Err()
+	}
+	if d.buffer != nil {
+		n, err := d.buffer.Read(p)
+		if err == io.EOF {
+			err = nil
+			d.buffer = nil
+		}
+		return n, err
+	}
+
+	if d.done {
+		return 0, io.EOF
+	}
+
+	db := d.db
+	if d.rows == nil {
+		rows, err := db.
+			Model(&model.Directory{}).
+			Where("attachment_id = ? AND exported = ?", d.attachmentID, false).
+			Order("id asc").Rows()
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+		d.rows = rows
+		header, err := util.GenerateCarHeader(d.root)
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+		d.buffer = bytes.NewReader(header)
+		d.offset += int64(len(header))
+		return 0, nil
+	}
+	if !d.rows.Next() {
+		d.done = true
+		return 0, nil
+	}
+	var dir model.Directory
+	err := db.ScanRows(d.rows, &dir)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	d.dirCIDs[dir.ID] = dir.CID
+	_, blks, err := daggen.UnmarshalToBlocks(dir.Data)
+	if err != nil {
+		return 0, errors.Wrapf(err, "failed to unmarshall directory %d to blocks", dir.ID)
+	}
+	readers := make([]io.Reader, 0, len(blks)*3)
+	for _, blk := range blks {
+		if len(blk.RawData()) == 0 && blk.Cid() != pack.EmptyFileCid {
+			// This is dummy node. skip putting into car file
+			continue
+		}
+
+		carBlockSize := len(blk.RawData()) + blk.Cid().ByteLen()
+		vint := varint.ToUvarint(uint64(carBlockSize))
+		carBlockSize += len(vint)
+		readers = append(readers, bytes.NewReader(vint), bytes.NewReader(blk.Cid().Bytes()), bytes.NewReader(blk.RawData()))
+		d.carBlocks = append(d.carBlocks, model.CarBlock{
+			CID:            model.CID(blk.Cid()),
+			CarOffset:      d.offset,
+			CarBlockLength: int32(carBlockSize),
+			Varint:         vint,
+			RawBlock:       blk.RawData(),
+		})
+		d.offset += int64(carBlockSize)
+	}
+	d.buffer = io.MultiReader(readers...)
+	return 0, nil
+}
+
+func (d *DagGenerator) Close() error {
+	if d.rows != nil {
+		return errors.WithStack(d.rows.Close())
+	}
+	return nil
+}
+
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID uint32, root cid.Cid) *DagGenerator {
+	return &DagGenerator{
+		ctx:          ctx,
+		db:           db,
+		attachmentID: attachmentID,
+		root:         root,
+		dirCIDs:      make(map[uint64]model.CID),
+	}
+}
 
 // ExportDag exports a Directed Acyclic Graph (DAG) for a given source.
 // The function takes a source, iterates through the related directories
@@ -43,134 +147,95 @@ import (
 // Returns:
 // - error: Standard error interface, returns nil if no error occurred during execution.
 func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
+	rootCID, err := job.Attachment.RootDirectoryCID(ctx, w.dbNoContext)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	db := w.dbNoContext.WithContext(ctx)
-	rootCID := pack.EmptyFileCid
-	var outDir string
-	var headerBytes []byte
-	var carBlocks []model.CarBlock
-	var car model.Car
-	if len(source.Dataset.OutputDirs) > 0 {
-		outDir = source.Dataset.OutputDirs[0]
-	}
-
-	var writeCloser io.WriteCloser
-	var calc *commp.Calc
-	var filepath string
-	var err error
-	offset := int64(0)
-	rows, err := db.Model(&model.Directory{}).Where("source_id = ? AND exported = ?", source.ID, false).Order("id asc").Rows()
+	pieceSize := job.Attachment.Preparation.PieceSize
+	// storageWriter can be nil for inline preparation
+	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
-		return errors.Wrap(err, "failed to get directories")
+		return errors.WithStack(err)
 	}
-	defer rows.Close()
-	dirCIDs := make(map[uint64]cid.Cid)
-	for rows.Next() {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-		var dir model.Directory
-		err = db.ScanRows(rows, &dir)
+
+	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID)
+	defer dagGenerator.Close()
+
+	var filename string
+	calc := &commp.Calc{}
+	var pieceCid cid.Cid
+	var finalPieceSize uint64
+	var fileSize int64
+	if storageWriter != nil {
+		reader := io.TeeReader(dagGenerator, calc)
+		filename = uuid.NewString() + ".car"
+		obj, err := storageWriter.Write(ctx, filename, reader)
 		if err != nil {
-			return errors.Wrap(err, "failed to scan directory")
+			return errors.WithStack(err)
 		}
-		dirCIDs[dir.ID] = cid.Cid(dir.CID)
-		if dir.ParentID == nil && dir.CID != model.CID(cid.Undef) {
-			rootCID = cid.Cid(dir.CID)
-		}
+		fileSize = obj.Size()
 
-		logger.Debugw("Reading content of directory", "dir_id", dir.ID, "name", dir.Name)
-		_, blks, err := daggen.UnmarshalToBlocks(dir.Data)
+		pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
 		if err != nil {
-			return errors.Wrap(err, "failed to unmarshall to blocks")
+			return errors.WithStack(err)
 		}
-		for _, blk := range blks {
-			if len(blk.RawData()) == 0 && blk.Cid() != pack.EmptyFileCid {
-				// This is dummy node. skip putting into car file
-				continue
-			}
-			if offset == 0 {
-				rootCID = blk.Cid()
-				writeCloser, calc, filepath, err = pack.GetMultiWriter(outDir)
-				if err != nil {
-					return errors.Wrap(err, "failed to get multi writer")
-				}
-				defer writeCloser.Close()
-				headerBytes, err = util2.WriteCarHeader(writeCloser, rootCID)
-				if err != nil {
-					return errors.Wrap(err, "failed to write header")
-				}
-
-				offset += int64(len(headerBytes))
-			}
-			written, err := util2.WriteCarBlock(writeCloser, blk)
-			if err != nil {
-				return errors.Wrap(err, "failed to write block")
-			}
-			carBlocks = append(carBlocks, model.CarBlock{
-				CID:            model.CID(blk.Cid()),
-				CarOffset:      offset,
-				CarBlockLength: int32(written),
-				Varint:         varint.ToUvarint(uint64(len(blk.RawData()) + blk.Cid().ByteLen())),
-				RawBlock:       blk.RawData(),
-			})
-			offset += written
+		_, err = storageWriter.Move(ctx, obj, pieceCid.String()+".car")
+		if err != nil && !errors.Is(err, storagesystem.ErrMoveNotSupported) {
+			logger.Errorf("failed to move car file from %s to %s: %s", filename, pieceCid.String()+".car", err)
 		}
-	}
-
-	if offset == 0 {
-		logger.Warnw("no blocks to write")
-		return nil
-	}
-
-	pieceCid, finalPieceSize, err := pack.GetCommp(calc, uint64(source.Dataset.PieceSize))
-	if err != nil {
-		return errors.Wrap(err, "failed to get commp")
-	}
-	if outDir != "" {
-		car.StoragePath = path.Join(outDir, pieceCid.String()+".car")
-	}
-	if car.StoragePath != "" {
-		writeCloser.Close()
-		err = os.Rename(filepath, car.StoragePath)
+		if err == nil {
+			filename = pieceCid.String() + ".car"
+		}
+	} else {
+		fileSize, err = io.Copy(calc, dagGenerator)
 		if err != nil {
-			return errors.Wrap(err, "failed to rename car file")
+			return errors.WithStack(err)
+		}
+		pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
+		if err != nil {
+			return errors.WithStack(err)
 		}
 	}
-	car.Header = headerBytes
-	car.PieceSize = int64(finalPieceSize)
-	car.PieceCID = model.CID(pieceCid)
-	car.RootCID = model.CID(rootCID)
-	car.FileSize = offset
-	car.DatasetID = source.DatasetID
-	car.SourceID = &source.ID
-	logger.Debugw("Saving car", "car", car)
+
+	car := model.Car{
+		PieceCID:     model.CID(pieceCid),
+		PieceSize:    int64(finalPieceSize),
+		RootCID:      model.CID(rootCID),
+		FileSize:     fileSize,
+		StorageID:    storageID,
+		StoragePath:  filename,
+		AttachmentID: job.AttachmentID,
+	}
+
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Create(&car).Error
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			for i := range carBlocks {
-				carBlocks[i].CarID = car.ID
+			for i := range dagGenerator.carBlocks {
+				dagGenerator.carBlocks[i].CarID = car.ID
 			}
-			err = db.CreateInBatches(carBlocks, util.BatchSize).Error
+			err = db.CreateInBatches(dagGenerator.carBlocks, util.BatchSize).Error
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			for dirID, dirCID := range dirCIDs {
+			for dirID, dirCID := range dagGenerator.dirCIDs {
 				result := db.Model(&model.Directory{}).Where("id = ? AND cid = ?", dirID, model.CID(dirCID)).Update("exported", true)
 				if result.Error != nil {
 					return errors.Wrap(result.Error, "failed to update directory")
 				}
 				if result.RowsAffected == 0 {
-					logger.Warnw("directory info has changed since we started. skipping update", "directory_id", dirID)
+					logger.Warnf("directory %d has changed since we started.", dirID)
 				}
 			}
 			return nil
 		})
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to save car")
+		return errors.WithStack(err)
 	}
 	return nil
 }

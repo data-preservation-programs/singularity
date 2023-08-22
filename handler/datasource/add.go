@@ -9,7 +9,6 @@ import (
 	"github.com/cockroachdb/errors"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	fs2 "github.com/rclone/rclone/fs"
