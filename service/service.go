@@ -98,6 +98,7 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 	}()
 
 	var err error
+	var alreadyDone bool
 	select {
 	case <-ctx.Done():
 		logger.Debug("context cancelled")
@@ -113,12 +114,15 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 		logger.Errorw("service failed", "error", err)
 		cancel()
 	case <-allDone:
+		alreadyDone = true
 		logger.Info("all services stopped")
 		cancel()
 		return err
 	}
 
-	<-allDone
-	logger.Info("all services stopped")
+	if !alreadyDone {
+		<-allDone
+		logger.Info("all services stopped")
+	}
 	return err
 }
