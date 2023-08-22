@@ -48,6 +48,9 @@ func prepareToPackFileHandler(
 	var remainingParts []model.FileRange
 	err = db.Where("file_id = ? AND pack_job_id is null", fileID).Order("file_ranges.id asc").
 		Find(&remainingParts).Error
+	if err != nil {
+		return 0, err
+	}
 
 	return prepareToPackFileRanges(ctx, db, file.SourceID, file.Source.Dataset.MaxSize, remainingParts)
 }
