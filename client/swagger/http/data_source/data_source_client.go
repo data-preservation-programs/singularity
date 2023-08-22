@@ -34,9 +34,9 @@ type ClientService interface {
 
 	GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetFileIDOK, error)
 
-	GetPackjobID(params *GetPackjobIDParams, opts ...ClientOption) (*GetPackjobIDOK, error)
+	GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOption) (*GetFileIDDealsOK, error)
 
-	GetItemIDDeals(params *GetItemIDDealsParams, opts ...ClientOption) (*GetItemIDDealsOK, error)
+	GetPackjobID(params *GetPackjobIDParams, opts ...ClientOption) (*GetPackjobIDOK, error)
 
 	GetSource(params *GetSourceParams, opts ...ClientOption) (*GetSourceOK, error)
 
@@ -226,6 +226,44 @@ func (a *Client) GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetF
 }
 
 /*
+GetFileIDDeals gets all deals that have been made for a file
+*/
+func (a *Client) GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOption) (*GetFileIDDealsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetFileIDDealsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetFileIDDeals",
+		Method:             "GET",
+		PathPattern:        "/file/{id}/deals",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetFileIDDealsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetFileIDDealsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetFileIDDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 GetPackjobID gets detail of a specific pack job
 */
 func (a *Client) GetPackjobID(params *GetPackjobIDParams, opts ...ClientOption) (*GetPackjobIDOK, error) {
@@ -260,44 +298,6 @@ func (a *Client) GetPackjobID(params *GetPackjobIDParams, opts ...ClientOption) 
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetPackjobID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetItemIDDeals gets all deals that have been made for an item
-*/
-func (a *Client) GetItemIDDeals(params *GetItemIDDealsParams, opts ...ClientOption) (*GetItemIDDealsOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetItemIDDealsParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetItemIDDeals",
-		Method:             "GET",
-		PathPattern:        "/item/{id}/deals",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetItemIDDealsReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetItemIDDealsOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetItemIDDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
