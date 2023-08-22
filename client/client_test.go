@@ -76,46 +76,53 @@ func TestClients(t *testing.T) {
 		require.ErrorAs(t, err, &asNotFoundError)
 		require.Nil(t, notFoundSource)
 
-		// push item
-		file, err := os.CreateTemp(path, "push-*")
+		// push osFile
+		osFile, err := os.CreateTemp(path, "push-*")
 		require.NoError(t, err)
 		buf := make([]byte, 1000)
 		_, _ = rand.Read(buf)
-		file.Write(buf)
-		name := file.Name()
-		err = file.Close()
+		osFile.Write(buf)
+		name := osFile.Name()
+		err = osFile.Close()
 		require.NoError(t, err)
-		itemA, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: filepath.Base(name)})
+		fileA, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: filepath.Base(name)})
 		require.NoError(t, err)
-		require.Equal(t, filepath.Base(name), itemA.Path)
+		require.Equal(t, filepath.Base(name), fileA.Path)
 
-		// get item
-		returnedItem, err := client.GetItem(ctx, itemA.ID)
+		// get file
+		returnedFile, err := client.GetFile(ctx, fileA.ID)
 		require.NoError(t, err)
-		require.Equal(t, itemA.Path, returnedItem.Path)
+		require.Equal(t, fileA.Path, returnedFile.Path)
 
-		// push another item
-		file, err = os.CreateTemp(path, "push-*")
+		// push another file
+		osFile, err = os.CreateTemp(path, "push-*")
 		require.NoError(t, err)
 		buf = make([]byte, 1000)
 		_, _ = rand.Read(buf)
-		file.Write(buf)
-		name = file.Name()
-		err = file.Close()
+		osFile.Write(buf)
+		name = osFile.Name()
+		err = osFile.Close()
 		require.NoError(t, err)
-		itemB, err := client.PushItem(ctx, source.ID, datasource.ItemInfo{Path: filepath.Base(name)})
+		fileB, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: filepath.Base(name)})
 		require.NoError(t, err)
-		require.Equal(t, filepath.Base(name), itemB.Path)
+		require.Equal(t, filepath.Base(name), fileB.Path)
 
-		// Chunk
-		chunk, err := client.Chunk(ctx, source.ID, datasource.ChunkRequest{ItemIDs: []uint64{itemA.ID, itemB.ID}})
+		// Create pack job
+		var fileRanges []model.FileRange
+		fileRanges = append(fileRanges, fileA.FileRanges...)
+		fileRanges = append(fileRanges, fileB.FileRanges...)
+		var fileRangeIDs []uint64
+		for _, fileRange := range fileRanges {
+			fileRangeIDs = append(fileRangeIDs, fileRange.ID)
+		}
+		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.CreatePackJobRequest{FileRangeIDs: fileRangeIDs})
 		require.NoError(t, err)
-		fmt.Printf("%#v\n", chunk)
+		fmt.Printf("%#v\n", packJob)
 
-		// Check that chunk exists
-		chunks, err := client.GetSourceChunks(ctx, source.ID, inspect.GetSourceChunksRequest{})
+		// Check that pack job exists
+		packJobs, err := client.GetSourcePackJobs(ctx, source.ID, inspect.GetSourcePackJobsRequest{})
 		require.NoError(t, err)
 
-		require.Len(t, chunks, 1)
+		require.Len(t, packJobs, 1)
 	})
 }

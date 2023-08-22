@@ -1,6 +1,8 @@
 package datasource
 
 import (
+	"context"
+
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
@@ -8,9 +10,11 @@ import (
 )
 
 func ListSourcesByDatasetHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 ) ([]model.Source, error) {
+	db = db.WithContext(ctx)
 	var sources []model.Source
 	if datasetName == "" {
 		err := db.Find(&sources).Error
@@ -39,13 +43,15 @@ func ListSourcesByDatasetHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /source [get]
 func listSourceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 ) ([]model.Source, error) {
-	return ListSourcesByDatasetHandler(db, "")
+	return ListSourcesByDatasetHandler(ctx, db, "")
 }
 
 func ListSourceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 ) ([]model.Source, error) {
-	return listSourceHandler(db)
+	return listSourceHandler(ctx, db.WithContext(ctx))
 }

@@ -52,15 +52,19 @@ var ContentProviderCmd = &cli.Command{
 			return err
 		}
 
-		config := contentprovider.ContentProviderConfig{
-			EnableHTTP:        c.Bool("enable-http"),
-			HTTPBind:          c.String("http-bind"),
-			EnableBitswap:     c.Bool("enable-bitswap"),
-			Libp2pIdentityKey: c.String("libp2p-identity-key"),
-			Libp2pListenAddrs: c.StringSlice("libp2p-listen"),
+		config := contentprovider.Config{
+			HTTP: contentprovider.HTTPConfig{
+				Enable: c.Bool("enable-http"),
+				Bind:   c.String("http-bind"),
+			},
+			Bitswap: contentprovider.BitswapConfig{
+				Enable:           c.Bool("enable-bitswap"),
+				IdentityKey:      c.String("libp2p-identity-key"),
+				ListenMultiAddrs: c.StringSlice("libp2p-listen"),
+			},
 		}
 
-		s, err := contentprovider.NewContentProviderService(db, config)
+		s, err := contentprovider.NewService(db, config)
 		if err != nil {
 			return cli.Exit(err.Error(), 1)
 		}

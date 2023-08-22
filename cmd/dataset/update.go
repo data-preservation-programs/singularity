@@ -38,11 +38,6 @@ var UpdateCmd = &cli.Command{
 			Usage:    "Public key of the encryption recipient",
 			Category: "Encryption",
 		},
-		&cli.StringFlag{
-			Name:     "encryption-script",
-			Usage:    "EncryptionScript command to run for custom encryption",
-			Category: "Encryption",
-		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -60,12 +55,8 @@ var UpdateCmd = &cli.Command{
 			s := c.String("piece-size")
 			pieceSizeStr = &s
 		}
-		var encryptionScript *string
-		if c.IsSet("encryption-script") {
-			s := c.String("encryption-script")
-			encryptionScript = &s
-		}
 		dataset, err := dataset.UpdateHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			dataset.UpdateRequest{
@@ -73,7 +64,6 @@ var UpdateCmd = &cli.Command{
 				PieceSizeStr:         pieceSizeStr,
 				OutputDirs:           c.StringSlice("output-dir"),
 				EncryptionRecipients: c.StringSlice("encryption-recipients"),
-				EncryptionScript:     encryptionScript,
 			},
 		)
 		if err != nil {

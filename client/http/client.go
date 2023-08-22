@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strconv"
+
+	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
@@ -102,8 +103,8 @@ func (c *Client) ListSourcesByDataset(ctx context.Context, datasetName string) (
 	return sources, nil
 }
 
-func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
-	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/item/"+strconv.FormatUint(id, 10), nil)
+func (c *Client) GetFile(ctx context.Context, id uint64) (*model.File, error) {
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/file/"+strconv.FormatUint(id, 10), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -117,16 +118,16 @@ func (c *Client) GetItem(ctx context.Context, id uint64) (*model.Item, error) {
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var item model.Item
-	err = json.NewDecoder(response.Body).Decode(&item)
+	var file model.File
+	err = json.NewDecoder(response.Body).Decode(&file)
 	if err != nil {
 		return nil, err
 	}
-	return &item, nil
+	return &file, nil
 }
 
-func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo datasource.ItemInfo) (*model.Item, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/push", itemInfo)
+func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo datasource.FileInfo) (*model.File, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/push", fileInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -136,16 +137,16 @@ func (c *Client) PushItem(ctx context.Context, sourceID uint32, itemInfo datasou
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var item model.Item
-	err = json.NewDecoder(response.Body).Decode(&item)
+	var file model.File
+	err = json.NewDecoder(response.Body).Decode(&file)
 	if err != nil {
 		return nil, err
 	}
-	return &item, nil
+	return &file, nil
 }
 
-func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request inspect.GetSourceChunksRequest) ([]model.Chunk, error) {
-	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/chunks", request)
+func (c *Client) GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packjobs", request)
 	if err != nil {
 		return nil, err
 	}
@@ -156,16 +157,16 @@ func (c *Client) GetSourceChunks(ctx context.Context, sourceID uint32, request i
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var chunks []model.Chunk
-	err = json.NewDecoder(response.Body).Decode(&chunks)
+	var packJobs []model.PackJob
+	err = json.NewDecoder(response.Body).Decode(&packJobs)
 	if err != nil {
 		return nil, err
 	}
-	return chunks, nil
+	return packJobs, nil
 }
 
-func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.ChunkRequest) (*model.Chunk, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/chunk", request)
+func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request datasource.CreatePackJobRequest) (*model.PackJob, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packjob", request)
 	if err != nil {
 		return nil, err
 	}
@@ -175,16 +176,16 @@ func (c *Client) Chunk(ctx context.Context, sourceID uint32, request datasource.
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, parseHTTPError(response)
 	}
-	var chunk model.Chunk
-	err = json.NewDecoder(response.Body).Decode(&chunk)
+	var packjob model.PackJob
+	err = json.NewDecoder(response.Body).Decode(&packjob)
 	if err != nil {
 		return nil, err
 	}
-	return &chunk, nil
+	return &packjob, nil
 }
 
-func (c *Client) Pack(ctx context.Context, chunkID uint32) ([]model.Car, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/chunk/"+strconv.FormatUint(uint64(chunkID), 10)+"/pack", nil)
+func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/packjob/"+strconv.FormatUint(uint64(packJobID), 10)+"/pack", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +203,8 @@ func (c *Client) Pack(ctx context.Context, chunkID uint32) ([]model.Car, error) 
 	return cars, nil
 }
 
-func (c *Client) GetItemDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
-	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/item/"+strconv.FormatUint(id, 10)+"/deals", nil)
+func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
+	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/file/"+strconv.FormatUint(id, 10)+"/deals", nil)
 	if err != nil {
 		return nil, err
 	}

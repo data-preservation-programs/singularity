@@ -63,7 +63,7 @@ type DatasourceHidriveRequest struct {
 	// User-level that rclone should use when requesting access from HiDrive.
 	ScopeRole *string `json:"scopeRole,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

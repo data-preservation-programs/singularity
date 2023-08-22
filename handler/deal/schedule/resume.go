@@ -1,6 +1,9 @@
 package schedule
 
 import (
+	"context"
+
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/pkg/errors"
@@ -8,10 +11,11 @@ import (
 )
 
 func ResumeHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	scheduleID string,
 ) (*model.Schedule, error) {
-	return resumeHandler(db, scheduleID)
+	return resumeHandler(ctx, db.WithContext(ctx), scheduleID)
 }
 
 // @Summary Resume a specific schedule
@@ -23,6 +27,7 @@ func ResumeHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /schedule/{id}/resume [post]
 func resumeHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	scheduleID string,
 ) (*model.Schedule, error) {
@@ -38,7 +43,9 @@ func resumeHandler(
 		return nil, handler.NewInvalidParameterErr("schedule is not paused")
 	}
 	schedule.State = model.ScheduleActive
-	err = db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.ScheduleActive).Error
+	err = database.DoRetry(ctx, func() error {
+		return db.Model(&model.Schedule{}).Where("id = ?", scheduleID).Update("state", model.ScheduleActive).Error
+	})
 	if err != nil {
 		return nil, err
 	}

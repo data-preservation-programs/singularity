@@ -7,18 +7,19 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/replication/internal/proposal110"
-	"github.com/data-preservation-programs/singularity/replication/internal/proposal120"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
 	cborutil "github.com/filecoin-project/go-cbor-util"
+	"github.com/filecoin-project/go-fil-markets/storagemarket/network"
 	"github.com/filecoin-project/go-state-types/abi"
+	"github.com/filecoin-project/go-state-types/builtin/v9/market"
 	"github.com/filecoin-project/go-state-types/crypto"
+	"github.com/filecoin-shipyard/boostly"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/libp2p/go-libp2p/core/network"
+	network2 "github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
@@ -26,21 +27,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testProposal(t *testing.T) proposal110.ClientDealProposal {
+func testProposal(t *testing.T) market.ClientDealProposal {
 	pieceCID, err := cid.Decode("baga6ea4seaqdyupo27fj2fk2mtefzlxvrbf6kdi4twdpccdzbyqrbpsvfsh5ula")
 	require.NoError(t, err)
 	clientAddr, err := address.NewFromString("f01000")
 	require.NoError(t, err)
 	provider, err := address.NewFromString("f01001")
 	require.NoError(t, err)
-	return proposal110.ClientDealProposal{
-		Proposal: proposal110.DealProposal{
+	return market.ClientDealProposal{
+		Proposal: market.DealProposal{
 			PieceCID:     pieceCID,
 			PieceSize:    1024,
 			VerifiedDeal: true,
 			Client:       clientAddr,
 			Provider:     provider,
-			Label:        proposal110.DealLabel{},
+			Label:        market.DealLabel{},
 			StartEpoch:   100,
 			EndEpoch:     200,
 			StoragePricePerEpoch: abi.TokenAmount{
@@ -65,25 +66,25 @@ func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 	require.NoError(t, err)
 	h, err := util.InitHost(nil, m)
 	require.NoError(t, err)
-	h.SetStreamHandler(StorageProposalV120, func(s network.Stream) {
-		var deal proposal120.DealParams
+	h.SetStreamHandler(StorageProposalV120, func(s network2.Stream) {
+		var deal boostly.DealParams
 		err := cborutil.ReadCborRPC(s, &deal)
 		require.NoError(t, err)
-		resp := &proposal120.DealResponse{
+		resp := &boostly.DealResponse{
 			Accepted: true,
 			Message:  "accepted",
 		}
 		err = cborutil.WriteCborRPC(s, resp)
 		require.NoError(t, err)
 	})
-	h.SetStreamHandler(StorageProposalV111, func(s network.Stream) {
-		var deal proposal110.Proposal
+	h.SetStreamHandler(StorageProposalV111, func(s network2.Stream) {
+		var deal network.Proposal
 		err := cborutil.ReadCborRPC(s, &deal)
 		require.NoError(t, err)
 		c, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 		require.NoError(t, err)
-		resp := &proposal110.SignedResponse{
-			Response: proposal110.Response{
+		resp := &network.SignedResponse{
+			Response: network.Response{
 				State:          1,
 				Message:        "accepted",
 				Proposal:       c,
@@ -175,7 +176,7 @@ func TestDealMaker_MakeDeal111(t *testing.T) {
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
 	proposal := testProposal(t)
-	resp, err := maker.makeDeal111(
+	resp, err := maker.MakeDeal111(
 		ctx,
 		proposal,
 		DealConfig{
@@ -233,7 +234,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
 	require.NoError(t, err)
 	proposal := testProposal(t)
-	resp, err := maker.makeDeal120(
+	resp, err := maker.MakeDeal120(
 		ctx,
 		proposal,
 		uuid.New(),
@@ -270,7 +271,7 @@ func TestDealMaker_GetCollateral(t *testing.T) {
 			Max: "2000000000000000000000",
 		}
 	})
-	result, err := maker.getMinCollateral(context.Background(), 34359738368, false)
+	result, err := maker.GetMinCollateral(context.Background(), 34359738368, false)
 	require.NoError(t, err)
 	require.Equal(t, "8649874114492479", result.String())
 }
@@ -285,7 +286,7 @@ func TestDealMaker_GetProtocols(t *testing.T) {
 	maker := NewDealMaker(nil, client, time.Hour, time.Second)
 	defer maker.Close()
 	time.Sleep(100 * time.Millisecond)
-	protocols, err := maker.getProtocols(ctx, peer.AddrInfo{
+	protocols, err := maker.GetProtocols(ctx, peer.AddrInfo{
 		ID:    server.ID(),
 		Addrs: server.Addrs(),
 	})
@@ -309,7 +310,7 @@ func TestDealMaker_GetProviderInfo(t *testing.T) {
 		}
 	})
 
-	info, err := maker.getProviderInfo(context.Background(), "address1")
+	info, err := maker.GetProviderInfo(context.Background(), "address1")
 	require.NoError(t, err)
 	require.Len(t, info.Multiaddrs, 1)
 	require.Contains(t, info.Multiaddrs[0].String(), "/tcp/24001")

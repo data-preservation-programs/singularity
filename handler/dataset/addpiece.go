@@ -2,10 +2,11 @@ package dataset
 
 import (
 	"bufio"
+	"context"
 	"os"
 	"strconv"
 
-	util "github.com/ipfs/go-ipfs-util"
+	"github.com/ipfs/boxo/util"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
@@ -24,11 +25,12 @@ type AddPieceRequest struct {
 }
 
 func AddPieceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	request AddPieceRequest,
 ) (*model.Car, error) {
-	return addPieceHandler(db, datasetName, request)
+	return addPieceHandler(ctx, db.WithContext(ctx), datasetName, request)
 }
 
 // @Summary Manually register a piece (CAR file) with the dataset for deal making purpose
@@ -42,6 +44,7 @@ func AddPieceHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName}/piece [post]
 func addPieceHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	request AddPieceRequest,
@@ -108,7 +111,7 @@ func addPieceHandler(
 		DatasetID: dataset.ID,
 	}
 
-	err = database.DoRetry(func() error { return db.Create(&mCar).Error })
+	err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })
 	if err != nil {
 		return nil, err
 	}

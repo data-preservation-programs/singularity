@@ -1,18 +1,22 @@
 package daggen
 
 import (
+	"context"
 	"strconv"
 	"testing"
 
 	"github.com/alecthomas/units"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/gotidy/ptr"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-unixfs/io"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMarshalling(t *testing.T) {
+	ctx := context.Background()
 	oldShardingSize := io.HAMTShardingSize
 	defer func() {
 		io.HAMTShardingSize = oldShardingSize
@@ -20,26 +24,37 @@ func TestMarshalling(t *testing.T) {
 	io.HAMTShardingSize = int(units.KiB)
 	var initial []byte
 	dirData := &DirectoryData{}
-	err := dirData.UnmarshallBinary(initial)
+	err := dirData.UnmarshalBinary(ctx, initial)
 	require.NoError(t, err)
 	for i := 0; i < 100; i++ {
-		err = dirData.AddItem(strconv.Itoa(i), cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i)))), 4)
+		err = dirData.AddFile(ctx, strconv.Itoa(i), cid.NewCidV1(cid.Raw, util.Hash([]byte(strconv.Itoa(i)))), 4)
 		require.NoError(t, err)
 	}
-	initial, err = dirData.MarshalBinary()
+	root, err := dirData.Node()
+	require.NoError(t, err)
+	initial, err = dirData.MarshalBinary(ctx)
 	require.NoError(t, err)
 	require.NotEmpty(t, initial)
+	err = dirData.UnmarshalBinary(ctx, initial)
+	require.NoError(t, err)
+	newRoot, err := dirData.Node()
+	require.NoError(t, err)
+	links, err := dirData.dir.Links(ctx)
+	require.NoError(t, err)
+	require.Len(t, links, 100)
+	require.Equal(t, root.Cid(), newRoot.Cid())
 }
 
 func TestDirectoryData(t *testing.T) {
+	ctx := context.Background()
 	d := NewDirectoryData()
-	binary, err := d.MarshalBinary()
+	binary, err := d.MarshalBinary(ctx)
 	require.NoError(t, err)
-	err = d.UnmarshallBinary(binary)
+	err = d.UnmarshalBinary(ctx, binary)
 	require.NoError(t, err)
-	err = d.AddItem("test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
+	err = d.AddFile(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
 	require.NoError(t, err)
-	_, err = d.AddItemFromLinks("test2", []format.Link{
+	_, err = d.AddFileFromLinks(ctx, "test2", []format.Link{
 		{
 			Cid:  cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))),
 			Size: 5,
@@ -50,36 +65,50 @@ func TestDirectoryData(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	binary, err = d.MarshalBinary()
+	binary, err = d.MarshalBinary(ctx)
 	require.NoError(t, err)
-	err = d.UnmarshallBinary(binary)
+	err = d.UnmarshalBinary(ctx, binary)
 	require.NoError(t, err)
-	err = d.AddItem("test4", cid.NewCidV1(cid.Raw, util.Hash([]byte("test4"))), 5)
+	err = d.AddFile(ctx, "test4", cid.NewCidV1(cid.Raw, util.Hash([]byte("test4"))), 5)
 	require.NoError(t, err)
-	_, err = d.MarshalBinary()
+	_, err = d.MarshalBinary(ctx)
 	require.NoError(t, err)
+	err = d.UnmarshalBinary(ctx, binary)
+	require.NoError(t, err)
+	root, err := d.Node()
+	require.NoError(t, err)
+	require.Len(t, root.Links(), 2)
+	size, err := root.Size()
+	require.NoError(t, err)
+	require.EqualValues(t, 213, size)
 }
 
 func TestResolveDirectoryTree(t *testing.T) {
-	dirCache := make(map[uint64]*DirectoryData)
-	childrenCache := make(map[uint64][]uint64)
+	ctx := context.Background()
 	root := NewDirectoryData()
-	root.Directory.ID = 1
-	err := root.AddItem("test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
-	require.NoError(t, err)
 	dir := NewDirectoryData()
-	err = dir.AddItem("test2", cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))), 5)
+	cache := map[uint64]*DirectoryDetail{
+		1: {
+			Dir:  &model.Directory{ID: 1},
+			Data: &root,
+		},
+		2: {
+			Dir:  &model.Directory{ID: 2, Name: "name", ParentID: ptr.Of(uint64(1))},
+			Data: &dir,
+		},
+	}
+	children := map[uint64][]uint64{
+		1: {2},
+	}
+	err := root.AddFile(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)
 	require.NoError(t, err)
-	dir.Directory.ID = 2
-	dir.Directory.Name = "name"
-	parentID := uint64(1)
-	dir.Directory.ParentID = &parentID
-	dirCache[2] = &dir
-	dirCache[1] = &root
-	childrenCache[1] = []uint64{2}
-	_, err = ResolveDirectoryTree(1, dirCache, childrenCache)
+	err = dir.AddFile(ctx, "test2", cid.NewCidV1(cid.Raw, util.Hash([]byte("test2"))), 5)
 	require.NoError(t, err)
-	require.Equal(t, 2, len(root.Node.Links()))
-	require.Equal(t, "name", root.Node.Links()[0].Name)
-	require.Equal(t, "test", root.Node.Links()[1].Name)
+	_, err = DirectoryTree{cache: cache, childrenCache: children}.Resolve(ctx, 1)
+	require.NoError(t, err)
+	node, err := root.Node()
+	require.NoError(t, err)
+	require.Equal(t, 2, len(node.Links()))
+	require.Equal(t, "name", node.Links()[0].Name)
+	require.Equal(t, "test", node.Links()[1].Name)
 }

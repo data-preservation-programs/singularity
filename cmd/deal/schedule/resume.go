@@ -17,7 +17,7 @@ var ResumeCmd = &cli.Command{
 			return err
 		}
 		defer closer.Close()
-		schedule, err := schedule.ResumeHandler(db, c.Args().Get(0))
+		schedule, err := schedule.ResumeHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return err
 		}

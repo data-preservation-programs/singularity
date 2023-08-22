@@ -11,8 +11,8 @@ import (
 	"github.com/bcicen/jstream"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
 )
@@ -36,6 +36,64 @@ func setupTestServerWithBody(t *testing.T, b string) (string, Closer) {
 	}))
 	encoder.Close()
 	return server.URL, server
+}
+
+func TestDealTracker_Name(t *testing.T) {
+	tracker := NewDealTracker(nil, time.Minute, "", "", "", true)
+	require.Equal(t, "DealTracker", tracker.Name())
+}
+
+func TestDealTracker_Start(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tracker := NewDealTracker(db, time.Minute, "", "", "", true)
+	ctx, cancel := context.WithCancel(context.Background())
+	dones, _, err := tracker.Start(ctx)
+	require.NoError(t, err)
+	time.Sleep(time.Second)
+	cancel()
+	for _, done := range dones {
+		<-done
+	}
+}
+
+func TestDealTracker_MultipleRunning_Once(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
+	tracker2 := NewDealTracker(db, time.Minute, "", "", "", true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	dones, _, err := tracker1.Start(ctx)
+	require.NoError(t, err)
+	_, _, err2 := tracker2.Start(ctx)
+	require.ErrorIs(t, err2, ErrAlreadyRunning)
+	cancel()
+	for _, done := range dones {
+		<-done
+	}
+}
+
+func TestDealTracker_MultipleRunning(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
+	tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	dones1, _, err := tracker1.Start(ctx)
+	require.NoError(t, err)
+	dones2, _, err2 := tracker2.Start(ctx)
+	require.ErrorIs(t, err2, context.DeadlineExceeded)
+	for _, done := range dones1 {
+		<-done
+	}
+	for _, done := range dones2 {
+		<-done
+	}
 }
 
 func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
@@ -87,7 +145,7 @@ func TestDealStateStreamFromHttpRequest_UnCompressed(t *testing.T) {
 func TestTrackDeal(t *testing.T) {
 	url, server := setupTestServer(t)
 	defer server.Close()
-	tracker := NewDealTracker(nil, 0, url, "", "")
+	tracker := NewDealTracker(nil, 0, url, "", "", true)
 	var deals []Deal
 	callback := func(dealID uint64, deal Deal) error {
 		deals = append(deals, deal)
@@ -288,7 +346,7 @@ func TestRunOnce(t *testing.T) {
 	url, server := setupTestServerWithBody(t, string(body))
 	defer server.Close()
 	require.NoError(t, err)
-	tracker := NewDealTracker(db, time.Minute, url, "", "")
+	tracker := NewDealTracker(db, time.Minute, url, "", "", true)
 	err = tracker.runOnce(context.Background())
 	require.NoError(t, err)
 	var allDeals []model.Deal

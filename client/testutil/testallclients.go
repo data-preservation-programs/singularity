@@ -4,7 +4,6 @@ import (
 	"context"
 	"net"
 	"net/http"
-	"path/filepath"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/api"
@@ -17,6 +16,10 @@ import (
 
 func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T, client.Client)) {
 	t.Run("http", func(t *testing.T) {
+		//nolint:contextcheck
+		_, closer, err := database.OpenInMemory()
+		require.NoError(t, err)
+		closer.Close()
 		ctx, cancel := context.WithCancel(ctx)
 		httpErr := make(chan error, 1)
 		defer func() {
@@ -27,7 +30,7 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 		listener, err := net.Listen("tcp", "127.0.0.1:0")
 		require.NoError(t, err)
 		server, err := api.InitServer(api.APIParams{
-			ConnString: "sqlite:" + filepath.Join(t.TempDir(), "singularity.db"),
+			ConnString: database.TestConnectionString,
 			Listener:   listener,
 			LotusAPI:   "https://api.node.glif.io/rpc/v1",
 		})
@@ -40,7 +43,7 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 		test(t, client)
 	})
 	t.Run("lib", func(t *testing.T) {
-		db, closer, err := database.OpenWithLogger("sqlite:" + filepath.Join(t.TempDir(), "singularity.db"))
+		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
 		client, err := libclient.NewClient(db)

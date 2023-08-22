@@ -20,9 +20,6 @@ type DatasetUpdateRequest struct {
 	// Public key of the encryption recipient
 	EncryptionRecipients []string `json:"encryptionRecipients"`
 
-	// EncryptionScript command to run for custom encryption
-	EncryptionScript string `json:"encryptionScript,omitempty"`
-
 	// Maximum size of the CAR files to be created
 	MaxSize *string `json:"maxSize,omitempty"`
 

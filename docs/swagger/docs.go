@@ -62,89 +62,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/chunk/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get detail of a specific chunk",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Chunk ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Chunk"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/chunk/{id}/pack": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Pack a chunk into car files",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Chunk ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/dataset": {
             "get": {
                 "produces": [
@@ -585,7 +502,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/item/{id}": {
+        "/file/{id}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -596,11 +513,11 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get details about an item",
+                "summary": "Get details about an file",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Item ID",
+                        "description": "File ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -610,7 +527,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Item"
+                            "$ref": "#/definitions/model.File"
                         }
                     },
                     "500": {
@@ -622,7 +539,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/item/{id}/deals": {
+        "/packjob/{id}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -633,11 +550,11 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get all deals that have been made for an item",
+                "summary": "Get detail of a specific pack job",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Source ID",
+                        "description": "Pack job ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -647,16 +564,59 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Deal"
-                            }
+                            "$ref": "#/definitions/model.PackJob"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/packjob/{id}/pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Pack a pack job into car files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Car"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -3228,98 +3188,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/chunk": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Create a chunk for the specified items",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.ChunkRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Item"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/chunks": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get all dag details of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/source/{id}/daggen": {
             "post": {
                 "produces": [
@@ -3360,7 +3228,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/items": {
+        "/source/{id}/files": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -3371,7 +3239,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get all item details of a data source",
+                "summary": "Get all file details of a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -3387,7 +3255,114 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Item"
+                                "$ref": "#/definitions/model.File"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/packjob": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Create a pack job for the specified files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/datasource.CreatePackJobRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.File"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/source/{id}/packjobs": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Get all pack job details of a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "GetSourcePackJobsRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/inspect.GetSourcePackJobsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.PackJob"
                             }
                         }
                     },
@@ -3417,7 +3392,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Get all item details inside a data source path",
+                "summary": "Get all file details inside a data source path",
                 "parameters": [
                     {
                         "type": "string",
@@ -3470,7 +3445,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Push an item to be queued",
+                "summary": "Push a file to be queued",
                 "parameters": [
                     {
                         "type": "string",
@@ -3480,12 +3455,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Item",
-                        "name": "item",
+                        "description": "File",
+                        "name": "file",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.ItemInfo"
+                            "$ref": "#/definitions/datasource.FileInfo"
                         }
                     }
                 ],
@@ -3493,7 +3468,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.Item"
+                            "$ref": "#/definitions/model.File"
                         }
                     },
                     "400": {
@@ -3503,7 +3478,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Item already exists",
+                        "description": "File already exists",
                         "schema": {
                             "type": "string"
                         }
@@ -3525,7 +3500,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Trigger a repack of a chunk or all errored chunks of a data source",
+                "summary": "Trigger a repack of a pack job or all errored pack jobs of a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -3550,7 +3525,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Chunk"
+                                "$ref": "#/definitions/model.PackJob"
                             }
                         }
                     },
@@ -3622,7 +3597,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/datasource.ChunksByState"
+                            "$ref": "#/definitions/datasource.PackJobsByState"
                         }
                     },
                     "400": {
@@ -3841,10 +3816,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "encryptionScript": {
-                    "description": "EncryptionScript command to run for custom encryption",
-                    "type": "string"
-                },
                 "maxSize": {
                     "description": "Maximum size of the CAR files to be created",
                     "type": "string",
@@ -3876,10 +3847,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "encryptionScript": {
-                    "description": "EncryptionScript command to run for custom encryption",
-                    "type": "string"
                 },
                 "maxSize": {
                     "description": "Maximum size of the CAR files to be created",
@@ -3946,7 +3913,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "templinkThreshold": {
@@ -6017,7 +5984,7 @@ const docTemplate = `{
                     "default": "$USER"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "storjAccessGrant": {
@@ -6431,7 +6398,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "tenant": {
@@ -6545,7 +6512,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "testMode": {
@@ -6643,7 +6610,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -6670,31 +6637,14 @@ const docTemplate = `{
                 }
             }
         },
-        "datasource.ChunkRequest": {
+        "datasource.CreatePackJobRequest": {
             "type": "object",
             "properties": {
-                "itemIDs": {
+                "fileRangeIDs": {
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
-                }
-            }
-        },
-        "datasource.ChunksByState": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "description": "number of chunks in this state",
-                    "type": "integer"
-                },
-                "state": {
-                    "description": "the state of the chunks",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
                 }
             }
         },
@@ -6868,7 +6818,7 @@ const docTemplate = `{
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "starredOnly": {
@@ -7012,7 +6962,7 @@ const docTemplate = `{
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -7072,7 +7022,16 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
+                    "type": "string"
+                }
+            }
+        },
+        "datasource.FileInfo": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "Path to the new file, relative to the source",
                     "type": "string"
                 }
             }
@@ -7116,7 +7075,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -7241,7 +7200,7 @@ const docTemplate = `{
                     "default": "1m0s"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "tls": {
@@ -7362,7 +7321,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "storageClass": {
@@ -7437,7 +7396,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "startYear": {
@@ -7498,7 +7457,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "username": {
@@ -7580,7 +7539,7 @@ const docTemplate = `{
                     "default": "user"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -7643,7 +7602,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "url": {
@@ -7706,22 +7665,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "waitArchive": {
                     "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
                     "type": "string",
                     "default": "0s"
-                }
-            }
-        },
-        "datasource.ItemInfo": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "description": "Path to the new item, relative to the source",
-                    "type": "string"
                 }
             }
         },
@@ -7771,7 +7721,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "trashedOnly": {
@@ -7838,7 +7788,7 @@ const docTemplate = `{
                     "default": "true"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "user": {
@@ -7933,7 +7883,7 @@ const docTemplate = `{
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "unicodeNormalization": {
@@ -7992,7 +7942,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "speedupEnable": {
@@ -8070,7 +8020,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "useHttps": {
@@ -8127,7 +8077,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -8246,7 +8196,7 @@ const docTemplate = `{
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -8351,7 +8301,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "sseCustomerAlgorithm": {
@@ -8431,12 +8381,29 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "username": {
                     "description": "Username.",
                     "type": "string"
+                }
+            }
+        },
+        "datasource.PackJobsByState": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "number of pack jobs in this state",
+                    "type": "integer"
+                },
+                "state": {
+                    "description": "the state of the pack jobs",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.WorkState"
+                        }
+                    ]
                 }
             }
         },
@@ -8497,7 +8464,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -8549,7 +8516,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -8585,7 +8552,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -8648,7 +8615,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "uploadConcurrency": {
@@ -8670,7 +8637,7 @@ const docTemplate = `{
         "datasource.RepackRequest": {
             "type": "object",
             "properties": {
-                "chunkId": {
+                "packJobId": {
                     "type": "integer"
                 }
             }
@@ -8858,7 +8825,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "sseCustomerAlgorithm": {
@@ -8988,7 +8955,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "url": {
@@ -9146,7 +9113,7 @@ const docTemplate = `{
                     "default": "false"
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "subsystem": {
@@ -9215,7 +9182,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "uploadCutoff": {
@@ -9265,7 +9232,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "userAgent": {
@@ -9339,7 +9306,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "spn": {
@@ -9401,7 +9368,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -9474,7 +9441,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "user": {
@@ -9581,7 +9548,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "storagePolicy": {
@@ -9649,7 +9616,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 }
             }
@@ -9700,7 +9667,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "url": {
@@ -9765,7 +9732,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -9825,7 +9792,7 @@ const docTemplate = `{
                     ]
                 },
                 "sourcePath": {
-                    "description": "The path of the source to scan items",
+                    "description": "The path of the source to scan files",
                     "type": "string"
                 },
                 "token": {
@@ -9981,10 +9948,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Directory"
                     }
                 },
-                "items": {
+                "files": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Item"
+                        "$ref": "#/definitions/model.File"
                     }
                 }
             }
@@ -9997,7 +9964,7 @@ const docTemplate = `{
                 }
             }
         },
-        "inspect.GetSourceChunksRequest": {
+        "inspect.GetSourcePackJobsRequest": {
             "type": "object",
             "properties": {
                 "state": {
@@ -10011,9 +9978,6 @@ const docTemplate = `{
         "model.Car": {
             "type": "object",
             "properties": {
-                "chunkId": {
-                    "type": "integer"
-                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -10035,6 +9999,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "packJobId": {
+                    "type": "integer"
+                },
                 "pieceCid": {
                     "$ref": "#/definitions/model.CID"
                 },
@@ -10043,41 +10010,6 @@ const docTemplate = `{
                 },
                 "rootCid": {
                     "$ref": "#/definitions/model.CID"
-                },
-                "sourceId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.Chunk": {
-            "type": "object",
-            "properties": {
-                "cars": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Car"
-                    }
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "errorMessage": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "itemParts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.ItemPart"
-                    }
-                },
-                "packingState": {
-                    "$ref": "#/definitions/model.WorkState"
-                },
-                "packingWorkerId": {
-                    "type": "string"
                 },
                 "sourceId": {
                     "type": "integer"
@@ -10095,9 +10027,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "encryptionScript": {
-                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -10236,7 +10165,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Item": {
+        "model.File": {
             "type": "object",
             "properties": {
                 "cid": {
@@ -10248,17 +10177,17 @@ const docTemplate = `{
                 "directoryId": {
                     "type": "integer"
                 },
+                "fileRanges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FileRange"
+                    }
+                },
                 "hash": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
-                },
-                "itemParts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.ItemPart"
-                    }
                 },
                 "lastModified": {
                     "type": "integer"
@@ -10274,28 +10203,28 @@ const docTemplate = `{
                 }
             }
         },
-        "model.ItemPart": {
+        "model.FileRange": {
             "type": "object",
             "properties": {
-                "chunkId": {
-                    "type": "integer"
-                },
                 "cid": {
                     "$ref": "#/definitions/model.CID"
                 },
-                "id": {
+                "file": {
+                    "$ref": "#/definitions/model.File"
+                },
+                "fileId": {
                     "type": "integer"
                 },
-                "item": {
-                    "$ref": "#/definitions/model.Item"
-                },
-                "itemId": {
+                "id": {
                     "type": "integer"
                 },
                 "length": {
                     "type": "integer"
                 },
                 "offset": {
+                    "type": "integer"
+                },
+                "packJobId": {
                     "type": "integer"
                 }
             }
@@ -10304,6 +10233,41 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": {
                 "type": "string"
+            }
+        },
+        "model.PackJob": {
+            "type": "object",
+            "properties": {
+                "cars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Car"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "fileRanges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FileRange"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "packingState": {
+                    "$ref": "#/definitions/model.WorkState"
+                },
+                "packingWorkerId": {
+                    "type": "string"
+                },
+                "sourceId": {
+                    "type": "integer"
+                }
             }
         },
         "model.Schedule": {

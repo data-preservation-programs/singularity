@@ -19,8 +19,8 @@ func retryOn(err error) bool {
 	return strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
 }
 
-func DoRetry(f func() error) error {
-	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true))
+func DoRetry(ctx context.Context, f func() error) error {
+	return retry.Do(f, retry.RetryIf(retryOn), retry.LastErrorOnly(true), retry.Context(ctx))
 }
 
 type databaseLogger struct {
@@ -83,29 +83,6 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
 	return OpenWithLogger(connString)
-}
-
-func OpenInMemory() (*gorm.DB, io.Closer, error) {
-	db, closer, err := OpenWithLogger("sqlite:file::memory:?cache=shared")
-	if err != nil {
-		logger.Error(err)
-		return nil, nil, err
-	}
-
-	err = DoRetry(func() error { return model.DropAll(db) })
-	if err != nil {
-		logger.Error(err)
-		closer.Close()
-		return nil, nil, err
-	}
-	err = DoRetry(func() error { return model.AutoMigrate(db) })
-	if err != nil {
-		logger.Error(err)
-		closer.Close()
-		return nil, nil, err
-	}
-
-	return db, closer, nil
 }
 
 func DropAll(db *gorm.DB) error {

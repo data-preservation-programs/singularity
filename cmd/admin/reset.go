@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/urfave/cli/v2"
@@ -9,12 +10,16 @@ import (
 var ResetCmd = &cli.Command{
 	Name:  "reset",
 	Usage: "Reset the database",
-	Action: func(context *cli.Context) error {
-		db, closer, err := database.OpenFromCLI(context)
+	Flags: []cli.Flag{cliutil.ReallyDotItFlag},
+	Action: func(c *cli.Context) error {
+		if err := cliutil.HandleReallyDoIt(c); err != nil {
+			return err
+		}
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		return admin.ResetHandler(db)
+		return admin.ResetHandler(c.Context, db)
 	},
 }

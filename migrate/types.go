@@ -28,7 +28,7 @@ const (
 )
 
 type ScanningRequest struct {
-	ID                    primitive.ObjectID    `bson:"_id"`
+	ID                    primitive.ObjectID    `bson:"_id,omitempty"`
 	Name                  string                `bson:"name"`
 	Path                  string                `bson:"path"`
 	OutDir                string                `bson:"outDir"`
@@ -41,7 +41,7 @@ type ScanningRequest struct {
 }
 
 type GenerationRequest struct {
-	ID                    primitive.ObjectID      `bson:"_id"`
+	ID                    primitive.ObjectID      `bson:"_id,omitempty"`
 	DatasetID             string                  `bson:"datasetId"`
 	DatasetName           string                  `bson:"datasetName"`
 	Path                  string                  `bson:"path"`
@@ -60,7 +60,7 @@ type GenerationRequest struct {
 }
 
 type OutputFileList struct {
-	ID                primitive.ObjectID `bson:"_id"`
+	ID                primitive.ObjectID `bson:"_id,omitempty"`
 	GenerationID      string             `bson:"generationId"`
 	Index             int64              `bson:"index"`
 	GeneratedFileList []GeneratedFile    `bson:"generatedFileList"`

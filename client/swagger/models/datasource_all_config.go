@@ -1362,7 +1362,7 @@ type DatasourceAllConfig struct {
 	// SMB username.
 	SmbUser *string `json:"smbUser,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

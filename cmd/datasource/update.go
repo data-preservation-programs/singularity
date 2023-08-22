@@ -62,8 +62,8 @@ var UpdateCmd = &cli.Command{
 		}
 
 		source, err := datasource.UpdateSourceHandler(
-			db,
 			c.Context,
+			db,
 			c.Args().Get(0),
 			config,
 		)

@@ -32,17 +32,17 @@ type ClientOption func(*runtime.ClientOperation)
 type ClientService interface {
 	DeleteSourceID(params *DeleteSourceIDParams, opts ...ClientOption) (*DeleteSourceIDNoContent, error)
 
-	GetChunkID(params *GetChunkIDParams, opts ...ClientOption) (*GetChunkIDOK, error)
+	GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetFileIDOK, error)
 
-	GetItemID(params *GetItemIDParams, opts ...ClientOption) (*GetItemIDOK, error)
+	GetPackjobID(params *GetPackjobIDParams, opts ...ClientOption) (*GetPackjobIDOK, error)
 
 	GetItemIDDeals(params *GetItemIDDealsParams, opts ...ClientOption) (*GetItemIDDealsOK, error)
 
 	GetSource(params *GetSourceParams, opts ...ClientOption) (*GetSourceOK, error)
 
-	GetSourceIDChunks(params *GetSourceIDChunksParams, opts ...ClientOption) (*GetSourceIDChunksOK, error)
+	GetSourceIDFiles(params *GetSourceIDFilesParams, opts ...ClientOption) (*GetSourceIDFilesOK, error)
 
-	GetSourceIDItems(params *GetSourceIDItemsParams, opts ...ClientOption) (*GetSourceIDItemsOK, error)
+	GetSourceIDPackjobs(params *GetSourceIDPackjobsParams, opts ...ClientOption) (*GetSourceIDPackjobsOK, error)
 
 	GetSourceIDPath(params *GetSourceIDPathParams, opts ...ClientOption) (*GetSourceIDPathOK, error)
 
@@ -50,7 +50,7 @@ type ClientService interface {
 
 	PatchSourceID(params *PatchSourceIDParams, opts ...ClientOption) (*PatchSourceIDOK, error)
 
-	PostChunkIDPack(params *PostChunkIDPackParams, opts ...ClientOption) (*PostChunkIDPackCreated, error)
+	PostPackjobIDPack(params *PostPackjobIDPackParams, opts ...ClientOption) (*PostPackjobIDPackCreated, error)
 
 	PostSourceAcdDatasetDatasetName(params *PostSourceAcdDatasetDatasetNameParams, opts ...ClientOption) (*PostSourceAcdDatasetDatasetNameOK, error)
 
@@ -82,9 +82,9 @@ type ClientService interface {
 
 	PostSourceIDCheck(params *PostSourceIDCheckParams, opts ...ClientOption) (*PostSourceIDCheckOK, error)
 
-	PostSourceIDChunk(params *PostSourceIDChunkParams, opts ...ClientOption) (*PostSourceIDChunkCreated, error)
-
 	PostSourceIDDaggen(params *PostSourceIDDaggenParams, opts ...ClientOption) (*PostSourceIDDaggenOK, error)
+
+	PostSourceIDPackjob(params *PostSourceIDPackjobParams, opts ...ClientOption) (*PostSourceIDPackjobCreated, error)
 
 	PostSourceIDPush(params *PostSourceIDPushParams, opts ...ClientOption) (*PostSourceIDPushCreated, error)
 
@@ -188,22 +188,22 @@ func (a *Client) DeleteSourceID(params *DeleteSourceIDParams, opts ...ClientOpti
 }
 
 /*
-GetChunkID gets detail of a specific chunk
+GetFileID gets details about an file
 */
-func (a *Client) GetChunkID(params *GetChunkIDParams, opts ...ClientOption) (*GetChunkIDOK, error) {
+func (a *Client) GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetFileIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetChunkIDParams()
+		params = NewGetFileIDParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetChunkID",
+		ID:                 "GetFileID",
 		Method:             "GET",
-		PathPattern:        "/chunk/{id}",
+		PathPattern:        "/file/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetChunkIDReader{formats: a.formats},
+		Reader:             &GetFileIDReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -215,33 +215,33 @@ func (a *Client) GetChunkID(params *GetChunkIDParams, opts ...ClientOption) (*Ge
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetChunkIDOK)
+	success, ok := result.(*GetFileIDOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetChunkID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetFileID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-GetItemID gets details about an item
+GetPackjobID gets detail of a specific pack job
 */
-func (a *Client) GetItemID(params *GetItemIDParams, opts ...ClientOption) (*GetItemIDOK, error) {
+func (a *Client) GetPackjobID(params *GetPackjobIDParams, opts ...ClientOption) (*GetPackjobIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetItemIDParams()
+		params = NewGetPackjobIDParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetItemID",
+		ID:                 "GetPackjobID",
 		Method:             "GET",
-		PathPattern:        "/item/{id}",
+		PathPattern:        "/packjob/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetItemIDReader{formats: a.formats},
+		Reader:             &GetPackjobIDReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -253,13 +253,13 @@ func (a *Client) GetItemID(params *GetItemIDParams, opts ...ClientOption) (*GetI
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetItemIDOK)
+	success, ok := result.(*GetPackjobIDOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetItemID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetPackjobID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -340,22 +340,22 @@ func (a *Client) GetSource(params *GetSourceParams, opts ...ClientOption) (*GetS
 }
 
 /*
-GetSourceIDChunks gets all dag details of a data source
+GetSourceIDFiles gets all file details of a data source
 */
-func (a *Client) GetSourceIDChunks(params *GetSourceIDChunksParams, opts ...ClientOption) (*GetSourceIDChunksOK, error) {
+func (a *Client) GetSourceIDFiles(params *GetSourceIDFilesParams, opts ...ClientOption) (*GetSourceIDFilesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetSourceIDChunksParams()
+		params = NewGetSourceIDFilesParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetSourceIDChunks",
+		ID:                 "GetSourceIDFiles",
 		Method:             "GET",
-		PathPattern:        "/source/{id}/chunks",
+		PathPattern:        "/source/{id}/files",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetSourceIDChunksReader{formats: a.formats},
+		Reader:             &GetSourceIDFilesReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -367,33 +367,33 @@ func (a *Client) GetSourceIDChunks(params *GetSourceIDChunksParams, opts ...Clie
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetSourceIDChunksOK)
+	success, ok := result.(*GetSourceIDFilesOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSourceIDChunks: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetSourceIDFiles: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-GetSourceIDItems gets all item details of a data source
+GetSourceIDPackjobs gets all pack job details of a data source
 */
-func (a *Client) GetSourceIDItems(params *GetSourceIDItemsParams, opts ...ClientOption) (*GetSourceIDItemsOK, error) {
+func (a *Client) GetSourceIDPackjobs(params *GetSourceIDPackjobsParams, opts ...ClientOption) (*GetSourceIDPackjobsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetSourceIDItemsParams()
+		params = NewGetSourceIDPackjobsParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetSourceIDItems",
+		ID:                 "GetSourceIDPackjobs",
 		Method:             "GET",
-		PathPattern:        "/source/{id}/items",
+		PathPattern:        "/source/{id}/packjobs",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetSourceIDItemsReader{formats: a.formats},
+		Reader:             &GetSourceIDPackjobsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -405,18 +405,18 @@ func (a *Client) GetSourceIDItems(params *GetSourceIDItemsParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetSourceIDItemsOK)
+	success, ok := result.(*GetSourceIDPackjobsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSourceIDItems: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetSourceIDPackjobs: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-GetSourceIDPath gets all item details inside a data source path
+GetSourceIDPath gets all file details inside a data source path
 */
 func (a *Client) GetSourceIDPath(params *GetSourceIDPathParams, opts ...ClientOption) (*GetSourceIDPathOK, error) {
 	// TODO: Validate the params before sending
@@ -530,22 +530,22 @@ func (a *Client) PatchSourceID(params *PatchSourceIDParams, opts ...ClientOption
 }
 
 /*
-PostChunkIDPack packs a chunk into car files
+PostPackjobIDPack packs a pack job into car files
 */
-func (a *Client) PostChunkIDPack(params *PostChunkIDPackParams, opts ...ClientOption) (*PostChunkIDPackCreated, error) {
+func (a *Client) PostPackjobIDPack(params *PostPackjobIDPackParams, opts ...ClientOption) (*PostPackjobIDPackCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostChunkIDPackParams()
+		params = NewPostPackjobIDPackParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostChunkIDPack",
+		ID:                 "PostPackjobIDPack",
 		Method:             "POST",
-		PathPattern:        "/chunk/{id}/pack",
+		PathPattern:        "/packjob/{id}/pack",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostChunkIDPackReader{formats: a.formats},
+		Reader:             &PostPackjobIDPackReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -557,13 +557,13 @@ func (a *Client) PostChunkIDPack(params *PostChunkIDPackParams, opts ...ClientOp
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostChunkIDPackCreated)
+	success, ok := result.(*PostPackjobIDPackCreated)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostChunkIDPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PostPackjobIDPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -1138,44 +1138,6 @@ func (a *Client) PostSourceIDCheck(params *PostSourceIDCheckParams, opts ...Clie
 }
 
 /*
-PostSourceIDChunk creates a chunk for the specified items
-*/
-func (a *Client) PostSourceIDChunk(params *PostSourceIDChunkParams, opts ...ClientOption) (*PostSourceIDChunkCreated, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostSourceIDChunkParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostSourceIDChunk",
-		Method:             "POST",
-		PathPattern:        "/source/{id}/chunk",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostSourceIDChunkReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostSourceIDChunkCreated)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostSourceIDChunk: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
 PostSourceIDDaggen marks a source as ready for d a g generation
 */
 func (a *Client) PostSourceIDDaggen(params *PostSourceIDDaggenParams, opts ...ClientOption) (*PostSourceIDDaggenOK, error) {
@@ -1214,7 +1176,45 @@ func (a *Client) PostSourceIDDaggen(params *PostSourceIDDaggenParams, opts ...Cl
 }
 
 /*
-PostSourceIDPush pushes an item to be queued
+PostSourceIDPackjob creates a pack job for the specified files
+*/
+func (a *Client) PostSourceIDPackjob(params *PostSourceIDPackjobParams, opts ...ClientOption) (*PostSourceIDPackjobCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostSourceIDPackjobParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostSourceIDPackjob",
+		Method:             "POST",
+		PathPattern:        "/source/{id}/packjob",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostSourceIDPackjobReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostSourceIDPackjobCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostSourceIDPackjob: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PostSourceIDPush pushes a file to be queued
 
 Tells Singularity that something is ready to be grabbed for data preparation
 */
@@ -1254,7 +1254,7 @@ func (a *Client) PostSourceIDPush(params *PostSourceIDPushParams, opts ...Client
 }
 
 /*
-PostSourceIDRepack triggers a repack of a chunk or all errored chunks of a data source
+PostSourceIDRepack triggers a repack of a pack job or all errored pack jobs of a data source
 */
 func (a *Client) PostSourceIDRepack(params *PostSourceIDRepackParams, opts ...ClientOption) (*PostSourceIDRepackOK, error) {
 	// TODO: Validate the params before sending

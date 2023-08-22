@@ -20,6 +20,7 @@ var PathCmd = &cli.Command{
 		}
 		defer closer.Close()
 		result, err := inspect.GetPathHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 			inspect.GetPathRequest{
@@ -41,9 +42,9 @@ var PathCmd = &cli.Command{
 			fmt.Println("SubDirs:")
 			cliutil.PrintToConsole(result.Dirs, false, nil)
 		}
-		if len(result.Items) > 0 {
-			fmt.Println("SubItems:")
-			cliutil.PrintToConsole(result.Items, false, nil)
+		if len(result.Files) > 0 {
+			fmt.Println("SubFiles:")
+			cliutil.PrintToConsole(result.Files, false, nil)
 		}
 		return nil
 	},

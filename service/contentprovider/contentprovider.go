@@ -2,92 +2,85 @@ package contentprovider
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"time"
-
-	"github.com/data-preservation-programs/singularity/util"
-	"github.com/fxamacker/cbor/v2"
-	nilrouting "github.com/ipfs/go-ipfs-routing/none"
-	bsnetwork "github.com/ipfs/go-libipfs/bitswap/network"
-	"github.com/ipfs/go-libipfs/bitswap/server"
-	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p/core/crypto"
-	"github.com/libp2p/go-libp2p/core/host"
-	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/multiformats/go-multiaddr"
 
 	"github.com/data-preservation-programs/singularity/datasource"
-	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/store"
-	"github.com/ipfs/go-cid"
+	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/util"
+	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/multiformats/go-multiaddr"
+
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
 var logger = logging.Logger("contentprovider")
 
-func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
-	private, public, err := crypto.GenerateEd25519Key(rand.Reader)
-	if err != nil {
-		return nil, nil, "", errors.Wrap(err, "cannot generate new peer")
-	}
-
-	peerID, err := peer.IDFromPublicKey(public)
-	if err != nil {
-		return nil, nil, "", errors.Wrap(err, "cannot generate peer id")
-	}
-
-	privateBytes, err := crypto.MarshalPrivateKey(private)
-	if err != nil {
-		return nil, nil, "", errors.Wrap(err, "cannot marshal private key")
-	}
-
-	publicBytes, err := crypto.MarshalPublicKey(public)
-	if err != nil {
-		return nil, nil, "", errors.Wrap(err, "cannot marshal public key")
-	}
-	return privateBytes, publicBytes, peerID, nil
+type Service struct {
+	servers []service.Server
 }
 
-type ContentProviderService struct {
-	Resolver datasource.HandlerResolver
-	DB       *gorm.DB
-	bind     string
-	host     host.Host
+type Config struct {
+	HTTP    HTTPConfig
+	Bitswap BitswapConfig
 }
 
-type ContentProviderConfig struct {
-	EnableHTTP        bool
-	HTTPBind          string
-	EnableBitswap     bool
-	Libp2pIdentityKey string
-	Libp2pListenAddrs []string
+type HTTPConfig struct {
+	Enable bool
+	Bind   string
 }
 
-func NewContentProviderService(db *gorm.DB, config ContentProviderConfig) (*ContentProviderService, error) {
-	bind := ""
-	if config.EnableHTTP {
-		bind = config.HTTPBind
+type BitswapConfig struct {
+	Enable           bool
+	IdentityKey      string
+	ListenMultiAddrs []string
+}
+
+// NewService creates a new Service instance with the provided database and configuration.
+//
+// The NewService function takes the following parameters:
+// - db: The gorm.DB instance for database operations.
+// - config: The Config struct containing the service configuration.
+//
+// The function performs the following steps:
+// 1. Creates an empty Service instance.
+// 2. If the HTTP server is enabled in the configuration, creates an HTTPServer instance and adds it to the servers slice.
+//   - The HTTPServer is configured with the bind address, database without context, and a DefaultHandlerResolver.
+//
+// 3. If the Bitswap server is enabled in the configuration, initializes the identity key based on the configuration.
+//   - If the identity key is not provided, generates a new peer identity key.
+//   - If the identity key is provided, decodes it from base64.
+//   - Unmarshals the private key from the identity key bytes.
+//   - If no listen multiaddresses are provided, sets a default listen multiaddress.
+//   - Converts each listen multiaddress string to a Multiaddr instance.
+//   - Initializes a libp2p host with the identity key and listen multiaddresses.
+//   - Logs the libp2p listening addresses and peer ID.
+//   - Creates a BitswapServer instance with the libp2p host and database without context, and adds it to the servers slice.
+//
+// 4. Returns the created Service instance and nil for the error if all steps are executed successfully.
+func NewService(db *gorm.DB, config Config) (*Service, error) {
+	s := &Service{}
+
+	if config.HTTP.Enable {
+		s.servers = append(s.servers, &HTTPServer{
+			bind:        config.HTTP.Bind,
+			dbNoContext: db,
+			resolver:    &datasource.DefaultHandlerResolver{},
+		})
 	}
-	if config.EnableBitswap {
+
+	if config.Bitswap.Enable {
 		var private []byte
-		if config.Libp2pIdentityKey == "" {
+		if config.Bitswap.IdentityKey == "" {
 			var err error
-			private, _, _, err = GenerateNewPeer()
+			private, _, _, err = util.GenerateNewPeer()
 			if err != nil {
 				return nil, err
 			}
 		} else {
 			var err error
-			private, err = base64.StdEncoding.DecodeString(config.Libp2pIdentityKey)
+			private, err = base64.StdEncoding.DecodeString(config.Bitswap.IdentityKey)
 			if err != nil {
 				return nil, err
 			}
@@ -96,8 +89,11 @@ func NewContentProviderService(db *gorm.DB, config ContentProviderConfig) (*Cont
 		if err != nil {
 			return nil, err
 		}
+		if len(config.Bitswap.ListenMultiAddrs) == 0 {
+			config.Bitswap.ListenMultiAddrs = []string{"/ip4/0.0.0.0/tcp/0"}
+		}
 		var listenAddrs []multiaddr.Multiaddr
-		for _, addr := range config.Libp2pListenAddrs {
+		for _, addr := range config.Bitswap.ListenMultiAddrs {
 			ma, err := multiaddr.NewMultiaddr(addr)
 			if err != nil {
 				return nil, err
@@ -109,283 +105,17 @@ func NewContentProviderService(db *gorm.DB, config ContentProviderConfig) (*Cont
 			return nil, err
 		}
 		for _, m := range h.Addrs() {
-			logger.Info("listening on " + m.String())
+			logger.Info("libp2p listening on " + m.String())
 		}
 		logger.Info("peerID: " + h.ID().String())
-		return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}, host: h}, nil
+		s.servers = append(s.servers, &BitswapServer{
+			host:        h,
+			dbNoContext: db,
+		})
 	}
-	return &ContentProviderService{DB: db, bind: bind, Resolver: datasource.DefaultHandlerResolver{}}, nil
+	return s, nil
 }
 
-func (s *ContentProviderService) StartBitswap(ctx context.Context) error {
-	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
-	if err != nil {
-		return err
-	}
-
-	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := store.ItemReferenceBlockStore{DB: s.DB, HandlerResolver: datasource.DefaultHandlerResolver{}}
-	bsserver := server.New(ctx, net, bs)
-	net.Start(bsserver)
-	return nil
-}
-
-func (s *ContentProviderService) Start(ctx context.Context) error {
-	if s.host != nil {
-		err := s.StartBitswap(ctx)
-		if err != nil {
-			logger.Fatal(err)
-		}
-	}
-	httpDone := make(chan struct{})
-	if s.bind != "" {
-		e := echo.New()
-		e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
-		e.Use(
-			middleware.RequestLoggerWithConfig(
-				middleware.RequestLoggerConfig{
-					LogStatus: true,
-					LogURI:    true,
-					LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-						uri := v.URI
-						status := v.Status
-						latency := time.Since(v.StartTime)
-						err := v.Error
-						method := c.Request().Method
-						if err != nil {
-							logger.With(
-								"status",
-								status,
-								"latency_ms",
-								latency.Milliseconds(),
-								"err",
-								err,
-							).Error(method + " " + uri)
-						} else {
-							logger.With("status", status, "latency_ms", latency.Milliseconds()).Info(method + " " + uri)
-						}
-						return nil
-					},
-				},
-			),
-		)
-		e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
-			Skipper:           middleware.DefaultSkipper,
-			StackSize:         4 << 10, // 4 KB
-			DisableStackAll:   false,
-			DisablePrintStack: false,
-			LogLevel:          0,
-			LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
-				logger.Errorw("panic", "err", err, "stack", string(stack))
-				return nil
-			},
-		}))
-		e.GET("/piece/metadata/:id", s.GetMetadataHandler)
-		e.HEAD("/piece/metadata/:id", s.GetMetadataHandler)
-		e.GET("/piece/:id", s.handleGetPiece)
-		e.HEAD("/piece/:id", s.handleGetPiece)
-		e.GET("/ipfs/:cid", s.handleGetCid)
-
-		go func() {
-			<-ctx.Done()
-			logger.Warnw("shutting down the server")
-			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer shutdownCancel()
-			//nolint:contextcheck
-			if err := e.Shutdown(shutdownCtx); err != nil {
-				fmt.Printf("Error shutting down the server: %v\n", err)
-			}
-			httpDone <- struct{}{}
-		}()
-
-		defer func() {
-			<-httpDone
-		}()
-
-		err := e.Start(s.bind)
-		if err != nil {
-			return err
-		}
-	}
-
-	<-ctx.Done()
-	return nil
-}
-
-func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
-	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
-	}
-
-	var car model.Car
-	ctx := c.Request().Context()
-	err = db.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).First(&car).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return c.String(http.StatusNotFound, "piece not found")
-	}
-
-	metadata, err := GetPieceMetadata(ctx, db, car)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
-	}
-
-	// Remove all relevant credentials
-	metadata.Source.Metadata = nil
-
-	acceptHeader := c.Request().Header.Get("Accept")
-	switch acceptHeader {
-	case "application/cbor":
-		c.Response().WriteHeader(http.StatusOK)
-		c.Response().Header().Set("Content-Type", "application/cbor")
-		encoder := cbor.NewEncoder(c.Response().Writer)
-		return encoder.Encode(metadata)
-	default:
-		return c.JSON(http.StatusOK, metadata)
-	}
-}
-
-func (s *ContentProviderService) GetMetadataHandler(c echo.Context) error {
-	return GetMetadataHandler(c, s.DB)
-}
-
-type PieceMetadata struct {
-	Car       model.Car        `json:"car"`
-	Source    model.Source     `json:"source"`
-	CarBlocks []model.CarBlock `json:"carBlocks"`
-	Items     []model.Item     `json:"items"`
-}
-
-func GetPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
-	var source model.Source
-	err := db.WithContext(ctx).Where("id = ?", car.SourceID).Find(&source).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to query for source: %w", err)
-	}
-	var carBlocks []model.CarBlock
-	err = db.WithContext(ctx).Where("car_id = ?", car.ID).
-		Find(&carBlocks).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to query for CAR blocks: %w", err)
-	}
-	var items []model.Item
-	err = db.WithContext(ctx).Where("id IN (?)", db.Model(&model.CarBlock{}).Select("item_id").Where("car_id = ?", car.ID)).Find(&items).Error
-	if err != nil {
-		return nil, fmt.Errorf("failed to query for items: %w", err)
-	}
-	return &PieceMetadata{
-		Car:       car,
-		Source:    source,
-		CarBlocks: carBlocks,
-		Items:     items,
-	}, nil
-}
-
-func (s *ContentProviderService) GetPieceMetadata(ctx context.Context, car model.Car) (*PieceMetadata, error) {
-	return GetPieceMetadata(ctx, s.DB, car)
-}
-
-func (s *ContentProviderService) FindPiece(ctx context.Context, pieceCid cid.Cid) (
-	io.ReadSeekCloser,
-	time.Time,
-	error,
-) {
-	var cars []model.Car
-	err := s.DB.WithContext(ctx).Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
-	if err != nil {
-		return nil, time.Time{}, fmt.Errorf("failed to query for CARs: %w", err)
-	}
-
-	if len(cars) == 0 {
-		return nil, time.Time{}, os.ErrNotExist
-	}
-
-	for _, car := range cars {
-		if car.FilePath == "" {
-			continue
-		}
-
-		file, err := os.Open(car.FilePath)
-		if err != nil {
-			continue
-		}
-		fileInfo, err := file.Stat()
-		if err != nil {
-			file.Close()
-			continue
-		}
-		return file, fileInfo.ModTime(), nil
-	}
-
-	car := cars[0]
-	metadata, err := s.GetPieceMetadata(ctx, car)
-	if err != nil {
-		return nil, time.Time{}, fmt.Errorf("failed to get piece metadata: %w", err)
-	}
-	reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Source, metadata.CarBlocks, metadata.Items, s.Resolver)
-	if err != nil {
-		return nil, time.Time{}, fmt.Errorf("failed to create piece reader: %w", err)
-	}
-	return reader, car.CreatedAt, nil
-}
-
-func (s *ContentProviderService) setCommonHeaders(c echo.Context, pieceCid string) {
-	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", pieceCid+".car"))
-	c.Response().Header().Set("Content-Type", "application/vnd.ipld.car; version=1")
-	c.Response().Header().Set("Accept-Ranges", "bytes")
-	c.Response().Header().Set("Etag", "\""+pieceCid+"\"")
-}
-
-func (s *ContentProviderService) handleGetCid(c echo.Context) error {
-	id := c.Param("cid")
-	cid, err := cid.Parse(id)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse CID: "+err.Error())
-	}
-
-	var item model.Item
-	err = s.DB.WithContext(c.Request().Context()).Preload("Source").Where("cid = ?", cid.String()).First(&item).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return c.String(http.StatusNotFound, "CID not found")
-	}
-	handler, err := s.Resolver.Resolve(c.Request().Context(), *item.Source)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to get handler: "+err.Error())
-	}
-
-	handle, _, err := handler.Read(c.Request().Context(), item.Path, 0, item.Size)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to open handler: "+err.Error())
-	}
-	defer handle.Close()
-	return c.Stream(http.StatusOK, "application/octet-stream", handle)
-}
-
-func (s *ContentProviderService) handleGetPiece(c echo.Context) error {
-	id := c.Param("id")
-	pieceCid, err := cid.Parse(id)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
-	}
-
-	reader, lastModified, err := s.FindPiece(c.Request().Context(), pieceCid)
-	if os.IsNotExist(err) {
-		return c.String(http.StatusNotFound, "piece not found")
-	}
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to find piece: "+err.Error())
-	}
-
-	defer reader.Close()
-	s.setCommonHeaders(c, pieceCid.String())
-	http.ServeContent(
-		c.Response(),
-		c.Request(),
-		pieceCid.String()+".car",
-		lastModified,
-		reader,
-	)
-
-	return nil
+func (s *Service) Start(ctx context.Context) error {
+	return service.StartServers(ctx, logger, s.servers...)
 }

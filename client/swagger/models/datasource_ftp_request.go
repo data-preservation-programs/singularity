@@ -81,7 +81,7 @@ type DatasourceFtpRequest struct {
 	// Maximum time to wait for data connection closing status.
 	ShutTimeout *string `json:"shutTimeout,omitempty"`
 
-	// The path of the source to scan items
+	// The path of the source to scan files
 	// Required: true
 	SourcePath *string `json:"sourcePath"`
 

@@ -2,9 +2,9 @@ package inspect_test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path"
+	"strconv"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -13,11 +13,10 @@ import (
 	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 )
 
-func TestItemDeals(t *testing.T) {
+func TestFileDeals(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test file to add
@@ -37,14 +36,14 @@ func TestItemDeals(t *testing.T) {
 
 	datasetName := "test"
 
-	_, err = dataset.CreateHandler(db.WithContext(ctx), dataset.CreateRequest{
+	_, err = dataset.CreateHandler(ctx, db.WithContext(ctx), dataset.CreateRequest{
 		Name:       datasetName,
 		MaxSizeStr: "31GiB",
 	})
 	require.NoError(t, err)
 
 	// Create datasource
-	source, err := dshandler.CreateDatasourceHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, "local", datasetName, map[string]any{
+	source, err := dshandler.CreateDatasourceHandler(ctx, db.WithContext(ctx), "local", datasetName, map[string]any{
 		"sourcePath":        testSourcePath,
 		"rescanInterval":    "10s",
 		"scanningState":     string(model.Ready),
@@ -52,19 +51,25 @@ func TestItemDeals(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// Push items
-	itemA, err := dshandler.PushItemHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, source.ID, dshandler.ItemInfo{Path: "a"})
+	// Push files
+	fileA, err := dshandler.PushFileHandler(ctx, db.WithContext(ctx), datasourceHandlerResolver, source.ID, dshandler.FileInfo{Path: "a"})
 	require.NoError(t, err)
 
-	itemB, err := dshandler.PushItemHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, source.ID, dshandler.ItemInfo{Path: "b"})
+	fileB, err := dshandler.PushFileHandler(ctx, db.WithContext(ctx), datasourceHandlerResolver, source.ID, dshandler.FileInfo{Path: "b"})
 	require.NoError(t, err)
 
-	chunk, err := dshandler.ChunkHandler(db.WithContext(ctx), source.ID, dshandler.ChunkRequest{
-		ItemIDs: append(underscore.Map(itemA.ItemParts, func(itemPart model.ItemPart) uint64 { return itemPart.ID }),
-			underscore.Map(itemB.ItemParts, func(itemPart model.ItemPart) uint64 { return itemPart.ID })...),
+	var fileRanges []model.FileRange
+	fileRanges = append(fileRanges, fileA.FileRanges...)
+	fileRanges = append(fileRanges, fileB.FileRanges...)
+	var fileRangeIDs []uint64
+	for _, fileRange := range fileRanges {
+		fileRangeIDs = append(fileRangeIDs, fileRange.ID)
+	}
+	packJob, err := dshandler.CreatePackJobHandler(ctx, db.WithContext(ctx), strconv.FormatUint(uint64(source.ID), 10), dshandler.CreatePackJobRequest{
+		FileRangeIDs: fileRangeIDs,
 	})
 	require.NoError(t, err)
-	cars, err := dshandler.PackHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, chunk.ID)
+	cars, err := dshandler.PackHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, packJob.ID)
 	require.NoError(t, err)
 
 	// Manually add fake deals
@@ -81,13 +86,12 @@ func TestItemDeals(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// Test item deals
-	deals, err := inspect.GetItemDealsHandler(db.WithContext(ctx), itemA.ID)
+	// Test file deals
+	deals, err := inspect.GetFileDealsHandler(db.WithContext(ctx), fileA.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
-	fmt.Printf("%#v\n", deals)
 
-	deals, err = inspect.GetItemDealsHandler(db.WithContext(ctx), itemB.ID)
+	deals, err = inspect.GetFileDealsHandler(db.WithContext(ctx), fileB.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 }

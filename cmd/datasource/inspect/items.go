@@ -7,18 +7,19 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var ItemsCmd = &cli.Command{
-	Name:        "items",
-	Usage:       "Get all item details of a data source",
+var FilesCmd = &cli.Command{
+	Name:        "files",
+	Usage:       "Get all file details of a data source",
 	ArgsUsage:   "<source_id>",
-	Description: "This command will list all items in a data source. This may be very large list.",
+	Description: "This command will list all files in a data source. This may be very large list.",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return err
 		}
 		defer closer.Close()
-		result, err := inspect.GetSourceItemsHandler(
+		result, err := inspect.GetSourceFilesHandler(
+			c.Context,
 			db,
 			c.Args().Get(0),
 		)

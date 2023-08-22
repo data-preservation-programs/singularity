@@ -1,6 +1,7 @@
 package dataset
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
@@ -18,15 +19,15 @@ type UpdateRequest struct {
 	PieceSizeStr         *string  `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
 	OutputDirs           []string `json:"outputDirs"           validate:"optional"`                     // Output directory for CAR files. Do not set if using inline preparation
 	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
-	EncryptionScript     *string  `json:"encryptionScript"     validate:"optional"`                     // EncryptionScript command to run for custom encryption
 }
 
 func UpdateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
 ) (*model.Dataset, error) {
-	return updateHandler(db, datasetName, request)
+	return updateHandler(ctx, db.WithContext(ctx), datasetName, request)
 }
 
 // @Summary Update a dataset
@@ -40,6 +41,7 @@ func UpdateHandler(
 // @Failure 500 {object} api.HTTPError
 // @Router /dataset/{datasetName} [patch]
 func updateHandler(
+	ctx context.Context,
 	db *gorm.DB,
 	datasetName string,
 	request UpdateRequest,
@@ -59,7 +61,7 @@ func updateHandler(
 		return nil, err2
 	}
 
-	err = database.DoRetry(func() error { return db.Save(&dataset).Error })
+	err = database.DoRetry(ctx, func() error { return db.Save(&dataset).Error })
 	if err != nil {
 		return nil, err
 	}
@@ -127,15 +129,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Dataset) error {
 		dataset.EncryptionRecipients = request.EncryptionRecipients
 	}
 
-	if request.EncryptionScript != nil {
-		dataset.EncryptionScript = *request.EncryptionScript
-	}
-
-	if len(dataset.EncryptionRecipients) > 0 && dataset.EncryptionScript != "" {
-		return handler.NewInvalidParameterErr("encryption recipients and script cannot be used together")
-	}
-
-	if (len(dataset.EncryptionRecipients) > 0 || dataset.EncryptionScript != "") && len(dataset.OutputDirs) == 0 {
+	if len(dataset.EncryptionRecipients) > 0 && len(dataset.OutputDirs) == 0 {
 		return handler.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",

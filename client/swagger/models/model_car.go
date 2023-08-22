@@ -17,9 +17,6 @@ import (
 // swagger:model model.Car
 type ModelCar struct {
 
-	// chunk Id
-	ChunkID int64 `json:"chunkId,omitempty"`
-
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
@@ -37,6 +34,9 @@ type ModelCar struct {
 
 	// id
 	ID int64 `json:"id,omitempty"`
+
+	// pack job Id
+	PackJobID int64 `json:"packJobId,omitempty"`
 
 	// piece cid
 	PieceCid ModelCID `json:"pieceCid,omitempty"`
