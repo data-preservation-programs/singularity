@@ -25,3 +25,6 @@ func GetFileTimestamp(t *testing.T, path string) int64 {
 }
 
 var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
+
+var TestRecipient = "age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"
+var TestSecretKey = "AGE-SECRET-KEY-1HZG3ESWDVPE3S4AM8WWCZG3H66A6RVJPXPZZEAC04FWZVT6RJ7XQAUV49J"

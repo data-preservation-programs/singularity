@@ -3,7 +3,6 @@ package pack
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/cockroachdb/errors"
@@ -12,6 +11,7 @@ import (
 	util2 "github.com/data-preservation-programs/singularity/pack/util"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/minio/sha256-simd"
@@ -23,22 +23,23 @@ import (
 var ErrFileModified = errors.New("file has been modified")
 
 type Assembler struct {
-	objects      map[uint64]fs.Object
-	ctx          context.Context
-	reader       storagesystem.Reader
-	encryptor    encryption.Encryptor
-	fileRanges   []model.FileRange
-	index        int
-	buffer       io.Reader
-	fileReader   io.Reader
-	closers      []io.Closer
-	buf          []byte
-	maxSize      int64
-	fileOffset   int64
-	carOffset    int64
-	pendingLinks []format.Link
-	carBlocks    []model.CarBlock
-	hasBoundary  bool
+	objects         map[uint64]fs.Object
+	ctx             context.Context
+	reader          storagesystem.Reader
+	encryptor       encryption.Encryptor
+	fileRanges      []model.FileRange
+	index           int
+	buffer          io.Reader
+	fileReader      io.Reader
+	closers         []io.Closer
+	buf             []byte
+	maxSize         int64
+	fileOffset      int64
+	carOffset       int64
+	pendingLinks    []format.Link
+	carBlocks       []model.CarBlock
+	hasBoundary     bool
+	assembleLinkFor *int
 }
 
 // Close closes the assembler and all of its underlying readers
@@ -81,17 +82,14 @@ func (a *Assembler) Next() bool {
 
 func (a *Assembler) readBuffer(p []byte) (int, error) {
 	n, err := a.buffer.Read(p)
-	fmt.Println("reading buffer", n, err)
 
 	switch err {
 	case io.EOF:
 		a.buffer = nil
 		if !a.hasBoundary {
 			err = nil
-			fmt.Println("finished reading all buffer, continue reading")
 		} else {
 			a.hasBoundary = false
-			fmt.Println("finished reading all buffer and reached boundary, terminating this read stream")
 		}
 		return n, err
 	case nil:
@@ -103,7 +101,6 @@ func (a *Assembler) readBuffer(p []byte) (int, error) {
 
 // populateBuffer will set the buffer to a MultiReader of the given content
 func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
-	fmt.Printf("populating buffer, offset: %d\n", a.carOffset)
 	var readers []io.Reader
 	if a.carOffset == 0 {
 		rootCid := EmptyFileCid
@@ -114,10 +111,6 @@ func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		if a.hasBoundary == true {
-			fmt.Println("this should not happen")
-		}
-		fmt.Println("adding car header to buffer")
 		readers = append(readers, bytes.NewReader(header))
 		a.carOffset += int64(len(header))
 	}
@@ -138,7 +131,6 @@ func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 
 	if a.carOffset > a.maxSize {
 		a.hasBoundary = true
-		fmt.Println("car offset exceeding maxsize, setting boundary to true")
 		a.carOffset = 0
 	}
 
@@ -146,11 +138,14 @@ func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 }
 
 func (a *Assembler) assembleLinks() error {
+	defer func() {
+		a.assembleLinkFor = nil
+	}()
 	if len(a.pendingLinks) == 0 {
 		return nil
 	}
 	if len(a.pendingLinks) == 1 {
-		a.fileRanges[a.index].CID = model.CID(a.pendingLinks[0].Cid)
+		a.fileRanges[*a.assembleLinkFor].CID = model.CID(a.pendingLinks[0].Cid)
 		return nil
 	}
 
@@ -160,7 +155,7 @@ func (a *Assembler) assembleLinks() error {
 	}
 
 	rootCid := rootNode.Cid()
-	a.fileRanges[a.index].CID = model.CID(rootCid)
+	a.fileRanges[*a.assembleLinkFor].CID = model.CID(rootCid)
 	carBlocks := make([]model.CarBlock, len(blks))
 	for i, blk := range blks {
 		vint := varint.ToUvarint(uint64(blk.Cid().ByteLen() + len(blk.RawData())))
@@ -217,11 +212,7 @@ func (a *Assembler) prefetch() error {
 
 	// Last empty chunk of a file
 	if err == io.EOF && !firstChunk {
-		err2 := a.assembleLinks()
-		if err2 != nil {
-			return errors.WithStack(err2)
-		}
-
+		a.assembleLinkFor = ptr.Of(a.index)
 		a.fileReader = nil
 		a.Close()
 		a.index++
@@ -268,10 +259,7 @@ func (a *Assembler) prefetch() error {
 			return nil
 		}
 
-		err = a.assembleLinks()
-		if err != nil {
-			return errors.WithStack(err)
-		}
+		a.assembleLinkFor = ptr.Of(a.index)
 		a.Close()
 		a.fileReader = nil
 		a.index++
@@ -289,6 +277,10 @@ func (a *Assembler) Read(p []byte) (int, error) {
 
 	if a.buffer != nil {
 		return a.readBuffer(p)
+	}
+
+	if a.assembleLinkFor != nil {
+		return 0, errors.WithStack(a.assembleLinks())
 	}
 
 	if a.index == len(a.fileRanges) {

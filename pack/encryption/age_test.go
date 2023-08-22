@@ -6,11 +6,12 @@ import (
 
 	"filippo.io/age"
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEncryptionFullPiece(t *testing.T) {
-	state, err := NewAgeEncryptor([]string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"})
+	state, err := NewAgeEncryptor([]string{testutil.TestRecipient})
 	require.NoError(t, err)
 
 	input := bytes.NewReader([]byte("This is a test"))
@@ -21,7 +22,7 @@ func TestEncryptionFullPiece(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 214, len(buf.Bytes()))
 
-	identity, err := age.ParseX25519Identity("AGE-SECRET-KEY-1HZG3ESWDVPE3S4AM8WWCZG3H66A6RVJPXPZZEAC04FWZVT6RJ7XQAUV49J")
+	identity, err := age.ParseX25519Identity(testutil.TestSecretKey)
 	require.NoError(t, err)
 	decrypted, err := age.Decrypt(buf, identity)
 	require.NoError(t, err)
@@ -32,7 +33,7 @@ func TestEncryptionFullPiece(t *testing.T) {
 }
 
 func TestEncryptionWithReadError(t *testing.T) {
-	state, err := NewAgeEncryptor([]string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"})
+	state, err := NewAgeEncryptor([]string{testutil.TestRecipient})
 	require.NoError(t, err)
 
 	readErr := errors.New("read error")
