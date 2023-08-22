@@ -237,7 +237,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 
 		switch job.Type {
 		case model.Scan:
-			err = w.scan(ctx, *job, true)
+			err = w.scan(ctx, *job)
 		case model.Pack:
 			err = w.pack(ctx, *job)
 		case model.DagGen:

@@ -31,6 +31,8 @@ var EmptyFileCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
 
 var EmptyFileVarint = varint.ToUvarint(uint64(len(EmptyFileCid.Bytes())))
 
+var EmptyCarHeader, _ = util2.GenerateCarHeader(EmptyFileCid)
+
 var logger = log.Logger("pack")
 
 // GetCommp calculates the data commitment (CommP) and the piece size based on the

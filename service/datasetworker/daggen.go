@@ -123,6 +123,8 @@ func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID uint32, root
 	}
 }
 
+var ErrDagNotReady = errors.New("dag is not ready to be generated")
+
 // ExportDag exports a Directed Acyclic Graph (DAG) for a given source.
 // The function takes a source, iterates through the related directories
 // (as rows from the database), and constructs the DAG in the form of a
@@ -150,6 +152,10 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	rootCID, err := job.Attachment.RootDirectoryCID(ctx, w.dbNoContext)
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	if rootCID == cid.Undef {
+		return ErrDagNotReady
 	}
 
 	db := w.dbNoContext.WithContext(ctx)

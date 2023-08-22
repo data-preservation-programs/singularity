@@ -1,9 +1,9 @@
 package daggen
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
 	ipld "github.com/ipfs/go-ipld-format"
-	"github.com/cockroachdb/errors"
 )
 
 type DummyNode struct {
@@ -13,8 +13,8 @@ type DummyNode struct {
 
 var ErrDummyNode error = errors.New("fake dummy Node")
 
-func NewDummyNode(size uint64, cid cid.Cid) DummyNode {
-	return DummyNode{size: size, cid: cid}
+func NewDummyNode(size uint64, cid cid.Cid) *DummyNode {
+	return &DummyNode{size: size, cid: cid}
 }
 
 func (f DummyNode) RawData() []byte {
