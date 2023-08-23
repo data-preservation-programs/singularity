@@ -77,7 +77,7 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 
 	// In case there are some works that have stale foreign key referenced to dead workers, we need to remove them
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Job{}).Where("(worker_id NOT IN (?) OR worker_id IS NULL) AND dag_gen_state = ?",
+		return db.Model(&model.Job{}).Where("(worker_id NOT IN (?) OR worker_id IS NULL) AND state = ?",
 			db.Table("workers").Select("id"), model.Processing).
 			Updates(map[string]any{
 				"worker_id": nil,
