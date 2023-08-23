@@ -65,7 +65,7 @@ func prepareToPackFileRanges(
 	fileRangeSet := newFileRangeSet()
 
 	for len(remainingParts) > 0 {
-		nextPackJob, err := nextAvailablePackJob(db, sourceID)
+		nextPackJob, err := nextAvailablePackJob(ctx, db, sourceID)
 		if err != nil {
 			return 0, fmt.Errorf("finding next available pack job: %w", err)
 		}
@@ -230,11 +230,14 @@ func toCarSize(size int64) int64 {
 }
 
 func nextAvailablePackJob(
+	ctx context.Context,
 	db *gorm.DB,
 	sourceID uint32,
 ) (*model.PackJob, error) {
 	var packJob model.PackJob
-	err := db.Where(model.PackJob{SourceID: sourceID, PackingState: model.Created}).Preload("FileRanges").FirstOrCreate(&packJob).Error
+	err := database.DoRetry(ctx, func() error {
+		return db.Where(model.PackJob{SourceID: sourceID, PackingState: model.Created}).Preload("FileRanges").FirstOrCreate(&packJob).Error
+	})
 	if err != nil {
 		return nil, err
 	}
