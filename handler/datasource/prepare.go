@@ -285,6 +285,11 @@ func PrepareSource(ctx context.Context, db *gorm.DB, datasourceHandlerResolver d
 			}
 
 			remainingParts = append(remainingParts, fileRanges...)
+			_, err = prepareToPackFileRanges(ctx, db, source.ID, dataset.MaxSize, remainingParts)
+			if err != nil {
+				return err
+			}
+			remainingParts = remainingParts[:0]
 		}
 	}
 	logger.With("remaining", len(remainingParts)).Info("remaining items")
