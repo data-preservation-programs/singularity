@@ -286,6 +286,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/source/:id/path", s.toEchoHandler(inspect.GetPathHandler))
 	e.GET("/api/packjob/:id", s.toEchoHandler(inspect.GetSourcePackJobDetailHandler))
 	e.GET("/api/file/:id", s.toEchoHandler(inspect.GetSourceFileDetailHandler))
+	e.GET("/api/file/:id/deals", s.toEchoHandler(inspect.GetFileDealsHandler))
 
 	// Deal Schedule
 	e.POST("/api/send_deal", s.toEchoHandler(deal.SendManualHandler))

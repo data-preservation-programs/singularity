@@ -3,6 +3,7 @@ package client_test
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,13 +85,44 @@ func TestClients(t *testing.T) {
 		name := osFile.Name()
 		err = osFile.Close()
 		require.NoError(t, err)
-		file, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: filepath.Base(name)})
+		fileA, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: filepath.Base(name)})
 		require.NoError(t, err)
-		require.Equal(t, filepath.Base(name), file.Path)
+		require.Equal(t, filepath.Base(name), fileA.Path)
 
 		// get file
-		returnedFile, err := client.GetFile(ctx, file.ID)
+		returnedFile, err := client.GetFile(ctx, fileA.ID)
 		require.NoError(t, err)
-		require.Equal(t, file.Path, returnedFile.Path)
+		require.Equal(t, fileA.Path, returnedFile.Path)
+
+		// push another file
+		osFile, err = os.CreateTemp(path, "push-*")
+		require.NoError(t, err)
+		buf = make([]byte, 1000)
+		_, _ = rand.Read(buf)
+		osFile.Write(buf)
+		name = osFile.Name()
+		err = osFile.Close()
+		require.NoError(t, err)
+		fileB, err := client.PushFile(ctx, source.ID, datasource.FileInfo{Path: filepath.Base(name)})
+		require.NoError(t, err)
+		require.Equal(t, filepath.Base(name), fileB.Path)
+
+		// Create pack job
+		var fileRanges []model.FileRange
+		fileRanges = append(fileRanges, fileA.FileRanges...)
+		fileRanges = append(fileRanges, fileB.FileRanges...)
+		var fileRangeIDs []uint64
+		for _, fileRange := range fileRanges {
+			fileRangeIDs = append(fileRangeIDs, fileRange.ID)
+		}
+		packJob, err := client.CreatePackJob(ctx, source.ID, datasource.CreatePackJobRequest{FileRangeIDs: fileRangeIDs})
+		require.NoError(t, err)
+		fmt.Printf("%#v\n", packJob)
+
+		// Check that pack job exists
+		packJobs, err := client.GetSourcePackJobs(ctx, source.ID, inspect.GetSourcePackJobsRequest{})
+		require.NoError(t, err)
+
+		require.Len(t, packJobs, 1)
 	})
 }

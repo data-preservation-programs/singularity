@@ -61,6 +61,10 @@ func (c *Client) GetFile(ctx context.Context, id uint64) (*model.File, error) {
 	return inspect.GetSourceFileDetailHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(id, 10))
 }
 
+func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
+	return inspect.GetFileDealsHandler(c.db.WithContext(ctx), id)
+}
+
 func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandler.FileInfo) (*model.File, error) {
 	return dshandler.PushFileHandler(ctx, c.db.WithContext(ctx), c.datasourceHandlerResolver, sourceID, fileInfo)
 }
@@ -69,7 +73,7 @@ func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dsh
 	return dshandler.CreatePackJobHandler(ctx, c.db.WithContext(ctx), strconv.FormatUint(uint64(sourceID), 10), request)
 }
 
-func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {
+func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error) {
 	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packJobID)
 }
 
