@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"path"
-	"strconv"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -58,17 +57,14 @@ func TestFileDeals(t *testing.T) {
 	fileB, err := dshandler.PushFileHandler(ctx, db.WithContext(ctx), datasourceHandlerResolver, source.ID, dshandler.FileInfo{Path: "b"})
 	require.NoError(t, err)
 
-	var fileRanges []model.FileRange
-	fileRanges = append(fileRanges, fileA.FileRanges...)
-	fileRanges = append(fileRanges, fileB.FileRanges...)
-	var fileRangeIDs []uint64
-	for _, fileRange := range fileRanges {
-		fileRangeIDs = append(fileRangeIDs, fileRange.ID)
-	}
-	packJob, err := dshandler.CreatePackJobHandler(ctx, db.WithContext(ctx), strconv.FormatUint(uint64(source.ID), 10), dshandler.CreatePackJobRequest{
-		FileRangeIDs: fileRangeIDs,
-	})
+	dshandler.PrepareToPackSourceHandler(ctx, db.WithContext(ctx), datasourceHandlerResolver, source.ID)
 	require.NoError(t, err)
+
+	packJobs, err := inspect.GetSourcePackJobsHandler(ctx, db.WithContext(ctx), source.ID, inspect.GetSourcePackJobsRequest{})
+	require.NoError(t, err)
+	require.Len(t, packJobs, 1)
+	packJob := packJobs[0]
+
 	cars, err := dshandler.PackHandler(db.WithContext(ctx), ctx, datasourceHandlerResolver, packJob.ID)
 	require.NoError(t, err)
 

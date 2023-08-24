@@ -579,6 +579,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/file/{id}/prepare_to_pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "prepare packjobs for a given item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/packjob/{id}": {
             "get": {
                 "consumes": [
@@ -3314,7 +3357,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/packjob": {
+        "/source/{id}/finalize": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -3325,31 +3368,19 @@ const docTemplate = `{
                 "tags": [
                     "Data Source"
                 ],
-                "summary": "Create a pack job for the specified files",
+                "summary": "prepare to pack a data source",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Source ID",
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.CreatePackJobRequest"
-                        }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.File"
-                        }
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -6674,17 +6705,6 @@ const docTemplate = `{
                 "path": {
                     "description": "Path relative to the data source root",
                     "type": "string"
-                }
-            }
-        },
-        "datasource.CreatePackJobRequest": {
-            "type": "object",
-            "properties": {
-                "fileRangeIDs": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 }
             }
         },

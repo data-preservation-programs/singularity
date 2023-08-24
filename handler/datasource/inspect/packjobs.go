@@ -48,9 +48,9 @@ func getSourcePackJobsHandler(
 
 	var packJobs []model.PackJob
 	if request.State == "" {
-		err = db.Where("source_id = ?", sourceID).Find(&packJobs).Error
+		err = db.Where("source_id = ?", sourceID).Order("id ASC").Find(&packJobs).Error
 	} else {
-		err = db.Where("source_id = ? AND packing_state = ?", sourceID, request.State).Find(&packJobs).Error
+		err = db.Where("source_id = ? AND packing_state = ?", sourceID, request.State).Order("id ASC").Find(&packJobs).Error
 	}
 
 	if err != nil {
