@@ -2280,13 +2280,6 @@ definitions:
         description: Path relative to the data source root
         type: string
     type: object
-  datasource.CreatePackJobRequest:
-    properties:
-      fileRangeIDs:
-        items:
-          type: integer
-        type: array
-    type: object
   datasource.DriveRequest:
     properties:
       acknowledgeAbuse:
@@ -5670,6 +5663,34 @@ paths:
       summary: Get all deals that have been made for a file
       tags:
       - Data Source
+  /file/{id}/prepare_to_pack:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: prepare packjobs for a given item
+      tags:
+      - Data Source
   /packjob/{id}:
     get:
       consumes:
@@ -6064,7 +6085,7 @@ paths:
       summary: Get all file details of a data source
       tags:
       - Data Source
-  /source/{id}/packjob:
+  /source/{id}/finalize:
     post:
       consumes:
       - application/json
@@ -6073,20 +6094,12 @@ paths:
         in: path
         name: id
         required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/datasource.CreatePackJobRequest'
+        type: integer
       produces:
       - application/json
       responses:
         "201":
           description: Created
-          schema:
-            $ref: '#/definitions/model.File'
         "400":
           description: Bad Request
           schema:
@@ -6095,7 +6108,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Create a pack job for the specified files
+      summary: prepare to pack a data source
       tags:
       - Data Source
   /source/{id}/packjobs:

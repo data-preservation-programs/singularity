@@ -50,6 +50,8 @@ type ClientService interface {
 
 	PatchSourceID(params *PatchSourceIDParams, opts ...ClientOption) (*PatchSourceIDOK, error)
 
+	PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackCreated, error)
+
 	PostPackjobIDPack(params *PostPackjobIDPackParams, opts ...ClientOption) (*PostPackjobIDPackCreated, error)
 
 	PostSourceAcdDatasetDatasetName(params *PostSourceAcdDatasetDatasetNameParams, opts ...ClientOption) (*PostSourceAcdDatasetDatasetNameOK, error)
@@ -84,7 +86,7 @@ type ClientService interface {
 
 	PostSourceIDDaggen(params *PostSourceIDDaggenParams, opts ...ClientOption) (*PostSourceIDDaggenOK, error)
 
-	PostSourceIDPackjob(params *PostSourceIDPackjobParams, opts ...ClientOption) (*PostSourceIDPackjobCreated, error)
+	PostSourceIDFinalize(params *PostSourceIDFinalizeParams, opts ...ClientOption) (*PostSourceIDFinalizeCreated, error)
 
 	PostSourceIDPush(params *PostSourceIDPushParams, opts ...ClientOption) (*PostSourceIDPushCreated, error)
 
@@ -526,6 +528,44 @@ func (a *Client) PatchSourceID(params *PatchSourceIDParams, opts ...ClientOption
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PatchSourceID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PostFileIDPrepareToPack prepares packjobs for a given item
+*/
+func (a *Client) PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostFileIDPrepareToPackParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostFileIDPrepareToPack",
+		Method:             "POST",
+		PathPattern:        "/file/{id}/prepare_to_pack",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostFileIDPrepareToPackReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostFileIDPrepareToPackCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostFileIDPrepareToPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -1176,22 +1216,22 @@ func (a *Client) PostSourceIDDaggen(params *PostSourceIDDaggenParams, opts ...Cl
 }
 
 /*
-PostSourceIDPackjob creates a pack job for the specified files
+PostSourceIDFinalize prepares to pack a data source
 */
-func (a *Client) PostSourceIDPackjob(params *PostSourceIDPackjobParams, opts ...ClientOption) (*PostSourceIDPackjobCreated, error) {
+func (a *Client) PostSourceIDFinalize(params *PostSourceIDFinalizeParams, opts ...ClientOption) (*PostSourceIDFinalizeCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostSourceIDPackjobParams()
+		params = NewPostSourceIDFinalizeParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostSourceIDPackjob",
+		ID:                 "PostSourceIDFinalize",
 		Method:             "POST",
-		PathPattern:        "/source/{id}/packjob",
+		PathPattern:        "/source/{id}/finalize",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostSourceIDPackjobReader{formats: a.formats},
+		Reader:             &PostSourceIDFinalizeReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1203,13 +1243,13 @@ func (a *Client) PostSourceIDPackjob(params *PostSourceIDPackjobParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostSourceIDPackjobCreated)
+	success, ok := result.(*PostSourceIDFinalizeCreated)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostSourceIDPackjob: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PostSourceIDFinalize: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

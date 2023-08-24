@@ -165,23 +165,45 @@ func (c *Client) GetSourcePackJobs(ctx context.Context, sourceID uint32, request
 	return packJobs, nil
 }
 
-func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request datasource.CreatePackJobRequest) (*model.PackJob, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/packjob", request)
+func (c *Client) PrepareToPackFile(ctx context.Context, fileID uint64) (int64, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.serverURL+"/api/file/"+strconv.FormatUint(fileID, 10)+"/prepare_to_pack", nil)
 	if err != nil {
-		return nil, err
+		return 0, err
+	}
+	response, err := c.client.Do(request)
+	if err != nil {
+		return 0, err
 	}
 	defer func() {
 		_ = response.Body.Close()
 	}()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, parseHTTPError(response)
+		return 0, parseHTTPError(response)
 	}
-	var packjob model.PackJob
-	err = json.NewDecoder(response.Body).Decode(&packjob)
+	var incomplete int64
+	err = json.NewDecoder(response.Body).Decode(&incomplete)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return &packjob, nil
+	return incomplete, nil
+}
+
+func (c *Client) PrepareToPackSource(ctx context.Context, sourceID uint32) error {
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.serverURL+"/api/source/"+strconv.FormatUint(uint64(sourceID), 10)+"/prepare_to_pack", nil)
+	if err != nil {
+		return err
+	}
+	response, err := c.client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return parseHTTPError(response)
+	}
+	return nil
 }
 
 func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error) {
