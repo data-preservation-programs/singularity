@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
@@ -201,6 +202,44 @@ func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error
 		return nil, err
 	}
 	return cars, nil
+}
+
+func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/wallet", request)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var wallet model.Wallet
+	err = json.NewDecoder(response.Body).Decode(&wallet)
+	if err != nil {
+		return nil, err
+	}
+	return &wallet, nil
+}
+
+func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset/"+walletName+"/wallet/"+datasetName, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var walletAssignment model.WalletAssignment
+	err = json.NewDecoder(response.Body).Decode(&walletAssignment)
+	if err != nil {
+		return nil, err
+	}
+	return &walletAssignment, nil
 }
 
 type HTTPError struct {

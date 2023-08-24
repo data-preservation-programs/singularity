@@ -10,16 +10,19 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
 type Client struct {
 	db                        *gorm.DB
+	lotusClient               jsonrpc.RPCClient
 	datasourceHandlerResolver datasource.HandlerResolver
 }
 
-func NewClient(db *gorm.DB) (*Client, error) {
+func NewClient(db *gorm.DB, lotusClient jsonrpc.RPCClient) (*Client, error) {
 	if err := model.AutoMigrate(db); err != nil {
 		return nil, err
 	}
@@ -71,6 +74,14 @@ func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dsh
 
 func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {
 	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packJobID)
+}
+
+func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error) {
+	return wallet.ImportHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
+}
+
+func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {
+	return wallet.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, walletName)
 }
 
 var _ client.Client = (*Client)(nil)

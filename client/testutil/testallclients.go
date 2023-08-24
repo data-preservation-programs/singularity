@@ -12,6 +12,7 @@ import (
 	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/stretchr/testify/require"
+	"github.com/ybbus/jsonrpc/v3"
 )
 
 func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T, client.Client)) {
@@ -20,6 +21,7 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 		_, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		closer.Close()
+
 		ctx, cancel := context.WithCancel(ctx)
 		httpErr := make(chan error, 1)
 		defer func() {
@@ -39,6 +41,7 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 			err := server.Run(ctx)
 			httpErr <- err
 		}()
+
 		client := httpclient.NewHTTPClient(http.DefaultClient, "http://"+listener.Addr().String())
 		test(t, client)
 	})
@@ -46,7 +49,30 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
-		client, err := libclient.NewClient(db)
+
+		ctx, cancel := context.WithCancel(ctx)
+		httpErr := make(chan error, 1)
+		defer func() {
+			cancel()
+			err := <-httpErr
+			require.ErrorIs(t, err, http.ErrServerClosed)
+		}()
+		listener, err := net.Listen("tcp", "127.0.0.1:0")
+		require.NoError(t, err)
+		server, err := api.InitServer(api.APIParams{
+			ConnString: database.TestConnectionString,
+			Listener:   listener,
+			LotusAPI:   "https://api.node.glif.io/rpc/v1",
+		})
+		require.NoError(t, err)
+		go func() {
+			err := server.Run(ctx)
+			httpErr <- err
+		}()
+
+		lotusClient := jsonrpc.NewClient("http://" + listener.Addr().String())
+
+		client, err := libclient.NewClient(db, lotusClient)
 		require.NoError(t, err)
 		test(t, client)
 	})

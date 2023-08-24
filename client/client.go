@@ -7,6 +7,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
@@ -22,4 +23,6 @@ type Client interface {
 	PushFile(ctx context.Context, sourceID uint32, fileInfo datasource.FileInfo) (*model.File, error)
 	GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error)
 	CreatePackJob(ctx context.Context, sourceID uint32, request datasource.CreatePackJobRequest) (*model.PackJob, error)
+	ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error)
+	AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error)
 }
