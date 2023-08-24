@@ -40,26 +40,15 @@ import (
 // Note:
 // - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
 // - For local file systems, hash computation is skipped to avoid inefficient operations.
-func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, string) {
+func IsSameEntry(ctx context.Context, file model.File, object fs.ObjectInfo) (bool, string) {
 	if file.Size != object.Size() {
 		return false, fmt.Sprintf("size mismatch: %d != %d", file.Size, object.Size())
 	}
-	var err error
 	// last modified can be time.Now() if fetch failed so it may not be reliable.
 	// This usually won't happen for most cloud provider i.e. S3
 	// Because during scanning, the modified time is already fetched.
 	lastModified := object.ModTime(ctx)
-	supportedHash := object.Fs().Hashes().GetOne()
-	// For local file system, rclone is actually hashing the file stream which is not efficient.
-	// So we skip hashing for local file system.
-	// For some of the remote storage, there may not have any supported hash type.
-	var hashValue string
-	if supportedHash != hash.None && object.Fs().Name() != "local" {
-		hashValue, err = object.Hash(ctx, supportedHash)
-		if err != nil {
-			logger.Errorw("failed to hash", "error", err)
-		}
-	}
+	hashValue, _ := GetHash(ctx, object)
 	if file.Hash != "" && hashValue != "" && file.Hash != hashValue {
 		return false, fmt.Sprintf("hash mismatch: %s != %s", file.Hash, hashValue)
 	}
@@ -67,6 +56,23 @@ func IsSameEntry(ctx context.Context, file model.File, object fs.Object) (bool, 
 		fmt.Sprintf("last modified mismatch: %d != %d",
 			lastModified.UnixNano(),
 			file.LastModifiedNano)
+}
+
+func GetHash(ctx context.Context, object fs.ObjectInfo) (string, error) {
+	if object.Fs().Features().SlowHash {
+		return "", nil
+	}
+	supportedHash := object.Fs().Hashes().GetOne()
+	var hashValue string
+	var err error
+	if supportedHash != hash.None {
+		hashValue, err = object.Hash(ctx, supportedHash)
+		if err != nil {
+			logger.Errorw("failed to hash", "error", err)
+		}
+	}
+
+	return hashValue, err
 }
 
 var ErrStorageNotAvailable = errors.New("storage not available")

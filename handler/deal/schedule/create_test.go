@@ -6,6 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -49,7 +50,7 @@ func getMockLotusClient() jsonrpc.RPCClient {
 }
 
 var createRequest = CreateRequest{
-	DatasetName:          "test",
+	PreparationID:        1,
 	Provider:             "f01000",
 	HTTPHeaders:          []string{"a=b"},
 	URLTemplate:          "http://127.0.0.1",
@@ -77,17 +78,18 @@ func TestCreateHandler_DatasetNotFound(t *testing.T) {
 	require.NoError(t, err)
 	defer closer.Close()
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
-	require.ErrorContains(t, err, "dataset not found")
+	require.ErrorIs(t, err, handlererror.ErrNotFound)
 }
 
 func TestCreateHandler_InvalidStartDelay(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	require.NoError(t, db.Create(&model.Preparation{Name: "test"}).Error)
+	require.NoError(t, db.Create(&model.Preparation{}).Error)
 	badRequest := createRequest
 	badRequest.StartDelay = "1year"
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid start delay")
 }
 
@@ -95,10 +97,11 @@ func TestCreateHandler_InvalidDuration(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	require.NoError(t, db.Create(&model.Preparation{Name: "test"}).Error)
+	require.NoError(t, db.Create(&model.Preparation{}).Error)
 	badRequest := createRequest
 	badRequest.Duration = "1year"
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid duration")
 }
 
@@ -106,10 +109,11 @@ func TestCreateHandler_InvalidScheduleInterval(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	require.NoError(t, db.Create(&model.Preparation{Name: "test"}).Error)
+	require.NoError(t, db.Create(&model.Preparation{}).Error)
 	badRequest := createRequest
 	badRequest.ScheduleCron = "1year"
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid schedule cron")
 }
 
@@ -117,11 +121,12 @@ func TestCreateHandler_InvalidScheduleDealSize(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
+	err = db.Create(&model.Preparation{}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.ScheduleDealSize = "One PB"
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid schedule deal size")
 }
 
@@ -129,11 +134,12 @@ func TestCreateHandler_InvalidTotalDealSize(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
+	err = db.Create(&model.Preparation{}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.TotalDealSize = "One PB"
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid total deal size")
 }
 
@@ -141,45 +147,49 @@ func TestCreateHandler_InvalidPendingDealSize(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
+	err = db.Create(&model.Preparation{}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.MaxPendingDealSize = "One PB"
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorContains(t, err, "invalid pending deal size")
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+	require.ErrorContains(t, err, "invalid max pending deal size")
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCID(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
+	err = db.Create(&model.Preparation{}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.AllowedPieceCIDs = []string{"not a cid"}
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorContains(t, err, "it's not a CID")
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+	require.ErrorContains(t, err, "invalid allowed piece CID")
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
+	err = db.Create(&model.Preparation{}).Error
 	require.NoError(t, err)
 	badRequest := createRequest
 	badRequest.AllowedPieceCIDs = []string{"bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma"}
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorContains(t, err, "it's not a commp")
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+	require.ErrorContains(t, err, "not commp")
 }
 
 func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
+	err = db.Create(&model.Preparation{}).Error
 	require.NoError(t, err)
 	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
+	require.ErrorIs(t, err, handlererror.ErrNotFound)
 	require.ErrorContains(t, err, "no wallet")
 }
 
@@ -187,29 +197,51 @@ func TestCreateHandler_InvalidProvider(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
-	require.NoError(t, err)
-	err = db.Create(&model.Wallet{ID: "f01"}).Error
-	require.NoError(t, err)
-	err = db.Create(&model.WalletAssignment{WalletID: "f01", DatasetID: 1}).Error
+	err = db.Create(&model.Preparation{
+		Wallets: []model.Wallet{{
+			ID: "f01",
+		}},
+	}).Error
 	require.NoError(t, err)
 	lotusClient := new(MockRPCClient)
 	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
 		Return(errors.New("Some provider error"))
 	_, err = CreateHandler(context.Background(), db, lotusClient, createRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "Some provider error")
+}
+
+func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
+	db, closer, err := database.OpenInMemory()
+	require.NoError(t, err)
+	defer closer.Close()
+	err = db.Create(&model.Preparation{
+		Wallets: []model.Wallet{{
+			ID: "f01",
+		}},
+	}).Error
+	createRequest := createRequest
+	createRequest.ScheduleCron = "@daily"
+	createRequest.ScheduleDealNumber = 0
+	createRequest.ScheduleDealSize = ""
+	createRequest.MaxPendingDealSize = ""
+	createRequest.TotalDealSize = ""
+	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+	require.ErrorContains(t, err, "must be set")
 }
 
 func TestCreateHandler_Success(t *testing.T) {
 	db, closer, err := database.OpenInMemory()
 	require.NoError(t, err)
 	defer closer.Close()
-	err = db.Create(&model.Preparation{Name: "test"}).Error
-	require.NoError(t, err)
-	err = db.Create(&model.Wallet{ID: "f01"}).Error
-	require.NoError(t, err)
-	err = db.Create(&model.WalletAssignment{WalletID: "f01", DatasetID: 1}).Error
-	require.NoError(t, err)
+	err = db.Create(&model.Preparation{
+		Wallets: []model.Wallet{{
+			ID: "f01",
+		}},
+	}).Error
+	createRequest := createRequest
+	createRequest.ScheduleCron = "@daily"
 	schedule, err := CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
 	require.NoError(t, err)
 	require.NotNil(t, schedule)

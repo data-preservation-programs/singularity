@@ -23,7 +23,7 @@ import (
 func StartDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string) (*model.Job, error) {
 	return StartJobHandler(ctx, db, id, name, model.Scan)
 }
@@ -44,7 +44,7 @@ func StartDagGenHandler(
 func PauseDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }

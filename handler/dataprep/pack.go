@@ -36,7 +36,7 @@ var pausableStatesForPack = []model.JobState{model.Processing, model.Ready}
 func StartPackHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string,
 	jobID int64) ([]model.Job, error) {
 	db = db.WithContext(ctx)
@@ -115,7 +115,7 @@ func StartPackHandler(
 func PausePackHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string,
 	jobID int64) ([]model.Job, error) {
 	db = db.WithContext(ctx)

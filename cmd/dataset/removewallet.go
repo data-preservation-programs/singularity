@@ -2,7 +2,6 @@ package dataset
 
 import (
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/urfave/cli/v2"
 )
 

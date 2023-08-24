@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/stretchr/testify/mock"
@@ -53,7 +54,8 @@ func TestSendManualHandler_WalletNotFound(t *testing.T) {
 	mockDealMaker := new(MockDealMaker)
 	mockDealMaker.On("MakeDeal", ctx, wallet, mock.Anything, mock.Anything).Return(&model.Deal{}, nil)
 	_, err = SendManualHandler(ctx, db, mockDealMaker, proposal)
-	require.ErrorContains(t, err, "client address not found")
+	require.ErrorIs(t, err, handlererror.ErrNotFound)
+	require.ErrorContains(t, err, "client address")
 }
 
 func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
@@ -74,6 +76,7 @@ func TestSendManualHandler_InvalidPieceCID(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceCID = "bad"
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid piece CID")
 }
 
@@ -95,7 +98,8 @@ func TestSendManualHandler_InvalidPieceCID_NOTCOMMP(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceCID = proposal.RootCID
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
-	require.ErrorContains(t, err, "piece CID must be commp")
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+	require.ErrorContains(t, err, "must be commp")
 }
 
 func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
@@ -116,6 +120,7 @@ func TestSendManualHandler_InvalidPieceSize(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceSize = "aaa"
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid piece size")
 }
 
@@ -137,7 +142,8 @@ func TestSendManualHandler_InvalidPieceSize_NotPowerOfTwo(t *testing.T) {
 	badProposal := proposal
 	badProposal.PieceSize = "31GiB"
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
-	require.ErrorContains(t, err, "piece size must be a power of 2")
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+	require.ErrorContains(t, err, "must be a power of 2")
 }
 
 func TestSendManualHandler_InvalidRootCID(t *testing.T) {
@@ -158,6 +164,7 @@ func TestSendManualHandler_InvalidRootCID(t *testing.T) {
 	badProposal := proposal
 	badProposal.RootCID = "xxxx"
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid root CID")
 }
 
@@ -179,6 +186,7 @@ func TestSendManualHandler_InvalidDuration(t *testing.T) {
 	badProposal := proposal
 	badProposal.Duration = "xxxx"
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid duration")
 }
 
@@ -200,6 +208,7 @@ func TestSendManualHandler_InvalidStartDelay(t *testing.T) {
 	badProposal := proposal
 	badProposal.StartDelay = "xxxx"
 	_, err = SendManualHandler(ctx, db, mockDealMaker, badProposal)
+	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	require.ErrorContains(t, err, "invalid start delay")
 }
 

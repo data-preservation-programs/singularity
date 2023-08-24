@@ -15,7 +15,7 @@ var pausableStatesForScan = []model.JobState{model.Processing, model.Ready}
 
 var startableStatesForScan = []model.JobState{model.Paused, model.Created, model.Error, model.Complete}
 
-func validateSourceStorage(ctx context.Context, db *gorm.DB, id int32, name string) (*model.Storage, error) {
+func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.Storage, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
 	err := db.Where("name = ?", name).First(&storage).Error
@@ -60,7 +60,7 @@ func validateSourceStorage(ctx context.Context, db *gorm.DB, id int32, name stri
 func StartJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string,
 	jobType model.JobType) (*model.Job, error) {
 	db = db.WithContext(ctx)
@@ -99,7 +99,7 @@ func StartJobHandler(
 func StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string) (*model.Job, error) {
 	return StartJobHandler(ctx, db, id, name, model.Scan)
 }
@@ -124,7 +124,7 @@ func StartScanHandler(
 func PauseJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string,
 	jobType model.JobType) (*model.Job, error) {
 	db = db.WithContext(ctx)
@@ -154,7 +154,7 @@ func PauseJobHandler(
 func PauseScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 	name string) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }

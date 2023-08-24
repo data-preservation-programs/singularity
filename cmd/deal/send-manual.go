@@ -6,12 +6,12 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/util"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/urfave/cli/v2"
 )
 

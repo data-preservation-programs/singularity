@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/boxo/util"
@@ -21,7 +22,7 @@ import (
 )
 
 // Using 27018 intentionally to avoid deleting default singularity V1 database
-var localMongoDB = "mongodb://localhost:27018"
+var localMongoDB = "mongodb://localhost:27017"
 
 func TestMigrateDataset(t *testing.T) {
 	err := setupMongoDBDataset()
@@ -45,26 +46,19 @@ func TestMigrateDataset(t *testing.T) {
 	err = MigrateDataset(cctx)
 	require.NoError(t, err)
 
-	var datasets []model.Preparation
-	err = db.Find(&datasets).Error
+	var preparations []model.Preparation
+	err = db.Preload("SourceStorages").Preload("OutputStorages").Find(&preparations).Error
 	require.NoError(t, err)
-	require.Len(t, datasets, 2)
-	require.Equal(t, "test", datasets[0].Name)
-	require.EqualValues(t, int64(18*1024*1024*1024), datasets[0].MaxSize)
-	require.EqualValues(t, int64(32*1024*1024*1024), datasets[0].PieceSize)
-	require.Equal(t, "test2", datasets[1].Name)
-	require.Equal(t, []string{filepath.Join("out", "dir")}, []string(datasets[0].OutputDirs))
-
-	var sources []model.Source
-	err = db.Find(&sources).Error
-	require.NoError(t, err)
-	require.Len(t, sources, 2)
-	require.Equal(t, "s3path", sources[1].Path)
-	require.Equal(t, "/path", sources[0].Path)
-	require.Equal(t, "s3", sources[1].Type)
-	require.Equal(t, "local", sources[0].Type)
-	require.EqualValues(t, 1, sources[0].DatasetID)
-	require.Equal(t, model.Complete, sources[0].ScanningState)
+	require.Len(t, preparations, 2)
+	require.Equal(t, "test-source", preparations[0].SourceStorages[0].Name)
+	require.Equal(t, "/path", preparations[0].SourceStorages[0].Path)
+	require.Equal(t, "local", preparations[0].SourceStorages[0].Type)
+	require.EqualValues(t, int64(18*1024*1024*1024), preparations[0].MaxSize)
+	require.EqualValues(t, int64(32*1024*1024*1024), preparations[0].PieceSize)
+	require.Equal(t, "test2-source", preparations[1].SourceStorages[0].Name)
+	require.Equal(t, "s3path", preparations[1].SourceStorages[0].Path)
+	require.Equal(t, "s3", preparations[1].SourceStorages[0].Type)
+	require.Equal(t, filepath.Join("out", "dir"), preparations[0].OutputStorages[0].Path)
 
 	var dirs []model.Directory
 	err = db.Find(&dirs).Error
@@ -73,10 +67,6 @@ func TestMigrateDataset(t *testing.T) {
 	require.Equal(t, "/path", dirs[0].Name)
 	require.Equal(t, "dir", dirs[1].Name)
 	require.Equal(t, "s3path", dirs[2].Name)
-	require.EqualValues(t, 1, dirs[0].SourceID)
-	require.EqualValues(t, 1, dirs[1].SourceID)
-	require.EqualValues(t, 2, dirs[2].SourceID)
-	require.EqualValues(t, 1, *dirs[1].ParentID)
 
 	var files []model.File
 	err = db.Find(&files).Error
@@ -85,9 +75,6 @@ func TestMigrateDataset(t *testing.T) {
 	require.Equal(t, "1.txt", files[0].Path)
 	require.Equal(t, "2.txt", files[1].Path)
 	require.Equal(t, "dir/3.txt", files[2].Path)
-	require.EqualValues(t, 1, files[0].SourceID)
-	require.EqualValues(t, 1, files[1].SourceID)
-	require.EqualValues(t, 1, files[2].SourceID)
 	require.EqualValues(t, 1, *files[0].DirectoryID)
 	require.EqualValues(t, 1, *files[1].DirectoryID)
 	require.EqualValues(t, 2, *files[2].DirectoryID)
@@ -105,12 +92,12 @@ func TestMigrateDataset(t *testing.T) {
 	require.EqualValues(t, 80, fileRanges[3].Offset)
 	require.EqualValues(t, 20, fileRanges[3].Length)
 
-	var packJobs []model.PackJob
+	var packJobs []model.Job
 	err = db.Find(&packJobs).Error
 	require.NoError(t, err)
 	require.Len(t, packJobs, 2)
-	require.EqualValues(t, 1, packJobs[0].SourceID)
-	require.Equal(t, model.Complete, packJobs[0].PackingState)
+	require.EqualValues(t, 1, packJobs[0].AttachmentID)
+	require.Equal(t, model.Complete, packJobs[0].State)
 	require.Equal(t, "error message", packJobs[0].ErrorMessage)
 
 	var cars []model.Car
@@ -122,8 +109,7 @@ func TestMigrateDataset(t *testing.T) {
 	require.EqualValues(t, filepath.Join("out", "dir", "test.car"), cars[0].StoragePath)
 	require.NotEmpty(t, cars[0].PieceCID.String())
 	require.NotEmpty(t, cars[0].RootCID.String())
-	require.EqualValues(t, 1, *cars[0].PackJobID)
-	require.EqualValues(t, 1, *cars[0].SourceID)
+	require.EqualValues(t, 1, *cars[0].AttachmentID)
 }
 
 func setupMongoDBDataset() error {

@@ -15,6 +15,7 @@ import (
 //go:generate sh ./docgen.sh
 //go:generate go run github.com/swaggo/swag/cmd/swag@v1.8.12 init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./docs/swagger
 //go:generate go run docs/gen/webapireference/main.go
+//go:generate npm run gen
 
 //go:embed version.json
 var version []byte

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/stretchr/testify/require"
@@ -35,10 +36,19 @@ func TestMigrateSchedule_DatasetNotExist(t *testing.T) {
 	cctx := cli.NewContext(nil, flagSet, nil)
 
 	err = db.Create(&model.Preparation{
-		Name: "test",
+		SourceStorages: []model.Storage{{
+			Name: "test-source",
+		}},
+		OutputStorages: []model.Storage{{
+			Name: "test-output",
+		}},
 	}).Error
 	require.NoError(t, err)
 
+	err = MigrateSchedule(cctx)
+	require.NoError(t, err)
+
+	// Migrate again does nothing
 	err = MigrateSchedule(cctx)
 	require.NoError(t, err)
 
@@ -46,7 +56,7 @@ func TestMigrateSchedule_DatasetNotExist(t *testing.T) {
 	err = db.Find(&schedules).Error
 	require.NoError(t, err)
 	require.Len(t, schedules, 2)
-	require.EqualValues(t, 1, schedules[0].DatasetID)
+	require.EqualValues(t, 1, schedules[0].PreparationID)
 	require.Equal(t, "http://localhost:8080/{PIECE_CID}", schedules[0].URLTemplate)
 	require.Equal(t, "f0miner1", schedules[0].Provider)
 	require.Equal(t, 100, schedules[0].TotalDealNumber)

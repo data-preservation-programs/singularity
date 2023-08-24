@@ -78,10 +78,16 @@ func MigrateSchedule(cctx *cli.Context) error {
 			return errors.Wrapf(err, "failed to decode dataset %s", replication.DatasetID)
 		}
 
-		var dataset model.Preparation
-		err = db.Where("name = ?", scanning.Name).First(&dataset).Error
+		var source model.Storage
+		err = db.Where("name = ?", scanning.Name+"-source").First(&source).Error
 		if err != nil {
-			return errors.Wrapf(err, "failed to find dataset %s", scanning.Name)
+			return errors.Wrapf(err, "failed to find source %s", scanning.Name+"-source")
+		}
+
+		var sourceAttachment model.SourceAttachment
+		err = db.Where("storage_id = ?", source.ID).First(&sourceAttachment).Error
+		if err != nil {
+			return errors.Wrapf(err, "failed to find source attachment for storage %d", source.ID)
 		}
 
 		var urlTemplate string
@@ -116,7 +122,6 @@ func MigrateSchedule(cctx *cli.Context) error {
 			schedule := model.Schedule{
 				CreatedAt:            replication.CreatedAt,
 				UpdatedAt:            replication.UpdatedAt,
-				DatasetID:            dataset.ID,
 				URLTemplate:          urlTemplate,
 				Provider:             provider,
 				PricePerGBEpoch:      replication.MaxPrice,
@@ -136,6 +141,7 @@ func MigrateSchedule(cctx *cli.Context) error {
 				Notes:                replication.Notes,
 				ErrorMessage:         replication.ErrorMessage,
 				AllowedPieceCIDs:     allowedCIDs,
+				PreparationID:        sourceAttachment.PreparationID,
 			}
 			schedules = append(schedules, schedule)
 		}

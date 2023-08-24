@@ -76,7 +76,7 @@ func sendManualHandler(
 	wallet := model.Wallet{}
 	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handlererror.NewInvalidParameterErr("client address not found")
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "client address %s not found", request.ClientAddress)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -84,21 +84,21 @@ func sendManualHandler(
 
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
-		return nil, handlererror.NewInvalidParameterErr("invalid piece CID")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid piece CID: %s", request.PieceCID)
 	}
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return nil, handlererror.NewInvalidParameterErr("piece CID must be commp")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "piece CID %s must be commp", request.PieceCID)
 	}
 	pieceSize, err := humanize.ParseBytes(request.PieceSize)
 	if err != nil {
-		return nil, handlererror.NewInvalidParameterErr("invalid piece size")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid piece size: %s", request.PieceSize)
 	}
 	if (pieceSize & (pieceSize - 1)) != 0 {
-		return nil, handlererror.NewInvalidParameterErr("piece size must be a power of 2")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "piece size %d must be a power of 2", pieceSize)
 	}
 	rootCID, err := cid.Parse(request.RootCID)
 	if err != nil {
-		return nil, handlererror.NewInvalidParameterErr("invalid root CID")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid root CID: %s", request.RootCID)
 	}
 	car := model.Car{
 		PieceCID:  model.CID(pieceCID),
@@ -108,11 +108,11 @@ func sendManualHandler(
 	}
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return nil, handlererror.NewInvalidParameterErr("invalid duration")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid duration: %s", request.Duration)
 	}
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return nil, handlererror.NewInvalidParameterErr("invalid start delay")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid start delay: %s", request.StartDelay)
 	}
 
 	dealConfig := replication.DealConfig{

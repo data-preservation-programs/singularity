@@ -3,36 +3,33 @@ package deal
 import (
 	"context"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
 
 type ListDealRequest struct {
-	Datasets  []string `json:"datasets"`  // dataset name filter
-	Schedules []uint   `json:"schedules"` // schedule id filter
-	Providers []string `json:"providers"` // provider filter
-	States    []string `json:"states"`    // state filter
+	Preparations []uint32          `json:"preparations"` // preparation ID filter
+	Storages     []string          `json:"storages"`     // storage filter
+	Schedules    []uint32          `json:"schedules"`    // schedule id filter
+	Providers    []string          `json:"providers"`    // provider filter
+	States       []model.DealState `json:"states"`       // state filter
 }
 
 func ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
-	return listHandler(db.WithContext(ctx), request)
-}
-
-// @Summary List all deals
-// @Description List all deals
-// @Tags Deal
-// @Accept json
-// @Produce json
-// @Param request body ListDealRequest true "ListDealRequest"
-// @Success 200 {array} model.Deal
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /deal [post]
-func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
+	db = db.WithContext(ctx)
 	var deals []model.Deal
 	statement := db
-	if len(request.Datasets) > 0 {
-		statement = statement.Where("dataset_id IN (?)", statement.Model(&model.Preparation{}).Select("id").Where("name in ?", request.Datasets))
+	if len(request.Preparations) > 0 {
+		statement = statement.Where("schedule_id IN (?)", db.Model(&model.Schedule{}).Select("id").
+			Where("preparation_id in ?", request.Preparations))
+	}
+
+	if len(request.Storages) > 0 {
+		statement = statement.Where("schedule_id IN (?)", db.Model(&model.Schedule{}).Select("id").
+			Where("preparation_id in (?)", db.Model(&model.SourceAttachment{}).Select("preparation_id").
+				Where("storage_id in (?)", db.Model(&model.Storage{}).Select("id").
+					Where("name in ?", request.Storages))))
 	}
 
 	if len(request.Schedules) > 0 {
@@ -54,3 +51,15 @@ func listHandler(db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	}
 	return deals, nil
 }
+
+// @Summary List all deals
+// @Description List all deals
+// @Tags Deal
+// @Accept json
+// @Produce json
+// @Param request body ListDealRequest true "ListDealRequest"
+// @Success 200 {array} model.Deal
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /deal [post]
+func _() {}

@@ -28,6 +28,20 @@ type PieceList struct {
 	Pieces []model.Car             `json:"pieces"`
 }
 
+// ListPiecesHandler retrieves the list of pieces associated with a particular preparation and its source attachments.
+//
+// This function retrieves the SourceAttachment associated with a given preparation ID. For each source attachment,
+// the associated pieces (represented by the Car model) are fetched and grouped. If there are pieces that are not
+// associated with any source attachment but are linked to the preparation, they are also fetched.
+//
+// Parameters:
+// - ctx: The context for database transactions and other operations.
+// - db: A pointer to the gorm.DB instance representing the database connection.
+// - id: The unique identifier for the desired Preparation record.
+//
+// Returns:
+// - A slice of PieceList, each representing a source attachment and its associated pieces.
+// - An error, if any occurred during the operation.
 func ListPiecesHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -71,6 +85,24 @@ func ListPiecesHandler(
 	return pieceLists, nil
 }
 
+// AddPieceHandler adds a new piece (represented by the Car model) to a given preparation.
+//
+// This function fetches a preparation based on the provided ID. It then parses and validates the
+// provided piece CID and size from the request. If a root CID is provided in the request, it is
+// parsed; if a file path is provided instead, the root CID is extracted from the file.
+//
+// Once the necessary information is extracted and validated, a new piece (Car model) is created in
+// the database associated with the given preparation.
+//
+// Parameters:
+// - ctx: The context for database transactions and other operations.
+// - db: A pointer to the gorm.DB instance representing the database connection.
+// - id: The unique identifier for the desired Preparation record.
+// - request: A struct of AddPieceRequest which contains the information for the piece to be added.
+//
+// Returns:
+// - A pointer to the newly created Car model.
+// - An error, if any occurred during the operation.
 func AddPieceHandler(
 	ctx context.Context,
 	db *gorm.DB,

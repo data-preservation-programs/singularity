@@ -3,7 +3,6 @@ package wallet
 import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 )
