@@ -14,6 +14,8 @@ import (
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/stretchr/testify/require"
 )
 
@@ -91,5 +93,33 @@ func TestClients(t *testing.T) {
 		returnedFile, err := client.GetFile(ctx, file.ID)
 		require.NoError(t, err)
 		require.Equal(t, file.Path, returnedFile.Path)
+
+		// import wallet
+		key := "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
+		wallet, err := client.ImportWallet(ctx, wallet.ImportRequest{
+			PrivateKey: key,
+		})
+		require.NoError(t, err)
+
+		// add to dataset
+		_, err = client.AddWalletToDataset(ctx, "test", wallet.ID)
+		require.NoError(t, err)
+
+		// create schedule
+		_, err = client.CreateSchedule(ctx, schedule.CreateRequest{
+			DatasetName:        "test",
+			StartDelay:         "72h",
+			Duration:           "2400h",
+			TotalDealSize:      "100TiB",
+			ScheduleDealSize:   "100TiB",
+			MaxPendingDealSize: "100TiB",
+			Provider:           "f01",
+		})
+		require.NoError(t, err)
+
+		// list schedules
+		schedules, err := client.ListSchedules(ctx)
+		require.NoError(t, err)
+		require.Len(t, schedules, 1)
 	})
 }

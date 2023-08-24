@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ybbus/jsonrpc/v3"
@@ -28,6 +29,7 @@ func NewClient(db *gorm.DB, lotusClient jsonrpc.RPCClient) (*Client, error) {
 	}
 	return &Client{
 		db:                        db,
+		lotusClient:               lotusClient,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}, nil
 }
@@ -82,6 +84,14 @@ func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest)
 
 func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {
 	return wallet.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, walletName)
+}
+
+func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {
+	return schedule.CreateHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
+}
+
+func (c *Client) ListSchedules(ctx context.Context) ([]model.Schedule, error) {
+	return schedule.ListHandler(ctx, c.db.WithContext(ctx))
 }
 
 var _ client.Client = (*Client)(nil)

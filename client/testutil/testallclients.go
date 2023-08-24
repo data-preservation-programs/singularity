@@ -5,14 +5,15 @@ import (
 	"net"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/api"
 	"github.com/data-preservation-programs/singularity/client"
 	httpclient "github.com/data-preservation-programs/singularity/client/http"
 	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/stretchr/testify/require"
-	"github.com/ybbus/jsonrpc/v3"
 )
 
 func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T, client.Client)) {
@@ -69,8 +70,9 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 			err := server.Run(ctx)
 			httpErr <- err
 		}()
+		time.Sleep(time.Millisecond)
 
-		lotusClient := jsonrpc.NewClient("http://" + listener.Addr().String())
+		lotusClient := util.NewLotusClient("https://api.node.glif.io/", "")
 
 		client, err := libclient.NewClient(db, lotusClient)
 		require.NoError(t, err)

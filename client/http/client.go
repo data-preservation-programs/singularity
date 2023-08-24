@@ -14,6 +14,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 )
@@ -224,7 +225,7 @@ func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest)
 }
 
 func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset/"+walletName+"/wallet/"+datasetName, nil)
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset/"+datasetName+"/wallet/"+walletName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -240,6 +241,44 @@ func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wal
 		return nil, err
 	}
 	return &walletAssignment, nil
+}
+
+func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/schedule", request)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var schedule model.Schedule
+	err = json.NewDecoder(response.Body).Decode(&schedule)
+	if err != nil {
+		return nil, err
+	}
+	return &schedule, nil
+}
+
+func (c *Client) ListSchedules(ctx context.Context) ([]model.Schedule, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/schedule", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var schedules []model.Schedule
+	err = json.NewDecoder(response.Body).Decode(&schedules)
+	if err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 type HTTPError struct {
