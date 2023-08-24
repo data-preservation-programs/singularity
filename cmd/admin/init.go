@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/urfave/cli/v2"

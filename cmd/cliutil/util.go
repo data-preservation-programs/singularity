@@ -10,7 +10,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
-	"golang.org/x/exp/slices"
 )
 
 var ReallyDotItFlag = &cli.BoolFlag{
@@ -34,24 +33,26 @@ func PrintAsJSON(obj any) {
 	fmt.Println(string(objJSON))
 }
 
-func PrintToConsole(obj any, useJSON bool, except []string) {
+func PrintToConsole(obj any, useJSON bool, verbose bool) {
 	if useJSON {
 		PrintAsJSON(obj)
 		return
 	}
+
 	value := reflect.ValueOf(obj)
 	if value.Kind() == reflect.Slice {
-		printTable(obj, except)
+		printTable(obj, verbose)
 	} else {
-		printSingleObject(obj, except)
+		printSingleObject(obj, verbose)
 	}
 }
 
-func isNotEligibleType(field reflect.StructField, except []string) bool {
-	return field.Name == "_" || slices.Contains(except, field.Name) ||
-		(field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct) ||
-		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Struct) ||
-		(field.Type.Kind() == reflect.Slice && field.Type.Elem().Kind() == reflect.Uint8)
+func isNotEligibleType(field reflect.StructField, verbose bool) bool {
+	if verbose {
+		return field.Tag.Get("cli") == "verbose" || field.Tag.Get("cli") == "normal"
+	}
+
+	return field.Tag.Get("cli") == "normal"
 }
 
 func getValue(fieldValue reflect.Value) any {
@@ -70,7 +71,7 @@ func getValue(fieldValue reflect.Value) any {
 	return finalValue
 }
 
-func printTable(objects any, except []string) {
+func printTable(objects any, verbose bool) {
 	value := reflect.ValueOf(objects)
 	if value.Len() == 0 {
 		return
@@ -86,7 +87,7 @@ func printTable(objects any, except []string) {
 	headers := make([]any, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if isNotEligibleType(field, except) {
+		if isNotEligibleType(field, verbose) {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -101,7 +102,7 @@ func printTable(objects any, except []string) {
 		for j := 0; j < objType.NumField(); j++ {
 			field := objType.Field(j)
 			fieldValue := objValue.Field(j)
-			if isNotEligibleType(field, except) {
+			if isNotEligibleType(field, verbose) {
 				continue
 			}
 			row = append(row, getValue(fieldValue))
@@ -112,7 +113,7 @@ func printTable(objects any, except []string) {
 	tbl.Print()
 	fmt.Println()
 }
-func printSingleObject(obj any, except []string) {
+func printSingleObject(obj any, verbose bool) {
 	value := reflect.Indirect(reflect.ValueOf(obj))
 	objType := value.Type()
 
@@ -122,7 +123,7 @@ func printSingleObject(obj any, except []string) {
 	headers := make([]any, 0, objType.NumField())
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
-		if isNotEligibleType(field, except) {
+		if isNotEligibleType(field, verbose) {
 			continue
 		}
 		headers = append(headers, field.Name)
@@ -135,7 +136,7 @@ func printSingleObject(obj any, except []string) {
 	for i := 0; i < objType.NumField(); i++ {
 		field := objType.Field(i)
 		fieldValue := value.Field(i)
-		if isNotEligibleType(field, except) {
+		if isNotEligibleType(field, verbose) {
 			continue
 		}
 		row = append(row, getValue(fieldValue))
