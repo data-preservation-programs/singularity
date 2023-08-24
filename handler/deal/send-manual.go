@@ -47,31 +47,28 @@ func argToDuration(s string) (time.Duration, error) {
 	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
+// SendManualHandler creates a deal proposal manually based on the information provided in the Proposal.
+//
+// The function searches for the client's wallet using the provided address, validates various input fields such as the
+// pieceCID, rootCID, piece size, etc., and then uses the dealMaker to create a deal. The result is a model.Deal that
+// represents the proposal. Any issues during these operations result in an appropriate error response.
+//
+// Parameters:
+// - ctx:       The context for the operation which can be used for timeouts and cancellations.
+// - db:        The database connection for accessing and storing related data.
+// - dealMaker: An interface responsible for creating deals based on the given configuration.
+// - request:   The request object containing all the necessary information for creating a deal proposal.
+//
+// Returns:
+// - A pointer to a model.Deal object representing the created deal.
+// - An error indicating any issues that occurred during the process.
 func SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {
-	return sendManualHandler(ctx, db.WithContext(ctx), dealMaker, request)
-}
-
-// @Summary Send a manual deal proposal
-// @Description Send a manual deal proposal
-// @Tags Deal
-// @Accept json
-// @Produce json
-// @Param proposal body Proposal true "Proposal"
-// @Success 200 {object} model.Deal
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /send_deal [post]
-func sendManualHandler(
-	ctx context.Context,
-	db *gorm.DB,
-	dealMaker replication.DealMaker,
-	request Proposal,
-) (*model.Deal, error) {
+	db = db.WithContext(ctx)
 	// Get the wallet object
 	wallet := model.Wallet{}
 	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
@@ -132,3 +129,15 @@ func sendManualHandler(
 	}
 	return dealModel, nil
 }
+
+// @Summary Send a manual deal proposal
+// @Description Send a manual deal proposal
+// @Tags Deal
+// @Accept json
+// @Produce json
+// @Param proposal body Proposal true "Proposal"
+// @Success 200 {object} model.Deal
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /send_deal [post]
+func _() {}

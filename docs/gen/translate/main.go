@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/cockroachdb/errors"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rjNemo/underscore"
 	"github.com/sashabaranov/go-openai"

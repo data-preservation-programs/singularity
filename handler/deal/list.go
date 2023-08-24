@@ -16,6 +16,26 @@ type ListDealRequest struct {
 	States       []model.DealState `json:"states"`       // state filter
 }
 
+// ListHandler retrieves a list of deals from the database based on the specified filtering criteria in ListDealRequest.
+//
+// The function takes advantage of the conditional nature of the ListDealRequest to construct the final query. It
+// filters deals based on various conditions such as preparations, storages, schedules, providers, and states
+// as specified in the request.
+//
+// The function begins by associating the provided context with the database connection. It then successively builds
+// upon a GORM statement by appending where clauses based on the parameters in the request.
+//
+// It's important to note that there aren't indexes for all the query fields in the current database setup.
+// This might be sufficient for smaller datasets but could affect performance on larger datasets or under heavy query loads.
+//
+// Parameters:
+// - ctx:      The context for the operation which provides facilities for timeouts and cancellations.
+// - db:       The database connection for performing CRUD operations related to deals.
+// - request:  The request object which contains the filtering criteria for the deals retrieval.
+//
+// Returns:
+// - A slice of model.Deal objects matching the filtering criteria.
+// - An error indicating any issues that occurred during the database operation.
 func ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	db = db.WithContext(ctx)
 	var deals []model.Deal

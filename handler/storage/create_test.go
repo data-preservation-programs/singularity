@@ -15,7 +15,9 @@ func TestCreate(t *testing.T) {
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
-		_, err = CreateStorageHandler(ctx, db, "not_supported", "", "", "", nil)
+		_, err = CreateStorageHandler(ctx, db, "not_supported", CreateRequest{
+			"", "", "", nil,
+		})
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
 	t.Run("local path", func(t *testing.T) {
@@ -24,7 +26,7 @@ func TestCreate(t *testing.T) {
 		require.NoError(t, err)
 		defer closer.Close()
 		tmp := t.TempDir()
-		storage, err := CreateStorageHandler(ctx, db, "local", "", "name", tmp, nil)
+		storage, err := CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
 		require.NoError(t, err)
 		require.Greater(t, storage.ID, uint32(0))
 	})
@@ -34,10 +36,10 @@ func TestCreate(t *testing.T) {
 		require.NoError(t, err)
 		defer closer.Close()
 		tmp := t.TempDir()
-		storage, err := CreateStorageHandler(ctx, db, "local", "", "name", tmp,
+		storage, err := CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp,
 			map[string]string{
 				"copy_links": "true",
-			})
+			}})
 		require.NoError(t, err)
 		require.Greater(t, storage.ID, uint32(0))
 	})
@@ -47,10 +49,10 @@ func TestCreate(t *testing.T) {
 		require.NoError(t, err)
 		defer closer.Close()
 		tmp := t.TempDir()
-		_, err = CreateStorageHandler(ctx, db, "local", "", "name", tmp,
+		_, err = CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp,
 			map[string]string{
 				"copy_links": "invalid",
-			})
+			}})
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
 
@@ -59,7 +61,7 @@ func TestCreate(t *testing.T) {
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
-		_, err = CreateStorageHandler(ctx, db, "local", "", "name", "/invalid/path", nil)
+		_, err = CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", "/invalid/path", nil})
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
 
@@ -69,7 +71,7 @@ func TestCreate(t *testing.T) {
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
-		_, err = CreateStorageHandler(ctx, db, "local", "invalid", "name", tmp, nil)
+		_, err = CreateStorageHandler(ctx, db, "local", CreateRequest{"invalid", "name", tmp, nil})
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
 
@@ -79,9 +81,9 @@ func TestCreate(t *testing.T) {
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
-		_, err = CreateStorageHandler(ctx, db, "local", "", "name", tmp, nil)
+		_, err = CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
 		require.NoError(t, err)
-		_, err = CreateStorageHandler(ctx, db, "local", "", "name", tmp, nil)
+		_, err = CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
 		require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 	})
 }

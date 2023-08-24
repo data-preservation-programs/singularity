@@ -13,13 +13,14 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/handler/admin"
-	"github.com/data-preservation-programs/singularity/handler/dataset"
-	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ybbus/jsonrpc/v3"
@@ -28,7 +29,6 @@ import (
 	"github.com/data-preservation-programs/singularity/dashboard"
 	"github.com/data-preservation-programs/singularity/database"
 	_ "github.com/data-preservation-programs/singularity/docs/swagger"
-	datasource2 "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
@@ -39,12 +39,15 @@ import (
 )
 
 type Server struct {
-	db                        *gorm.DB
-	listener                  net.Listener
-	datasourceHandlerResolver storagesystem.HandlerResolver
-	lotusClient               jsonrpc.RPCClient
-	dealMaker                 replication.DealMaker
-	closer                    io.Closer
+	db          *gorm.DB
+	listener    net.Listener
+	lotusClient jsonrpc.RPCClient
+	dealMaker   replication.DealMaker
+	closer      io.Closer
+}
+
+func (s Server) Name() string {
+	return "api"
 }
 
 // @Summary Get metadata for a piece
@@ -73,7 +76,7 @@ func Run(c *cli.Context) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	server, err := InitServer(APIParams{
+	server, err := InitServer(c.Context, APIParams{
 		ConnString: connString,
 		Listener:   listener,
 		LotusAPI:   lotusAPI,
@@ -84,23 +87,22 @@ func Run(c *cli.Context) error {
 	}
 
 	logger.Info("Starting Singularity API server...")
-	return server.Run(c.Context)
+	return service.StartServers(c.Context, logger, server)
 }
 
 type APIParams struct {
-	Ctx        context.Context
 	Listener   net.Listener
 	LotusAPI   string
 	LotusToken string
 	ConnString string
 }
 
-func InitServer(params APIParams) (Server, error) {
+func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	db, closer, err := database.OpenWithLogger(params.ConnString)
 	if err != nil {
 		return Server{}, errors.WithStack(err)
 	}
-	if err := model.AutoMigrate(db); err != nil {
+	if err := model.AutoMigrate(db.WithContext(ctx)); err != nil {
 		return Server{}, errors.WithStack(err)
 	}
 	h, err := util.InitHost(nil)
@@ -108,9 +110,10 @@ func InitServer(params APIParams) (Server, error) {
 		return Server{}, errors.Wrap(err, "failed to init host")
 	}
 
-	return Server{db: db, listener: params.Listener,
-		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
-		lotusClient:               util.NewLotusClient(params.LotusAPI, params.LotusToken),
+	return Server{
+		db:          db,
+		listener:    params.Listener,
+		lotusClient: util.NewLotusClient(params.LotusAPI, params.LotusToken),
 		dealMaker: replication.NewDealMaker(
 			util.NewLotusClient(params.LotusAPI, params.LotusToken),
 			h,
@@ -121,6 +124,30 @@ func InitServer(params APIParams) (Server, error) {
 	}, nil
 }
 
+// toEchoHandler is a utility method to convert a generic handler function into an echo.HandlerFunc.
+// It uses reflection to introspect the signature and parameter types of the passed handler function,
+// and wraps it into a function suitable for Echo's routing.
+//
+// Supported input parameters for the handler functions are:
+// - context.Context: Will be passed the request context.
+// - *gorm.DB: Will be passed the Server's database instance with the request's context.
+// - jsonrpc.RPCClient: Will be passed the Server's Lotus client.
+// - replication.DealMaker: Will be passed the Server's deal maker.
+// - Any other supported path parameters (string, int, uint) or a request body.
+//
+// The handler function should return either a single error or a result and an error.
+// The output will be interpreted and converted into appropriate HTTP responses.
+//
+// Parameters:
+// - handlerFunc: A function to be converted, it should have a supported signature.
+//
+// Returns:
+// - An echo.HandlerFunc suitable for use with Echo's router.
+//
+// Notes:
+// This method assumes a specific ordering and kind of parameters in the handler functions.
+// It is designed to simplify the process of defining Echo handlers but has limitations
+// in terms of the variety of supported handler function signatures.
 func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		handlerFuncValue := reflect.ValueOf(handlerFunc)
@@ -147,10 +174,6 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 			}
 			if paramType.String() == "*gorm.DB" {
 				inputParams = append(inputParams, reflect.ValueOf(s.db.WithContext(c.Request().Context())))
-				continue
-			}
-			if paramType.String() == "datasource.HandlerResolver" {
-				inputParams = append(inputParams, reflect.ValueOf(s.datasourceHandlerResolver))
 				continue
 			}
 			if paramType.String() == "jsonrpc.RPCClient" {
@@ -241,50 +264,52 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/admin/reset", s.toEchoHandler(admin.ResetHandler))
 	e.POST("/api/admin/init", s.toEchoHandler(admin.InitHandler))
 
+	// Storage
+	e.POST("/api/storage/:type", s.toEchoHandler(storage.CreateStorageHandler))
+	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(storage.ExploreHandler))
+	e.GET("/api/storage", s.toEchoHandler(storage.ListStoragesHandler))
+	e.DELETE("/api/storage/:name", s.toEchoHandler(storage.RemoveStorageHandler))
+	e.PATCH("/api/storage/:name", s.toEchoHandler(storage.UpdateStorageHandler))
+
 	// Preparation
-	e.POST("/api/dataset", s.toEchoHandler(dataset.CreateHandler))
-	e.GET("/api/dataset/:datasetName/sources", s.toEchoHandler(datasource2.ListSourcesByDatasetHandler))
-	e.PATCH("/api/dataset/:datasetName", s.toEchoHandler(dataset.UpdateHandler))
-	e.DELETE("/api/dataset/:datasetName", s.toEchoHandler(dataset.RemoveHandler))
-	e.POST("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.AddPieceHandler))
-	e.GET("/api/dataset", s.toEchoHandler(dataset.ListHandler))
-	e.GET("/api/dataset/:datasetName/piece", s.toEchoHandler(dataset.ListPiecesHandler))
+	e.POST("/api/preparation", s.toEchoHandler(dataprep.CreatePreparationHandler))
+	e.GET("/api/preparation", s.toEchoHandler(dataprep.ListHandler))
+	e.GET("/api/preparation/:id", s.toEchoHandler(dataprep.GetStatusHandler))
+
+	// Job management
+	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(dataprep.StartDagGenHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-daggen", s.toEchoHandler(dataprep.PauseDagGenHandler))
+	e.POST("/api/preparation/:id/source/:name/start-scan", s.toEchoHandler(dataprep.StartScanHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-scan", s.toEchoHandler(dataprep.PauseScanHandler))
+	e.POST("/api/preparation/:id/source/:name/start-pack", s.toEchoHandler(dataprep.StartPackHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-pack", s.toEchoHandler(dataprep.PausePackHandler))
+	e.POST("/api/preparation/:id/source/:name/start-pack/:id", s.toEchoHandler(dataprep.StartPackHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-pack/:id", s.toEchoHandler(dataprep.PausePackHandler))
+
+	// storage attachment
+	e.POST("/api/preparation/:id/output/:name", s.toEchoHandler(dataprep.AddOutputStorageHandler))
+	e.POST("/api/preparation/:id/source/:name", s.toEchoHandler(dataprep.AddSourceStorageHandler))
+	e.DELETE("/api/preparation/:id/output/:name", s.toEchoHandler(dataprep.RemoveOutputStorageHandler))
+
+	// Explore
+	e.GET("/api/preparation/:id/source/:name/explore/:path", s.toEchoHandler(dataprep.ExploreHandler))
+
+	// Piece
+	e.GET("/api/preparation/:id/piece", s.toEchoHandler(dataprep.ListPiecesHandler))
+	e.POST("/api/preparation/:id/piece", s.toEchoHandler(dataprep.AddPieceHandler))
 
 	// Wallet
 	e.POST("/api/wallet", s.toEchoHandler(wallet.ImportHandler))
 	e.GET("/api/wallet", s.toEchoHandler(wallet.ListHandler))
-	e.POST("/api/wallet/remote", s.toEchoHandler(wallet.AddRemoteHandler))
 	e.DELETE("/api/wallet/:address", s.toEchoHandler(wallet.RemoveHandler))
 
 	// Wallet Association
-	e.POST("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.AddWalletHandler))
-	e.GET("/api/dataset/:datasetName/wallet", s.toEchoHandler(wallet.ListWalletHandler))
-	e.DELETE("/api/dataset/:datasetName/wallet/:wallet", s.toEchoHandler(wallet.RemoveWalletHandler))
-
-	// Data source
-	e.POST("/api/source/:type/dataset/:datasetName", s.toEchoHandler(datasource2.CreateDatasourceHandler))
-	e.GET("/api/source", s.toEchoHandler(datasource2.ListSourceHandler))
-	e.PATCH("/api/source/:id", s.toEchoHandler(datasource2.UpdateSourceHandler))
-	e.DELETE("/api/source/:id", s.toEchoHandler(datasource2.RemoveSourceHandler))
-	e.POST("/api/source/:id/rescan", s.toEchoHandler(datasource2.RescanSourceHandler))
-	e.POST("/api/source/:id/daggen", s.toEchoHandler(datasource2.DagGenHandler))
-	e.POST("/api/source/:id/push", s.toEchoHandler(datasource2.PushFileHandler))
-	e.POST("/api/source/:id/repack", s.toEchoHandler(datasource2.RepackHandler))
-	e.POST("/api/source/:id/packjob", s.toEchoHandler(datasource2.CreateJobHandler))
-	e.POST("/api/packjob/:id/pack", s.toEchoHandler(datasource2.PackHandler))
+	e.POST("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(wallet.AttachHandler))
+	e.GET("/api/preparation/:id/wallet", s.toEchoHandler(wallet.ListAttachedHandler))
+	e.DELETE("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(wallet.DetachHandler))
 
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
-
-	// Data source status
-	e.POST("/api/source/:id/check", s.toEchoHandler(datasource2.CheckSourceHandler))
-	e.GET("/api/source/:id/summary", s.toEchoHandler(datasource2.GetSourceStatusHandler))
-	e.GET("/api/source/:id/packjobs", s.toEchoHandler(inspect.GetSourcePackJobsHandler))
-	e.GET("/api/source/:id/files", s.toEchoHandler(inspect.GetSourceFilesHandler))
-	e.GET("/api/source/:id/dags", s.toEchoHandler(inspect.GetDagsHandler))
-	e.GET("/api/source/:id/path", s.toEchoHandler(inspect.GetPathHandler))
-	e.GET("/api/packjob/:id", s.toEchoHandler(inspect.GetSourcePackJobDetailHandler))
-	e.GET("/api/file/:id", s.toEchoHandler(inspect.GetSourceFileDetailHandler))
 
 	// Deal Schedule
 	e.POST("/api/send_deal", s.toEchoHandler(deal.SendManualHandler))
@@ -299,10 +324,20 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 var logger = logging.Logger("api")
 
-func (s Server) Run(ctx context.Context) error {
+func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	e := echo.New()
 	e.Debug = true
-	e.Use(middleware.Recover())
+	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+		Skipper:           middleware.DefaultSkipper,
+		StackSize:         4 << 10, // 4 KiB
+		DisableStackAll:   false,
+		DisablePrintStack: false,
+		LogLevel:          0,
+		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
+			logger.Errorw("panic", "err", err, "stack", string(stack))
+			return nil
+		},
+	}))
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus: true,
 		LogURI:    true,
@@ -326,34 +361,35 @@ func (s Server) Run(ctx context.Context) error {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	s.setupRoutes(e) //nolint: contextcheck
+	s.setupRoutes(e)
 	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
 	if err != nil {
-		return errors.WithStack(err)
+		return nil, nil, errors.WithStack(err)
 	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
 	e.Listener = s.listener
-	shutdownDone := make(chan struct{})
-	defer func() {
-		<-shutdownDone
-		logger.Info("Server shutdown complete")
-		logger.Debug("Closing the database connection")
-		s.closer.Close()
+
+	done := make(chan struct{})
+	fail := make(chan error)
+	go func() {
+		err := e.Start("")
+		if err != nil {
+			fail <- err
+		}
 	}()
 	go func() {
 		<-ctx.Done()
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer shutdownCancel()
-		logger.Info("Gracefully shutting down the server...")
 		//nolint:contextcheck
-		if err := e.Shutdown(shutdownCtx); err != nil {
-			fmt.Printf("Error shutting down the server: %v\n", err)
+		err := e.Shutdown(context.Background())
+		if err != nil {
+			fail <- err
 		}
-		close(shutdownDone)
+		s.closer.Close()
+		close(done)
 	}()
-	return e.Start("")
+	return []service.Done{done}, fail, nil
 }
 
 func isIntKind(kind reflect.Kind) bool {
@@ -375,22 +411,16 @@ func httpResponseFromError(c echo.Context, e error) error {
 
 	httpStatusCode := http.StatusInternalServerError
 
-	var invalidParameterErr handlererror.InvalidParameterError
-	if errors.As(e, &invalidParameterErr) {
-		httpStatusCode = http.StatusBadRequest
-		e = invalidParameterErr.Unwrap()
-	}
-
-	var notFoundErr handlererror.NotFoundError
-	if errors.As(e, &notFoundErr) {
+	if errors.Is(e, handlererror.ErrNotFound) {
 		httpStatusCode = http.StatusNotFound
-		e = notFoundErr.Unwrap()
 	}
 
-	var duplicateRecordErr handlererror.DuplicateRecordError
-	if errors.As(e, &duplicateRecordErr) {
+	if errors.Is(e, handlererror.ErrInvalidParameter) {
+		httpStatusCode = http.StatusBadRequest
+	}
+
+	if errors.Is(e, handlererror.ErrDuplicateRecord) {
 		httpStatusCode = http.StatusConflict
-		e = duplicateRecordErr.Unwrap()
 	}
 
 	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})

@@ -14,6 +14,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type CreateRequest struct {
+	Provider string            `json:"provider"`
+	Name     string            `json:"name" validate:"required"`
+	Path     string            `json:"path" validate:"required"`
+	Config   map[string]string `json:"config"`
+}
+
 // CreateStorageHandler initializes a new storage using the provided configurations
 // and attempts to create a connection to the storage to ensure it is valid. If successful,
 // it creates a new storage entry in the database.
@@ -34,12 +41,13 @@ func CreateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	storageType string,
-	provider string,
-	name string,
-	path string,
-	config map[string]string,
+	request CreateRequest,
 ) (*model.Storage, error) {
 	db = db.WithContext(ctx)
+	provider := request.Provider
+	name := request.Name
+	path := request.Path
+	config := request.Config
 	backend, ok := storagesystem.BackendMap[storageType]
 	if !ok {
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "storage type %s is not supported", storageType)

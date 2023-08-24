@@ -14,19 +14,7 @@ import (
 // @Success 204
 // @Failure 500 {object} api.HTTPError
 // @Router /admin/reset [post]
-func resetHandler(db *gorm.DB) error {
-	err := model.DropAll(db)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	err = model.AutoMigrate(db)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return nil
-}
+func _() {}
 
 // ResetHandler resets the database by dropping all existing tables and then
 // recreating them using migrations defined in the model.
@@ -39,5 +27,16 @@ func resetHandler(db *gorm.DB) error {
 // Returns:
 // - An error, if any occurred during the operation.
 func ResetHandler(ctx context.Context, db *gorm.DB) error {
-	return resetHandler(db.WithContext(ctx))
+	db = db.WithContext(ctx)
+	err := model.DropAll(db)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = model.AutoMigrate(db)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
