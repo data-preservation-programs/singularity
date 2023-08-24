@@ -28,7 +28,7 @@ services:
 
   singularity_api:
     image: ghcr.io/data-preservation-programs/singularity:main
-    command: run api
+    command: run api --bind :9090
     ports:
       - 9090:9090
     environment:
