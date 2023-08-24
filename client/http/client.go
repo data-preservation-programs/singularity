@@ -186,8 +186,8 @@ func (c *Client) CreatePackJob(ctx context.Context, sourceID uint32, request dat
 	return &packjob, nil
 }
 
-func (c *Client) Pack(ctx context.Context, packJobID uint64) ([]model.Car, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/packjob/"+strconv.FormatUint(packJobID, 10)+"/pack", nil)
+func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/packjob/"+strconv.FormatUint(uint64(packJobID), 10)+"/pack", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -222,6 +222,25 @@ func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest)
 		return nil, err
 	}
 	return &wallet, nil
+}
+
+func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/file/"+strconv.FormatUint(id, 10)+"/deals", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var deals []model.Deal
+	err = json.NewDecoder(response.Body).Decode(&deals)
+	if err != nil {
+		return nil, err
+	}
+	return deals, nil
 }
 
 func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {

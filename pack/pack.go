@@ -111,7 +111,7 @@ func GetMultiWriter(outDir string) (io.WriteCloser, *commp.Calc, string, error) 
 //
 // Returns:
 //   - *Result: A structure that contains results of the CAR file creation,
-//     including CIDs of the items, file paths, and sizes.
+//     including CIDs of the files, file paths, and sizes.
 //   - error: An error that occurred during the CAR assembly process, or nil if the operation was successful.
 func AssembleCar(
 	ctx context.Context,

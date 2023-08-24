@@ -94,7 +94,7 @@ func (w *Thread) packJobOnce(
 	// If everything fit, create a packJob. Usually this is the case for the last packJob
 	if remaining.carSize <= dataset.MaxSize {
 		w.logger.Debugw("creating packJob", "size", remaining.carSize)
-		_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
+		_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext.WithContext(ctx), strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
 			FileRangeIDs: remaining.fileRangeIDs(),
 		})
 
@@ -128,7 +128,7 @@ func (w *Thread) packJobOnce(
 	fileRangeIDs := underscore.Map(remaining.fileRanges[:si], func(fileRange model.FileRange) uint64 {
 		return fileRange.ID
 	})
-	_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext, strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
+	_, err := datasource.CreatePackJobHandler(ctx, w.dbNoContext.WithContext(ctx), strconv.FormatUint(uint64(source.ID), 10), datasource.CreatePackJobRequest{
 		FileRangeIDs: fileRangeIDs,
 	})
 	if err != nil {

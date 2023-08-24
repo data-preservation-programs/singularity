@@ -22,7 +22,7 @@ func PackHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	packJobID uint64,
+	packJobID uint32,
 ) ([]model.Car, error) {
 	return packHandler(db, ctx, resolver, packJobID)
 }
@@ -40,7 +40,7 @@ func packHandler(
 	db *gorm.DB,
 	ctx context.Context,
 	resolver datasource.HandlerResolver,
-	packJobID uint64,
+	packJobID uint32,
 ) ([]model.Car, error) {
 	var packJob model.PackJob
 	err := db.Where("id = ?", packJobID).Find(&packJob).Error
@@ -48,7 +48,34 @@ func packHandler(
 		return nil, err
 	}
 
+	if err := LoadSource(db, &packJob); err != nil {
+		return nil, err
+	}
+	if err := LoadFileRanges(db, &packJob); err != nil {
+		return nil, err
+	}
 	return Pack(ctx, db, packJob, resolver)
+}
+
+func LoadSource(db *gorm.DB, packJob *model.PackJob) error {
+	var src model.Source
+	err := db.Joins("Dataset").Where("sources.id = ?", packJob.SourceID).First(&src).Error
+	if err != nil {
+		return err
+	}
+
+	packJob.Source = &src
+	return nil
+}
+
+func LoadFileRanges(db *gorm.DB, packJob *model.PackJob) error {
+	var fileRanges []model.FileRange
+	err := db.Joins("File").Where("file_ranges.pack_job_id = ?", packJob.ID).Order("file_ranges.id asc").Find(&fileRanges).Error
+	if err != nil {
+		return err
+	}
+	packJob.FileRanges = fileRanges
+	return nil
 }
 
 func Pack(

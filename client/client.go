@@ -24,6 +24,8 @@ type Client interface {
 	PushFile(ctx context.Context, sourceID uint32, fileInfo datasource.FileInfo) (*model.File, error)
 	GetSourcePackJobs(ctx context.Context, sourceID uint32, request inspect.GetSourcePackJobsRequest) ([]model.PackJob, error)
 	CreatePackJob(ctx context.Context, sourceID uint32, request datasource.CreatePackJobRequest) (*model.PackJob, error)
+	Pack(ctx context.Context, packJobID uint32) ([]model.Car, error)
+	GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error)
 	ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error)
 	AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error)
 	CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error)

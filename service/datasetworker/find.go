@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -101,20 +102,12 @@ func (w *Thread) findPackWork(ctx context.Context) (*model.PackJob, error) {
 		//nolint: nilnil
 		return nil, nil
 	}
-
-	var src model.Source
-	err = db.Joins("Dataset").Where("sources.id = ?", packJobs[0].SourceID).First(&src).Error
-	if err != nil {
+	if err := datasource.LoadSource(w.dbNoContext.WithContext(ctx), &packJobs[0]); err != nil {
 		return nil, err
 	}
-	packJobs[0].Source = &src
-
-	var fileRanges []model.FileRange
-	err = db.Joins("File").Where("file_ranges.pack_job_id = ?", packJobs[0].ID).Order("file_ranges.id asc").Find(&fileRanges).Error
-	if err != nil {
+	if err := datasource.LoadFileRanges(w.dbNoContext.WithContext(ctx), &packJobs[0]); err != nil {
 		return nil, err
 	}
-	packJobs[0].FileRanges = fileRanges
 
 	return &packJobs[0], nil
 }
