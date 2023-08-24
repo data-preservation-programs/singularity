@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
@@ -48,12 +48,12 @@ func updateHandler(
 ) (*model.Preparation, error) {
 	logger := log.Logger("cli")
 	if datasetName == "" {
-		return nil, handler.NewInvalidParameterErr("name is required")
+		return nil, handlererror.NewInvalidParameterErr("name is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("dataset not found")
+		return nil, handlererror.NewInvalidParameterErr("dataset not found")
 	}
 
 	err2 := parseUpdateRequest(request, &dataset)
@@ -74,7 +74,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Preparation) error
 	if request.MaxSizeStr != nil {
 		maxSize, err := humanize.ParseBytes(*request.MaxSizeStr)
 		if err != nil {
-			return handler.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
+			return handlererror.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
 		}
 		dataset.MaxSize = int64(maxSize)
 	}
@@ -84,25 +84,25 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Preparation) error
 		var err error
 		pieceSize, err = humanize.ParseBytes(*request.PieceSizeStr)
 		if err != nil {
-			return handler.NewInvalidParameterErr("invalid value for piece-size: " + err.Error())
+			return handlererror.NewInvalidParameterErr("invalid value for piece-size: " + err.Error())
 		}
 
 		if pieceSize != util.NextPowerOfTwo(pieceSize) {
-			return handler.NewInvalidParameterErr("piece size must be a power of two")
+			return handlererror.NewInvalidParameterErr("piece size must be a power of two")
 		}
 	}
 
 	dataset.PieceSize = int64(pieceSize)
 	if dataset.PieceSize > 1<<36 {
-		return handler.NewInvalidParameterErr("piece size cannot be larger than 64 GiB")
+		return handlererror.NewInvalidParameterErr("piece size cannot be larger than 64 GiB")
 	}
 
 	if dataset.MaxSize*128/127 >= dataset.PieceSize {
-		return handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
+		return handlererror.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
 	if len(request.OutputDirs) > 1 {
-		return handler.NewInvalidParameterErr("multiple output directories will not supported in the future hence no longer allowed")
+		return handlererror.NewInvalidParameterErr("multiple output directories will not supported in the future hence no longer allowed")
 	}
 
 	if request.OutputDirs != nil {
@@ -113,11 +113,11 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Preparation) error
 			for i, outputDir := range request.OutputDirs {
 				info, err := os.Stat(outputDir)
 				if err != nil || !info.IsDir() {
-					return handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
+					return handlererror.NewInvalidParameterErr("output directory does not exist: " + outputDir)
 				}
 				abs, err := filepath.Abs(outputDir)
 				if err != nil {
-					return handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
+					return handlererror.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 				}
 				outDirs[i] = abs
 			}
@@ -130,7 +130,7 @@ func parseUpdateRequest(request UpdateRequest, dataset *model.Preparation) error
 	}
 
 	if len(dataset.EncryptionRecipients) > 0 && len(dataset.OutputDirs) == 0 {
-		return handler.NewInvalidParameterErr(
+		return handlererror.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
 		)

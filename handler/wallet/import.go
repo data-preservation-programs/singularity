@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/filecoin-project/go-address"
 	"github.com/jsign/go-filsigner/wallet"
@@ -42,18 +42,18 @@ func importHandler(
 ) (*model.Wallet, error) {
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid private key")
+		return nil, handlererror.NewInvalidParameterErr("invalid private key")
 	}
 
 	var result string
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid private key")
+		return nil, handlererror.NewInvalidParameterErr("invalid private key")
 	}
 
 	_, err = address.NewFromString(result)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid actor ID from GLIF result: " + result)
+		return nil, handlererror.NewInvalidParameterErr("invalid actor ID from GLIF result: " + result)
 	}
 
 	wallet := model.Wallet{

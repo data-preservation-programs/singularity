@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +23,7 @@ func removeHandler(
 ) error {
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
+		return handlererror.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 	err = database.DoRetry(ctx, func() error { return db.Delete(&dataset).Error })
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"gorm.io/gorm"
@@ -43,7 +43,7 @@ func createPackJobHandler(
 ) (*model.PackJob, error) {
 	sourceIDInt, err := strconv.Atoi(sourceID)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid source id")
+		return nil, handlererror.NewInvalidParameterErr("invalid source id")
 	}
 
 	packJob := model.PackJob{

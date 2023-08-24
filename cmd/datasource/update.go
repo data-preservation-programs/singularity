@@ -21,7 +21,7 @@ var UpdateCmd = &cli.Command{
 					return flag
 				}
 				stringFlag.Required = false
-				stringFlag.Category = "Options for " + cmd.Name
+				stringFlag.Category = "Config for " + cmd.Name
 				stringFlag.Aliases = nil
 				return stringFlag
 			})

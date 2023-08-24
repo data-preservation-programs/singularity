@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
@@ -143,7 +144,8 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 
 	err = db.Create(&model.CarBlock{
 		Car: &model.Car{
-			AttachmentID: 1,
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
 		},
 		CID: model.CID(cidValue),
 		File: &model.File{

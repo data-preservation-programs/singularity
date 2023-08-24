@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/filecoin-project/go-address"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -43,22 +43,22 @@ func addRemoteHandler(
 ) (*model.Wallet, error) {
 	addr, err := address.NewFromString(request.Address)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid address")
+		return nil, handlererror.NewInvalidParameterErr("invalid address")
 	}
 
 	_, err = peer.Decode(request.RemotePeer)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid peer")
+		return nil, handlererror.NewInvalidParameterErr("invalid peer")
 	}
 
 	if addr.Protocol() == address.ID {
-		return nil, handler.NewInvalidParameterErr("invalid address")
+		return nil, handlererror.NewInvalidParameterErr("invalid address")
 	}
 
 	var result string
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid wallet")
+		return nil, handlererror.NewInvalidParameterErr("invalid wallet")
 	}
 
 	wallet := model.Wallet{

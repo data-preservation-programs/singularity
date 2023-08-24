@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/robfig/cron/v3"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/dustin/go-humanize"
 	"github.com/ipfs/go-cid"
@@ -82,7 +82,7 @@ func createHandler(
 ) (*model.Schedule, error) {
 	dataset, err := database.FindDatasetByName(db, request.DatasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("dataset not found")
+		return nil, handlererror.NewInvalidParameterErr("dataset not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -90,12 +90,12 @@ func createHandler(
 
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid start delay")
+		return nil, handlererror.NewInvalidParameterErr("invalid start delay")
 	}
 
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid duration")
+		return nil, handlererror.NewInvalidParameterErr("invalid duration")
 	}
 
 	var scheduleCron string
@@ -103,7 +103,7 @@ func createHandler(
 		cronParser := cron.NewParser(cron.SecondOptional | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
 		_, err = cronParser.Parse(request.ScheduleCron)
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("invalid schedule cron")
+			return nil, handlererror.NewInvalidParameterErr("invalid schedule cron")
 		} else {
 			scheduleCron = request.ScheduleCron
 		}
@@ -111,26 +111,26 @@ func createHandler(
 
 	totalDealSize, err := humanize.ParseBytes(request.TotalDealSize)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid total deal size")
+		return nil, handlererror.NewInvalidParameterErr("invalid total deal size")
 	}
 	scheduleDealSize, err := humanize.ParseBytes(request.ScheduleDealSize)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid schedule deal size")
+		return nil, handlererror.NewInvalidParameterErr("invalid schedule deal size")
 	}
 	pendingDealSize, err := humanize.ParseBytes(request.MaxPendingDealSize)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid pending deal size")
+		return nil, handlererror.NewInvalidParameterErr("invalid pending deal size")
 	}
 	if scheduleCron != "" && scheduleDealSize == 0 && request.ScheduleDealNumber == 0 {
-		return nil, handler.NewInvalidParameterErr("schedule deal number or size must be set when using cron schedule")
+		return nil, handlererror.NewInvalidParameterErr("schedule deal number or size must be set when using cron schedule")
 	}
 	for _, pieceCID := range request.AllowedPieceCIDs {
 		parsed, err := cid.Parse(pieceCID)
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("invalid allowed piece CID, it's not a CID")
+			return nil, handlererror.NewInvalidParameterErr("invalid allowed piece CID, it's not a CID")
 		}
 		if parsed.Type() != cid.FilCommitmentUnsealed {
-			return nil, handler.NewInvalidParameterErr("invalid allowed piece CID, it's not a commp")
+			return nil, handlererror.NewInvalidParameterErr("invalid allowed piece CID, it's not a commp")
 		}
 	}
 
@@ -141,7 +141,7 @@ func createHandler(
 	}
 
 	if walletCount == 0 {
-		return nil, handler.NewInvalidParameterErr("no wallet assigned to this dataset")
+		return nil, handlererror.NewInvalidParameterErr("no wallet assigned to this dataset")
 	}
 
 	var providerActor string

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rclone/rclone/fs"
 	"gorm.io/gorm"
@@ -47,7 +47,7 @@ func pushFileHandler(
 	var source model.Source
 	err := db.Joins("Preparation").Where("sources.id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("source %d not found.", sourceID))
+		return nil, handlererror.NewInvalidParameterErr(fmt.Sprintf("source %d not found.", sourceID))
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -60,12 +60,12 @@ func pushFileHandler(
 
 	entry, err := dsHandler.Check(ctx, fileInfo.Path)
 	if err != nil {
-		return nil, handler.InvalidParameterError{Err: err}
+		return nil, handlererror.InvalidParameterError{Err: err}
 	}
 
 	obj, ok := entry.(fs.ObjectInfo)
 	if !ok {
-		return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s is not an object", fileInfo.Path))
+		return nil, handlererror.NewInvalidParameterErr(fmt.Sprintf("%s is not an object", fileInfo.Path))
 	}
 
 	file, fileRanges, err := PushFile(ctx, db, obj, source, *source.Dataset, map[string]uint64{})
@@ -75,7 +75,7 @@ func pushFileHandler(
 	}
 
 	if file == nil {
-		return nil, handler.NewDuplicateRecordError(fmt.Sprintf("%s already exists", obj.Remote()))
+		return nil, handlererror.NewDuplicateRecordError(fmt.Sprintf("%s already exists", obj.Remote()))
 	}
 
 	file.FileRanges = fileRanges

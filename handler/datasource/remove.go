@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -26,11 +26,11 @@ func removeSourceHandler(
 	var source model.Source
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return handler.NewInvalidParameterErr("invalid source id")
+		return handlererror.NewInvalidParameterErr("invalid source id")
 	}
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return handler.NewInvalidParameterErr("source not found")
+		return handlererror.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
 		return errors.WithStack(err)

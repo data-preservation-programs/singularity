@@ -15,6 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -111,7 +112,7 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 	schedule := model.Schedule{
 		Preparation: &model.Preparation{
 			SourceStorages: []model.Storage{{}},
-			Name:           "test", Wallets: []model.Wallet{
+			Wallets: []model.Wallet{
 				{
 					ID: client, Address: "f0xx",
 				},
@@ -130,10 +131,11 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 	}
 	err = db.Create([]model.Car{
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[0],
-			PieceSize:    1024,
-			StoragePath:  "0",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			StoragePath:   "0",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -163,7 +165,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 	schedule := model.Schedule{
 		Preparation: &model.Preparation{
 			SourceStorages: []model.Storage{{}},
-			Name:           "test", Wallets: []model.Wallet{
+			Wallets: []model.Wallet{
 				{
 					ID: client, Address: "f0xx",
 				},
@@ -182,19 +184,22 @@ func TestDealMakerService_Cron(t *testing.T) {
 
 	err = db.Create([]model.Car{
 		{
-			AttachmentID: 1,
-			PieceCID:     model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			PieceSize:    1024,
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			PieceSize:     1024,
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			PieceSize:    1024,
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			PieceSize:     1024,
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			PieceSize:    1024,
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			PieceSize:     1024,
 		},
 	}).Error
 
@@ -252,7 +257,7 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 	schedule := model.Schedule{
 		Preparation: &model.Preparation{
 			SourceStorages: []model.Storage{{}},
-			Name:           "test", Wallets: []model.Wallet{
+			Wallets: []model.Wallet{
 				{
 					ID: client, Address: "f0xx",
 				},
@@ -277,34 +282,39 @@ func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 	}
 	err = db.Create([]model.Car{
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[0],
-			PieceSize:    1024,
-			StoragePath:  "0",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			StoragePath:   "0",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[1],
-			PieceSize:    1024,
-			StoragePath:  "1",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[1],
+			PieceSize:     1024,
+			StoragePath:   "1",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[2],
-			PieceSize:    2048,
-			StoragePath:  "2",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[2],
+			PieceSize:     2048,
+			StoragePath:   "2",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[3],
-			PieceSize:    1024,
-			StoragePath:  "3",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[3],
+			PieceSize:     1024,
+			StoragePath:   "3",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[4],
-			PieceSize:    1024,
-			StoragePath:  "4",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[4],
+			PieceSize:     1024,
+			StoragePath:   "4",
 		},
 	}).Error
 	require.NoError(t, err)
@@ -358,7 +368,7 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	client := "f0client"
 	schedule := model.Schedule{
 		Preparation: &model.Preparation{
-			Name: "test", Wallets: []model.Wallet{
+			Wallets: []model.Wallet{
 				{
 					ID: client, Address: "f0xx",
 				},
@@ -384,34 +394,39 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 	}
 	err = db.Create([]model.Car{
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[0],
-			PieceSize:    1024,
-			StoragePath:  "0",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[0],
+			PieceSize:     1024,
+			StoragePath:   "0",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[1],
-			PieceSize:    1024,
-			StoragePath:  "1",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[1],
+			PieceSize:     1024,
+			StoragePath:   "1",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[2],
-			PieceSize:    1024,
-			StoragePath:  "2",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[2],
+			PieceSize:     1024,
+			StoragePath:   "2",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[3],
-			PieceSize:    1024,
-			StoragePath:  "3",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[3],
+			PieceSize:     1024,
+			StoragePath:   "3",
 		},
 		{
-			AttachmentID: 1,
-			PieceCID:     pieceCIDs[4],
-			PieceSize:    1024,
-			StoragePath:  "4",
+			AttachmentID:  ptr.Of(uint32(1)),
+			PreparationID: 1,
+			PieceCID:      pieceCIDs[4],
+			PieceSize:     1024,
+			StoragePath:   "4",
 		},
 	}).Error
 	require.NoError(t, err)

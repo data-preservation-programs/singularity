@@ -1,0 +1,146 @@
+package dataprep
+
+import (
+	"context"
+
+	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
+	"github.com/dustin/go-humanize"
+	"gorm.io/gorm"
+)
+
+type CreateRequest struct {
+	SourceStorages       []string `json:"sourceStorages"       validate:"required"`                     // Name of Source storage systems to be used for the source
+	OutputStorages       []string `json:"outputStorages"       validate:"optional"`                     // Name of Output storage systems to be used for the output
+	MaxSizeStr           string   `default:"31.5GiB"           json:"maxSize"      validate:"required"` // Maximum size of the CAR files to be created
+	PieceSizeStr         string   `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
+	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
+}
+
+// ValidateCreateRequest processes and validates the creation request parameters.
+// The function checks the validity of the input parameters such as maxSize, pieceSize, and
+// the existence of source and output storages. The function also ensures that provided
+// parameters meet certain criteria, like the pieceSize being a power of two, and maxSize
+// allowing for padding. The encryption and storages compatibility is also validated.
+//
+// Parameters:
+// - ctx: The context for database transactions and other operations.
+// - db: A pointer to the gorm.DB instance representing the database connection.
+// - request: The CreateRequest structure containing the parameters for the creation request.
+//
+// Returns:
+//   - A pointer to the validated Preparation model which can be used for subsequent operations.
+//   - An error, if any occurred during the validation. This includes errors such as invalid
+//     parameter values, storage not found, or incompatibility between encryption and storage options.
+//
+// Note:
+// If certain parameters are not provided in the request, they are computed based on certain
+// defaults or constraints, like the pieceSize defaulting to a power of two value.
+func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.Preparation, error) {
+	db = db.WithContext(ctx)
+	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
+	if err != nil {
+		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid value for maxSize: %s", request.MaxSizeStr))
+	}
+
+	pieceSize := util.NextPowerOfTwo(maxSize)
+	if request.PieceSizeStr != "" {
+		pieceSize, err = humanize.ParseBytes(request.PieceSizeStr)
+		if err != nil {
+			return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid value for pieceSize: %s", request.PieceSizeStr))
+		}
+
+		if pieceSize != util.NextPowerOfTwo(pieceSize) {
+			return nil, errors.Wrap(handlererror.ErrInvalidParameter, "pieceSize must be a power of two")
+		}
+	}
+
+	if pieceSize > 1<<36 {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "pieceSize cannot be larger than 64 GiB")
+	}
+
+	if maxSize*128/127 >= pieceSize {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "maxSize needs to be reduced to leave space for padding")
+	}
+
+	if len(request.EncryptionRecipients) > 0 && len(request.OutputStorages) == 0 {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter,
+			"encryption is not compatible with inline preparation and requires at least one output storage")
+	}
+
+	if len(request.SourceStorages) == 0 {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "at least one source storage must be specified")
+	}
+
+	var sources []model.Storage
+	for _, name := range request.SourceStorages {
+		var source model.Storage
+		err = db.Where("name = ?", name).First(&source).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.Wrapf(handlererror.ErrNotFound, "source storage %s does not exist", name)
+		}
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		sources = append(sources, source)
+	}
+
+	var outputs []model.Storage
+	for _, name := range request.OutputStorages {
+		var output model.Storage
+		err = db.Where("name = ?", name).First(&output).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage %s does not exist", name)
+		}
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		outputs = append(outputs, output)
+	}
+
+	return &model.Preparation{
+		MaxSize:              int64(maxSize),
+		PieceSize:            int64(pieceSize),
+		EncryptionRecipients: request.EncryptionRecipients,
+		SourceStorages:       sources,
+		OutputStorages:       outputs,
+	}, nil
+}
+
+// CreatePreparationHandler handles the creation of a new Preparation entity based on the provided
+// CreateRequest parameters. Initially, it validates the request parameters and, if valid,
+// creates a new Preparation record in the database.
+//
+// Parameters:
+// - ctx: The context for database transactions and other operations.
+// - db: A pointer to the gorm.DB instance representing the database connection.
+// - request: The CreateRequest structure containing the parameters for the creation request.
+//
+// Returns:
+// - A pointer to the newly created Preparation model.
+// - An error, if any occurred during the validation or creation process.
+//
+// Note:
+// This function relies on the ValidateCreateRequest function to ensure that the provided
+// parameters meet the required criteria before creating a Preparation record.
+func CreatePreparationHandler(
+	ctx context.Context,
+	db *gorm.DB,
+	request CreateRequest,
+) (*model.Preparation, error) {
+	db = db.WithContext(ctx)
+	preparation, err := ValidateCreateRequest(ctx, db, request)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	err = database.DoRetry(ctx, func() error { return db.Create(preparation).Error })
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return preparation, nil
+}

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -35,22 +35,22 @@ func addWalletHandler(
 	wallet string,
 ) (*model.WalletAssignment, error) {
 	if datasetName == "" {
-		return nil, handler.NewInvalidParameterErr("dataset name is required")
+		return nil, handlererror.NewInvalidParameterErr("dataset name is required")
 	}
 
 	if wallet == "" {
-		return nil, handler.NewInvalidParameterErr("wallet address is required")
+		return nil, handlererror.NewInvalidParameterErr("wallet address is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 
 	var w model.Wallet
 	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("failed to find wallet: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("failed to find wallet: " + err.Error())
 	}
 
 	a := model.WalletAssignment{
@@ -63,7 +63,7 @@ func addWalletHandler(
 	})
 
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("failed to create wallet assignment: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("failed to create wallet assignment: " + err.Error())
 	}
 
 	return &a, nil

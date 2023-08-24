@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"gorm.io/gorm"
@@ -33,12 +33,12 @@ func getSourcePackJobDetailHandler(
 ) (*model.PackJob, error) {
 	packJobID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid pack job id")
+		return nil, handlererror.NewInvalidParameterErr("invalid pack job id")
 	}
 	var packJob model.PackJob
 	err = db.Preload("Cars").Preload("FileRanges").Where("id = ?", packJobID).First(&packJob).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("pack job not found")
+		return nil, handlererror.NewInvalidParameterErr("pack job not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

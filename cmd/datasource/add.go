@@ -7,8 +7,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/datasource"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
@@ -18,7 +17,7 @@ import (
 )
 
 var exclude = []string{
-	"CreatedAt", "UpdatedAt", "ScanningWorkerID", "LastScannedTimestamp", "DagGenWorkerID", "Options",
+	"CreatedAt", "UpdatedAt", "ScanningWorkerID", "LastScannedTimestamp", "DagGenWorkerID", "Config",
 }
 
 var AddCmd = &cli.Command{
@@ -32,16 +31,16 @@ var AddCmd = &cli.Command{
 		cmd.Flags = append(cmd.Flags, &cli.BoolFlag{
 			Name:     "delete-after-export",
 			Usage:    "[Dangerous] Delete the files of the dataset after exporting it to CAR files. ",
-			Category: "Data Preparation Options",
+			Category: "Data Preparation Config",
 		}, &cli.DurationFlag{
 			Name:        "rescan-interval",
 			Usage:       "Automatically rescan the source directory when this interval has passed from last successful scan",
-			Category:    "Data Preparation Options",
+			Category:    "Data Preparation Config",
 			DefaultText: "disabled",
 		}, &cli.GenericFlag{
 			Name:        "scanning-state",
 			Usage:       "set the initial scanning state",
-			Category:    "Data Preparation Options",
+			Category:    "Data Preparation Config",
 			DefaultText: "ready",
 			Value:       &ws,
 		})
@@ -56,10 +55,10 @@ var AddCmd = &cli.Command{
 			db = db.WithContext(c.Context)
 			dataset, err := database.FindDatasetByName(db, datasetName)
 			if err != nil {
-				return handler.InvalidParameterError{Err: err}
+				return handlererror.InvalidParameterError{Err: err}
 			}
 			if path == "" {
-				return handler.NewInvalidParameterErr("path is required")
+				return handlererror.NewInvalidParameterErr("path is required")
 			}
 			if r.Prefix == "local" {
 				path, err = filepath.Abs(path)

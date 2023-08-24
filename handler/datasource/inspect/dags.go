@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -32,12 +32,12 @@ func getDagsHandler(
 ) ([]model.Car, error) {
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid source id")
+		return nil, handlererror.NewInvalidParameterErr("invalid source id")
 	}
 	var source model.Source
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("source not found")
+		return nil, handlererror.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

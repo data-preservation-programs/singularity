@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -30,13 +30,13 @@ func listWalletHandler(
 	datasetName string,
 ) ([]model.Wallet, error) {
 	if datasetName == "" {
-		return nil, handler.NewInvalidParameterErr("dataset name is required")
+		return nil, handlererror.NewInvalidParameterErr("dataset name is required")
 	}
 
 	var dataset model.Preparation
 	err := db.Preload("Wallets").Where("name = ?", datasetName).First(&dataset).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("dataset not found")
+		return nil, handlererror.NewInvalidParameterErr("dataset not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

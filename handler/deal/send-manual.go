@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/dustin/go-humanize"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/ipfs/go-cid"
@@ -76,7 +76,7 @@ func sendManualHandler(
 	wallet := model.Wallet{}
 	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("client address not found")
+		return nil, handlererror.NewInvalidParameterErr("client address not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -84,21 +84,21 @@ func sendManualHandler(
 
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid piece CID")
+		return nil, handlererror.NewInvalidParameterErr("invalid piece CID")
 	}
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return nil, handler.NewInvalidParameterErr("piece CID must be commp")
+		return nil, handlererror.NewInvalidParameterErr("piece CID must be commp")
 	}
 	pieceSize, err := humanize.ParseBytes(request.PieceSize)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid piece size")
+		return nil, handlererror.NewInvalidParameterErr("invalid piece size")
 	}
 	if (pieceSize & (pieceSize - 1)) != 0 {
-		return nil, handler.NewInvalidParameterErr("piece size must be a power of 2")
+		return nil, handlererror.NewInvalidParameterErr("piece size must be a power of 2")
 	}
 	rootCID, err := cid.Parse(request.RootCID)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid root CID")
+		return nil, handlererror.NewInvalidParameterErr("invalid root CID")
 	}
 	car := model.Car{
 		PieceCID:  model.CID(pieceCID),
@@ -108,11 +108,11 @@ func sendManualHandler(
 	}
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid duration")
+		return nil, handlererror.NewInvalidParameterErr("invalid duration")
 	}
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid start delay")
+		return nil, handlererror.NewInvalidParameterErr("invalid start delay")
 	}
 
 	dealConfig := replication.DealConfig{

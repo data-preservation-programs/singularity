@@ -3,16 +3,16 @@ package client
 import (
 	"context"
 
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
-type DuplicateRecordError = handler.DuplicateRecordError
-type InvalidParameterError = handler.InvalidParameterError
-type NotFoundError = handler.NotFoundError
+type DuplicateRecordError = handlererror.DuplicateRecordError
+type InvalidParameterError = handlererror.InvalidParameterError
+type NotFoundError = handlererror.NotFoundError
 
 type Client interface {
 	CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Preparation, error)

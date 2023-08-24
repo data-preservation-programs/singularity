@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
@@ -49,12 +49,12 @@ func getPathHandler(
 	path := request.Path
 	sourceID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid source id")
+		return nil, handlererror.NewInvalidParameterErr("invalid source id")
 	}
 	var source model.Source
 	err = db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("source not found")
+		return nil, handlererror.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -78,7 +78,7 @@ func getPathHandler(
 					return nil, errors.WithStack(err)
 				}
 				if len(files) == 0 {
-					return nil, handler.NewInvalidParameterErr("entry not found with given path")
+					return nil, handlererror.NewInvalidParameterErr("entry not found with given path")
 				}
 				return &DirDetail{
 					Current: subdir,
@@ -86,7 +86,7 @@ func getPathHandler(
 					Files:   files,
 				}, nil
 			}
-			return nil, handler.NewInvalidParameterErr("entry not found with given path")
+			return nil, handlererror.NewInvalidParameterErr("entry not found with given path")
 		}
 		if err != nil {
 			return nil, errors.WithStack(err)

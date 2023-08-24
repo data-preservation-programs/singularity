@@ -5,7 +5,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -34,14 +34,14 @@ func pauseHandler(
 	var schedule model.Schedule
 	err := db.First(&schedule, "id = ?", scheduleID).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("schedule not found")
+		return nil, handlererror.NewInvalidParameterErr("schedule not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	if schedule.State == model.ScheduleCompleted {
-		return nil, handler.NewInvalidParameterErr("schedule is already completed")
+		return nil, handlererror.NewInvalidParameterErr("schedule is already completed")
 	}
 
 	schedule.State = model.SchedulePaused

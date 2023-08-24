@@ -2,10 +2,8 @@ package storagesystem
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"sort"
-	"strconv"
 	"strings"
 
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
@@ -51,7 +49,6 @@ import (
 	_ "github.com/rclone/rclone/backend/zoho"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
-	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
 
@@ -117,18 +114,20 @@ func (e *EmptyReadCloser) Close() error {
 }
 
 type Backend struct {
-	LongName   string
-	ShortName  string
-	ShortUsage string
-	LongUsage  string
-	Flags      []cli.Flag
-	Options    []Option
+	// Name of this fs
+	Name string
+	// Description of this fs - defaults to Name
+	Description string
+	// Prefix for command line flags for this fs - defaults to Name if not set
+	Prefix string
+	// Different Config by Provider
+	ProviderOptions []ProviderOptions
 }
 
-type Option struct {
-	Name     string
-	FlagName string
-	Default  string
+type ProviderOptions struct {
+	Provider            string
+	ProviderDescription string
+	Options             []fs.Option
 }
 
 var Backends []Backend
@@ -140,110 +139,62 @@ func init() {
 			continue
 		}
 		backend := Backend{}
-		backend.ShortName = regInfo.Prefix
-		backend.LongName = regInfo.Name
-		backend.ShortUsage = regInfo.Description
+		backend.Prefix = regInfo.Prefix
+		backend.Name = regInfo.Name
+		backend.Description = regInfo.Description
 
-		var usageLines []string
-		var flags []cli.Flag
-		providerSet := make(map[string]struct{})
-		var optionsByName = make(map[string][]fs.Option)
+		providerMap := make(map[string]*ProviderOptions)
+		var allProviders []string
 		for _, option := range regInfo.Options {
-			optionsByName[option.Name] = append(optionsByName[option.Name], option)
-			if strings.HasPrefix(option.Provider, "!") || option.Provider == "" {
+			if option.Name == "provider" {
+				for _, example := range option.Examples {
+					providerMap[example.Value] = &ProviderOptions{
+						Provider:            example.Value,
+						ProviderDescription: example.Help,
+					}
+					allProviders = append(allProviders, example.Value)
+				}
 				continue
 			}
-			providers := strings.Split(option.Provider, ",")
+
+			if len(allProviders) == 0 {
+				allProviders = []string{""}
+				providerMap[""] = &ProviderOptions{}
+			}
+			var providers []string
+			if option.Provider == "" {
+				providers = allProviders
+			} else if option.Provider == "" {
+				providers = []string{""}
+			} else if strings.HasPrefix(option.Provider, "!") {
+				excludes := strings.Split(option.Provider[1:], ",")
+				providers = underscore.Difference(allProviders, excludes)
+			} else {
+				providers = strings.Split(option.Provider, ",")
+			}
+
 			for _, provider := range providers {
-				providerSet[provider] = struct{}{}
-			}
-		}
-		var optionsByNameSorted []string
-		for name := range optionsByName {
-			optionsByNameSorted = append(optionsByNameSorted, name)
-		}
-		sort.Strings(optionsByNameSorted)
-		for _, name := range optionsByNameSorted {
-			options := optionsByName[name]
-			category := ""
-			if options[0].Advanced {
-				category = "Advanced Options"
-			}
-			var aliases []string
-			if options[0].ShortOpt != "" {
-				aliases = append(aliases, options[0].ShortOpt)
-			}
-			envvar := strings.ToUpper(regInfo.Prefix + "_" + name)
-			flagName := strings.ToLower(strings.ReplaceAll(envvar, "_", "-"))
-			defaultValue := fmt.Sprint(options[0].Default)
-			if regInfo.Prefix == "local" && name == "encoding" {
-				defaultValue = "Slash,Dot"
-			}
-			flag := &cli.StringFlag{
-				Name:     flagName,
-				Category: category,
-				Usage:    strings.Split(options[0].Help, "\n")[0],
-				Required: options[0].Required,
-				Hidden:   options[0].Hide&fs.OptionHideCommandLine != 0,
-				Value:    defaultValue,
-				Aliases:  aliases,
-				EnvVars:  []string{envvar},
-			}
-			flags = append(flags, flag)
-			backend.Options = append(backend.Options, Option{
-				Name:     name,
-				FlagName: flagName,
-				Default:  defaultValue,
-			})
-			usageLines = append(usageLines, "--"+flag.Name)
-			for _, option := range options {
-				margin := "   "
-				if option.Provider != "" {
-					margin = "      "
+				option := option.Copy()
+				option.Examples = underscore.Filter(option.Examples, func(example fs.OptionExample) bool {
+					return example.Provider == "" || example.Provider == provider
+				})
+				_, ok := providerMap[provider]
+				if !ok {
+					panic("provider not found")
 				}
-				var providers []string
-				if strings.HasPrefix(option.Provider, "!") {
-					excludes := strings.Split(option.Provider[1:], ",")
-					for provider := range providerSet {
-						if !slices.Contains(excludes, provider) {
-							providers = append(providers, provider)
-						}
-					}
-				} else if option.Provider != "" {
-					providers = strings.Split(option.Provider, ",")
-				}
-				sort.Strings(providers)
-				if option.Provider != "" {
-					usageLines = append(usageLines, "   [Provider] - "+strings.Join(providers, ", "))
-				}
-				lines := underscore.Map(strings.Split(option.Help, "\n"), func(line string) string { return margin + line })
-				usageLines = append(usageLines, lines...)
-				if len(option.Examples) > 0 {
-					for i, example := range option.Examples {
-						if example.Value == "" {
-							option.Examples[i].Value = "<unset>"
-						}
-					}
-					usageLines = append(usageLines, "")
-					usageLines = append(usageLines, margin+"Examples:")
-					maxValueLen := underscore.Max(underscore.Map(option.Examples, func(example fs.OptionExample) int { return len(example.Value) }))
-					for _, example := range option.Examples {
-						pattern := margin + "   | %-" + strconv.Itoa(maxValueLen) + "s | %s"
-						helpLines := strings.Split(example.Help, "\n")
-						exampleLine := fmt.Sprintf(pattern, example.Value, helpLines[0])
-						usageLines = append(usageLines, exampleLine)
-						for _, helpLine := range helpLines[1:] {
-							usageLines = append(usageLines, margin+"     "+strings.Repeat(" ", maxValueLen)+" | "+helpLine)
-						}
-					}
-				}
-				usageLines = append(usageLines, "")
+				providerMap[provider].Options = append(providerMap[provider].Options, *option)
 			}
 		}
 
-		backend.Flags = flags
-		backend.LongUsage = strings.Join(usageLines, "\n")
+		for _, provider := range providerMap {
+			backend.ProviderOptions = append(backend.ProviderOptions, *provider)
+		}
+
+		sort.Slice(backend.ProviderOptions, func(i, j int) bool {
+			return backend.ProviderOptions[i].Provider < backend.ProviderOptions[j].Provider
+		})
+
 		Backends = append(Backends, backend)
-		BackendMap[backend.ShortName] = backend
+		BackendMap[backend.Prefix] = backend
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -25,7 +25,7 @@ func ListSourcesByDatasetHandler(
 	}
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 	err = db.Where("dataset_id = ?", dataset.ID).Find(&sources).Error
 	if err != nil {

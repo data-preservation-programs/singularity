@@ -206,13 +206,14 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	}
 
 	car := model.Car{
-		PieceCID:     model.CID(pieceCid),
-		PieceSize:    int64(finalPieceSize),
-		RootCID:      model.CID(rootCID),
-		FileSize:     fileSize,
-		StorageID:    storageID,
-		StoragePath:  filename,
-		AttachmentID: job.AttachmentID,
+		PieceCID:      model.CID(pieceCid),
+		PieceSize:     int64(finalPieceSize),
+		RootCID:       model.CID(rootCID),
+		FileSize:      fileSize,
+		StorageID:     storageID,
+		StoragePath:   filename,
+		AttachmentID:  &job.AttachmentID,
+		PreparationID: job.Attachment.PreparationID,
 	}
 
 	err = database.DoRetry(ctx, func() error {

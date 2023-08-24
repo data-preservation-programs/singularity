@@ -9,9 +9,9 @@ import (
 
 	"github.com/data-preservation-programs/singularity/client"
 	"github.com/data-preservation-programs/singularity/client/testutil"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/stretchr/testify/require"
@@ -34,13 +34,13 @@ func TestClients(t *testing.T) {
 			Name:       "test",
 			MaxSizeStr: "31.5GiB",
 		})
-		var asConflict handler.DuplicateRecordError
+		var asConflict handlererror.DuplicateRecordError
 		require.ErrorAs(t, err, &asConflict)
 		require.Nil(t, dupDataset)
 
 		// cannot create dataset with invalid parameter
 		invalidDataset, err := client.CreateDataset(ctx, dataset.CreateRequest{})
-		var asInvalidParameter handler.InvalidParameterError
+		var asInvalidParameter handlererror.InvalidParameterError
 		require.ErrorAs(t, err, &asInvalidParameter)
 		require.Nil(t, invalidDataset)
 
@@ -70,7 +70,7 @@ func TestClients(t *testing.T) {
 			SourcePath:     path,
 			RescanInterval: "0h",
 		})
-		var asNotFoundError handler.NotFoundError
+		var asNotFoundError handlererror.NotFoundError
 		require.ErrorAs(t, err, &asNotFoundError)
 		require.Nil(t, notFoundSource)
 

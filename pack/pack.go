@@ -154,13 +154,14 @@ func Pack(
 			}
 		}
 		cars = append(cars, model.Car{
-			PieceCID:     model.CID(pieceCid),
-			PieceSize:    int64(finalPieceSize),
-			RootCID:      model.CID(EmptyFileCid),
-			FileSize:     fileSize,
-			StorageID:    storageID,
-			StoragePath:  filename,
-			AttachmentID: job.AttachmentID,
+			PieceCID:      model.CID(pieceCid),
+			PieceSize:     int64(finalPieceSize),
+			RootCID:       model.CID(EmptyFileCid),
+			FileSize:      fileSize,
+			StorageID:     storageID,
+			StoragePath:   filename,
+			AttachmentID:  &job.AttachmentID,
+			PreparationID: job.Attachment.PreparationID,
 		})
 		numCarBlocks = append(numCarBlocks, len(assembler.carBlocks))
 	}

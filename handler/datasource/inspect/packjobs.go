@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -40,7 +40,7 @@ func getSourcePackJobsHandler(
 	var source model.Source
 	err := db.Where("id = ?", sourceID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("source not found")
+		return nil, handlererror.NewInvalidParameterErr("source not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

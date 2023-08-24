@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors"
+	"gorm.io/gorm"
 )
 
 type AggregateError struct {
@@ -65,4 +66,8 @@ func (a AggregateError) Format(s fmt.State, verb rune) {
 	case 'q':
 		_, _ = fmt.Fprintf(s, "%q", a.Error())
 	}
+}
+
+func IsDuplicateKeyError(err error) bool {
+	return errors.Is(err, gorm.ErrDuplicatedKey) || (err != nil && strings.Contains(err.Error(), "constraint failed"))
 }

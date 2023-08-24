@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -23,12 +23,12 @@ func listPiecesHandler(
 	datasetName string,
 ) ([]model.Car, error) {
 	if datasetName == "" {
-		return nil, handler.NewInvalidParameterErr("dataset name is required")
+		return nil, handlererror.NewInvalidParameterErr("dataset name is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 
 	var cars []model.Car

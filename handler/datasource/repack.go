@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -26,7 +26,7 @@ func repackHandler(
 	request RepackRequest,
 ) ([]model.PackJob, error) {
 	if id == "" && request.PackJobID == nil {
-		return nil, handler.NewInvalidParameterErr("either source id or pack job id must be provided")
+		return nil, handlererror.NewInvalidParameterErr("either source id or pack job id must be provided")
 	}
 
 	var sourceID int
@@ -34,7 +34,7 @@ func repackHandler(
 	if id != "" {
 		sourceID, err = strconv.Atoi(id)
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("invalid source id")
+			return nil, handlererror.NewInvalidParameterErr("invalid source id")
 		}
 	}
 
@@ -47,7 +47,7 @@ func repackHandler(
 		}
 		err = statement.First(&packJob).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, handler.NewInvalidParameterErr("pack job not found")
+			return nil, handlererror.NewInvalidParameterErr("pack job not found")
 		}
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -63,7 +63,7 @@ func repackHandler(
 				return nil, errors.WithStack(err)
 			}
 		} else {
-			return nil, handler.NewInvalidParameterErr("pack job is not in error or complete state")
+			return nil, handlererror.NewInvalidParameterErr("pack job is not in error or complete state")
 		}
 		return []model.PackJob{packJob}, nil
 	}

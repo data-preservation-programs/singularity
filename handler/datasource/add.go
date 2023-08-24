@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	fs2 "github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
@@ -47,7 +47,7 @@ func createDatasourceHandler(
 ) (*model.Source, error) {
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NotFoundError{Err: err}
+		return nil, handlererror.NotFoundError{Err: err}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to find dataset: %w", err)
@@ -55,47 +55,47 @@ func createDatasourceHandler(
 
 	r, err := fs2.Find(sourceType)
 	if err != nil {
-		return nil, handler.InvalidParameterError{Err: err}
+		return nil, handlererror.InvalidParameterError{Err: err}
 	}
 	sourcePath := sourceParameters["sourcePath"]
 	path, ok := sourcePath.(string)
 	if !ok {
-		return nil, handler.NewInvalidParameterErr("sourcePath needs to be a string")
+		return nil, handlererror.NewInvalidParameterErr("sourcePath needs to be a string")
 	}
 	if path == "" {
-		return nil, handler.NewInvalidParameterErr("sourcePath is required")
+		return nil, handlererror.NewInvalidParameterErr("sourcePath is required")
 	}
 	if r.Prefix == "local" {
 		path, err = filepath.Abs(path)
 		if err != nil {
-			return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to get absolute path: %w", err)}
+			return nil, handlererror.InvalidParameterError{Err: fmt.Errorf("failed to get absolute path: %w", err)}
 		}
 	}
 	deleteAfterExportValue := sourceParameters["deleteAfterExport"]
 	deleteAfterExport, ok := deleteAfterExportValue.(bool)
 	if !ok {
-		return nil, handler.NewInvalidParameterErr("deleteAfterExport needs to be a boolean")
+		return nil, handlererror.NewInvalidParameterErr("deleteAfterExport needs to be a boolean")
 	}
 	rescanIntervalValue := sourceParameters["rescanInterval"]
 	rescanInterval, ok := rescanIntervalValue.(string)
 	if !ok {
-		return nil, handler.NewInvalidParameterErr("rescanInterval needs to be a string")
+		return nil, handlererror.NewInvalidParameterErr("rescanInterval needs to be a string")
 	}
 	scanningStateValue := sourceParameters["scanningState"]
 	scanningState, ok := scanningStateValue.(string)
 	if !ok {
-		return nil, handler.NewInvalidParameterErr("scanningState needs to be a string")
+		return nil, handlererror.NewInvalidParameterErr("scanningState needs to be a string")
 	}
 
 	rescan, err := time.ParseDuration(rescanInterval)
 	if err != nil {
-		return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to parse rescanInterval: %w", err)}
+		return nil, handlererror.InvalidParameterError{Err: fmt.Errorf("failed to parse rescanInterval: %w", err)}
 	}
 
 	var ws model.WorkState
 	err = ws.Set(scanningState)
 	if err != nil {
-		return nil, handler.InvalidParameterError{Err: fmt.Errorf("failed to parse scanningState: %w", err)}
+		return nil, handlererror.InvalidParameterError{Err: fmt.Errorf("failed to parse scanningState: %w", err)}
 	}
 	delete(sourceParameters, "sourcePath")
 	delete(sourceParameters, "deleteAfterExport")
@@ -108,13 +108,13 @@ func createDatasourceHandler(
 	for k, v := range sourceParameters {
 		str, ok := v.(string)
 		if !ok {
-			return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s needs to be a string", k))
+			return nil, handlererror.NewInvalidParameterErr(fmt.Sprintf("%s needs to be a string", k))
 		}
 		optionName := lowerCamelToSnake(k)
 		if !underscore.Any(r.Options, func(o fs2.Option) bool {
 			return o.Name == optionName
 		}) {
-			return nil, handler.NewInvalidParameterErr(fmt.Sprintf("%s is not a valid parameter for storage source type %s", k, r.Prefix))
+			return nil, handlererror.NewInvalidParameterErr(fmt.Sprintf("%s is not a valid parameter for storage source type %s", k, r.Prefix))
 		}
 		config[optionName] = str
 	}
@@ -144,7 +144,7 @@ func createDatasourceHandler(
 
 	err = db.Create(&source).Error
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return nil, handler.NewDuplicateRecordError(fmt.Sprintf("source at %s of type %s for dataset %s already exists", sourcePath, sourceType, datasetName))
+		return nil, handlererror.NewDuplicateRecordError(fmt.Sprintf("source at %s of type %s for dataset %s already exists", sourcePath, sourceType, datasetName))
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to create source: %w", err)

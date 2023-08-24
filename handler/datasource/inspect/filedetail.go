@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -32,12 +32,12 @@ func getSourceFileDetailHandler(
 ) (*model.File, error) {
 	fileID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid file id")
+		return nil, handlererror.NewInvalidParameterErr("invalid file id")
 	}
 	var file model.File
 	err = db.Preload("FileRanges").Where("id = ?", fileID).First(&file).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("file not found")
+		return nil, handlererror.NewInvalidParameterErr("file not found")
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

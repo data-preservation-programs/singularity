@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -33,22 +33,22 @@ func removeWalletHandler(
 	wallet string,
 ) error {
 	if datasetName == "" {
-		return handler.NewInvalidParameterErr("dataset name is required")
+		return handlererror.NewInvalidParameterErr("dataset name is required")
 	}
 
 	if wallet == "" {
-		return handler.NewInvalidParameterErr("wallet address is required")
+		return handlererror.NewInvalidParameterErr("wallet address is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
+		return handlererror.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 
 	var w model.Wallet
 	err = db.Where("address = ? OR id = ?", wallet, wallet).First(&w).Error
 	if err != nil {
-		return handler.NewInvalidParameterErr("failed to find wallet: " + err.Error())
+		return handlererror.NewInvalidParameterErr("failed to find wallet: " + err.Error())
 	}
 
 	err = database.DoRetry(ctx, func() error {

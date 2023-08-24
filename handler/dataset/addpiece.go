@@ -6,10 +6,10 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/ipfs/boxo/util"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
@@ -51,38 +51,38 @@ func addPieceHandler(
 ) (*model.Car, error) {
 	logger := log.Logger("cli")
 	if datasetName == "" {
-		return nil, handler.NewInvalidParameterErr("dataset name is required")
+		return nil, handlererror.NewInvalidParameterErr("dataset name is required")
 	}
 
 	dataset, err := database.FindDatasetByName(db, datasetName)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("failed to find dataset: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("failed to find dataset: " + err.Error())
 	}
 
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid piece CID")
+		return nil, handlererror.NewInvalidParameterErr("invalid piece CID")
 	}
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return nil, handler.NewInvalidParameterErr("piece CID must be commp")
+		return nil, handlererror.NewInvalidParameterErr("piece CID must be commp")
 	}
 	pieceSize, err := strconv.ParseInt(request.PieceSize, 10, 64)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid piece size")
+		return nil, handlererror.NewInvalidParameterErr("invalid piece size")
 	}
 	if (pieceSize & (pieceSize - 1)) != 0 {
-		return nil, handler.NewInvalidParameterErr("piece size must be a power of 2")
+		return nil, handlererror.NewInvalidParameterErr("piece size must be a power of 2")
 	}
 	rootCID := cid.NewCidV1(cid.Raw, util.Hash([]byte(""))).String()
 	if request.FilePath != "" {
 		file, err := os.Open(request.FilePath)
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("failed to open file: " + err.Error())
+			return nil, handlererror.NewInvalidParameterErr("failed to open file: " + err.Error())
 		}
 		defer file.Close()
 		header, err := car.ReadHeader(bufio.NewReader(file))
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("failed to read CAR header: " + err.Error())
+			return nil, handlererror.NewInvalidParameterErr("failed to read CAR header: " + err.Error())
 		}
 		if len(header.Roots) != 1 {
 			logger.Warnf("CAR file has %d roots, expected 1", len(header.Roots))

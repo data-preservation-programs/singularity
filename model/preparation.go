@@ -25,10 +25,8 @@ type Global struct {
 // Preparation is a data preparation definition that can attach multiple source storages and up to one output storage.
 type Preparation struct {
 	ID                   uint32      `gorm:"primaryKey"        json:"id"`
-	Name                 string      `gorm:"unique"            json:"name"`
 	CreatedAt            time.Time   `json:"createdAt"`
 	UpdatedAt            time.Time   `json:"updatedAt"`
-	Enabled              bool        `json:"enabled"`                                       // Enabled is a flag that indicates whether the preparation is enabled.
 	EncryptionRecipients StringSlice `gorm:"type:JSON"         json:"encryptionRecipients"` // EncryptionRecipients is a list of public keys that are used to encrypt the output.
 	DeleteAfterExport    bool        `json:"deleteAfterExport"`                             // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	MaxSize              int64       `json:"maxSize"`
@@ -52,9 +50,12 @@ type Storage struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	Type      string    `json:"type"`      // Type is the name of the storage system in RClone, e.g., "s3" or "local".
 	Path      string    `json:"path"`      // Path is the path to the storage root.
-	Options   StringMap `gorm:"type:JSON"` // Options is a map of key-value pairs that can be used to store RClone options.
+	Config    StringMap `gorm:"type:JSON"` // Config is a map of key-value pairs that can be used to store RClone options.
 	Metadata  StringMap `gorm:"type:JSON"` // Metadata is a map of key-value pairs that can be used to store arbitrary information about the source storage.
 
+	// Associations
+	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" swaggerignore:"true"`
+	PreparationsAsOutput []Preparation `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" swaggerignore:"true"`
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
 }
@@ -64,9 +65,9 @@ type SourceAttachment struct {
 	ID uint32 `gorm:"primaryKey" json:"id"`
 
 	// Associations
-	PreparationID   uint32       `json:"preparationId"`
+	PreparationID   uint32       `gorm:"uniqueIndex:prep_source" json:"preparationId"`
 	Preparation     *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
-	StorageID       uint32       `json:"storageId"`
+	StorageID       uint32       `gorm:"uniqueIndex:prep_source" json:"storageId"`
 	Storage         *Storage     `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
 	LastScannedPath string       `json:"lastScannedPath"`
 }
@@ -97,9 +98,9 @@ type OutputAttachment struct {
 	ID uint32 `gorm:"primaryKey" json:"id"`
 
 	// Associations
-	PreparationID uint32       `json:"preparationId"`
+	PreparationID uint32       `gorm:"uniqueIndex:prep_output" json:"preparationId"`
 	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
-	StorageID     uint32       `json:"storageId"`
+	StorageID     uint32       `gorm:"uniqueIndex:prep_output" json:"storageId"`
 	Storage       *Storage     `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
 }
 
@@ -183,17 +184,21 @@ type FileRange struct {
 // on the fly using CarBlock.
 // The index on PieceCID is to find all CARs that can matches the PieceCID
 type Car struct {
-	ID           uint32            `gorm:"primaryKey"                                           json:"id"`
-	CreatedAt    time.Time         `json:"createdAt"`
-	PieceCID     CID               `gorm:"column:piece_cid;index;type:bytes;size:255"           json:"pieceCid"`
-	PieceSize    int64             `json:"pieceSize"`
-	RootCID      CID               `gorm:"column:root_cid;type:bytes"                           json:"rootCid"`
-	FileSize     int64             `json:"fileSize"`
-	StorageID    *uint32           `json:"storageId"`
-	Storage      *Storage          `gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty" swaggerignore:"true"`
-	StoragePath  string            `json:"storagePath"`
-	AttachmentID uint32            `json:"attachmentId"`
-	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
+	ID          uint32    `gorm:"primaryKey"                                           json:"id"`
+	CreatedAt   time.Time `json:"createdAt"`
+	PieceCID    CID       `gorm:"column:piece_cid;index;type:bytes;size:255"           json:"pieceCid"`
+	PieceSize   int64     `json:"pieceSize"`
+	RootCID     CID       `gorm:"column:root_cid;type:bytes"                           json:"rootCid"`
+	FileSize    int64     `json:"fileSize"`
+	StorageID   *uint32   `json:"storageId"`
+	Storage     *Storage  `gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty" swaggerignore:"true"`
+	StoragePath string    `json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
+
+	// Association
+	PreparationID uint32            `json:"preparationId"`
+	Preparation   *Preparation      `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
+	AttachmentID  *uint32           `json:"attachmentId"`
+	Attachment    *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
 
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`

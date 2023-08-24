@@ -20,21 +20,21 @@ var DownloadCmd = &cli.Command{
 				Name:     "api",
 				Usage:    "URL of the metadata API",
 				Value:    "http://127.0.0.1:7777",
-				Category: "General Options",
+				Category: "General Config",
 			},
 			&cli.StringFlag{
 				Name:     "out-dir",
 				Usage:    "Directory to write CAR files to",
 				Value:    ".",
 				Aliases:  []string{"o"},
-				Category: "General Options",
+				Category: "General Config",
 			},
 			&cli.IntFlag{
 				Name:     "concurrency",
 				Usage:    "Number of concurrent downloads",
 				Value:    10,
 				Aliases:  []string{"j"},
-				Category: "General Options",
+				Category: "General Config",
 			},
 		}
 
@@ -50,7 +50,7 @@ var DownloadCmd = &cli.Command{
 					continue
 				}
 				stringFlag.Required = false
-				stringFlag.Category = "Options for " + cmd.Name
+				stringFlag.Category = "Config for " + cmd.Name
 				stringFlag.Aliases = nil
 				flags = append(flags, stringFlag)
 			}

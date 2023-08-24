@@ -9,8 +9,8 @@ import (
 	"strconv"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
@@ -222,15 +222,15 @@ func parseHTTPError(response *http.Response) error {
 
 	switch response.StatusCode {
 	case http.StatusBadRequest:
-		return handler.InvalidParameterError{
+		return handlererror.InvalidParameterError{
 			Err: err,
 		}
 	case http.StatusNotFound:
-		return handler.NotFoundError{
+		return handlererror.NotFoundError{
 			Err: err,
 		}
 	case http.StatusConflict:
-		return handler.DuplicateRecordError{
+		return handlererror.DuplicateRecordError{
 			Err: err,
 		}
 	default:

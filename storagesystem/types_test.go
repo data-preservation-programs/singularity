@@ -9,5 +9,5 @@ import (
 func TestBackends(t *testing.T) {
 	require.EqualValues(t, 41, len(Backends))
 	local := BackendMap["local"]
-	require.Equal(t, "local", local.LongName)
+	require.Equal(t, "local", local.Name)
 }

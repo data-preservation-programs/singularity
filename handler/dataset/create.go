@@ -8,8 +8,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
@@ -28,48 +28,48 @@ type CreateRequest struct {
 func parseCreateRequest(request CreateRequest) (*model.Preparation, error) {
 	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
+		return nil, handlererror.NewInvalidParameterErr("invalid value for max-size: " + err.Error())
 	}
 
 	pieceSize := util.NextPowerOfTwo(maxSize)
 	if request.PieceSizeStr != "" {
 		pieceSize, err = humanize.ParseBytes(request.PieceSizeStr)
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("invalid value for piece-size: " + err.Error())
+			return nil, handlererror.NewInvalidParameterErr("invalid value for piece-size: " + err.Error())
 		}
 
 		if pieceSize != util.NextPowerOfTwo(pieceSize) {
-			return nil, handler.NewInvalidParameterErr("piece size must be a power of two")
+			return nil, handlererror.NewInvalidParameterErr("piece size must be a power of two")
 		}
 	}
 
 	if pieceSize > 1<<36 {
-		return nil, handler.NewInvalidParameterErr("piece size cannot be larger than 64 GiB")
+		return nil, handlererror.NewInvalidParameterErr("piece size cannot be larger than 64 GiB")
 	}
 
 	if maxSize*128/127 >= pieceSize {
-		return nil, handler.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
+		return nil, handlererror.NewInvalidParameterErr("max size needs to be reduced to leave space for padding")
 	}
 
 	outDirs := make([]string, len(request.OutputDirs))
 	if len(request.OutputDirs) > 1 {
-		return nil, handler.NewInvalidParameterErr("multiple output directories will not supported in the future hence no longer allowed")
+		return nil, handlererror.NewInvalidParameterErr("multiple output directories will not supported in the future hence no longer allowed")
 	}
 
 	for i, outputDir := range request.OutputDirs {
 		info, err := os.Stat(outputDir)
 		if err != nil || !info.IsDir() {
-			return nil, handler.NewInvalidParameterErr("output directory does not exist: " + outputDir)
+			return nil, handlererror.NewInvalidParameterErr("output directory does not exist: " + outputDir)
 		}
 		abs, err := filepath.Abs(outputDir)
 		if err != nil {
-			return nil, handler.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
+			return nil, handlererror.NewInvalidParameterErr("could not get absolute path for output directory: " + err.Error())
 		}
 		outDirs[i] = abs
 	}
 
 	if len(request.EncryptionRecipients) > 0 && len(request.OutputDirs) == 0 {
-		return nil, handler.NewInvalidParameterErr(
+		return nil, handlererror.NewInvalidParameterErr(
 			"encryption is not compatible with inline preparation and " +
 				"requires at least one output directory",
 		)
@@ -109,7 +109,7 @@ func createHandler(
 ) (*model.Preparation, error) {
 	logger := log.Logger("cli")
 	if request.Name == "" {
-		return nil, handler.NewInvalidParameterErr("name is required")
+		return nil, handlererror.NewInvalidParameterErr("name is required")
 	}
 
 	dataset, err := parseCreateRequest(request)
@@ -119,7 +119,7 @@ func createHandler(
 
 	err2 := database.DoRetry(ctx, func() error { return db.Create(dataset).Error })
 	if errors.Is(err2, gorm.ErrDuplicatedKey) || (err2 != nil && strings.Contains(err2.Error(), "constraint failed")) {
-		return nil, handler.NewDuplicateRecordError("dataset with this name already exists")
+		return nil, handlererror.NewDuplicateRecordError("dataset with this name already exists")
 	}
 
 	if err2 != nil {

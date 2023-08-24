@@ -12,12 +12,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
@@ -49,7 +49,7 @@ type Server struct {
 
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Options
+// @Tags Config
 // @Produce json
 // @Param id path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
@@ -375,19 +375,19 @@ func httpResponseFromError(c echo.Context, e error) error {
 
 	httpStatusCode := http.StatusInternalServerError
 
-	var invalidParameterErr handler.InvalidParameterError
+	var invalidParameterErr handlererror.InvalidParameterError
 	if errors.As(e, &invalidParameterErr) {
 		httpStatusCode = http.StatusBadRequest
 		e = invalidParameterErr.Unwrap()
 	}
 
-	var notFoundErr handler.NotFoundError
+	var notFoundErr handlererror.NotFoundError
 	if errors.As(e, &notFoundErr) {
 		httpStatusCode = http.StatusNotFound
 		e = notFoundErr.Unwrap()
 	}
 
-	var duplicateRecordErr handler.DuplicateRecordError
+	var duplicateRecordErr handlererror.DuplicateRecordError
 	if errors.As(e, &duplicateRecordErr) {
 		httpStatusCode = http.StatusConflict
 		e = duplicateRecordErr.Unwrap()
