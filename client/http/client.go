@@ -14,6 +14,8 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	wallethandler "github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
@@ -225,12 +227,27 @@ func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error
 	return cars, nil
 }
 
-func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
-	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodGet, c.serverURL+"/api/file/"+strconv.FormatUint(id, 10)+"/deals", nil)
+func (c *Client) ImportWallet(ctx context.Context, request wallethandler.ImportRequest) (*model.Wallet, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/wallet", request)
 	if err != nil {
 		return nil, err
 	}
-	response, err := c.client.Do(httpRequest)
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var wallet model.Wallet
+	err = json.NewDecoder(response.Body).Decode(&wallet)
+	if err != nil {
+		return nil, err
+	}
+	return &wallet, nil
+}
+
+func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/file/"+strconv.FormatUint(id, 10)+"/deals", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -246,6 +263,63 @@ func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, err
 		return nil, err
 	}
 	return deals, nil
+}
+
+func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset/"+datasetName+"/wallet/"+wallet, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var walletAssignment model.WalletAssignment
+	err = json.NewDecoder(response.Body).Decode(&walletAssignment)
+	if err != nil {
+		return nil, err
+	}
+	return &walletAssignment, nil
+}
+
+func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/schedule", request)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var schedule model.Schedule
+	err = json.NewDecoder(response.Body).Decode(&schedule)
+	if err != nil {
+		return nil, err
+	}
+	return &schedule, nil
+}
+
+func (c *Client) ListSchedules(ctx context.Context) ([]model.Schedule, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/schedule", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var schedules []model.Schedule
+	err = json.NewDecoder(response.Body).Decode(&schedules)
+	if err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 type HTTPError struct {
