@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -912,6 +913,13 @@ func TestPieceDownload(t *testing.T) {
 			commp := calculateCommp(t, content, 1024*1024)
 			require.Equal(t, pieceCID, commp)
 		}
+	})
+}
+
+func TestGetItemDeals(t *testing.T) {
+	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, err := inspect.GetFileDealsHandler(db, 0)
+		require.NoError(t, err)
 	})
 }
 
