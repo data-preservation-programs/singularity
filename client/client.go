@@ -16,6 +16,7 @@ type DuplicateRecordError = handler.DuplicateRecordError
 type InvalidParameterError = handler.InvalidParameterError
 type NotFoundError = handler.NotFoundError
 
+//nolint:interfacebloat
 type Client interface {
 	CreateDataset(ctx context.Context, request dataset.CreateRequest) (*model.Dataset, error)
 	CreateLocalSource(ctx context.Context, datasetName string, params datasource.LocalRequest) (*model.Source, error)

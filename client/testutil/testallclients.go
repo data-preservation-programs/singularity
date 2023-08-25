@@ -47,6 +47,7 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 		test(t, client)
 	})
 	t.Run("lib", func(t *testing.T) {
+		//nolint:contextcheck
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
