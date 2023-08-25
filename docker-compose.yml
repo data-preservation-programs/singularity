@@ -18,9 +18,17 @@ services:
     ports:
       - 5432:5432
 
+  singularity_init:
+    image: ghcr.io/data-preservation-programs/singularity:main
+    command: admin init
+    restart: on-failure # Restart only on failure
+    depends_on:
+      db:
+        condition: service_healthy
+
   singularity_api:
-    image: datapreservationprogram/singularity:latest
-    command: run api
+    image: ghcr.io/data-preservation-programs/singularity:main
+    command: run api --bind :9090
     ports:
       - 9090:9090
     environment:
@@ -28,14 +36,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      singularity_init:
+        condition: service_completed_successfully
 
   singularity_dataset_worker:
-    image: datapreservationprogram/singularity:latest
+    image: ghcr.io/data-preservation-programs/singularity:main
     command: run dataset-worker
     environment:
       DATABASE_CONNECTION_STRING: postgres://postgres:postgres@db:5432/singularity
     depends_on:
       db:
         condition: service_healthy
+      singularity_init:
+        condition: service_completed_successfully
+
 volumes:
   singularity_db:
