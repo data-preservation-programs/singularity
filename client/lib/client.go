@@ -11,7 +11,7 @@ import (
 	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
-	"github.com/data-preservation-programs/singularity/handler/wallet"
+	wallethandler "github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
@@ -82,12 +82,12 @@ func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error
 	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packJobID)
 }
 
-func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error) {
-	return wallet.ImportHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
+func (c *Client) ImportWallet(ctx context.Context, request wallethandler.ImportRequest) (*model.Wallet, error) {
+	return wallethandler.ImportHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
 }
 
-func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {
-	return wallet.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, walletName)
+func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error) {
+	return wallethandler.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, wallet)
 }
 
 func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {

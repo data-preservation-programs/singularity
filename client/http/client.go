@@ -15,7 +15,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
-	"github.com/data-preservation-programs/singularity/handler/wallet"
+	wallethandler "github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 )
 
@@ -205,7 +205,7 @@ func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error
 	return cars, nil
 }
 
-func (c *Client) ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error) {
+func (c *Client) ImportWallet(ctx context.Context, request wallethandler.ImportRequest) (*model.Wallet, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/wallet", request)
 	if err != nil {
 		return nil, err
@@ -243,8 +243,8 @@ func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, err
 	return deals, nil
 }
 
-func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, walletName string) (*model.WalletAssignment, error) {
-	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset/"+datasetName+"/wallet/"+walletName, nil)
+func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error) {
+	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/dataset/"+datasetName+"/wallet/"+wallet, nil)
 	if err != nil {
 		return nil, err
 	}
