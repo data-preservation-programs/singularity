@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -52,7 +51,7 @@ func (s Server) Name() string {
 
 // @Summary Get metadata for a piece
 // @Description Get metadata for a piece for how it may be reassembled from the data source
-// @Tags Config
+// @Tags Piece
 // @Produce json
 // @Param id path string true "Piece CID"
 // @Success 200 {object} store.PieceReader
@@ -260,10 +259,6 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 }
 
 func (s Server) setupRoutes(e *echo.Echo) {
-	// Admin
-	e.POST("/api/admin/reset", s.toEchoHandler(admin.ResetHandler))
-	e.POST("/api/admin/init", s.toEchoHandler(admin.InitHandler))
-
 	// Storage
 	e.POST("/api/storage/:type", s.toEchoHandler(storage.CreateStorageHandler))
 	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(storage.ExploreHandler))
@@ -283,8 +278,8 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/preparation/:id/source/:name/pause-scan", s.toEchoHandler(dataprep.PauseScanHandler))
 	e.POST("/api/preparation/:id/source/:name/start-pack", s.toEchoHandler(dataprep.StartPackHandler))
 	e.POST("/api/preparation/:id/source/:name/pause-pack", s.toEchoHandler(dataprep.PausePackHandler))
-	e.POST("/api/preparation/:id/source/:name/start-pack/:id", s.toEchoHandler(dataprep.StartPackHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-pack/:id", s.toEchoHandler(dataprep.PausePackHandler))
+	e.POST("/api/preparation/:id/source/:name/start-pack/:job_id", s.toEchoHandler(dataprep.StartPackHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-pack/:job_id", s.toEchoHandler(dataprep.PausePackHandler))
 
 	// storage attachment
 	e.POST("/api/preparation/:id/output/:name", s.toEchoHandler(dataprep.AddOutputStorageHandler))
@@ -423,5 +418,6 @@ func httpResponseFromError(c echo.Context, e error) error {
 		httpStatusCode = http.StatusConflict
 	}
 
+	logger.Errorf("%+v", e)
 	return c.JSON(httpStatusCode, HTTPError{Err: e.Error()})
 }

@@ -13,7 +13,8 @@ import (
 var ResumeCmd = &cli.Command{
 	Name:      "resume",
 	Usage:     "Resume a specific schedule",
-	ArgsUsage: "SCHEDULE_ID",
+	Before:    cliutil.CheckNArgs,
+	ArgsUsage: "<schedule_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {

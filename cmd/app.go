@@ -13,6 +13,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/admin"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/cmd/dataprep"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
@@ -94,6 +95,7 @@ Network Support:
 			},
 		},
 		DownloadCmd,
+		tool.ExtractCarCmd,
 		{
 			Name:     "deal",
 			Usage:    "Replication / Deal making management",
@@ -136,14 +138,6 @@ Network Support:
 			},
 		},
 		{
-			Name:     "tool",
-			Category: "Tooling",
-			Usage:    "Tools used for development and debugging",
-			Subcommands: []*cli.Command{
-				tool.ExtractCarCmd,
-			},
-		},
-		{
 			Name:     "storage",
 			Category: "Operations",
 			Usage:    "Create and manage storage system connections",
@@ -152,6 +146,32 @@ Network Support:
 				storage.ExploreCmd,
 				storage.ListCmd,
 				storage.RemoveCmd,
+				storage.UpdateCmd,
+			},
+		},
+		{
+			Name:     "prep",
+			Category: "Operations",
+			Usage:    "Create and manage dataset preparations",
+			Subcommands: []*cli.Command{
+				dataprep.CreateCmd,
+				dataprep.ListCmd,
+				dataprep.StatusCmd,
+				dataprep.AttachSourceCmd,
+				dataprep.AttachOutputCmd,
+				dataprep.DetachOutputCmd,
+				dataprep.StartScanCmd,
+				dataprep.PauseScanCmd,
+				dataprep.StartPackCmd,
+				dataprep.PausePackCmd,
+				dataprep.StartDagGenCmd,
+				dataprep.PauseDagGenCmd,
+				dataprep.ListPiecesCmd,
+				dataprep.AddPieceCmd,
+				dataprep.ExploreCmd,
+				dataprep.AttachWalletCmd,
+				dataprep.ListWalletsCmd,
+				dataprep.DetachWalletCmd,
 			},
 		},
 	},
@@ -188,7 +208,24 @@ func SetupErrorHandler() {
 	}
 }
 
+const subCommandHelpTemplate = `NAME:
+   {{template "helpNameTemplate" .}}
+
+USAGE:
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
+
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
+
 func SetupHelpPager() {
+	cli.SubcommandHelpTemplate = subCommandHelpTemplate
 	//nolint:errcheck
 	cli.HelpPrinter = func(w io.Writer, templ string, data any) {
 		var helpText bytes.Buffer

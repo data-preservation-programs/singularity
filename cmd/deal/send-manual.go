@@ -18,6 +18,7 @@ import (
 var SendManualCmd = &cli.Command{
 	Name:      "send-manual",
 	Usage:     "Send a manual deal proposal to boost or legacy market",
+	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<client> <provider> <piece_cid> <piece_size>",
 	Description: `Send a manual deal proposal to boost or legacy market
   Example: singularity deal send-manual f01234 f05678 bagaxxxx 32GiB

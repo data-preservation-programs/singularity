@@ -57,14 +57,14 @@ func AttachHandler(
 	return &preparation, nil
 }
 
-// @Summary Associate a new wallet with a dataset
+// @Summary Attach a new wallet with a preparation
 // @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param datasetName path string true "Preparation name"
+// @Param id path int true "Preparation ID"
 // @Param wallet path string true "Wallet Address"
-// @Success 200 {object} model.WalletAssignment
+// @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /dataset/{datasetName}/wallet/{wallet} [post]
+// @Router /preparation/{id}/wallet/{wallet} [post]
 func _() {}

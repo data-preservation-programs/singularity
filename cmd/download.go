@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/ipfs/go-log"
@@ -12,6 +13,7 @@ var DownloadCmd = &cli.Command{
 	Name:      "download",
 	Usage:     "Download a CAR file from the metadata API",
 	Category:  "Utility",
+	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<piece_cid>",
 	Flags: func() []cli.Flag {
 		flags := []cli.Flag{

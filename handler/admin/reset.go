@@ -8,14 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary Reset the database
-// @Description This will drop all tables and recreate them.
-// @Tags Admin
-// @Success 204
-// @Failure 500 {object} api.HTTPError
-// @Router /admin/reset [post]
-func _() {}
-
 // ResetHandler resets the database by dropping all existing tables and then
 // recreating them using migrations defined in the model.
 // It's generally used during testing or for complete system resets, and caution

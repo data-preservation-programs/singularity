@@ -57,12 +57,14 @@ func DetachHandler(
 	return &preparation, nil
 }
 
-// @Summary Remove an associated wallet from a dataset
-// @Tags Wallet
-// @Param datasetName path string true "Preparation name"
+// @Summary Detach a new wallet from a preparation
+// @Tags Wallet Association
+// @Produce json
+// @Accept json
+// @Param id path int true "Preparation ID"
 // @Param wallet path string true "Wallet Address"
-// @Success 204
+// @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /dataset/{datasetName}/wallet/{wallet} [delete]
+// @Router /preparation/{id}/wallet/{wallet} [delete]
 func _() {}

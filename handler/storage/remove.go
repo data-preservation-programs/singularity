@@ -62,3 +62,12 @@ func RemoveHandler(
 	})
 	return errors.WithStack(err)
 }
+
+// @Summary Remove a storage
+// @Tags Storage
+// @Param name path string true "Name"
+// @Success 204
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /storage/{name} [delete]
+func _() {}

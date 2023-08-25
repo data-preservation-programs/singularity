@@ -45,7 +45,7 @@ type PieceList struct {
 func ListPiecesHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id int32,
+	id uint32,
 ) ([]PieceList, error) {
 	db = db.WithContext(ctx)
 	var sourceAttachments []model.SourceAttachment
@@ -84,6 +84,29 @@ func ListPiecesHandler(
 
 	return pieceLists, nil
 }
+
+// @Summary List all prepared pieces for a preparation
+// @Tags Piece
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Success 200 {array} PieceList
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/piece [get]
+func _() {}
+
+// @Summary Add a piece to a preparation
+// @Tags Piece
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param request body AddPieceRequest true "Piece information"
+// @Success 200 {object} Car
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/piece [post]
+func _() {}
 
 // AddPieceHandler adds a new piece (represented by the Car model) to a given preparation.
 //

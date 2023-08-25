@@ -28,3 +28,13 @@ func ListHandler(ctx context.Context, db *gorm.DB) ([]model.Preparation, error) 
 	err := db.WithContext(ctx).Preload("SourceStorages").Preload("OutputStorages").Find(&preparations).Error
 	return preparations, errors.WithStack(err)
 }
+
+// @Summary List all preparations
+// @Tags Preparation
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.Preparation
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /preparation [get]
+func _() {}

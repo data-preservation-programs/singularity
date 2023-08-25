@@ -62,6 +62,30 @@ func AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output
 	return &preparation, errors.WithStack(err)
 }
 
+// @Summary Attach an output storage with a preparation
+// @Tags Preparation
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Output storage name"
+// @Success 200 {object} model.Preparation
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /preparation/{id}/output/{name} [post]
+func _() {}
+
+// @Summary Detach an output storage from a preparation
+// @Tags Preparation
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Output storage name"
+// @Success 200 {object} model.Preparation
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /preparation/{id}/output/{name} [delete]
+func _() {}
+
 // RemoveOutputStorageHandler disassociates a specified output storage from a Preparation using the provided ID.
 // It ensures that the output storage and Preparation both exist before attempting the removal.
 // Special checks are in place to ensure:

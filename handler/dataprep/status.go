@@ -36,7 +36,7 @@ type SourceStatus struct {
 // Note:
 // The function fetches not only the Preparation record but also all associated SourceAttachment
 // records with their associated Job records, providing a comprehensive status of a specific preparation.
-func GetStatusHandler(ctx context.Context, db *gorm.DB, id int) (*Status, error) {
+func GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) (*Status, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
 	err := db.First(&preparation, id).Error
@@ -73,3 +73,13 @@ func GetStatusHandler(ctx context.Context, db *gorm.DB, id int) (*Status, error)
 		Sources:     allStatuses,
 	}, nil
 }
+
+// @Summary Get the status of a preparation
+// @Tags Preparation
+// @Param id path integer true "ID"
+// @Produce json
+// @Success 200 {object} Status
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id} [get]
+func _() {}

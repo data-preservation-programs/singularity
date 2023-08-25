@@ -3,6 +3,7 @@ package dataprep
 import (
 	"context"
 
+	"filippo.io/age"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -101,6 +102,13 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		outputs = append(outputs, output)
 	}
 
+	for _, recipient := range request.EncryptionRecipients {
+		_, err = age.ParseX25519Recipient(recipient)
+		if err != nil {
+			return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "failed to parse recipient %s", recipient))
+		}
+	}
+
 	return &model.Preparation{
 		MaxSize:              int64(maxSize),
 		PieceSize:            int64(pieceSize),
@@ -144,3 +152,14 @@ func CreatePreparationHandler(
 
 	return preparation, nil
 }
+
+// @Summary Create a new preparation
+// @Tags Preparation
+// @Accept json
+// @Produce json
+// @Param request body CreateRequest true "Create Request"
+// @Success 200 {object} model.Preparation
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /preparation [post]
+func _() {}

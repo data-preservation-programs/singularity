@@ -85,3 +85,15 @@ func UpdateStorageHandler(
 
 	return &storage, err
 }
+
+// @Summary Update a storage connection
+// @Tags Storage
+// @Param name path string true "Name"
+// @Param config body object true "Configuration"
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /storage/{name} [patch]
+func _() {}

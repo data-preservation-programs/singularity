@@ -1,15 +1,16 @@
 package tool
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/tool"
 	"github.com/ipfs/go-cid"
-	"github.com/cockroachdb/errors"
 	"github.com/urfave/cli/v2"
 )
 
 var ExtractCarCmd = &cli.Command{
-	Name:  "extract-car",
-	Usage: "Extract folders or files from a folder of CAR files to a local directory",
+	Name:     "extract-car",
+	Category: "Utility",
+	Usage:    "Extract folders or files from a folder of CAR files to a local directory",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "input-dir",

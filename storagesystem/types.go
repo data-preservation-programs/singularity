@@ -196,9 +196,8 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 
 func (p ProviderOptions) ToCLICommand(short string, long string, description string) *cli.Command {
 	command := &cli.Command{
-		Name:      short,
-		Usage:     description,
-		ArgsUsage: "[name] [path]",
+		Name:  short,
+		Usage: description,
 	}
 	var helpLines []string
 	margin := "   "

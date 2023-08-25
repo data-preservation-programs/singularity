@@ -25,10 +25,3 @@ func InitHandler(ctx context.Context, db *gorm.DB) error {
 
 	return nil
 }
-
-// @Summary Initialize the database
-// @Tags Admin
-// @Success 204
-// @Failure 500 {object} api.HTTPError
-// @Router /admin/init [post]
-func _() {}

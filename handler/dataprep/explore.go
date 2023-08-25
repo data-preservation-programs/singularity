@@ -143,3 +143,16 @@ func ExploreHandler(
 
 	return result, nil
 }
+
+// @Summary Explore a directory in a prepared source storage
+// @Tags Preparation
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Source storage name"
+// @Param path path string true "Directory path"
+// @Success 200 {array} DirEntry
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/source/{name}/explore/{path} [get]
+func _() {}

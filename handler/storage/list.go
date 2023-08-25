@@ -27,3 +27,13 @@ func ListStoragesHandler(
 	}
 	return storages, nil
 }
+
+// @Summary List all storages
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /storage [get]
+func _() {}

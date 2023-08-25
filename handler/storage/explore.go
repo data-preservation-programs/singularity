@@ -95,3 +95,15 @@ func ExploreHandler(
 
 	return result, nil
 }
+
+// @Summary Explore directory entries in a storage system
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Param name path string true "Storage name"
+// @Param path path string true "Path in the storage system to explore"
+// @Success 200 {array} DirEntry
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /storage/{name}/explore/{path} [get]
+func _() {}

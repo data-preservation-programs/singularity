@@ -94,6 +94,56 @@ func StartPackHandler(
 	return []model.Job{job}, errors.WithStack(err)
 }
 
+// @Summary Start or restart a specific packing job
+// @Tags Job
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Storage name"
+// @Param job_id path int true "Pack Job ID"
+// @Success 200 {object} Job
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/source/{name}/start-pack/{job_id} [post]
+func _() {}
+
+// @Summary Start or restart all packing job
+// @Tags Job
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Storage name"
+// @Success 200 {object} Job
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/source/{name}/start-pack [post]
+func _() {}
+
+// @Summary Pause a specific packing job
+// @Tags Job
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Storage name"
+// @Param job_id path int true "Pack Job ID"
+// @Success 200 {object} Job
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/source/{name}/pause-pack/{job_id} [post]
+func _() {}
+
+// @Summary Pause all packing job
+// @Tags Job
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Storage name"
+// @Success 200 {object} Job
+// @Failure 400 {object} HTTPError
+// @Failure 500 {object} HTTPError
+// @Router /preparation/{id}/source/{name}/pause-pack [post]
+func _() {}
+
 // PausePackHandler attempts to pause pack jobs for a given source storage.
 //
 // If jobID is provided, the function will attempt to pause a specific pack job. If not,

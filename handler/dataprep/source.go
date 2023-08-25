@@ -61,3 +61,15 @@ func AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source
 
 	return &preparation, errors.WithStack(err)
 }
+
+// @Summary Attach a source storage with a preparation
+// @Tags Preparation
+// @Accept json
+// @Produce json
+// @Param id path int true "Preparation ID"
+// @Param name path string true "Source storage name"
+// @Success 200 {object} model.Preparation
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /preparation/{id}/source/{name} [post]
+func _() {}

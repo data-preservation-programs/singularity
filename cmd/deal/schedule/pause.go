@@ -13,6 +13,7 @@ import (
 var PauseCmd = &cli.Command{
 	Name:      "pause",
 	Usage:     "Pause a specific schedule",
+	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<schedule_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)

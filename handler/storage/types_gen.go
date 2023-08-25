@@ -310,7 +310,7 @@ func createFilefabricStorage() {}
 
 type FtpConfig struct {
 	Host               string               `json:"host"`                                                                             // FTP host to connect to.
-	User               string               `json:"user" default:"shane"`                                                             // FTP username.
+	User               string               `json:"user" default:"$USER"`                                                             // FTP username.
 	Port               int                  `json:"port" default:"21"`                                                                // FTP port number.
 	Pass               string               `json:"pass"`                                                                             // FTP password.
 	Tls                bool                 `json:"tls" default:"false"`                                                              // Use Implicit FTPS (FTP over TLS).
@@ -2611,7 +2611,7 @@ func createSeafileStorage() {}
 
 type SftpConfig struct {
 	Host                    string          `json:"host"`                                              // SSH host to connect to.
-	User                    string          `json:"user" default:"shane"`                              // SSH username.
+	User                    string          `json:"user" default:"$USER"`                              // SSH username.
 	Port                    int             `json:"port" default:"22"`                                 // SSH port number.
 	Pass                    string          `json:"pass"`                                              // SSH password, leave blank to use ssh-agent.
 	KeyPem                  string          `json:"keyPem"`                                            // Raw PEM-encoded private key.
@@ -2711,7 +2711,7 @@ func createSiaStorage() {}
 
 type SmbConfig struct {
 	Host             string               `json:"host"`                                                                                                                        // SMB server hostname to connect to.
-	User             string               `json:"user" default:"shane"`                                                                                                        // SMB username.
+	User             string               `json:"user" default:"$USER"`                                                                                                        // SMB username.
 	Port             int                  `json:"port" default:"445"`                                                                                                          // SMB port number.
 	Pass             string               `json:"pass"`                                                                                                                        // SMB password.
 	Domain           string               `json:"domain" default:"WORKGROUP"`                                                                                                  // Domain name for NTLM authentication.

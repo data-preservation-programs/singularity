@@ -13,9 +13,9 @@ func ListAttachedHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID uint32,
-) (*model.Preparation, error) {
+) ([]model.Wallet, error) {
 	var preparation model.Preparation
-	err := db.Preload("SourceStorages").Preload("OutputStorages").Preload("Wallets").Where("id = ?", preparationID).First(&preparation).Error
+	err := db.Preload("Wallets").Where("id = ?", preparationID).First(&preparation).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -23,15 +23,16 @@ func ListAttachedHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	return &preparation, nil
+	return preparation.Wallets, nil
 }
 
-// @Summary List all wallets of a dataset.
-// @Tags Wallet
+// @Summary List all wallets of a preparation.
+// @Tags Wallet Association
 // @Produce json
-// @Param datasetName path string true "Preparation name"
-// @Success 200 {array} model.Wallet
+// @Accept json
+// @Param id path int true "Preparation ID"
+// @Success 200 {object} model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /dataset/{datasetName}/wallet [get]
+// @Router /preparation/{id}/wallet [post]
 func _() {}

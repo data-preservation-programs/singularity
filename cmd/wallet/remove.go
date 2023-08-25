@@ -12,6 +12,7 @@ var RemoveCmd = &cli.Command{
 	Name:      "remove",
 	Usage:     "Remove a wallet",
 	ArgsUsage: "<address>",
+	Before:    cliutil.CheckNArgs,
 	Flags: []cli.Flag{
 		cliutil.ReallyDotItFlag,
 	},

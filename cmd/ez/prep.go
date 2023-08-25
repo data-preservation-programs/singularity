@@ -20,7 +20,8 @@ import (
 
 var PrepCmd = &cli.Command{
 	Name:      "ez-prep",
-	Category:  "Easy Commands",
+	Category:  "Utility",
+	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<path>",
 	Usage:     "Prepare a dataset from a local path",
 	Description: "This commands can be used to prepare a dataset from a local path with minimum configurable parameters.\n" +

@@ -19,6 +19,7 @@ var re = regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
 var CreateCmd = &cli.Command{
 	Name:      "create",
 	Usage:     "Create a schedule to send out deals to a storage provider",
+	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<prep_id> <provider>",
 	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
   Standard CRON:
