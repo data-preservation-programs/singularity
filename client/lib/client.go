@@ -5,17 +5,14 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/client"
-	"github.com/data-preservation-programs/singularity/handler/dataset"
-	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
-	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
 
 type Client struct {
-	db                        *gorm.DB
-	datasourceHandlerResolver storagesystem.HandlerResolver
+	db *gorm.DB
 }
 
 func NewClient(db *gorm.DB) (*Client, error) {
@@ -23,8 +20,7 @@ func NewClient(db *gorm.DB) (*Client, error) {
 		return nil, errors.WithStack(err)
 	}
 	return &Client{
-		db:                        db,
-		datasourceHandlerResolver: &storagesystem.DefaultHandlerResolver{},
+		db: db,
 	}, nil
 }
 

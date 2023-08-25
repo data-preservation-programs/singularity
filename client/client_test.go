@@ -12,8 +12,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 
-	"github.com/data-preservation-programs/singularity/handler/dataset"
-	"github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/stretchr/testify/require"
 )
 

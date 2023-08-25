@@ -1,0 +1,83 @@
+# Pcloud
+
+{% code fullWidth="true" %}
+```
+NAME:
+   singularity storage create pcloud - Pcloud
+
+USAGE:
+   singularity storage create pcloud [command options] <name> <path>
+
+DESCRIPTION:
+   --client_id
+      OAuth Client Id.
+      
+      Leave blank normally.
+
+   --client_secret
+      OAuth Client Secret.
+      
+      Leave blank normally.
+
+   --token
+      OAuth Access Token as a JSON blob.
+
+   --auth_url
+      Auth server URL.
+      
+      Leave blank to use the provider defaults.
+
+   --token_url
+      Token server url.
+      
+      Leave blank to use the provider defaults.
+
+   --encoding
+      The encoding for the backend.
+      
+      See the [encoding section in the overview](/overview/#encoding) for more info.
+
+   --root_folder_id
+      Fill in for rclone to use a non root folder as its starting point.
+
+   --hostname
+      Hostname to connect to.
+      
+      This is normally set when rclone initially does the oauth connection,
+      however you will need to set it by hand if you are using remote config
+      with rclone authorize.
+      
+
+      Examples:
+         | api.pcloud.com  | Original/US region
+         | eapi.pcloud.com | EU region
+
+   --username
+      Your pcloud username.
+            
+      This is only required when you want to use the cleanup command. Due to a bug
+      in the pcloud API the required API does not support OAuth authentication so
+      we have to rely on user password authentication for it.
+
+   --password
+      Your pcloud password.
+
+
+OPTIONS:
+   --client_id value      OAuth Client Id. [$CLIENT_ID]
+   --client_secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --help, -h             show help
+
+   Advanced
+
+   --auth_url value        Auth server URL. [$AUTH_URL]
+   --encoding value        The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
+   --hostname value        Hostname to connect to. (default: "api.pcloud.com") [$HOSTNAME]
+   --password value        Your pcloud password. [$PASSWORD]
+   --root_folder_id value  Fill in for rclone to use a non root folder as its starting point. (default: "d0") [$ROOT_FOLDER_ID]
+   --token value           OAuth Access Token as a JSON blob. [$TOKEN]
+   --token_url value       Token server url. [$TOKEN_URL]
+   --username value        Your pcloud username. [$USERNAME]
+
+```
+{% endcode %}

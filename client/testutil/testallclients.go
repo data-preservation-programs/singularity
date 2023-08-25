@@ -11,6 +11,8 @@ import (
 	httpclient "github.com/data-preservation-programs/singularity/client/http"
 	libclient "github.com/data-preservation-programs/singularity/client/lib"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/service"
+	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,23 +23,17 @@ func TestWithAllClients(ctx context.Context, t *testing.T, test func(*testing.T,
 		require.NoError(t, err)
 		closer.Close()
 		ctx, cancel := context.WithCancel(ctx)
-		httpErr := make(chan error, 1)
-		defer func() {
-			cancel()
-			err := <-httpErr
-			require.ErrorIs(t, err, http.ErrServerClosed)
-		}()
+		defer cancel()
 		listener, err := net.Listen("tcp", "127.0.0.1:0")
 		require.NoError(t, err)
-		server, err := api.InitServer(api.APIParams{
+		server, err := api.InitServer(ctx, api.APIParams{
 			ConnString: database.TestConnectionString,
 			Listener:   listener,
 			LotusAPI:   "https://api.node.glif.io/rpc/v1",
 		})
 		require.NoError(t, err)
 		go func() {
-			err := server.Run(ctx)
-			httpErr <- err
+			service.StartServers(ctx, log.Logger("test"), server)
 		}()
 		client := httpclient.NewHTTPClient(http.DefaultClient, "http://"+listener.Addr().String())
 		test(t, client)
