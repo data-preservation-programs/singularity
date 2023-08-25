@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
@@ -18,7 +19,7 @@ var re = regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
 var CreateCmd = &cli.Command{
 	Name:      "create",
 	Usage:     "Create a schedule to send out deals to a storage provider",
-	ArgsUsage: "DATASET_NAME PROVIDER_ID",
+	ArgsUsage: "<prep_id> <provider>",
 	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
   Standard CRON:
     ┌───────────── minute (0 - 59)
@@ -189,6 +190,10 @@ var CreateCmd = &cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		preparationID, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
+		if err != nil {
+			return errors.Wrapf(err, "failed to parse preparation ID %s", c.Args().Get(0))
+		}
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return errors.WithStack(err)
@@ -212,7 +217,7 @@ var CreateCmd = &cli.Command{
 			allowedPieceCIDs = append(allowedPieceCIDs, cid)
 		}
 		request := schedule.CreateRequest{
-			DatasetName:          c.Args().Get(0),
+			PreparationID:        uint32(preparationID),
 			Provider:             c.Args().Get(1),
 			HTTPHeaders:          c.StringSlice("http-header"),
 			URLTemplate:          c.String("url-template"),
@@ -240,7 +245,7 @@ var CreateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
+		cliutil.PrintToConsole(c, schedule)
 		return nil
 	},
 }

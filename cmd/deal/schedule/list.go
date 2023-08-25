@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -21,7 +22,7 @@ var ListCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(schedules, c.Bool("json"), nil)
+		cliutil.PrintToConsole(c, schedules)
 		return nil
 	},
 }

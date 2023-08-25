@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -11,14 +12,12 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/admin"
-	"github.com/data-preservation-programs/singularity/cmd/dataset"
-	"github.com/data-preservation-programs/singularity/cmd/datasource"
-	"github.com/data-preservation-programs/singularity/cmd/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
-	"github.com/data-preservation-programs/singularity/cmd/deal/spadepolicy"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
+	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/mattn/go-shellwords"
@@ -60,6 +59,11 @@ Network Support:
 			Usage: "Enable JSON output",
 			Value: false,
 		},
+		&cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "Enable verbose output. This will print more columns for the result as well as full error trace",
+			Value: false,
+		},
 		&cli.StringFlag{
 			Name:     "lotus-api",
 			Category: "Lotus",
@@ -77,6 +81,7 @@ Network Support:
 	},
 	Commands: []*cli.Command{
 		ez.PrepCmd,
+		VersionCmd,
 		{
 			Name:     "admin",
 			Usage:    "Admin commands",
@@ -88,7 +93,6 @@ Network Support:
 				admin.MigrateScheduleCmd,
 			},
 		},
-		VersionCmd,
 		DownloadCmd,
 		{
 			Name:     "deal",
@@ -103,15 +107,6 @@ Network Support:
 						schedule.ListCmd,
 						schedule.PauseCmd,
 						schedule.ResumeCmd,
-					},
-				},
-				{
-					Name:  "spade-policy",
-					Usage: "Manage SPADE policies",
-					Subcommands: []*cli.Command{
-						spadepolicy.CreateCmd,
-						spadepolicy.ListCmd,
-						spadepolicy.RemoveCmd,
 					},
 				},
 				deal.SendManualCmd,
@@ -131,57 +126,12 @@ Network Support:
 			},
 		},
 		{
-			Name:     "dataset",
-			Category: "Operations",
-			Usage:    "Dataset management",
-			Subcommands: []*cli.Command{
-				dataset.CreateCmd,
-				dataset.ListDatasetCmd,
-				dataset.UpdateCmd,
-				dataset.RemoveDatasetCmd,
-				dataset.AddWalletCmd,
-				dataset.ListWalletCmd,
-				dataset.RemoveWalletCmd,
-				dataset.AddPieceCmd,
-				dataset.ListPiecesCmd,
-			},
-		},
-		{
-			Name:     "datasource",
-			Category: "Operations",
-			Usage:    "Data source management",
-			Subcommands: []*cli.Command{
-				datasource.AddCmd,
-				datasource.ListCmd,
-				datasource.StatusCmd,
-				datasource.RemoveCmd,
-				datasource.CheckCmd,
-				datasource.UpdateCmd,
-				datasource.RescanCmd,
-				datasource.DagGenCmd,
-				datasource.RepackCmd,
-				{
-					Name:  "inspect",
-					Usage: "Get preparation status of a data source",
-					Subcommands: []*cli.Command{
-						inspect.PackJobsCmd,
-						inspect.FilesCmd,
-						inspect.DagsCmd,
-						inspect.PackJobDetailCmd,
-						inspect.FileDetailCmd,
-						inspect.PathCmd,
-					},
-				},
-			},
-		},
-		{
 			Name:     "wallet",
 			Category: "Operations",
 			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
 				wallet.ImportCmd,
 				wallet.ListCmd,
-				wallet.AddRemoteCmd,
 				wallet.RemoveCmd,
 			},
 		},
@@ -191,6 +141,17 @@ Network Support:
 			Usage:    "Tools used for development and debugging",
 			Subcommands: []*cli.Command{
 				tool.ExtractCarCmd,
+			},
+		},
+		{
+			Name:     "storage",
+			Category: "Operations",
+			Usage:    "Create and manage storage system connections",
+			Subcommands: []*cli.Command{
+				storage.CreateCmd,
+				storage.ExploreCmd,
+				storage.ListCmd,
+				storage.RemoveCmd,
 			},
 		},
 	},
@@ -211,6 +172,20 @@ func SetVersion(versionJSON []byte) error {
 
 	Version = v.Version
 	return nil
+}
+
+func SetupErrorHandler() {
+	App.ExitErrHandler = func(c *cli.Context, err error) {
+		if err == nil {
+			return
+		}
+		if c.Bool("verbose") {
+			report := fmt.Sprintf("%+v\n\n", err)
+			App.ErrWriter.Write([]byte(report))
+		}
+		concise := cliutil.Failure(err.Error()) + "\n"
+		App.ErrWriter.Write([]byte(concise))
+	}
 }
 
 func SetupHelpPager() {

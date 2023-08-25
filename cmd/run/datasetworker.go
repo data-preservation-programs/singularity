@@ -1,6 +1,7 @@
 package run
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
@@ -12,40 +13,34 @@ var DatasetWorkerCmd = &cli.Command{
 	Usage: "Start a dataset preparation worker to process dataset scanning and preparation tasks",
 	Flags: []cli.Flag{
 		&cli.IntFlag{
-			Name:    "concurrency",
-			Usage:   "Number of concurrent workers to run",
-			EnvVars: []string{"DATASET_WORKER_CONCURRENCY"},
-			Value:   1,
+			Name:  "concurrency",
+			Usage: "Number of concurrent workers to run",
+			Value: 1,
 		},
 		&cli.BoolFlag{
-			Name:    "enable-scan",
-			Usage:   "Enable scanning of datasets",
-			EnvVars: []string{"DATASET_WORKER_ENABLE_SCAN"},
-			Value:   true,
+			Name:  "enable-scan",
+			Usage: "Enable scanning of datasets",
+			Value: true,
 		},
 		&cli.BoolFlag{
-			Name:    "enable-pack",
-			Usage:   "Enable packing of datasets that calculates CIDs and packs them into CAR files",
-			EnvVars: []string{"DATASET_WORKER_ENABLE_PACK"},
-			Value:   true,
+			Name:  "enable-pack",
+			Usage: "Enable packing of datasets that calculates CIDs and packs them into CAR files",
+			Value: true,
 		},
 		&cli.BoolFlag{
-			Name:    "enable-dag",
-			Usage:   "Enable dag generation of datasets that maintains the directory structure of datasets",
-			EnvVars: []string{"DATASET_WORKER_ENABLE_DAG"},
-			Value:   true,
+			Name:  "enable-dag",
+			Usage: "Enable dag generation of datasets that maintains the directory structure of datasets",
+			Value: true,
 		},
 		&cli.BoolFlag{
-			Name:    "exit-on-complete",
-			Usage:   "Exit the worker when there is no more work to do",
-			EnvVars: []string{"DATASET_WORKER_EXIT_ON_COMPLETE"},
-			Value:   false,
+			Name:  "exit-on-complete",
+			Usage: "Exit the worker when there is no more work to do",
+			Value: false,
 		},
 		&cli.BoolFlag{
-			Name:    "exit-on-error",
-			Usage:   "Exit the worker when there is any error",
-			EnvVars: []string{"DATASET_WORKER_EXIT_ON_ERROR"},
-			Value:   false,
+			Name:  "exit-on-error",
+			Usage: "Exit the worker when there is any error",
+			Value: false,
 		},
 	},
 	Action: func(c *cli.Context) error {

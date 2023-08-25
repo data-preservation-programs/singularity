@@ -19,7 +19,7 @@ func TestRemoveStorageHandler(t *testing.T) {
 		tmp := t.TempDir()
 		_, err = CreateStorageHandler(ctx, db, "local", "", "name", tmp, nil)
 		require.NoError(t, err)
-		err = RemoveStorageHandler(ctx, db, "name")
+		err = RemoveHandler(ctx, db, "name")
 		require.NoError(t, err)
 	})
 	t.Run("remove storage that does not exist", func(t *testing.T) {
@@ -27,7 +27,7 @@ func TestRemoveStorageHandler(t *testing.T) {
 		db, closer, err := database.OpenInMemory()
 		require.NoError(t, err)
 		defer closer.Close()
-		err = RemoveStorageHandler(ctx, db, "name")
+		err = RemoveHandler(ctx, db, "name")
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
 	})
 	t.Run("remove storage that is still in use", func(t *testing.T) {
@@ -44,7 +44,7 @@ func TestRemoveStorageHandler(t *testing.T) {
 		}
 		err = db.Create(&source).Error
 		require.NoError(t, err)
-		err = RemoveStorageHandler(ctx, db, "name")
+		err = RemoveHandler(ctx, db, "name")
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
 }

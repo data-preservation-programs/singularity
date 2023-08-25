@@ -2,8 +2,10 @@ package storagesystem
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
@@ -49,6 +51,7 @@ import (
 	_ "github.com/rclone/rclone/backend/zoho"
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
 
@@ -124,10 +127,111 @@ type Backend struct {
 	ProviderOptions []ProviderOptions
 }
 
+type Option fs.Option
+
 type ProviderOptions struct {
 	Provider            string
 	ProviderDescription string
-	Options             []fs.Option
+	Options             []Option
+}
+
+func (option *Option) ToCLIFlag(prefix string) cli.Flag {
+	var category string
+	if option.Advanced {
+		category = "Advanced"
+	}
+	var aliases []string
+	if option.ShortOpt != "" && prefix == "" {
+		aliases = []string{option.ShortOpt}
+	}
+	var flag cli.Flag
+	name := prefix + option.Name
+	usage := strings.Split(option.Help, "\n")[0]
+	switch (*fs.Option)(option).Type() {
+	case "string":
+		flag = &cli.StringFlag{
+			Category: category,
+			Name:     name,
+			Required: option.Required,
+			Usage:    usage,
+			Value:    option.Default.(string),
+			Aliases:  aliases,
+			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
+		}
+	case "int":
+		flag = &cli.IntFlag{
+			Category: category,
+			Name:     name,
+			Required: option.Required,
+			Usage:    usage,
+			Value:    option.Default.(int),
+			Aliases:  aliases,
+			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
+		}
+	case "bool":
+		flag = &cli.BoolFlag{
+			Category: category,
+			Name:     name,
+			Required: option.Required,
+			Usage:    usage,
+			Value:    option.Default.(bool),
+			Aliases:  aliases,
+			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
+		}
+	default:
+		flag = &cli.StringFlag{
+			Category: category,
+			Name:     name,
+			Required: option.Required,
+			Usage:    usage,
+			Value: option.Default.(interface {
+				String() string
+			}).String(),
+			Aliases: aliases,
+			EnvVars: []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
+		}
+	}
+	return flag
+}
+
+func (p ProviderOptions) ToCLICommand(short string, long string, description string) *cli.Command {
+	command := &cli.Command{
+		Name:      short,
+		Usage:     description,
+		ArgsUsage: "[name] [path]",
+	}
+	var helpLines []string
+	margin := "   "
+	for _, option := range p.Options {
+		flag := option.ToCLIFlag("")
+		command.Flags = append(command.Flags, flag)
+		lines := underscore.Map(strings.Split(option.Help, "\n"), func(line string) string { return margin + line })
+		helpLines = append(helpLines, "--"+flag.Names()[0])
+		helpLines = append(helpLines, lines...)
+		if len(option.Examples) > 0 {
+			for i, example := range option.Examples {
+				if example.Value == "" {
+					option.Examples[i].Value = "<unset>"
+				}
+			}
+			helpLines = append(helpLines, "")
+			helpLines = append(helpLines, margin+"Examples:")
+			maxValueLen := underscore.Max(underscore.Map(option.Examples, func(example fs.OptionExample) int { return len(example.Value) }))
+			for _, example := range option.Examples {
+				pattern := margin + "   | %-" + strconv.Itoa(maxValueLen) + "s | %s"
+				help := strings.Split(example.Help, "\n")
+				exampleLine := fmt.Sprintf(pattern, example.Value, help[0])
+				helpLines = append(helpLines, exampleLine)
+				for _, helpLine := range help[1:] {
+					exampleLine = fmt.Sprintf(pattern, "", helpLine)
+					helpLines = append(helpLines, exampleLine)
+				}
+			}
+		}
+		helpLines = append(helpLines, "")
+	}
+	command.Description = strings.Join(helpLines, "\n")
+	return command
 }
 
 var Backends []Backend
@@ -182,7 +286,7 @@ func init() {
 				if !ok {
 					panic("provider not found")
 				}
-				providerMap[provider].Options = append(providerMap[provider].Options, *option)
+				providerMap[provider].Options = append(providerMap[provider].Options, Option(*option))
 			}
 		}
 

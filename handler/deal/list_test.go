@@ -37,7 +37,7 @@ func TestListHandler(t *testing.T) {
 	require.NoError(t, err)
 	deals, err := ListHandler(context.Background(), db, ListDealRequest{
 		Preparations: []uint32{1},
-		Storages:     []string{"storage"},
+		Sources:      []string{"storage"},
 		Schedules:    []uint32{1},
 		Providers:    []string{"provider"},
 		States:       []model.DealState{model.DealActive},

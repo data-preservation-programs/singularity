@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	datasource2 "github.com/data-preservation-programs/singularity/datasource"
 	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/ipfs/go-log"
-	"github.com/rclone/rclone/fs"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
@@ -13,7 +12,7 @@ var DownloadCmd = &cli.Command{
 	Name:      "download",
 	Usage:     "Download a CAR file from the metadata API",
 	Category:  "Utility",
-	ArgsUsage: "PIECE_CID",
+	ArgsUsage: "<piece_cid>",
 	Flags: func() []cli.Flag {
 		flags := []cli.Flag{
 			&cli.StringFlag{
@@ -38,21 +37,17 @@ var DownloadCmd = &cli.Command{
 			},
 		}
 
-		for _, r := range fs.Registry {
-			if slices.Contains([]string{"crypt", "memory", "tardigrade"}, r.Prefix) {
-				continue
-			}
-			cmd := datasource2.OptionsToCLIFlags(r)
-			for _, flag := range cmd.Flags {
-				stringFlag, ok := flag.(*cli.StringFlag)
-				if !ok {
+		keys := make(map[string]struct{})
+		for _, backend := range storagesystem.Backends {
+			for _, providerOptions := range backend.ProviderOptions {
+				for _, option := range providerOptions.Options {
+					if _, ok := keys[option.Name]; ok {
+						continue
+					}
+					keys[option.Name] = struct{}{}
+					flag := option.ToCLIFlag(backend.Prefix + "-")
 					flags = append(flags, flag)
-					continue
 				}
-				stringFlag.Required = false
-				stringFlag.Category = "Config for " + cmd.Name
-				stringFlag.Aliases = nil
-				flags = append(flags, stringFlag)
 			}
 		}
 		return flags

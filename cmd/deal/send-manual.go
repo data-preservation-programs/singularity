@@ -18,7 +18,7 @@ import (
 var SendManualCmd = &cli.Command{
 	Name:      "send-manual",
 	Usage:     "Send a manual deal proposal to boost or legacy market",
-	ArgsUsage: "CLIENT_ADDRESS PROVIDER_ID PIECE_CID PIECE_SIZE",
+	ArgsUsage: "<client> <provider> <piece_cid> <piece_size>",
 	Description: `Send a manual deal proposal to boost or legacy market
   Example: singularity deal send-manual f01234 f05678 bagaxxxx 32GiB
 Notes:
@@ -152,13 +152,11 @@ Notes:
 			10*timeout,
 			timeout,
 		)
-		dealModel, err2 := deal.SendManualHandler(ctx, db, dealMaker, proposal)
-		if err2 != nil {
-			return err2
+		dealModel, err := deal.SendManualHandler(ctx, db, dealMaker, proposal)
+		if err != nil {
+			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(dealModel, c.Bool("json"), []string{
-			"CreatedAt", "UpdatedAt", "DealID", "DatasetID", "SectorStartEpoch",
-			"ID", "State", "ErrorMessage", "ScheduleID"})
+		cliutil.PrintToConsole(c, dealModel)
 		return nil
 	},
 }

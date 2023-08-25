@@ -5,12 +5,39 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/fatih/color"
+	"github.com/logrusorgru/aurora/v4"
 	"github.com/rodaine/table"
 	"github.com/urfave/cli/v2"
 )
+
+var ErrIncorrectNArgs = errors.New("incorrect number of arguments")
+
+func Success(msg string) string {
+	return aurora.BrightGreen(msg).String()
+}
+
+func Failure(msg string) string {
+	return aurora.BrightRed(msg).String()
+}
+
+func Warning(msg string) string {
+	return aurora.BrightYellow(msg).String()
+}
+
+func CheckNArgs(c *cli.Context) error {
+	required := strings.Count(c.Command.ArgsUsage, "<")
+	optional := strings.Count(c.Command.ArgsUsage, "[")
+	if c.Args().Len() < required || c.Args().Len() > required+optional {
+		cli.ShowSubcommandHelp(c)
+		return ErrIncorrectNArgs
+	}
+	return nil
+}
 
 var ReallyDotItFlag = &cli.BoolFlag{
 	Name:  "really-do-it",
@@ -33,7 +60,9 @@ func PrintAsJSON(obj any) {
 	fmt.Println(string(objJSON))
 }
 
-func PrintToConsole(obj any, useJSON bool, verbose bool) {
+func PrintToConsole(c *cli.Context, obj any) {
+	useJSON := c.Bool("json")
+	verbose := c.Bool("verbose")
 	if useJSON {
 		PrintAsJSON(obj)
 		return

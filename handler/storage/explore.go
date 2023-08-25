@@ -13,13 +13,13 @@ import (
 )
 
 type DirEntry struct {
-	Path         string    `json:"path"`
-	LastModified time.Time `json:"lastModified"`
-	Size         int64     `json:"size"`
-	IsDir        bool      `json:"isDir"`
-	DirID        string    `json:"dirId"`
-	NumItems     int64     `json:"numItems"`
-	Hash         string    `json:"hash"`
+	Path         string    `json:"path" cli:"normal"`
+	LastModified time.Time `json:"lastModified" cli:"verbose"`
+	Size         int64     `json:"size" cli:"normal"`
+	IsDir        bool      `json:"isDir" cli:"normal"`
+	DirID        string    `json:"dirId" cli:"verbose"`
+	NumItems     int64     `json:"numItems" cli:"verbose"`
+	Hash         string    `json:"hash" cli:"verbose"`
 }
 
 // ExploreHandler fetches directory entries (files and sub-directories) for a given storage system

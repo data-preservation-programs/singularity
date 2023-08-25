@@ -1,9 +1,12 @@
 package deal
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal"
+	"github.com/data-preservation-programs/singularity/model"
+	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 )
 
@@ -11,9 +14,13 @@ var ListCmd = &cli.Command{
 	Name:  "list",
 	Usage: "List all deals",
 	Flags: []cli.Flag{
+		&cli.UintSliceFlag{
+			Name:  "preparation",
+			Usage: "Filter deals by preparation id",
+		},
 		&cli.StringSliceFlag{
-			Name:  "dataset",
-			Usage: "Filter deals by dataset name",
+			Name:  "source",
+			Usage: "Filter deals by source storage name",
 		},
 		&cli.UintSliceFlag{
 			Name:  "schedule",
@@ -35,15 +42,16 @@ var ListCmd = &cli.Command{
 		}
 		defer closer.Close()
 		deals, err := deal.ListHandler(c.Context, db, deal.ListDealRequest{
-			Datasets:  c.StringSlice("dataset"),
-			Schedules: c.UintSlice("schedule"),
-			Providers: c.StringSlice("provider"),
-			States:    c.StringSlice("state"),
+			Preparations: underscore.Map(c.IntSlice("preparation"), func(i int) uint32 { return uint32(i) }),
+			Sources:      c.StringSlice("source"),
+			Schedules:    underscore.Map(c.IntSlice("schedules"), func(i int) uint32 { return uint32(i) }),
+			Providers:    c.StringSlice("provider"),
+			States:       underscore.Map(c.StringSlice("state"), func(s string) model.DealState { return model.DealState(s) }),
 		})
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(deals, c.Bool("json"), nil)
+		cliutil.PrintToConsole(c, deals)
 		return nil
 	},
 }

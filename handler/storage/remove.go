@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// RemoveStorageHandler deletes the storage entry with the specified name from the database.
+// RemoveHandler deletes the storage entry with the specified name from the database.
 // Before deletion, it checks if any attachments are still using the storage,
 // and if so, returns an error.
 //
@@ -22,7 +22,7 @@ import (
 // Returns:
 //   - An error, if any occurred during the operation. Returns a specific error
 //     if the storage is still in use or if the storage does not exist.
-func RemoveStorageHandler(
+func RemoveHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	name string) error {

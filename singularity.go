@@ -43,11 +43,10 @@ func main() {
 		log2.SetAllLoggers(log2.LevelInfo)
 	}
 	cmd.SetupHelpPager()
+	cmd.SetupErrorHandler()
 	err := cmd.SetVersion(version)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = cmd.App.RunContext(context.TODO(), os.Args); err != nil {
-		log.Fatal(err)
-	}
+	_ = cmd.App.RunContext(context.TODO(), os.Args)
 }

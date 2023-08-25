@@ -10,7 +10,7 @@ import (
 
 type ListDealRequest struct {
 	Preparations []uint32          `json:"preparations"` // preparation ID filter
-	Storages     []string          `json:"storages"`     // storage filter
+	Sources      []string          `json:"sources"`      // source filter
 	Schedules    []uint32          `json:"schedules"`    // schedule id filter
 	Providers    []string          `json:"providers"`    // provider filter
 	States       []model.DealState `json:"states"`       // state filter
@@ -45,11 +45,11 @@ func ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]m
 			Where("preparation_id in ?", request.Preparations))
 	}
 
-	if len(request.Storages) > 0 {
+	if len(request.Sources) > 0 {
 		statement = statement.Where("schedule_id IN (?)", db.Model(&model.Schedule{}).Select("id").
 			Where("preparation_id in (?)", db.Model(&model.SourceAttachment{}).Select("preparation_id").
 				Where("storage_id in (?)", db.Model(&model.Storage{}).Select("id").
-					Where("name in ?", request.Storages))))
+					Where("name in ?", request.Sources))))
 	}
 
 	if len(request.Schedules) > 0 {

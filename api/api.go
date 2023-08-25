@@ -268,7 +268,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/storage/:type", s.toEchoHandler(storage.CreateStorageHandler))
 	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(storage.ExploreHandler))
 	e.GET("/api/storage", s.toEchoHandler(storage.ListStoragesHandler))
-	e.DELETE("/api/storage/:name", s.toEchoHandler(storage.RemoveStorageHandler))
+	e.DELETE("/api/storage/:name", s.toEchoHandler(storage.RemoveHandler))
 	e.PATCH("/api/storage/:name", s.toEchoHandler(storage.UpdateStorageHandler))
 
 	// Preparation

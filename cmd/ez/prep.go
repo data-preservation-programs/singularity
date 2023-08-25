@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,9 +11,8 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
-	"github.com/data-preservation-programs/singularity/handler/dataset"
-	"github.com/data-preservation-programs/singularity/handler/datasource"
-	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -26,7 +24,7 @@ var PrepCmd = &cli.Command{
 	ArgsUsage: "<path>",
 	Usage:     "Prepare a dataset from a local path",
 	Description: "This commands can be used to prepare a dataset from a local path with minimum configurable parameters.\n" +
-		"For more advanced usage, please use the subcommands under `dataset` and `datasource`.\n" +
+		"For more advanced usage, please use the subcommands under `storage` and `data-prep`.\n" +
 		"You can also use this command for benchmarking with in-memory database and inline preparation, i.e.\n" +
 		"  mkdir dataset\n" +
 		"  truncate -s 1024G dataset/1T.bin\n" +
@@ -90,49 +88,40 @@ var PrepCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		// Step 2, create a dataset
-		var outputDirs []string
-		if c.String("output-dir") != "" {
-			outputDirs = []string{c.String("output-dir")}
-			err = os.MkdirAll(outputDirs[0], 0755)
+		// Step 2, create a preparation
+		outputDir := c.String("output-dir")
+		var outputStorages []string
+		if outputDir != "" {
+			err = os.MkdirAll(outputDir, 0755)
 			if err != nil {
 				return errors.Wrap(err, "failed to create output directory")
 			}
+
+			_, err = storage.CreateStorageHandler(c.Context, db, "local", storage.CreateRequest{
+				Name: "output",
+				Path: outputDir,
+			})
+			if err != nil {
+				return errors.Wrap(err, "failed to create output storage")
+			}
+			outputStorages = []string{"output"}
 		}
-		ds, err2 := dataset.CreateHandler(c.Context, db, dataset.CreateRequest{
-			Name:       "ez",
-			MaxSizeStr: c.String("max-size"),
-			OutputDirs: outputDirs,
+
+		_, err = storage.CreateStorageHandler(c.Context, db, "local", storage.CreateRequest{
+			Name: "source",
+			Path: path,
 		})
-		if err2 != nil {
-			return err2
+		if err != nil {
+			return errors.Wrap(err, "failed to create source storage")
 		}
 
-		// Step 3, add a local data source
-		path, err = filepath.Abs(path)
+		_, err = dataprep.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
+			SourceStorages: []string{"source"},
+			OutputStorages: outputStorages,
+			MaxSizeStr:     c.String("max-size"),
+		})
 		if err != nil {
-			return errors.Wrap(err, "failed to get absolute path")
-		}
-		source := model.Source{
-			DatasetID:     ds.ID,
-			Type:          "local",
-			Path:          path,
-			Metadata:      model.StringMap(nil),
-			ScanningState: model.Ready,
-			DagGenState:   model.Created,
-		}
-		err = db.Create(&source).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to create source")
-		}
-
-		root := model.Directory{
-			SourceID: source.ID,
-			Name:     path,
-		}
-		err = db.Create(&root).Error
-		if err != nil {
-			return errors.Wrap(err, "failed to create root directory")
+			return errors.Wrap(err, "failed to create preparation")
 		}
 
 		// Step 3, start dataset worker
@@ -147,30 +136,30 @@ var PrepCmd = &cli.Command{
 			})
 		err = worker.Run(c.Context)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Wrap(err, "failed to run dataset worker")
 		}
 
 		// Step 4, Initiate dag gen
-		_, err2 = datasource.DagGenHandler(c.Context, db, strconv.Itoa(int(source.ID)))
-		if err2 != nil {
-			return err2
+		_, err = dataprep.StartDagGenHandler(c.Context, db, 1, "source")
+		if err != nil {
+			return errors.Wrap(err, "failed to start dag gen")
 		}
 
 		// Step 5, start dataset worker again
 		err = worker.Run(c.Context)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Wrap(err, "failed to run dataset worker")
 		}
 
 		// Step 6, print all information
-		cars, err2 := dataset.ListPiecesHandler(
-			c.Context, db, ds.Name,
+		pieceLists, err := dataprep.ListPiecesHandler(
+			c.Context, db, 1,
 		)
-		if err2 != nil {
-			return err2
+		if err != nil {
+			return errors.Wrap(err, "failed to list pieces")
 		}
 
-		cliutil.PrintToConsole(cars, false, nil)
+		cliutil.PrintToConsole(c, pieceLists[0].Pieces)
 		return nil
 	},
 }

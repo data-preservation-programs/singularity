@@ -1,16 +1,16 @@
-package dataset
+package storage
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/dataset"
+	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/urfave/cli/v2"
 )
 
-var ListPiecesCmd = &cli.Command{
-	Name:      "list-pieces",
-	Usage:     "List all pieces for the dataset that are available for deal making",
-	ArgsUsage: "<dataset_name>",
+var ListCmd = &cli.Command{
+	Name:  "list",
+	Usage: "List all storages system connections",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -18,15 +18,11 @@ var ListPiecesCmd = &cli.Command{
 		}
 		defer closer.Close()
 
-		car, err := dataset.ListPiecesHandler(
-			c.Context,
-			db, c.Args().Get(0),
-		)
+		storages, err := storage.ListStoragesHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-
-		cliutil.PrintToConsole(car, c.Bool("json"), nil)
+		cliutil.PrintToConsole(c, storages)
 		return nil
 	},
 }

@@ -73,27 +73,27 @@ func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEp
 // The index on PieceCID is used to track replication of the same piece CID.
 // The index on State and ClientID is used to calculate number and size of pending deals.
 type Deal struct {
-	ID               uint64    `gorm:"primaryKey"                      json:"id"`
+	ID               uint64    `gorm:"primaryKey"                      json:"id" cli:"verbose"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
-	DealID           *uint64   `gorm:"unique"                          json:"dealId"`
-	State            DealState `gorm:"index:idx_pending"               json:"state"`
-	Provider         string    `json:"provider"`
-	ProposalID       string    `json:"proposalId"`
-	Label            string    `json:"label"`
-	PieceCID         CID       `gorm:"column:piece_cid;index;size:255" json:"pieceCid"`
-	PieceSize        int64     `json:"pieceSize"`
-	StartEpoch       int32     `json:"startEpoch"`
-	EndEpoch         int32     `json:"endEpoch"`
-	SectorStartEpoch int32     `json:"sectorStartEpoch"`
-	Price            string    `json:"price"`
-	Verified         bool      `json:"verified"`
-	ErrorMessage     string    `json:"errorMessage"`
+	DealID           *uint64   `gorm:"unique"                          json:"dealId" cli:"normal"`
+	State            DealState `gorm:"index:idx_pending"               json:"state" cli:"normal"`
+	Provider         string    `json:"provider" cli:"normal"`
+	ProposalID       string    `json:"proposalId" cli:"verbose"`
+	Label            string    `json:"label" cli:"verbose"`
+	PieceCID         CID       `gorm:"column:piece_cid;index;size:255" json:"pieceCid" cli:"normal"`
+	PieceSize        int64     `json:"pieceSize" cli:"verbose"`
+	StartEpoch       int32     `json:"startEpoch" cli:"verbose"`
+	EndEpoch         int32     `json:"endEpoch" cli:"verbose"`
+	SectorStartEpoch int32     `json:"sectorStartEpoch" cli:"verbose"`
+	Price            string    `json:"price" cli:"verbose"`
+	Verified         bool      `json:"verified" cli:"normal"`
+	ErrorMessage     string    `json:"errorMessage" cli:"verbose"`
 
 	// Associations
 	ScheduleID *uint32   `json:"scheduleId"`
 	Schedule   *Schedule `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL"    json:"schedule,omitempty"    swaggerignore:"true"`
-	ClientID   string    `gorm:"index:idx_pending"                                     json:"clientId"`
+	ClientID   string    `gorm:"index:idx_pending"                                     json:"clientId" cli:"verbose"`
 	Wallet     *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"      json:"wallet,omitempty"      swaggerignore:"true"`
 }
 
@@ -103,39 +103,39 @@ func (d Deal) Key() string {
 }
 
 type Schedule struct {
-	ID                   uint32        `gorm:"primaryKey"           json:"id"`
+	ID                   uint32        `gorm:"primaryKey"           json:"id" cli:"normal"`
 	CreatedAt            time.Time     `json:"createdAt"`
 	UpdatedAt            time.Time     `json:"updatedAt"`
-	URLTemplate          string        `json:"urlTemplate"`
-	HTTPHeaders          StringSlice   `gorm:"type:JSON"            json:"httpHeaders"`
-	Provider             string        `json:"provider"`
-	PricePerGBEpoch      float64       `json:"pricePerGbEpoch"`
-	PricePerGB           float64       `json:"pricePerGb"`
-	PricePerDeal         float64       `json:"pricePerDeal"`
-	TotalDealNumber      int           `json:"totalDealNumber"`
-	TotalDealSize        int64         `json:"totalDealSize"`
-	Verified             bool          `json:"verified"`
-	KeepUnsealed         bool          `json:"keepUnsealed"`
-	AnnounceToIPNI       bool          `json:"announceToIpni"`
-	StartDelay           time.Duration `json:"startDelay"           swaggertype:"primitive,integer"`
-	Duration             time.Duration `json:"duration"             swaggertype:"primitive,integer"`
-	State                ScheduleState `json:"state"`
-	ScheduleCron         string        `json:"scheduleCron"`
-	ScheduleDealNumber   int           `json:"scheduleDealNumber"`
-	ScheduleDealSize     int64         `json:"scheduleDealSize"`
-	MaxPendingDealNumber int           `json:"maxPendingDealNumber"`
-	MaxPendingDealSize   int64         `json:"maxPendingDealSize"`
-	Notes                string        `json:"notes"`
-	ErrorMessage         string        `json:"errorMessage"`
-	AllowedPieceCIDs     StringSlice   `gorm:"type:JSON"            json:"allowedPieceCids"`
+	URLTemplate          string        `json:"urlTemplate" cli:"verbose"`
+	HTTPHeaders          StringSlice   `gorm:"type:JSON"            json:"httpHeaders" cli:"verbose"`
+	Provider             string        `json:"provider" cli:"normal"`
+	PricePerGBEpoch      float64       `json:"pricePerGbEpoch" cli:"verbose"`
+	PricePerGB           float64       `json:"pricePerGb" cli:"verbose"`
+	PricePerDeal         float64       `json:"pricePerDeal" cli:"verbose"`
+	TotalDealNumber      int           `json:"totalDealNumber" cli:"normal"`
+	TotalDealSize        int64         `json:"totalDealSize" cli:"normal"`
+	Verified             bool          `json:"verified" cli:"normal"`
+	KeepUnsealed         bool          `json:"keepUnsealed" cli:"verbose"`
+	AnnounceToIPNI       bool          `json:"announceToIpni" cli:"verbose"`
+	StartDelay           time.Duration `json:"startDelay"           swaggertype:"primitive,integer" cli:"verbose"`
+	Duration             time.Duration `json:"duration"             swaggertype:"primitive,integer" cli:"verbose"`
+	State                ScheduleState `json:"state" cli:"normal"`
+	ScheduleCron         string        `json:"scheduleCron" cli:"normal"`
+	ScheduleDealNumber   int           `json:"scheduleDealNumber" cli:"normal"`
+	ScheduleDealSize     int64         `json:"scheduleDealSize" cli:"normal"`
+	MaxPendingDealNumber int           `json:"maxPendingDealNumber" cli:"verbose"`
+	MaxPendingDealSize   int64         `json:"maxPendingDealSize" cli:"verbose"`
+	Notes                string        `json:"notes" cli:"normal"`
+	ErrorMessage         string        `json:"errorMessage" cli:"verbose"`
+	AllowedPieceCIDs     StringSlice   `gorm:"type:JSON"            json:"allowedPieceCids" cli:"verbose"`
 
 	// Associations
-	PreparationID uint32       `json:"preparationId"`
+	PreparationID uint32       `json:"preparationId" cli:"verbose"`
 	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
 }
 
 type Wallet struct {
-	ID         string `gorm:"primaryKey;size:15"   json:"id"`      // ID is the short ID of the wallet
-	Address    string `gorm:"index"                json:"address"` // Address is the Filecoin full address of the wallet
-	PrivateKey string `json:"privateKey,omitempty"`                // PrivateKey is the private key of the wallet
+	ID         string `gorm:"primaryKey;size:15"   json:"id" cli:"normal"`      // ID is the short ID of the wallet
+	Address    string `gorm:"index"                json:"address" cli:"normal"` // Address is the Filecoin full address of the wallet
+	PrivateKey string `json:"privateKey,omitempty"`                             // PrivateKey is the private key of the wallet
 }

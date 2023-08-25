@@ -21,20 +21,20 @@ import (
 
 var pieceCidRegex = regexp.MustCompile("baga[0-9a-z]+")
 
-func MigrateSchedule(cctx *cli.Context) error {
+func MigrateSchedule(c *cli.Context) error {
 	log.Println("Migrating dataset from old singularity database")
-	mongoConnectionString := cctx.String("mongo-connection-string")
-	sqlConnectionString := cctx.String("database-connection-string")
+	mongoConnectionString := c.String("mongo-connection-string")
+	sqlConnectionString := c.String("database-connection-string")
 	log.Printf("Using mongo connection string: %s\n", mongoConnectionString)
 	log.Printf("Using sql connection string: %s\n", sqlConnectionString)
-	db, closer, err := database.OpenFromCLI(cctx)
+	db, closer, err := database.OpenFromCLI(c)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	defer closer.Close()
-	ctx := cctx.Context
+	ctx := c.Context
 	db = db.WithContext(ctx)
-	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(cctx.String("mongo-connection-string")))
+	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(c.String("mongo-connection-string")))
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}
@@ -152,6 +152,6 @@ func MigrateSchedule(cctx *cli.Context) error {
 		return errors.Wrap(err, "failed to create schedules")
 	}
 
-	cliutil.PrintToConsole(schedules, false, nil)
+	cliutil.PrintToConsole(c, schedules)
 	return nil
 }
