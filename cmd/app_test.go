@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -918,7 +917,7 @@ func TestPieceDownload(t *testing.T) {
 
 func TestGetItemDeals(t *testing.T) {
 	testWithAllBackend(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		_, err := inspect.GetFileDealsHandler(db, 0)
+		_, _, err := RunArgsInTest(ctx, "singularity datasource inspect filedeals 0")
 		require.NoError(t, err)
 	})
 }

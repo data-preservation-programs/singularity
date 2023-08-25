@@ -170,6 +170,7 @@ Network Support:
 						inspect.PackJobDetailCmd,
 						inspect.FileDetailCmd,
 						inspect.PathCmd,
+						inspect.FileDealsCmd,
 					},
 				},
 			},
