@@ -10,21 +10,26 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataset"
 	dshandler "github.com/data-preservation-programs/singularity/handler/datasource"
 	"github.com/data-preservation-programs/singularity/handler/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	wallethandler "github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
 
 type Client struct {
 	db                        *gorm.DB
+	lotusClient               jsonrpc.RPCClient
 	datasourceHandlerResolver datasource.HandlerResolver
 }
 
-func NewClient(db *gorm.DB) (*Client, error) {
+func NewClient(db *gorm.DB, lotusClient jsonrpc.RPCClient) (*Client, error) {
 	if err := model.AutoMigrate(db); err != nil {
 		return nil, err
 	}
 	return &Client{
 		db:                        db,
+		lotusClient:               lotusClient,
 		datasourceHandlerResolver: &datasource.DefaultHandlerResolver{},
 	}, nil
 }
@@ -79,6 +84,22 @@ func (c *Client) PrepareToPackSource(ctx context.Context, sourceID uint32) error
 
 func (c *Client) Pack(ctx context.Context, packJobID uint32) ([]model.Car, error) {
 	return dshandler.PackHandler(c.db.WithContext(ctx), ctx, c.datasourceHandlerResolver, packJobID)
+}
+
+func (c *Client) ImportWallet(ctx context.Context, request wallethandler.ImportRequest) (*model.Wallet, error) {
+	return wallethandler.ImportHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
+}
+
+func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error) {
+	return wallethandler.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, wallet)
+}
+
+func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {
+	return schedule.CreateHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
+}
+
+func (c *Client) ListSchedules(ctx context.Context) ([]model.Schedule, error) {
+	return schedule.ListHandler(ctx, c.db.WithContext(ctx))
 }
 
 var _ client.Client = (*Client)(nil)
