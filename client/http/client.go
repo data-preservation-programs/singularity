@@ -284,6 +284,25 @@ func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wal
 	return &walletAssignment, nil
 }
 
+func (c *Client) ListWalletsByDataset(ctx context.Context, datasetName string) ([]model.Wallet, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/dataset/"+datasetName+"/wallet", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = response.Body.Close()
+	}()
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return nil, parseHTTPError(response)
+	}
+	var wallets []model.Wallet
+	err = json.NewDecoder(response.Body).Decode(&wallets)
+	if err != nil {
+		return nil, err
+	}
+	return wallets, nil
+}
+
 func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {
 	response, err := c.jsonRequest(ctx, http.MethodPost, c.serverURL+"/api/schedule", request)
 	if err != nil {

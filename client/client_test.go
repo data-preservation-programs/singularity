@@ -128,6 +128,11 @@ func TestClients(t *testing.T) {
 		_, err = client.AddWalletToDataset(ctx, "test", wallet.ID)
 		require.NoError(t, err)
 
+		// verify wallet is present in dataset
+		wallets, err := client.ListWalletsByDataset(ctx, "test")
+		require.NoError(t, err)
+		require.Len(t, wallets, 1)
+		require.Equal(t, *wallet, wallets[0])
 		// create schedule
 		_, err = client.CreateSchedule(ctx, schedule.CreateRequest{
 			DatasetName:        "test",
