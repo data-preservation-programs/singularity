@@ -33,5 +33,5 @@ type Client interface {
 	ListWallets(ctx context.Context) ([]model.Wallet, error)
 	ListWalletsByDataset(ctx context.Context, datasetName string) ([]model.Wallet, error)
 	CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error)
-	ListSchedules(ctx context.Context) ([]model.Schedule, error)
+	ListSchedulesByDataset(ctx context.Context, datasetName string) ([]model.Schedule, error)
 }

@@ -341,8 +341,8 @@ func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequ
 	return &schedule, nil
 }
 
-func (c *Client) ListSchedules(ctx context.Context) ([]model.Schedule, error) {
-	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/schedule", nil)
+func (c *Client) ListSchedulesByDataset(ctx context.Context, datasetName string) ([]model.Schedule, error) {
+	response, err := c.jsonRequest(ctx, http.MethodGet, c.serverURL+"/api/dataset/"+datasetName+"/schedules", nil)
 	if err != nil {
 		return nil, err
 	}

@@ -105,8 +105,8 @@ func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequ
 	return schedule.CreateHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
 }
 
-func (c *Client) ListSchedules(ctx context.Context) ([]model.Schedule, error) {
-	return schedule.ListHandler(ctx, c.db.WithContext(ctx))
+func (c *Client) ListSchedulesByDataset(ctx context.Context, datasetName string) ([]model.Schedule, error) {
+	return schedule.ListByDatasetHandler(ctx, c.db.WithContext(ctx), datasetName)
 }
 
 var _ client.Client = (*Client)(nil)
