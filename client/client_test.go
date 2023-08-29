@@ -153,7 +153,7 @@ func TestClients(t *testing.T) {
 		require.NoError(t, err)
 
 		// list schedules
-		schedules, err := client.ListSchedules(ctx)
+		schedules, err := client.ListSchedulesByDataset(ctx, "test")
 		require.NoError(t, err)
 		require.Len(t, schedules, 1)
 	})
