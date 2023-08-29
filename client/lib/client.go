@@ -94,6 +94,9 @@ func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wal
 	return wallethandler.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, wallet)
 }
 
+func (c *Client) ListWallets(ctx context.Context) ([]model.Wallet, error) {
+	return wallethandler.ListHandler(ctx, c.db.WithContext(ctx))
+}
 func (c *Client) ListWalletsByDataset(ctx context.Context, datasetName string) ([]model.Wallet, error) {
 	return wallethandler.ListWalletHandler(ctx, c.db.WithContext(ctx), datasetName)
 }
