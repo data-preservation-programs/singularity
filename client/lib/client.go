@@ -94,6 +94,10 @@ func (c *Client) AddWalletToDataset(ctx context.Context, datasetName string, wal
 	return wallethandler.AddWalletHandler(ctx, c.db.WithContext(ctx), datasetName, wallet)
 }
 
+func (c *Client) ListWalletsByDataset(ctx context.Context, datasetName string) ([]model.Wallet, error) {
+	return wallethandler.ListWalletHandler(ctx, c.db.WithContext(ctx), datasetName)
+}
+
 func (c *Client) CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error) {
 	return schedule.CreateHandler(ctx, c.db.WithContext(ctx), c.lotusClient, request)
 }
