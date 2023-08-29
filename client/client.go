@@ -30,6 +30,7 @@ type Client interface {
 	GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error)
 	ImportWallet(ctx context.Context, request wallet.ImportRequest) (*model.Wallet, error)
 	AddWalletToDataset(ctx context.Context, datasetName string, wallet string) (*model.WalletAssignment, error)
+	ListWallets(ctx context.Context) ([]model.Wallet, error)
 	ListWalletsByDataset(ctx context.Context, datasetName string) ([]model.Wallet, error)
 	CreateSchedule(ctx context.Context, request schedule.CreateRequest) (*model.Schedule, error)
 	ListSchedules(ctx context.Context) ([]model.Schedule, error)
