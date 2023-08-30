@@ -18,11 +18,11 @@ var ListCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		preps, err := dataprep.ListHandler(c.Context, db)
+		preps, err := dataprep.Default.ListHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, preps)
+		cliutil.Print(c, preps)
 		return nil
 	},
 }

@@ -19,7 +19,7 @@ import (
 //
 // Returns:
 // - An error, if any occurred during the database deletion operation.
-func RemoveHandler(
+func (DefaultHandler) RemoveHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	address string,

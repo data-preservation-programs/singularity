@@ -23,7 +23,7 @@ import (
 // The function uses the Preload() method of gorm to automatically load the related source
 // and output storage records for each returned Preparation, simplifying subsequent operations
 // on these records.
-func ListHandler(ctx context.Context, db *gorm.DB) ([]model.Preparation, error) {
+func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB) ([]model.Preparation, error) {
 	var preparations []model.Preparation
 	err := db.WithContext(ctx).Preload("SourceStorages").Preload("OutputStorages").Find(&preparations).Error
 	return preparations, errors.WithStack(err)

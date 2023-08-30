@@ -27,11 +27,11 @@ var ListPiecesCmd = &cli.Command{
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
 
-		pieces, err := dataprep.ListPiecesHandler(c.Context, db, uint32(id))
+		pieces, err := dataprep.Default.ListPiecesHandler(c.Context, db, uint32(id))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, pieces)
+		cliutil.Print(c, pieces)
 		return nil
 	},
 }
@@ -74,7 +74,7 @@ var AddPieceCmd = &cli.Command{
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
 
-		pieces, err := dataprep.AddPieceHandler(c.Context, db, uint32(id), dataprep.AddPieceRequest{
+		pieces, err := dataprep.Default.AddPieceHandler(c.Context, db, uint32(id), dataprep.AddPieceRequest{
 			PieceCID:  c.String("piece-cid"),
 			PieceSize: c.String("piece-size"),
 			FilePath:  c.String("file-path"),
@@ -83,7 +83,7 @@ var AddPieceCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, pieces)
+		cliutil.Print(c, pieces)
 		return nil
 	},
 }

@@ -71,3 +71,7 @@ func (a AggregateError) Format(s fmt.State, verb rune) {
 func IsDuplicateKeyError(err error) bool {
 	return errors.Is(err, gorm.ErrDuplicatedKey) || (err != nil && strings.Contains(err.Error(), "constraint failed"))
 }
+
+func IsForeignKeyConstraintError(err error) bool {
+	return errors.Is(err, gorm.ErrForeignKeyViolated) || (err != nil && strings.Contains(err.Error(), "foreign key constraint"))
+}

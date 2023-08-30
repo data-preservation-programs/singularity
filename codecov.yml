@@ -12,3 +12,4 @@ ignore:
   - "dashboard/model2ts"
   - "docs/gen"
   - "handler/storage/gen"
+  - "cmd/testutil.go"

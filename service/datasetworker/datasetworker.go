@@ -267,7 +267,10 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		}
 		w.logger.Errorw("error encountered", "error", err)
 		if w.config.ExitOnError {
-			errChan <- err
+			select {
+			case errChan <- err:
+			case <-ctx.Done():
+			}
 			return
 		}
 	loop:

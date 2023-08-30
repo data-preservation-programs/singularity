@@ -21,7 +21,7 @@ import (
 // Returns:
 // - A pointer to the updated Preparation instance.
 // - An error, if any occurred during the association operation.
-func AttachHandler(
+func (DefaultHandler) AttachHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID uint32,

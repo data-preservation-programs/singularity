@@ -67,7 +67,7 @@ var ContentProviderCmd = &cli.Command{
 
 		s, err := contentprovider.NewService(db, config)
 		if err != nil {
-			return cli.Exit(err.Error(), 1)
+			return errors.WithStack(err)
 		}
 		return s.Start(c.Context)
 	},

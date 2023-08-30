@@ -29,7 +29,7 @@ import (
 // This function ensures that the given source storage exists and that the given Preparation exists
 // before creating an association. It also ensures there are no duplicate associations and handles
 // potential errors accordingly.
-func AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source string) (*model.Preparation, error) {
+func (DefaultHandler) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source string) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
 	err := db.Where("name = ?", source).First(&storage).Error
@@ -46,7 +46,7 @@ func AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source
 			PreparationID: id,
 		}).Error
 	})
-	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+	if util.IsForeignKeyConstraintError(err) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)
 	}
 	if util.IsDuplicateKeyError(err) {

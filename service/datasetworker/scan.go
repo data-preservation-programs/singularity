@@ -6,7 +6,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/rjNemo/underscore"
@@ -128,7 +128,7 @@ type remain struct {
 	carSize    int64
 }
 
-var carHeaderSize = len(pack.EmptyCarHeader)
+var carHeaderSize = len(packutil.EmptyCarHeader)
 
 func newRemain() *remain {
 	return &remain{

@@ -18,11 +18,11 @@ var ListCmd = &cli.Command{
 		}
 		defer closer.Close()
 
-		storages, err := storage.ListStoragesHandler(c.Context, db)
+		storages, err := storage.Default.ListStoragesHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, storages)
+		cliutil.Print(c, storages)
 		return nil
 	},
 }

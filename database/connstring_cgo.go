@@ -18,7 +18,7 @@ var ErrDatabaseNotSupported = errors.New("database not supported")
 
 var logger = log.Logger("database")
 
-func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
+func open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	var db *gorm.DB
 	var closer io.Closer
 	var err error

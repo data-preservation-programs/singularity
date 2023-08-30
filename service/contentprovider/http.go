@@ -99,7 +99,10 @@ func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	go func() {
 		err := e.Start(s.bind)
 		if err != nil {
-			fail <- err
+			select {
+			case <-ctx.Done():
+			case fail <- err:
+			}
 		}
 	}()
 	go func() {

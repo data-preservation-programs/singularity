@@ -18,7 +18,7 @@ import (
 //
 // Returns:
 // - An error, if any occurred during the operation.
-func ResetHandler(ctx context.Context, db *gorm.DB) error {
+func (DefaultHandler) ResetHandler(ctx context.Context, db *gorm.DB) error {
 	db = db.WithContext(ctx)
 	err := model.DropAll(db)
 	if err != nil {

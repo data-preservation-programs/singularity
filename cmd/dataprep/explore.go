@@ -27,11 +27,11 @@ var ExploreCmd = &cli.Command{
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
 
-		entries, err := dataprep.ExploreHandler(c.Context, db, uint32(id), c.Args().Get(1), c.Args().Get(2))
+		entries, err := dataprep.Default.ExploreHandler(c.Context, db, uint32(id), c.Args().Get(1), c.Args().Get(2))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, entries)
+		cliutil.Print(c, entries)
 		return nil
 	},
 }

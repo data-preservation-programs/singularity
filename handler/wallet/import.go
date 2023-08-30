@@ -43,7 +43,7 @@ func _() {}
 // Returns:
 // - A pointer to the created Wallet model if successful.
 // - An error, if any occurred during the operation.
-func ImportHandler(
+func (DefaultHandler) ImportHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,

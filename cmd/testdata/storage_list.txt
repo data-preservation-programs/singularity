@@ -1,0 +1,9 @@
+ID  Name   Type   Path  
+1   name1  local  path  
+    As Source: 
+        ID  DeleteAfterExport  MaxSize  PieceSize  
+        1   true               100      200        
+    As Output: 
+        ID  DeleteAfterExport  MaxSize  PieceSize  
+        2   true               300      400        
+2   name   local  path  

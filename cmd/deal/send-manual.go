@@ -153,11 +153,11 @@ Notes:
 			10*timeout,
 			timeout,
 		)
-		dealModel, err := deal.SendManualHandler(ctx, db, dealMaker, proposal)
+		dealModel, err := deal.Default.SendManualHandler(ctx, db, dealMaker, proposal)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, dealModel)
+		cliutil.Print(c, dealModel)
 		return nil
 	},
 }

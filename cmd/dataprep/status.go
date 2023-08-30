@@ -27,11 +27,11 @@ var StatusCmd = &cli.Command{
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
 
-		status, err := dataprep.GetStatusHandler(c.Context, db, uint32(id))
+		status, err := dataprep.Default.GetStatusHandler(c.Context, db, uint32(id))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, status)
+		cliutil.Print(c, status)
 		return nil
 	},
 }

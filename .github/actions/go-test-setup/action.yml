@@ -13,11 +13,12 @@ runs:
         restore-keys: |
           ${{ matrix.os }}-golang-${{ matrix.go }}-
     - name: Setup PostgreSQL database
-      uses: ikalnytskyi/action-setup-postgres@v4
+      uses: harmon758/postgresql-action@v1
       with:
-        username: 'singularity'
-        password: 'singularity'
-        database: 'singularity'
+        postgresql version: '14'
+        postgresql user: 'singularity'
+        postgresql password: 'singularity'
+        postgresql db: 'singularity'
     - name: Setup MySQL database
       uses: shogo82148/actions-setup-mysql@v1
       with:

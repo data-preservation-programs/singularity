@@ -17,12 +17,12 @@ var ListCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		wallets, err := wallet.ListHandler(c.Context, db)
+		wallets, err := wallet.Default.ListHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(c, wallets)
+		cliutil.Print(c, wallets)
 		return nil
 	},
 }

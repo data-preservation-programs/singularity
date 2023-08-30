@@ -48,13 +48,9 @@ var CreateCmd = &cli.Command{
 			Usage: "The target piece size of the CAR files used for piece commitment calculation",
 			Value: "32GiB",
 		},
-		&cli.StringSliceFlag{
-			Name:  "encryption-recipient",
-			Usage: "The public key of the encryption recipient",
-		},
 	},
 	Action: func(c *cli.Context) error {
-		db, closer, err := database.OpenInMemory()
+		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -79,18 +75,17 @@ var CreateCmd = &cli.Command{
 			outputStorages = append(outputStorages, output.Name)
 		}
 
-		prep, err := dataprep.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
-			SourceStorages:       sourceStorages,
-			OutputStorages:       outputStorages,
-			MaxSizeStr:           maxSizeStr,
-			PieceSizeStr:         pieceSizeStr,
-			EncryptionRecipients: c.StringSlice("encryption-recipient"),
+		prep, err := dataprep.Default.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
+			SourceStorages: sourceStorages,
+			OutputStorages: outputStorages,
+			MaxSizeStr:     maxSizeStr,
+			PieceSizeStr:   pieceSizeStr,
 		})
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, *prep)
 		return nil
 	},
 }
@@ -113,7 +108,7 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, sourcePath string
 			name = ""
 		}
 		name += "-" + randomReadableString(4)
-		existing, err = storage.CreateStorageHandler(
+		existing, err = storage.Default.CreateStorageHandler(
 			ctx,
 			db,
 			"local", storage.CreateRequest{

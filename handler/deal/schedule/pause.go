@@ -26,7 +26,7 @@ var pausableStates = []model.ScheduleState{
 // Returns:
 // - A pointer to the updated Schedule if successful.
 // - An error if there are issues during the operation, e.g., if the schedule is not found or already completed.
-func PauseHandler(
+func (DefaultHandler) PauseHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	scheduleID uint32,

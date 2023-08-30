@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	rand2 "math/rand"
+
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
@@ -17,6 +19,16 @@ func GenerateRandomBytes(n int) []byte {
 	return b
 }
 
+func RandomLetterString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyz"
+
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand2.Intn(len(charset))]
+	}
+	return string(b)
+}
+
 func GetFileTimestamp(t *testing.T, path string) int64 {
 	t.Helper()
 	info, err := os.Stat(path)
@@ -25,9 +37,6 @@ func GetFileTimestamp(t *testing.T, path string) int64 {
 }
 
 var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
-
-const TestRecipient = "age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"
-const TestSecretKey = "AGE-SECRET-KEY-1HZG3ESWDVPE3S4AM8WWCZG3H66A6RVJPXPZZEAC04FWZVT6RJ7XQAUV49J"
 
 // https://github.com/jsign/go-filsigner/blob/main/wallet/wallet_test.go
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	"github.com/cockroachdb/errors"
 	"github.com/urfave/cli/v2"
 )
 
@@ -18,7 +19,7 @@ var VersionCmd = &cli.Command{
 		}
 
 		version := buildInfo.Main.Version
-		if version == "(devel)" {
+		if version == "(devel)" || version == "" {
 			version = Version
 		}
 		var revision string
@@ -46,7 +47,9 @@ var VersionCmd = &cli.Command{
 		default:
 			modified = "-" + modified
 		}
-		fmt.Printf("singularity %s%s%s\n", version, revision, modified)
-		return nil
+		v := fmt.Sprintf("singularity %s%s%s\n", version, revision, modified)
+		_, err := context.App.Writer.Write([]byte(v))
+
+		return errors.WithStack(err)
 	},
 }

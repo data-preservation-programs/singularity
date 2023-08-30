@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/storagesystem"
@@ -74,6 +75,6 @@ var DownloadCmd = &cli.Command{
 			log.Logger("download").Info("Download complete")
 			return nil
 		}
-		return cli.Exit(err.Error(), 1)
+		return errors.WithStack(err)
 	},
 }

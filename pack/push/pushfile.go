@@ -106,28 +106,20 @@ func PushFile(
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			if attachment.Preparation.UseEncryption() {
+			offset := int64(0)
+			for {
+				length := splitSize
+				if file.Size-offset < length {
+					length = file.Size - offset
+				}
 				fileRanges = append(fileRanges, model.FileRange{
 					FileID: file.ID,
-					Offset: 0,
-					Length: file.Size,
+					Offset: offset,
+					Length: length,
 				})
-			} else {
-				offset := int64(0)
-				for {
-					length := splitSize
-					if file.Size-offset < length {
-						length = file.Size - offset
-					}
-					fileRanges = append(fileRanges, model.FileRange{
-						FileID: file.ID,
-						Offset: offset,
-						Length: length,
-					})
-					offset += length
-					if offset >= file.Size {
-						break
-					}
+				offset += length
+				if offset >= file.Size {
+					break
 				}
 			}
 			err = db.CreateInBatches(&fileRanges, util.BatchSize).Error

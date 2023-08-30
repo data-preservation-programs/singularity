@@ -1,11 +1,12 @@
-package util
+package packutil
 
 import (
 	"bytes"
 	"io"
 
 	"github.com/cockroachdb/errors"
-	util2 "github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util"
+	util2 "github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-ipld-format"
@@ -14,6 +15,12 @@ import (
 	"github.com/ipfs/go-unixfs/pb"
 	"github.com/multiformats/go-varint"
 )
+
+var EmptyFileCid = cid.NewCidV1(cid.Raw, util2.Hash([]byte("")))
+
+var EmptyFileVarint = varint.ToUvarint(uint64(len(EmptyFileCid.Bytes())))
+
+var EmptyCarHeader, _ = util.GenerateCarHeader(EmptyFileCid)
 
 const ChunkSize int64 = 1 << 20
 const NumLinkPerNode = 1024
@@ -128,7 +135,7 @@ func AssembleFileFromLinks(links []format.Link) ([]blocks.Block, *merkledag.Prot
 //   - []byte: The byte representation of the CAR header.
 //   - error: An error that can occur during the write process, or nil if the write was successful.
 func WriteCarHeader(writer io.Writer, root cid.Cid) ([]byte, error) {
-	headerBytes, err := util2.GenerateCarHeader(root)
+	headerBytes, err := util.GenerateCarHeader(root)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

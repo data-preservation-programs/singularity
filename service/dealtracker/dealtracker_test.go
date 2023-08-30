@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/bcicen/jstream"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 type Closer interface {
@@ -44,56 +45,53 @@ func TestDealTracker_Name(t *testing.T) {
 }
 
 func TestDealTracker_Start(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	tracker := NewDealTracker(db, time.Minute, "", "", "", true)
-	ctx, cancel := context.WithCancel(context.Background())
-	dones, _, err := tracker.Start(ctx)
-	require.NoError(t, err)
-	time.Sleep(time.Second)
-	cancel()
-	for _, done := range dones {
-		<-done
-	}
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tracker := NewDealTracker(db, time.Minute, "", "", "", true)
+		ctx, cancel := context.WithCancel(ctx)
+		dones, _, err := tracker.Start(ctx)
+		require.NoError(t, err)
+		time.Sleep(time.Second)
+		cancel()
+		for _, done := range dones {
+			<-done
+		}
+	})
 }
 
 func TestDealTracker_MultipleRunning_Once(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
-	tracker2 := NewDealTracker(db, time.Minute, "", "", "", true)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	dones, _, err := tracker1.Start(ctx)
-	require.NoError(t, err)
-	_, _, err2 := tracker2.Start(ctx)
-	require.ErrorIs(t, err2, ErrAlreadyRunning)
-	cancel()
-	for _, done := range dones {
-		<-done
-	}
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
+		tracker2 := NewDealTracker(db, time.Minute, "", "", "", true)
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		dones, _, err := tracker1.Start(ctx)
+		require.NoError(t, err)
+		_, _, err2 := tracker2.Start(ctx)
+		require.ErrorIs(t, err2, ErrAlreadyRunning)
+		cancel()
+		for _, done := range dones {
+			<-done
+		}
+	})
 }
 
 func TestDealTracker_MultipleRunning(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
-	tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	dones1, _, err := tracker1.Start(ctx)
-	require.NoError(t, err)
-	dones2, _, err2 := tracker2.Start(ctx)
-	require.ErrorIs(t, err2, context.DeadlineExceeded)
-	for _, done := range dones1 {
-		<-done
-	}
-	for _, done := range dones2 {
-		<-done
-	}
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tracker1 := NewDealTracker(db, time.Minute, "", "", "", false)
+		tracker2 := NewDealTracker(db, time.Minute, "", "", "", false)
+		ctx, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		dones1, _, err := tracker1.Start(ctx)
+		require.NoError(t, err)
+		dones2, _, err2 := tracker2.Start(ctx)
+		require.ErrorIs(t, err2, context.DeadlineExceeded)
+		for _, done := range dones1 {
+			<-done
+		}
+		for _, done := range dones2 {
+			<-done
+		}
+	})
 }
 
 func TestDealStateStreamFromHttpRequest_Compressed(t *testing.T) {
@@ -157,207 +155,206 @@ func TestTrackDeal(t *testing.T) {
 }
 
 func TestRunOnce(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Wallet{
-		ID:      "t0100",
-		Address: "t3xxx",
-	}).Error
-	require.NoError(t, err)
-	d1 := uint64(1)
-	d2 := uint64(2)
-	d4 := uint64(4)
-	d6 := uint64(6)
-	cid1 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid1"))))
-	cid2 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid2"))))
-	cid3 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid3"))))
-	cid4 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid4"))))
-	cid5 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid5"))))
-	cid6 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid6"))))
-	cid7 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid7"))))
-	err = db.Create([]model.Deal{
-		{
-			DealID:           &d1,
-			State:            model.DealActive,
-			ClientID:         "t0100",
-			Provider:         "sp1",
-			ProposalID:       "proposal1",
-			Label:            "label1",
-			PieceCID:         cid1,
-			PieceSize:        100,
-			StartEpoch:       100,
-			EndEpoch:         999999999,
-			SectorStartEpoch: 0,
-			Verified:         true,
-		},
-		{
-			DealID:           &d2,
-			State:            model.DealPublished,
-			ClientID:         "t0100",
-			Provider:         "sp1",
-			ProposalID:       "proposal2",
-			Label:            "label2",
-			PieceCID:         cid2,
-			PieceSize:        100,
-			StartEpoch:       100,
-			EndEpoch:         999999999,
-			SectorStartEpoch: 0,
-			Verified:         true,
-		},
-		{
-			State:            model.DealProposed,
-			ClientID:         "t0100",
-			Provider:         "sp1",
-			ProposalID:       "proposal3",
-			Label:            "label3",
-			PieceCID:         cid3,
-			PieceSize:        100,
-			StartEpoch:       999999998,
-			EndEpoch:         999999999,
-			SectorStartEpoch: 0,
-			Verified:         true,
-		},
-		{
-			DealID:           &d4,
-			State:            model.DealActive,
-			ClientID:         "t0100",
-			Provider:         "sp1",
-			ProposalID:       "proposal4",
-			Label:            "label4",
-			PieceCID:         cid4,
-			PieceSize:        100,
-			StartEpoch:       100,
-			EndEpoch:         200,
-			SectorStartEpoch: 100,
-			Verified:         true,
-		},
-		{
-			State:            model.DealActive,
-			ClientID:         "t0100",
-			Provider:         "sp1",
-			ProposalID:       "proposal5",
-			Label:            "label5",
-			PieceCID:         cid5,
-			PieceSize:        100,
-			StartEpoch:       100,
-			EndEpoch:         200,
-			SectorStartEpoch: 0,
-			Verified:         true,
-		},
-		{
-			DealID:           &d6,
-			State:            model.DealPublished,
-			ClientID:         "t0100",
-			Provider:         "sp1",
-			ProposalID:       "proposal6",
-			Label:            "label6",
-			PieceCID:         cid6,
-			PieceSize:        100,
-			StartEpoch:       100,
-			EndEpoch:         200,
-			SectorStartEpoch: 0,
-			Verified:         true,
-		},
-	}).Error
-	require.NoError(t, err)
-
-	// Deal 1 : Active -> Slashed
-	// Deal 2 : Published -> Active
-	// Deal 3 : Proposed -> Proposal_expired
-	// Deal 4 : Active -> Expired
-	// Deal 5 : Active -> Expired
-	// Deal 6 : Published -> Expired
-	deals := map[string]Deal{
-		"1": {
-			Proposal: DealProposal{
-				PieceCID:             Cid{Root: cid1.String()},
-				PieceSize:            100,
-				VerifiedDeal:         true,
-				Client:               "t0100",
-				Provider:             "sp1",
-				StartEpoch:           100,
-				EndEpoch:             999999999,
-				StoragePricePerEpoch: "0",
-				Label:                "label1",
-			},
-			State: DealState{
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Wallet{
+			ID:      "t0100",
+			Address: "t3xxx",
+		}).Error
+		require.NoError(t, err)
+		d1 := uint64(1)
+		d2 := uint64(2)
+		d4 := uint64(4)
+		d6 := uint64(6)
+		cid1 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid1"))))
+		cid2 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid2"))))
+		cid3 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid3"))))
+		cid4 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid4"))))
+		cid5 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid5"))))
+		cid6 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid6"))))
+		cid7 := model.CID(cid.NewCidV1(cid.Raw, util.Hash([]byte("cid7"))))
+		err = db.Create([]model.Deal{
+			{
+				DealID:           &d1,
+				State:            model.DealActive,
+				ClientID:         "t0100",
+				Provider:         "sp1",
+				ProposalID:       "proposal1",
+				Label:            "label1",
+				PieceCID:         cid1,
+				PieceSize:        100,
+				StartEpoch:       100,
+				EndEpoch:         999999999,
 				SectorStartEpoch: 0,
-				LastUpdatedEpoch: 999999999,
-				SlashEpoch:       100,
+				Verified:         true,
 			},
-		},
-		"2": {
-			Proposal: DealProposal{
-				PieceCID:             Cid{Root: cid2.String()},
-				PieceSize:            100,
-				VerifiedDeal:         true,
-				Client:               "t0100",
-				Provider:             "sp1",
-				StartEpoch:           100,
-				EndEpoch:             999999999,
-				StoragePricePerEpoch: "0",
-				Label:                "label2",
+			{
+				DealID:           &d2,
+				State:            model.DealPublished,
+				ClientID:         "t0100",
+				Provider:         "sp1",
+				ProposalID:       "proposal2",
+				Label:            "label2",
+				PieceCID:         cid2,
+				PieceSize:        100,
+				StartEpoch:       100,
+				EndEpoch:         999999999,
+				SectorStartEpoch: 0,
+				Verified:         true,
 			},
-			State: DealState{
-				SectorStartEpoch: 200,
-				LastUpdatedEpoch: -1,
-				SlashEpoch:       -1,
+			{
+				State:            model.DealProposed,
+				ClientID:         "t0100",
+				Provider:         "sp1",
+				ProposalID:       "proposal3",
+				Label:            "label3",
+				PieceCID:         cid3,
+				PieceSize:        100,
+				StartEpoch:       999999998,
+				EndEpoch:         999999999,
+				SectorStartEpoch: 0,
+				Verified:         true,
 			},
-		},
-		"3": {
-			Proposal: DealProposal{
-				PieceCID:             Cid{Root: cid3.String()},
-				PieceSize:            100,
-				VerifiedDeal:         true,
-				Client:               "t0100",
-				Provider:             "sp1",
-				StartEpoch:           999999998,
-				EndEpoch:             999999999,
-				StoragePricePerEpoch: "0",
-				Label:                "label3",
-			},
-			State: DealState{
-				SectorStartEpoch: -1,
-				LastUpdatedEpoch: -1,
-				SlashEpoch:       -1,
-			},
-		},
-		"7": {
-			Proposal: DealProposal{
-				PieceCID:             Cid{Root: cid7.String()},
-				PieceSize:            100,
-				VerifiedDeal:         true,
-				Client:               "t0100",
-				Provider:             "sp1",
-				StartEpoch:           100,
-				EndEpoch:             999999999,
-				StoragePricePerEpoch: "0",
-				Label:                "label7",
-			},
-			State: DealState{
+			{
+				DealID:           &d4,
+				State:            model.DealActive,
+				ClientID:         "t0100",
+				Provider:         "sp1",
+				ProposalID:       "proposal4",
+				Label:            "label4",
+				PieceCID:         cid4,
+				PieceSize:        100,
+				StartEpoch:       100,
+				EndEpoch:         200,
 				SectorStartEpoch: 100,
-				LastUpdatedEpoch: -1,
-				SlashEpoch:       -1,
+				Verified:         true,
 			},
-		},
-	}
-	body, err := json.Marshal(deals)
-	url, server := setupTestServerWithBody(t, string(body))
-	defer server.Close()
-	require.NoError(t, err)
-	tracker := NewDealTracker(db, time.Minute, url, "", "", true)
-	err = tracker.runOnce(context.Background())
-	require.NoError(t, err)
-	var allDeals []model.Deal
-	err = db.Find(&allDeals).Error
-	require.NoError(t, err)
-	require.Len(t, allDeals, 7)
-	require.Equal(t, model.DealSlashed, allDeals[0].State)
-	require.Equal(t, model.DealActive, allDeals[1].State)
-	require.Equal(t, model.DealProposalExpired, allDeals[2].State)
-	require.Equal(t, model.DealExpired, allDeals[3].State)
-	require.Equal(t, model.DealExpired, allDeals[4].State)
-	require.Equal(t, model.DealProposalExpired, allDeals[5].State)
-	require.Equal(t, model.DealActive, allDeals[6].State)
+			{
+				State:            model.DealActive,
+				ClientID:         "t0100",
+				Provider:         "sp1",
+				ProposalID:       "proposal5",
+				Label:            "label5",
+				PieceCID:         cid5,
+				PieceSize:        100,
+				StartEpoch:       100,
+				EndEpoch:         200,
+				SectorStartEpoch: 0,
+				Verified:         true,
+			},
+			{
+				DealID:           &d6,
+				State:            model.DealPublished,
+				ClientID:         "t0100",
+				Provider:         "sp1",
+				ProposalID:       "proposal6",
+				Label:            "label6",
+				PieceCID:         cid6,
+				PieceSize:        100,
+				StartEpoch:       100,
+				EndEpoch:         200,
+				SectorStartEpoch: 0,
+				Verified:         true,
+			},
+		}).Error
+		require.NoError(t, err)
+
+		// Deal 1 : Active -> Slashed
+		// Deal 2 : Published -> Active
+		// Deal 3 : Proposed -> Proposal_expired
+		// Deal 4 : Active -> Expired
+		// Deal 5 : Active -> Expired
+		// Deal 6 : Published -> Expired
+		deals := map[string]Deal{
+			"1": {
+				Proposal: DealProposal{
+					PieceCID:             Cid{Root: cid1.String()},
+					PieceSize:            100,
+					VerifiedDeal:         true,
+					Client:               "t0100",
+					Provider:             "sp1",
+					StartEpoch:           100,
+					EndEpoch:             999999999,
+					StoragePricePerEpoch: "0",
+					Label:                "label1",
+				},
+				State: DealState{
+					SectorStartEpoch: 0,
+					LastUpdatedEpoch: 999999999,
+					SlashEpoch:       100,
+				},
+			},
+			"2": {
+				Proposal: DealProposal{
+					PieceCID:             Cid{Root: cid2.String()},
+					PieceSize:            100,
+					VerifiedDeal:         true,
+					Client:               "t0100",
+					Provider:             "sp1",
+					StartEpoch:           100,
+					EndEpoch:             999999999,
+					StoragePricePerEpoch: "0",
+					Label:                "label2",
+				},
+				State: DealState{
+					SectorStartEpoch: 200,
+					LastUpdatedEpoch: -1,
+					SlashEpoch:       -1,
+				},
+			},
+			"3": {
+				Proposal: DealProposal{
+					PieceCID:             Cid{Root: cid3.String()},
+					PieceSize:            100,
+					VerifiedDeal:         true,
+					Client:               "t0100",
+					Provider:             "sp1",
+					StartEpoch:           999999998,
+					EndEpoch:             999999999,
+					StoragePricePerEpoch: "0",
+					Label:                "label3",
+				},
+				State: DealState{
+					SectorStartEpoch: -1,
+					LastUpdatedEpoch: -1,
+					SlashEpoch:       -1,
+				},
+			},
+			"7": {
+				Proposal: DealProposal{
+					PieceCID:             Cid{Root: cid7.String()},
+					PieceSize:            100,
+					VerifiedDeal:         true,
+					Client:               "t0100",
+					Provider:             "sp1",
+					StartEpoch:           100,
+					EndEpoch:             999999999,
+					StoragePricePerEpoch: "0",
+					Label:                "label7",
+				},
+				State: DealState{
+					SectorStartEpoch: 100,
+					LastUpdatedEpoch: -1,
+					SlashEpoch:       -1,
+				},
+			},
+		}
+		body, err := json.Marshal(deals)
+		url, server := setupTestServerWithBody(t, string(body))
+		defer server.Close()
+		require.NoError(t, err)
+		tracker := NewDealTracker(db, time.Minute, url, "", "", true)
+		err = tracker.runOnce(context.Background())
+		require.NoError(t, err)
+		var allDeals []model.Deal
+		err = db.Order("id asc").Find(&allDeals).Error
+		require.NoError(t, err)
+		require.Len(t, allDeals, 7)
+		require.Equal(t, model.DealSlashed, allDeals[0].State)
+		require.Equal(t, model.DealActive, allDeals[1].State)
+		require.Equal(t, model.DealProposalExpired, allDeals[2].State)
+		require.Equal(t, model.DealExpired, allDeals[3].State)
+		require.Equal(t, model.DealExpired, allDeals[4].State)
+		require.Equal(t, model.DealProposalExpired, allDeals[5].State)
+		require.Equal(t, model.DealActive, allDeals[6].State)
+	})
 }

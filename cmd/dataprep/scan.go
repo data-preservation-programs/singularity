@@ -26,11 +26,11 @@ var StartScanCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		job, err := dataprep.StartScanHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		job, err := dataprep.Default.StartScanHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, job)
+		cliutil.Print(c, job)
 		return nil
 	},
 }
@@ -51,11 +51,11 @@ var PauseScanCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		job, err := dataprep.PauseScanHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		job, err := dataprep.Default.PauseScanHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, job)
+		cliutil.Print(c, job)
 		return nil
 	},
 }

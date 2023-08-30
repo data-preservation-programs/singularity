@@ -13,13 +13,13 @@ import (
 )
 
 type DirEntry struct {
-	Path         string    `json:"path" cli:"normal"`
-	LastModified time.Time `json:"lastModified" cli:"verbose"`
-	Size         int64     `json:"size" cli:"normal"`
-	IsDir        bool      `json:"isDir" cli:"normal"`
-	DirID        string    `json:"dirId" cli:"verbose"`
-	NumItems     int64     `json:"numItems" cli:"verbose"`
-	Hash         string    `json:"hash" cli:"verbose"`
+	Path         string    `json:"path" `
+	LastModified time.Time `json:"lastModified" table:"format:2006-01-02 15:04:05"`
+	Size         int64     `json:"size" `
+	IsDir        bool      `json:"isDir"`
+	DirID        string    `json:"dirId" table:"verbose"`
+	NumItems     int64     `json:"numItems" table:"verbose"`
+	Hash         string    `json:"hash" table:"verbose"`
 }
 
 // ExploreHandler fetches directory entries (files and sub-directories) for a given storage system
@@ -40,7 +40,7 @@ type DirEntry struct {
 // Returns:
 // - A slice of DirEntry structs representing the entries in the explored directory.
 // - An error, if any occurred during the operation.
-func ExploreHandler(
+func (DefaultHandler) ExploreHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	name string,

@@ -17,12 +17,12 @@ var ListCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		schedules, err := schedule.ListHandler(c.Context, db)
+		schedules, err := schedule.Default.ListHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(c, schedules)
+		cliutil.Print(c, schedules)
 		return nil
 	},
 }

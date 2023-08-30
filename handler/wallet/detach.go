@@ -22,7 +22,7 @@ import (
 // Returns:
 // - A pointer to the updated Preparation instance.
 // - An error, if any occurred during the removal operation.
-func DetachHandler(
+func (DefaultHandler) DetachHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID uint32,

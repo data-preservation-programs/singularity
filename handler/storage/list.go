@@ -17,7 +17,7 @@ import (
 // Returns:
 // - A slice containing all Storage model entries found in the database.
 // - An error, if any occurred during the operation.
-func ListStoragesHandler(
+func (DefaultHandler) ListStoragesHandler(
 	ctx context.Context,
 	db *gorm.DB) ([]model.Storage, error) {
 	db = db.WithContext(ctx)

@@ -16,7 +16,7 @@ import (
 //
 // Returns:
 // - An error, if any occurred during the operation.
-func InitHandler(ctx context.Context, db *gorm.DB) error {
+func (DefaultHandler) InitHandler(ctx context.Context, db *gorm.DB) error {
 	db = db.WithContext(ctx)
 	err := model.AutoMigrate(db)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"
 	"gorm.io/gorm"
@@ -42,7 +42,7 @@ type PieceList struct {
 // Returns:
 // - A slice of PieceList, each representing a source attachment and its associated pieces.
 // - An error, if any occurred during the operation.
-func ListPiecesHandler(
+func (DefaultHandler) ListPiecesHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
@@ -126,7 +126,7 @@ func _() {}
 // Returns:
 // - A pointer to the newly created Car model.
 // - An error, if any occurred during the operation.
-func AddPieceHandler(
+func (DefaultHandler) AddPieceHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
@@ -156,7 +156,7 @@ func AddPieceHandler(
 	if (pieceSize & (pieceSize - 1)) != 0 {
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece size must be a power of 2")
 	}
-	rootCID := pack.EmptyFileCid
+	rootCID := packutil.EmptyFileCid
 	if request.RootCID != "" {
 		rootCID, err = cid.Parse(request.RootCID)
 		if err != nil {

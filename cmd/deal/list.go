@@ -41,7 +41,7 @@ var ListCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		deals, err := deal.ListHandler(c.Context, db, deal.ListDealRequest{
+		deals, err := deal.Default.ListHandler(c.Context, db, deal.ListDealRequest{
 			Preparations: underscore.Map(c.IntSlice("preparation"), func(i int) uint32 { return uint32(i) }),
 			Sources:      c.StringSlice("source"),
 			Schedules:    underscore.Map(c.IntSlice("schedules"), func(i int) uint32 { return uint32(i) }),
@@ -51,7 +51,7 @@ var ListCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, deals)
+		cliutil.Print(c, deals)
 		return nil
 	},
 }

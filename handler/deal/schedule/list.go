@@ -26,7 +26,7 @@ func _() {}
 // Returns:
 // - A slice of Schedule models if successful.
 // - An error if there are issues during the operation.
-func ListHandler(
+func (DefaultHandler) ListHandler(
 	ctx context.Context,
 	db *gorm.DB,
 ) ([]model.Schedule, error) {

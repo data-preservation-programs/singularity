@@ -22,7 +22,7 @@ import (
 // Returns:
 //   - An error, if any occurred during the operation. Returns a specific error
 //     if the storage is still in use or if the storage does not exist.
-func RemoveHandler(
+func (DefaultHandler) RemoveHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	name string) error {

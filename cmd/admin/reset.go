@@ -21,6 +21,6 @@ var ResetCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		return admin.ResetHandler(c.Context, db)
+		return admin.Default.ResetHandler(c.Context, db)
 	},
 }

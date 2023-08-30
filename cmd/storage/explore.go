@@ -20,11 +20,11 @@ var ExploreCmd = &cli.Command{
 		}
 		defer closer.Close()
 
-		entries, err := storage.ExploreHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
+		entries, err := storage.Default.ExploreHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, entries)
+		cliutil.Print(c, entries)
 		return nil
 	},
 }

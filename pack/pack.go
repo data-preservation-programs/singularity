@@ -6,12 +6,10 @@ import (
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
-	"github.com/data-preservation-programs/singularity/pack/encryption"
-	util3 "github.com/data-preservation-programs/singularity/pack/util"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
-	util2 "github.com/data-preservation-programs/singularity/util"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
-	"github.com/ipfs/boxo/util"
 	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -24,14 +22,7 @@ import (
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
-	"github.com/multiformats/go-varint"
 )
-
-var EmptyFileCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("")))
-
-var EmptyFileVarint = varint.ToUvarint(uint64(len(EmptyFileCid.Bytes())))
-
-var EmptyCarHeader, _ = util2.GenerateCarHeader(EmptyFileCid)
 
 var logger = log.Logger("pack")
 
@@ -92,7 +83,7 @@ func Pack(
 	ctx context.Context,
 	db *gorm.DB,
 	job model.Job,
-) ([]model.Car, error) {
+) (*model.Car, error) {
 	db = db.WithContext(ctx)
 	pieceSize := job.Attachment.Preparation.PieceSize
 	// storageWriter can be nil for inline preparation
@@ -106,64 +97,53 @@ func Pack(
 		return nil, errors.Wrapf(err, "failed to get storage handler for %s", job.Attachment.Storage.Name)
 	}
 
-	var encryptor encryption.Encryptor
-	if job.Attachment.Preparation.UseEncryption() {
-		encryptor, err = encryption.NewAgeEncryptor(job.Attachment.Preparation.EncryptionRecipients)
+	assembler := NewAssembler(ctx, storageReader, job.FileRanges)
+	defer assembler.Close()
+	var filename string
+	calc := &commp.Calc{}
+	var pieceCid cid.Cid
+	var finalPieceSize uint64
+	var fileSize int64
+	if storageWriter != nil {
+		reader := io.TeeReader(assembler, calc)
+		filename = uuid.NewString() + ".car"
+		obj, err := storageWriter.Write(ctx, filename, reader)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		fileSize = obj.Size()
+
+		pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		_, err = storageWriter.Move(ctx, obj, pieceCid.String()+".car")
+		if err != nil && !errors.Is(err, storagesystem.ErrMoveNotSupported) {
+			logger.Errorf("failed to move car file from %s to %s: %s", filename, pieceCid.String()+".car", err)
+		}
+		if err == nil {
+			filename = pieceCid.String() + ".car"
+		}
+	} else {
+		fileSize, err = io.Copy(calc, assembler)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 	}
-	assembler := NewAssembler(ctx, storageReader, encryptor, job.FileRanges, job.Attachment.Preparation.MaxSize)
-	defer assembler.Close()
-	var cars []model.Car
-	var numCarBlocks []int
-	for assembler.Next() {
-		var filename string
-		calc := &commp.Calc{}
-		var pieceCid cid.Cid
-		var finalPieceSize uint64
-		var fileSize int64
-		if storageWriter != nil {
-			reader := io.TeeReader(assembler, calc)
-			filename = uuid.NewString() + ".car"
-			obj, err := storageWriter.Write(ctx, filename, reader)
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			fileSize = obj.Size()
-
-			pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			_, err = storageWriter.Move(ctx, obj, pieceCid.String()+".car")
-			if err != nil && !errors.Is(err, storagesystem.ErrMoveNotSupported) {
-				logger.Errorf("failed to move car file from %s to %s: %s", filename, pieceCid.String()+".car", err)
-			}
-			if err == nil {
-				filename = pieceCid.String() + ".car"
-			}
-		} else {
-			fileSize, err = io.Copy(calc, assembler)
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-			pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
-			if err != nil {
-				return nil, errors.WithStack(err)
-			}
-		}
-		cars = append(cars, model.Car{
-			PieceCID:      model.CID(pieceCid),
-			PieceSize:     int64(finalPieceSize),
-			RootCID:       model.CID(EmptyFileCid),
-			FileSize:      fileSize,
-			StorageID:     storageID,
-			StoragePath:   filename,
-			AttachmentID:  &job.AttachmentID,
-			PreparationID: job.Attachment.PreparationID,
-		})
-		numCarBlocks = append(numCarBlocks, len(assembler.carBlocks))
+	car := &model.Car{
+		PieceCID:      model.CID(pieceCid),
+		PieceSize:     int64(finalPieceSize),
+		RootCID:       model.CID(packutil.EmptyFileCid),
+		FileSize:      fileSize,
+		StorageID:     storageID,
+		StoragePath:   filename,
+		AttachmentID:  &job.AttachmentID,
+		PreparationID: job.Attachment.PreparationID,
+		JobID:         &job.ID,
 	}
 
 	// Update all FileRange and file CID that are not split
@@ -211,7 +191,7 @@ func Pack(
 							Cid:  cid.Cid(p.CID),
 						}
 					})
-					blks, node, err := util3.AssembleFileFromLinks(links)
+					blks, node, err := packutil.AssembleFileFromLinks(links)
 					if err != nil {
 						return errors.Wrap(err, "failed to assemble file from links")
 					}
@@ -236,18 +216,14 @@ func Pack(
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
-				j := 0
-				for i, n := range numCarBlocks {
-					car := cars[i]
-					err := db.Create(&car).Error
-					if err != nil {
-						return errors.WithStack(err)
-					}
-					for ; j < n; j++ {
-						assembler.carBlocks[j].CarID = car.ID
-					}
+				err := db.Create(&car).Error
+				if err != nil {
+					return errors.WithStack(err)
 				}
-				err = db.CreateInBatches(assembler.carBlocks, util2.BatchSize).Error
+				for j, _ := range assembler.carBlocks {
+					assembler.carBlocks[j].CarID = car.ID
+				}
+				err = db.CreateInBatches(assembler.carBlocks, util.BatchSize).Error
 				if err != nil {
 					return errors.WithStack(err)
 				}
@@ -349,5 +325,5 @@ func Pack(
 		}
 	}
 
-	return cars, nil
+	return car, nil
 }

@@ -152,6 +152,6 @@ func MigrateSchedule(c *cli.Context) error {
 		return errors.Wrap(err, "failed to create schedules")
 	}
 
-	cliutil.PrintToConsole(c, schedules)
+	cliutil.Print(c, schedules)
 	return nil
 }

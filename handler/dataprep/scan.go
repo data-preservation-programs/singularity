@@ -96,7 +96,7 @@ func StartJobHandler(
 	return &job, errors.WithStack(err)
 }
 
-func StartScanHandler(
+func (DefaultHandler) StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
@@ -163,7 +163,7 @@ func PauseJobHandler(
 	return &job, errors.WithStack(err)
 }
 
-func PauseScanHandler(
+func (DefaultHandler) PauseScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,

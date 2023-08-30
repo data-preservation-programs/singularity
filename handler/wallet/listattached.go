@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListAttachedHandler(
+func (DefaultHandler) ListAttachedHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	preparationID uint32,

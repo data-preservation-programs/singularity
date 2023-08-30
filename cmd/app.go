@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,7 +20,6 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
-	"github.com/mattn/go-shellwords"
 	"github.com/rclone/rclone/lib/terminal"
 	"github.com/urfave/cli/v2"
 )
@@ -266,72 +264,4 @@ func SetupHelpPager() {
 		pagerIn.Close()
 		cmd.Wait()
 	}
-}
-
-func RunArgsInTestNoCapture(ctx context.Context, args string) error {
-	App.ExitErrHandler = func(c *cli.Context, err error) {
-	}
-	parser := shellwords.NewParser()
-	parser.ParseEnv = true // Enable environment variable parsing
-	parsedArgs, err := parser.Parse(args)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	return App.RunContext(ctx, parsedArgs)
-}
-
-func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
-	App.ExitErrHandler = func(c *cli.Context, err error) {
-	}
-	parser := shellwords.NewParser()
-	parser.ParseEnv = true // Enable environment variable parsing
-	parsedArgs, err := parser.Parse(args)
-	if err != nil {
-		return "", "", errors.WithStack(err)
-	}
-
-	// Create pipes
-	rOut, wOut, _ := os.Pipe()
-	rErr, wErr, _ := os.Pipe()
-
-	// Save current stdout and stderr
-	oldOut := os.Stdout
-	oldErr := os.Stderr
-	oldAppWriterOut := App.Writer
-	oldAppWriterErr := App.ErrWriter
-	defer func() {
-		os.Stdout = oldOut
-		os.Stderr = oldErr
-		App.Writer = oldAppWriterOut
-		App.ErrWriter = oldAppWriterErr
-	}()
-
-	// Overwrite the stdout and stderr
-	os.Stdout = wOut
-	os.Stderr = wErr
-	App.Writer = wOut
-	App.ErrWriter = wErr
-
-	outC := make(chan string) // Buffered to prevent goroutine leak
-	errC := make(chan string)
-	go func() {
-		out, _ := io.ReadAll(rOut)
-		outC <- string(out)
-	}()
-	go func() {
-		out, _ := io.ReadAll(rErr)
-		errC <- string(out)
-	}()
-
-	err = App.RunContext(ctx, parsedArgs)
-
-	// Close the pipes
-	wOut.Close()
-	wErr.Close()
-
-	// Wait for the output from the goroutines
-	outputOut := <-outC
-	outputErr := <-errC
-
-	return outputOut, outputErr, errors.WithStack(err)
 }

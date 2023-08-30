@@ -22,7 +22,7 @@ var ImportCmd = &cli.Command{
 		defer closer.Close()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		w, err := wallet.ImportHandler(
+		w, err := wallet.Default.ImportHandler(
 			c.Context,
 			db,
 			lotusClient,
@@ -33,7 +33,7 @@ var ImportCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(c, w)
+		cliutil.Print(c, w)
 		return nil
 	},
 }

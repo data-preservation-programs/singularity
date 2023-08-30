@@ -20,7 +20,7 @@ import (
 // Returns:
 // - A pointer to the model.Job record that was initiated.
 // - An error, if any occurred during the operation.
-func StartDagGenHandler(
+func (DefaultHandler) StartDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
@@ -53,7 +53,7 @@ func _() {}
 // Returns:
 // - A pointer to the model.Job record that was paused.
 // - An error, if any occurred during the operation.
-func PauseDagGenHandler(
+func (DefaultHandler) PauseDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,

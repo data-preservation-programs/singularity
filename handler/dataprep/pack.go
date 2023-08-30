@@ -33,7 +33,7 @@ var pausableStatesForPack = []model.JobState{model.Processing, model.Ready}
 //   - A slice of model.Job records that were started.
 //   - An error, if any occurred during the database transaction or if the job doesn't exist,
 //     or if the job is not in a startable state.
-func StartPackHandler(
+func (DefaultHandler) StartPackHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,
@@ -162,7 +162,7 @@ func _() {}
 //   - A slice of model.Job records that were paused.
 //   - An error, if any occurred during the database transaction, if the job doesn't exist,
 //     or if the job is not in a pausable state.
-func PausePackHandler(
+func (DefaultHandler) PausePackHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,

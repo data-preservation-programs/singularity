@@ -62,7 +62,7 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 			config[flagName] = c.String(flagName)
 		}
 	}
-	s, err := storage.CreateStorageHandler(c.Context, db, storageType, storage.CreateRequest{
+	s, err := storage.Default.CreateStorageHandler(c.Context, db, storageType, storage.CreateRequest{
 		Provider: provider,
 		Name:     name,
 		Path:     path,
@@ -71,6 +71,6 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	cliutil.PrintToConsole(c, s)
+	cliutil.Print(c, s)
 	return nil
 }

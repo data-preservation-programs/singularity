@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rclone/rclone/backend/s3"
 	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/fs/config/configmap"
 	"github.com/rclone/rclone/fs/hash"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,9 @@ func TestIsSameEntry(t *testing.T) {
 	ctx := context.Background()
 	mockObject := new(MockObject)
 	mockObject.On("Size").Return(int64(5))
-	mockObject.On("Fs").Return(&s3.Fs{})
+	s3fs, err := s3.NewFs(ctx, "s3", "commoncrawl", configmap.Simple{"chunk_size": "5Mi"})
+	require.NoError(t, err)
+	mockObject.On("Fs").Return(s3fs)
 	mockObject.On("Hash", mock.Anything, mock.Anything).Return("hash", nil)
 	tm := time.Now()
 	mockObject.On("ModTime", mock.Anything).Return(tm)
@@ -130,10 +133,10 @@ func TestGetRandomOutputWriter(t *testing.T) {
 		Path: t.TempDir(),
 	}
 	s3 := model.Storage{
-		ID:       3,
-		Type:     "s3",
-		Path:     "commoncrawl",
-		Metadata: map[string]string{"chunk_size": "5MiB"},
+		ID:     3,
+		Type:   "s3",
+		Path:   "commoncrawl",
+		Config: map[string]string{"chunk_size": "5Mi"},
 	}
 	t.Run("no storages", func(t *testing.T) {
 		id, writer, err := GetRandomOutputWriter(ctx, []model.Storage{})

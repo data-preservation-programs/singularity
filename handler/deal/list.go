@@ -36,7 +36,7 @@ type ListDealRequest struct {
 // Returns:
 // - A slice of model.Deal objects matching the filtering criteria.
 // - An error indicating any issues that occurred during the database operation.
-func ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
+func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB, request ListDealRequest) ([]model.Deal, error) {
 	db = db.WithContext(ctx)
 	var deals []model.Deal
 	statement := db

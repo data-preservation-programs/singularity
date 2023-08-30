@@ -7,8 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack/encryption"
-	util2 "github.com/data-preservation-programs/singularity/pack/util"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/gotidy/ptr"
@@ -23,7 +22,7 @@ import (
 var ErrFileModified = errors.New("file has been modified")
 
 // Assembler assembles various objects and data streams into a coherent output stream.
-// It uses the provided encryption, file ranges, and internal buffers to produce the desired output.
+// It uses the provided file ranges, and internal buffers to produce the desired output.
 type Assembler struct {
 	// objects represents a map of object IDs to their corresponding fs.Object representations.
 	objects map[uint64]fs.Object
@@ -31,22 +30,16 @@ type Assembler struct {
 	ctx context.Context
 	// reader is the storage system reader used to read file data.
 	reader storagesystem.Reader
-	// encryptor handles the encryption of the data if needed.
-	encryptor encryption.Encryptor
 	// fileRanges contains the ranges of the files that should be read and processed.
 	fileRanges []model.FileRange
 	// index is the current position in the fileRanges slice.
 	index int
 	// buffer is a reader that holds data that's ready to be read out.
 	buffer io.Reader
-	// fileReader reads the actual content from files.
-	fileReader io.Reader
-	// closers contains a list of io.Closers that need to be closed.
-	closers []io.Closer
+	// fileReadCloser reads the actual content from files.
+	fileReadCloser io.ReadCloser
 	// buf is a buffer for temporarily holding data.
 	buf []byte
-	// maxSize defines the maximum size of the output.
-	maxSize int64
 	// fileOffset tracks the offset into the current file being read.
 	fileOffset int64
 	// carOffset tracks the offset within a CAR (Content Addressable Archive).
@@ -55,50 +48,32 @@ type Assembler struct {
 	pendingLinks []format.Link
 	// carBlocks is a slice of CAR blocks that are used in the assembly process.
 	carBlocks []model.CarBlock
-	// hasBoundary indicates if a boundary exists in the CAR.
-	hasBoundary bool
 	// assembleLinkFor is a pointer to the index in fileRanges for which links need to be assembled.
 	assembleLinkFor *int
 }
 
 // Close closes the assembler and all of its underlying readers
 func (a *Assembler) Close() error {
-	var errs []error
-	for _, closer := range a.closers {
-		err := closer.Close()
+	if a.fileReadCloser != nil {
+		err := a.fileReadCloser.Close()
 		if err != nil {
-			errs = append(errs, err)
+			return errors.WithStack(err)
 		}
-	}
-	a.closers = nil
-	if len(errs) > 0 {
-		return util.AggregateError{Errors: errs}
+		a.fileReadCloser = nil
 	}
 	return nil
 }
 
 // NewAssembler initializes a new Assembler instance with the given parameters.
-func NewAssembler(ctx context.Context, reader storagesystem.Reader, encryptor encryption.Encryptor,
-	fileRanges []model.FileRange, maxSize int64) *Assembler {
+func NewAssembler(ctx context.Context, reader storagesystem.Reader,
+	fileRanges []model.FileRange) *Assembler {
 	return &Assembler{
 		ctx:        ctx,
 		reader:     reader,
-		encryptor:  encryptor,
 		fileRanges: fileRanges,
-		buf:        make([]byte, util2.ChunkSize),
-		maxSize:    maxSize,
+		buf:        make([]byte, packutil.ChunkSize),
 		objects:    make(map[uint64]fs.Object),
 	}
-}
-
-// Next checks if there are more chunks to read from the fileRanges or buffer.
-// This method should only be called after hitting an io.EOF.
-func (a *Assembler) Next() bool {
-	if a.index >= len(a.fileRanges) && a.buffer == nil {
-		return false
-	}
-
-	return true
 }
 
 // readBuffer reads data from the internal buffer, handling buffer-related flags and states.
@@ -109,12 +84,7 @@ func (a *Assembler) readBuffer(p []byte) (int, error) {
 	switch err {
 	case io.EOF:
 		a.buffer = nil
-		if !a.hasBoundary {
-			err = nil
-		} else {
-			a.hasBoundary = false
-		}
-		return n, err
+		return n, nil
 	case nil:
 		return n, nil
 	default:
@@ -126,7 +96,7 @@ func (a *Assembler) readBuffer(p []byte) (int, error) {
 func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 	var readers []io.Reader
 	if a.carOffset == 0 {
-		rootCid := EmptyFileCid
+		rootCid := packutil.EmptyFileCid
 		if len(carBlocks) > 0 {
 			rootCid = cid.Cid(carBlocks[0].CID)
 		}
@@ -147,11 +117,6 @@ func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 
 	a.buffer = io.MultiReader(readers...)
 
-	if a.carOffset > a.maxSize {
-		a.hasBoundary = true
-		a.carOffset = 0
-	}
-
 	return nil
 }
 
@@ -168,7 +133,7 @@ func (a *Assembler) assembleLinks() error {
 		return nil
 	}
 
-	blks, rootNode, err := util2.AssembleFileFromLinks(a.pendingLinks)
+	blks, rootNode, err := packutil.AssembleFileFromLinks(a.pendingLinks)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -199,7 +164,7 @@ func (a *Assembler) assembleLinks() error {
 // It might return without populating the buffer if there's no more data to read.
 func (a *Assembler) prefetch() error {
 	firstChunk := false
-	if a.fileReader == nil {
+	if a.fileReadCloser == nil {
 		fileRange := a.fileRanges[a.index]
 		readCloser, obj, err := a.reader.Read(a.ctx, fileRange.File.Path, fileRange.Offset, fileRange.Length)
 		if err != nil {
@@ -210,29 +175,20 @@ func (a *Assembler) prefetch() error {
 			return errors.Wrapf(ErrFileModified, "fileRange has been modified: %s, %s", fileRange.File.Path, detail)
 		}
 		a.objects[fileRange.File.ID] = obj
-		a.fileReader = readCloser
+		a.fileReadCloser = readCloser
 		a.fileOffset = fileRange.Offset
-		a.closers = append(a.closers, readCloser)
-		if a.encryptor != nil {
-			encryptStream, err := a.encryptor.Encrypt(readCloser)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			a.fileReader = encryptStream
-			a.closers = append(a.closers, encryptStream)
-		}
 		firstChunk = true
 		a.pendingLinks = nil
 	}
 
 	hasher := sha256.New()
-	reader := io.TeeReader(a.fileReader, hasher)
+	reader := io.TeeReader(a.fileReadCloser, hasher)
 	n, err := io.ReadFull(reader, a.buf)
 
 	// Last empty chunk of a file
 	if err == io.EOF && !firstChunk {
 		a.assembleLinkFor = ptr.Of(a.index)
-		a.fileReader = nil
+		a.fileReadCloser = nil
 		a.Close()
 		a.index++
 		return nil
@@ -243,8 +199,8 @@ func (a *Assembler) prefetch() error {
 		var cidValue cid.Cid
 		var vint []byte
 		if err == io.EOF {
-			cidValue = EmptyFileCid
-			vint = EmptyFileVarint
+			cidValue = packutil.EmptyFileCid
+			vint = packutil.EmptyFileVarint
 		} else {
 			sum := hasher.Sum(nil)
 			mh, err2 := multihash.Encode(sum, multihash.SHA2_256)
@@ -255,12 +211,11 @@ func (a *Assembler) prefetch() error {
 			vint = varint.ToUvarint(uint64(cidValue.ByteLen() + n))
 		}
 		carBlocks := []model.CarBlock{{
-			CID:           model.CID(cidValue),
-			RawBlock:      a.buf[:n],
-			Varint:        vint,
-			FileOffset:    a.fileOffset,
-			FileEncrypted: a.encryptor != nil,
-			FileID:        &a.fileRanges[a.index].FileID,
+			CID:        model.CID(cidValue),
+			RawBlock:   a.buf[:n],
+			Varint:     vint,
+			FileOffset: a.fileOffset,
+			FileID:     &a.fileRanges[a.index].FileID,
 		}}
 		err2 := a.populateBuffer(carBlocks)
 		if err2 != nil {
@@ -280,7 +235,7 @@ func (a *Assembler) prefetch() error {
 
 		a.assembleLinkFor = ptr.Of(a.index)
 		a.Close()
-		a.fileReader = nil
+		a.fileReadCloser = nil
 		a.index++
 
 		return nil

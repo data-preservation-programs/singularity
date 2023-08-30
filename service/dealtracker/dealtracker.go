@@ -299,7 +299,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		defer close(runDone)
 		for {
 			err := d.runOnce(ctx)
-			if err != nil {
+			if err != nil && ctx.Err() == nil {
 				Logger.Errorw("failed to run once", "error", err)
 			}
 			if d.once {

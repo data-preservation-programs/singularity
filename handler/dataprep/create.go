@@ -3,7 +3,6 @@ package dataprep
 import (
 	"context"
 
-	"filippo.io/age"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -14,11 +13,10 @@ import (
 )
 
 type CreateRequest struct {
-	SourceStorages       []string `json:"sourceStorages"       validate:"required"`                     // Name of Source storage systems to be used for the source
-	OutputStorages       []string `json:"outputStorages"       validate:"optional"`                     // Name of Output storage systems to be used for the output
-	MaxSizeStr           string   `default:"31.5GiB"           json:"maxSize"      validate:"required"` // Maximum size of the CAR files to be created
-	PieceSizeStr         string   `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
-	EncryptionRecipients []string `json:"encryptionRecipients" validate:"optional"`                     // Public key of the encryption recipient
+	SourceStorages []string `json:"sourceStorages"       validate:"required"`                     // Name of Source storage systems to be used for the source
+	OutputStorages []string `json:"outputStorages"       validate:"optional"`                     // Name of Output storage systems to be used for the output
+	MaxSizeStr     string   `default:"31.5GiB"           json:"maxSize"      validate:"required"` // Maximum size of the CAR files to be created
+	PieceSizeStr   string   `default:""                  json:"pieceSize"    validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.
@@ -67,15 +65,6 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "maxSize needs to be reduced to leave space for padding")
 	}
 
-	if len(request.EncryptionRecipients) > 0 && len(request.OutputStorages) == 0 {
-		return nil, errors.Wrap(handlererror.ErrInvalidParameter,
-			"encryption is not compatible with inline preparation and requires at least one output storage")
-	}
-
-	if len(request.SourceStorages) == 0 {
-		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "at least one source storage must be specified")
-	}
-
 	var sources []model.Storage
 	for _, name := range request.SourceStorages {
 		var source model.Storage
@@ -102,19 +91,11 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		outputs = append(outputs, output)
 	}
 
-	for _, recipient := range request.EncryptionRecipients {
-		_, err = age.ParseX25519Recipient(recipient)
-		if err != nil {
-			return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "failed to parse recipient %s", recipient))
-		}
-	}
-
 	return &model.Preparation{
-		MaxSize:              int64(maxSize),
-		PieceSize:            int64(pieceSize),
-		EncryptionRecipients: request.EncryptionRecipients,
-		SourceStorages:       sources,
-		OutputStorages:       outputs,
+		MaxSize:        int64(maxSize),
+		PieceSize:      int64(pieceSize),
+		SourceStorages: sources,
+		OutputStorages: outputs,
 	}, nil
 }
 
@@ -134,7 +115,7 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 // Note:
 // This function relies on the ValidateCreateRequest function to ensure that the provided
 // parameters meet the required criteria before creating a Preparation record.
-func CreatePreparationHandler(
+func (DefaultHandler) CreatePreparationHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	request CreateRequest,

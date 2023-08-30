@@ -4,15 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestInitHandler(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	defer model.DropAll(db)
-	require.NoError(t, InitHandler(context.Background(), db))
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		require.NoError(t, Default.InitHandler(ctx, db))
+	})
 }

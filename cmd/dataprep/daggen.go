@@ -26,11 +26,11 @@ var StartDagGenCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		job, err := dataprep.StartDagGenHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		job, err := dataprep.Default.StartDagGenHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, job)
+		cliutil.Print(c, job)
 		return nil
 	},
 }
@@ -51,11 +51,11 @@ var PauseDagGenCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		job, err := dataprep.PauseDagGenHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		job, err := dataprep.Default.PauseDagGenHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, job)
+		cliutil.Print(c, job)
 		return nil
 	},
 }

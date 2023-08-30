@@ -8,10 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
-	"github.com/data-preservation-programs/singularity/pack/util"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/google/uuid"
 	blocks "github.com/ipfs/go-block-format"
@@ -19,6 +17,7 @@ import (
 	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/rand"
+	"gorm.io/gorm"
 )
 
 func TestScan(t *testing.T) {
@@ -41,92 +40,43 @@ func TestScan(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	thread := &Thread{
-		id:          uuid.New(),
-		dbNoContext: db,
-		logger:      log.Logger("test").With("test", true),
-	}
-	job := model.Job{
-		Type:  model.Scan,
-		State: model.Ready,
-		Attachment: &model.SourceAttachment{
-			Preparation: &model.Preparation{
-				MaxSize: 2_000_000,
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		thread := &Thread{
+			id:          uuid.New(),
+			dbNoContext: db,
+			logger:      log.Logger("test").With("test", true),
+		}
+		job := model.Job{
+			Type:  model.Scan,
+			State: model.Ready,
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{
+					MaxSize: 2_000_000,
+				},
+				Storage: &model.Storage{
+					Type: "local",
+					Path: tmp,
+				},
 			},
-			Storage: &model.Storage{
-				Type: "local",
-				Path: tmp,
-			},
-		},
-	}
-	require.NoError(t, err)
-	err = db.Create(&job).Error
-	dir := model.Directory{
-		AttachmentID: 1,
-	}
-	err = db.Create(&dir).Error
-	require.NoError(t, err)
-	err = thread.scan(context.Background(), job)
-	require.NoError(t, err)
+		}
+		err := db.Create(&job).Error
+		dir := model.Directory{
+			AttachmentID: 1,
+		}
+		err = db.Create(&dir).Error
+		require.NoError(t, err)
+		err = thread.scan(ctx, job)
+		require.NoError(t, err)
 
-	var dirs []model.Directory
-	err = db.Find(&dirs).Error
-	require.NoError(t, err)
-	require.Len(t, dirs, 4)
-	var jobs []model.Job
-	err = db.Preload("FileRanges").Find(&jobs).Error
-	require.NoError(t, err)
-	require.Len(t, jobs, 13)
-}
-
-func TestScan_WithEncryption(t *testing.T) {
-	tmp := t.TempDir()
-	err := os.WriteFile(filepath.Join(tmp, "16m.bin"), testutil.GenerateRandomBytes(16<<20), 0644)
-	require.NoError(t, err)
-
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	thread := &Thread{
-		id:          uuid.New(),
-		dbNoContext: db,
-		logger:      log.Logger("test").With("test", true),
-	}
-	job := model.Job{
-		Type:  model.Scan,
-		State: model.Ready,
-		Attachment: &model.SourceAttachment{
-			Preparation: &model.Preparation{
-				MaxSize:              2_000_000,
-				EncryptionRecipients: []string{"aa"},
-			},
-			Storage: &model.Storage{
-				Type: "local",
-				Path: tmp,
-			},
-		},
-	}
-	require.NoError(t, err)
-	err = db.Create(&job).Error
-	dir := model.Directory{
-		AttachmentID: 1,
-	}
-	err = db.Create(&dir).Error
-	require.NoError(t, err)
-	err = thread.scan(context.Background(), job)
-	require.NoError(t, err)
-
-	var dirs []model.Directory
-	err = db.Find(&dirs).Error
-	require.NoError(t, err)
-	require.Len(t, dirs, 1)
-	var jobs []model.Job
-	err = db.Preload("FileRanges").Find(&jobs).Error
-	require.NoError(t, err)
-	require.Len(t, jobs, 2)
+		var dirs []model.Directory
+		err = db.Find(&dirs).Error
+		require.NoError(t, err)
+		require.Len(t, dirs, 4)
+		var jobs []model.Job
+		err = db.Preload("FileRanges").Find(&jobs).Error
+		require.NoError(t, err)
+		require.Len(t, jobs, 13)
+	})
 }
 
 func TestToCarSize(t *testing.T) {
@@ -163,9 +113,9 @@ func toCarSizeExpensive(t *testing.T, size int64) int64 {
 	written := int64(0)
 	writer := bytes.NewBuffer(nil)
 	if size == 0 {
-		blk, err := blocks.NewBlockWithCid([]byte{}, pack.EmptyFileCid)
+		blk, err := blocks.NewBlockWithCid([]byte{}, packutil.EmptyFileCid)
 		require.NoError(t, err)
-		n, err := util.WriteCarBlock(writer, blk)
+		n, err := packutil.WriteCarBlock(writer, blk)
 		require.NoError(t, err)
 		written += n
 		return written
@@ -173,13 +123,13 @@ func toCarSizeExpensive(t *testing.T, size int64) int64 {
 
 	var links []format.Link
 	for size > 0 {
-		blkSize := util.ChunkSize
-		if size < util.ChunkSize {
+		blkSize := packutil.ChunkSize
+		if size < packutil.ChunkSize {
 			blkSize = size
 		}
-		blk, err := blocks.NewBlockWithCid(make([]byte, blkSize), pack.EmptyFileCid)
+		blk, err := blocks.NewBlockWithCid(make([]byte, blkSize), packutil.EmptyFileCid)
 		require.NoError(t, err)
-		n, err := util.WriteCarBlock(writer, blk)
+		n, err := packutil.WriteCarBlock(writer, blk)
 		require.NoError(t, err)
 		written += n
 		links = append(links, format.Link{
@@ -190,10 +140,10 @@ func toCarSizeExpensive(t *testing.T, size int64) int64 {
 	}
 
 	if len(links) > 1 {
-		blks, _, err := util.AssembleFileFromLinks(links)
+		blks, _, err := packutil.AssembleFileFromLinks(links)
 		require.NoError(t, err)
 		for _, blk := range blks {
-			n, err := util.WriteCarBlock(writer, blk)
+			n, err := packutil.WriteCarBlock(writer, blk)
 			require.NoError(t, err)
 			written += n
 		}

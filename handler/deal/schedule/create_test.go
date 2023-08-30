@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/ybbus/jsonrpc/v3"
+	"gorm.io/gorm"
 )
 
 type MockRPCClient struct {
@@ -74,175 +75,162 @@ var createRequest = CreateRequest{
 }
 
 func TestCreateHandler_DatasetNotFound(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
-	require.ErrorIs(t, err, handlererror.ErrNotFound)
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		require.ErrorIs(t, err, handlererror.ErrNotFound)
+	})
 }
 
 func TestCreateHandler_InvalidStartDelay(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	require.NoError(t, db.Create(&model.Preparation{}).Error)
-	badRequest := createRequest
-	badRequest.StartDelay = "1year"
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid start delay")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		require.NoError(t, db.Create(&model.Preparation{}).Error)
+		badRequest := createRequest
+		badRequest.StartDelay = "1year"
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid start delay")
+	})
 }
 
 func TestCreateHandler_InvalidDuration(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	require.NoError(t, db.Create(&model.Preparation{}).Error)
-	badRequest := createRequest
-	badRequest.Duration = "1year"
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid duration")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		require.NoError(t, db.Create(&model.Preparation{}).Error)
+		badRequest := createRequest
+		badRequest.Duration = "1year"
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid duration")
+	})
 }
 
 func TestCreateHandler_InvalidScheduleInterval(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	require.NoError(t, db.Create(&model.Preparation{}).Error)
-	badRequest := createRequest
-	badRequest.ScheduleCron = "1year"
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid schedule cron")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		require.NoError(t, db.Create(&model.Preparation{}).Error)
+		badRequest := createRequest
+		badRequest.ScheduleCron = "1year"
+		_, err := Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid schedule cron")
+	})
 }
 
 func TestCreateHandler_InvalidScheduleDealSize(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{}).Error
-	require.NoError(t, err)
-	badRequest := createRequest
-	badRequest.ScheduleDealSize = "One PB"
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid schedule deal size")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{}).Error
+		require.NoError(t, err)
+		badRequest := createRequest
+		badRequest.ScheduleDealSize = "One PB"
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid schedule deal size")
+	})
 }
 
 func TestCreateHandler_InvalidTotalDealSize(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{}).Error
-	require.NoError(t, err)
-	badRequest := createRequest
-	badRequest.TotalDealSize = "One PB"
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid total deal size")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{}).Error
+		require.NoError(t, err)
+		badRequest := createRequest
+		badRequest.TotalDealSize = "One PB"
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid total deal size")
+	})
 }
 
 func TestCreateHandler_InvalidPendingDealSize(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{}).Error
-	require.NoError(t, err)
-	badRequest := createRequest
-	badRequest.MaxPendingDealSize = "One PB"
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid max pending deal size")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{}).Error
+		require.NoError(t, err)
+		badRequest := createRequest
+		badRequest.MaxPendingDealSize = "One PB"
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid max pending deal size")
+	})
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCID(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{}).Error
-	require.NoError(t, err)
-	badRequest := createRequest
-	badRequest.AllowedPieceCIDs = []string{"not a cid"}
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "invalid allowed piece CID")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{}).Error
+		require.NoError(t, err)
+		badRequest := createRequest
+		badRequest.AllowedPieceCIDs = []string{"not a cid"}
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "invalid allowed piece CID")
+	})
 }
 
 func TestCreateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{}).Error
-	require.NoError(t, err)
-	badRequest := createRequest
-	badRequest.AllowedPieceCIDs = []string{"bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma"}
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), badRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "not commp")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{}).Error
+		require.NoError(t, err)
+		badRequest := createRequest
+		badRequest.AllowedPieceCIDs = []string{"bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma"}
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), badRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "not commp")
+	})
 }
 
 func TestCreateHandler_NoAssociatedWallet(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{}).Error
-	require.NoError(t, err)
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
-	require.ErrorIs(t, err, handlererror.ErrNotFound)
-	require.ErrorContains(t, err, "no wallet")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{}).Error
+		require.NoError(t, err)
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		require.ErrorIs(t, err, handlererror.ErrNotFound)
+		require.ErrorContains(t, err, "no wallet")
+	})
 }
 
 func TestCreateHandler_InvalidProvider(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{
-		Wallets: []model.Wallet{{
-			ID: "f01",
-		}},
-	}).Error
-	require.NoError(t, err)
-	lotusClient := new(MockRPCClient)
-	lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
-		Return(errors.New("Some provider error"))
-	_, err = CreateHandler(context.Background(), db, lotusClient, createRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "Some provider error")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			Wallets: []model.Wallet{{
+				ID: "f01",
+			}},
+		}).Error
+		require.NoError(t, err)
+		lotusClient := new(MockRPCClient)
+		lotusClient.On("CallFor", mock.Anything, mock.Anything, "Filecoin.StateLookupID", mock.Anything).
+			Return(errors.New("Some provider error"))
+		_, err = Default.CreateHandler(ctx, db, lotusClient, createRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "Some provider error")
+	})
 }
 
 func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{
-		Wallets: []model.Wallet{{
-			ID: "f01",
-		}},
-	}).Error
-	createRequest := createRequest
-	createRequest.ScheduleCron = "@daily"
-	createRequest.ScheduleDealNumber = 0
-	createRequest.ScheduleDealSize = ""
-	createRequest.MaxPendingDealSize = ""
-	createRequest.TotalDealSize = ""
-	_, err = CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
-	require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-	require.ErrorContains(t, err, "must be set")
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			Wallets: []model.Wallet{{
+				ID: "f01",
+			}},
+		}).Error
+		createRequest := createRequest
+		createRequest.ScheduleCron = "@daily"
+		createRequest.ScheduleDealNumber = 0
+		createRequest.ScheduleDealSize = ""
+		createRequest.MaxPendingDealSize = ""
+		createRequest.TotalDealSize = ""
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "must be set")
+	})
 }
 
 func TestCreateHandler_Success(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	err = db.Create(&model.Preparation{
-		Wallets: []model.Wallet{{
-			ID: "f01",
-		}},
-	}).Error
-	createRequest := createRequest
-	createRequest.ScheduleCron = "@daily"
-	schedule, err := CreateHandler(context.Background(), db, getMockLotusClient(), createRequest)
-	require.NoError(t, err)
-	require.NotNil(t, schedule)
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			Wallets: []model.Wallet{{
+				ID: "f01",
+			}},
+		}).Error
+		createRequest := createRequest
+		createRequest.ScheduleCron = "@daily"
+		schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		require.NoError(t, err)
+		require.NotNil(t, schedule)
+	})
 }

@@ -26,11 +26,11 @@ var AttachWalletCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		prep, err := wallet.AttachHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := wallet.Default.AttachHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, prep)
 		return nil
 	},
 }
@@ -51,11 +51,11 @@ var ListWalletsCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		prep, err := wallet.ListAttachedHandler(c.Context, db, uint32(id))
+		prep, err := wallet.Default.ListAttachedHandler(c.Context, db, uint32(id))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, prep)
 		return nil
 	},
 }
@@ -76,11 +76,11 @@ var DetachWalletCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		prep, err := wallet.DetachHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := wallet.Default.DetachHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, prep)
 		return nil
 	},
 }

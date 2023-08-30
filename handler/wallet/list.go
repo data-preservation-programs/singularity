@@ -17,7 +17,7 @@ import (
 // Returns:
 // - A slice containing all Wallet models from the database.
 // - An error, if any occurred during the database fetch operation.
-func ListHandler(
+func (DefaultHandler) ListHandler(
 	ctx context.Context,
 	db *gorm.DB,
 ) ([]model.Wallet, error) {

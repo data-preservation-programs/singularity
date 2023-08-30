@@ -62,7 +62,7 @@ func argToDuration(s string) (time.Duration, error) {
 // Returns:
 // - A pointer to a model.Deal object representing the created deal.
 // - An error indicating any issues that occurred during the process.
-func SendManualHandler(
+func (DefaultHandler) SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	dealMaker replication.DealMaker,

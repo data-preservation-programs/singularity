@@ -15,7 +15,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
-	"gorm.io/gorm"
 )
 
 var PrepCmd = &cli.Command{
@@ -76,7 +75,7 @@ var PrepCmd = &cli.Command{
 				return errors.Wrap(err, "failed to get absolute path")
 			}
 		}
-		db, closer, err := database.Open("sqlite:"+databaseFile, &gorm.Config{})
+		db, closer, err := database.OpenWithLogger("sqlite:" + databaseFile)
 		if err != nil {
 			return errors.Wrapf(err, "failed to open database %s", databaseFile)
 		}
@@ -84,7 +83,7 @@ var PrepCmd = &cli.Command{
 		defer closer.Close()
 
 		// Step 1, initialize the database
-		err = admin.InitHandler(c.Context, db)
+		err = admin.Default.InitHandler(c.Context, db)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -98,7 +97,7 @@ var PrepCmd = &cli.Command{
 				return errors.Wrap(err, "failed to create output directory")
 			}
 
-			_, err = storage.CreateStorageHandler(c.Context, db, "local", storage.CreateRequest{
+			_, err = storage.Default.CreateStorageHandler(c.Context, db, "local", storage.CreateRequest{
 				Name: "output",
 				Path: outputDir,
 			})
@@ -108,7 +107,7 @@ var PrepCmd = &cli.Command{
 			outputStorages = []string{"output"}
 		}
 
-		_, err = storage.CreateStorageHandler(c.Context, db, "local", storage.CreateRequest{
+		_, err = storage.Default.CreateStorageHandler(c.Context, db, "local", storage.CreateRequest{
 			Name: "source",
 			Path: path,
 		})
@@ -116,7 +115,7 @@ var PrepCmd = &cli.Command{
 			return errors.Wrap(err, "failed to create source storage")
 		}
 
-		_, err = dataprep.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
+		_, err = dataprep.Default.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
 			SourceStorages: []string{"source"},
 			OutputStorages: outputStorages,
 			MaxSizeStr:     c.String("max-size"),
@@ -141,7 +140,7 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 4, Initiate dag gen
-		_, err = dataprep.StartDagGenHandler(c.Context, db, 1, "source")
+		_, err = dataprep.Default.StartDagGenHandler(c.Context, db, 1, "source")
 		if err != nil {
 			return errors.Wrap(err, "failed to start dag gen")
 		}
@@ -153,14 +152,14 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 6, print all information
-		pieceLists, err := dataprep.ListPiecesHandler(
+		pieceLists, err := dataprep.Default.ListPiecesHandler(
 			c.Context, db, 1,
 		)
 		if err != nil {
 			return errors.Wrap(err, "failed to list pieces")
 		}
 
-		cliutil.PrintToConsole(c, pieceLists[0].Pieces)
+		cliutil.Print(c, pieceLists[0].Pieces)
 		return nil
 	},
 }

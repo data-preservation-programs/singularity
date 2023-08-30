@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +20,7 @@ func TestServerStart(t *testing.T) {
 		Listener:   listener,
 		LotusAPI:   "https://api.node.glif.io",
 		LotusToken: "",
-		ConnString: database.TestConnectionString,
+		ConnString: testutil.TestConnectionString,
 	})
 	require.NoError(t, err)
 	require.Equal(t, "api", server.Name())

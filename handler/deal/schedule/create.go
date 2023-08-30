@@ -80,7 +80,7 @@ func argToDuration(s string) (time.Duration, error) {
 // Returns:
 // - A pointer to the created model.Schedule if successful.
 // - An error indicating the reason for any failure during the operation.
-func CreateHandler(
+func (DefaultHandler) CreateHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	lotusClient jsonrpc.RPCClient,

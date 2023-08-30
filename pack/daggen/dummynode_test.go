@@ -21,7 +21,7 @@ func TestDummyNode(t *testing.T) {
 	_, _, err = node.ResolveLink(nil)
 	require.ErrorIs(t, err, ErrDummyNode)
 	copied := node.Copy()
-	require.Equal(t, node, *copied.(*DummyNode))
+	require.Equal(t, *node, *copied.(*DummyNode))
 	require.Nil(t, node.Links())
 	_, err = node.Stat()
 	require.ErrorIs(t, err, ErrDummyNode)

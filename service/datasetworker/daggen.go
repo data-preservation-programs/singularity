@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
@@ -84,7 +85,7 @@ func (d *DagGenerator) Read(p []byte) (int, error) {
 	}
 	readers := make([]io.Reader, 0, len(blks)*3)
 	for _, blk := range blks {
-		if len(blk.RawData()) == 0 && blk.Cid() != pack.EmptyFileCid {
+		if len(blk.RawData()) == 0 && blk.Cid() != packutil.EmptyFileCid {
 			// This is dummy node. skip putting into car file
 			continue
 		}

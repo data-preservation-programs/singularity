@@ -1,0 +1,9 @@
+ID  Name   CreatedAt            UpdatedAt            Type   Path  Config  Metadata  
+1   name1  0001-01-01 00:00:00  0001-01-01 00:00:00  local  path  map[]   map[]     
+    As Source: 
+        ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize  PieceSize  
+        1   0001-01-01 00:00:00  0001-01-01 00:00:00  true               100      200        
+    As Output: 
+        ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize  PieceSize  
+        2   0001-01-01 00:00:00  0001-01-01 00:00:00  true               300      400        
+2   name   0001-01-01 00:00:00  0001-01-01 00:00:00  local  path  map[]   map[]     

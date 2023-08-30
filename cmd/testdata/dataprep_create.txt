@@ -1,0 +1,9 @@
+ID  DeleteAfterExport  MaxSize  PieceSize  
+1   false              100      200        
+    Source Storages:
+        ID  Name    Type   Path         
+        1   source  local  /tmp/source  
+    Output Storages:
+        ID  Name     Type   Path          
+        2   output1  local  /tmp/output1  
+        3   output2  local  /tmp/output2  

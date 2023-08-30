@@ -40,7 +40,7 @@ var DealPusherCmd = &cli.Command{
 
 		dm, err := dealpusher.NewDealPusher(db, c.String("lotus-api"), c.String("lotus-token"), c.Uint("deal-attempts"))
 		if err != nil {
-			return cli.Exit(err.Error(), 1)
+			return errors.WithStack(err)
 		}
 		return service.StartServers(c.Context, dealpusher.Logger, dm)
 	},

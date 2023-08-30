@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateStorageHandler(
+func (DefaultHandler) UpdateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	name string,

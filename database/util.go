@@ -8,7 +8,6 @@ import (
 
 	"github.com/avast/retry-go"
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
@@ -75,7 +74,7 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 	gormLogger := databaseLogger{
 		level: logger2.Info,
 	}
-	return Open(connString, &gorm.Config{
+	return open(connString, &gorm.Config{
 		Logger:         &gormLogger,
 		TranslateError: true,
 	})
@@ -84,8 +83,4 @@ func OpenWithLogger(connString string) (*gorm.DB, io.Closer, error) {
 func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
 	return OpenWithLogger(connString)
-}
-
-func DropAll(db *gorm.DB) error {
-	return model.DropAll(db)
 }

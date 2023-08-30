@@ -37,7 +37,7 @@ type CreateRequest struct {
 // Returns:
 // - A pointer to the newly created Storage model if successful.
 // - An error, if any occurred during the operation.
-func CreateStorageHandler(
+func (DefaultHandler) CreateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	storageType string,

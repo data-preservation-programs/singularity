@@ -26,11 +26,11 @@ var AttachSourceCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		prep, err := dataprep.AddSourceStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := dataprep.Default.AddSourceStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, prep)
 		return nil
 	},
 }

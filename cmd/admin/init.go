@@ -16,6 +16,6 @@ var InitCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		return admin.InitHandler(c.Context, db)
+		return admin.Default.InitHandler(c.Context, db)
 	},
 }

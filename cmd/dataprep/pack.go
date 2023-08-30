@@ -33,11 +33,11 @@ var StartPackCmd = &cli.Command{
 				return errors.Wrapf(err, "invalid job ID '%s'", c.Args().Get(2))
 			}
 		}
-		job, err := dataprep.StartPackHandler(c.Context, db, uint32(id), c.Args().Get(1), jobID)
+		job, err := dataprep.Default.StartPackHandler(c.Context, db, uint32(id), c.Args().Get(1), jobID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, job)
+		cliutil.Print(c, job)
 		return nil
 	},
 }
@@ -65,11 +65,11 @@ var PausePackCmd = &cli.Command{
 				return errors.Wrapf(err, "invalid job ID '%s'", c.Args().Get(2))
 			}
 		}
-		job, err := dataprep.PausePackHandler(c.Context, db, uint32(id), c.Args().Get(1), jobID)
+		job, err := dataprep.Default.PausePackHandler(c.Context, db, uint32(id), c.Args().Get(1), jobID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, job)
+		cliutil.Print(c, job)
 		return nil
 	},
 }

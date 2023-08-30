@@ -27,12 +27,12 @@ var ResumeCmd = &cli.Command{
 			return errors.Wrapf(err, "failed to parse schedule ID %s", c.Args().Get(0))
 		}
 
-		schedule, err := schedule.ResumeHandler(c.Context, db, uint32(scheduleID))
+		schedule, err := schedule.Default.ResumeHandler(c.Context, db, uint32(scheduleID))
 		if err != nil {
 			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(c, schedule)
+		cliutil.Print(c, schedule)
 		return nil
 	},
 }

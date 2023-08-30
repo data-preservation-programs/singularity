@@ -49,7 +49,7 @@ type Version struct {
 // Returns:
 // - A slice of DirEntry structs representing the entries in the explored directory.
 // - An error, if any occurred during the operation.
-func ExploreHandler(
+func (DefaultHandler) ExploreHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	id uint32,

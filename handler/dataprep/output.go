@@ -29,7 +29,7 @@ import (
 // Note:
 // This function performs several checks to ensure the output storage and the Preparation exist.
 // It also checks for potential duplicate associations and handles potential errors accordingly.
-func AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
+func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
 	err := db.Where("name = ?", output).First(&storage).Error
@@ -46,7 +46,7 @@ func AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output
 			PreparationID: id,
 		}).Error
 	})
-	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+	if util.IsForeignKeyConstraintError(err) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)
 	}
 	if util.IsDuplicateKeyError(err) {
@@ -105,7 +105,7 @@ func _() {}
 // Note:
 // This function performs several validation steps to ensure integrity while removing the association.
 // It also preloads associated storages to return an updated version of the Preparation.
-func RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
+func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
 	err := db.Where("name = ?", output).First(&storage).Error
@@ -127,11 +127,6 @@ func RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, out
 
 	if !underscore.Any(preparation.OutputStorages, func(s model.Storage) bool { return s.ID == storage.ID }) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage %s is not attached to preparation %d", output, id)
-	}
-
-	if len(preparation.OutputStorages) == 1 && preparation.UseEncryption() {
-		return nil, errors.Wrapf(handlererror.ErrInvalidParameter,
-			"cannot remove the only output storage %s as inline preparation is not compatible with encryption", output)
 	}
 
 	err = database.DoRetry(ctx, func() error {

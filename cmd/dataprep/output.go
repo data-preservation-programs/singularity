@@ -26,11 +26,11 @@ var AttachOutputCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		prep, err := dataprep.AddOutputStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := dataprep.Default.AddOutputStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, prep)
 		return nil
 	},
 }
@@ -51,11 +51,11 @@ var DetachOutputCmd = &cli.Command{
 		if err != nil {
 			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
 		}
-		prep, err := dataprep.RemoveOutputStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := dataprep.Default.RemoveOutputStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(c, prep)
+		cliutil.Print(c, prep)
 		return nil
 	},
 }

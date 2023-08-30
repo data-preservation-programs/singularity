@@ -26,7 +26,7 @@ var resumableStates = []model.ScheduleState{
 // Returns:
 // - A pointer to the updated Schedule if successful.
 // - An error if any issues occur, e.g., if the schedule is not found or not in a paused state.
-func ResumeHandler(
+func (DefaultHandler) ResumeHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	scheduleID uint32,

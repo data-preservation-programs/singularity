@@ -76,11 +76,11 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 		}
 	}
 
-	s2, err := storage.UpdateStorageHandler(c.Context, db, name, config)
+	s2, err := storage.Default.UpdateStorageHandler(c.Context, db, name, config)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	cliutil.PrintToConsole(c, s2)
+	cliutil.Print(c, s2)
 	return nil
 }

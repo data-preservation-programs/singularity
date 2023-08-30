@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack/encryption"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/ipfs/go-cid"
@@ -71,22 +70,11 @@ func TestAssembler(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Run(fmt.Sprintf("single size=%d", size), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, nil, []model.FileRange{fileRange}, 30*1024*1024)
+			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange})
 			defer assembler.Close()
 			content, err := io.ReadAll(assembler)
 			require.NoError(t, err)
 			require.Equal(t, expected.size, len(content))
-			validateCarContent(t, content)
-			validateAssembler(t, assembler)
-		})
-		encryptor, err := encryption.NewAgeEncryptor([]string{testutil.TestRecipient})
-		require.NoError(t, err)
-		t.Run(fmt.Sprintf("encrypted single size=%d", size), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, encryptor, []model.FileRange{fileRange}, 30*1024*1024)
-			defer assembler.Close()
-			content, err := io.ReadAll(assembler)
-			require.NoError(t, err)
-			require.Equal(t, expected.encSize, len(content))
 			validateCarContent(t, content)
 			validateAssembler(t, assembler)
 		})
@@ -96,7 +84,7 @@ func TestAssembler(t *testing.T) {
 		return allFileRanges[i].ID < allFileRanges[j].ID
 	})
 	t.Run("all", func(t *testing.T) {
-		assembler := NewAssembler(context.Background(), reader, nil, allFileRanges, 100*1024*1024)
+		assembler := NewAssembler(context.Background(), reader, allFileRanges)
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
@@ -104,51 +92,6 @@ func TestAssembler(t *testing.T) {
 		validateCarContent(t, content)
 		validateAssembler(t, assembler)
 	})
-
-	maxSizes := map[int64]struct {
-		sizes    []int
-		sizesEnc []int
-	}{
-		20000000: {[]int{20974565, 17827692},
-			[]int{20980899, 17833285}},
-		2000000: {[]int{2098426, 2097434, 2097436, 2097520, 2097289, 2097289, 2097289, 2097289, 2097835, 2097289, 2097289, 2097289, 2097289, 2097836, 2097289, 2097289, 2097289, 2097289, 1049305},
-			[]int{2099650, 2098217, 2098218, 2098235, 2097289, 2097289, 2097289, 2097289, 2100665, 2097289, 2097289, 2097289, 2097289, 2100666, 2097289, 2097289, 2097289, 2097289, 1052068}},
-		150000: {nil, nil},
-	}
-	for maxSize, contentSizes := range maxSizes {
-		t.Run(fmt.Sprintf("all maxSize=%d", maxSize), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, nil, allFileRanges, maxSize)
-			defer assembler.Close()
-			var actualSizes []int
-			for assembler.Next() {
-				content, err := io.ReadAll(assembler)
-				require.NoError(t, err)
-				actualSizes = append(actualSizes, len(content))
-				validateCarContent(t, content)
-			}
-			if contentSizes.sizes != nil {
-				require.EqualValues(t, contentSizes.sizes, actualSizes)
-			}
-			validateAssembler(t, assembler)
-		})
-		encryptor, err := encryption.NewAgeEncryptor([]string{testutil.TestRecipient})
-		require.NoError(t, err)
-		t.Run(fmt.Sprintf("encrypted all maxSize=%d", maxSize), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, encryptor, allFileRanges, maxSize)
-			defer assembler.Close()
-			var actualSizes []int
-			for assembler.Next() {
-				content, err := io.ReadAll(assembler)
-				require.NoError(t, err)
-				actualSizes = append(actualSizes, len(content))
-				validateCarContent(t, content)
-			}
-			if contentSizes.sizesEnc != nil {
-				require.EqualValues(t, contentSizes.sizesEnc, actualSizes)
-			}
-			validateAssembler(t, assembler)
-		})
-	}
 }
 
 func validateCarContent(t *testing.T, content []byte) {
