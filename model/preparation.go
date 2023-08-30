@@ -67,13 +67,6 @@ type SourceAttachment struct {
 	LastScannedPath string       `json:"lastScannedPath"`
 }
 
-func (s SourceAttachment) RootDirectory(ctx context.Context, db *gorm.DB) (*Directory, error) {
-	db = db.WithContext(ctx)
-	var root Directory
-	err := db.Where("attachment_id = ? AND parent_id is null", s.ID).First(&root).Error
-	return &root, errors.WithStack(err)
-}
-
 func (s SourceAttachment) RootDirectoryCID(ctx context.Context, db *gorm.DB) (cid.Cid, error) {
 	db = db.WithContext(ctx)
 	var root Directory

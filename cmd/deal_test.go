@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -19,6 +20,13 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 	return func() {
 		deal.Default = actual
 	}
+}
+
+func TestSendDealHandler_TooFewArgs(t *testing.T) {
+	out, stderr, err := Run(context.Background(), "singularity deal send-manual")
+	require.ErrorIs(t, err, cliutil.ErrIncorrectNArgs)
+	require.Contains(t, out, "USAGE:")
+	require.Empty(t, stderr)
 }
 
 func TestSendDealHandler(t *testing.T) {
@@ -91,10 +99,13 @@ func TestListDealHandler(t *testing.T) {
 			ClientID:         "client_id",
 		},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity deal list")
+	out, _, err := Run(context.Background(), "singularity deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
 	require.NoError(t, err)
 	Save(t, out, "deal_list.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose deal list")
+	out, _, err = Run(context.Background(), "singularity --verbose deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
 	require.NoError(t, err)
 	Save(t, out, "deal_list_verbose.txt")
+	out, _, err = Run(context.Background(), "singularity --json deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
+	require.NoError(t, err)
+	Save(t, out, "deal_list_json.txt")
 }

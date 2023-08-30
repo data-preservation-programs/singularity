@@ -173,3 +173,30 @@ func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 		Save(t, out, "storage_update_s3_verbose.txt")
 	})
 }
+func TestStorageUpdateHandler_Local(t *testing.T) {
+	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Storage{
+			Name: "name",
+			Type: "local",
+			Path: "/tmp",
+		}).Error
+		require.NoError(t, err)
+		mockHandler := new(MockStorage)
+		defer swapStorageHandler(mockHandler)()
+		mockHandler.On("UpdateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
+			ID:        1,
+			Name:      "name",
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			Type:      "local",
+			Path:      "/tmp",
+		}, nil)
+		out, _, err := Run(context.Background(), "singularity storage update local name")
+		require.NoError(t, err)
+		require.NoError(t, err)
+		Save(t, out, "storage_update_local.txt")
+		out, _, err = Run(context.Background(), "singularity --verbose storage update local name")
+		require.NoError(t, err)
+		Save(t, out, "storage_update_local_verbose.txt")
+	})
+}

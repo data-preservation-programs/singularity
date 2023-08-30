@@ -23,6 +23,10 @@ func (c CID) MarshalBinary() ([]byte, error) {
 }
 
 func (c *CID) UnmarshalBinary(b []byte) error {
+	if len(b) == 0 {
+		*c = CID(cid.Undef)
+		return nil
+	}
 	var c2 cid.Cid
 	err := c2.UnmarshalBinary(b)
 	if err != nil {

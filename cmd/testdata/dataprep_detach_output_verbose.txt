@@ -1,0 +1,12 @@
+ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize  PieceSize  
+1   0001-01-01 00:00:00  0001-01-01 00:00:00  false              100      200        
+    Wallets
+        ID         Address         PrivateKey   
+        client_id  client_address  private_key  
+    Source Storages:
+        ID  Name    CreatedAt            UpdatedAt            Type   Path         Config  Metadata  
+        1   source  0001-01-01 00:00:00  0001-01-01 00:00:00  local  /tmp/source  map[]   map[]     
+    Output Storages:
+        ID  Name     CreatedAt            UpdatedAt            Type   Path          Config  Metadata  
+        2   output1  0001-01-01 00:00:00  0001-01-01 00:00:00  local  /tmp/output1  map[]   map[]     
+        3   output2  0001-01-01 00:00:00  0001-01-01 00:00:00  local  /tmp/output2  map[]   map[]     

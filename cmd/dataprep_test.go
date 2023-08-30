@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -71,6 +72,18 @@ func TestDataPrepCreateHandler(t *testing.T) {
 	require.NoError(t, err)
 	Save(t, out, "dataprep_create_verbose.txt")
 }
+func TestDataPrepCreateHandler_WithStorage(t *testing.T) {
+	mockHandler := new(MockDataPrep)
+	defer swapDataPrepHandler(mockHandler)()
+
+	mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
+	source := t.TempDir()
+	output := t.TempDir()
+	_, _, err := Run(context.Background(), fmt.Sprintf("singularity prep create --local-source '%s' --local-output '%s'",
+		testutil.EscapePath(source),
+		testutil.EscapePath(output)))
+	require.NoError(t, err)
+}
 
 func TestDataPrepListHandler(t *testing.T) {
 	mockHandler := new(MockDataPrep)
@@ -79,10 +92,10 @@ func TestDataPrepListHandler(t *testing.T) {
 	mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Preparation{testPreparation}, nil)
 	out, _, err := Run(context.Background(), "singularity prep list")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
+	Save(t, out, "dataprep_list.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep list")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+	Save(t, out, "dataprep_list_verbose.txt")
 }
 
 var testDagGenJob = model.Job{
@@ -113,10 +126,10 @@ func TestDataPrepPauseDagGenHandler(t *testing.T) {
 	mockHandler.On("PauseDagGenHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testDagGenJob, nil)
 	out, _, err := Run(context.Background(), "singularity prep pause-daggen 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_daggen_job.txt")
+	Save(t, out, "dataprep_pause_daggen_job.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep pause-daggen 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_daggen_job_verbose.txt")
+	Save(t, out, "dataprep_pause_daggen_job_verbose.txt")
 }
 
 var testScanob = model.Job{
@@ -147,10 +160,10 @@ func TestDataPrepPauseScanHandler(t *testing.T) {
 	mockHandler.On("PauseScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanob, nil)
 	out, _, err := Run(context.Background(), "singularity prep pause-scan 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_scan_job.txt")
+	Save(t, out, "dataprep_pause_scan_job.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep pause-scan 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_scan_job_verbose.txt")
+	Save(t, out, "dataprep_pause_scan_job_verbose.txt")
 }
 
 var testPackJob = model.Job{
@@ -172,6 +185,10 @@ func TestDataPrepStartPackHandler(t *testing.T) {
 	out, _, err = Run(context.Background(), "singularity --verbose prep start-pack 1 name")
 	require.NoError(t, err)
 	Save(t, out, "dataprep_pack_job_verbose.txt")
+	_, _, err = Run(context.Background(), "singularity prep start-pack 1 name 1")
+	require.NoError(t, err)
+	_, _, err = Run(context.Background(), "singularity --verbose prep start-pack 1 name 1")
+	require.NoError(t, err)
 }
 
 func TestDataPrepPausePackHandler(t *testing.T) {
@@ -181,10 +198,14 @@ func TestDataPrepPausePackHandler(t *testing.T) {
 	mockHandler.On("PausePackHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]model.Job{testPackJob}, nil)
 	out, _, err := Run(context.Background(), "singularity prep pause-pack 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pack_job.txt")
+	Save(t, out, "dataprep_pause_pack_job.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep pause-pack 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pack_job_verbose.txt")
+	Save(t, out, "dataprep_pause_pack_job_verbose.txt")
+	_, _, err = Run(context.Background(), "singularity prep pause-pack 1 name 1")
+	require.NoError(t, err)
+	_, _, err = Run(context.Background(), "singularity --verbose prep pause-pack 1 name 1")
+	require.NoError(t, err)
 }
 
 func TestDataPrepAttachSourceHandler(t *testing.T) {
@@ -194,10 +215,10 @@ func TestDataPrepAttachSourceHandler(t *testing.T) {
 	mockHandler.On("AddSourceStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	out, _, err := Run(context.Background(), "singularity prep attach-source 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
+	Save(t, out, "dataprep_attach_source.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep attach-source 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+	Save(t, out, "dataprep_attach_source_verbose.txt")
 }
 
 func TestDataPrepAttachOutputHandler(t *testing.T) {
@@ -207,10 +228,10 @@ func TestDataPrepAttachOutputHandler(t *testing.T) {
 	mockHandler.On("AddOutputStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	out, _, err := Run(context.Background(), "singularity prep attach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
+	Save(t, out, "dataprep_attach_output.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep attach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+	Save(t, out, "dataprep_attach_output_verbose.txt")
 }
 func TestDataPrepDetachOutputHandler(t *testing.T) {
 	mockHandler := new(MockDataPrep)
@@ -219,10 +240,10 @@ func TestDataPrepDetachOutputHandler(t *testing.T) {
 	mockHandler.On("RemoveOutputStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	out, _, err := Run(context.Background(), "singularity prep detach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
+	Save(t, out, "dataprep_detach_output.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep detach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+	Save(t, out, "dataprep_detach_output_verbose.txt")
 }
 
 func TestDataPreparationAttachWalletHandler(t *testing.T) {
@@ -232,10 +253,10 @@ func TestDataPreparationAttachWalletHandler(t *testing.T) {
 	mockHandler.On("AttachHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	out, _, err := Run(context.Background(), "singularity prep attach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
+	Save(t, out, "dataprep_attach_wallet.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep attach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+	Save(t, out, "dataprep_attach_wallet_verbose.txt")
 }
 
 func TestDataPreparationDetachWalletHandler(t *testing.T) {
@@ -245,10 +266,10 @@ func TestDataPreparationDetachWalletHandler(t *testing.T) {
 	mockHandler.On("DetachHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	out, _, err := Run(context.Background(), "singularity prep detach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
+	Save(t, out, "dataprep_detach_wallet.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose prep detach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+	Save(t, out, "dataprep_detach_wallet_verbose.txt")
 }
 
 func TestDataPreparationListAttachedWalletHandler(t *testing.T) {

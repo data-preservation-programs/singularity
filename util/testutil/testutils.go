@@ -3,6 +3,7 @@ package testutil
 import (
 	"crypto/rand"
 	"os"
+	"strings"
 	"testing"
 
 	rand2 "math/rand"
@@ -44,3 +45,7 @@ var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
 const TestWalletAddr = "f1fib3pv7jua2ockdugtz7viz3cyy6lkhh7rfx3sa"
 
 const TestPrivateKeyHex = "7b2254797065223a22736563703235366b31222c22507269766174654b6579223a226b35507976337148327349586343595a58594f5775453149326e32554539436861556b6c4e36695a5763453d227d"
+
+func EscapePath(p string) string {
+	return "'" + strings.ReplaceAll(p, `\`, `\\`) + "'"
+}
