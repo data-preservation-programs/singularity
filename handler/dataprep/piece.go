@@ -11,6 +11,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-car"
 	"gorm.io/gorm"
@@ -24,8 +25,10 @@ type AddPieceRequest struct {
 }
 
 type PieceList struct {
-	Source *model.SourceAttachment `json:"source"`
-	Pieces []model.Car             `json:"pieces"`
+	AttachmentID    *uint32        `json:"attachmentId"`
+	SourceStorageID *uint32        `json:"storageId"`
+	SourceStorage   *model.Storage `json:"source"       table:"expand"`
+	Pieces          []model.Car    `json:"pieces"       table:"expand"`
 }
 
 // ListPiecesHandler retrieves the list of pieces associated with a particular preparation and its source attachments.
@@ -65,8 +68,10 @@ func (DefaultHandler) ListPiecesHandler(
 			return nil, errors.WithStack(err)
 		}
 		pieceLists = append(pieceLists, PieceList{
-			Source: &sourceAttachment,
-			Pieces: cars,
+			AttachmentID:    ptr.Of(sourceAttachment.ID),
+			SourceStorageID: ptr.Of(sourceAttachment.StorageID),
+			SourceStorage:   sourceAttachment.Storage,
+			Pieces:          cars,
 		})
 	}
 

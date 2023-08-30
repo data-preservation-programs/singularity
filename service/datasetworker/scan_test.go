@@ -60,6 +60,7 @@ func TestScan(t *testing.T) {
 			},
 		}
 		err := db.Create(&job).Error
+		require.NoError(t, err)
 		dir := model.Directory{
 			AttachmentID: 1,
 		}

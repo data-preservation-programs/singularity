@@ -80,6 +80,7 @@ func TestExploreHandler(t *testing.T) {
 				DirectoryID:      ptr.Of(uint64(2)),
 			},
 		}).Error
+		require.NoError(t, err)
 		result, err := Default.ExploreHandler(ctx, db, 1, "source", "sub1")
 		require.NoError(t, err)
 		require.Len(t, result, 3)

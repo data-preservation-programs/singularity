@@ -62,6 +62,7 @@ func TestStartScanHandler_StartExisting(t *testing.T) {
 			State:        model.Error,
 			Type:         model.Scan,
 		}).Error
+		require.NoError(t, err)
 		job, err := Default.StartScanHandler(ctx, db, 1, "source")
 		require.NoError(t, err)
 		require.Equal(t, model.Ready, job.State)

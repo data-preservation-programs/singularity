@@ -29,9 +29,9 @@ func TestGetStatusHandler(t *testing.T) {
 
 		status, err := Default.GetStatusHandler(ctx, db, 1)
 		require.NoError(t, err)
-		require.Len(t, status.Sources, 1)
-		require.Len(t, status.Sources[0].Jobs, 1)
-		require.Equal(t, model.Ready, status.Sources[0].Jobs[0].State)
+		require.Len(t, status, 1)
+		require.Len(t, status[0].Jobs, 1)
+		require.Equal(t, model.Ready, status[0].Jobs[0].State)
 	})
 }
 

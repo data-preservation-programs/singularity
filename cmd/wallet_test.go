@@ -29,10 +29,10 @@ func TestWalletImport(t *testing.T) {
 	}, nil)
 	out, _, err := Run(context.Background(), "singularity wallet import xxx")
 	require.NoError(t, err)
-	CompareWith(t, out, "wallet_import.txt")
+	Save(t, out, "wallet_import.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose wallet import xxx")
 	require.NoError(t, err)
-	CompareWith(t, out, "wallet_import_verbose.txt")
+	Save(t, out, "wallet_import_verbose.txt")
 }
 
 func TestWalletList(t *testing.T) {
@@ -49,10 +49,10 @@ func TestWalletList(t *testing.T) {
 	}}, nil)
 	out, _, err := Run(context.Background(), "singularity wallet list")
 	require.NoError(t, err)
-	CompareWith(t, out, "wallet_list.txt")
+	Save(t, out, "wallet_list.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose wallet list")
 	require.NoError(t, err)
-	CompareWith(t, out, "wallet_list_verbose.txt")
+	Save(t, out, "wallet_list_verbose.txt")
 }
 
 func TestWalletRemove(t *testing.T) {

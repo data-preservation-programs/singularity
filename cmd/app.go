@@ -199,10 +199,10 @@ func SetupErrorHandler() {
 		}
 		if c.Bool("verbose") {
 			report := fmt.Sprintf("%+v\n\n", err)
-			App.ErrWriter.Write([]byte(report))
+			_, _ = App.ErrWriter.Write([]byte(report))
 		}
 		concise := cliutil.Failure(err.Error()) + "\n"
-		App.ErrWriter.Write([]byte(concise))
+		_, _ = App.ErrWriter.Write([]byte(concise))
 	}
 }
 

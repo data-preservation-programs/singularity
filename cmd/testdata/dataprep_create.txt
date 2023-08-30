@@ -1,5 +1,8 @@
 ID  DeleteAfterExport  MaxSize  PieceSize  
 1   false              100      200        
+    Wallets
+        ID         Address         
+        client_id  client_address  
     Source Storages:
         ID  Name    Type   Path         
         1   source  local  /tmp/source  

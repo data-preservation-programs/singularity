@@ -30,14 +30,14 @@ func TestRCloneHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, entries, 1)
 
-	readCloser, obj, err := handler.Read(ctx, "test.txt", 0, 4)
+	readCloser, _, err := handler.Read(ctx, "test.txt", 0, 4)
 	require.NoError(t, err)
 	defer readCloser.Close()
 	read, err := io.ReadAll(readCloser)
 	require.NoError(t, err)
 	require.EqualValues(t, "test", read)
 
-	readCloser2, obj, err := handler.Read(ctx, "test.txt", 0, 0)
+	readCloser2, _, err := handler.Read(ctx, "test.txt", 0, 0)
 	require.NoError(t, err)
 	defer readCloser2.Close()
 	read, err = io.ReadAll(readCloser2)

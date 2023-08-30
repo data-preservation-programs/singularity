@@ -1,0 +1,2 @@
+ID  CreatedAt            PieceCID                                                     PieceSize  RootCID  FileSize  StorageID  StoragePath  
+1   0001-01-01 00:00:00  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 100       1          test1.car    

@@ -64,6 +64,7 @@ func TestAddSourceStorageHandler_Success(t *testing.T) {
 		err = db.Create(&model.Storage{
 			Name: "source2",
 		}).Error
+		require.NoError(t, err)
 
 		preparation, err := Default.AddSourceStorageHandler(ctx, db, 1, "source2")
 		require.NoError(t, err)

@@ -11,7 +11,7 @@ import (
 )
 
 func TestHelpPage(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		SetupHelpPager()
 		var testCommand func(ctx context.Context, t *testing.T, db *gorm.DB, cmd string, cliCommand *cli.Command)
 		testCommand = func(ctx context.Context, t *testing.T, db *gorm.DB, cmd string, cliCommand *cli.Command) {

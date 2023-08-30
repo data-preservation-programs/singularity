@@ -1,0 +1,14 @@
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name   Type   Path  
+        1   local  local  /tmp  
+    Pieces
+        PieceCID                                                     PieceSize  RootCID  FileSize  StoragePath  
+        bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 200       test1.car    
+        bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  300                 400       test2.car    
+<nil>         <nil>            
+    Pieces
+        PieceCID                                                     PieceSize  RootCID  FileSize  StoragePath  
+        bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  500                 600       test3.car    
+        bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  700                 800       test4.car    

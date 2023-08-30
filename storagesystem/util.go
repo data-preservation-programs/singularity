@@ -146,6 +146,7 @@ func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*uint
 		totalWeight += item.weight
 	}
 
+	//nolint:gosec
 	r := rand.Float64() * totalWeight
 	for _, item := range handlersWithWeight {
 		r -= item.weight

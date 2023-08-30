@@ -81,6 +81,7 @@ func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 func (a *Assembler) readBuffer(p []byte) (int, error) {
 	n, err := a.buffer.Read(p)
 
+	//nolint:errorlint
 	switch err {
 	case io.EOF:
 		a.buffer = nil
@@ -195,6 +196,7 @@ func (a *Assembler) prefetch() error {
 	}
 
 	// read more than 0 bytes, or the first block of an empty file
+	// nolint:goerr113
 	if err == nil || err == io.ErrUnexpectedEOF || err == io.EOF {
 		var cidValue cid.Cid
 		var vint []byte

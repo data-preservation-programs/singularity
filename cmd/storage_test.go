@@ -46,10 +46,10 @@ func TestStorageExploreHandler(t *testing.T) {
 	}, nil)
 	out, _, err := Run(context.Background(), "singularity storage explore name path")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_explore.txt")
+	Save(t, out, "storage_explore.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose storage explore name path")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_explore_verbose.txt")
+	Save(t, out, "storage_explore_verbose.txt")
 }
 
 func TestStorageCreateHandler_S3Provider(t *testing.T) {
@@ -66,10 +66,10 @@ func TestStorageCreateHandler_S3Provider(t *testing.T) {
 	}, nil)
 	out, _, err := Run(context.Background(), "singularity storage create s3 aws --region us-east-1 name bucket")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_create_s3.txt")
+	Save(t, out, "storage_create_s3.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose storage create s3 aws --region us-east-1 name bucket")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_create_s3_verbose.txt")
+	Save(t, out, "storage_create_s3_verbose.txt")
 }
 
 func TestStorageCreateHandler_Local(t *testing.T) {
@@ -85,10 +85,10 @@ func TestStorageCreateHandler_Local(t *testing.T) {
 	}, nil)
 	out, _, err := Run(context.Background(), "singularity storage create local name path")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_create_local.txt")
+	Save(t, out, "storage_create_local.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose storage create local name path")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_create_local_verbose.txt")
+	Save(t, out, "storage_create_local_verbose.txt")
 }
 
 func TestStorageListHandler(t *testing.T) {
@@ -130,10 +130,10 @@ func TestStorageListHandler(t *testing.T) {
 	}}, nil)
 	out, _, err := Run(context.Background(), "singularity storage list")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_list.txt")
+	Save(t, out, "storage_list.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose storage list")
 	require.NoError(t, err)
-	CompareWith(t, out, "storage_list_verbose.txt")
+	Save(t, out, "storage_list_verbose.txt")
 }
 
 func TestStorageRemoveHandler(t *testing.T) {
@@ -146,11 +146,13 @@ func TestStorageRemoveHandler(t *testing.T) {
 
 func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		db.Create(&model.Storage{
+		err := db.Create(&model.Storage{
 			Name:   "name",
 			Type:   "s3",
 			Config: map[string]string{"provider": "AWS"},
-		})
+			Path:   "bucket",
+		}).Error
+		require.NoError(t, err)
 		mockHandler := new(MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("UpdateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
@@ -165,9 +167,9 @@ func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 		out, _, err := Run(context.Background(), "singularity storage update s3 aws --region us-east-1 name")
 		require.NoError(t, err)
 		require.NoError(t, err)
-		CompareWith(t, out, "storage_update_s3.txt")
+		Save(t, out, "storage_update_s3.txt")
 		out, _, err = Run(context.Background(), "singularity --verbose storage update s3 aws --region us-east-1 name")
 		require.NoError(t, err)
-		CompareWith(t, out, "storage_update_s3_verbose.txt")
+		Save(t, out, "storage_update_s3_verbose.txt")
 	})
 }

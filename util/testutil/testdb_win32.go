@@ -14,23 +14,20 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
-var TestConnectionString = "mysql://singularity:singularity@tcp(localhost:3306)/singularity?parseTime=true"
-
-var logger = log.Logger("testutil")
-
 var SupportedTestDialects = []string{"mysql", "postgres"}
 
 func One(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
+	t.Helper()
 	backend := SupportedTestDialects[0]
 	doOne(t, backend, testFunc)
 }
 
 func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
+	t.Helper()
 	db, closer, connStr := getTestDB(t, backend)
 	if db == nil {
 		t.Log("Skip " + backend)
@@ -38,6 +35,9 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 	}
 	defer closer.Close()
 	os.Setenv("DATABASE_CONNECTION_STRING", connStr)
+	defer func() {
+		os.Unsetenv("DATABASE_CONNECTION_STRING")
+	}()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 	db = db.WithContext(ctx)
@@ -51,6 +51,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 }
 
 func All(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
+	t.Helper()
 	for _, backend := range SupportedTestDialects {
 		doOne(t, backend, testFunc)
 	}
@@ -63,6 +64,7 @@ func (f CloserFunc) Close() error {
 }
 
 func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, connStr string) {
+	t.Helper()
 	var err error
 	dbName := RandomLetterString(6)
 	var opError *net.OpError

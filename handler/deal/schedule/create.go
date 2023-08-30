@@ -19,26 +19,26 @@ import (
 
 //nolint:lll
 type CreateRequest struct {
-	PreparationID        uint32   `json:"preparationID"          validation:"required"` // Preparation ID
-	Provider             string   `json:"provider"             validation:"required"`   // Provider
-	HTTPHeaders          []string `json:"httpHeaders"`                                  // http headers to be passed with the request (i.e. key=value)
-	URLTemplate          string   `json:"urlTemplate"`                                  // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
-	PricePerGBEpoch      float64  `default:"0"                 json:"pricePerGbEpoch"`  // Price in FIL per GiB per epoch
-	PricePerGB           float64  `default:"0"                 json:"pricePerGb"`       // Price in FIL  per GiB
-	PricePerDeal         float64  `default:"0"                 json:"pricePerDeal"`     // Price in FIL per deal
-	Verified             bool     `default:"true"              json:"verified"`         // Whether the deal should be verified
-	IPNI                 bool     `default:"true"              json:"ipni"`             // Whether the deal should be IPNI
-	KeepUnsealed         bool     `default:"true"              json:"keepUnsealed"`     // Whether the deal should be kept unsealed
-	StartDelay           string   `default:"72h"               json:"startDelay"`       // Deal start delay in epoch or in duration format, i.e. 1000, 72h
-	Duration             string   `default:"12840h"            json:"duration"`         // Duration in epoch or in duration format, i.e. 1500000, 2400h
-	ScheduleCron         string   `json:"scheduleCron"`                                 // Schedule cron patter
-	ScheduleDealNumber   int      `json:"scheduleDealNumber"`                           // Number of deals per scheduled time
-	TotalDealNumber      int      `json:"totalDealNumber"`                              // Total number of deals
-	ScheduleDealSize     string   `json:"scheduleDealSize"`                             // Size of deals per schedule trigger in human readable format, i.e. 100 TiB
-	TotalDealSize        string   `json:"totalDealSize"`                                // Total size of deals in human readable format, i.e. 100 TiB
-	Notes                string   `json:"notes"`                                        // Notes
-	MaxPendingDealSize   string   `json:"maxPendingDealSize"`                           // Max pending deal size in human readable format, i.e. 100 TiB
-	MaxPendingDealNumber int      `json:"maxPendingDealNumber"`                         // Max pending deal number
+	PreparationID        uint32   `json:"preparationId"        validation:"required"`  // Preparation ID
+	Provider             string   `json:"provider"             validation:"required"`  // Provider
+	HTTPHeaders          []string `json:"httpHeaders"`                                 // http headers to be passed with the request (i.e. key=value)
+	URLTemplate          string   `json:"urlTemplate"`                                 // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
+	PricePerGBEpoch      float64  `default:"0"                 json:"pricePerGbEpoch"` // Price in FIL per GiB per epoch
+	PricePerGB           float64  `default:"0"                 json:"pricePerGb"`      // Price in FIL  per GiB
+	PricePerDeal         float64  `default:"0"                 json:"pricePerDeal"`    // Price in FIL per deal
+	Verified             bool     `default:"true"              json:"verified"`        // Whether the deal should be verified
+	IPNI                 bool     `default:"true"              json:"ipni"`            // Whether the deal should be IPNI
+	KeepUnsealed         bool     `default:"true"              json:"keepUnsealed"`    // Whether the deal should be kept unsealed
+	StartDelay           string   `default:"72h"               json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
+	Duration             string   `default:"12840h"            json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
+	ScheduleCron         string   `json:"scheduleCron"`                                // Schedule cron patter
+	ScheduleDealNumber   int      `json:"scheduleDealNumber"`                          // Number of deals per scheduled time
+	TotalDealNumber      int      `json:"totalDealNumber"`                             // Total number of deals
+	ScheduleDealSize     string   `json:"scheduleDealSize"`                            // Size of deals per schedule trigger in human readable format, i.e. 100 TiB
+	TotalDealSize        string   `json:"totalDealSize"`                               // Total size of deals in human readable format, i.e. 100 TiB
+	Notes                string   `json:"notes"`                                       // Notes
+	MaxPendingDealSize   string   `json:"maxPendingDealSize"`                          // Max pending deal size in human readable format, i.e. 100 TiB
+	MaxPendingDealNumber int      `json:"maxPendingDealNumber"`                        // Max pending deal number
 	//nolint:tagliatelle
 	AllowedPieceCIDs []string `json:"allowedPieceCids"` // Allowed piece CIDs in this schedule
 }

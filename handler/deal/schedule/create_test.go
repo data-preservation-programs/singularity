@@ -208,6 +208,7 @@ func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 				ID: "f01",
 			}},
 		}).Error
+		require.NoError(t, err)
 		createRequest := createRequest
 		createRequest.ScheduleCron = "@daily"
 		createRequest.ScheduleDealNumber = 0
@@ -227,6 +228,7 @@ func TestCreateHandler_Success(t *testing.T) {
 				ID: "f01",
 			}},
 		}).Error
+		require.NoError(t, err)
 		createRequest := createRequest
 		createRequest.ScheduleCron = "@daily"
 		schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)

@@ -6,17 +6,15 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/gotidy/ptr"
 	"gorm.io/gorm"
 )
 
-type Status struct {
-	Preparation model.Preparation `json:"preparation"`
-	Sources     []SourceStatus    `json:"sources"`
-}
-
 type SourceStatus struct {
-	Source model.SourceAttachment `json:"source"`
-	Jobs   []model.Job            `json:"jobs"`
+	AttachmentID    *uint32        `json:"attachmentId"`
+	SourceStorageID *uint32        `json:"storageId"`
+	SourceStorage   *model.Storage `json:"source"       table:"expand"`
+	Jobs            []model.Job    `json:"jobs"         table:"expand"`
 }
 
 // GetStatusHandler fetches and returns the current status of a specific Preparation.
@@ -36,7 +34,7 @@ type SourceStatus struct {
 // Note:
 // The function fetches not only the Preparation record but also all associated SourceAttachment
 // records with their associated Job records, providing a comprehensive status of a specific preparation.
-func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) (*Status, error) {
+func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) ([]SourceStatus, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
 	err := db.First(&preparation, id).Error
@@ -57,21 +55,20 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint
 	var allStatuses []SourceStatus
 	for _, source := range sources {
 		var jobs []model.Job
-		err = db.Where("attachment_id = ?", id).Find(&jobs).Error
+		err = db.Where("attachment_id = ?", source.ID).Find(&jobs).Error
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		status := SourceStatus{
-			Source: source,
-			Jobs:   jobs,
+			AttachmentID:    ptr.Of(source.ID),
+			SourceStorageID: ptr.Of(source.StorageID),
+			SourceStorage:   source.Storage,
+			Jobs:            jobs,
 		}
 		allStatuses = append(allStatuses, status)
 	}
 
-	return &Status{
-		Preparation: preparation,
-		Sources:     allStatuses,
-	}, nil
+	return allStatuses, nil
 }
 
 // @Summary Get the status of a preparation

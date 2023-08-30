@@ -21,7 +21,10 @@ func CheckNArgs(c *cli.Context) error {
 	required := strings.Count(c.Command.ArgsUsage, "<")
 	optional := strings.Count(c.Command.ArgsUsage, "[")
 	if c.Args().Len() < required || c.Args().Len() > required+optional {
-		cli.ShowSubcommandHelp(c)
+		err := cli.ShowSubcommandHelp(c)
+		if err != nil {
+			return errors.WithStack(err)
+		}
 		return ErrIncorrectNArgs
 	}
 	return nil
@@ -47,7 +50,7 @@ func PrintAsJSON(c *cli.Context, obj any) {
 		fmt.Println("Error: Unable to marshal object to JSON.")
 		return
 	}
-	c.App.Writer.Write(objJSON)
+	_, _ = c.App.Writer.Write(objJSON)
 }
 
 func Print(c *cli.Context, obj any) {
@@ -57,8 +60,8 @@ func Print(c *cli.Context, obj any) {
 	}
 
 	if c.Bool("verbose") {
-		c.App.Writer.Write([]byte(table.New(table.WithVerbose()).Render(obj)))
+		_, _ = c.App.Writer.Write([]byte(table.New(table.WithVerbose()).Render(obj)))
 	} else {
-		c.App.Writer.Write([]byte(table.New().Render(obj)))
+		_, _ = c.App.Writer.Write([]byte(table.New().Render(obj)))
 	}
 }

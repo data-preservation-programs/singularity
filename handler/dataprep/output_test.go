@@ -64,6 +64,7 @@ func TestAddOutputStorageHandler_Success(t *testing.T) {
 		err = db.Create(&model.Storage{
 			Name: "output2",
 		}).Error
+		require.NoError(t, err)
 
 		preparation, err := Default.AddOutputStorageHandler(ctx, db, 1, "output2")
 		require.NoError(t, err)
@@ -105,6 +106,7 @@ func TestRemoveOutputStorageHandler_NotAttached(t *testing.T) {
 		err = db.Create(&model.Storage{
 			Name: "output",
 		}).Error
+		require.NoError(t, err)
 
 		_, err = Default.RemoveOutputStorageHandler(ctx, db, 1, "output")
 		require.ErrorIs(t, err, handlererror.ErrNotFound)

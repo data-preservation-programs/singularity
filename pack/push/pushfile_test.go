@@ -60,6 +60,7 @@ func TestPushFile(t *testing.T) {
 			AttachmentID: attachment.ID,
 		}
 		err = db.Create(&root).Error
+		require.NoError(t, err)
 		tmp := t.TempDir()
 		err = os.WriteFile(filepath.Join(tmp, "test.txt"), []byte("hello world"), 0644)
 		require.NoError(t, err)

@@ -231,7 +231,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 				return errors.WithStack(err)
 			}
 			for dirID, dirCID := range dagGenerator.dirCIDs {
-				result := db.Model(&model.Directory{}).Where("id = ? AND cid = ?", dirID, model.CID(dirCID)).Update("exported", true)
+				result := db.Model(&model.Directory{}).Where("id = ? AND cid = ?", dirID, dirCID).Update("exported", true)
 				if result.Error != nil {
 					return errors.Wrap(result.Error, "failed to update directory")
 				}

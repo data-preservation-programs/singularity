@@ -279,7 +279,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		case <-ctx.Done():
 			return
 		case <-time.After(interval):
-			interval = interval * 2
+			interval *= 2
 			if interval > maxInterval {
 				interval = maxInterval
 			}

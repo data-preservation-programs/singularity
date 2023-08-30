@@ -17,7 +17,7 @@ type DirEntry struct {
 	Path         string    `json:"path"`
 	IsDir        bool      `json:"isDir"`
 	CID          string    `json:"cid"`
-	FileVersions []Version `json:"fileVersions"`
+	FileVersions []Version `json:"fileVersions" table:"expand"`
 }
 
 type Version struct {

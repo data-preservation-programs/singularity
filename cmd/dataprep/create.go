@@ -120,7 +120,6 @@ func createStorageIfNotExist(ctx context.Context, db *gorm.DB, sourcePath string
 		}
 	}
 	return existing, nil
-
 }
 
 func randomReadableString(length int) string {
@@ -128,6 +127,7 @@ func randomReadableString(length int) string {
 
 	b := make([]byte, length)
 	for i := range b {
+		//nolint:gosec
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)

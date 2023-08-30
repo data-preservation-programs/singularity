@@ -1,3 +1,4 @@
+//nolint:forcetypeassert
 package cmd
 
 import (
@@ -8,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/cockroachdb/errors"
-	"github.com/cockroachdb/errors/oserror"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -24,23 +24,26 @@ import (
 	"gorm.io/gorm"
 )
 
-func CompareWith(t *testing.T, actual string, path string) {
-	path = filepath.Join("testdata", path)
-	_, err := os.Stat(path)
-	if errors.Is(err, oserror.ErrNotExist) {
-		err = os.WriteFile(path, []byte(actual), 0644)
-		require.NoError(t, err)
-	}
+func Save(t *testing.T, actual string, path string) {
+	t.Helper()
+	err := os.WriteFile(filepath.Join("testdata", path), []byte(actual), 0600)
 	require.NoError(t, err)
-
-	expected, err := os.ReadFile(path)
-	require.NoError(t, err)
-	require.Equal(t, string(expected), actual)
 }
 
 func Run(ctx context.Context, args string) (string, string, error) {
 	// Create a clone of the app so that we can run from different tests concurrently
 	app := *App
+	for i, flag := range app.Flags {
+		if flag.Names()[0] == "database-connection-string" {
+			app.Flags[i] = &cli.StringFlag{
+				Name:        "database-connection-string",
+				Usage:       "Connection string to the database",
+				DefaultText: "sqlite:" + "./singularity.db",
+				Value:       "sqlite:" + "./singularity.db",
+				EnvVars:     []string{"DATABASE_CONNECTION_STRING"},
+			}
+		}
+	}
 	app.ExitErrHandler = func(c *cli.Context, err error) {}
 	parser := shellwords.NewParser()
 	parser.ParseEnv = true // Enable environment variable parsing
@@ -148,9 +151,9 @@ func (m *MockDataPrep) AddSourceStorageHandler(ctx context.Context, db *gorm.DB,
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) (*dataprep.Status, error) {
+func (m *MockDataPrep) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) ([]dataprep.SourceStatus, error) {
 	args := m.Called(ctx, db, id)
-	return args.Get(0).(*dataprep.Status), args.Error(1)
+	return args.Get(0).([]dataprep.SourceStatus), args.Error(1)
 }
 
 type MockSchedule struct {

@@ -1,0 +1,3 @@
+Path   LastModified         Size  IsDir  DirID  NumItems  Hash   
+path1  0001-01-01 00:00:00  100   true   xx     100       hash1  
+path2  0001-01-01 00:00:00  100   false         -1        hash2  

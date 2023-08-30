@@ -24,6 +24,7 @@ func RandomLetterString(length int) string {
 
 	b := make([]byte, length)
 	for i := range b {
+		//nolint:gosec
 		b[i] = charset[rand2.Intn(len(charset))]
 	}
 	return string(b)

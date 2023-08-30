@@ -1,2 +1,2 @@
-ID  Type  State  ErrorMessage  
-1   scan  ready                
+ID  Type  State  ErrorMessage  WorkerID  
+1   scan  ready                <nil>     

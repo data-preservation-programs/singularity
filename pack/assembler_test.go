@@ -45,7 +45,7 @@ func TestAssembler(t *testing.T) {
 	require.NoError(t, err)
 
 	var allFileRanges []model.FileRange
-	for size, _ := range sizes {
+	for size := range sizes {
 		filename := fmt.Sprintf("%d.bin", size)
 		err := os.WriteFile(filepath.Join(tmp, filename), testutil.GenerateRandomBytes(size), 0644)
 		require.NoError(t, err)

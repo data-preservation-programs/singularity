@@ -23,7 +23,7 @@ func TestImportHandler(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, testutil.TestWalletAddr, w.Address)
 
-			w, err = Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
+			_, err = Default.ImportHandler(ctx, db, lotusClient, ImportRequest{
 				PrivateKey: testutil.TestPrivateKeyHex,
 			})
 			require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)

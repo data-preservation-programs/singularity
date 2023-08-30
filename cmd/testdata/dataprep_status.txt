@@ -1,0 +1,8 @@
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    Type   Path  
+        1   source  local  /tmp  
+    Jobs
+        ID  Type  State       ErrorMessage  WorkerID                              
+        1   pack  processing                8b8a4a8f-bf6a-48b2-b6ff-b7c30758e319  

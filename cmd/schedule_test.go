@@ -49,25 +49,25 @@ func swapScheduleHandler(mockHandler schedule.Handler) func() {
 func TestSchedulePauseHandler(t *testing.T) {
 	mockHandler := new(MockSchedule)
 	defer swapScheduleHandler(mockHandler)()
-	mockHandler.On("PauseHandler", mock.Anything, mock.Anything).Return([]model.Schedule{testSchedule}, nil)
+	mockHandler.On("PauseHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
 	out, _, err := Run(context.Background(), "singularity deal schedule pause 1")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_create.txt")
+	Save(t, out, "schedule_create.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose deal schedule pause 1")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_create_verbose.txt")
+	Save(t, out, "schedule_create_verbose.txt")
 }
 
 func TestScheduleResumeHandler(t *testing.T) {
 	mockHandler := new(MockSchedule)
 	defer swapScheduleHandler(mockHandler)()
-	mockHandler.On("ResumeHandler", mock.Anything, mock.Anything).Return([]model.Schedule{testSchedule}, nil)
+	mockHandler.On("ResumeHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
 	out, _, err := Run(context.Background(), "singularity deal schedule resume 1")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_create.txt")
+	Save(t, out, "schedule_create.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose deal schedule resume 1")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_create_verbose.txt")
+	Save(t, out, "schedule_create_verbose.txt")
 }
 
 func TestScheduleListHandler(t *testing.T) {
@@ -76,10 +76,10 @@ func TestScheduleListHandler(t *testing.T) {
 	mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Schedule{testSchedule}, nil)
 	out, _, err := Run(context.Background(), "singularity deal schedule list")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_list.txt")
+	Save(t, out, "schedule_list.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose deal schedule list")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_list_verbose.txt")
+	Save(t, out, "schedule_list_verbose.txt")
 }
 
 func TestScheduleCreateHandler(t *testing.T) {
@@ -88,8 +88,8 @@ func TestScheduleCreateHandler(t *testing.T) {
 	mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
 	out, _, err := Run(context.Background(), "singularity deal schedule create 5 provider")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_create.txt")
+	Save(t, out, "schedule_create.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose deal schedule create 5 provider")
 	require.NoError(t, err)
-	CompareWith(t, out, "schedule_create_verbose.txt")
+	Save(t, out, "schedule_create_verbose.txt")
 }

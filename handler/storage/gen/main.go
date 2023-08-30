@@ -11,6 +11,8 @@ import (
 	"unicode"
 
 	"github.com/data-preservation-programs/singularity/storagesystem"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const header = `//lint:file-ignore U1000 Ignore all unused code, it's generated
@@ -218,6 +220,7 @@ func main() {
 		panic(err)
 	}
 	// Create generated file in the same directory
+	//nolint:gosec
 	err = os.WriteFile("handler/storage/types_gen.go", formatted, 0644)
 	if err != nil {
 		panic(err)
@@ -234,7 +237,7 @@ func snakeToLowerCamel(s string) string {
 
 		// Only capitalize the first letter of subsequent words (not the first word)
 		if i != 0 {
-			words[i] = strings.Title(words[i])
+			words[i] = cases.Title(language.English).String(words[i])
 		} else {
 			// Ensure the first word starts with a lowercase letter
 			r := []rune(words[i])

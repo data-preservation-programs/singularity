@@ -81,7 +81,7 @@ type Handler interface {
 
 	AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source string) (*model.Preparation, error)
 
-	GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) (*Status, error)
+	GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) ([]SourceStatus, error)
 }
 
 type DefaultHandler struct{}

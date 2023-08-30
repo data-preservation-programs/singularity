@@ -149,6 +149,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 	usage := strings.Split(option.Help, "\n")[0]
 	switch (*fs.Option)(option).Type() {
 	case "string":
+		//nolint:forcetypeassert
 		flag = &cli.StringFlag{
 			Category: category,
 			Name:     name,
@@ -159,6 +160,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
 		}
 	case "int":
+		//nolint:forcetypeassert
 		flag = &cli.IntFlag{
 			Category: category,
 			Name:     name,
@@ -169,6 +171,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
 		}
 	case "bool":
+		//nolint:forcetypeassert
 		flag = &cli.BoolFlag{
 			Category: category,
 			Name:     name,
@@ -179,6 +182,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 			EnvVars:  []string{strings.ToUpper(strings.ReplaceAll(name, "-", "_"))},
 		}
 	default:
+		//nolint:forcetypeassert
 		flag = &cli.StringFlag{
 			Category: category,
 			Name:     name,
@@ -265,14 +269,13 @@ func init() {
 				providerMap[""] = &ProviderOptions{}
 			}
 			var providers []string
-			if option.Provider == "" {
+			switch {
+			case option.Provider == "":
 				providers = allProviders
-			} else if option.Provider == "" {
-				providers = []string{""}
-			} else if strings.HasPrefix(option.Provider, "!") {
+			case strings.HasPrefix(option.Provider, "!"):
 				excludes := strings.Split(option.Provider[1:], ",")
 				providers = underscore.Difference(allProviders, excludes)
-			} else {
+			default:
 				providers = strings.Split(option.Provider, ",")
 			}
 

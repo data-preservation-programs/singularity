@@ -356,6 +356,7 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
+	//nolint:contextcheck
 	s.setupRoutes(e)
 	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
 	if err != nil {
@@ -382,8 +383,14 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 		ctx2, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		//nolint:contextcheck
-		e.Shutdown(ctx2)
-		s.closer.Close()
+		err := e.Shutdown(ctx2)
+		if err != nil {
+			logger.Errorw("failed to shutdown api server", "err", err)
+		}
+		err = s.closer.Close()
+		if err != nil {
+			logger.Errorw("failed to close database connection", "err", err)
+		}
 		close(done)
 	}()
 	return []service.Done{done}, fail, nil

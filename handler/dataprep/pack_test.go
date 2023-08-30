@@ -59,6 +59,7 @@ func TestStartPackHandler_StartExisting(t *testing.T) {
 			State:        model.Error,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		jobs, err := Default.StartPackHandler(ctx, db, 1, "source", 1)
 		require.NoError(t, err)
 		require.Len(t, jobs, 1)
@@ -80,6 +81,7 @@ func TestStartPackHandler_AlreadyProcessing(t *testing.T) {
 			State:        model.Processing,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		_, err = Default.StartPackHandler(ctx, db, 1, "source", 1)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
@@ -98,6 +100,7 @@ func TestStartPackHandler_All(t *testing.T) {
 			State:        model.Error,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		jobs, err := Default.StartPackHandler(ctx, db, 1, "source", 0)
 		require.NoError(t, err)
 		require.Len(t, jobs, 1)
@@ -119,6 +122,7 @@ func TestPausePackHandler_All(t *testing.T) {
 			State:        model.Ready,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		jobs, err := Default.PausePackHandler(ctx, db, 1, "source", 0)
 		require.NoError(t, err)
 		require.Len(t, jobs, 1)
@@ -140,6 +144,7 @@ func TestPausePackHandler_Existing(t *testing.T) {
 			State:        model.Ready,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		jobs, err := Default.PausePackHandler(ctx, db, 1, "source", 1)
 		require.NoError(t, err)
 		require.Len(t, jobs, 1)
@@ -161,6 +166,7 @@ func TestPausePackHandler_JobNotExist(t *testing.T) {
 			State:        model.Ready,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		_, err = Default.PausePackHandler(ctx, db, 1, "source", 2)
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
 	})
@@ -179,6 +185,7 @@ func TestPausePackHandler_AlreadyPaused(t *testing.T) {
 			State:        model.Paused,
 			Type:         model.Pack,
 		}).Error
+		require.NoError(t, err)
 		_, err = Default.PausePackHandler(ctx, db, 1, "source", 1)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})

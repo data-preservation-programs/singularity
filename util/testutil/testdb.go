@@ -6,7 +6,6 @@ import (
 	"context"
 	"io"
 	"net"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -14,33 +13,27 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
-var TestConnectionString = "sqlite:file::memory:?cache=shared"
-
-var logger = log.Logger("testutil")
-
 var SupportedTestDialects = []string{"sqlite", "mysql", "postgres"}
 
 func One(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
+	t.Helper()
 	backend := SupportedTestDialects[0]
 	doOne(t, backend, testFunc)
 }
 
 func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
+	t.Helper()
 	db, closer, connStr := getTestDB(t, backend)
 	if db == nil {
 		t.Log("Skip " + backend)
 		return
 	}
 	defer closer.Close()
-	os.Setenv("DATABASE_CONNECTION_STRING", connStr)
-	defer func() {
-		os.Unsetenv("DATABASE_CONNECTION_STRING")
-	}()
+	t.Setenv("DATABASE_CONNECTION_STRING", connStr)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 	db = db.WithContext(ctx)
@@ -54,6 +47,7 @@ func doOne(t *testing.T, backend string, testFunc func(ctx context.Context, t *t
 }
 
 func All(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
+	t.Helper()
 	for _, backend := range SupportedTestDialects {
 		doOne(t, backend, testFunc)
 	}
@@ -66,6 +60,7 @@ func (f CloserFunc) Close() error {
 }
 
 func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, connStr string) {
+	t.Helper()
 	var err error
 	if dialect == "sqlite" {
 		connStr = "sqlite:" + t.TempDir() + "/singularity.db"
@@ -94,6 +89,7 @@ func getTestDB(t *testing.T, dialect string) (db *gorm.DB, closer io.Closer, con
 	connStr = strings.ReplaceAll(connStr, "singularity?", dbName+"?")
 	var closer2 io.Closer
 	db, closer2, err = database.OpenWithLogger(connStr)
+	require.NoError(t, err)
 	closer = CloserFunc(func() error {
 		require.NoError(t, closer2.Close())
 		require.NoError(t, db1.Exec("DROP DATABASE "+dbName+"").Error)

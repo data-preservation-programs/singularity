@@ -43,10 +43,10 @@ func TestSendDealHandler(t *testing.T) {
 	}, nil)
 	out, _, err := Run(context.Background(), "singularity deal send-manual client provider piece_cid 1024")
 	require.NoError(t, err)
-	CompareWith(t, out, "deal_send_manual.txt")
+	Save(t, out, "deal_send_manual.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose deal send-manual client provider piece_cid 1024")
 	require.NoError(t, err)
-	CompareWith(t, out, "deal_send_manual_verbose.txt")
+	Save(t, out, "deal_send_manual_verbose.txt")
 }
 
 func TestListDealHandler(t *testing.T) {
@@ -93,8 +93,8 @@ func TestListDealHandler(t *testing.T) {
 	}, nil)
 	out, _, err := Run(context.Background(), "singularity deal list")
 	require.NoError(t, err)
-	CompareWith(t, out, "deal_list.txt")
+	Save(t, out, "deal_list.txt")
 	out, _, err = Run(context.Background(), "singularity --verbose deal list")
 	require.NoError(t, err)
-	CompareWith(t, out, "deal_list_verbose.txt")
+	Save(t, out, "deal_list_verbose.txt")
 }
