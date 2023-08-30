@@ -1,2 +1,0 @@
-ID  Address  PrivateKey  
-id  address  private     

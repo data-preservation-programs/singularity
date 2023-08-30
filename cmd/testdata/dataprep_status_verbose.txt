@@ -1,8 +1,0 @@
-AttachmentID  SourceStorageID  
-1             1                
-    SourceStorage
-        ID  Name    CreatedAt            UpdatedAt            Type   Path  Config  Metadata  
-        1   source  0001-01-01 00:00:00  0001-01-01 00:00:00  local  /tmp  map[]   map[]     
-    Jobs
-        ID  Type  State       ErrorMessage  ErrorStackTrace  WorkerID                              AttachmentID  
-        1   pack  processing                                 b071ce96-98cf-4572-80a4-269b8eb28e78  1             

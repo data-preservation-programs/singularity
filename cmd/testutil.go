@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/cockroachdb/errors"
@@ -16,6 +17,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/fatih/color"
 	"github.com/mattn/go-shellwords"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -24,9 +26,28 @@ import (
 	"gorm.io/gorm"
 )
 
-func Save(t *testing.T, actual string, path string) {
+type Runner struct {
+	sb strings.Builder
+}
+
+func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
+	color.NoColor = false
+	out, stderr, err := Run(ctx, args)
+	green := color.New(color.FgGreen).SprintFunc()
+	blue := color.New(color.FgBlue).SprintFunc()
+	r.sb.WriteString(green("user@localhost") + ":" + blue("~/test") + "$ " + args + "\n")
+	r.sb.WriteString(out)
+	r.sb.WriteString(stderr)
+	r.sb.WriteString("\n")
+	return out, stderr, err
+}
+
+func (r *Runner) Save(t *testing.T) {
 	t.Helper()
-	err := os.WriteFile(filepath.Join("testdata", path), []byte(actual), 0600)
+	path := filepath.Join("testdata", t.Name()+".log")
+	err := os.MkdirAll(filepath.Dir(path), 0700)
+	require.NoError(t, err)
+	err = os.WriteFile(path, []byte(r.sb.String()), 0600)
 	require.NoError(t, err)
 }
 

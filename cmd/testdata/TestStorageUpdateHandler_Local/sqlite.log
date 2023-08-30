@@ -1,0 +1,8 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity storage update local name
+[32;4mID  [0m[32;4mName  [0m[32;4mType   [0m[32;4mPath  [0m
+[33m1   [0mname  local  /tmp  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose storage update local name
+[32;4mID  [0m[32;4mName  [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath  [0m[32;4mConfig  [0m[32;4mMetadata  [0m
+[33m1   [0mname  0001-01-01 00:00:00  0001-01-01 00:00:00  local  /tmp  map[]   map[]     
+

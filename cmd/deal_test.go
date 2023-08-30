@@ -23,13 +23,19 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 }
 
 func TestSendDealHandler_TooFewArgs(t *testing.T) {
-	out, stderr, err := Run(context.Background(), "singularity deal send-manual")
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
+	out, stderr, err := runner.Run(ctx, "singularity deal send-manual")
 	require.ErrorIs(t, err, cliutil.ErrIncorrectNArgs)
 	require.Contains(t, out, "USAGE:")
 	require.Empty(t, stderr)
 }
 
 func TestSendDealHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDeal)
 	defer swapDealHandler(mockHandler)()
 	mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
@@ -49,15 +55,18 @@ func TestSendDealHandler(t *testing.T) {
 		Verified:         true,
 		ClientID:         "client_id",
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity deal send-manual client provider piece_cid 1024")
+	_, _, err := runner.Run(ctx, "singularity deal send-manual client provider piece_cid 1024")
 	require.NoError(t, err)
-	Save(t, out, "deal_send_manual.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose deal send-manual client provider piece_cid 1024")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose deal send-manual client provider piece_cid 1024")
 	require.NoError(t, err)
-	Save(t, out, "deal_send_manual_verbose.txt")
+
 }
 
 func TestListDealHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDeal)
 	defer swapDealHandler(mockHandler)()
 	mockHandler.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deal{
@@ -99,13 +108,13 @@ func TestListDealHandler(t *testing.T) {
 			ClientID:         "client_id",
 		},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
+	_, _, err := runner.Run(ctx, "singularity deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
 	require.NoError(t, err)
-	Save(t, out, "deal_list.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
 	require.NoError(t, err)
-	Save(t, out, "deal_list_verbose.txt")
-	out, _, err = Run(context.Background(), "singularity --json deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
+
+	_, _, err = runner.Run(ctx, "singularity --json deal list --preparation 1 --source source --schedule 5 --provider f01 --state active")
 	require.NoError(t, err)
-	Save(t, out, "deal_list_json.txt")
+
 }

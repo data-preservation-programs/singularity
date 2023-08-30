@@ -1,2 +1,0 @@
-ID  Type  State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
-1   scan  ready                                 <nil>     1             

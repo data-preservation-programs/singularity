@@ -20,6 +20,8 @@ func swapWalletHandler(mockHandler wallet.Handler) func() {
 }
 
 func TestWalletImport(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 	mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
@@ -27,15 +29,15 @@ func TestWalletImport(t *testing.T) {
 		Address:    "address",
 		PrivateKey: "private",
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity wallet import xxx")
+	_, _, err := runner.Run(context.Background(), "singularity wallet import xxx")
 	require.NoError(t, err)
-	Save(t, out, "wallet_import.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose wallet import xxx")
+	_, _, err = runner.Run(context.Background(), "singularity --verbose wallet import xxx")
 	require.NoError(t, err)
-	Save(t, out, "wallet_import_verbose.txt")
 }
 
 func TestWalletList(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 	mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Wallet{{
@@ -47,26 +49,28 @@ func TestWalletList(t *testing.T) {
 		Address:    "address2",
 		PrivateKey: "private2",
 	}}, nil)
-	out, _, err := Run(context.Background(), "singularity wallet list")
+	_, _, err := runner.Run(context.Background(), "singularity wallet list")
 	require.NoError(t, err)
-	Save(t, out, "wallet_list.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose wallet list")
+	_, _, err = runner.Run(context.Background(), "singularity --verbose wallet list")
 	require.NoError(t, err)
-	Save(t, out, "wallet_list_verbose.txt")
 }
 
 func TestWalletRemove(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 	mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	_, _, err := Run(context.Background(), "singularity wallet remove --really-do-it xxx")
+	_, _, err := runner.Run(context.Background(), "singularity wallet remove --really-do-it xxx")
 	require.NoError(t, err)
 }
 
 func TestWalletRemove_NoReallyDoIt(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 	mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	_, _, err := Run(context.Background(), "singularity wallet remove xxx")
+	_, _, err := runner.Run(context.Background(), "singularity wallet remove xxx")
 	require.ErrorIs(t, err, cliutil.ErrReallyDoIt)
 }

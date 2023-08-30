@@ -19,25 +19,34 @@ func swapAdminHandler(mockHandler admin.Handler) func() {
 }
 
 func TestAdminInit(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockAdmin)
 	defer swapAdminHandler(mockHandler)()
 	mockHandler.On("InitHandler", mock.Anything, mock.Anything).Return(nil)
-	_, _, err := Run(context.Background(), "singularity admin init")
+	_, _, err := runner.Run(ctx, "singularity admin init")
 	require.NoError(t, err)
 }
 
 func TestAdminReset(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockAdmin)
 	defer swapAdminHandler(mockHandler)()
 	mockHandler.On("ResetHandler", mock.Anything, mock.Anything).Return(nil)
-	_, _, err := Run(context.Background(), "singularity admin reset --really-do-it")
+	_, _, err := runner.Run(ctx, "singularity admin reset --really-do-it")
 	require.NoError(t, err)
 }
 
 func TestAdminReset_NoReallyDoIt(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockAdmin)
 	defer swapAdminHandler(mockHandler)()
 	mockHandler.On("ResetHandler", mock.Anything, mock.Anything).Return(nil)
-	_, _, err := Run(context.Background(), "singularity admin reset")
+	_, _, err := runner.Run(ctx, "singularity admin reset")
 	require.ErrorIs(t, err, cliutil.ErrReallyDoIt)
 }

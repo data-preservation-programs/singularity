@@ -13,6 +13,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const pattern = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func GenerateFixedBytes(length int) []byte {
+	patternLen := len(pattern)
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
+		result[i] = pattern[i%patternLen]
+	}
+	return result
+}
+
 func GenerateRandomBytes(n int) []byte {
 	b := make([]byte, n)
 	//nolint:errcheck

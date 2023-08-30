@@ -1,3 +1,0 @@
-DealID  State     Provider  PieceCID                                                     PieceSize  StartEpoch  Price  Verified  ClientID   
-100     active    f01       bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  1024       1001        0      true      client_id  
-<nil>   proposed  f01       bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  1024       1011        0      false     client_id  

@@ -61,41 +61,50 @@ func swapDataPrepHandler(mockHandler dataprep.Handler) func() {
 }
 
 func TestDataPrepCreateHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	out, _, err := Run(context.Background(), "singularity prep create --source source --output output")
+	_, _, err := runner.Run(ctx, "singularity prep create --source source --output output")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep create --source source --output output")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep create --source source --output output")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_create_verbose.txt")
+
 }
 func TestDataPrepCreateHandler_WithStorage(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	source := t.TempDir()
 	output := t.TempDir()
-	_, _, err := Run(context.Background(), fmt.Sprintf("singularity prep create --local-source '%s' --local-output '%s'",
+	_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --local-source '%s' --local-output '%s'",
 		testutil.EscapePath(source),
 		testutil.EscapePath(output)))
 	require.NoError(t, err)
 }
 
 func TestDataPrepListHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Preparation{testPreparation}, nil)
-	out, _, err := Run(context.Background(), "singularity prep list")
+	_, _, err := runner.Run(ctx, "singularity prep list")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_list.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep list")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep list")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_list_verbose.txt")
+
 }
 
 var testDagGenJob = model.Job{
@@ -107,29 +116,35 @@ var testDagGenJob = model.Job{
 }
 
 func TestDataPrepStartDagGenHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("StartDagGenHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testDagGenJob, nil)
-	out, _, err := Run(context.Background(), "singularity prep start-daggen 1 name")
+	_, _, err := runner.Run(ctx, "singularity prep start-daggen 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_daggen_job.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep start-daggen 1 name")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep start-daggen 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_daggen_job_verbose.txt")
+
 }
 
 func TestDataPrepPauseDagGenHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("PauseDagGenHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testDagGenJob, nil)
-	out, _, err := Run(context.Background(), "singularity prep pause-daggen 1 name")
+	_, _, err := runner.Run(ctx, "singularity prep pause-daggen 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pause_daggen_job.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep pause-daggen 1 name")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep pause-daggen 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pause_daggen_job_verbose.txt")
+
 }
 
 var testScanob = model.Job{
@@ -141,29 +156,35 @@ var testScanob = model.Job{
 }
 
 func TestDataPrepStartScanHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("StartScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanob, nil)
-	out, _, err := Run(context.Background(), "singularity prep start-scan 1 name")
+	_, _, err := runner.Run(ctx, "singularity prep start-scan 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_scan_job.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep start-scan 1 name")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep start-scan 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_scan_job_verbose.txt")
+
 }
 
 func TestDataPrepPauseScanHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("PauseScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanob, nil)
-	out, _, err := Run(context.Background(), "singularity prep pause-scan 1 name")
+	_, _, err := runner.Run(ctx, "singularity prep pause-scan 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pause_scan_job.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep pause-scan 1 name")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep pause-scan 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pause_scan_job_verbose.txt")
+
 }
 
 var testPackJob = model.Job{
@@ -175,117 +196,144 @@ var testPackJob = model.Job{
 }
 
 func TestDataPrepStartPackHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("StartPackHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]model.Job{testPackJob}, nil)
-	out, _, err := Run(context.Background(), "singularity prep start-pack 1 name")
+	_, _, err := runner.Run(ctx, "singularity prep start-pack 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pack_job.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep start-pack 1 name")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep start-pack 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pack_job_verbose.txt")
-	_, _, err = Run(context.Background(), "singularity prep start-pack 1 name 1")
+
+	_, _, err = runner.Run(ctx, "singularity prep start-pack 1 name 1")
 	require.NoError(t, err)
-	_, _, err = Run(context.Background(), "singularity --verbose prep start-pack 1 name 1")
+	_, _, err = runner.Run(ctx, "singularity --verbose prep start-pack 1 name 1")
 	require.NoError(t, err)
 }
 
 func TestDataPrepPausePackHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("PausePackHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]model.Job{testPackJob}, nil)
-	out, _, err := Run(context.Background(), "singularity prep pause-pack 1 name")
+	_, _, err := runner.Run(ctx, "singularity prep pause-pack 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pause_pack_job.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep pause-pack 1 name")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep pause-pack 1 name")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_pause_pack_job_verbose.txt")
-	_, _, err = Run(context.Background(), "singularity prep pause-pack 1 name 1")
+
+	_, _, err = runner.Run(ctx, "singularity prep pause-pack 1 name 1")
 	require.NoError(t, err)
-	_, _, err = Run(context.Background(), "singularity --verbose prep pause-pack 1 name 1")
+	_, _, err = runner.Run(ctx, "singularity --verbose prep pause-pack 1 name 1")
 	require.NoError(t, err)
 }
 
 func TestDataPrepAttachSourceHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("AddSourceStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	out, _, err := Run(context.Background(), "singularity prep attach-source 1 source")
+	_, _, err := runner.Run(ctx, "singularity prep attach-source 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_attach_source.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep attach-source 1 source")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep attach-source 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_attach_source_verbose.txt")
+
 }
 
 func TestDataPrepAttachOutputHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("AddOutputStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	out, _, err := Run(context.Background(), "singularity prep attach-output 1 source")
+	_, _, err := runner.Run(ctx, "singularity prep attach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_attach_output.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep attach-output 1 source")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep attach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_attach_output_verbose.txt")
+
 }
 func TestDataPrepDetachOutputHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("RemoveOutputStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	out, _, err := Run(context.Background(), "singularity prep detach-output 1 source")
+	_, _, err := runner.Run(ctx, "singularity prep detach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_detach_output.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep detach-output 1 source")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep detach-output 1 source")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_detach_output_verbose.txt")
+
 }
 
 func TestDataPreparationAttachWalletHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 
 	mockHandler.On("AttachHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	out, _, err := Run(context.Background(), "singularity prep attach-wallet 1 test")
+	_, _, err := runner.Run(ctx, "singularity prep attach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_attach_wallet.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep attach-wallet 1 test")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep attach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_attach_wallet_verbose.txt")
+
 }
 
 func TestDataPreparationDetachWalletHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 
 	mockHandler.On("DetachHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	out, _, err := Run(context.Background(), "singularity prep detach-wallet 1 test")
+	_, _, err := runner.Run(ctx, "singularity prep detach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_detach_wallet.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep detach-wallet 1 test")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep detach-wallet 1 test")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_detach_wallet_verbose.txt")
+
 }
 
 func TestDataPreparationListAttachedWalletHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockWallet)
 	defer swapWalletHandler(mockHandler)()
 
 	mockHandler.On("ListAttachedHandler", mock.Anything, mock.Anything, mock.Anything).Return(testPreparation.Wallets, nil)
-	out, _, err := Run(context.Background(), "singularity prep list-wallets 1")
+	_, _, err := runner.Run(ctx, "singularity prep list-wallets 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_list_wallets.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep list-wallets 1")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep list-wallets 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_list_wallets_verbose.txt")
+
 }
 
 func TestDataPreparationExploreHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
@@ -326,15 +374,18 @@ func TestDataPreparationExploreHandler(t *testing.T) {
 			}},
 		},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity prep explore 1 storage path")
+	_, _, err := runner.Run(ctx, "singularity prep explore 1 storage path")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_explore.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep explore 1 storage path")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep explore 1 storage path")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_explore_verbose.txt")
+
 }
 
 func TestDataPreparationAddPieceHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
@@ -349,15 +400,18 @@ func TestDataPreparationAddPieceHandler(t *testing.T) {
 		StoragePath:   "test1.car",
 		PreparationID: 1,
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity prep add-piece --piece-cid xxx --piece-size 100 1")
+	_, _, err := runner.Run(ctx, "singularity prep add-piece --piece-cid xxx --piece-size 100 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_add_piece.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 1")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_add_piece_verbose.txt")
+
 }
 
 func TestDataPreparationListPiecesHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
@@ -415,15 +469,18 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 			}},
 		},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity prep list-pieces 1")
+	_, _, err := runner.Run(ctx, "singularity prep list-pieces 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_list_pieces.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep list-pieces 1")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep list-pieces 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_list_pieces_verbose.txt")
+
 }
 
 func TestDataPreparationGetStatusHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
@@ -450,10 +507,10 @@ func TestDataPreparationGetStatusHandler(t *testing.T) {
 			},
 		},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity prep status 1")
+	_, _, err := runner.Run(ctx, "singularity prep status 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_status.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose prep status 1")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose prep status 1")
 	require.NoError(t, err)
-	Save(t, out, "dataprep_status_verbose.txt")
+
 }

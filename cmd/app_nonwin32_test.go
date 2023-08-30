@@ -17,7 +17,7 @@ func TestEzPrepBenchmark(t *testing.T) {
 	err := os.WriteFile(filepath.Join(temp, "test.img"), []byte("hello world"), 0777)
 	require.NoError(t, err)
 	ctx := context.Background()
-	out, _, err := RunArgsInTest(ctx, fmt.Sprintf("singularity ez-prep --output-dir '' --database-file '' -j 1 %s", escape(temp)))
+	_, _, err := RunArgsInTest(ctx, fmt.Sprintf("singularity ez-prep --output-dir '' --database-file '' -j 1 %s", escape(temp)))
 	require.NoError(t, err)
 	// contains two CARs, one for the file and another one for the dag
 	require.Contains(t, out, "107")

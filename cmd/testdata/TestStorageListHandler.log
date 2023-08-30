@@ -1,0 +1,22 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity storage list
+[32;4mID  [0m[32;4mName   [0m[32;4mType   [0m[32;4mPath  [0m
+[33m1   [0mname1  local  path  
+    [32;4mAs Source: [0m
+        [32;4mID  [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize  [0m[32;4mPieceSize  [0m
+        [33m1   [0mtrue               100      200        
+    [32;4mAs Output: [0m
+        [32;4mID  [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize  [0m[32;4mPieceSize  [0m
+        [33m2   [0mtrue               300      400        
+[33m2   [0mname   local  path  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose storage list
+[32;4mID  [0m[32;4mName   [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath  [0m[32;4mConfig  [0m[32;4mMetadata  [0m
+[33m1   [0mname1  0001-01-01 00:00:00  0001-01-01 00:00:00  local  path  map[]   map[]     
+    [32;4mAs Source: [0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize  [0m[32;4mPieceSize  [0m
+        [33m1   [0m0001-01-01 00:00:00  0001-01-01 00:00:00  true               100      200        
+    [32;4mAs Output: [0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize  [0m[32;4mPieceSize  [0m
+        [33m2   [0m0001-01-01 00:00:00  0001-01-01 00:00:00  true               300      400        
+[33m2   [0mname   0001-01-01 00:00:00  0001-01-01 00:00:00  local  path  map[]   map[]     
+

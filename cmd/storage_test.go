@@ -22,6 +22,9 @@ func swapStorageHandler(mockHandler storage.Handler) func() {
 }
 
 func TestStorageExploreHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockStorage)
 	defer swapStorageHandler(mockHandler)()
 	mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]storage.DirEntry{
@@ -44,15 +47,18 @@ func TestStorageExploreHandler(t *testing.T) {
 			Hash:         "hash2",
 		},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity storage explore name path")
+	_, _, err := runner.Run(ctx, "singularity storage explore name path")
 	require.NoError(t, err)
-	Save(t, out, "storage_explore.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose storage explore name path")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose storage explore name path")
 	require.NoError(t, err)
-	Save(t, out, "storage_explore_verbose.txt")
+
 }
 
 func TestStorageCreateHandler_S3Provider(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockStorage)
 	defer swapStorageHandler(mockHandler)()
 	mockHandler.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
@@ -64,15 +70,18 @@ func TestStorageCreateHandler_S3Provider(t *testing.T) {
 		Path:      "bucket",
 		Config:    map[string]string{"region": "us-east-1"},
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity storage create s3 aws --region us-east-1 name bucket")
+	_, _, err := runner.Run(ctx, "singularity storage create s3 aws --region us-east-1 name bucket")
 	require.NoError(t, err)
-	Save(t, out, "storage_create_s3.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose storage create s3 aws --region us-east-1 name bucket")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose storage create s3 aws --region us-east-1 name bucket")
 	require.NoError(t, err)
-	Save(t, out, "storage_create_s3_verbose.txt")
+
 }
 
 func TestStorageCreateHandler_Local(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockStorage)
 	defer swapStorageHandler(mockHandler)()
 	mockHandler.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
@@ -83,15 +92,18 @@ func TestStorageCreateHandler_Local(t *testing.T) {
 		Type:      "local",
 		Path:      "path",
 	}, nil)
-	out, _, err := Run(context.Background(), "singularity storage create local name path")
+	_, _, err := runner.Run(ctx, "singularity storage create local name path")
 	require.NoError(t, err)
-	Save(t, out, "storage_create_local.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose storage create local name path")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose storage create local name path")
 	require.NoError(t, err)
-	Save(t, out, "storage_create_local_verbose.txt")
+
 }
 
 func TestStorageListHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockStorage)
 	defer swapStorageHandler(mockHandler)()
 	mockHandler.On("ListStoragesHandler", mock.Anything, mock.Anything).Return([]model.Storage{{
@@ -128,24 +140,29 @@ func TestStorageListHandler(t *testing.T) {
 		Type:      "local",
 		Path:      "path",
 	}}, nil)
-	out, _, err := Run(context.Background(), "singularity storage list")
+	_, _, err := runner.Run(ctx, "singularity storage list")
 	require.NoError(t, err)
-	Save(t, out, "storage_list.txt")
-	out, _, err = Run(context.Background(), "singularity --verbose storage list")
+
+	_, _, err = runner.Run(ctx, "singularity --verbose storage list")
 	require.NoError(t, err)
-	Save(t, out, "storage_list_verbose.txt")
+
 }
 
 func TestStorageRemoveHandler(t *testing.T) {
+	runner := Runner{}
+	defer runner.Save(t)
+	ctx := context.Background()
 	mockHandler := new(MockStorage)
 	defer swapStorageHandler(mockHandler)()
 	mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	_, _, err := Run(context.Background(), "singularity storage remove name")
+	_, _, err := runner.Run(ctx, "singularity storage remove name")
 	require.NoError(t, err)
 }
 
 func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := Runner{}
+		defer runner.Save(t)
 		err := db.Create(&model.Storage{
 			Name:   "name",
 			Type:   "s3",
@@ -164,17 +181,19 @@ func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 			Path:      "bucket",
 			Config:    map[string]string{"region": "us-east-1"},
 		}, nil)
-		out, _, err := Run(context.Background(), "singularity storage update s3 aws --region us-east-1 name")
+		_, _, err = runner.Run(ctx, "singularity storage update s3 aws --region us-east-1 name")
 		require.NoError(t, err)
 		require.NoError(t, err)
-		Save(t, out, "storage_update_s3.txt")
-		out, _, err = Run(context.Background(), "singularity --verbose storage update s3 aws --region us-east-1 name")
+
+		_, _, err = runner.Run(ctx, "singularity --verbose storage update s3 aws --region us-east-1 name")
 		require.NoError(t, err)
-		Save(t, out, "storage_update_s3_verbose.txt")
+
 	})
 }
 func TestStorageUpdateHandler_Local(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := Runner{}
+		defer runner.Save(t)
 		err := db.Create(&model.Storage{
 			Name: "name",
 			Type: "local",
@@ -191,12 +210,12 @@ func TestStorageUpdateHandler_Local(t *testing.T) {
 			Type:      "local",
 			Path:      "/tmp",
 		}, nil)
-		out, _, err := Run(context.Background(), "singularity storage update local name")
+		_, _, err = runner.Run(ctx, "singularity storage update local name")
 		require.NoError(t, err)
 		require.NoError(t, err)
-		Save(t, out, "storage_update_local.txt")
-		out, _, err = Run(context.Background(), "singularity --verbose storage update local name")
+
+		_, _, err = runner.Run(ctx, "singularity --verbose storage update local name")
 		require.NoError(t, err)
-		Save(t, out, "storage_update_local_verbose.txt")
+
 	})
 }

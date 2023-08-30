@@ -1,2 +1,0 @@
-ID  Provider  TotalDealSize  Verified  StartDelay  Duration  State   ScheduleCron  ScheduleDealNumber  ScheduleDealSize  MaxPendingDealNumber  MaxPendingDealSize  Notes    PreparationID  
-1   provider  200            true      300ns       400ns     active  * * * * *     500                 600               700                   800                 my note  5              

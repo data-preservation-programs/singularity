@@ -1,2 +1,0 @@
-PieceCID                                                     PieceSize  RootCID  FileSize  StoragePath  
-bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 100       test1.car    

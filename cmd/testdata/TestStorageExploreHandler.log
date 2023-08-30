@@ -1,0 +1,10 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity storage explore name path
+[32;4mPath   [0m[32;4mLastModified         [0m[32;4mSize  [0m[32;4mIsDir  [0m
+[33mpath1  [0m0001-01-01 00:00:00  100   true   
+[33mpath2  [0m0001-01-01 00:00:00  100   false  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose storage explore name path
+[32;4mPath   [0m[32;4mLastModified         [0m[32;4mSize  [0m[32;4mIsDir  [0m[32;4mDirID  [0m[32;4mNumItems  [0m[32;4mHash   [0m
+[33mpath1  [0m0001-01-01 00:00:00  100   true   xx     100       hash1  
+[33mpath2  [0m0001-01-01 00:00:00  100   false         -1        hash2  
+

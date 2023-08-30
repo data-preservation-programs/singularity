@@ -1,2 +1,0 @@
-ID  CreatedAt            UpdatedAt            DealID  State     Provider  ProposalID   Label  PieceCID                                                     PieceSize  StartEpoch  EndEpoch  SectorStartEpoch  Price  Verified  ErrorMessage  ScheduleID  ClientID   
-1   0001-01-01 00:00:00  0001-01-01 00:00:00  <nil>   proposed  f01       proposal_id  label  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  1024       1001        1999      1500              0      true                    <nil>       client_id  
