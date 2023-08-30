@@ -41,10 +41,22 @@ func (DefaultHandler) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, 
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Create(&model.SourceAttachment{
+		attachment := model.SourceAttachment{
 			StorageID:     storage.ID,
 			PreparationID: id,
+		}
+		err := db.Create(&attachment).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		err = db.Create(&model.Directory{
+			AttachmentID: attachment.ID,
 		}).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		return nil
 	})
 	if util.IsForeignKeyConstraintError(err) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)

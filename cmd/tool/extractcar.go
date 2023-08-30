@@ -40,6 +40,6 @@ var ExtractCarCmd = &cli.Command{
 			return errors.Wrap(err, "failed to decode CID")
 		}
 
-		return tool.ExtractCarHandler(c.Context, inputDir, output, cidValue)
+		return tool.ExtractCarHandler(c, inputDir, output, cidValue)
 	},
 }

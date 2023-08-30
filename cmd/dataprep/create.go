@@ -44,9 +44,10 @@ var CreateCmd = &cli.Command{
 			Value: "31.5GiB",
 		},
 		&cli.StringFlag{
-			Name:  "piece-size",
-			Usage: "The target piece size of the CAR files used for piece commitment calculation",
-			Value: "32GiB",
+			Name:        "piece-size",
+			Usage:       "The target piece size of the CAR files used for piece commitment calculation",
+			Value:       "",
+			DefaultText: "Determined by --max-size",
 		},
 	},
 	Action: func(c *cli.Context) error {

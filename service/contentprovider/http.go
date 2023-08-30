@@ -94,6 +94,9 @@ func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	e.HEAD("/piece/metadata/:id", s.getMetadataHandler)
 	e.GET("/piece/:id", s.handleGetPiece)
 	e.HEAD("/piece/:id", s.handleGetPiece)
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "ok")
+	})
 	done := make(chan struct{})
 	fail := make(chan error)
 	go func() {

@@ -32,7 +32,7 @@ type Handler interface {
 		id uint32,
 		name string,
 		path string,
-	) ([]DirEntry, error)
+	) (*ExploreResult, error)
 
 	ListHandler(ctx context.Context, db *gorm.DB) ([]model.Preparation, error)
 

@@ -135,14 +135,17 @@ type ProviderOptions struct {
 	Options             []Option
 }
 
-func (option *Option) ToCLIFlag(prefix string) cli.Flag {
-	var category string
-	if option.Advanced {
+func (option *Option) ToCLIFlag(prefix string, useBuiltIn bool, category string) cli.Flag {
+	if option.Advanced && category == "" {
 		category = "Advanced"
 	}
 	var aliases []string
-	if option.ShortOpt != "" && prefix == "" {
+	if useBuiltIn && option.ShortOpt != "" && prefix == "" {
 		aliases = []string{option.ShortOpt}
+	}
+	var required bool
+	if useBuiltIn {
+		required = option.Required
 	}
 	var flag cli.Flag
 	name := prefix + option.Name
@@ -153,7 +156,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 		flag = &cli.StringFlag{
 			Category: category,
 			Name:     name,
-			Required: option.Required,
+			Required: required,
 			Usage:    usage,
 			Value:    option.Default.(string),
 			Aliases:  aliases,
@@ -164,7 +167,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 		flag = &cli.IntFlag{
 			Category: category,
 			Name:     name,
-			Required: option.Required,
+			Required: required,
 			Usage:    usage,
 			Value:    option.Default.(int),
 			Aliases:  aliases,
@@ -175,7 +178,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 		flag = &cli.BoolFlag{
 			Category: category,
 			Name:     name,
-			Required: option.Required,
+			Required: required,
 			Usage:    usage,
 			Value:    option.Default.(bool),
 			Aliases:  aliases,
@@ -186,7 +189,7 @@ func (option *Option) ToCLIFlag(prefix string) cli.Flag {
 		flag = &cli.StringFlag{
 			Category: category,
 			Name:     name,
-			Required: option.Required,
+			Required: required,
 			Usage:    usage,
 			Value: option.Default.(interface {
 				String() string
@@ -206,7 +209,7 @@ func (p ProviderOptions) ToCLICommand(short string, long string, description str
 	var helpLines []string
 	margin := "   "
 	for _, option := range p.Options {
-		flag := option.ToCLIFlag("")
+		flag := option.ToCLIFlag("", true, "")
 		command.Flags = append(command.Flags, flag)
 		lines := underscore.Map(strings.Split(option.Help, "\n"), func(line string) string { return margin + line })
 		helpLines = append(helpLines, "--"+flag.Names()[0])

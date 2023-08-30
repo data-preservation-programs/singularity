@@ -1,0 +1,502 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose storage create local source '/tempDir/0'
+[32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+[33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep create --max-size 62914560 --source source
+[32;4mID  [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize   [0m[32;4mPieceSize  [0m
+[33m1   [0m2023-08-30 13:20:05  2023-08-30 13:20:05  false              62914560  67108864   
+    [32;4mSource Storages:[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+        [33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep list
+[32;4mID  [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize   [0m[32;4mPieceSize  [0m
+[33m1   [0m2023-08-30 13:20:05  2023-08-30 13:20:05  false              62914560  67108864   
+    [32;4mSource Storages:[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+        [33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep start-scan 1 source
+[32;4mID  [0m[32;4mType  [0m[32;4mState  [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+[33m1   [0mscan  ready                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep status 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+        [33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+    [32;4mJobs[0m
+        [32;4mID  [0m[32;4mType  [0m[32;4mState     [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+        [33m1   [0mscan  complete                                 <nil>     1             
+        [33m2   [0mpack  complete                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep list-pieces 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+        [33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+    [32;4mPieces[0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mPieceCID                                                          [0m[32;4mPieceSize  [0m[32;4mRootCID                                                      [0m[32;4mFileSize  [0m[32;4mStorageID  [0m[32;4mStoragePath  [0m
+        [33m1   [0m2023-08-30 13:20:06  baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi  67108864   bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku  23080634  <nil>                   
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep explore 1 source
+[32;4mPath               [0m[32;4mIsDir  [0m[32;4mCID                                                          [0m
+[33mfolder-0           [0mtrue   bafybeigs5l2cvtc44rzygg6citduv6lcbzb6eteuopnqld7r5u442htrsq  
+[33mfile-59.txt        [0mfalse  bafkreida2c5c2niqyjb7dnqz3lbyfvvh33sq5mbpq4pftqign5ziy66yai  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m56  [0mbafkreida2c5c2niqyjb7dnqz3lbyfvvh33sq5mbpq4pftqign5ziy66yai        59    2023-08-30 13:19:58  
+[33mfile-69.txt        [0mfalse  bafkreiekxhmajr3rpm6ahapnlvm3qfoj7efk5olizaoraavfuiu3p4qbea  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m67  [0mbafkreiekxhmajr3rpm6ahapnlvm3qfoj7efk5olizaoraavfuiu3p4qbea        69    2023-08-30 13:19:58  
+[33mfile-80.txt        [0mfalse  bafkreic22tkm4m77rcfrtkqvhmprgviuarnpuebu7gcrejel3rsfffwqae  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m80  [0mbafkreic22tkm4m77rcfrtkqvhmprgviuarnpuebu7gcrejel3rsfffwqae        80    2023-08-30 13:19:58  
+[33msize-20971520.txt  [0mfalse  bafybeift4xxg7o3i6x2jcaj4hmh3xv25magshh4ok7fgr5urqilylygoyi  
+    [32;4mFileVersions[0m
+        [32;4mID   [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize      [0m[32;4mLastModified         [0m
+        [33m106  [0mbafybeift4xxg7o3i6x2jcaj4hmh3xv25magshh4ok7fgr5urqilylygoyi        20971520  2023-08-30 13:19:58  
+[33mfile-18.txt        [0mfalse  bafkreibncirgskx26vxjlkflacdz5ubduag3hytpufbdnzkcoscxskc67i  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m11  [0mbafkreibncirgskx26vxjlkflacdz5ubduag3hytpufbdnzkcoscxskc67i        18    2023-08-30 13:19:58  
+[33mfile-42.txt        [0mfalse  bafkreiaqaxxda6l54czhtulknjkbuneowvw752whmtakd7ferjpzgkppca  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m38  [0mbafkreiaqaxxda6l54czhtulknjkbuneowvw752whmtakd7ferjpzgkppca        42    2023-08-30 13:19:58  
+[33mfile-26.txt        [0mfalse  bafkreidrysan7e6wvyxr56wrir6gnskslyyweggpkh6i3hwyglznv4mlom  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m20  [0mbafkreidrysan7e6wvyxr56wrir6gnskslyyweggpkh6i3hwyglznv4mlom        26    2023-08-30 13:19:58  
+[33mfile-29.txt        [0mfalse  bafkreiafgvlhzlcacmizdui5a3kf4ldr37cwv7hkd5vwwmoi34cya4kdym  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m23  [0mbafkreiafgvlhzlcacmizdui5a3kf4ldr37cwv7hkd5vwwmoi34cya4kdym        29    2023-08-30 13:19:58  
+[33mfile-34.txt        [0mfalse  bafkreidd66577v7jzqprj5swt4ae62oayyl6ckoucoctoaregopsdsfzcm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m29  [0mbafkreidd66577v7jzqprj5swt4ae62oayyl6ckoucoctoaregopsdsfzcm        34    2023-08-30 13:19:58  
+[33mfile-39.txt        [0mfalse  bafkreicw5zwibunurzdtd7eongavfgdgpwd7gmomyfctuwx6yxk72bzpym  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m34  [0mbafkreicw5zwibunurzdtd7eongavfgdgpwd7gmomyfctuwx6yxk72bzpym        39    2023-08-30 13:19:58  
+[33mfile-55.txt        [0mfalse  bafkreigxjoqhlzbftrwia7cbahtg2kaqs3hz74kluajgbxxhigy33lxtey  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m52  [0mbafkreigxjoqhlzbftrwia7cbahtg2kaqs3hz74kluajgbxxhigy33lxtey        55    2023-08-30 13:19:58  
+[33mfile-92.txt        [0mfalse  bafkreibyorwurqjxwyjgww32p6xusepr2iwsrcwpmz2c7vrx6dxahdtzri  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m93  [0mbafkreibyorwurqjxwyjgww32p6xusepr2iwsrcwpmz2c7vrx6dxahdtzri        92    2023-08-30 13:19:58  
+[33mfile-32.txt        [0mfalse  bafkreigp2ly7vv22df4nucsejcb5w4sriffrhhzr6wqeobgcsh63bylv4y  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m27  [0mbafkreigp2ly7vv22df4nucsejcb5w4sriffrhhzr6wqeobgcsh63bylv4y        32    2023-08-30 13:19:58  
+[33msize-0.txt         [0mfalse  bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku  
+    [32;4mFileVersions[0m
+        [32;4mID   [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m102  [0mbafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku        0     2023-08-30 13:19:58  
+[33mfile-36.txt        [0mfalse  bafkreih34xa4sh7pv6kpvslp6ysci2wptk2hjxpou2c4a4gpo6dioyjld4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m31  [0mbafkreih34xa4sh7pv6kpvslp6ysci2wptk2hjxpou2c4a4gpo6dioyjld4        36    2023-08-30 13:19:58  
+[33mfile-57.txt        [0mfalse  bafkreihwk5yax3uyx5qiqbabu3vb43rs73ggdt2oelnlkyhvrljq4aauqi  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m54  [0mbafkreihwk5yax3uyx5qiqbabu3vb43rs73ggdt2oelnlkyhvrljq4aauqi        57    2023-08-30 13:19:58  
+[33mfile-78.txt        [0mfalse  bafkreidnzbfxhjdftxgkr2qo5qesupssuncym4py2cek4xjeivxdvof4bq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m77  [0mbafkreidnzbfxhjdftxgkr2qo5qesupssuncym4py2cek4xjeivxdvof4bq        78    2023-08-30 13:19:58  
+[33mfile-83.txt        [0mfalse  bafkreidjp7tbrggqic2ydgugujlotzeshohex7pq3r4abdzrp3p2mg42jm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m83  [0mbafkreidjp7tbrggqic2ydgugujlotzeshohex7pq3r4abdzrp3p2mg42jm        83    2023-08-30 13:19:58  
+[33mfile-27.txt        [0mfalse  bafkreib3nplpjlaol4fnzru7rw4layftfb6v2esiz7edfbgr4emnf3yeuq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m21  [0mbafkreib3nplpjlaol4fnzru7rw4layftfb6v2esiz7edfbgr4emnf3yeuq        27    2023-08-30 13:19:58  
+[33mfile-86.txt        [0mfalse  bafkreihu3glvzcs4zs7prxu2r2pix6fkt7t5hnwlnkgys42i63hxjhnj6u  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m86  [0mbafkreihu3glvzcs4zs7prxu2r2pix6fkt7t5hnwlnkgys42i63hxjhnj6u        86    2023-08-30 13:19:58  
+[33mfile-95.txt        [0mfalse  bafkreiaisz5cc6up4aeojqsg36l6ja7nquevg4wfeq34p7wzu7ghrijj7q  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m96  [0mbafkreiaisz5cc6up4aeojqsg36l6ja7nquevg4wfeq34p7wzu7ghrijj7q        95    2023-08-30 13:19:58  
+[33mfile-76.txt        [0mfalse  bafkreihsjsk7fd2ilcfshaeaj7cibmgtlklx37smf7bscugkbvipgefyeq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m75  [0mbafkreihsjsk7fd2ilcfshaeaj7cibmgtlklx37smf7bscugkbvipgefyeq        76    2023-08-30 13:19:58  
+[33mfile-94.txt        [0mfalse  bafkreiffjk5z5gnhfgzhgpbkaq7gtukv4ux3sfcolhwswf4wmfortee4vy  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m95  [0mbafkreiffjk5z5gnhfgzhgpbkaq7gtukv4ux3sfcolhwswf4wmfortee4vy        94    2023-08-30 13:19:58  
+[33mfile-8.txt         [0mfalse  bafkreie4k3gfdm3uyo5breqq2w3njp2xpegtkhewyr6aegioz4pegbrvvm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m79  [0mbafkreie4k3gfdm3uyo5breqq2w3njp2xpegtkhewyr6aegioz4pegbrvvm        8     2023-08-30 13:19:58  
+[33mfile-43.txt        [0mfalse  bafkreicguimzpawiqj7qvrlpka56tu4673ux6qfhg24szr6xyx4clt6yke  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m39  [0mbafkreicguimzpawiqj7qvrlpka56tu4673ux6qfhg24szr6xyx4clt6yke        43    2023-08-30 13:19:58  
+[33mfile-5.txt         [0mfalse  bafkreibwxpsq5wliihiqiq54wzynmvkpbi2loyn6m7wjysuk2lamitfefq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m46  [0mbafkreibwxpsq5wliihiqiq54wzynmvkpbi2loyn6m7wjysuk2lamitfefq        5     2023-08-30 13:19:58  
+[33mfile-65.txt        [0mfalse  bafkreiemvxj5gxi3azgva65titbvlzs5jrzaxpk3aofjqoxmc5cmm2d5iu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m63  [0mbafkreiemvxj5gxi3azgva65titbvlzs5jrzaxpk3aofjqoxmc5cmm2d5iu        65    2023-08-30 13:19:58  
+[33mfile-33.txt        [0mfalse  bafkreidkkbumwnydekt2zabimvo6u3ttys5r2dmhzzr63mbtwmc6unzvj4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m28  [0mbafkreidkkbumwnydekt2zabimvo6u3ttys5r2dmhzzr63mbtwmc6unzvj4        33    2023-08-30 13:19:58  
+[33mfile-1.txt         [0mfalse  bafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m2   [0mbafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm        1     2023-08-30 13:19:58  
+[33mfile-81.txt        [0mfalse  bafkreifwteo5nk4qjgw5oxhprvntog4oj6lenclxjtuxc5gjho7rbjhs4e  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m81  [0mbafkreifwteo5nk4qjgw5oxhprvntog4oj6lenclxjtuxc5gjho7rbjhs4e        81    2023-08-30 13:19:58  
+[33mfile-89.txt        [0mfalse  bafkreihqxuthdv4dyhfxcpldbyrs7xirgitouymwlcyeopumh34sjvw3dq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m89  [0mbafkreihqxuthdv4dyhfxcpldbyrs7xirgitouymwlcyeopumh34sjvw3dq        89    2023-08-30 13:19:58  
+[33mfile-49.txt        [0mfalse  bafkreics3xjt57knkfgg4rj5cxyrc2p7gbaejqtsnw56wzbgh2hvvlgkpi  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m45  [0mbafkreics3xjt57knkfgg4rj5cxyrc2p7gbaejqtsnw56wzbgh2hvvlgkpi        49    2023-08-30 13:19:58  
+[33mfile-88.txt        [0mfalse  bafkreia4g7ox4lact3mjpkjv7c5ef27vcndvudgfnmexzcadlyy6cee3xm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m88  [0mbafkreia4g7ox4lact3mjpkjv7c5ef27vcndvudgfnmexzcadlyy6cee3xm        88    2023-08-30 13:19:58  
+[33msize-1048577.txt   [0mfalse  bafybeihyoyn2hzzamyuv67jray2iqrrtp74thkf45mlzon5m5gmgbity5y  
+    [32;4mFileVersions[0m
+        [32;4mID   [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize     [0m[32;4mLastModified         [0m
+        [33m105  [0mbafybeihyoyn2hzzamyuv67jray2iqrrtp74thkf45mlzon5m5gmgbity5y        1048577  2023-08-30 13:19:58  
+[33mfile-12.txt        [0mfalse  bafkreigwqlwuzjgzrhatj3eu6fkr4hwfqdow2wtozxu7hu26nzfhc7554q  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m5   [0mbafkreigwqlwuzjgzrhatj3eu6fkr4hwfqdow2wtozxu7hu26nzfhc7554q        12    2023-08-30 13:19:58  
+[33mfile-13.txt        [0mfalse  bafkreih7caye6gxsgydo3ypc3cv43skmekiepjquldmatwf32u7n4h3fta  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m6   [0mbafkreih7caye6gxsgydo3ypc3cv43skmekiepjquldmatwf32u7n4h3fta        13    2023-08-30 13:19:58  
+[33mfile-16.txt        [0mfalse  bafkreihttwwgzov2knpcyid42dgy6fkjoqrdzbepoj7zrm2wjtvfng2bz4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m9   [0mbafkreihttwwgzov2knpcyid42dgy6fkjoqrdzbepoj7zrm2wjtvfng2bz4        16    2023-08-30 13:19:58  
+[33mfile-62.txt        [0mfalse  bafkreicuanr5cby2aauzokim3d2kfpptvtidkx722oz7ex2svlloxlmtni  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m60  [0mbafkreicuanr5cby2aauzokim3d2kfpptvtidkx722oz7ex2svlloxlmtni        62    2023-08-30 13:19:58  
+[33mfile-68.txt        [0mfalse  bafkreigui3ely2ymzuytmjwdtyswi6wyp7wtmqxs22osd4rr2zjftwlxxu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m66  [0mbafkreigui3ely2ymzuytmjwdtyswi6wyp7wtmqxs22osd4rr2zjftwlxxu        68    2023-08-30 13:19:58  
+[33mfile-35.txt        [0mfalse  bafkreiaokjtt4tqsqo5fyyqoh3cuhcv6k5y6tdvz6a6ngrxhdozsdn44aq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m30  [0mbafkreiaokjtt4tqsqo5fyyqoh3cuhcv6k5y6tdvz6a6ngrxhdozsdn44aq        35    2023-08-30 13:19:58  
+[33mfile-51.txt        [0mfalse  bafkreigrkw6lfib2i5kaofnqkxgtuvkymixfky5fiuagzwv375yqcwhqj4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m48  [0mbafkreigrkw6lfib2i5kaofnqkxgtuvkymixfky5fiuagzwv375yqcwhqj4        51    2023-08-30 13:19:58  
+[33mfile-58.txt        [0mfalse  bafkreif7dofpqeykqve2bmtdgjty4uzpi34ytuu4mhf5hggd7wnwfzsery  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m55  [0mbafkreif7dofpqeykqve2bmtdgjty4uzpi34ytuu4mhf5hggd7wnwfzsery        58    2023-08-30 13:19:58  
+[33mfile-74.txt        [0mfalse  bafkreifzb4djqrc3nn2xgcjvj5gwowgpnqqk3j52smbuasyp3jlxkaov5i  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m73  [0mbafkreifzb4djqrc3nn2xgcjvj5gwowgpnqqk3j52smbuasyp3jlxkaov5i        74    2023-08-30 13:19:58  
+[33mfile-97.txt        [0mfalse  bafkreif2gpoc53aen6qoq2c7vjzidael5lflt2uyhfvenweiqtlvaq7h3u  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m98  [0mbafkreif2gpoc53aen6qoq2c7vjzidael5lflt2uyhfvenweiqtlvaq7h3u        97    2023-08-30 13:19:58  
+[33mfile-99.txt        [0mfalse  bafkreiamtvbcpduxppytflav6kezu46fskj52bdrpbyildiwj4qvthcife  
+    [32;4mFileVersions[0m
+        [32;4mID   [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m100  [0mbafkreiamtvbcpduxppytflav6kezu46fskj52bdrpbyildiwj4qvthcife        99    2023-08-30 13:19:58  
+[33mfile-15.txt        [0mfalse  bafkreicby53ayuhp32m36v2o3d77y6tn2naf2vdnhwustmquzckfvt4ks4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m8   [0mbafkreicby53ayuhp32m36v2o3d77y6tn2naf2vdnhwustmquzckfvt4ks4        15    2023-08-30 13:19:58  
+[33msize-1048576.txt   [0mfalse  bafkreialma7cnmrp643lmxzcnnwqpxuu3kaywazbotsbvparlpixxkuolu  
+    [32;4mFileVersions[0m
+        [32;4mID   [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize     [0m[32;4mLastModified         [0m
+        [33m104  [0mbafkreialma7cnmrp643lmxzcnnwqpxuu3kaywazbotsbvparlpixxkuolu        1048576  2023-08-30 13:19:58  
+[33mfile-3.txt         [0mfalse  bafkreif2pall7dybz7vecqka3zo24irdwabwdi4wc55jznaq75q7eaavvu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m24  [0mbafkreif2pall7dybz7vecqka3zo24irdwabwdi4wc55jznaq75q7eaavvu        3     2023-08-30 13:19:58  
+[33mfile-54.txt        [0mfalse  bafkreifxnwjmayvf3yphkx2cwjge7hu5rzpq52p24chdn2weywjb2regkm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m51  [0mbafkreifxnwjmayvf3yphkx2cwjge7hu5rzpq52p24chdn2weywjb2regkm        54    2023-08-30 13:19:58  
+[33mfile-82.txt        [0mfalse  bafkreidlnljicelzi7v6pq5agn66htcdth3b2posygsa7cxhnrttteau6a  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m82  [0mbafkreidlnljicelzi7v6pq5agn66htcdth3b2posygsa7cxhnrttteau6a        82    2023-08-30 13:19:58  
+[33mfile-53.txt        [0mfalse  bafkreihlrdpbsioijnjvgcjpvyinyrym2wmg3gazxk3oshd3zrxprc3hui  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m50  [0mbafkreihlrdpbsioijnjvgcjpvyinyrym2wmg3gazxk3oshd3zrxprc3hui        53    2023-08-30 13:19:58  
+[33mfile-11.txt        [0mfalse  bafkreigkf4qgt2qmnzdfqiroa34n2y4wlhf3lzt4xo5gonf4gnfdpgn4na  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m4   [0mbafkreigkf4qgt2qmnzdfqiroa34n2y4wlhf3lzt4xo5gonf4gnfdpgn4na        11    2023-08-30 13:19:58  
+[33mfile-61.txt        [0mfalse  bafkreifbc5mqqymkgpmhqpnadbwhbcehrouo3ok25yx7niywlwm6qdqwuu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m59  [0mbafkreifbc5mqqymkgpmhqpnadbwhbcehrouo3ok25yx7niywlwm6qdqwuu        61    2023-08-30 13:19:58  
+[33mfile-84.txt        [0mfalse  bafkreigvf3562awiknyfeumez7wb3wfyagqadkfsurhbitlypdp2x4jg2i  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m84  [0mbafkreigvf3562awiknyfeumez7wb3wfyagqadkfsurhbitlypdp2x4jg2i        84    2023-08-30 13:19:58  
+[33mfile-46.txt        [0mfalse  bafkreicp4z7n3ckxtfj5fwul7qqyf2poqwom4jb6r4aytd4zfq27z6eira  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m42  [0mbafkreicp4z7n3ckxtfj5fwul7qqyf2poqwom4jb6r4aytd4zfq27z6eira        46    2023-08-30 13:19:58  
+[33msize-1.txt         [0mfalse  bafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm  
+    [32;4mFileVersions[0m
+        [32;4mID   [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m103  [0mbafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm        1     2023-08-30 13:19:58  
+[33mfile-25.txt        [0mfalse  bafkreidjxgafjhkqiwljfbithx3xhlur3xk5bzohhxeo5fm3f2zchpc7xm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m19  [0mbafkreidjxgafjhkqiwljfbithx3xhlur3xk5bzohhxeo5fm3f2zchpc7xm        25    2023-08-30 13:19:58  
+[33mfile-28.txt        [0mfalse  bafkreiafmtwds3ljtclmp72dhgksdeiqucaimntrcsl4yqiwvsv3hcvoyy  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m22  [0mbafkreiafmtwds3ljtclmp72dhgksdeiqucaimntrcsl4yqiwvsv3hcvoyy        28    2023-08-30 13:19:58  
+[33mfile-0.txt         [0mfalse  bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m1   [0mbafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku        0     2023-08-30 13:19:58  
+[33mfile-2.txt         [0mfalse  bafkreih3ryqpylsmh4siyygdtplff46bgrzjro4xpofu2widxbifkyqgam  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m13  [0mbafkreih3ryqpylsmh4siyygdtplff46bgrzjro4xpofu2widxbifkyqgam        2     2023-08-30 13:19:58  
+[33mfile-56.txt        [0mfalse  bafkreiepwyc6vmxpvy6r7teid6s4lxlcdgqxzi3ghzdgil7vm2chyjgcoi  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m53  [0mbafkreiepwyc6vmxpvy6r7teid6s4lxlcdgqxzi3ghzdgil7vm2chyjgcoi        56    2023-08-30 13:19:58  
+[33mfile-23.txt        [0mfalse  bafkreid7a6ay4fgqrfcm4fcwfhffimzplt5ncsgfsdx3znodo72ngnxf6q  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m17  [0mbafkreid7a6ay4fgqrfcm4fcwfhffimzplt5ncsgfsdx3znodo72ngnxf6q        23    2023-08-30 13:19:58  
+[33mfile-44.txt        [0mfalse  bafkreig424bvd2orat7bvozjyomahjhczrx7etnitbd22bs4qitzoq5rve  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m40  [0mbafkreig424bvd2orat7bvozjyomahjhczrx7etnitbd22bs4qitzoq5rve        44    2023-08-30 13:19:58  
+[33mfile-17.txt        [0mfalse  bafkreierrkkuvrg7wvfmhhygrwmgqit7ngvttpbwfywjwaedx5vbbhlk24  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m10  [0mbafkreierrkkuvrg7wvfmhhygrwmgqit7ngvttpbwfywjwaedx5vbbhlk24        17    2023-08-30 13:19:58  
+[33mfile-91.txt        [0mfalse  bafkreiegkz6zcwxtt3fmsfchne3zjpjn4zdo73uqirw7tqz64wafjicptu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m92  [0mbafkreiegkz6zcwxtt3fmsfchne3zjpjn4zdo73uqirw7tqz64wafjicptu        91    2023-08-30 13:19:58  
+[33mfile-10.txt        [0mfalse  bafkreidshgjwdwtko5kp5smg3ss3ps5pdsaqukg62sv26vvscbwqns3ywa  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m3   [0mbafkreidshgjwdwtko5kp5smg3ss3ps5pdsaqukg62sv26vvscbwqns3ywa        10    2023-08-30 13:19:58  
+[33mfile-24.txt        [0mfalse  bafkreietwdfl7bti4dctjrjkk2evosm6ckrij5m5s7ojwjzf56bwqbehlm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m18  [0mbafkreietwdfl7bti4dctjrjkk2evosm6ckrij5m5s7ojwjzf56bwqbehlm        24    2023-08-30 13:19:58  
+[33mfile-41.txt        [0mfalse  bafkreifmp2b4at3vmgiz3lra5dn22nbzied2bksneo3dkhgjm5i3zxjmjq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m37  [0mbafkreifmp2b4at3vmgiz3lra5dn22nbzied2bksneo3dkhgjm5i3zxjmjq        41    2023-08-30 13:19:58  
+[33mfile-52.txt        [0mfalse  bafkreibzmquuwzsgcn4y2gshp24k2aqrrnenbrltrrbhmezaf4xnci5v6e  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m49  [0mbafkreibzmquuwzsgcn4y2gshp24k2aqrrnenbrltrrbhmezaf4xnci5v6e        52    2023-08-30 13:19:58  
+[33mfile-90.txt        [0mfalse  bafkreidgerrlqohzmgmulouc5f4iuvddfnsyabb2rxlit37ewoeqyjltbu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m91  [0mbafkreidgerrlqohzmgmulouc5f4iuvddfnsyabb2rxlit37ewoeqyjltbu        90    2023-08-30 13:19:58  
+[33mfile-96.txt        [0mfalse  bafkreifryz46dmli76nwxqm5msmjpf76n4mjprlngrcffjhs6x6prp7n5i  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m97  [0mbafkreifryz46dmli76nwxqm5msmjpf76n4mjprlngrcffjhs6x6prp7n5i        96    2023-08-30 13:19:58  
+[33mfile-50.txt        [0mfalse  bafkreielmroqxvracnr2nz7lks4nq3bzdmm7wcm2escogthsdx5hsxyfkq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m47  [0mbafkreielmroqxvracnr2nz7lks4nq3bzdmm7wcm2escogthsdx5hsxyfkq        50    2023-08-30 13:19:58  
+[33mfile-70.txt        [0mfalse  bafkreigwdcqblcdavz5ka54lk2wjrhlnzdytzehnsalgllx2ytwkyybbte  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m69  [0mbafkreigwdcqblcdavz5ka54lk2wjrhlnzdytzehnsalgllx2ytwkyybbte        70    2023-08-30 13:19:58  
+[33mfile-77.txt        [0mfalse  bafkreiazyu5nzgypmhr3j7hklf5ovur2k5gqoliw7rddxd5nvlzgm2q2qe  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m76  [0mbafkreiazyu5nzgypmhr3j7hklf5ovur2k5gqoliw7rddxd5nvlzgm2q2qe        77    2023-08-30 13:19:58  
+[33mfile-93.txt        [0mfalse  bafkreig4erhieqyfredtqccknw2xjrupqk2n7ukhnhcuy76yudfmy5beau  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m94  [0mbafkreig4erhieqyfredtqccknw2xjrupqk2n7ukhnhcuy76yudfmy5beau        93    2023-08-30 13:19:58  
+[33mfile-30.txt        [0mfalse  bafkreibcz2a4oyrxjytwn7lfxvq3cqpwzb27t4k6t6is3ok76rxzpi56ve  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m25  [0mbafkreibcz2a4oyrxjytwn7lfxvq3cqpwzb27t4k6t6is3ok76rxzpi56ve        30    2023-08-30 13:19:58  
+[33mfile-66.txt        [0mfalse  bafkreiaj2bnthdbergzeozzyll746ur5eb6ah5e5l3pudqlkih5zqipspi  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m64  [0mbafkreiaj2bnthdbergzeozzyll746ur5eb6ah5e5l3pudqlkih5zqipspi        66    2023-08-30 13:19:58  
+[33mfile-71.txt        [0mfalse  bafkreigabftmqgfgojndiuuoi2avpbrb43kj2he45f5yjcfw72leyyy5bi  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m70  [0mbafkreigabftmqgfgojndiuuoi2avpbrb43kj2he45f5yjcfw72leyyy5bi        71    2023-08-30 13:19:58  
+[33mfile-19.txt        [0mfalse  bafkreihckd4im4ulo65gg4rmpzs7y47camibvbbidmzdgl6wptdkdlr6ei  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m12  [0mbafkreihckd4im4ulo65gg4rmpzs7y47camibvbbidmzdgl6wptdkdlr6ei        19    2023-08-30 13:19:58  
+[33mfile-21.txt        [0mfalse  bafkreibf6yvfupkbj3doecih357tm7zlojrfvlpfklnwjqdzgp3ait6eti  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m15  [0mbafkreibf6yvfupkbj3doecih357tm7zlojrfvlpfklnwjqdzgp3ait6eti        21    2023-08-30 13:19:58  
+[33mfile-64.txt        [0mfalse  bafkreih2iq7sizld257r6r6deisrcwpdfi2xabn7np6mmggdzec6qsolzu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m62  [0mbafkreih2iq7sizld257r6r6deisrcwpdfi2xabn7np6mmggdzec6qsolzu        64    2023-08-30 13:19:58  
+[33mfile-63.txt        [0mfalse  bafkreifgmi2tbbnguihe7sn4otx25xphb7ovivtmvuf6gxftdc6ewrbfv4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m61  [0mbafkreifgmi2tbbnguihe7sn4otx25xphb7ovivtmvuf6gxftdc6ewrbfv4        63    2023-08-30 13:19:58  
+[33mfile-4.txt         [0mfalse  bafkreiei2qtg7vhggogrhocf7tzisv45ecois6bdxeqx3i7bmgjw6ayvre  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m35  [0mbafkreiei2qtg7vhggogrhocf7tzisv45ecois6bdxeqx3i7bmgjw6ayvre        4     2023-08-30 13:19:58  
+[33mfile-6.txt         [0mfalse  bafkreif66v7mp5j2nval5nsau6akmooihpbjvsfjqfxr7rwfy3onspchee  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m57  [0mbafkreif66v7mp5j2nval5nsau6akmooihpbjvsfjqfxr7rwfy3onspchee        6     2023-08-30 13:19:58  
+[33mfile-40.txt        [0mfalse  bafkreiaiwfhvhewxvtyy25qt7enudorhtvnd4b2yq5yftno2dwqyxe4yc4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m36  [0mbafkreiaiwfhvhewxvtyy25qt7enudorhtvnd4b2yq5yftno2dwqyxe4yc4        40    2023-08-30 13:19:58  
+[33mfile-9.txt         [0mfalse  bafkreiazzqbpe3puhtcxdpe626ymjuusesr6yiuvferbojppo3icdsbsn4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m90  [0mbafkreiazzqbpe3puhtcxdpe626ymjuusesr6yiuvferbojppo3icdsbsn4        9     2023-08-30 13:19:58  
+[33mfile-45.txt        [0mfalse  bafkreih6ja23afww7r676flzqrok2bay354in2gqjdtvy72zqiuidndkii  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m41  [0mbafkreih6ja23afww7r676flzqrok2bay354in2gqjdtvy72zqiuidndkii        45    2023-08-30 13:19:58  
+[33mfile-37.txt        [0mfalse  bafkreibt4q5ej4kspucau7uwfwuzw4cgy5vvecfx4wty6vrj6styw5t2tq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m32  [0mbafkreibt4q5ej4kspucau7uwfwuzw4cgy5vvecfx4wty6vrj6styw5t2tq        37    2023-08-30 13:19:58  
+[33mfile-72.txt        [0mfalse  bafkreieqengbclxjomtauexwcsf6vjy6qsbvc37dal6ndczkkth2qpskm4  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m71  [0mbafkreieqengbclxjomtauexwcsf6vjy6qsbvc37dal6ndczkkth2qpskm4        72    2023-08-30 13:19:58  
+[33mfile-48.txt        [0mfalse  bafkreihwx3x45y4cf4hvykppopxmunatfnvjeq6iuxp2fuogxadoins3yy  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m44  [0mbafkreihwx3x45y4cf4hvykppopxmunatfnvjeq6iuxp2fuogxadoins3yy        48    2023-08-30 13:19:58  
+[33mfile-60.txt        [0mfalse  bafkreiffye2uydglou5dhotjpc7skd6y2jjqkzeb57tu5ftbtafoc5thke  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m58  [0mbafkreiffye2uydglou5dhotjpc7skd6y2jjqkzeb57tu5ftbtafoc5thke        60    2023-08-30 13:19:58  
+[33mfile-20.txt        [0mfalse  bafkreig5mxxkamu5zoklc4mhv6o76kgddioxqathg6qwv52zpgq7urqy4u  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m14  [0mbafkreig5mxxkamu5zoklc4mhv6o76kgddioxqathg6qwv52zpgq7urqy4u        20    2023-08-30 13:19:58  
+[33mfile-31.txt        [0mfalse  bafkreia5oog45qyy4s5j7ncnoy4dji2xzyipzbrhsh7otfejxbzr32oxzm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m26  [0mbafkreia5oog45qyy4s5j7ncnoy4dji2xzyipzbrhsh7otfejxbzr32oxzm        31    2023-08-30 13:19:58  
+[33mfile-7.txt         [0mfalse  bafkreid5djkbe6zceubpln43l6yiamdbcuvej6jlg7rdyzjhxl3glvg2ti  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m68  [0mbafkreid5djkbe6zceubpln43l6yiamdbcuvej6jlg7rdyzjhxl3glvg2ti        7     2023-08-30 13:19:58  
+[33mfile-85.txt        [0mfalse  bafkreihlb7ook6qrhg7slbavzsodz7n55l2unw4k4ljl5zriihim3ugm4e  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m85  [0mbafkreihlb7ook6qrhg7slbavzsodz7n55l2unw4k4ljl5zriihim3ugm4e        85    2023-08-30 13:19:58  
+[33mfile-47.txt        [0mfalse  bafkreibo4seuebcca6eopjkf4has5hy4f5ahdhxrt4uizlvaedw55pwbxi  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m43  [0mbafkreibo4seuebcca6eopjkf4has5hy4f5ahdhxrt4uizlvaedw55pwbxi        47    2023-08-30 13:19:58  
+[33mfile-79.txt        [0mfalse  bafkreicqhbp7rbeh3vcje7275ksrikgawnvv4mkufpykdpe6rmgkerm4cu  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m78  [0mbafkreicqhbp7rbeh3vcje7275ksrikgawnvv4mkufpykdpe6rmgkerm4cu        79    2023-08-30 13:19:58  
+[33mfile-87.txt        [0mfalse  bafkreihq6vxp3d3d4udhwnc3mfqspwlbzxxfocnbsk4t7nlcrufee3srhe  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m87  [0mbafkreihq6vxp3d3d4udhwnc3mfqspwlbzxxfocnbsk4t7nlcrufee3srhe        87    2023-08-30 13:19:58  
+[33mfile-22.txt        [0mfalse  bafkreihwt6nxbuojuvccewgko34lbj5el7fu4modmfa3mnl6ywitfcygeq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m16  [0mbafkreihwt6nxbuojuvccewgko34lbj5el7fu4modmfa3mnl6ywitfcygeq        22    2023-08-30 13:19:58  
+[33mfile-38.txt        [0mfalse  bafkreihaiebxqz5nmulsogpt2frh5muyxk6du7xgejxbejl5yn2x3piboa  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m33  [0mbafkreihaiebxqz5nmulsogpt2frh5muyxk6du7xgejxbejl5yn2x3piboa        38    2023-08-30 13:19:58  
+[33mfile-14.txt        [0mfalse  bafkreiagkpd6tewxvlkazmtdk44lq4heyfkk7m2ggqgqfr4x2sin2uwv7e  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m7   [0mbafkreiagkpd6tewxvlkazmtdk44lq4heyfkk7m2ggqgqfr4x2sin2uwv7e        14    2023-08-30 13:19:58  
+[33mfile-67.txt        [0mfalse  bafkreiayhem2n45yzk6kerfd66c3qoiiaxgfv3njtodgn7cv7kmm3zmbqq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m65  [0mbafkreiayhem2n45yzk6kerfd66c3qoiiaxgfv3njtodgn7cv7kmm3zmbqq        67    2023-08-30 13:19:58  
+[33mfile-75.txt        [0mfalse  bafkreigtpo45vxr4lim6exbuwsa3tol7xst5fabtdabujfo5qlw34lepfm  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m74  [0mbafkreigtpo45vxr4lim6exbuwsa3tol7xst5fabtdabujfo5qlw34lepfm        75    2023-08-30 13:19:58  
+[33mfile-98.txt        [0mfalse  bafkreigienxacfz3mhu2rzmz4u7ciead4zsxhfhd6xwqryhf6ad3abd7zq  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m99  [0mbafkreigienxacfz3mhu2rzmz4u7ciead4zsxhfhd6xwqryhf6ad3abd7zq        98    2023-08-30 13:19:58  
+[33mfile-73.txt        [0mfalse  bafkreibf3fvvuwpmfzjtnquvxvjqnazsttsoc4256n2en3tzr45n2bhaky  
+    [32;4mFileVersions[0m
+        [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+        [33m72  [0mbafkreibf3fvvuwpmfzjtnquvxvjqnazsttsoc4256n2en3tzr45n2bhaky        73    2023-08-30 13:19:58  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep explore 1 source folder-0
+[32;4mPath      [0m[32;4mIsDir  [0m[32;4mCID                                                          [0m
+[33mfolder-1  [0mtrue   bafybeifzr26zygwm5nx5idttnnpsw6jseoibbzl3lq3v7lgwlmhxt4x6iq  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep start-daggen 1 source
+[32;4mID  [0m[32;4mType    [0m[32;4mState  [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+[33m3   [0mdaggen  ready                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep status 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+        [33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+    [32;4mJobs[0m
+        [32;4mID  [0m[32;4mType    [0m[32;4mState     [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+        [33m1   [0mscan    complete                                 <nil>     1             
+        [33m2   [0mpack    complete                                 <nil>     1             
+        [33m3   [0mdaggen  complete                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep list-pieces 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                            [0m[32;4mConfig                                                                                                                                                                                                                                                                                  [0m[32;4mMetadata  [0m
+        [33m1   [0msource  2023-08-30 13:20:05  2023-08-30 13:20:05  local  /tempDir/0  map[case_insensitive:false case_sensitive:false copy_links:false encoding:Slash,Dot links:false no_check_updated:false no_preallocate:false no_set_modtime:false no_sparse:false nounc:false one_file_system:false skip_links:false unicode_normalization:false zero_size_links:false]  map[]     
+    [32;4mPieces[0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mPieceCID                                                          [0m[32;4mPieceSize  [0m[32;4mRootCID                                                      [0m[32;4mFileSize  [0m[32;4mStorageID  [0m[32;4mStoragePath  [0m
+        [33m1   [0m2023-08-30 13:20:06  baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi  67108864   bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku  23080634  <nil>                   
+        [33m2   [0m2023-08-30 13:20:06  baga6ea4seaqndseccgy2dr5egmoflkb362jsitmyeejs46ec4cfracyvauvo6ga  67108864   bafybeigq5nnkq736nujpmqchv53ro4xtxvvcgjpsmbtc7fsaofplnzixte  8651      <nil>                   
+

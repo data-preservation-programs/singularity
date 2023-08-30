@@ -85,7 +85,7 @@ func TestDataPrepCreateHandler_WithStorage(t *testing.T) {
 	mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
 	source := t.TempDir()
 	output := t.TempDir()
-	_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --local-source '%s' --local-output '%s'",
+	_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --local-source %s --local-output %s",
 		testutil.EscapePath(source),
 		testutil.EscapePath(output)))
 	require.NoError(t, err)
@@ -337,7 +337,7 @@ func TestDataPreparationExploreHandler(t *testing.T) {
 	mockHandler := new(MockDataPrep)
 	defer swapDataPrepHandler(mockHandler)()
 
-	mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]dataprep.DirEntry{
+	mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&dataprep.ExploreResult{SubEntries: []dataprep.DirEntry{
 		{
 			Path:  "file1",
 			IsDir: false,
@@ -373,6 +373,9 @@ func TestDataPreparationExploreHandler(t *testing.T) {
 				LastModified: time.Time{},
 			}},
 		},
+	},
+		Path: "/",
+		CID:  "root_cid",
 	}, nil)
 	_, _, err := runner.Run(ctx, "singularity prep explore 1 storage path")
 	require.NoError(t, err)

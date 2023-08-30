@@ -105,12 +105,12 @@ func TestScheduleCreateHandler(t *testing.T) {
 	err := os.WriteFile(filepath.Join(tmp, "cid.txt"), []byte(testutil.TestCid.String()), 0644)
 	require.NoError(t, err)
 	mockHandler.On("CreateHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
-	_, _, err = runner.Run(ctx, fmt.Sprintf("singularity deal schedule create --allowed-piece-cid-file '%s' --allowed-piece-cid '%s' 5 provider",
+	_, _, err = runner.Run(ctx, fmt.Sprintf("singularity deal schedule create --allowed-piece-cid-file %s --allowed-piece-cid %s 5 provider",
 		testutil.EscapePath(filepath.Join(tmp, "cid.txt")),
 		testutil.TestCid.String()))
 	require.NoError(t, err)
 
-	_, _, err = runner.Run(ctx, fmt.Sprintf("singularity --verbose deal schedule create --allowed-piece-cid-file '%s' --allowed-piece-cid '%s' 5 provider",
+	_, _, err = runner.Run(ctx, fmt.Sprintf("singularity --verbose deal schedule create --allowed-piece-cid-file %s --allowed-piece-cid %s 5 provider",
 		testutil.EscapePath(filepath.Join(tmp, "cid.txt")),
 		testutil.TestCid.String()))
 	require.NoError(t, err)

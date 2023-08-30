@@ -2,6 +2,7 @@ package tool
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/ipfs/go-unixfs"
 	"github.com/ipfs/go-unixfs/io"
 	carblockstore "github.com/ipld/go-car/v2/blockstore"
+	"github.com/urfave/cli/v2"
 )
 
 type multiBlockstore struct {
@@ -88,7 +90,7 @@ func (m multiBlockstore) HashOnRead(enabled bool) {
 	panic("implement me")
 }
 
-func ExtractCarHandler(ctx context.Context, inputDir string, output string, c cid.Cid) error {
+func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.Cid) error {
 	if c.Type() != cid.Raw && c.Type() != cid.DagProtobuf {
 		return errors.New("unsupported CID type")
 	}
@@ -151,8 +153,8 @@ func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
 	return outPath, nil
 }
 
-func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string, c cid.Cid, isRoot bool) error {
-	node, err := dagServ.Get(ctx, c)
+func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c cid.Cid, isRoot bool) error {
+	node, err := dagServ.Get(ctx.Context, c)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get node for CID %s", c)
 	}
@@ -165,6 +167,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 				return errors.Wrapf(err, "failed to get output path for CID %s", c)
 			}
 		}
+		ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
 		return os.WriteFile(outPath, node.RawData(), 0600)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
@@ -173,7 +176,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 		}
 		switch fsnode.Type() {
 		case unixfs.TFile:
-			reader, err := io.NewDagReader(ctx, node, dagServ)
+			reader, err := io.NewDagReader(ctx.Context, node, dagServ)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create dag reader for CID %s", c)
 			}
@@ -188,6 +191,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 				return errors.Wrapf(err, "failed to create output file %s", outPath)
 			}
 			defer f.Close()
+			ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
 			_, err = reader.WriteTo(f)
 			if err != nil {
 				return errors.Wrapf(err, "failed to write to output file %s", outPath)
@@ -197,11 +201,12 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 			if err != nil {
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
+			ctx.App.Writer.Write([]byte(fmt.Sprintf("Create Dir %s\n", outPath)))
 			err = os.MkdirAll(outPath, 0755)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)
 			}
-			err = dirNode.ForEachLink(ctx, func(link *ipld.Link) error {
+			err = dirNode.ForEachLink(ctx.Context, func(link *ipld.Link) error {
 				return writeToOutput(ctx, dagServ, filepath.Join(outPath, link.Name), link.Cid, false)
 			})
 			if err != nil {

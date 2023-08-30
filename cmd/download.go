@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/handler"
@@ -28,29 +30,47 @@ var DownloadCmd = &cli.Command{
 				Name:     "out-dir",
 				Usage:    "Directory to write CAR files to",
 				Value:    ".",
-				Aliases:  []string{"o"},
 				Category: "General Config",
 			},
 			&cli.IntFlag{
 				Name:     "concurrency",
 				Usage:    "Number of concurrent downloads",
 				Value:    10,
-				Aliases:  []string{"j"},
 				Category: "General Config",
+			},
+			&cli.BoolFlag{
+				Name:     "quiet",
+				Usage:    "Suppress all output",
+				Category: "General Config",
+				Value:    false,
 			},
 		}
 
 		keys := make(map[string]struct{})
 		for _, backend := range storagesystem.Backends {
+			var providers []string
 			for _, providerOptions := range backend.ProviderOptions {
+				providers = append(providers, providerOptions.Provider)
 				for _, option := range providerOptions.Options {
-					if _, ok := keys[option.Name]; ok {
+					flag := option.ToCLIFlag(backend.Prefix+"-", false, backend.Description)
+					if _, ok := keys[flag.Names()[0]]; ok {
 						continue
 					}
-					keys[option.Name] = struct{}{}
-					flag := option.ToCLIFlag(backend.Prefix + "-")
+					keys[flag.Names()[0]] = struct{}{}
 					flags = append(flags, flag)
 				}
+			}
+			if len(providers) > 1 {
+				providerFlag := &cli.StringFlag{
+					Name:  backend.Prefix + "-provider",
+					Usage: strings.Join(providers, " | "),
+					EnvVars: []string{
+						strings.ToUpper(backend.Prefix) + "_PROVIDER",
+					},
+					Category: backend.Description,
+					Value:    providers[0],
+				}
+				flags = append(flags, providerFlag)
 			}
 		}
 		return flags
@@ -63,16 +83,16 @@ var DownloadCmd = &cli.Command{
 		config := map[string]string{}
 		for _, key := range c.LocalFlagNames() {
 			if c.IsSet(key) {
-				if slices.Contains([]string{"api", "out-dir", "concurrency", "o", "j"}, key) {
+				if slices.Contains([]string{"api", "out-dir", "concurrency"}, key) {
 					continue
 				}
 				value := c.String(key)
 				config[key] = value
 			}
 		}
-		err := handler.DownloadHandler(c.Context, piece, api, config, outDir, concurrency)
+		err := handler.DownloadHandler(c, piece, api, config, outDir, concurrency)
 		if err == nil {
-			log.Logger("download").Info("Download complete")
+			log.Logger("Download").Info("Download complete")
 			return nil
 		}
 		return errors.WithStack(err)

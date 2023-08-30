@@ -25,7 +25,7 @@ func (DefaultHandler) StartDagGenHandler(
 	db *gorm.DB,
 	id uint32,
 	name string) (*model.Job, error) {
-	return StartJobHandler(ctx, db, id, name, model.Scan)
+	return StartJobHandler(ctx, db, id, name, model.DagGen)
 }
 
 // @Summary Start a new DAG generation job
@@ -58,7 +58,7 @@ func (DefaultHandler) PauseDagGenHandler(
 	db *gorm.DB,
 	id uint32,
 	name string) (*model.Job, error) {
-	return PauseJobHandler(ctx, db, id, name, model.Scan)
+	return PauseJobHandler(ctx, db, id, name, model.DagGen)
 }
 
 // @Summary Pause an ongoing DAG generation job

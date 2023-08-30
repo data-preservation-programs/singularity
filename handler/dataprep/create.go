@@ -126,7 +126,29 @@ func (DefaultHandler) CreatePreparationHandler(
 		return nil, errors.WithStack(err)
 	}
 
-	err = database.DoRetry(ctx, func() error { return db.Create(preparation).Error })
+	err = database.DoRetry(ctx, func() error {
+		err := db.Create(preparation).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		var attachments []model.SourceAttachment
+		err = db.Where("preparation_id = ?", preparation.ID).Find(&attachments).Error
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		for _, attachment := range attachments {
+			err = db.Create(&model.Directory{
+				AttachmentID: attachment.ID,
+			}).Error
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

@@ -1,0 +1,2035 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json storage create local source '/tempDir/0'
+{
+  "id": 1,
+  "name": "source",
+  "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+  "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+  "type": "local",
+  "path": "/tempDir/0",
+  "Config": {
+    "case_insensitive": "false",
+    "case_sensitive": "false",
+    "copy_links": "false",
+    "encoding": "Slash,Dot",
+    "links": "false",
+    "no_check_updated": "false",
+    "no_preallocate": "false",
+    "no_set_modtime": "false",
+    "no_sparse": "false",
+    "nounc": "false",
+    "one_file_system": "false",
+    "skip_links": "false",
+    "unicode_normalization": "false",
+    "zero_size_links": "false"
+  },
+  "Metadata": null
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json storage create local output '/tempDir/1'
+{
+  "id": 2,
+  "name": "output",
+  "createdAt": "2023-08-30T15:17:17.584757528-07:00",
+  "updatedAt": "2023-08-30T15:17:17.584757528-07:00",
+  "type": "local",
+  "path": "/tempDir/1",
+  "Config": {
+    "case_insensitive": "false",
+    "case_sensitive": "false",
+    "copy_links": "false",
+    "encoding": "Slash,Dot",
+    "links": "false",
+    "no_check_updated": "false",
+    "no_preallocate": "false",
+    "no_set_modtime": "false",
+    "no_sparse": "false",
+    "nounc": "false",
+    "one_file_system": "false",
+    "skip_links": "false",
+    "unicode_normalization": "false",
+    "zero_size_links": "false"
+  },
+  "Metadata": null
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep create --max-size 62914560 --source source --output output
+{
+  "id": 1,
+  "createdAt": "2023-08-30T15:17:17.586905508-07:00",
+  "updatedAt": "2023-08-30T15:17:17.586905508-07:00",
+  "deleteAfterExport": false,
+  "maxSize": 62914560,
+  "pieceSize": 67108864,
+  "sourceStorages": [
+    {
+      "id": 1,
+      "name": "source",
+      "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+      "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+      "type": "local",
+      "path": "/tempDir/0",
+      "Config": {
+        "case_insensitive": "false",
+        "case_sensitive": "false",
+        "copy_links": "false",
+        "encoding": "Slash,Dot",
+        "links": "false",
+        "no_check_updated": "false",
+        "no_preallocate": "false",
+        "no_set_modtime": "false",
+        "no_sparse": "false",
+        "nounc": "false",
+        "one_file_system": "false",
+        "skip_links": "false",
+        "unicode_normalization": "false",
+        "zero_size_links": "false"
+      },
+      "Metadata": null
+    }
+  ],
+  "outputStorages": [
+    {
+      "id": 2,
+      "name": "output",
+      "createdAt": "2023-08-30T15:17:17.584757528-07:00",
+      "updatedAt": "2023-08-30T15:17:17.584757528-07:00",
+      "type": "local",
+      "path": "/tempDir/1",
+      "Config": {
+        "case_insensitive": "false",
+        "case_sensitive": "false",
+        "copy_links": "false",
+        "encoding": "Slash,Dot",
+        "links": "false",
+        "no_check_updated": "false",
+        "no_preallocate": "false",
+        "no_set_modtime": "false",
+        "no_sparse": "false",
+        "nounc": "false",
+        "one_file_system": "false",
+        "skip_links": "false",
+        "unicode_normalization": "false",
+        "zero_size_links": "false"
+      },
+      "Metadata": null
+    }
+  ]
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep list
+[
+  {
+    "id": 1,
+    "createdAt": "2023-08-30T15:17:17.586905508-07:00",
+    "updatedAt": "2023-08-30T15:17:17.586905508-07:00",
+    "deleteAfterExport": false,
+    "maxSize": 62914560,
+    "pieceSize": 67108864,
+    "sourceStorages": [
+      {
+        "id": 1,
+        "name": "source",
+        "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+        "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+        "type": "local",
+        "path": "/tempDir/0",
+        "Config": {
+          "case_insensitive": "false",
+          "case_sensitive": "false",
+          "copy_links": "false",
+          "encoding": "Slash,Dot",
+          "links": "false",
+          "no_check_updated": "false",
+          "no_preallocate": "false",
+          "no_set_modtime": "false",
+          "no_sparse": "false",
+          "nounc": "false",
+          "one_file_system": "false",
+          "skip_links": "false",
+          "unicode_normalization": "false",
+          "zero_size_links": "false"
+        },
+        "Metadata": null
+      }
+    ],
+    "outputStorages": [
+      {
+        "id": 2,
+        "name": "output",
+        "createdAt": "2023-08-30T15:17:17.584757528-07:00",
+        "updatedAt": "2023-08-30T15:17:17.584757528-07:00",
+        "type": "local",
+        "path": "/tempDir/1",
+        "Config": {
+          "case_insensitive": "false",
+          "case_sensitive": "false",
+          "copy_links": "false",
+          "encoding": "Slash,Dot",
+          "links": "false",
+          "no_check_updated": "false",
+          "no_preallocate": "false",
+          "no_set_modtime": "false",
+          "no_sparse": "false",
+          "nounc": "false",
+          "one_file_system": "false",
+          "skip_links": "false",
+          "unicode_normalization": "false",
+          "zero_size_links": "false"
+        },
+        "Metadata": null
+      }
+    ]
+  }
+]
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep start-scan 1 source
+{
+  "id": 1,
+  "type": "scan",
+  "state": "ready",
+  "errorMessage": "",
+  "errorStackTrace": "",
+  "attachmentId": 1
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep status 1
+[
+  {
+    "attachmentId": 1,
+    "storageId": 1,
+    "source": {
+      "id": 1,
+      "name": "source",
+      "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+      "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+      "type": "local",
+      "path": "/tempDir/0",
+      "Config": {
+        "case_insensitive": "false",
+        "case_sensitive": "false",
+        "copy_links": "false",
+        "encoding": "Slash,Dot",
+        "links": "false",
+        "no_check_updated": "false",
+        "no_preallocate": "false",
+        "no_set_modtime": "false",
+        "no_sparse": "false",
+        "nounc": "false",
+        "one_file_system": "false",
+        "skip_links": "false",
+        "unicode_normalization": "false",
+        "zero_size_links": "false"
+      },
+      "Metadata": null
+    },
+    "jobs": [
+      {
+        "id": 1,
+        "type": "scan",
+        "state": "complete",
+        "errorMessage": "",
+        "errorStackTrace": "",
+        "attachmentId": 1
+      },
+      {
+        "id": 2,
+        "type": "pack",
+        "state": "complete",
+        "errorMessage": "",
+        "errorStackTrace": "",
+        "attachmentId": 1
+      }
+    ]
+  }
+]
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep list-pieces 1
+[
+  {
+    "attachmentId": 1,
+    "storageId": 1,
+    "source": {
+      "id": 1,
+      "name": "source",
+      "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+      "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+      "type": "local",
+      "path": "/tempDir/0",
+      "Config": {
+        "case_insensitive": "false",
+        "case_sensitive": "false",
+        "copy_links": "false",
+        "encoding": "Slash,Dot",
+        "links": "false",
+        "no_check_updated": "false",
+        "no_preallocate": "false",
+        "no_set_modtime": "false",
+        "no_sparse": "false",
+        "nounc": "false",
+        "one_file_system": "false",
+        "skip_links": "false",
+        "unicode_normalization": "false",
+        "zero_size_links": "false"
+      },
+      "Metadata": null
+    },
+    "pieces": [
+      {
+        "id": 1,
+        "createdAt": "2023-08-30T15:17:17.742951298-07:00",
+        "pieceCid": "baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi",
+        "pieceSize": 67108864,
+        "rootCid": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku",
+        "fileSize": 23080634,
+        "storageId": 2,
+        "storagePath": "baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi.car",
+        "preparationId": 1,
+        "attachmentId": 1,
+        "jobId": 2
+      }
+    ]
+  }
+]
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep explore 1 source
+{
+  "path": "",
+  "cid": "bafybeigq5nnkq736nujpmqchv53ro4xtxvvcgjpsmbtc7fsaofplnzixte",
+  "subEntries": [
+    {
+      "path": "/folder-0",
+      "isDir": true,
+      "cid": "bafybeigs5l2cvtc44rzygg6citduv6lcbzb6eteuopnqld7r5u442htrsq",
+      "fileVersions": null
+    },
+    {
+      "path": "/file-33.txt",
+      "isDir": false,
+      "cid": "bafkreidkkbumwnydekt2zabimvo6u3ttys5r2dmhzzr63mbtwmc6unzvj4",
+      "fileVersions": [
+        {
+          "id": 28,
+          "cid": "bafkreidkkbumwnydekt2zabimvo6u3ttys5r2dmhzzr63mbtwmc6unzvj4",
+          "hash": "",
+          "size": 33,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-68.txt",
+      "isDir": false,
+      "cid": "bafkreigui3ely2ymzuytmjwdtyswi6wyp7wtmqxs22osd4rr2zjftwlxxu",
+      "fileVersions": [
+        {
+          "id": 66,
+          "cid": "bafkreigui3ely2ymzuytmjwdtyswi6wyp7wtmqxs22osd4rr2zjftwlxxu",
+          "hash": "",
+          "size": 68,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-82.txt",
+      "isDir": false,
+      "cid": "bafkreidlnljicelzi7v6pq5agn66htcdth3b2posygsa7cxhnrttteau6a",
+      "fileVersions": [
+        {
+          "id": 82,
+          "cid": "bafkreidlnljicelzi7v6pq5agn66htcdth3b2posygsa7cxhnrttteau6a",
+          "hash": "",
+          "size": 82,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-25.txt",
+      "isDir": false,
+      "cid": "bafkreidjxgafjhkqiwljfbithx3xhlur3xk5bzohhxeo5fm3f2zchpc7xm",
+      "fileVersions": [
+        {
+          "id": 19,
+          "cid": "bafkreidjxgafjhkqiwljfbithx3xhlur3xk5bzohhxeo5fm3f2zchpc7xm",
+          "hash": "",
+          "size": 25,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-36.txt",
+      "isDir": false,
+      "cid": "bafkreih34xa4sh7pv6kpvslp6ysci2wptk2hjxpou2c4a4gpo6dioyjld4",
+      "fileVersions": [
+        {
+          "id": 31,
+          "cid": "bafkreih34xa4sh7pv6kpvslp6ysci2wptk2hjxpou2c4a4gpo6dioyjld4",
+          "hash": "",
+          "size": 36,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-69.txt",
+      "isDir": false,
+      "cid": "bafkreiekxhmajr3rpm6ahapnlvm3qfoj7efk5olizaoraavfuiu3p4qbea",
+      "fileVersions": [
+        {
+          "id": 67,
+          "cid": "bafkreiekxhmajr3rpm6ahapnlvm3qfoj7efk5olizaoraavfuiu3p4qbea",
+          "hash": "",
+          "size": 69,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/size-1048577.txt",
+      "isDir": false,
+      "cid": "bafybeihyoyn2hzzamyuv67jray2iqrrtp74thkf45mlzon5m5gmgbity5y",
+      "fileVersions": [
+        {
+          "id": 105,
+          "cid": "bafybeihyoyn2hzzamyuv67jray2iqrrtp74thkf45mlzon5m5gmgbity5y",
+          "hash": "",
+          "size": 1048577,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-29.txt",
+      "isDir": false,
+      "cid": "bafkreiafgvlhzlcacmizdui5a3kf4ldr37cwv7hkd5vwwmoi34cya4kdym",
+      "fileVersions": [
+        {
+          "id": 23,
+          "cid": "bafkreiafgvlhzlcacmizdui5a3kf4ldr37cwv7hkd5vwwmoi34cya4kdym",
+          "hash": "",
+          "size": 29,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-39.txt",
+      "isDir": false,
+      "cid": "bafkreicw5zwibunurzdtd7eongavfgdgpwd7gmomyfctuwx6yxk72bzpym",
+      "fileVersions": [
+        {
+          "id": 34,
+          "cid": "bafkreicw5zwibunurzdtd7eongavfgdgpwd7gmomyfctuwx6yxk72bzpym",
+          "hash": "",
+          "size": 39,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-92.txt",
+      "isDir": false,
+      "cid": "bafkreibyorwurqjxwyjgww32p6xusepr2iwsrcwpmz2c7vrx6dxahdtzri",
+      "fileVersions": [
+        {
+          "id": 93,
+          "cid": "bafkreibyorwurqjxwyjgww32p6xusepr2iwsrcwpmz2c7vrx6dxahdtzri",
+          "hash": "",
+          "size": 92,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-70.txt",
+      "isDir": false,
+      "cid": "bafkreigwdcqblcdavz5ka54lk2wjrhlnzdytzehnsalgllx2ytwkyybbte",
+      "fileVersions": [
+        {
+          "id": 69,
+          "cid": "bafkreigwdcqblcdavz5ka54lk2wjrhlnzdytzehnsalgllx2ytwkyybbte",
+          "hash": "",
+          "size": 70,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-93.txt",
+      "isDir": false,
+      "cid": "bafkreig4erhieqyfredtqccknw2xjrupqk2n7ukhnhcuy76yudfmy5beau",
+      "fileVersions": [
+        {
+          "id": 94,
+          "cid": "bafkreig4erhieqyfredtqccknw2xjrupqk2n7ukhnhcuy76yudfmy5beau",
+          "hash": "",
+          "size": 93,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-20.txt",
+      "isDir": false,
+      "cid": "bafkreig5mxxkamu5zoklc4mhv6o76kgddioxqathg6qwv52zpgq7urqy4u",
+      "fileVersions": [
+        {
+          "id": 14,
+          "cid": "bafkreig5mxxkamu5zoklc4mhv6o76kgddioxqathg6qwv52zpgq7urqy4u",
+          "hash": "",
+          "size": 20,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-26.txt",
+      "isDir": false,
+      "cid": "bafkreidrysan7e6wvyxr56wrir6gnskslyyweggpkh6i3hwyglznv4mlom",
+      "fileVersions": [
+        {
+          "id": 20,
+          "cid": "bafkreidrysan7e6wvyxr56wrir6gnskslyyweggpkh6i3hwyglznv4mlom",
+          "hash": "",
+          "size": 26,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-67.txt",
+      "isDir": false,
+      "cid": "bafkreiayhem2n45yzk6kerfd66c3qoiiaxgfv3njtodgn7cv7kmm3zmbqq",
+      "fileVersions": [
+        {
+          "id": 65,
+          "cid": "bafkreiayhem2n45yzk6kerfd66c3qoiiaxgfv3njtodgn7cv7kmm3zmbqq",
+          "hash": "",
+          "size": 67,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-88.txt",
+      "isDir": false,
+      "cid": "bafkreia4g7ox4lact3mjpkjv7c5ef27vcndvudgfnmexzcadlyy6cee3xm",
+      "fileVersions": [
+        {
+          "id": 88,
+          "cid": "bafkreia4g7ox4lact3mjpkjv7c5ef27vcndvudgfnmexzcadlyy6cee3xm",
+          "hash": "",
+          "size": 88,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-90.txt",
+      "isDir": false,
+      "cid": "bafkreidgerrlqohzmgmulouc5f4iuvddfnsyabb2rxlit37ewoeqyjltbu",
+      "fileVersions": [
+        {
+          "id": 91,
+          "cid": "bafkreidgerrlqohzmgmulouc5f4iuvddfnsyabb2rxlit37ewoeqyjltbu",
+          "hash": "",
+          "size": 90,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-10.txt",
+      "isDir": false,
+      "cid": "bafkreidshgjwdwtko5kp5smg3ss3ps5pdsaqukg62sv26vvscbwqns3ywa",
+      "fileVersions": [
+        {
+          "id": 3,
+          "cid": "bafkreidshgjwdwtko5kp5smg3ss3ps5pdsaqukg62sv26vvscbwqns3ywa",
+          "hash": "",
+          "size": 10,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-12.txt",
+      "isDir": false,
+      "cid": "bafkreigwqlwuzjgzrhatj3eu6fkr4hwfqdow2wtozxu7hu26nzfhc7554q",
+      "fileVersions": [
+        {
+          "id": 5,
+          "cid": "bafkreigwqlwuzjgzrhatj3eu6fkr4hwfqdow2wtozxu7hu26nzfhc7554q",
+          "hash": "",
+          "size": 12,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-17.txt",
+      "isDir": false,
+      "cid": "bafkreierrkkuvrg7wvfmhhygrwmgqit7ngvttpbwfywjwaedx5vbbhlk24",
+      "fileVersions": [
+        {
+          "id": 10,
+          "cid": "bafkreierrkkuvrg7wvfmhhygrwmgqit7ngvttpbwfywjwaedx5vbbhlk24",
+          "hash": "",
+          "size": 17,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-75.txt",
+      "isDir": false,
+      "cid": "bafkreigtpo45vxr4lim6exbuwsa3tol7xst5fabtdabujfo5qlw34lepfm",
+      "fileVersions": [
+        {
+          "id": 74,
+          "cid": "bafkreigtpo45vxr4lim6exbuwsa3tol7xst5fabtdabujfo5qlw34lepfm",
+          "hash": "",
+          "size": 75,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-91.txt",
+      "isDir": false,
+      "cid": "bafkreiegkz6zcwxtt3fmsfchne3zjpjn4zdo73uqirw7tqz64wafjicptu",
+      "fileVersions": [
+        {
+          "id": 92,
+          "cid": "bafkreiegkz6zcwxtt3fmsfchne3zjpjn4zdo73uqirw7tqz64wafjicptu",
+          "hash": "",
+          "size": 91,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-21.txt",
+      "isDir": false,
+      "cid": "bafkreibf6yvfupkbj3doecih357tm7zlojrfvlpfklnwjqdzgp3ait6eti",
+      "fileVersions": [
+        {
+          "id": 15,
+          "cid": "bafkreibf6yvfupkbj3doecih357tm7zlojrfvlpfklnwjqdzgp3ait6eti",
+          "hash": "",
+          "size": 21,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-23.txt",
+      "isDir": false,
+      "cid": "bafkreid7a6ay4fgqrfcm4fcwfhffimzplt5ncsgfsdx3znodo72ngnxf6q",
+      "fileVersions": [
+        {
+          "id": 17,
+          "cid": "bafkreid7a6ay4fgqrfcm4fcwfhffimzplt5ncsgfsdx3znodo72ngnxf6q",
+          "hash": "",
+          "size": 23,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-40.txt",
+      "isDir": false,
+      "cid": "bafkreiaiwfhvhewxvtyy25qt7enudorhtvnd4b2yq5yftno2dwqyxe4yc4",
+      "fileVersions": [
+        {
+          "id": 36,
+          "cid": "bafkreiaiwfhvhewxvtyy25qt7enudorhtvnd4b2yq5yftno2dwqyxe4yc4",
+          "hash": "",
+          "size": 40,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-72.txt",
+      "isDir": false,
+      "cid": "bafkreieqengbclxjomtauexwcsf6vjy6qsbvc37dal6ndczkkth2qpskm4",
+      "fileVersions": [
+        {
+          "id": 71,
+          "cid": "bafkreieqengbclxjomtauexwcsf6vjy6qsbvc37dal6ndczkkth2qpskm4",
+          "hash": "",
+          "size": 72,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-9.txt",
+      "isDir": false,
+      "cid": "bafkreiazzqbpe3puhtcxdpe626ymjuusesr6yiuvferbojppo3icdsbsn4",
+      "fileVersions": [
+        {
+          "id": 90,
+          "cid": "bafkreiazzqbpe3puhtcxdpe626ymjuusesr6yiuvferbojppo3icdsbsn4",
+          "hash": "",
+          "size": 9,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-55.txt",
+      "isDir": false,
+      "cid": "bafkreigxjoqhlzbftrwia7cbahtg2kaqs3hz74kluajgbxxhigy33lxtey",
+      "fileVersions": [
+        {
+          "id": 52,
+          "cid": "bafkreigxjoqhlzbftrwia7cbahtg2kaqs3hz74kluajgbxxhigy33lxtey",
+          "hash": "",
+          "size": 55,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-14.txt",
+      "isDir": false,
+      "cid": "bafkreiagkpd6tewxvlkazmtdk44lq4heyfkk7m2ggqgqfr4x2sin2uwv7e",
+      "fileVersions": [
+        {
+          "id": 7,
+          "cid": "bafkreiagkpd6tewxvlkazmtdk44lq4heyfkk7m2ggqgqfr4x2sin2uwv7e",
+          "hash": "",
+          "size": 14,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-18.txt",
+      "isDir": false,
+      "cid": "bafkreibncirgskx26vxjlkflacdz5ubduag3hytpufbdnzkcoscxskc67i",
+      "fileVersions": [
+        {
+          "id": 11,
+          "cid": "bafkreibncirgskx26vxjlkflacdz5ubduag3hytpufbdnzkcoscxskc67i",
+          "hash": "",
+          "size": 18,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-51.txt",
+      "isDir": false,
+      "cid": "bafkreigrkw6lfib2i5kaofnqkxgtuvkymixfky5fiuagzwv375yqcwhqj4",
+      "fileVersions": [
+        {
+          "id": 48,
+          "cid": "bafkreigrkw6lfib2i5kaofnqkxgtuvkymixfky5fiuagzwv375yqcwhqj4",
+          "hash": "",
+          "size": 51,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-58.txt",
+      "isDir": false,
+      "cid": "bafkreif7dofpqeykqve2bmtdgjty4uzpi34ytuu4mhf5hggd7wnwfzsery",
+      "fileVersions": [
+        {
+          "id": 55,
+          "cid": "bafkreif7dofpqeykqve2bmtdgjty4uzpi34ytuu4mhf5hggd7wnwfzsery",
+          "hash": "",
+          "size": 58,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-79.txt",
+      "isDir": false,
+      "cid": "bafkreicqhbp7rbeh3vcje7275ksrikgawnvv4mkufpykdpe6rmgkerm4cu",
+      "fileVersions": [
+        {
+          "id": 78,
+          "cid": "bafkreicqhbp7rbeh3vcje7275ksrikgawnvv4mkufpykdpe6rmgkerm4cu",
+          "hash": "",
+          "size": 79,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/size-1.txt",
+      "isDir": false,
+      "cid": "bafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm",
+      "fileVersions": [
+        {
+          "id": 103,
+          "cid": "bafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm",
+          "hash": "",
+          "size": 1,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-0.txt",
+      "isDir": false,
+      "cid": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku",
+      "fileVersions": [
+        {
+          "id": 1,
+          "cid": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku",
+          "hash": "",
+          "size": 0,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-19.txt",
+      "isDir": false,
+      "cid": "bafkreihckd4im4ulo65gg4rmpzs7y47camibvbbidmzdgl6wptdkdlr6ei",
+      "fileVersions": [
+        {
+          "id": 12,
+          "cid": "bafkreihckd4im4ulo65gg4rmpzs7y47camibvbbidmzdgl6wptdkdlr6ei",
+          "hash": "",
+          "size": 19,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-32.txt",
+      "isDir": false,
+      "cid": "bafkreigp2ly7vv22df4nucsejcb5w4sriffrhhzr6wqeobgcsh63bylv4y",
+      "fileVersions": [
+        {
+          "id": 27,
+          "cid": "bafkreigp2ly7vv22df4nucsejcb5w4sriffrhhzr6wqeobgcsh63bylv4y",
+          "hash": "",
+          "size": 32,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-77.txt",
+      "isDir": false,
+      "cid": "bafkreiazyu5nzgypmhr3j7hklf5ovur2k5gqoliw7rddxd5nvlzgm2q2qe",
+      "fileVersions": [
+        {
+          "id": 76,
+          "cid": "bafkreiazyu5nzgypmhr3j7hklf5ovur2k5gqoliw7rddxd5nvlzgm2q2qe",
+          "hash": "",
+          "size": 77,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-85.txt",
+      "isDir": false,
+      "cid": "bafkreihlb7ook6qrhg7slbavzsodz7n55l2unw4k4ljl5zriihim3ugm4e",
+      "fileVersions": [
+        {
+          "id": 85,
+          "cid": "bafkreihlb7ook6qrhg7slbavzsodz7n55l2unw4k4ljl5zriihim3ugm4e",
+          "hash": "",
+          "size": 85,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-3.txt",
+      "isDir": false,
+      "cid": "bafkreif2pall7dybz7vecqka3zo24irdwabwdi4wc55jznaq75q7eaavvu",
+      "fileVersions": [
+        {
+          "id": 24,
+          "cid": "bafkreif2pall7dybz7vecqka3zo24irdwabwdi4wc55jznaq75q7eaavvu",
+          "hash": "",
+          "size": 3,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-57.txt",
+      "isDir": false,
+      "cid": "bafkreihwk5yax3uyx5qiqbabu3vb43rs73ggdt2oelnlkyhvrljq4aauqi",
+      "fileVersions": [
+        {
+          "id": 54,
+          "cid": "bafkreihwk5yax3uyx5qiqbabu3vb43rs73ggdt2oelnlkyhvrljq4aauqi",
+          "hash": "",
+          "size": 57,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-66.txt",
+      "isDir": false,
+      "cid": "bafkreiaj2bnthdbergzeozzyll746ur5eb6ah5e5l3pudqlkih5zqipspi",
+      "fileVersions": [
+        {
+          "id": 64,
+          "cid": "bafkreiaj2bnthdbergzeozzyll746ur5eb6ah5e5l3pudqlkih5zqipspi",
+          "hash": "",
+          "size": 66,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-63.txt",
+      "isDir": false,
+      "cid": "bafkreifgmi2tbbnguihe7sn4otx25xphb7ovivtmvuf6gxftdc6ewrbfv4",
+      "fileVersions": [
+        {
+          "id": 61,
+          "cid": "bafkreifgmi2tbbnguihe7sn4otx25xphb7ovivtmvuf6gxftdc6ewrbfv4",
+          "hash": "",
+          "size": 63,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-64.txt",
+      "isDir": false,
+      "cid": "bafkreih2iq7sizld257r6r6deisrcwpdfi2xabn7np6mmggdzec6qsolzu",
+      "fileVersions": [
+        {
+          "id": 62,
+          "cid": "bafkreih2iq7sizld257r6r6deisrcwpdfi2xabn7np6mmggdzec6qsolzu",
+          "hash": "",
+          "size": 64,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-35.txt",
+      "isDir": false,
+      "cid": "bafkreiaokjtt4tqsqo5fyyqoh3cuhcv6k5y6tdvz6a6ngrxhdozsdn44aq",
+      "fileVersions": [
+        {
+          "id": 30,
+          "cid": "bafkreiaokjtt4tqsqo5fyyqoh3cuhcv6k5y6tdvz6a6ngrxhdozsdn44aq",
+          "hash": "",
+          "size": 35,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-38.txt",
+      "isDir": false,
+      "cid": "bafkreihaiebxqz5nmulsogpt2frh5muyxk6du7xgejxbejl5yn2x3piboa",
+      "fileVersions": [
+        {
+          "id": 33,
+          "cid": "bafkreihaiebxqz5nmulsogpt2frh5muyxk6du7xgejxbejl5yn2x3piboa",
+          "hash": "",
+          "size": 38,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-41.txt",
+      "isDir": false,
+      "cid": "bafkreifmp2b4at3vmgiz3lra5dn22nbzied2bksneo3dkhgjm5i3zxjmjq",
+      "fileVersions": [
+        {
+          "id": 37,
+          "cid": "bafkreifmp2b4at3vmgiz3lra5dn22nbzied2bksneo3dkhgjm5i3zxjmjq",
+          "hash": "",
+          "size": 41,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-42.txt",
+      "isDir": false,
+      "cid": "bafkreiaqaxxda6l54czhtulknjkbuneowvw752whmtakd7ferjpzgkppca",
+      "fileVersions": [
+        {
+          "id": 38,
+          "cid": "bafkreiaqaxxda6l54czhtulknjkbuneowvw752whmtakd7ferjpzgkppca",
+          "hash": "",
+          "size": 42,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-56.txt",
+      "isDir": false,
+      "cid": "bafkreiepwyc6vmxpvy6r7teid6s4lxlcdgqxzi3ghzdgil7vm2chyjgcoi",
+      "fileVersions": [
+        {
+          "id": 53,
+          "cid": "bafkreiepwyc6vmxpvy6r7teid6s4lxlcdgqxzi3ghzdgil7vm2chyjgcoi",
+          "hash": "",
+          "size": 56,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-73.txt",
+      "isDir": false,
+      "cid": "bafkreibf3fvvuwpmfzjtnquvxvjqnazsttsoc4256n2en3tzr45n2bhaky",
+      "fileVersions": [
+        {
+          "id": 72,
+          "cid": "bafkreibf3fvvuwpmfzjtnquvxvjqnazsttsoc4256n2en3tzr45n2bhaky",
+          "hash": "",
+          "size": 73,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-98.txt",
+      "isDir": false,
+      "cid": "bafkreigienxacfz3mhu2rzmz4u7ciead4zsxhfhd6xwqryhf6ad3abd7zq",
+      "fileVersions": [
+        {
+          "id": 99,
+          "cid": "bafkreigienxacfz3mhu2rzmz4u7ciead4zsxhfhd6xwqryhf6ad3abd7zq",
+          "hash": "",
+          "size": 98,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/size-0.txt",
+      "isDir": false,
+      "cid": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku",
+      "fileVersions": [
+        {
+          "id": 102,
+          "cid": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku",
+          "hash": "",
+          "size": 0,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-53.txt",
+      "isDir": false,
+      "cid": "bafkreihlrdpbsioijnjvgcjpvyinyrym2wmg3gazxk3oshd3zrxprc3hui",
+      "fileVersions": [
+        {
+          "id": 50,
+          "cid": "bafkreihlrdpbsioijnjvgcjpvyinyrym2wmg3gazxk3oshd3zrxprc3hui",
+          "hash": "",
+          "size": 53,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-76.txt",
+      "isDir": false,
+      "cid": "bafkreihsjsk7fd2ilcfshaeaj7cibmgtlklx37smf7bscugkbvipgefyeq",
+      "fileVersions": [
+        {
+          "id": 75,
+          "cid": "bafkreihsjsk7fd2ilcfshaeaj7cibmgtlklx37smf7bscugkbvipgefyeq",
+          "hash": "",
+          "size": 76,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-15.txt",
+      "isDir": false,
+      "cid": "bafkreicby53ayuhp32m36v2o3d77y6tn2naf2vdnhwustmquzckfvt4ks4",
+      "fileVersions": [
+        {
+          "id": 8,
+          "cid": "bafkreicby53ayuhp32m36v2o3d77y6tn2naf2vdnhwustmquzckfvt4ks4",
+          "hash": "",
+          "size": 15,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-50.txt",
+      "isDir": false,
+      "cid": "bafkreielmroqxvracnr2nz7lks4nq3bzdmm7wcm2escogthsdx5hsxyfkq",
+      "fileVersions": [
+        {
+          "id": 47,
+          "cid": "bafkreielmroqxvracnr2nz7lks4nq3bzdmm7wcm2escogthsdx5hsxyfkq",
+          "hash": "",
+          "size": 50,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-8.txt",
+      "isDir": false,
+      "cid": "bafkreie4k3gfdm3uyo5breqq2w3njp2xpegtkhewyr6aegioz4pegbrvvm",
+      "fileVersions": [
+        {
+          "id": 79,
+          "cid": "bafkreie4k3gfdm3uyo5breqq2w3njp2xpegtkhewyr6aegioz4pegbrvvm",
+          "hash": "",
+          "size": 8,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-30.txt",
+      "isDir": false,
+      "cid": "bafkreibcz2a4oyrxjytwn7lfxvq3cqpwzb27t4k6t6is3ok76rxzpi56ve",
+      "fileVersions": [
+        {
+          "id": 25,
+          "cid": "bafkreibcz2a4oyrxjytwn7lfxvq3cqpwzb27t4k6t6is3ok76rxzpi56ve",
+          "hash": "",
+          "size": 30,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-99.txt",
+      "isDir": false,
+      "cid": "bafkreiamtvbcpduxppytflav6kezu46fskj52bdrpbyildiwj4qvthcife",
+      "fileVersions": [
+        {
+          "id": 100,
+          "cid": "bafkreiamtvbcpduxppytflav6kezu46fskj52bdrpbyildiwj4qvthcife",
+          "hash": "",
+          "size": 99,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-27.txt",
+      "isDir": false,
+      "cid": "bafkreib3nplpjlaol4fnzru7rw4layftfb6v2esiz7edfbgr4emnf3yeuq",
+      "fileVersions": [
+        {
+          "id": 21,
+          "cid": "bafkreib3nplpjlaol4fnzru7rw4layftfb6v2esiz7edfbgr4emnf3yeuq",
+          "hash": "",
+          "size": 27,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-89.txt",
+      "isDir": false,
+      "cid": "bafkreihqxuthdv4dyhfxcpldbyrs7xirgitouymwlcyeopumh34sjvw3dq",
+      "fileVersions": [
+        {
+          "id": 89,
+          "cid": "bafkreihqxuthdv4dyhfxcpldbyrs7xirgitouymwlcyeopumh34sjvw3dq",
+          "hash": "",
+          "size": 89,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-11.txt",
+      "isDir": false,
+      "cid": "bafkreigkf4qgt2qmnzdfqiroa34n2y4wlhf3lzt4xo5gonf4gnfdpgn4na",
+      "fileVersions": [
+        {
+          "id": 4,
+          "cid": "bafkreigkf4qgt2qmnzdfqiroa34n2y4wlhf3lzt4xo5gonf4gnfdpgn4na",
+          "hash": "",
+          "size": 11,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-61.txt",
+      "isDir": false,
+      "cid": "bafkreifbc5mqqymkgpmhqpnadbwhbcehrouo3ok25yx7niywlwm6qdqwuu",
+      "fileVersions": [
+        {
+          "id": 59,
+          "cid": "bafkreifbc5mqqymkgpmhqpnadbwhbcehrouo3ok25yx7niywlwm6qdqwuu",
+          "hash": "",
+          "size": 61,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-87.txt",
+      "isDir": false,
+      "cid": "bafkreihq6vxp3d3d4udhwnc3mfqspwlbzxxfocnbsk4t7nlcrufee3srhe",
+      "fileVersions": [
+        {
+          "id": 87,
+          "cid": "bafkreihq6vxp3d3d4udhwnc3mfqspwlbzxxfocnbsk4t7nlcrufee3srhe",
+          "hash": "",
+          "size": 87,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-95.txt",
+      "isDir": false,
+      "cid": "bafkreiaisz5cc6up4aeojqsg36l6ja7nquevg4wfeq34p7wzu7ghrijj7q",
+      "fileVersions": [
+        {
+          "id": 96,
+          "cid": "bafkreiaisz5cc6up4aeojqsg36l6ja7nquevg4wfeq34p7wzu7ghrijj7q",
+          "hash": "",
+          "size": 95,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-43.txt",
+      "isDir": false,
+      "cid": "bafkreicguimzpawiqj7qvrlpka56tu4673ux6qfhg24szr6xyx4clt6yke",
+      "fileVersions": [
+        {
+          "id": 39,
+          "cid": "bafkreicguimzpawiqj7qvrlpka56tu4673ux6qfhg24szr6xyx4clt6yke",
+          "hash": "",
+          "size": 43,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-97.txt",
+      "isDir": false,
+      "cid": "bafkreif2gpoc53aen6qoq2c7vjzidael5lflt2uyhfvenweiqtlvaq7h3u",
+      "fileVersions": [
+        {
+          "id": 98,
+          "cid": "bafkreif2gpoc53aen6qoq2c7vjzidael5lflt2uyhfvenweiqtlvaq7h3u",
+          "hash": "",
+          "size": 97,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/size-1048576.txt",
+      "isDir": false,
+      "cid": "bafkreialma7cnmrp643lmxzcnnwqpxuu3kaywazbotsbvparlpixxkuolu",
+      "fileVersions": [
+        {
+          "id": 104,
+          "cid": "bafkreialma7cnmrp643lmxzcnnwqpxuu3kaywazbotsbvparlpixxkuolu",
+          "hash": "",
+          "size": 1048576,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-2.txt",
+      "isDir": false,
+      "cid": "bafkreih3ryqpylsmh4siyygdtplff46bgrzjro4xpofu2widxbifkyqgam",
+      "fileVersions": [
+        {
+          "id": 13,
+          "cid": "bafkreih3ryqpylsmh4siyygdtplff46bgrzjro4xpofu2widxbifkyqgam",
+          "hash": "",
+          "size": 2,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-47.txt",
+      "isDir": false,
+      "cid": "bafkreibo4seuebcca6eopjkf4has5hy4f5ahdhxrt4uizlvaedw55pwbxi",
+      "fileVersions": [
+        {
+          "id": 43,
+          "cid": "bafkreibo4seuebcca6eopjkf4has5hy4f5ahdhxrt4uizlvaedw55pwbxi",
+          "hash": "",
+          "size": 47,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-80.txt",
+      "isDir": false,
+      "cid": "bafkreic22tkm4m77rcfrtkqvhmprgviuarnpuebu7gcrejel3rsfffwqae",
+      "fileVersions": [
+        {
+          "id": 80,
+          "cid": "bafkreic22tkm4m77rcfrtkqvhmprgviuarnpuebu7gcrejel3rsfffwqae",
+          "hash": "",
+          "size": 80,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-1.txt",
+      "isDir": false,
+      "cid": "bafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm",
+      "fileVersions": [
+        {
+          "id": 2,
+          "cid": "bafkreigks6arfsq3xxfpvqrrwonchxcnu6do76auprhhfomao6c273sixm",
+          "hash": "",
+          "size": 1,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-84.txt",
+      "isDir": false,
+      "cid": "bafkreigvf3562awiknyfeumez7wb3wfyagqadkfsurhbitlypdp2x4jg2i",
+      "fileVersions": [
+        {
+          "id": 84,
+          "cid": "bafkreigvf3562awiknyfeumez7wb3wfyagqadkfsurhbitlypdp2x4jg2i",
+          "hash": "",
+          "size": 84,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-86.txt",
+      "isDir": false,
+      "cid": "bafkreihu3glvzcs4zs7prxu2r2pix6fkt7t5hnwlnkgys42i63hxjhnj6u",
+      "fileVersions": [
+        {
+          "id": 86,
+          "cid": "bafkreihu3glvzcs4zs7prxu2r2pix6fkt7t5hnwlnkgys42i63hxjhnj6u",
+          "hash": "",
+          "size": 86,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-48.txt",
+      "isDir": false,
+      "cid": "bafkreihwx3x45y4cf4hvykppopxmunatfnvjeq6iuxp2fuogxadoins3yy",
+      "fileVersions": [
+        {
+          "id": 44,
+          "cid": "bafkreihwx3x45y4cf4hvykppopxmunatfnvjeq6iuxp2fuogxadoins3yy",
+          "hash": "",
+          "size": 48,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-49.txt",
+      "isDir": false,
+      "cid": "bafkreics3xjt57knkfgg4rj5cxyrc2p7gbaejqtsnw56wzbgh2hvvlgkpi",
+      "fileVersions": [
+        {
+          "id": 45,
+          "cid": "bafkreics3xjt57knkfgg4rj5cxyrc2p7gbaejqtsnw56wzbgh2hvvlgkpi",
+          "hash": "",
+          "size": 49,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-94.txt",
+      "isDir": false,
+      "cid": "bafkreiffjk5z5gnhfgzhgpbkaq7gtukv4ux3sfcolhwswf4wmfortee4vy",
+      "fileVersions": [
+        {
+          "id": 95,
+          "cid": "bafkreiffjk5z5gnhfgzhgpbkaq7gtukv4ux3sfcolhwswf4wmfortee4vy",
+          "hash": "",
+          "size": 94,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-54.txt",
+      "isDir": false,
+      "cid": "bafkreifxnwjmayvf3yphkx2cwjge7hu5rzpq52p24chdn2weywjb2regkm",
+      "fileVersions": [
+        {
+          "id": 51,
+          "cid": "bafkreifxnwjmayvf3yphkx2cwjge7hu5rzpq52p24chdn2weywjb2regkm",
+          "hash": "",
+          "size": 54,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-4.txt",
+      "isDir": false,
+      "cid": "bafkreiei2qtg7vhggogrhocf7tzisv45ecois6bdxeqx3i7bmgjw6ayvre",
+      "fileVersions": [
+        {
+          "id": 35,
+          "cid": "bafkreiei2qtg7vhggogrhocf7tzisv45ecois6bdxeqx3i7bmgjw6ayvre",
+          "hash": "",
+          "size": 4,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-44.txt",
+      "isDir": false,
+      "cid": "bafkreig424bvd2orat7bvozjyomahjhczrx7etnitbd22bs4qitzoq5rve",
+      "fileVersions": [
+        {
+          "id": 40,
+          "cid": "bafkreig424bvd2orat7bvozjyomahjhczrx7etnitbd22bs4qitzoq5rve",
+          "hash": "",
+          "size": 44,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-5.txt",
+      "isDir": false,
+      "cid": "bafkreibwxpsq5wliihiqiq54wzynmvkpbi2loyn6m7wjysuk2lamitfefq",
+      "fileVersions": [
+        {
+          "id": 46,
+          "cid": "bafkreibwxpsq5wliihiqiq54wzynmvkpbi2loyn6m7wjysuk2lamitfefq",
+          "hash": "",
+          "size": 5,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-74.txt",
+      "isDir": false,
+      "cid": "bafkreifzb4djqrc3nn2xgcjvj5gwowgpnqqk3j52smbuasyp3jlxkaov5i",
+      "fileVersions": [
+        {
+          "id": 73,
+          "cid": "bafkreifzb4djqrc3nn2xgcjvj5gwowgpnqqk3j52smbuasyp3jlxkaov5i",
+          "hash": "",
+          "size": 74,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-78.txt",
+      "isDir": false,
+      "cid": "bafkreidnzbfxhjdftxgkr2qo5qesupssuncym4py2cek4xjeivxdvof4bq",
+      "fileVersions": [
+        {
+          "id": 77,
+          "cid": "bafkreidnzbfxhjdftxgkr2qo5qesupssuncym4py2cek4xjeivxdvof4bq",
+          "hash": "",
+          "size": 78,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-22.txt",
+      "isDir": false,
+      "cid": "bafkreihwt6nxbuojuvccewgko34lbj5el7fu4modmfa3mnl6ywitfcygeq",
+      "fileVersions": [
+        {
+          "id": 16,
+          "cid": "bafkreihwt6nxbuojuvccewgko34lbj5el7fu4modmfa3mnl6ywitfcygeq",
+          "hash": "",
+          "size": 22,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-24.txt",
+      "isDir": false,
+      "cid": "bafkreietwdfl7bti4dctjrjkk2evosm6ckrij5m5s7ojwjzf56bwqbehlm",
+      "fileVersions": [
+        {
+          "id": 18,
+          "cid": "bafkreietwdfl7bti4dctjrjkk2evosm6ckrij5m5s7ojwjzf56bwqbehlm",
+          "hash": "",
+          "size": 24,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-34.txt",
+      "isDir": false,
+      "cid": "bafkreidd66577v7jzqprj5swt4ae62oayyl6ckoucoctoaregopsdsfzcm",
+      "fileVersions": [
+        {
+          "id": 29,
+          "cid": "bafkreidd66577v7jzqprj5swt4ae62oayyl6ckoucoctoaregopsdsfzcm",
+          "hash": "",
+          "size": 34,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-45.txt",
+      "isDir": false,
+      "cid": "bafkreih6ja23afww7r676flzqrok2bay354in2gqjdtvy72zqiuidndkii",
+      "fileVersions": [
+        {
+          "id": 41,
+          "cid": "bafkreih6ja23afww7r676flzqrok2bay354in2gqjdtvy72zqiuidndkii",
+          "hash": "",
+          "size": 45,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-71.txt",
+      "isDir": false,
+      "cid": "bafkreigabftmqgfgojndiuuoi2avpbrb43kj2he45f5yjcfw72leyyy5bi",
+      "fileVersions": [
+        {
+          "id": 70,
+          "cid": "bafkreigabftmqgfgojndiuuoi2avpbrb43kj2he45f5yjcfw72leyyy5bi",
+          "hash": "",
+          "size": 71,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-46.txt",
+      "isDir": false,
+      "cid": "bafkreicp4z7n3ckxtfj5fwul7qqyf2poqwom4jb6r4aytd4zfq27z6eira",
+      "fileVersions": [
+        {
+          "id": 42,
+          "cid": "bafkreicp4z7n3ckxtfj5fwul7qqyf2poqwom4jb6r4aytd4zfq27z6eira",
+          "hash": "",
+          "size": 46,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-28.txt",
+      "isDir": false,
+      "cid": "bafkreiafmtwds3ljtclmp72dhgksdeiqucaimntrcsl4yqiwvsv3hcvoyy",
+      "fileVersions": [
+        {
+          "id": 22,
+          "cid": "bafkreiafmtwds3ljtclmp72dhgksdeiqucaimntrcsl4yqiwvsv3hcvoyy",
+          "hash": "",
+          "size": 28,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-31.txt",
+      "isDir": false,
+      "cid": "bafkreia5oog45qyy4s5j7ncnoy4dji2xzyipzbrhsh7otfejxbzr32oxzm",
+      "fileVersions": [
+        {
+          "id": 26,
+          "cid": "bafkreia5oog45qyy4s5j7ncnoy4dji2xzyipzbrhsh7otfejxbzr32oxzm",
+          "hash": "",
+          "size": 31,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-7.txt",
+      "isDir": false,
+      "cid": "bafkreid5djkbe6zceubpln43l6yiamdbcuvej6jlg7rdyzjhxl3glvg2ti",
+      "fileVersions": [
+        {
+          "id": 68,
+          "cid": "bafkreid5djkbe6zceubpln43l6yiamdbcuvej6jlg7rdyzjhxl3glvg2ti",
+          "hash": "",
+          "size": 7,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-81.txt",
+      "isDir": false,
+      "cid": "bafkreifwteo5nk4qjgw5oxhprvntog4oj6lenclxjtuxc5gjho7rbjhs4e",
+      "fileVersions": [
+        {
+          "id": 81,
+          "cid": "bafkreifwteo5nk4qjgw5oxhprvntog4oj6lenclxjtuxc5gjho7rbjhs4e",
+          "hash": "",
+          "size": 81,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-83.txt",
+      "isDir": false,
+      "cid": "bafkreidjp7tbrggqic2ydgugujlotzeshohex7pq3r4abdzrp3p2mg42jm",
+      "fileVersions": [
+        {
+          "id": 83,
+          "cid": "bafkreidjp7tbrggqic2ydgugujlotzeshohex7pq3r4abdzrp3p2mg42jm",
+          "hash": "",
+          "size": 83,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/size-20971520.txt",
+      "isDir": false,
+      "cid": "bafybeift4xxg7o3i6x2jcaj4hmh3xv25magshh4ok7fgr5urqilylygoyi",
+      "fileVersions": [
+        {
+          "id": 106,
+          "cid": "bafybeift4xxg7o3i6x2jcaj4hmh3xv25magshh4ok7fgr5urqilylygoyi",
+          "hash": "",
+          "size": 20971520,
+          "lastModified": "2023-08-30T15:17:13.14675514-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-16.txt",
+      "isDir": false,
+      "cid": "bafkreihttwwgzov2knpcyid42dgy6fkjoqrdzbepoj7zrm2wjtvfng2bz4",
+      "fileVersions": [
+        {
+          "id": 9,
+          "cid": "bafkreihttwwgzov2knpcyid42dgy6fkjoqrdzbepoj7zrm2wjtvfng2bz4",
+          "hash": "",
+          "size": 16,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-6.txt",
+      "isDir": false,
+      "cid": "bafkreif66v7mp5j2nval5nsau6akmooihpbjvsfjqfxr7rwfy3onspchee",
+      "fileVersions": [
+        {
+          "id": 57,
+          "cid": "bafkreif66v7mp5j2nval5nsau6akmooihpbjvsfjqfxr7rwfy3onspchee",
+          "hash": "",
+          "size": 6,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-65.txt",
+      "isDir": false,
+      "cid": "bafkreiemvxj5gxi3azgva65titbvlzs5jrzaxpk3aofjqoxmc5cmm2d5iu",
+      "fileVersions": [
+        {
+          "id": 63,
+          "cid": "bafkreiemvxj5gxi3azgva65titbvlzs5jrzaxpk3aofjqoxmc5cmm2d5iu",
+          "hash": "",
+          "size": 65,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-62.txt",
+      "isDir": false,
+      "cid": "bafkreicuanr5cby2aauzokim3d2kfpptvtidkx722oz7ex2svlloxlmtni",
+      "fileVersions": [
+        {
+          "id": 60,
+          "cid": "bafkreicuanr5cby2aauzokim3d2kfpptvtidkx722oz7ex2svlloxlmtni",
+          "hash": "",
+          "size": 62,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-59.txt",
+      "isDir": false,
+      "cid": "bafkreida2c5c2niqyjb7dnqz3lbyfvvh33sq5mbpq4pftqign5ziy66yai",
+      "fileVersions": [
+        {
+          "id": 56,
+          "cid": "bafkreida2c5c2niqyjb7dnqz3lbyfvvh33sq5mbpq4pftqign5ziy66yai",
+          "hash": "",
+          "size": 59,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-60.txt",
+      "isDir": false,
+      "cid": "bafkreiffye2uydglou5dhotjpc7skd6y2jjqkzeb57tu5ftbtafoc5thke",
+      "fileVersions": [
+        {
+          "id": 58,
+          "cid": "bafkreiffye2uydglou5dhotjpc7skd6y2jjqkzeb57tu5ftbtafoc5thke",
+          "hash": "",
+          "size": 60,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-13.txt",
+      "isDir": false,
+      "cid": "bafkreih7caye6gxsgydo3ypc3cv43skmekiepjquldmatwf32u7n4h3fta",
+      "fileVersions": [
+        {
+          "id": 6,
+          "cid": "bafkreih7caye6gxsgydo3ypc3cv43skmekiepjquldmatwf32u7n4h3fta",
+          "hash": "",
+          "size": 13,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-37.txt",
+      "isDir": false,
+      "cid": "bafkreibt4q5ej4kspucau7uwfwuzw4cgy5vvecfx4wty6vrj6styw5t2tq",
+      "fileVersions": [
+        {
+          "id": 32,
+          "cid": "bafkreibt4q5ej4kspucau7uwfwuzw4cgy5vvecfx4wty6vrj6styw5t2tq",
+          "hash": "",
+          "size": 37,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-52.txt",
+      "isDir": false,
+      "cid": "bafkreibzmquuwzsgcn4y2gshp24k2aqrrnenbrltrrbhmezaf4xnci5v6e",
+      "fileVersions": [
+        {
+          "id": 49,
+          "cid": "bafkreibzmquuwzsgcn4y2gshp24k2aqrrnenbrltrrbhmezaf4xnci5v6e",
+          "hash": "",
+          "size": 52,
+          "lastModified": "2023-08-30T15:17:13.110754273-07:00"
+        }
+      ]
+    },
+    {
+      "path": "/file-96.txt",
+      "isDir": false,
+      "cid": "bafkreifryz46dmli76nwxqm5msmjpf76n4mjprlngrcffjhs6x6prp7n5i",
+      "fileVersions": [
+        {
+          "id": 97,
+          "cid": "bafkreifryz46dmli76nwxqm5msmjpf76n4mjprlngrcffjhs6x6prp7n5i",
+          "hash": "",
+          "size": 96,
+          "lastModified": "2023-08-30T15:17:13.114754369-07:00"
+        }
+      ]
+    }
+  ]
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep explore 1 source folder-0
+{
+  "path": "folder-0",
+  "cid": "bafybeigs5l2cvtc44rzygg6citduv6lcbzb6eteuopnqld7r5u442htrsq",
+  "subEntries": [
+    {
+      "path": "folder-0/folder-1",
+      "isDir": true,
+      "cid": "bafybeifzr26zygwm5nx5idttnnpsw6jseoibbzl3lq3v7lgwlmhxt4x6iq",
+      "fileVersions": null
+    }
+  ]
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep start-daggen 1 source
+{
+  "id": 3,
+  "type": "daggen",
+  "state": "ready",
+  "errorMessage": "",
+  "errorStackTrace": "",
+  "attachmentId": 1
+}
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep status 1
+[
+  {
+    "attachmentId": 1,
+    "storageId": 1,
+    "source": {
+      "id": 1,
+      "name": "source",
+      "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+      "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+      "type": "local",
+      "path": "/tempDir/0",
+      "Config": {
+        "case_insensitive": "false",
+        "case_sensitive": "false",
+        "copy_links": "false",
+        "encoding": "Slash,Dot",
+        "links": "false",
+        "no_check_updated": "false",
+        "no_preallocate": "false",
+        "no_set_modtime": "false",
+        "no_sparse": "false",
+        "nounc": "false",
+        "one_file_system": "false",
+        "skip_links": "false",
+        "unicode_normalization": "false",
+        "zero_size_links": "false"
+      },
+      "Metadata": null
+    },
+    "jobs": [
+      {
+        "id": 1,
+        "type": "scan",
+        "state": "complete",
+        "errorMessage": "",
+        "errorStackTrace": "",
+        "attachmentId": 1
+      },
+      {
+        "id": 2,
+        "type": "pack",
+        "state": "complete",
+        "errorMessage": "",
+        "errorStackTrace": "",
+        "attachmentId": 1
+      },
+      {
+        "id": 3,
+        "type": "daggen",
+        "state": "complete",
+        "errorMessage": "",
+        "errorStackTrace": "",
+        "attachmentId": 1
+      }
+    ]
+  }
+]
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json prep list-pieces 1
+[
+  {
+    "attachmentId": 1,
+    "storageId": 1,
+    "source": {
+      "id": 1,
+      "name": "source",
+      "createdAt": "2023-08-30T15:17:17.582588649-07:00",
+      "updatedAt": "2023-08-30T15:17:17.582588649-07:00",
+      "type": "local",
+      "path": "/tempDir/0",
+      "Config": {
+        "case_insensitive": "false",
+        "case_sensitive": "false",
+        "copy_links": "false",
+        "encoding": "Slash,Dot",
+        "links": "false",
+        "no_check_updated": "false",
+        "no_preallocate": "false",
+        "no_set_modtime": "false",
+        "no_sparse": "false",
+        "nounc": "false",
+        "one_file_system": "false",
+        "skip_links": "false",
+        "unicode_normalization": "false",
+        "zero_size_links": "false"
+      },
+      "Metadata": null
+    },
+    "pieces": [
+      {
+        "id": 1,
+        "createdAt": "2023-08-30T15:17:17.742951298-07:00",
+        "pieceCid": "baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi",
+        "pieceSize": 67108864,
+        "rootCid": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku",
+        "fileSize": 23080634,
+        "storageId": 2,
+        "storagePath": "baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi.car",
+        "preparationId": 1,
+        "attachmentId": 1,
+        "jobId": 2
+      },
+      {
+        "id": 2,
+        "createdAt": "2023-08-30T15:17:17.801059431-07:00",
+        "pieceCid": "baga6ea4seaqgzvbzh6yec6yxfhwpzi2k5pfre3xbkjrbkpgdht7su5eig4b4yoq",
+        "pieceSize": 67108864,
+        "rootCid": "bafybeigq5nnkq736nujpmqchv53ro4xtxvvcgjpsmbtc7fsaofplnzixte",
+        "fileSize": 8651,
+        "storageId": 2,
+        "storagePath": "baga6ea4seaqgzvbzh6yec6yxfhwpzi2k5pfre3xbkjrbkpgdht7su5eig4b4yoq.car",
+        "preparationId": 1,
+        "attachmentId": 1
+      }
+    ]
+  }
+]
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json download --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqdq5l5747tygg6nutzf5zluqibpx3h5btigvq6kbhpgrnygwencbi
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json download --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqgzvbzh6yec6yxfhwpzi2k5pfre3xbkjrbkpgdht7su5eig4b4yoq
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --json extract-car -i '/tempDir/2' -o '/tempDir/4' -c bafybeigq5nnkq736nujpmqchv53ro4xtxvvcgjpsmbtc7fsaofplnzixte
+Create Dir /tempDir/4
+Writing to /tempDir/4/file-87.txt
+Writing to /tempDir/4/file-49.txt
+Writing to /tempDir/4/file-23.txt
+Writing to /tempDir/4/file-36.txt
+Writing to /tempDir/4/file-14.txt
+Writing to /tempDir/4/file-25.txt
+Writing to /tempDir/4/file-65.txt
+Writing to /tempDir/4/file-89.txt
+Writing to /tempDir/4/file-2.txt
+Writing to /tempDir/4/file-11.txt
+Writing to /tempDir/4/file-59.txt
+Writing to /tempDir/4/file-22.txt
+Writing to /tempDir/4/file-95.txt
+Writing to /tempDir/4/file-51.txt
+Writing to /tempDir/4/file-7.txt
+Writing to /tempDir/4/file-72.txt
+Writing to /tempDir/4/file-82.txt
+Writing to /tempDir/4/file-68.txt
+Writing to /tempDir/4/file-20.txt
+Writing to /tempDir/4/file-53.txt
+Writing to /tempDir/4/file-67.txt
+Writing to /tempDir/4/file-91.txt
+Writing to /tempDir/4/file-88.txt
+Writing to /tempDir/4/file-56.txt
+Writing to /tempDir/4/file-15.txt
+Writing to /tempDir/4/file-92.txt
+Writing to /tempDir/4/file-99.txt
+Writing to /tempDir/4/size-0.txt
+Writing to /tempDir/4/file-34.txt
+Writing to /tempDir/4/file-16.txt
+Writing to /tempDir/4/file-97.txt
+Writing to /tempDir/4/file-78.txt
+Writing to /tempDir/4/file-57.txt
+Writing to /tempDir/4/file-70.txt
+Writing to /tempDir/4/file-39.txt
+Writing to /tempDir/4/file-45.txt
+Writing to /tempDir/4/file-40.txt
+Writing to /tempDir/4/file-31.txt
+Writing to /tempDir/4/file-30.txt
+Writing to /tempDir/4/file-94.txt
+Writing to /tempDir/4/file-38.txt
+Writing to /tempDir/4/file-13.txt
+Writing to /tempDir/4/file-75.txt
+Writing to /tempDir/4/file-79.txt
+Writing to /tempDir/4/file-81.txt
+Writing to /tempDir/4/file-37.txt
+Writing to /tempDir/4/file-71.txt
+Writing to /tempDir/4/file-33.txt
+Writing to /tempDir/4/file-54.txt
+Writing to /tempDir/4/file-35.txt
+Writing to /tempDir/4/size-20971520.txt
+Writing to /tempDir/4/file-86.txt
+Writing to /tempDir/4/file-3.txt
+Writing to /tempDir/4/file-12.txt
+Writing to /tempDir/4/file-73.txt
+Writing to /tempDir/4/file-24.txt
+Writing to /tempDir/4/file-9.txt
+Writing to /tempDir/4/file-83.txt
+Writing to /tempDir/4/file-96.txt
+Writing to /tempDir/4/file-28.txt
+Writing to /tempDir/4/file-50.txt
+Writing to /tempDir/4/file-46.txt
+Writing to /tempDir/4/file-93.txt
+Writing to /tempDir/4/size-1048577.txt
+Writing to /tempDir/4/file-66.txt
+Writing to /tempDir/4/file-6.txt
+Writing to /tempDir/4/file-4.txt
+Writing to /tempDir/4/file-76.txt
+Create Dir /tempDir/4/folder-0
+Create Dir /tempDir/4/folder-0/folder-1
+Create Dir /tempDir/4/folder-0/folder-1/folder-2
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4/folder-5
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4/folder-5/folder-6
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4/folder-5/folder-6/folder-7
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4/folder-5/folder-6/folder-7/folder-8
+Create Dir /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4/folder-5/folder-6/folder-7/folder-8/folder-9
+Writing to /tempDir/4/folder-0/folder-1/folder-2/folder-3/folder-4/folder-5/folder-6/folder-7/folder-8/folder-9/file.txt
+Writing to /tempDir/4/file-80.txt
+Writing to /tempDir/4/file-27.txt
+Writing to /tempDir/4/file-44.txt
+Writing to /tempDir/4/file-48.txt
+Writing to /tempDir/4/file-61.txt
+Writing to /tempDir/4/file-63.txt
+Writing to /tempDir/4/file-5.txt
+Writing to /tempDir/4/file-69.txt
+Writing to /tempDir/4/file-52.txt
+Writing to /tempDir/4/file-42.txt
+Writing to /tempDir/4/file-55.txt
+Writing to /tempDir/4/file-1.txt
+Writing to /tempDir/4/file-60.txt
+Writing to /tempDir/4/file-21.txt
+Writing to /tempDir/4/file-98.txt
+Writing to /tempDir/4/file-47.txt
+Writing to /tempDir/4/size-1.txt
+Writing to /tempDir/4/file-32.txt
+Writing to /tempDir/4/file-8.txt
+Writing to /tempDir/4/file-77.txt
+Writing to /tempDir/4/file-90.txt
+Writing to /tempDir/4/file-26.txt
+Writing to /tempDir/4/file-0.txt
+Writing to /tempDir/4/file-19.txt
+Writing to /tempDir/4/file-74.txt
+Writing to /tempDir/4/file-58.txt
+Writing to /tempDir/4/size-1048576.txt
+Writing to /tempDir/4/file-41.txt
+Writing to /tempDir/4/file-62.txt
+Writing to /tempDir/4/file-18.txt
+Writing to /tempDir/4/file-29.txt
+Writing to /tempDir/4/file-84.txt
+Writing to /tempDir/4/file-85.txt
+Writing to /tempDir/4/file-17.txt
+Writing to /tempDir/4/file-43.txt
+Writing to /tempDir/4/file-10.txt
+Writing to /tempDir/4/file-64.txt
+

@@ -16,6 +16,7 @@ import (
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/rjNemo/underscore"
+	"github.com/urfave/cli/v2"
 )
 
 // DownloadHandler fetches the metadata for a specified piece from a remote API and downloads the associated content.
@@ -31,14 +32,14 @@ import (
 //
 // Returns:
 // - An error, if any occurred during the download process.
-func DownloadHandler(ctx context.Context,
+func DownloadHandler(ctx *cli.Context,
 	piece string,
 	api string,
 	config map[string]string,
 	outDir string,
 	concurrency int,
 ) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/piece/metadata/"+piece, nil)
+	req, err := http.NewRequestWithContext(ctx.Context, http.MethodGet, api+"/piece/metadata/"+piece, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to create request")
 	}
@@ -95,7 +96,7 @@ func DownloadHandler(ctx context.Context,
 		pieceMetadata.Storages[i].Config = cfg
 	}
 
-	pieceReader, err := store.NewPieceReader(ctx, pieceMetadata.Car, pieceMetadata.Storages, pieceMetadata.CarBlocks, pieceMetadata.Files)
+	pieceReader, err := store.NewPieceReader(ctx.Context, pieceMetadata.Car, pieceMetadata.Storages, pieceMetadata.CarBlocks, pieceMetadata.Files)
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")
 	}
@@ -108,14 +109,14 @@ func DownloadHandler(ctx context.Context,
 // The content is divided into parts and downloaded concurrently based on the provided concurrency level.
 //
 // Parameters:
-// - ctx: The context for the operation, allowing for cancellation.
+// - cctx: The context for the operation, allowing for cancellation.
 // - reader: The PieceReader providing the content.
 // - outPath: The path where the downloaded content should be saved.
 // - concurrency: The number of concurrent download tasks.
 //
 // Returns:
 // - An error, if any occurred during the download process.
-func download(ctx context.Context, reader *store.PieceReader, outPath string, concurrency int) error {
+func download(cctx *cli.Context, reader *store.PieceReader, outPath string, concurrency int) error {
 	size, err := reader.Seek(0, io.SeekEnd)
 	if err != nil {
 		return errors.New("failed to seek to end of piece")
@@ -133,7 +134,7 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 	var wg sync.WaitGroup
 	partSize := size / int64(concurrency)
 
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(cctx.Context)
 	defer cancel()
 
 	errChan := make(chan error, 1)
@@ -169,7 +170,13 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 			// Read the part into a buffer
 			reader := io.LimitReader(clonedReader, end-start)
 			buffer := make([]byte, 4096)
+			if !cctx.Bool("quiet") {
+				cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Downloading part %d - %d\n", i, end, start)))
+			}
 			for {
+				if ctx.Err() != nil {
+					return
+				}
 				n, err := reader.Read(buffer)
 				if err != nil && !errors.Is(err, io.EOF) {
 					select {
@@ -179,7 +186,7 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 					cancel()
 					return
 				}
-				if n == 0 {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				if _, err := file.WriteAt(buffer[:n], start); err != nil {
@@ -192,6 +199,9 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 				}
 				start += int64(n)
 			}
+			if !cctx.Bool("quiet") {
+				cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Completed\n", i)))
+			}
 		}(i)
 	}
 
@@ -203,6 +213,9 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 
 	select {
 	case <-done:
+		if !cctx.Bool("quiet") {
+			cctx.App.Writer.Write([]byte("Download Complete\n"))
+		}
 		return file.Close()
 	case err := <-errChan:
 		file.Close()

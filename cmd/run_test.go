@@ -60,7 +60,7 @@ func TestRunContentProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		_, _, err := Run(ctx, "singularity run content-provider")
+		_, _, err := Run(ctx, "singularity run content-provider --http-bind "+contentProviderBind)
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }
