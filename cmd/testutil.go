@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	color2 "image/color"
-	"image/png"
 	"io"
 	"net/http"
 	"os"
@@ -81,15 +80,6 @@ var timeRegex = regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`)
 
 func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	t.Helper()
-	r.save(t, false, tempDirs...)
-}
-
-func (r *Runner) SaveWithImage(t *testing.T, tempDirs ...string) {
-	t.Helper()
-	r.save(t, true, tempDirs...)
-}
-
-func (r *Runner) save(t *testing.T, withImage bool, tempDirs ...string) {
 	t.Helper()
 	ansi := r.sb.String()
 
@@ -99,72 +89,60 @@ func (r *Runner) save(t *testing.T, withImage bool, tempDirs ...string) {
 
 	ansi = timeRegex.ReplaceAllString(ansi, "2023-04-05 06:07:08")
 
+	ansiPath := filepath.Join("testdata", t.Name()+".ansi")
+	err := os.MkdirAll(filepath.Dir(ansiPath), 0700)
+	require.NoError(t, err)
+	err = os.WriteFile(ansiPath, []byte(ansi), 0600)
+	require.NoError(t, err)
+
 	plain := removeANSI.ReplaceAllString(ansi, "")
 	plainPath := filepath.Join("testdata", t.Name()+".txt")
-	err := os.MkdirAll(filepath.Dir(plainPath), 0700)
-	require.NoError(t, err)
 	err = os.WriteFile(plainPath, []byte(plain), 0600)
 	require.NoError(t, err)
 
-	if withImage {
-		imagePath := filepath.Join("testdata", t.Name()+".png")
+	imagePath := filepath.Join("testdata", t.Name()+".png")
 
-		c := config.Config{
-			Foreground:    "255,255,255,255",
-			Background:    "40,20,20,255",
-			Outpath:       imagePath,
-			FontSize:      20,
-			LineCount:     1,
-			SlideWidth:    1,
-			FileExtension: ".png",
-		}
-
-		err = c.Adjust([]string{ansi}, config.EnvVars{})
-		require.NoError(t, err)
-		defer c.Writer.Close()
-
-		tokens, err := parser.Parse(strings.Join(c.Texts, "\n"))
-		require.NoError(t, err)
-
-		bw := tokens.MaxStringWidth()
-		bh := len(tokens.StringLines())
-		param := &image.ImageParam{
-			BaseWidth:          bw,
-			BaseHeight:         bh,
-			ForegroundColor:    color2.RGBA(c.ForegroundColor),
-			BackgroundColor:    color2.RGBA(c.BackgroundColor),
-			FontFace:           c.FontFace,
-			EmojiFontFace:      c.EmojiFontFace,
-			EmojiDir:           c.EmojiDir,
-			FontSize:           c.FontSize,
-			Delay:              c.Delay,
-			UseAnimation:       c.UseAnimation,
-			AnimationLineCount: c.LineCount,
-			ResizeWidth:        c.ResizeWidth,
-			ResizeHeight:       c.ResizeHeight,
-			UseEmoji:           c.UseEmojiFont,
-		}
-		img := image.NewImage(param)
-		err = img.Draw(tokens)
-		require.NoError(t, err)
-		// textimg does not expose compression ratio so a bit hassle here.
-
-		content := bytes.NewBuffer(nil)
-		err = img.Encode(content, c.FileExtension)
-		require.NoError(t, err)
-		pngImage, err := png.Decode(content)
-		require.NoError(t, err)
-		encoder := png.Encoder{
-			CompressionLevel: png.BestCompression,
-		}
-		encoder.Encode(c.Writer, pngImage)
-		err = img.Encode(c.Writer, c.FileExtension)
-		require.NoError(t, err)
-	} else {
-		ansiPath := filepath.Join("testdata", t.Name()+".ansi")
-		err = os.WriteFile(ansiPath, []byte(ansi), 0600)
-		require.NoError(t, err)
+	c := config.Config{
+		Foreground:    "255,255,255,255",
+		Background:    "40,20,20,255",
+		Outpath:       imagePath,
+		FontSize:      20,
+		LineCount:     1,
+		SlideWidth:    1,
+		FileExtension: ".png",
 	}
+
+	err = c.Adjust([]string{ansi}, config.EnvVars{})
+	require.NoError(t, err)
+	defer c.Writer.Close()
+
+	tokens, err := parser.Parse(strings.Join(c.Texts, "\n"))
+	require.NoError(t, err)
+
+	bw := tokens.MaxStringWidth()
+	bh := len(tokens.StringLines())
+	param := &image.ImageParam{
+		BaseWidth:          bw,
+		BaseHeight:         bh,
+		ForegroundColor:    color2.RGBA(c.ForegroundColor),
+		BackgroundColor:    color2.RGBA(c.BackgroundColor),
+		FontFace:           c.FontFace,
+		EmojiFontFace:      c.EmojiFontFace,
+		EmojiDir:           c.EmojiDir,
+		FontSize:           c.FontSize,
+		Delay:              c.Delay,
+		UseAnimation:       c.UseAnimation,
+		AnimationLineCount: c.LineCount,
+		ResizeWidth:        c.ResizeWidth,
+		ResizeHeight:       c.ResizeHeight,
+		UseEmoji:           c.UseEmojiFont,
+	}
+	img := image.NewImage(param)
+	err = img.Draw(tokens)
+	require.NoError(t, err)
+
+	err = img.Encode(c.Writer, c.FileExtension)
+	require.NoError(t, err)
 }
 
 func Run(ctx context.Context, args string) (string, string, error) {

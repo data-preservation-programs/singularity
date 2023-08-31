@@ -1,8 +1,0 @@
-user@localhost:~/test$ singularity storage create local name path
-ID  Name  Type   Path  
-1   name  local  path  
-
-user@localhost:~/test$ singularity --verbose storage create local name path
-ID  Name  CreatedAt            UpdatedAt            Type   Path  Config  
-1   name  2023-04-05 06:07:08  2023-04-05 06:07:08  local  path  <nil>   
-

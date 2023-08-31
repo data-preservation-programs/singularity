@@ -1,2 +1,0 @@
-user@localhost:~/test$ singularity storage remove name
-

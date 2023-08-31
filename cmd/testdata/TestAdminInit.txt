@@ -1,2 +1,0 @@
-user@localhost:~/test$ singularity admin init
-

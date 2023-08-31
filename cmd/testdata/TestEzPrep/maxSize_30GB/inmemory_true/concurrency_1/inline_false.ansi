@@ -1,5 +1,0 @@
-[32muser@localhost[0m:[34m~/test[0m$ singularity ez-prep -o '/tempDir/1' -M 30GB -j 1 -f '' '/tempDir/0'
-[32;4mPieceCID                                                          [0m[32;4mPieceSize    [0m[32;4mRootCID                                                      [0m[32;4mFileSize  [0m[32;4mStoragePath                                                           [0m
-[33mbaga6ea4seaqd4ffktbqcuw2kh7sbzznoovn7uow7fkdt34flfjnlpwtiue7aini  [0m34359738368  bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku  42995443  baga6ea4seaqd4ffktbqcuw2kh7sbzznoovn7uow7fkdt34flfjnlpwtiue7aini.car  
-[33mbaga6ea4seaqhijqp2qi52afolrjtngcib4k7cxwly4mbxy6ds6qsmjb22rcfqia  [0m34359738368  bafybeifpc2cdhzpln6kcq224txpmoatgzhvaw5pqwacscx7lujagtcm5c4  399       baga6ea4seaqhijqp2qi52afolrjtngcib4k7cxwly4mbxy6ds6qsmjb22rcfqia.car  
-

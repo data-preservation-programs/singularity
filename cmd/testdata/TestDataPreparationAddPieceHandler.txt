@@ -1,8 +1,0 @@
-user@localhost:~/test$ singularity prep add-piece --piece-cid xxx --piece-size 100 1
-PieceCID                                                     PieceSize  RootCID  FileSize  StoragePath  
-bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 100       test1.car    
-
-user@localhost:~/test$ singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 1
-ID  CreatedAt            PieceCID                                                     PieceSize  RootCID  FileSize  StorageID  StoragePath  
-1   2023-04-05 06:07:08  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 100       1          test1.car    
-
