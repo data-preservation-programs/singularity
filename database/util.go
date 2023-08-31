@@ -84,3 +84,9 @@ func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
 	return OpenWithLogger(connString)
 }
+
+var ErrInmemoryWithHighConcurrency = errors.New("cannot use in-memory database with concurrency > 1")
+
+var ErrDatabaseNotSupported = errors.New("database not supported")
+
+var logger = logging.Logger("database")

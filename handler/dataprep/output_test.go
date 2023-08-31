@@ -114,6 +114,22 @@ func TestRemoveOutputStorageHandler_NotAttached(t *testing.T) {
 	})
 }
 
+func TestRemoveOutputStorageHandler_DeleteAfterExportTrue(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			DeleteAfterExport: true,
+			OutputStorages: []model.Storage{{
+				Name: "output",
+			}},
+		}).Error
+		require.NoError(t, err)
+
+		_, err = Default.RemoveOutputStorageHandler(ctx, db, 1, "output")
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "cannot remove the only output storage from a preparation with deleteAfterExport enabled")
+	})
+}
+
 func TestRemoveOutputStorageHandler_Success(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := db.Create(&model.Preparation{

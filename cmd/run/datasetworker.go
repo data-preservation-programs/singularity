@@ -1,6 +1,8 @@
 package run
 
 import (
+	"strings"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
@@ -52,6 +54,12 @@ var DatasetWorkerCmd = &cli.Command{
 		if err := model.AutoMigrate(db); err != nil {
 			return errors.WithStack(err)
 		}
+
+		connString := c.String("database-connection-string")
+		if strings.HasPrefix(connString, "sqlite:file::memory:") && c.Int("concurrency") > 1 {
+			return database.ErrInmemoryWithHighConcurrency
+		}
+
 		worker := datasetworker.NewWorker(
 			db,
 			datasetworker.Config{

@@ -51,6 +51,20 @@ func TestCreatePreparationHandler_MaxSizeTooLarge(t *testing.T) {
 	})
 }
 
+func TestCreatePreparationHandler_DeleteAfterExportWithoutOutput(t *testing.T) {
+	tmp1 := t.TempDir()
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, err := storage.Default.CreateStorageHandler(ctx, db, "local", storage.CreateRequest{Name: "source", Path: tmp1})
+		require.NoError(t, err)
+		_, err = Default.CreatePreparationHandler(ctx, db, CreateRequest{
+			MaxSizeStr:        "2GB",
+			SourceStorages:    []string{"source"},
+			DeleteAfterExport: true,
+		})
+		require.ErrorContains(t, err, "deleteAfterExport cannot be set without output storages")
+	})
+}
+
 func TestCreatePreparationHandler_Success(t *testing.T) {
 	tmp1 := t.TempDir()
 	tmp2 := t.TempDir()

@@ -44,6 +44,10 @@ var CreateCmd = &cli.Command{
 			Value:       "",
 			DefaultText: "Determined by --max-size",
 		},
+		&cli.BoolFlag{
+			Name:  "delete-after-export",
+			Usage: "Whether to delete the source files after export to CAR files",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -65,10 +69,11 @@ var CreateCmd = &cli.Command{
 		}
 
 		prep, err := dataprep.Default.CreatePreparationHandler(c.Context, db, dataprep.CreateRequest{
-			SourceStorages: sourceStorages,
-			OutputStorages: outputStorages,
-			MaxSizeStr:     maxSizeStr,
-			PieceSizeStr:   pieceSizeStr,
+			SourceStorages:    sourceStorages,
+			OutputStorages:    outputStorages,
+			MaxSizeStr:        maxSizeStr,
+			PieceSizeStr:      pieceSizeStr,
+			DeleteAfterExport: c.Bool("delete-after-export"),
 		})
 		if err != nil {
 			return errors.WithStack(err)

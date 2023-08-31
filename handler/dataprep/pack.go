@@ -40,7 +40,7 @@ func (DefaultHandler) StartPackHandler(
 	name string,
 	jobID int64) ([]model.Job, error) {
 	db = db.WithContext(ctx)
-	source, err := validateSourceStorage(ctx, db, id, name)
+	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -48,7 +48,7 @@ func (DefaultHandler) StartPackHandler(
 	var jobs []model.Job
 	if jobID == 0 {
 		err = database.DoRetry(ctx, func() error {
-			err := db.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, startableStatesForPack, source.ID).Find(&jobs).Error
+			err := db.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, startableStatesForPack, sourceAttachment.ID).Find(&jobs).Error
 			if err != nil {
 				return errors.WithStack(err)
 			}
@@ -79,15 +79,15 @@ func (DefaultHandler) StartPackHandler(
 	var job model.Job
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			err := db.Where("id = ? AND type = ? AND attachment_id = ?", jobID, model.Pack, source.ID).First(&job).Error
+			err := db.Where("id = ? AND type = ? AND attachment_id = ?", jobID, model.Pack, sourceAttachment.ID).First(&job).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for source '%s' does not exist", jobID, name)
+				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for sourceAttachment '%s' does not exist", jobID, name)
 			}
 			if slices.Contains(startableStatesForPack, job.State) {
 				return errors.WithStack(db.Model(&job).Update("state", model.Ready).Error)
 			}
 
-			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for source '%s' is running or complete", jobID, name)
+			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for sourceAttachment '%s' is running or complete", jobID, name)
 		})
 	})
 
@@ -169,7 +169,7 @@ func (DefaultHandler) PausePackHandler(
 	name string,
 	jobID int64) ([]model.Job, error) {
 	db = db.WithContext(ctx)
-	source, err := validateSourceStorage(ctx, db, id, name)
+	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -177,7 +177,7 @@ func (DefaultHandler) PausePackHandler(
 	var jobs []model.Job
 	if jobID == 0 {
 		err = database.DoRetry(ctx, func() error {
-			err := db.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, pausableStatesForPack, source.ID).Find(&jobs).Error
+			err := db.Where("type = ? AND state in ? AND attachment_id = ?", model.Pack, pausableStatesForPack, sourceAttachment.ID).Find(&jobs).Error
 			if err != nil {
 				return errors.WithStack(err)
 			}
@@ -204,15 +204,15 @@ func (DefaultHandler) PausePackHandler(
 	var job model.Job
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			err := db.Where("id = ? AND type = ? AND attachment_id = ?", jobID, model.Pack, source.ID).First(&job).Error
+			err := db.Where("id = ? AND type = ? AND attachment_id = ?", jobID, model.Pack, sourceAttachment.ID).First(&job).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for source '%s' does not exist", jobID, name)
+				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for sourceAttachment '%s' does not exist", jobID, name)
 			}
 			if slices.Contains(pausableStatesForPack, job.State) {
 				return errors.WithStack(db.Model(&job).Update("state", model.Paused).Error)
 			}
 
-			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for source '%s' is not running", jobID, name)
+			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for sourceAttachment '%s' is not running", jobID, name)
 		})
 	})
 

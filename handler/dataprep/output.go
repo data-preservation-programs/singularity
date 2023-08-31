@@ -129,6 +129,10 @@ func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.D
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage %s is not attached to preparation %d", output, id)
 	}
 
+	if preparation.DeleteAfterExport && len(preparation.OutputStorages) == 1 {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "cannot remove the only output storage from a preparation with deleteAfterExport enabled")
+	}
+
 	err = database.DoRetry(ctx, func() error {
 		return db.Where("storage_id = ? AND preparation_id = ?", storage.ID, id).Delete(&model.OutputAttachment{}).Error
 	})

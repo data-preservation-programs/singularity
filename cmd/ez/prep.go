@@ -50,6 +50,7 @@ var PrepCmd = &cli.Command{
 		},
 		&cli.StringFlag{
 			Name:        "database-file",
+			Aliases:     []string{"f"},
 			Usage:       "The database file to store the metadata. To use in memory database, use an empty string.",
 			DefaultText: "./ezprep-<name>.db",
 		},
@@ -63,7 +64,7 @@ var PrepCmd = &cli.Command{
 		databaseFile := c.String("database-file")
 		if databaseFile == "" {
 			if c.IsSet("database-file") {
-				databaseFile = "file::memory:?cache=shared"
+				databaseFile = "file::memory:"
 			} else {
 				databaseFile = fmt.Sprintf("./ezprep-%d.db", t)
 			}
@@ -73,6 +74,10 @@ var PrepCmd = &cli.Command{
 			databaseFile, err = filepath.Abs(databaseFile)
 			if err != nil {
 				return errors.Wrap(err, "failed to get absolute path")
+			}
+		} else {
+			if c.Int("concurrency") > 1 {
+				return database.ErrInmemoryWithHighConcurrency
 			}
 		}
 		db, closer, err := database.OpenWithLogger("sqlite:" + databaseFile)
@@ -124,6 +129,11 @@ var PrepCmd = &cli.Command{
 			return errors.Wrap(err, "failed to create preparation")
 		}
 
+		_, err = dataprep.Default.StartScanHandler(c.Context, db, 1, "source")
+		if err != nil {
+			return errors.Wrap(err, "failed to start scan")
+		}
+
 		// Step 3, start dataset worker
 		worker := datasetworker.NewWorker(
 			db,
@@ -133,6 +143,7 @@ var PrepCmd = &cli.Command{
 				EnablePack:     true,
 				EnableDag:      true,
 				ExitOnComplete: true,
+				ExitOnError:    true,
 			})
 		err = worker.Run(c.Context)
 		if err != nil {

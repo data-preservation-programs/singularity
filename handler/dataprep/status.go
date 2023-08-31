@@ -46,23 +46,23 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint
 		return nil, errors.WithStack(err)
 	}
 
-	var sources []model.SourceAttachment
-	err = db.Preload("Storage").Where("preparation_id = ?", id).Find(&sources).Error
+	var sourceAttachments []model.SourceAttachment
+	err = db.Preload("Storage").Where("preparation_id = ?", id).Find(&sourceAttachments).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	var allStatuses []SourceStatus
-	for _, source := range sources {
+	for _, sourceAttachment := range sourceAttachments {
 		var jobs []model.Job
-		err = db.Where("attachment_id = ?", source.ID).Find(&jobs).Error
+		err = db.Where("attachment_id = ?", sourceAttachment.ID).Find(&jobs).Error
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		status := SourceStatus{
-			AttachmentID:    ptr.Of(source.ID),
-			SourceStorageID: ptr.Of(source.StorageID),
-			SourceStorage:   source.Storage,
+			AttachmentID:    ptr.Of(sourceAttachment.ID),
+			SourceStorageID: ptr.Of(sourceAttachment.StorageID),
+			SourceStorage:   sourceAttachment.Storage,
 			Jobs:            jobs,
 		}
 		allStatuses = append(allStatuses, status)

@@ -4,59 +4,35 @@ package database
 
 import (
 	"io"
+	"net/url"
 	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/glebarez/sqlite"
-	"github.com/ipfs/go-log/v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var ErrDatabaseNotSupported = errors.New("database not supported")
-
-var logger = log.Logger("database")
-
-func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
+func open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	var db *gorm.DB
 	var closer io.Closer
 	var err error
 	if strings.HasPrefix(connString, "sqlite:") {
-		logger.Debug("Opening sqlite database (cgo version)")
-		db, err = gorm.Open(sqlite.Open(connString[7:]), config)
+		connString, err = AddPragmaToSQLite(connString[7:])
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
 		}
-
+		db, err = gorm.Open(sqlite.Open(connString), config)
+		if err != nil {
+			return nil, nil, errors.WithStack(err)
+		}
 		closer, err = db.DB()
-		if err != nil {
-			return nil, nil, errors.WithStack(err)
-		}
-
-		err = db.Exec("PRAGMA foreign_keys = ON").Error
-		if err != nil {
-			closer.Close()
-			return nil, nil, errors.WithStack(err)
-		}
-
-		err = db.Exec("PRAGMA busy_timeout = 50000").Error
-		if err != nil {
-			closer.Close()
-			return nil, nil, errors.WithStack(err)
-		}
-
-		err = db.Exec("PRAGMA journal_mode = WAL").Error
-		if err != nil {
-			closer.Close()
-			return nil, nil, errors.WithStack(err)
-		}
-
-		return db, closer, nil
+		return db, closer, errors.WithStack(err)
 	}
 
 	if strings.HasPrefix(connString, "postgres:") {
-		logger.Debug("Opening postgres database")
+		logger.Info("Opening postgres database")
 		db, err = gorm.Open(postgres.Open(connString), config)
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
@@ -66,7 +42,7 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	if strings.HasPrefix(connString, "mysql://") {
-		logger.Debug("Opening mysql database")
+		logger.Info("Opening mysql database")
 		db, err = gorm.Open(mysql.Open(connString[8:]), config)
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
@@ -76,4 +52,25 @@ func Open(connString string, config *gorm.Config) (*gorm.DB, io.Closer, error) {
 	}
 
 	return nil, nil, ErrDatabaseNotSupported
+}
+
+func AddPragmaToSQLite(connString string) (string, error) {
+	u, err := url.Parse(connString)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	qs := u.Query()
+	qs.Add("_pragma", "busy_timeout(50000)")
+	qs.Set("_pragma", "foreign_keys(1)")
+	if strings.HasPrefix(connString, "file::memory:") {
+		qs.Set("_pragma", "journal_mode(MEMORY)")
+		qs.Set("mode", "memory")
+		qs.Set("cache", "shared")
+	} else {
+		qs.Set("_pragma", "journal_mode(WAL)")
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
 }

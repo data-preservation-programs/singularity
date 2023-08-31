@@ -15,7 +15,7 @@ var pausableStatesForScan = []model.JobState{model.Processing, model.Ready}
 
 var startableStatesForScan = []model.JobState{model.Paused, model.Created, model.Error, model.Complete}
 
-func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.Storage, error) {
+func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.SourceAttachment, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
 	err := db.Where("name = ?", name).First(&storage).Error
@@ -26,15 +26,16 @@ func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name str
 		return nil, errors.WithStack(err)
 	}
 
-	var source model.SourceAttachment
-	err = db.Where("preparation_id = ? AND storage_id = ?", id, storage.ID).First(&source).Error
+	var sourceAttachment model.SourceAttachment
+	err = db.Where("preparation_id = ? AND storage_id = ?", id, storage.ID).First(&sourceAttachment).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "source '%s' is not attached to preparation %d", name, id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "sourceAttachment '%s' is not attached to preparation %d", name, id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return &storage, nil
+	sourceAttachment.Storage = &storage
+	return &sourceAttachment, nil
 }
 
 // StartJobHandler initializes or restarts a job for a given source storage.
@@ -64,7 +65,7 @@ func StartJobHandler(
 	name string,
 	jobType model.JobType) (*model.Job, error) {
 	db = db.WithContext(ctx)
-	source, err := validateSourceStorage(ctx, db, id, name)
+	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -72,12 +73,12 @@ func StartJobHandler(
 	var job model.Job
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			err := db.Where("type = ? AND attachment_id = ?", jobType, source.ID).First(&job).Error
+			err := db.Where("type = ? AND attachment_id = ?", jobType, sourceAttachment.ID).First(&job).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				job = model.Job{
 					State:        model.Ready,
 					Type:         jobType,
-					AttachmentID: source.ID,
+					AttachmentID: sourceAttachment.ID,
 				}
 				return errors.WithStack(db.Create(&job).Error)
 			}
@@ -89,7 +90,7 @@ func StartJobHandler(
 				}).Error)
 			}
 
-			return errors.Wrapf(handlererror.ErrInvalidParameter, "%s job for source '%s' is already running", jobType, name)
+			return errors.Wrapf(handlererror.ErrInvalidParameter, "%s job for sourceAttachment '%s' is already running", jobType, name)
 		})
 	})
 
@@ -140,7 +141,7 @@ func PauseJobHandler(
 	name string,
 	jobType model.JobType) (*model.Job, error) {
 	db = db.WithContext(ctx)
-	source, err := validateSourceStorage(ctx, db, id, name)
+	sourceAttachment, err := validateSourceStorage(ctx, db, id, name)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -148,12 +149,12 @@ func PauseJobHandler(
 	var job model.Job
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			err := db.Where("type = ? AND attachment_id = ?", jobType, source.ID).First(&job).Error
+			err := db.Where("type = ? AND attachment_id = ?", jobType, sourceAttachment.ID).First(&job).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.Wrapf(handlererror.ErrNotFound, "%s job for source '%s' does not exist", jobType, name)
+				return errors.Wrapf(handlererror.ErrNotFound, "%s job for sourceAttachment '%s' does not exist", jobType, name)
 			}
 			if !slices.Contains(pausableStatesForScan, job.State) {
-				return errors.Wrapf(handlererror.ErrInvalidParameter, "%s job for source '%s' is not running", jobType, name)
+				return errors.Wrapf(handlererror.ErrInvalidParameter, "%s job for sourceAttachment '%s' is not running", jobType, name)
 			}
 
 			return errors.WithStack(db.Model(&job).Update("state", model.Paused).Error)
