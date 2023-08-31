@@ -3,13 +3,13 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
 
 USAGE:
-   singularity storage create swift [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create swift [command options] <name> <path>
 
 DESCRIPTION:
-   --env_auth
+   --env-auth
       Get swift credentials from environment variables in standard OpenStack form.
 
       Examples:
@@ -34,7 +34,7 @@ DESCRIPTION:
          | https://auth.storage.memset.com/v2.0         | Memset Memstore UK v2
          | https://auth.cloud.ovh.net/v3                | OVH
 
-   --user_id
+   --user-id
       User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).
 
    --domain
@@ -43,34 +43,34 @@ DESCRIPTION:
    --tenant
       Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).
 
-   --tenant_id
+   --tenant-id
       Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).
 
-   --tenant_domain
+   --tenant-domain
       Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).
 
    --region
       Region name - optional (OS_REGION_NAME).
 
-   --storage_url
+   --storage-url
       Storage URL - optional (OS_STORAGE_URL).
 
-   --auth_token
+   --auth-token
       Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).
 
-   --application_credential_id
+   --application-credential-id
       Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).
 
-   --application_credential_name
+   --application-credential-name
       Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).
 
-   --application_credential_secret
+   --application-credential-secret
       Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).
 
-   --auth_version
+   --auth-version
       AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).
 
-   --endpoint_type
+   --endpoint-type
       Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
 
       Examples:
@@ -78,12 +78,12 @@ DESCRIPTION:
          | internal | Internal (use internal service net)
          | admin    | Admin
 
-   --leave_parts_on_error
+   --leave-parts-on-error
       If true avoid calling abort upload on a failure.
       
       It should be set to true for resuming uploads across different sessions.
 
-   --storage_policy
+   --storage-policy
       The storage policy to use when creating a new container.
       
       This applies the specified storage policy when creating a new
@@ -96,13 +96,13 @@ DESCRIPTION:
          | pcs     | OVH Public Cloud Storage
          | pca     | OVH Public Cloud Archive
 
-   --chunk_size
+   --chunk-size
       Above this size files will be chunked into a _segments container.
       
       Above this size files will be chunked into a _segments container.  The
       default for this is 5 GiB which is its maximum value.
 
-   --no_chunk
+   --no-chunk
       Don't chunk files during streaming upload.
       
       When doing streaming uploads (e.g. using rcat or mount) setting this
@@ -114,7 +114,7 @@ DESCRIPTION:
       Rclone will still chunk files bigger than chunk_size when doing normal
       copy operations.
 
-   --no_large_objects
+   --no-large-objects
       Disable support for static and dynamic large objects
       
       Swift cannot transparently store files bigger than 5 GiB. There are
@@ -145,33 +145,33 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --application_credential_id value      Application Credential ID (OS_APPLICATION_CREDENTIAL_ID). [$APPLICATION_CREDENTIAL_ID]
-   --application_credential_name value    Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME). [$APPLICATION_CREDENTIAL_NAME]
-   --application_credential_secret value  Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET). [$APPLICATION_CREDENTIAL_SECRET]
+   --application-credential-id value      Application Credential ID (OS_APPLICATION_CREDENTIAL_ID). [$APPLICATION_CREDENTIAL_ID]
+   --application-credential-name value    Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME). [$APPLICATION_CREDENTIAL_NAME]
+   --application-credential-secret value  Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET). [$APPLICATION_CREDENTIAL_SECRET]
    --auth value                           Authentication URL for server (OS_AUTH_URL). [$AUTH]
-   --auth_token value                     Auth Token from alternate authentication - optional (OS_AUTH_TOKEN). [$AUTH_TOKEN]
-   --auth_version value                   AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION). (default: 0) [$AUTH_VERSION]
+   --auth-token value                     Auth Token from alternate authentication - optional (OS_AUTH_TOKEN). [$AUTH_TOKEN]
+   --auth-version value                   AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION). (default: 0) [$AUTH_VERSION]
    --domain value                         User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME) [$DOMAIN]
-   --endpoint_type value                  Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE). (default: "public") [$ENDPOINT_TYPE]
-   --env_auth                             Get swift credentials from environment variables in standard OpenStack form. (default: false) [$ENV_AUTH]
+   --endpoint-type value                  Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE). (default: "public") [$ENDPOINT_TYPE]
+   --env-auth                             Get swift credentials from environment variables in standard OpenStack form. (default: false) [$ENV_AUTH]
    --help, -h                             show help
    --key value                            API key or password (OS_PASSWORD). [$KEY]
    --region value                         Region name - optional (OS_REGION_NAME). [$REGION]
-   --storage_policy value                 The storage policy to use when creating a new container. [$STORAGE_POLICY]
-   --storage_url value                    Storage URL - optional (OS_STORAGE_URL). [$STORAGE_URL]
+   --storage-policy value                 The storage policy to use when creating a new container. [$STORAGE_POLICY]
+   --storage-url value                    Storage URL - optional (OS_STORAGE_URL). [$STORAGE_URL]
    --tenant value                         Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME). [$TENANT]
-   --tenant_domain value                  Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME). [$TENANT_DOMAIN]
-   --tenant_id value                      Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID). [$TENANT_ID]
+   --tenant-domain value                  Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME). [$TENANT_DOMAIN]
+   --tenant-id value                      Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID). [$TENANT_ID]
    --user value                           User name to log in (OS_USERNAME). [$USER]
-   --user_id value                        User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID). [$USER_ID]
+   --user-id value                        User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID). [$USER_ID]
 
    Advanced
 
-   --chunk_size value      Above this size files will be chunked into a _segments container. (default: "5Gi") [$CHUNK_SIZE]
+   --chunk-size value      Above this size files will be chunked into a _segments container. (default: "5Gi") [$CHUNK_SIZE]
    --encoding value        The encoding for the backend. (default: "Slash,InvalidUtf8") [$ENCODING]
-   --leave_parts_on_error  If true avoid calling abort upload on a failure. (default: false) [$LEAVE_PARTS_ON_ERROR]
-   --no_chunk              Don't chunk files during streaming upload. (default: false) [$NO_CHUNK]
-   --no_large_objects      Disable support for static and dynamic large objects (default: false) [$NO_LARGE_OBJECTS]
+   --leave-parts-on-error  If true avoid calling abort upload on a failure. (default: false) [$LEAVE_PARTS_ON_ERROR]
+   --no-chunk              Don't chunk files during streaming upload. (default: false) [$NO_CHUNK]
+   --no-large-objects      Disable support for static and dynamic large objects (default: false) [$NO_LARGE_OBJECTS]
 
 ```
 {% endcode %}

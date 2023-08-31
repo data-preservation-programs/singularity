@@ -3,18 +3,18 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update acd - Amazon Drive
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update acd - Amazon Drive
 
 USAGE:
-   singularity storage update acd [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update acd [command options] <name>
 
 DESCRIPTION:
-   --client_id
+   --client-id
       OAuth Client Id.
       
       Leave blank normally.
 
-   --client_secret
+   --client-secret
       OAuth Client Secret.
       
       Leave blank normally.
@@ -22,12 +22,12 @@ DESCRIPTION:
    --token
       OAuth Access Token as a JSON blob.
 
-   --auth_url
+   --auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --token_url
+   --token-url
       Token server url.
       
       Leave blank to use the provider defaults.
@@ -35,7 +35,7 @@ DESCRIPTION:
    --checkpoint
       Checkpoint for internal polling (debug).
 
-   --upload_wait_per_gb
+   --upload-wait-per-gb
       Additional time per GiB to wait after a failed complete upload to see if it appears.
       
       Sometimes Amazon Drive gives an error when a file has been fully
@@ -58,7 +58,7 @@ DESCRIPTION:
       Upload with the "-v" flag to see more info about what rclone is doing
       in this situation.
 
-   --templink_threshold
+   --templink-threshold
       Files >= this size will be downloaded via their tempLink.
       
       Files this size or more will be downloaded via their "tempLink". This
@@ -77,19 +77,19 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --client_id value      OAuth Client Id. [$CLIENT_ID]
-   --client_secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h             show help
 
    Advanced
 
-   --auth_url value            Auth server URL. [$AUTH_URL]
+   --auth-url value            Auth server URL. [$AUTH_URL]
    --checkpoint value          Checkpoint for internal polling (debug). [$CHECKPOINT]
    --encoding value            The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
-   --templink_threshold value  Files >= this size will be downloaded via their tempLink. (default: "9Gi") [$TEMPLINK_THRESHOLD]
+   --templink-threshold value  Files >= this size will be downloaded via their tempLink. (default: "9Gi") [$TEMPLINK_THRESHOLD]
    --token value               OAuth Access Token as a JSON blob. [$TOKEN]
-   --token_url value           Token server url. [$TOKEN_URL]
-   --upload_wait_per_gb value  Additional time per GiB to wait after a failed complete upload to see if it appears. (default: "3m0s") [$UPLOAD_WAIT_PER_GB]
+   --token-url value           Token server url. [$TOKEN_URL]
+   --upload-wait-per-gb value  Additional time per GiB to wait after a failed complete upload to see if it appears. (default: "3m0s") [$UPLOAD_WAIT_PER_GB]
 
 ```
 {% endcode %}

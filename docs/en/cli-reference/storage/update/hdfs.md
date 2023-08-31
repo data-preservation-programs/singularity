@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update hdfs - Hadoop distributed file system
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update hdfs - Hadoop distributed file system
 
 USAGE:
-   singularity storage update hdfs [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update hdfs [command options] <name>
 
 DESCRIPTION:
    --namenode
@@ -20,14 +20,14 @@ DESCRIPTION:
       Examples:
          | root | Connect to hdfs as root.
 
-   --service_principal_name
+   --service-principal-name
       Kerberos service principal name for the namenode.
       
       Enables KERBEROS authentication. Specifies the Service Principal Name
       (SERVICE/FQDN) for the namenode. E.g. \"hdfs/namenode.hadoop.docker\"
       for namenode running as service 'hdfs' with FQDN 'namenode.hadoop.docker'.
 
-   --data_transfer_protection
+   --data-transfer-protection
       Kerberos data transfer protection: authentication|integrity|privacy.
       
       Specifies whether or not authentication, data signature integrity
@@ -51,9 +51,9 @@ OPTIONS:
 
    Advanced
 
-   --data_transfer_protection value  Kerberos data transfer protection: authentication|integrity|privacy. [$DATA_TRANSFER_PROTECTION]
+   --data-transfer-protection value  Kerberos data transfer protection: authentication|integrity|privacy. [$DATA_TRANSFER_PROTECTION]
    --encoding value                  The encoding for the backend. (default: "Slash,Colon,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
-   --service_principal_name value    Kerberos service principal name for the namenode. [$SERVICE_PRINCIPAL_NAME]
+   --service-principal-name value    Kerberos service principal name for the namenode. [$SERVICE_PRINCIPAL_NAME]
 
 ```
 {% endcode %}

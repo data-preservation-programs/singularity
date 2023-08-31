@@ -3,13 +3,13 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update uptobox - Uptobox
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update uptobox - Uptobox
 
 USAGE:
-   singularity storage update uptobox [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update uptobox [command options] <name>
 
 DESCRIPTION:
-   --access_token
+   --access-token
       Your access token.
       
       Get it from https://uptobox.com/my_account.
@@ -21,7 +21,7 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --access_token value  Your access token. [$ACCESS_TOKEN]
+   --access-token value  Your access token. [$ACCESS_TOKEN]
    --help, -h            show help
 
    Advanced

@@ -88,7 +88,6 @@ func (m multiBlockstore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error
 }
 
 func (m multiBlockstore) HashOnRead(enabled bool) {
-	return
 }
 
 func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.Cid) error {

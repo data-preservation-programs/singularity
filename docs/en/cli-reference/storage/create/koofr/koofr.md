@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create koofr koofr - Koofr, https://app.koofr.net/
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create koofr koofr - Koofr, https://app.koofr.net/
 
 USAGE:
-   singularity storage create koofr koofr [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create koofr koofr [command options] <name> <path>
 
 DESCRIPTION:
    --mountid

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update oos - Oracle Cloud Infrastructure Object Storage
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos - Oracle Cloud Infrastructure Object Storage
 
 USAGE:
-   singularity storage update oos command [command options] [arguments...]
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos command [command options] [arguments...]
 
 COMMANDS:
    env_auth                 automatically pickup the credentials from runtime(env), first one to provide auth wins

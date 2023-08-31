@@ -10,12 +10,12 @@ import (
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/data-preservation-programs/singularity/client/swagger/http/admin"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/data_source"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/dataset"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_schedule"
-	"github.com/data-preservation-programs/singularity/client/swagger/http/metadata"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/storage"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet_association"
 )
@@ -62,12 +62,12 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Singularit
 
 	cli := new(SingularityAPI)
 	cli.Transport = transport
-	cli.Admin = admin.New(transport, formats)
-	cli.DataSource = data_source.New(transport, formats)
-	cli.Dataset = dataset.New(transport, formats)
 	cli.Deal = deal.New(transport, formats)
 	cli.DealSchedule = deal_schedule.New(transport, formats)
-	cli.Metadata = metadata.New(transport, formats)
+	cli.Job = job.New(transport, formats)
+	cli.Piece = piece.New(transport, formats)
+	cli.Preparation = preparation.New(transport, formats)
+	cli.Storage = storage.New(transport, formats)
 	cli.Wallet = wallet.New(transport, formats)
 	cli.WalletAssociation = wallet_association.New(transport, formats)
 	return cli
@@ -114,17 +114,17 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // SingularityAPI is a client for singularity API
 type SingularityAPI struct {
-	Admin admin.ClientService
-
-	DataSource data_source.ClientService
-
-	Dataset dataset.ClientService
-
 	Deal deal.ClientService
 
 	DealSchedule deal_schedule.ClientService
 
-	Metadata metadata.ClientService
+	Job job.ClientService
+
+	Piece piece.ClientService
+
+	Preparation preparation.ClientService
+
+	Storage storage.ClientService
 
 	Wallet wallet.ClientService
 
@@ -136,12 +136,12 @@ type SingularityAPI struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *SingularityAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-	c.Admin.SetTransport(transport)
-	c.DataSource.SetTransport(transport)
-	c.Dataset.SetTransport(transport)
 	c.Deal.SetTransport(transport)
 	c.DealSchedule.SetTransport(transport)
-	c.Metadata.SetTransport(transport)
+	c.Job.SetTransport(transport)
+	c.Piece.SetTransport(transport)
+	c.Preparation.SetTransport(transport)
+	c.Storage.SetTransport(transport)
 	c.Wallet.SetTransport(transport)
 	c.WalletAssociation.SetTransport(transport)
 }

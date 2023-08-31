@@ -15,8 +15,8 @@ import (
 type CreateRequest struct {
 	SourceStorages    []string `json:"sourceStorages" validate:"required"`                          // Name of Source storage systems to be used for the source
 	OutputStorages    []string `json:"outputStorages" validate:"optional"`                          // Name of Output storage systems to be used for the output
-	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"      validate:"required"`      // Maximum size of the CAR files to be created
-	PieceSizeStr      string   `default:""            json:"pieceSize"    validate:"optional"`      // Target piece size of the CAR files used for piece commitment calculation
+	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"           validate:"required"` // Maximum size of the CAR files to be created
+	PieceSizeStr      string   `default:""            json:"pieceSize"         validate:"optional"` // Target piece size of the CAR files used for piece commitment calculation
 	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport" validate:"optional"` // Whether to delete the source files after export
 }
 

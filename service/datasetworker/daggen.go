@@ -210,7 +210,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 			logger.Info("Nothing to export to dag. Skipping.")
 			return nil
 		}
-		
+
 		pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
 		if err != nil {
 			return errors.WithStack(err)

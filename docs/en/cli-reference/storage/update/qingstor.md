@@ -3,13 +3,13 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update qingstor - QingCloud Object Storage
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update qingstor - QingCloud Object Storage
 
 USAGE:
-   singularity storage update qingstor [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update qingstor [command options] <name>
 
 DESCRIPTION:
-   --env_auth
+   --env-auth
       Get QingStor credentials from runtime.
       
       Only applies if access_key_id and secret_access_key is blank.
@@ -18,12 +18,12 @@ DESCRIPTION:
          | false | Enter QingStor credentials in the next step.
          | true  | Get QingStor credentials from the environment (env vars or IAM).
 
-   --access_key_id
+   --access-key-id
       QingStor Access Key ID.
       
       Leave blank for anonymous access or runtime credentials.
 
-   --secret_access_key
+   --secret-access-key
       QingStor Secret Access Key (password).
       
       Leave blank for anonymous access or runtime credentials.
@@ -46,16 +46,16 @@ DESCRIPTION:
          | gd2a  | The Guangdong (China) Second Zone.
          |       | Needs location constraint gd2a.
 
-   --connection_retries
+   --connection-retries
       Number of connection retries.
 
-   --upload_cutoff
+   --upload-cutoff
       Cutoff for switching to chunked upload.
       
       Any files larger than this will be uploaded in chunks of chunk_size.
       The minimum is 0 and the maximum is 5 GiB.
 
-   --chunk_size
+   --chunk-size
       Chunk size to use for uploading.
       
       When uploading files larger than upload_cutoff they will be uploaded
@@ -67,7 +67,7 @@ DESCRIPTION:
       If you are transferring large files over high-speed links and you have
       enough memory, then increasing this will speed up the transfers.
 
-   --upload_concurrency
+   --upload-concurrency
       Concurrency for multipart uploads.
       
       This is the number of chunks of the same file that are uploaded
@@ -87,20 +87,20 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --access_key_id value      QingStor Access Key ID. [$ACCESS_KEY_ID]
+   --access-key-id value      QingStor Access Key ID. [$ACCESS_KEY_ID]
    --endpoint value           Enter an endpoint URL to connection QingStor API. [$ENDPOINT]
-   --env_auth                 Get QingStor credentials from runtime. (default: false) [$ENV_AUTH]
+   --env-auth                 Get QingStor credentials from runtime. (default: false) [$ENV_AUTH]
    --help, -h                 show help
-   --secret_access_key value  QingStor Secret Access Key (password). [$SECRET_ACCESS_KEY]
+   --secret-access-key value  QingStor Secret Access Key (password). [$SECRET_ACCESS_KEY]
    --zone value               Zone to connect to. [$ZONE]
 
    Advanced
 
-   --chunk_size value          Chunk size to use for uploading. (default: "4Mi") [$CHUNK_SIZE]
-   --connection_retries value  Number of connection retries. (default: 3) [$CONNECTION_RETRIES]
+   --chunk-size value          Chunk size to use for uploading. (default: "4Mi") [$CHUNK_SIZE]
+   --connection-retries value  Number of connection retries. (default: 3) [$CONNECTION_RETRIES]
    --encoding value            The encoding for the backend. (default: "Slash,Ctl,InvalidUtf8") [$ENCODING]
-   --upload_concurrency value  Concurrency for multipart uploads. (default: 1) [$UPLOAD_CONCURRENCY]
-   --upload_cutoff value       Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
+   --upload-concurrency value  Concurrency for multipart uploads. (default: 1) [$UPLOAD_CONCURRENCY]
+   --upload-cutoff value       Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
 
 ```
 {% endcode %}

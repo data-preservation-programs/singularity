@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create http - HTTP
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create http - HTTP
 
 USAGE:
-   singularity storage create http [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create http [command options] <name> <path>
 
 DESCRIPTION:
    --url
@@ -26,7 +26,7 @@ DESCRIPTION:
       
       You can set multiple headers, e.g. '"Cookie","name=value","Authorization","xxx"'.
 
-   --no_slash
+   --no-slash
       Set this if the site doesn't end directories with /.
       
       Use this if your target website does not use / on the end of
@@ -40,7 +40,7 @@ DESCRIPTION:
       Note that this may cause rclone to confuse genuine HTML files with
       directories.
 
-   --no_head
+   --no-head
       Don't use HEAD requests.
       
       HEAD requests are mainly used to find file sizes in dir listing.
@@ -64,8 +64,8 @@ OPTIONS:
    Advanced
 
    --headers value  Set HTTP headers for all transactions. [$HEADERS]
-   --no_head        Don't use HEAD requests. (default: false) [$NO_HEAD]
-   --no_slash       Set this if the site doesn't end directories with /. (default: false) [$NO_SLASH]
+   --no-head        Don't use HEAD requests. (default: false) [$NO_HEAD]
+   --no-slash       Set this if the site doesn't end directories with /. (default: false) [$NO_SLASH]
 
 ```
 {% endcode %}

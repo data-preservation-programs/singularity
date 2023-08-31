@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create local - Local Disk
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create local - Local Disk
 
 USAGE:
-   singularity storage create local [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create local [command options] <name> <path>
 
 DESCRIPTION:
    --nounc
@@ -15,19 +15,19 @@ DESCRIPTION:
       Examples:
          | true | Disables long file names.
 
-   --copy_links
+   --copy-links
       Follow symlinks and copy the pointed to item.
 
    --links
       Translate symlinks to/from regular files with a '.rclonelink' extension.
 
-   --skip_links
+   --skip-links
       Don't warn about skipped symlinks.
       
       This flag disables warning messages on skipped symlinks or junction
       points, as you explicitly acknowledge that they should be skipped.
 
-   --zero_size_links
+   --zero-size-links
       Assume the Stat size of links is zero (and read them instead) (deprecated).
       
       Rclone used to use the Stat size of links as the link size, but this fails in quite a few places:
@@ -39,7 +39,7 @@ DESCRIPTION:
       So rclone now always reads the link.
       
 
-   --unicode_normalization
+   --unicode-normalization
       Apply unicode NFC normalization to paths and filenames.
       
       This flag can be used to normalize file names into unicode NFC form
@@ -55,7 +55,7 @@ DESCRIPTION:
       Note that rclone compares filenames with unicode normalization in the sync
       routine so this flag shouldn't normally be used.
 
-   --no_check_updated
+   --no-check-updated
       Don't check to see if the files change during upload.
       
       Normally rclone checks the size and modification time of files as they
@@ -83,24 +83,24 @@ DESCRIPTION:
       
       
 
-   --one_file_system
+   --one-file-system
       Don't cross filesystem boundaries (unix/macOS only).
 
-   --case_sensitive
+   --case-sensitive
       Force the filesystem to report itself as case sensitive.
       
       Normally the local backend declares itself as case insensitive on
       Windows/macOS and case sensitive for everything else.  Use this flag
       to override the default choice.
 
-   --case_insensitive
+   --case-insensitive
       Force the filesystem to report itself as case insensitive.
       
       Normally the local backend declares itself as case insensitive on
       Windows/macOS and case sensitive for everything else.  Use this flag
       to override the default choice.
 
-   --no_preallocate
+   --no-preallocate
       Disable preallocation of disk space for transferred files.
       
       Preallocation of disk space helps prevent filesystem fragmentation.
@@ -109,7 +109,7 @@ DESCRIPTION:
       preallocated space, causing checksum and file size checks to fail.
       Use this flag to disable preallocation.
 
-   --no_sparse
+   --no-sparse
       Disable sparse files for multi-thread downloads.
       
       On Windows platforms rclone will make sparse files when doing
@@ -117,7 +117,7 @@ DESCRIPTION:
       the OS zeros the file. However sparse files may be undesirable as they
       cause disk fragmentation and can be slow to work with.
 
-   --no_set_modtime
+   --no-set-modtime
       Disable setting modtime.
       
       Normally rclone updates modification time of files after they are done
@@ -137,20 +137,20 @@ OPTIONS:
 
    Advanced
 
-   --case_insensitive       Force the filesystem to report itself as case insensitive. (default: false) [$CASE_INSENSITIVE]
-   --case_sensitive         Force the filesystem to report itself as case sensitive. (default: false) [$CASE_SENSITIVE]
-   --copy_links, -L         Follow symlinks and copy the pointed to item. (default: false) [$COPY_LINKS]
+   --case-insensitive       Force the filesystem to report itself as case insensitive. (default: false) [$CASE_INSENSITIVE]
+   --case-sensitive         Force the filesystem to report itself as case sensitive. (default: false) [$CASE_SENSITIVE]
+   --copy-links, -L         Follow symlinks and copy the pointed to item. (default: false) [$COPY_LINKS]
    --encoding value         The encoding for the backend. (default: "Slash,Dot") [$ENCODING]
    --links, -l              Translate symlinks to/from regular files with a '.rclonelink' extension. (default: false) [$LINKS]
-   --no_check_updated       Don't check to see if the files change during upload. (default: false) [$NO_CHECK_UPDATED]
-   --no_preallocate         Disable preallocation of disk space for transferred files. (default: false) [$NO_PREALLOCATE]
-   --no_set_modtime         Disable setting modtime. (default: false) [$NO_SET_MODTIME]
-   --no_sparse              Disable sparse files for multi-thread downloads. (default: false) [$NO_SPARSE]
+   --no-check-updated       Don't check to see if the files change during upload. (default: false) [$NO_CHECK_UPDATED]
+   --no-preallocate         Disable preallocation of disk space for transferred files. (default: false) [$NO_PREALLOCATE]
+   --no-set-modtime         Disable setting modtime. (default: false) [$NO_SET_MODTIME]
+   --no-sparse              Disable sparse files for multi-thread downloads. (default: false) [$NO_SPARSE]
    --nounc                  Disable UNC (long path names) conversion on Windows. (default: false) [$NOUNC]
-   --one_file_system, -x    Don't cross filesystem boundaries (unix/macOS only). (default: false) [$ONE_FILE_SYSTEM]
-   --skip_links             Don't warn about skipped symlinks. (default: false) [$SKIP_LINKS]
-   --unicode_normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
-   --zero_size_links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]
+   --one-file-system, -x    Don't cross filesystem boundaries (unix/macOS only). (default: false) [$ONE_FILE_SYSTEM]
+   --skip-links             Don't warn about skipped symlinks. (default: false) [$SKIP_LINKS]
+   --unicode-normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
+   --zero-size-links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]
 
 ```
 {% endcode %}

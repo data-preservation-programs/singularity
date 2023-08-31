@@ -34,9 +34,9 @@ func (DefaultHandler) StartDagGenHandler(
 // @Produce json
 // @Param id path int true "Preparation ID"
 // @Param name path string true "Storage name"
-// @Success 200 {object} Job
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Job
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/start-daggen [post]
 func _() {}
 
@@ -67,8 +67,8 @@ func (DefaultHandler) PauseDagGenHandler(
 // @Produce json
 // @Param id path int true "Preparation ID"
 // @Param name path string true "Storage name"
-// @Success 200 {object} Job
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Job
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/pause-daggen [post]
 func _() {}

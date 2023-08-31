@@ -3,16 +3,16 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update sharefile - Citrix Sharefile
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update sharefile - Citrix Sharefile
 
 USAGE:
-   singularity storage update sharefile [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update sharefile [command options] <name>
 
 DESCRIPTION:
-   --upload_cutoff
+   --upload-cutoff
       Cutoff for switching to multipart upload.
 
-   --root_folder_id
+   --root-folder-id
       ID of the root folder.
       
       Leave blank to access "Personal Folders".  You can use one of the
@@ -25,7 +25,7 @@ DESCRIPTION:
          | connectors | Access all the individual connectors.
          | top        | Access the home, favorites, and shared folders as well as the connectors.
 
-   --chunk_size
+   --chunk-size
       Upload chunk size.
       
       Must a power of 2 >= 256k.
@@ -50,14 +50,14 @@ DESCRIPTION:
 
 OPTIONS:
    --help, -h              show help
-   --root_folder_id value  ID of the root folder. [$ROOT_FOLDER_ID]
+   --root-folder-id value  ID of the root folder. [$ROOT_FOLDER_ID]
 
    Advanced
 
-   --chunk_size value     Upload chunk size. (default: "64Mi") [$CHUNK_SIZE]
+   --chunk-size value     Upload chunk size. (default: "64Mi") [$CHUNK_SIZE]
    --encoding value       The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
    --endpoint value       Endpoint for API calls. [$ENDPOINT]
-   --upload_cutoff value  Cutoff for switching to multipart upload. (default: "128Mi") [$UPLOAD_CUTOFF]
+   --upload-cutoff value  Cutoff for switching to multipart upload. (default: "128Mi") [$UPLOAD_CUTOFF]
 
 ```
 {% endcode %}

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create mega - Mega
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create mega - Mega
 
 USAGE:
-   singularity storage create mega [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create mega [command options] <name> <path>
 
 DESCRIPTION:
    --user
@@ -21,14 +21,14 @@ DESCRIPTION:
       If this flag is set (along with -vv) it will print further debugging
       information from the mega backend.
 
-   --hard_delete
+   --hard-delete
       Delete files permanently rather than putting them into the trash.
       
       Normally the mega backend will put all deletions into the trash rather
       than permanently deleting them.  If you specify this then rclone will
       permanently delete objects instead.
 
-   --use_https
+   --use-https
       Use HTTPS for transfers.
       
       MEGA uses plain text HTTP connections by default.
@@ -52,8 +52,8 @@ OPTIONS:
 
    --debug           Output more debug from Mega. (default: false) [$DEBUG]
    --encoding value  The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
-   --hard_delete     Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
-   --use_https       Use HTTPS for transfers. (default: false) [$USE_HTTPS]
+   --hard-delete     Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
+   --use-https       Use HTTPS for transfers. (default: false) [$USE_HTTPS]
 
 ```
 {% endcode %}

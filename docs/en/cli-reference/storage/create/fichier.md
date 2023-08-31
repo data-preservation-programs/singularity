@@ -3,22 +3,22 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create fichier - 1Fichier
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create fichier - 1Fichier
 
 USAGE:
-   singularity storage create fichier [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create fichier [command options] <name> <path>
 
 DESCRIPTION:
-   --api_key
+   --api-key
       Your API Key, get it from https://1fichier.com/console/params.pl.
 
-   --shared_folder
+   --shared-folder
       If you want to download a shared folder, add this parameter.
 
-   --file_password
+   --file-password
       If you want to download a shared file that is password protected, add this parameter.
 
-   --folder_password
+   --folder-password
       If you want to list the files in a shared folder that is password protected, add this parameter.
 
    --encoding
@@ -28,15 +28,15 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --api_key value  Your API Key, get it from https://1fichier.com/console/params.pl. [$API_KEY]
+   --api-key value  Your API Key, get it from https://1fichier.com/console/params.pl. [$API_KEY]
    --help, -h       show help
 
    Advanced
 
    --encoding value         The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot") [$ENCODING]
-   --file_password value    If you want to download a shared file that is password protected, add this parameter. [$FILE_PASSWORD]
-   --folder_password value  If you want to list the files in a shared folder that is password protected, add this parameter. [$FOLDER_PASSWORD]
-   --shared_folder value    If you want to download a shared folder, add this parameter. [$SHARED_FOLDER]
+   --file-password value    If you want to download a shared file that is password protected, add this parameter. [$FILE_PASSWORD]
+   --folder-password value  If you want to list the files in a shared folder that is password protected, add this parameter. [$FOLDER_PASSWORD]
+   --shared-folder value    If you want to download a shared folder, add this parameter. [$SHARED_FOLDER]
 
 ```
 {% endcode %}

@@ -3,18 +3,18 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update pcloud - Pcloud
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update pcloud - Pcloud
 
 USAGE:
-   singularity storage update pcloud [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update pcloud [command options] <name>
 
 DESCRIPTION:
-   --client_id
+   --client-id
       OAuth Client Id.
       
       Leave blank normally.
 
-   --client_secret
+   --client-secret
       OAuth Client Secret.
       
       Leave blank normally.
@@ -22,12 +22,12 @@ DESCRIPTION:
    --token
       OAuth Access Token as a JSON blob.
 
-   --auth_url
+   --auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --token_url
+   --token-url
       Token server url.
       
       Leave blank to use the provider defaults.
@@ -37,7 +37,7 @@ DESCRIPTION:
       
       See the [encoding section in the overview](/overview/#encoding) for more info.
 
-   --root_folder_id
+   --root-folder-id
       Fill in for rclone to use a non root folder as its starting point.
 
    --hostname
@@ -64,19 +64,19 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --client_id value      OAuth Client Id. [$CLIENT_ID]
-   --client_secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h             show help
 
    Advanced
 
-   --auth_url value        Auth server URL. [$AUTH_URL]
+   --auth-url value        Auth server URL. [$AUTH_URL]
    --encoding value        The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --hostname value        Hostname to connect to. (default: "api.pcloud.com") [$HOSTNAME]
    --password value        Your pcloud password. [$PASSWORD]
-   --root_folder_id value  Fill in for rclone to use a non root folder as its starting point. (default: "d0") [$ROOT_FOLDER_ID]
+   --root-folder-id value  Fill in for rclone to use a non root folder as its starting point. (default: "d0") [$ROOT_FOLDER_ID]
    --token value           OAuth Access Token as a JSON blob. [$TOKEN]
-   --token_url value       Token server url. [$TOKEN_URL]
+   --token-url value       Token server url. [$TOKEN_URL]
    --username value        Your pcloud username. [$USERNAME]
 
 ```

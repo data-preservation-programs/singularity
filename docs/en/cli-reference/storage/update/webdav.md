@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update webdav - WebDAV
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update webdav - WebDAV
 
 USAGE:
-   singularity storage update webdav [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update webdav [command options] <name>
 
 DESCRIPTION:
    --url
@@ -32,10 +32,10 @@ DESCRIPTION:
    --pass
       Password.
 
-   --bearer_token
+   --bearer-token
       Bearer token instead of user/pass (e.g. a Macaroon).
 
-   --bearer_token_command
+   --bearer-token-command
       Command to run to get a bearer token.
 
    --encoding
@@ -60,7 +60,7 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --bearer_token value  Bearer token instead of user/pass (e.g. a Macaroon). [$BEARER_TOKEN]
+   --bearer-token value  Bearer token instead of user/pass (e.g. a Macaroon). [$BEARER_TOKEN]
    --help, -h            show help
    --pass value          Password. [$PASS]
    --url value           URL of http host to connect to. [$URL]
@@ -69,7 +69,7 @@ OPTIONS:
 
    Advanced
 
-   --bearer_token_command value  Command to run to get a bearer token. [$BEARER_TOKEN_COMMAND]
+   --bearer-token-command value  Command to run to get a bearer token. [$BEARER_TOKEN_COMMAND]
    --encoding value              The encoding for the backend. [$ENCODING]
    --headers value               Set HTTP headers for all transactions. [$HEADERS]
 

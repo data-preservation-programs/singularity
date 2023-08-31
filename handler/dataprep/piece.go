@@ -96,8 +96,8 @@ func (DefaultHandler) ListPiecesHandler(
 // @Produce json
 // @Param id path int true "Preparation ID"
 // @Success 200 {array} PieceList
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/piece [get]
 func _() {}
 
@@ -107,9 +107,9 @@ func _() {}
 // @Produce json
 // @Param id path int true "Preparation ID"
 // @Param request body AddPieceRequest true "Piece information"
-// @Success 200 {object} Car
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Car
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/piece [post]
 func _() {}
 

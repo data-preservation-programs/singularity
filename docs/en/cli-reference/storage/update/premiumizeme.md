@@ -3,13 +3,13 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update premiumizeme - premiumize.me
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update premiumizeme - premiumize.me
 
 USAGE:
-   singularity storage update premiumizeme [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update premiumizeme [command options] <name>
 
 DESCRIPTION:
-   --api_key
+   --api-key
       API Key.
       
       This is not normally used - use oauth instead.
@@ -22,7 +22,7 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --api_key value  API Key. [$API_KEY]
+   --api-key value  API Key. [$API_KEY]
    --help, -h       show help
 
    Advanced

@@ -195,7 +195,7 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 
 	// Remove all credentials
 	for i := range metadata.Storages {
-		for k, _ := range metadata.Storages[i].Config {
+		for k := range metadata.Storages[i].Config {
 			if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
 				delete(metadata.Storages[i].Config, k)
 			}

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal list - List all deals
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal list - List all deals
 
 USAGE:
-   singularity deal list [command options] [arguments...]
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal list [command options] [arguments...]
 
 OPTIONS:
    --preparation value [ --preparation value ]  Filter deals by preparation id

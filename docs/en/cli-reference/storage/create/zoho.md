@@ -3,18 +3,18 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create zoho - Zoho
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create zoho - Zoho
 
 USAGE:
-   singularity storage create zoho [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create zoho [command options] <name> <path>
 
 DESCRIPTION:
-   --client_id
+   --client-id
       OAuth Client Id.
       
       Leave blank normally.
 
-   --client_secret
+   --client-secret
       OAuth Client Secret.
       
       Leave blank normally.
@@ -22,12 +22,12 @@ DESCRIPTION:
    --token
       OAuth Access Token as a JSON blob.
 
-   --auth_url
+   --auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --token_url
+   --token-url
       Token server url.
       
       Leave blank to use the provider defaults.
@@ -54,17 +54,17 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --client_id value      OAuth Client Id. [$CLIENT_ID]
-   --client_secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h             show help
    --region value         Zoho region to connect to. [$REGION]
 
    Advanced
 
-   --auth_url value   Auth server URL. [$AUTH_URL]
+   --auth-url value   Auth server URL. [$AUTH_URL]
    --encoding value   The encoding for the backend. (default: "Del,Ctl,InvalidUtf8") [$ENCODING]
    --token value      OAuth Access Token as a JSON blob. [$TOKEN]
-   --token_url value  Token server url. [$TOKEN_URL]
+   --token-url value  Token server url. [$TOKEN_URL]
 
 ```
 {% endcode %}

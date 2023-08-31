@@ -3,32 +3,32 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update sugarsync - Sugarsync
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update sugarsync - Sugarsync
 
 USAGE:
-   singularity storage update sugarsync [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update sugarsync [command options] <name>
 
 DESCRIPTION:
-   --app_id
+   --app-id
       Sugarsync App ID.
       
       Leave blank to use rclone's.
 
-   --access_key_id
+   --access-key-id
       Sugarsync Access Key ID.
       
       Leave blank to use rclone's.
 
-   --private_access_key
+   --private-access-key
       Sugarsync Private Access Key.
       
       Leave blank to use rclone's.
 
-   --hard_delete
+   --hard-delete
       Permanently delete files if true
       otherwise put them in the deleted files.
 
-   --refresh_token
+   --refresh-token
       Sugarsync refresh token.
       
       Leave blank normally, will be auto configured by rclone.
@@ -38,7 +38,7 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
-   --authorization_expiry
+   --authorization-expiry
       Sugarsync authorization expiry.
       
       Leave blank normally, will be auto configured by rclone.
@@ -48,12 +48,12 @@ DESCRIPTION:
       
       Leave blank normally, will be auto configured by rclone.
 
-   --root_id
+   --root-id
       Sugarsync root id.
       
       Leave blank normally, will be auto configured by rclone.
 
-   --deleted_id
+   --deleted-id
       Sugarsync deleted folder id.
       
       Leave blank normally, will be auto configured by rclone.
@@ -65,20 +65,20 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --access_key_id value       Sugarsync Access Key ID. [$ACCESS_KEY_ID]
-   --app_id value              Sugarsync App ID. [$APP_ID]
-   --hard_delete               Permanently delete files if true (default: false) [$HARD_DELETE]
+   --access-key-id value       Sugarsync Access Key ID. [$ACCESS_KEY_ID]
+   --app-id value              Sugarsync App ID. [$APP_ID]
+   --hard-delete               Permanently delete files if true (default: false) [$HARD_DELETE]
    --help, -h                  show help
-   --private_access_key value  Sugarsync Private Access Key. [$PRIVATE_ACCESS_KEY]
+   --private-access-key value  Sugarsync Private Access Key. [$PRIVATE_ACCESS_KEY]
 
    Advanced
 
    --authorization value         Sugarsync authorization. [$AUTHORIZATION]
-   --authorization_expiry value  Sugarsync authorization expiry. [$AUTHORIZATION_EXPIRY]
-   --deleted_id value            Sugarsync deleted folder id. [$DELETED_ID]
+   --authorization-expiry value  Sugarsync authorization expiry. [$AUTHORIZATION_EXPIRY]
+   --deleted-id value            Sugarsync deleted folder id. [$DELETED_ID]
    --encoding value              The encoding for the backend. (default: "Slash,Ctl,InvalidUtf8,Dot") [$ENCODING]
-   --refresh_token value         Sugarsync refresh token. [$REFRESH_TOKEN]
-   --root_id value               Sugarsync root id. [$ROOT_ID]
+   --refresh-token value         Sugarsync refresh token. [$REFRESH_TOKEN]
+   --root-id value               Sugarsync root id. [$ROOT_ID]
    --user value                  Sugarsync user. [$USER]
 
 ```

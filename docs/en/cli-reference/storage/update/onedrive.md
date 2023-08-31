@@ -3,18 +3,18 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update onedrive - Microsoft OneDrive
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update onedrive - Microsoft OneDrive
 
 USAGE:
-   singularity storage update onedrive [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update onedrive [command options] <name>
 
 DESCRIPTION:
-   --client_id
+   --client-id
       OAuth Client Id.
       
       Leave blank normally.
 
-   --client_secret
+   --client-secret
       OAuth Client Secret.
       
       Leave blank normally.
@@ -22,12 +22,12 @@ DESCRIPTION:
    --token
       OAuth Access Token as a JSON blob.
 
-   --auth_url
+   --auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --token_url
+   --token-url
       Token server url.
       
       Leave blank to use the provider defaults.
@@ -41,20 +41,20 @@ DESCRIPTION:
          | de     | Microsoft Cloud Germany
          | cn     | Azure and Office 365 operated by Vnet Group in China
 
-   --chunk_size
+   --chunk-size
       Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
       
       Above this size files will be chunked - must be multiple of 320k (327,680 bytes) and
       should not exceed 250M (262,144,000 bytes) else you may encounter \"Microsoft.SharePoint.Client.InvalidClientQueryException: The request message is too big.\"
       Note that the chunks will be buffered into memory.
 
-   --drive_id
+   --drive-id
       The ID of the drive to use.
 
-   --drive_type
+   --drive-type
       The type of the drive (personal | business | documentLibrary).
 
-   --root_folder_id
+   --root-folder-id
       ID of the root folder.
       
       This isn't normally needed, but in special circumstances you might
@@ -62,7 +62,7 @@ DESCRIPTION:
       there through a path traversal.
       
 
-   --access_scopes
+   --access-scopes
       Set scopes to be requested by rclone.
       
       Choose or manually enter a custom space separated list with all scopes, that rclone should request.
@@ -74,7 +74,7 @@ DESCRIPTION:
          | Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All offline_access                | Read and write access to all resources, without the ability to browse SharePoint sites. 
          |                                                                                             | Same as if disable_site_permission was set to true
 
-   --disable_site_permission
+   --disable-site-permission
       Disable the request for Sites.Read.All permission.
       
       If set to true, you will no longer be able to search for a SharePoint site when
@@ -83,7 +83,7 @@ DESCRIPTION:
       application, and your organization disallows users to consent app permission
       request on their own.
 
-   --expose_onenote_files
+   --expose-onenote-files
       Set to make OneNote files show up in directory listings.
       
       By default, rclone will hide OneNote files in directory listings because
@@ -92,17 +92,17 @@ DESCRIPTION:
       delete OneNote files or otherwise want them to show up in directory
       listing, set this option.
 
-   --server_side_across_configs
+   --server-side-across-configs
       Allow server-side operations (e.g. copy) to work across different onedrive configs.
       
       This will only work if you are copying between two OneDrive *Personal* drives AND
       the files to copy are already shared between them.  In other cases, rclone will
       fall back to normal copy (which will be slightly slower).
 
-   --list_chunk
+   --list-chunk
       Size of listing chunk.
 
-   --no_versions
+   --no-versions
       Remove all versions on modifying operations.
       
       Onedrive for business creates versions when rclone uploads new files
@@ -117,7 +117,7 @@ DESCRIPTION:
       this flag there.
       
 
-   --link_scope
+   --link-scope
       Set the scope of the links created by the link command.
 
       Examples:
@@ -127,7 +127,7 @@ DESCRIPTION:
          | organization | Anyone signed into your organization (tenant) can use the link to get access.
          |              | Only available in OneDrive for Business and SharePoint.
 
-   --link_type
+   --link-type
       Set the type of the links created by the link command.
 
       Examples:
@@ -135,13 +135,13 @@ DESCRIPTION:
          | edit  | Creates a read-write link to the item.
          | embed | Creates an embeddable link to the item.
 
-   --link_password
+   --link-password
       Set the password for links created by the link command.
       
       At the time of writing this only works with OneDrive personal paid accounts.
       
 
-   --hash_type
+   --hash-type
       Specify the hash in use for the backend.
       
       This specifies the hash type in use. If set to "auto" it will use the
@@ -177,31 +177,31 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --client_id value      OAuth Client Id. [$CLIENT_ID]
-   --client_secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h             show help
    --region value         Choose national cloud region for OneDrive. (default: "global") [$REGION]
 
    Advanced
 
-   --access_scopes value         Set scopes to be requested by rclone. (default: "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access") [$ACCESS_SCOPES]
-   --auth_url value              Auth server URL. [$AUTH_URL]
-   --chunk_size value            Chunk size to upload files with - must be multiple of 320k (327,680 bytes). (default: "10Mi") [$CHUNK_SIZE]
-   --disable_site_permission     Disable the request for Sites.Read.All permission. (default: false) [$DISABLE_SITE_PERMISSION]
-   --drive_id value              The ID of the drive to use. [$DRIVE_ID]
-   --drive_type value            The type of the drive (personal | business | documentLibrary). [$DRIVE_TYPE]
+   --access-scopes value         Set scopes to be requested by rclone. (default: "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access") [$ACCESS_SCOPES]
+   --auth-url value              Auth server URL. [$AUTH_URL]
+   --chunk-size value            Chunk size to upload files with - must be multiple of 320k (327,680 bytes). (default: "10Mi") [$CHUNK_SIZE]
+   --disable-site-permission     Disable the request for Sites.Read.All permission. (default: false) [$DISABLE_SITE_PERMISSION]
+   --drive-id value              The ID of the drive to use. [$DRIVE_ID]
+   --drive-type value            The type of the drive (personal | business | documentLibrary). [$DRIVE_TYPE]
    --encoding value              The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
-   --expose_onenote_files        Set to make OneNote files show up in directory listings. (default: false) [$EXPOSE_ONENOTE_FILES]
-   --hash_type value             Specify the hash in use for the backend. (default: "auto") [$HASH_TYPE]
-   --link_password value         Set the password for links created by the link command. [$LINK_PASSWORD]
-   --link_scope value            Set the scope of the links created by the link command. (default: "anonymous") [$LINK_SCOPE]
-   --link_type value             Set the type of the links created by the link command. (default: "view") [$LINK_TYPE]
-   --list_chunk value            Size of listing chunk. (default: 1000) [$LIST_CHUNK]
-   --no_versions                 Remove all versions on modifying operations. (default: false) [$NO_VERSIONS]
-   --root_folder_id value        ID of the root folder. [$ROOT_FOLDER_ID]
-   --server_side_across_configs  Allow server-side operations (e.g. copy) to work across different onedrive configs. (default: false) [$SERVER_SIDE_ACROSS_CONFIGS]
+   --expose-onenote-files        Set to make OneNote files show up in directory listings. (default: false) [$EXPOSE_ONENOTE_FILES]
+   --hash-type value             Specify the hash in use for the backend. (default: "auto") [$HASH_TYPE]
+   --link-password value         Set the password for links created by the link command. [$LINK_PASSWORD]
+   --link-scope value            Set the scope of the links created by the link command. (default: "anonymous") [$LINK_SCOPE]
+   --link-type value             Set the type of the links created by the link command. (default: "view") [$LINK_TYPE]
+   --list-chunk value            Size of listing chunk. (default: 1000) [$LIST_CHUNK]
+   --no-versions                 Remove all versions on modifying operations. (default: false) [$NO_VERSIONS]
+   --root-folder-id value        ID of the root folder. [$ROOT_FOLDER_ID]
+   --server-side-across-configs  Allow server-side operations (e.g. copy) to work across different onedrive configs. (default: false) [$SERVER_SIDE_ACROSS_CONFIGS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
-   --token_url value             Token server url. [$TOKEN_URL]
+   --token-url value             Token server url. [$TOKEN_URL]
 
 ```
 {% endcode %}

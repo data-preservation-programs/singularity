@@ -257,12 +257,12 @@
 ## 🌐 Web API Reference <a href="#web-api-reference" id="web-api-reference"></a>
 <!-- webapi begin -->
 
-* [Admin](web-api-reference/admin.md)
-* [Data Source](web-api-reference/data-source.md)
-* [Dataset](web-api-reference/dataset.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
 * [Deal](web-api-reference/deal.md)
-* [Metadata](web-api-reference/metadata.md)
+* [Job](web-api-reference/job.md)
+* [Piece](web-api-reference/piece.md)
+* [Preparation](web-api-reference/preparation.md)
+* [Storage](web-api-reference/storage.md)
 * [Wallet Association](web-api-reference/wallet-association.md)
 * [Wallet](web-api-reference/wallet.md)
 * [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)

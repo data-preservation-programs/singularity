@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity admin reset - Reset the database
+   singularity singularity singularity singularity admin reset - Reset the database
 
 USAGE:
-   singularity admin reset [command options] [arguments...]
+   singularity singularity singularity singularity admin reset [command options] [arguments...]
 
 OPTIONS:
    --really-do-it  Really do it (default: false)

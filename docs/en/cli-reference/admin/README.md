@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity admin - Admin commands
+   singularity singularity singularity singularity admin - Admin commands
 
 USAGE:
-   singularity admin command [command options] [arguments...]
+   singularity singularity singularity singularity admin command [command options] [arguments...]
 
 COMMANDS:
    init              Initialize the database

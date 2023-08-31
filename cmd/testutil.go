@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	color2 "image/color"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -28,6 +28,9 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/fatih/color"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
+	"github.com/jiro4989/textimg/v3/config"
+	"github.com/jiro4989/textimg/v3/image"
+	"github.com/jiro4989/textimg/v3/parser"
 	"github.com/mattn/go-shellwords"
 	"github.com/parnurzeal/gorequest"
 	"github.com/rjNemo/underscore"
@@ -43,8 +46,8 @@ type RunnerMode string
 
 const (
 	Normal  RunnerMode = "normal"
-	Verbose            = "verbose"
-	JSON               = "json"
+	Verbose RunnerMode = "verbose"
+	JSON    RunnerMode = "json"
 )
 
 type Runner struct {
@@ -77,7 +80,6 @@ var timeRegex = regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`)
 
 func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	t.Helper()
-	path := filepath.Join("testdata", t.Name()+".log")
 	ansi := r.sb.String()
 
 	for i, tempDir := range tempDirs {
@@ -86,14 +88,55 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 
 	ansi = timeRegex.ReplaceAllString(ansi, "2023-04-05 06:07:08")
 
-	err := os.MkdirAll(filepath.Dir(path), 0700)
-	require.NoError(t, err)
-	err = os.WriteFile(path, []byte(ansi), 0600)
-	require.NoError(t, err)
-
 	plain := removeANSI.ReplaceAllString(ansi, "")
 	plainPath := filepath.Join("testdata", t.Name()+".txt")
+	err := os.MkdirAll(filepath.Dir(plainPath), 0700)
+	require.NoError(t, err)
 	err = os.WriteFile(plainPath, []byte(plain), 0600)
+	require.NoError(t, err)
+
+	imagePath := filepath.Join("testdata", t.Name()+".png")
+
+	c := config.Config{
+		Foreground:    "255,255,255,255",
+		Background:    "40,20,20,255",
+		Outpath:       imagePath,
+		FontSize:      20,
+		LineCount:     1,
+		SlideWidth:    1,
+		FileExtension: ".png",
+	}
+
+	err = c.Adjust([]string{ansi}, config.EnvVars{})
+	require.NoError(t, err)
+
+	tokens, err := parser.Parse(strings.Join(c.Texts, "\n"))
+	require.NoError(t, err)
+
+	bw := tokens.MaxStringWidth()
+	bh := len(tokens.StringLines())
+	param := &image.ImageParam{
+		BaseWidth:          bw,
+		BaseHeight:         bh,
+		ForegroundColor:    color2.RGBA(c.ForegroundColor),
+		BackgroundColor:    color2.RGBA(c.BackgroundColor),
+		FontFace:           c.FontFace,
+		EmojiFontFace:      c.EmojiFontFace,
+		EmojiDir:           c.EmojiDir,
+		FontSize:           c.FontSize,
+		Delay:              c.Delay,
+		UseAnimation:       c.UseAnimation,
+		AnimationLineCount: c.LineCount,
+		ResizeWidth:        c.ResizeWidth,
+		ResizeHeight:       c.ResizeHeight,
+		UseEmoji:           c.UseEmojiFont,
+	}
+	img := image.NewImage(param)
+	err = img.Draw(tokens)
+	require.NoError(t, err)
+	err = img.Draw(tokens)
+	require.NoError(t, err)
+	err = img.Encode(c.Writer, c.FileExtension)
 	require.NoError(t, err)
 }
 
@@ -498,10 +541,10 @@ func CompareDirectories(t *testing.T, dir1, dir2 string) {
 		require.Equal(t, info1.Size(), info2.Size(), "Size mismatch for %s", relPath)
 
 		// Compare file content
-		content1, err := ioutil.ReadFile(path1)
+		content1, err := os.ReadFile(path1)
 		require.NoError(t, err)
 
-		content2, err := ioutil.ReadFile(path2)
+		content2, err := os.ReadFile(path2)
 		require.NoError(t, err)
 
 		require.True(t, bytes.Equal(content1, content2), "Content mismatch for %s", relPath)

@@ -75,8 +75,8 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint
 // @Tags Preparation
 // @Param id path integer true "ID"
 // @Produce json
-// @Success 200 {object} Status
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {array} SourceStatus
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id} [get]
 func _() {}

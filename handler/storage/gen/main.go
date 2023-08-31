@@ -21,7 +21,6 @@ package storage
 
 import (
 	"github.com/rclone/rclone/fs"
-	"github.com/rclone/rclone/lib/encoder"
 )
 `
 
@@ -51,7 +50,6 @@ const s3Template = `
 // @Tags Storage
 // @Accept json
 // @Produce json
-// @Param provider path string true "Provider name"
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -151,6 +149,9 @@ func main() {
 				tp := "string"
 				if option.Default != nil {
 					tp = reflect.TypeOf(option.Default).String()
+				}
+				if tp == "fs.SizeSuffix" || tp == "encoder.MultiEncoder" {
+					tp = "string"
 				}
 				description := strings.Split(option.Help, "\n")[0]
 				fields = append(fields, Field{

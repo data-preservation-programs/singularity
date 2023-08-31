@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal schedule create - Create a schedule to send out deals to a storage provider
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal schedule create - Create a schedule to send out deals to a storage provider
 
 USAGE:
-   singularity deal schedule create [command options] <prep_id> <provider>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal schedule create [command options] <prep_id> <provider>
 
 DESCRIPTION:
    CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field

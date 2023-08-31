@@ -7,7 +7,9 @@ package models
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -17,8 +19,8 @@ import (
 // swagger:model deal.ListDealRequest
 type DealListDealRequest struct {
 
-	// dataset name filter
-	Datasets []string `json:"datasets"`
+	// preparation ID filter
+	Preparations []int64 `json:"preparations"`
 
 	// provider filter
 	Providers []string `json:"providers"`
@@ -26,17 +28,81 @@ type DealListDealRequest struct {
 	// schedule id filter
 	Schedules []int64 `json:"schedules"`
 
+	// source filter
+	Sources []string `json:"sources"`
+
 	// state filter
-	States []string `json:"states"`
+	States []ModelDealState `json:"states"`
 }
 
 // Validate validates this deal list deal request
 func (m *DealListDealRequest) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateStates(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this deal list deal request based on context it is used
+func (m *DealListDealRequest) validateStates(formats strfmt.Registry) error {
+	if swag.IsZero(m.States) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.States); i++ {
+
+		if err := m.States[i].Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("states" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("states" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this deal list deal request based on the context it is used
 func (m *DealListDealRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStates(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DealListDealRequest) contextValidateStates(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.States); i++ {
+
+		if swag.IsZero(m.States[i]) { // not required
+			return nil
+		}
+
+		if err := m.States[i].ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("states" + "." + strconv.Itoa(i))
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("states" + "." + strconv.Itoa(i))
+			}
+			return err
+		}
+
+	}
+
 	return nil
 }
 

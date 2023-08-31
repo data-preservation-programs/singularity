@@ -23,436 +23,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/init": {
-            "post": {
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Initialize the database",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/reset": {
-            "post": {
-                "description": "This will drop all tables and recreate them.",
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Reset the database",
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "List all datasets",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Dataset"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "The dataset is a top level object to distinguish different dataset.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "Create a new dataset",
-                "parameters": [
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dataset.CreateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Dataset"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}": {
-            "delete": {
-                "description": "Important! If the dataset is large, this command will take some time to remove all relevant data.",
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "Remove a specific dataset. This will not remove the CAR files.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "Update a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dataset.UpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Dataset"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/piece": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "List all pieces for the dataset that are available for deal making",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Dataset"
-                ],
-                "summary": "Manually register a piece (CAR file) with the dataset for deal making purpose",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dataset.AddPieceRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Car"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/wallet": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wallet"
-                ],
-                "summary": "List all wallets of a dataset.",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Wallet"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/dataset/{datasetName}/wallet/{wallet}": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wallet Association"
-                ],
-                "summary": "Associate a new wallet with a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Wallet Address",
-                        "name": "wallet",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.WalletAssignment"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Wallet"
-                ],
-                "summary": "Remove an associated wallet from a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Wallet Address",
-                        "name": "wallet",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/deal": {
             "post": {
                 "description": "List all deals",
@@ -502,126 +72,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/file/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get details about an file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.File"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/packjob/{id}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get detail of a specific pack job",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Pack job ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.PackJob"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/packjob/{id}/pack": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Pack a pack job into car files",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Pack job ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Car"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/piece/{id}/metadata": {
             "get": {
                 "description": "Get metadata for a piece for how it may be reassembled from the data source",
@@ -629,7 +79,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Config"
+                    "Piece"
                 ],
                 "summary": "Get metadata for a piece",
                 "parameters": [
@@ -664,6 +114,985 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "List all preparations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Preparation"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Create a new preparation",
+                "parameters": [
+                    {
+                        "description": "Create Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataprep.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Get the status of a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dataprep.SourceStatus"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/output/{name}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Attach an output storage with a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Output storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Detach an output storage from a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Output storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/piece": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Piece"
+                ],
+                "summary": "List all prepared pieces for a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dataprep.PieceList"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Piece"
+                ],
+                "summary": "Add a piece to a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Piece information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataprep.AddPieceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Car"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Attach a source storage with a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Source storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/explore/{path}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Explore a directory in a prepared source storage",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Source storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Directory path",
+                        "name": "path",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dataprep.ExploreResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/pause-daggen": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Pause an ongoing DAG generation job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/pause-pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Pause all packing job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/pause-pack/{job_id}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Pause a specific packing job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Pack Job ID",
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/pause-scan": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Pause an ongoing scanning job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/start-daggen": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Start a new DAG generation job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/start-pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Start or restart all packing job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/start-pack/{job_id}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Start or restart a specific packing job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Pack Job ID",
+                        "name": "job_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/start-scan": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Start a new scanning job",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Job"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/wallet": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet Association"
+                ],
+                "summary": "List all wallets of a preparation.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Wallet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/wallet/{wallet}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet Association"
+                ],
+                "summary": "Attach a new wallet with a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Wallet Association"
+                ],
+                "summary": "Detach a new wallet from a preparation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Preparation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "wallet",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
                         }
                     }
                 }
@@ -875,30 +1304,25 @@ const docTemplate = `{
                 }
             }
         },
-        "/source": {
+        "/storage": {
             "get": {
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "List all sources for a dataset",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "dataset",
-                        "in": "query"
-                    }
-                ],
+                "summary": "List all storages",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Source"
+                                "$ref": "#/definitions/model.Storage"
                             }
                         }
                     },
@@ -917,7 +1341,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/acd/dataset/{datasetName}": {
+        "/storage/acd": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -926,24 +1350,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add acd source for a dataset",
+                "summary": "Create Acd storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.AcdRequest"
+                            "$ref": "#/definitions/storage.CreateAcdStorageRequest"
                         }
                     }
                 ],
@@ -951,7 +1368,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -969,7 +1386,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/azureblob/dataset/{datasetName}": {
+        "/storage/azureblob": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -978,24 +1395,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add azureblob source for a dataset",
+                "summary": "Create Azureblob storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.AzureblobRequest"
+                            "$ref": "#/definitions/storage.CreateAzureblobStorageRequest"
                         }
                     }
                 ],
@@ -1003,7 +1413,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1021,7 +1431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/b2/dataset/{datasetName}": {
+        "/storage/b2": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1030,24 +1440,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add b2 source for a dataset",
+                "summary": "Create B2 storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.B2Request"
+                            "$ref": "#/definitions/storage.CreateB2StorageRequest"
                         }
                     }
                 ],
@@ -1055,7 +1458,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1073,7 +1476,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/box/dataset/{datasetName}": {
+        "/storage/box": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1082,24 +1485,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add box source for a dataset",
+                "summary": "Create Box storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.BoxRequest"
+                            "$ref": "#/definitions/storage.CreateBoxStorageRequest"
                         }
                     }
                 ],
@@ -1107,7 +1503,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1125,7 +1521,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/drive/dataset/{datasetName}": {
+        "/storage/drive": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1134,24 +1530,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add drive source for a dataset",
+                "summary": "Create Drive storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.DriveRequest"
+                            "$ref": "#/definitions/storage.CreateDriveStorageRequest"
                         }
                     }
                 ],
@@ -1159,7 +1548,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1177,7 +1566,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/dropbox/dataset/{datasetName}": {
+        "/storage/dropbox": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1186,24 +1575,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add dropbox source for a dataset",
+                "summary": "Create Dropbox storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.DropboxRequest"
+                            "$ref": "#/definitions/storage.CreateDropboxStorageRequest"
                         }
                     }
                 ],
@@ -1211,7 +1593,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1229,7 +1611,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/fichier/dataset/{datasetName}": {
+        "/storage/fichier": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1238,24 +1620,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add fichier source for a dataset",
+                "summary": "Create Fichier storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.FichierRequest"
+                            "$ref": "#/definitions/storage.CreateFichierStorageRequest"
                         }
                     }
                 ],
@@ -1263,7 +1638,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1281,7 +1656,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/filefabric/dataset/{datasetName}": {
+        "/storage/filefabric": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1290,24 +1665,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add filefabric source for a dataset",
+                "summary": "Create Filefabric storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.FilefabricRequest"
+                            "$ref": "#/definitions/storage.CreateFilefabricStorageRequest"
                         }
                     }
                 ],
@@ -1315,7 +1683,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1333,7 +1701,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/ftp/dataset/{datasetName}": {
+        "/storage/ftp": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1342,24 +1710,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add ftp source for a dataset",
+                "summary": "Create Ftp storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.FtpRequest"
+                            "$ref": "#/definitions/storage.CreateFtpStorageRequest"
                         }
                     }
                 ],
@@ -1367,7 +1728,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1385,7 +1746,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/gcs/dataset/{datasetName}": {
+        "/storage/gcs": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1394,24 +1755,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add gcs source for a dataset",
+                "summary": "Create Gcs storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.GcsRequest"
+                            "$ref": "#/definitions/storage.CreateGcsStorageRequest"
                         }
                     }
                 ],
@@ -1419,7 +1773,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1437,7 +1791,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/gphotos/dataset/{datasetName}": {
+        "/storage/gphotos": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1446,24 +1800,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add gphotos source for a dataset",
+                "summary": "Create Gphotos storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.GphotosRequest"
+                            "$ref": "#/definitions/storage.CreateGphotosStorageRequest"
                         }
                     }
                 ],
@@ -1471,7 +1818,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1489,7 +1836,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/hdfs/dataset/{datasetName}": {
+        "/storage/hdfs": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1498,24 +1845,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add hdfs source for a dataset",
+                "summary": "Create Hdfs storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.HdfsRequest"
+                            "$ref": "#/definitions/storage.CreateHdfsStorageRequest"
                         }
                     }
                 ],
@@ -1523,7 +1863,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1541,7 +1881,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/hidrive/dataset/{datasetName}": {
+        "/storage/hidrive": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1550,24 +1890,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add hidrive source for a dataset",
+                "summary": "Create Hidrive storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.HidriveRequest"
+                            "$ref": "#/definitions/storage.CreateHidriveStorageRequest"
                         }
                     }
                 ],
@@ -1575,7 +1908,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1593,7 +1926,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/http/dataset/{datasetName}": {
+        "/storage/http": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1602,24 +1935,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add http source for a dataset",
+                "summary": "Create Http storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.HttpRequest"
+                            "$ref": "#/definitions/storage.CreateHttpStorageRequest"
                         }
                     }
                 ],
@@ -1627,7 +1953,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1645,7 +1971,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/internetarchive/dataset/{datasetName}": {
+        "/storage/internetarchive": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1654,24 +1980,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add internetarchive source for a dataset",
+                "summary": "Create Internetarchive storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.InternetarchiveRequest"
+                            "$ref": "#/definitions/storage.CreateInternetarchiveStorageRequest"
                         }
                     }
                 ],
@@ -1679,7 +1998,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1697,7 +2016,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/jottacloud/dataset/{datasetName}": {
+        "/storage/jottacloud": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1706,24 +2025,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add jottacloud source for a dataset",
+                "summary": "Create Jottacloud storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.JottacloudRequest"
+                            "$ref": "#/definitions/storage.CreateJottacloudStorageRequest"
                         }
                     }
                 ],
@@ -1731,7 +2043,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1749,7 +2061,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/koofr/dataset/{datasetName}": {
+        "/storage/koofr/digistorage": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1758,24 +2070,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add koofr source for a dataset",
+                "summary": "Create Koofr storage with digistorage - Digi Storage, https://storage.rcs-rds.ro/",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.KoofrRequest"
+                            "$ref": "#/definitions/storage.CreateKoofrDigistorageStorageRequest"
                         }
                     }
                 ],
@@ -1783,7 +2088,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1801,7 +2106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/local/dataset/{datasetName}": {
+        "/storage/koofr/koofr": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1810,24 +2115,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add local source for a dataset",
+                "summary": "Create Koofr storage with koofr - Koofr, https://app.koofr.net/",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.LocalRequest"
+                            "$ref": "#/definitions/storage.CreateKoofrKoofrStorageRequest"
                         }
                     }
                 ],
@@ -1835,7 +2133,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1853,7 +2151,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/mailru/dataset/{datasetName}": {
+        "/storage/koofr/other": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1862,24 +2160,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add mailru source for a dataset",
+                "summary": "Create Koofr storage with other - Any other Koofr API compatible storage service",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.MailruRequest"
+                            "$ref": "#/definitions/storage.CreateKoofrOtherStorageRequest"
                         }
                     }
                 ],
@@ -1887,7 +2178,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1905,7 +2196,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/mega/dataset/{datasetName}": {
+        "/storage/local": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1914,24 +2205,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add mega source for a dataset",
+                "summary": "Create Local storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.MegaRequest"
+                            "$ref": "#/definitions/storage.CreateLocalStorageRequest"
                         }
                     }
                 ],
@@ -1939,7 +2223,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -1957,7 +2241,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/netstorage/dataset/{datasetName}": {
+        "/storage/mailru": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1966,24 +2250,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add netstorage source for a dataset",
+                "summary": "Create Mailru storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.NetstorageRequest"
+                            "$ref": "#/definitions/storage.CreateMailruStorageRequest"
                         }
                     }
                 ],
@@ -1991,7 +2268,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2009,7 +2286,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/onedrive/dataset/{datasetName}": {
+        "/storage/mega": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2018,24 +2295,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add onedrive source for a dataset",
+                "summary": "Create Mega storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.OnedriveRequest"
+                            "$ref": "#/definitions/storage.CreateMegaStorageRequest"
                         }
                     }
                 ],
@@ -2043,7 +2313,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2061,7 +2331,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/oos/dataset/{datasetName}": {
+        "/storage/netstorage": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2070,24 +2340,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add oos source for a dataset",
+                "summary": "Create Netstorage storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.OosRequest"
+                            "$ref": "#/definitions/storage.CreateNetstorageStorageRequest"
                         }
                     }
                 ],
@@ -2095,7 +2358,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2113,7 +2376,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/opendrive/dataset/{datasetName}": {
+        "/storage/onedrive": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2122,24 +2385,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add opendrive source for a dataset",
+                "summary": "Create Onedrive storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.OpendriveRequest"
+                            "$ref": "#/definitions/storage.CreateOnedriveStorageRequest"
                         }
                     }
                 ],
@@ -2147,7 +2403,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2165,7 +2421,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/pcloud/dataset/{datasetName}": {
+        "/storage/oos/env_auth": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2174,24 +2430,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add pcloud source for a dataset",
+                "summary": "Create Oos storage with env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.PcloudRequest"
+                            "$ref": "#/definitions/storage.CreateOosEnv_authStorageRequest"
                         }
                     }
                 ],
@@ -2199,7 +2448,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2217,7 +2466,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/premiumizeme/dataset/{datasetName}": {
+        "/storage/oos/instance_principal_auth": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2226,24 +2475,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add premiumizeme source for a dataset",
+                "summary": "Create Oos storage with instance_principal_auth - use instance principals to authorize an instance to make API calls.",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.PremiumizemeRequest"
+                            "$ref": "#/definitions/storage.CreateOosInstance_principal_authStorageRequest"
                         }
                     }
                 ],
@@ -2251,7 +2493,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2269,7 +2511,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/putio/dataset/{datasetName}": {
+        "/storage/oos/no_auth": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2278,24 +2520,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add putio source for a dataset",
+                "summary": "Create Oos storage with no_auth - no credentials needed, this is typically for reading public buckets",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.PutioRequest"
+                            "$ref": "#/definitions/storage.CreateOosNo_authStorageRequest"
                         }
                     }
                 ],
@@ -2303,7 +2538,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2321,7 +2556,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/qingstor/dataset/{datasetName}": {
+        "/storage/oos/resource_principal_auth": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2330,24 +2565,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add qingstor source for a dataset",
+                "summary": "Create Oos storage with resource_principal_auth - use resource principals to make API calls",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.QingstorRequest"
+                            "$ref": "#/definitions/storage.CreateOosResource_principal_authStorageRequest"
                         }
                     }
                 ],
@@ -2355,7 +2583,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2373,7 +2601,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/s3/dataset/{datasetName}": {
+        "/storage/oos/user_principal_auth": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2382,24 +2610,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add s3 source for a dataset",
+                "summary": "Create Oos storage with user_principal_auth - use an OCI user and an API key for authentication.",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.S3Request"
+                            "$ref": "#/definitions/storage.CreateOosUser_principal_authStorageRequest"
                         }
                     }
                 ],
@@ -2407,7 +2628,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2425,7 +2646,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/seafile/dataset/{datasetName}": {
+        "/storage/opendrive": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2434,24 +2655,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add seafile source for a dataset",
+                "summary": "Create Opendrive storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SeafileRequest"
+                            "$ref": "#/definitions/storage.CreateOpendriveStorageRequest"
                         }
                     }
                 ],
@@ -2459,7 +2673,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2477,7 +2691,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/sftp/dataset/{datasetName}": {
+        "/storage/pcloud": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2486,24 +2700,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add sftp source for a dataset",
+                "summary": "Create Pcloud storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SftpRequest"
+                            "$ref": "#/definitions/storage.CreatePcloudStorageRequest"
                         }
                     }
                 ],
@@ -2511,7 +2718,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2529,7 +2736,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/sharefile/dataset/{datasetName}": {
+        "/storage/premiumizeme": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2538,24 +2745,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add sharefile source for a dataset",
+                "summary": "Create Premiumizeme storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SharefileRequest"
+                            "$ref": "#/definitions/storage.CreatePremiumizemeStorageRequest"
                         }
                     }
                 ],
@@ -2563,7 +2763,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2581,7 +2781,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/sia/dataset/{datasetName}": {
+        "/storage/putio": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2590,24 +2790,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add sia source for a dataset",
+                "summary": "Create Putio storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SiaRequest"
+                            "$ref": "#/definitions/storage.CreatePutioStorageRequest"
                         }
                     }
                 ],
@@ -2615,7 +2808,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2633,7 +2826,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/smb/dataset/{datasetName}": {
+        "/storage/qingstor": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2642,24 +2835,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add smb source for a dataset",
+                "summary": "Create Qingstor storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SmbRequest"
+                            "$ref": "#/definitions/storage.CreateQingstorStorageRequest"
                         }
                     }
                 ],
@@ -2667,7 +2853,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2685,7 +2871,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/storj/dataset/{datasetName}": {
+        "/storage/s3/alibaba": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2694,24 +2880,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add storj source for a dataset",
+                "summary": "Create S3 storage with Alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.StorjRequest"
+                            "$ref": "#/definitions/storage.CreateS3AlibabaStorageRequest"
                         }
                     }
                 ],
@@ -2719,7 +2898,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2737,7 +2916,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/sugarsync/dataset/{datasetName}": {
+        "/storage/s3/arvancloud": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2746,24 +2925,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add sugarsync source for a dataset",
+                "summary": "Create S3 storage with ArvanCloud - Arvan Cloud Object Storage (AOS)",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SugarsyncRequest"
+                            "$ref": "#/definitions/storage.CreateS3ArvanCloudStorageRequest"
                         }
                     }
                 ],
@@ -2771,7 +2943,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2789,7 +2961,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/swift/dataset/{datasetName}": {
+        "/storage/s3/aws": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2798,24 +2970,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add swift source for a dataset",
+                "summary": "Create S3 storage with AWS - Amazon Web Services (AWS) S3",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.SwiftRequest"
+                            "$ref": "#/definitions/storage.CreateS3AWSStorageRequest"
                         }
                     }
                 ],
@@ -2823,7 +2988,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2841,7 +3006,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/uptobox/dataset/{datasetName}": {
+        "/storage/s3/ceph": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2850,24 +3015,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add uptobox source for a dataset",
+                "summary": "Create S3 storage with Ceph - Ceph Object Storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.UptoboxRequest"
+                            "$ref": "#/definitions/storage.CreateS3CephStorageRequest"
                         }
                     }
                 ],
@@ -2875,7 +3033,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2893,7 +3051,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/webdav/dataset/{datasetName}": {
+        "/storage/s3/chinamobile": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2902,24 +3060,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add webdav source for a dataset",
+                "summary": "Create S3 storage with ChinaMobile - China Mobile Ecloud Elastic Object Storage (EOS)",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.WebdavRequest"
+                            "$ref": "#/definitions/storage.CreateS3ChinaMobileStorageRequest"
                         }
                     }
                 ],
@@ -2927,7 +3078,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2945,7 +3096,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/yandex/dataset/{datasetName}": {
+        "/storage/s3/cloudflare": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -2954,24 +3105,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add yandex source for a dataset",
+                "summary": "Create S3 storage with Cloudflare - Cloudflare R2 Storage",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.YandexRequest"
+                            "$ref": "#/definitions/storage.CreateS3CloudflareStorageRequest"
                         }
                     }
                 ],
@@ -2979,7 +3123,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -2997,7 +3141,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/zoho/dataset/{datasetName}": {
+        "/storage/s3/digitalocean": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -3006,24 +3150,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Add zoho source for a dataset",
+                "summary": "Create S3 storage with DigitalOcean - DigitalOcean Spaces",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Dataset name",
-                        "name": "datasetName",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Request body",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.ZohoRequest"
+                            "$ref": "#/definitions/storage.CreateS3DigitalOceanStorageRequest"
                         }
                     }
                 ],
@@ -3031,7 +3168,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -3049,17 +3186,1412 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}": {
+        "/storage/s3/dreamhost": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Dreamhost - Dreamhost DreamObjects",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3DreamhostStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/huaweiobs": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with HuaweiOBS - Huawei Object Storage Service",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3HuaweiOBSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/ibmcos": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with IBMCOS - IBM COS S3",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3IBMCOSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/idrive": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with IDrive - IDrive e2",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3IDriveStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/ionos": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with IONOS - IONOS Cloud",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3IONOSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/liara": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Liara - Liara Object Storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3LiaraStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/lyvecloud": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with LyveCloud - Seagate Lyve Cloud",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3LyveCloudStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/minio": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Minio - Minio Object Storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3MinioStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/netease": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Netease - Netease Object Storage (NOS)",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3NeteaseStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/other": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Other - Any other S3 compatible provider",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3OtherStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/qiniu": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Qiniu - Qiniu Object Storage (Kodo)",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3QiniuStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/rackcorp": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with RackCorp - RackCorp Object Storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3RackCorpStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/scaleway": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Scaleway - Scaleway Object Storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3ScalewayStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/seaweedfs": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with SeaweedFS - SeaweedFS S3",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3SeaweedFSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/stackpath": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with StackPath - StackPath Object Storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3StackPathStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/storj": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Storj - Storj (S3 Compatible Gateway)",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3StorjStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/tencentcos": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with TencentCOS - Tencent Cloud Object Storage (COS)",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3TencentCOSStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/s3/wasabi": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create S3 storage with Wasabi - Wasabi Object Storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateS3WasabiStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/seafile": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Seafile storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSeafileStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/sftp": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Sftp storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSftpStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/sharefile": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Sharefile storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSharefileStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/sia": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Sia storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSiaStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/smb": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Smb storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSmbStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/storj/existing": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Storj storage with existing - Use an existing access grant.",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateStorjExistingStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/storj/new": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Storj storage with new - Create a new access grant from satellite address, API key, and passphrase.",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateStorjNewStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/sugarsync": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Sugarsync storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSugarsyncStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/swift": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Swift storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateSwiftStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/uptobox": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Uptobox storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateUptoboxStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/webdav": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Webdav storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateWebdavStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/yandex": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Yandex storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateYandexStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/zoho": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage"
+                ],
+                "summary": "Create Zoho storage",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/storage.CreateZohoStorageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Storage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storage/{name}": {
             "delete": {
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Remove a source",
+                "summary": "Remove a storage",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
+                        "description": "Name",
+                        "name": "name",
                         "in": "path",
                         "required": true
                     }
@@ -3090,24 +4622,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Update the config options of a source",
+                "summary": "Update a storage connection",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
+                        "description": "Name",
+                        "name": "name",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Config",
+                        "description": "Configuration",
                         "name": "config",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.AllConfig"
+                            "type": "object"
                         }
                     }
                 ],
@@ -3115,7 +4647,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Source"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -3133,8 +4665,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/check": {
-            "post": {
+        "/storage/{name}/explore/{path}": {
+            "get": {
                 "consumes": [
                     "application/json"
                 ],
@@ -3142,25 +4674,23 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Check the connection of the data source by listing a path",
+                "summary": "Explore directory entries in a storage system",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
+                        "description": "Storage name",
+                        "name": "name",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.CheckSourceRequest"
-                        }
+                        "type": "string",
+                        "description": "Path in the storage system to explore",
+                        "name": "path",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3169,7 +4699,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_data-preservation-programs_singularity_handler_datasource.Entry"
+                                "$ref": "#/definitions/storage.DirEntry"
                             }
                         }
                     },
@@ -3188,93 +4718,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/source/{id}/daggen": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Mark a source as ready for DAG generation",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Source"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/files": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get all file details of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.File"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/packjob": {
+        "/storage/{storageType}": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -3283,76 +4727,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "Storage"
                 ],
-                "summary": "Create a pack job for the specified files",
+                "summary": "Create a new storage",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
+                        "description": "Storage type",
+                        "name": "storageType",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Request body",
-                        "name": "request",
+                        "description": "Storage configuration",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/datasource.CreatePackJobRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.File"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/packjobs": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get all pack job details of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "GetSourcePackJobsRequest",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/inspect.GetSourcePackJobsRequest"
+                            "$ref": "#/definitions/storage.CreateRequest"
                         }
                     }
                 ],
@@ -3360,244 +4752,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.PackJob"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/path": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get all file details inside a data source path",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "GetPathRequest",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/inspect.GetPathRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/inspect.DirDetail"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/push": {
-            "post": {
-                "description": "Tells Singularity that something is ready to be grabbed for data preparation",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Push a file to be queued",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "File",
-                        "name": "file",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.FileInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.File"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "409": {
-                        "description": "File already exists",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/repack": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Trigger a repack of a pack job or all errored pack jobs of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/datasource.RepackRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.PackJob"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/rescan": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Trigger a rescan of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Source"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/source/{id}/summary": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Data Source"
-                ],
-                "summary": "Get the data preparation summary of a data source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/datasource.PackJobsByState"
+                            "$ref": "#/definitions/model.Storage"
                         }
                     },
                     "400": {
@@ -3692,51 +4847,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/wallet/remote": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Wallet"
-                ],
-                "summary": "Add a remote wallet",
-                "parameters": [
-                    {
-                        "description": "Request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/wallet.AddRemoteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Wallet"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/wallet/{address}": {
             "delete": {
                 "tags": [
@@ -3781,7 +4891,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dataset.AddPieceRequest": {
+        "dataprep.AddPieceRequest": {
             "type": "object",
             "properties": {
                 "filePath": {
@@ -3802,31 +4912,25 @@ const docTemplate = `{
                 }
             }
         },
-        "dataset.CreateRequest": {
+        "dataprep.CreateRequest": {
             "type": "object",
             "required": [
                 "maxSize",
-                "name"
+                "sourceStorages"
             ],
             "properties": {
-                "encryptionRecipients": {
-                    "description": "Public key of the encryption recipient",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "deleteAfterExport": {
+                    "description": "Whether to delete the source files after export",
+                    "type": "boolean",
+                    "default": false
                 },
                 "maxSize": {
                     "description": "Maximum size of the CAR files to be created",
                     "type": "string",
                     "default": "31.5GiB"
                 },
-                "name": {
-                    "description": "Name must be a unique identifier for a dataset",
-                    "type": "string"
-                },
-                "outputDirs": {
-                    "description": "Output directory for CAR files. Do not set if using inline preparation",
+                "outputStorages": {
+                    "description": "Name of Output storage systems to be used for the output",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3835,5984 +4939,121 @@ const docTemplate = `{
                 "pieceSize": {
                     "description": "Target piece size of the CAR files used for piece commitment calculation",
                     "type": "string"
-                }
-            }
-        },
-        "dataset.UpdateRequest": {
-            "type": "object",
-            "properties": {
-                "encryptionRecipients": {
-                    "description": "Public key of the encryption recipient",
+                },
+                "sourceStorages": {
+                    "description": "Name of Source storage systems to be used for the source",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "dataprep.DirEntry": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "type": "string"
                 },
-                "maxSize": {
-                    "description": "Maximum size of the CAR files to be created",
-                    "type": "string",
-                    "default": "31.5GiB"
-                },
-                "outputDirs": {
-                    "description": "Output directory for CAR files. Do not set if using inline preparation",
+                "fileVersions": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/dataprep.Version"
                     }
                 },
-                "pieceSize": {
-                    "description": "Target piece size of the CAR files used for piece commitment calculation",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.AcdRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "checkpoint": {
-                    "description": "Checkpoint for internal polling (debug).",
-                    "type": "string"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
+                "isDir": {
                     "type": "boolean"
                 },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "templinkThreshold": {
-                    "description": "Files \u003e= this size will be downloaded via their tempLink.",
-                    "type": "string",
-                    "default": "9Gi"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "uploadWaitPerGb": {
-                    "description": "Additional time per GiB to wait after a failed complete upload to see if it appears.",
-                    "type": "string",
-                    "default": "3m0s"
-                }
-            }
-        },
-        "datasource.AllConfig": {
-            "type": "object",
-            "required": [
-                "sourcePath"
-            ],
-            "properties": {
-                "acdAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "acdCheckpoint": {
-                    "description": "Checkpoint for internal polling (debug).",
-                    "type": "string"
-                },
-                "acdClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "acdClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "acdEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "acdTemplinkThreshold": {
-                    "description": "Files \u003e= this size will be downloaded via their tempLink.",
-                    "type": "string",
-                    "default": "9Gi"
-                },
-                "acdToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "acdTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "acdUploadWaitPerGb": {
-                    "description": "Additional time per GiB to wait after a failed complete upload to see if it appears.",
-                    "type": "string",
-                    "default": "3m0s"
-                },
-                "azureblobAccessTier": {
-                    "description": "Access tier of blob: hot, cool or archive.",
-                    "type": "string"
-                },
-                "azureblobAccount": {
-                    "description": "Azure Storage Account Name.",
-                    "type": "string"
-                },
-                "azureblobArchiveTierDelete": {
-                    "description": "Delete archive tier blobs before overwriting.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobChunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "4Mi"
-                },
-                "azureblobClientCertificatePassword": {
-                    "description": "Password for the certificate file (optional).",
-                    "type": "string"
-                },
-                "azureblobClientCertificatePath": {
-                    "description": "Path to a PEM or PKCS12 certificate file including the private key.",
-                    "type": "string"
-                },
-                "azureblobClientId": {
-                    "description": "The ID of the client in use.",
-                    "type": "string"
-                },
-                "azureblobClientSecret": {
-                    "description": "One of the service principal's client secrets",
-                    "type": "string"
-                },
-                "azureblobClientSendCertificateChain": {
-                    "description": "Send the certificate chain when using certificate auth.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobDisableChecksum": {
-                    "description": "Don't store MD5 checksum with object metadata.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
-                },
-                "azureblobEndpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
-                },
-                "azureblobEnvAuth": {
-                    "description": "Read credentials from runtime (environment variables, CLI or MSI).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobKey": {
-                    "description": "Storage Account Shared Key.",
-                    "type": "string"
-                },
-                "azureblobListChunk": {
-                    "description": "Size of blob list.",
-                    "type": "string",
-                    "default": "5000"
-                },
-                "azureblobMemoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "azureblobMemoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobMsiClientId": {
-                    "description": "Object ID of the user-assigned MSI to use, if any.",
-                    "type": "string"
-                },
-                "azureblobMsiMiResId": {
-                    "description": "Azure resource ID of the user-assigned MSI to use, if any.",
-                    "type": "string"
-                },
-                "azureblobMsiObjectId": {
-                    "description": "Object ID of the user-assigned MSI to use, if any.",
-                    "type": "string"
-                },
-                "azureblobNoCheckContainer": {
-                    "description": "If set, don't attempt to check the container exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobNoHeadObject": {
-                    "description": "If set, do not do HEAD before GET when getting objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobPassword": {
-                    "description": "The user's password",
-                    "type": "string"
-                },
-                "azureblobPublicAccess": {
-                    "description": "Public access level of a container: blob or container.",
-                    "type": "string"
-                },
-                "azureblobSasUrl": {
-                    "description": "SAS URL for container level access only.",
-                    "type": "string"
-                },
-                "azureblobServicePrincipalFile": {
-                    "description": "Path to file containing credentials for use with a service principal.",
-                    "type": "string"
-                },
-                "azureblobTenant": {
-                    "description": "ID of the service principal's tenant. Also called its directory ID.",
-                    "type": "string"
-                },
-                "azureblobUploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "16"
-                },
-                "azureblobUploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload (\u003c= 256 MiB) (deprecated).",
-                    "type": "string"
-                },
-                "azureblobUseEmulator": {
-                    "description": "Uses local storage emulator if provided as 'true'.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobUseMsi": {
-                    "description": "Use a managed service identity to authenticate (only works in Azure).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "azureblobUsername": {
-                    "description": "User name (usually an email address)",
-                    "type": "string"
-                },
-                "b2Account": {
-                    "description": "Account ID or Application Key ID.",
-                    "type": "string"
-                },
-                "b2ChunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "96Mi"
-                },
-                "b2CopyCutoff": {
-                    "description": "Cutoff for switching to multipart copy.",
-                    "type": "string",
-                    "default": "4Gi"
-                },
-                "b2DisableChecksum": {
-                    "description": "Disable checksums for large (\u003e upload cutoff) files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "b2DownloadAuthDuration": {
-                    "description": "Time before the authorization token will expire in s or suffix ms|s|m|h|d.",
-                    "type": "string",
-                    "default": "1w"
-                },
-                "b2DownloadUrl": {
-                    "description": "Custom endpoint for downloads.",
-                    "type": "string"
-                },
-                "b2Encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "b2Endpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
-                },
-                "b2HardDelete": {
-                    "description": "Permanently delete files on remote removal, otherwise hide files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "b2Key": {
-                    "description": "Application Key.",
-                    "type": "string"
-                },
-                "b2MemoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "b2MemoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "b2TestMode": {
-                    "description": "A flag string for X-Bz-Test-Mode header for debugging.",
-                    "type": "string"
-                },
-                "b2UploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "b2VersionAt": {
-                    "description": "Show file versions as they were at the specified time.",
-                    "type": "string",
-                    "default": "off"
-                },
-                "b2Versions": {
-                    "description": "Include old versions in directory listings.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "boxAccessToken": {
-                    "description": "Box App Primary Access Token",
-                    "type": "string"
-                },
-                "boxAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "boxBoxConfigFile": {
-                    "description": "Box App config.json location",
-                    "type": "string"
-                },
-                "boxBoxSubType": {
-                    "type": "string",
-                    "default": "user"
-                },
-                "boxClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "boxClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "boxCommitRetries": {
-                    "description": "Max number of times to try committing a multipart file.",
-                    "type": "string",
-                    "default": "100"
-                },
-                "boxEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
-                },
-                "boxListChunk": {
-                    "description": "Size of listing chunk 1-1000.",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "boxOwnedBy": {
-                    "description": "Only show items owned by the login (email address) passed in.",
-                    "type": "string"
-                },
-                "boxRootFolderId": {
-                    "description": "Fill in for rclone to use a non root folder as its starting point.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "boxToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "boxTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "boxUploadCutoff": {
-                    "description": "Cutoff for switching to multipart upload (\u003e= 50 MiB).",
-                    "type": "string",
-                    "default": "50Mi"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "driveAcknowledgeAbuse": {
-                    "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveAllowImportNameChange": {
-                    "description": "Allow the filetype to change when uploading Google docs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveAlternateExport": {
-                    "description": "Deprecated: No longer needed.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveAuthOwnerOnly": {
-                    "description": "Only consider files owned by the authenticated user.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "driveChunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "8Mi"
-                },
-                "driveClientId": {
-                    "description": "Google Application Client Id",
-                    "type": "string"
-                },
-                "driveClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "driveCopyShortcutContent": {
-                    "description": "Server side copy contents of shortcuts instead of the shortcut.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveDisableHttp2": {
-                    "description": "Disable drive using http2.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "driveEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "InvalidUtf8"
-                },
-                "driveExportFormats": {
-                    "description": "Comma separated list of preferred formats for downloading Google docs.",
-                    "type": "string",
-                    "default": "docx,xlsx,pptx,svg"
-                },
-                "driveFormats": {
-                    "description": "Deprecated: See export_formats.",
-                    "type": "string"
-                },
-                "driveImpersonate": {
-                    "description": "Impersonate this user when using a service account.",
-                    "type": "string"
-                },
-                "driveImportFormats": {
-                    "description": "Comma separated list of preferred formats for uploading Google docs.",
-                    "type": "string"
-                },
-                "driveKeepRevisionForever": {
-                    "description": "Keep new head revision of each file forever.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveListChunk": {
-                    "description": "Size of listing chunk 100-1000, 0 to disable.",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "drivePacerBurst": {
-                    "description": "Number of API calls to allow without sleeping.",
-                    "type": "string",
-                    "default": "100"
-                },
-                "drivePacerMinSleep": {
-                    "description": "Minimum time to sleep between API calls.",
-                    "type": "string",
-                    "default": "100ms"
-                },
-                "driveResourceKey": {
-                    "description": "Resource key for accessing a link-shared file.",
-                    "type": "string"
-                },
-                "driveRootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "driveScope": {
-                    "description": "Scope that rclone should use when requesting access from drive.",
-                    "type": "string"
-                },
-                "driveServerSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different drive configs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveServiceAccountCredentials": {
-                    "description": "Service Account Credentials JSON blob.",
-                    "type": "string"
-                },
-                "driveServiceAccountFile": {
-                    "description": "Service Account Credentials JSON file path.",
-                    "type": "string"
-                },
-                "driveSharedWithMe": {
-                    "description": "Only show files that are shared with me.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveSizeAsQuota": {
-                    "description": "Show sizes as storage quota usage, not actual size.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveSkipChecksumGphotos": {
-                    "description": "Skip MD5 checksum on Google photos and videos only.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveSkipDanglingShortcuts": {
-                    "description": "If set skip dangling shortcut files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveSkipGdocs": {
-                    "description": "Skip google documents in all listings.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveSkipShortcuts": {
-                    "description": "If set skip shortcut files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveStarredOnly": {
-                    "description": "Only show files that are starred.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveStopOnDownloadLimit": {
-                    "description": "Make download limit errors be fatal.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveStopOnUploadLimit": {
-                    "description": "Make upload limit errors be fatal.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveTeamDrive": {
-                    "description": "ID of the Shared Drive (Team Drive).",
-                    "type": "string"
-                },
-                "driveToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "driveTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "driveTrashedOnly": {
-                    "description": "Only show files that are in the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveUploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "8Mi"
-                },
-                "driveUseCreatedDate": {
-                    "description": "Use file created date instead of modified date.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveUseSharedDate": {
-                    "description": "Use date file was shared instead of modified date.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveUseTrash": {
-                    "description": "Send files to the trash instead of deleting permanently.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "driveV2DownloadMinSize": {
-                    "description": "If Object's are greater, use drive v2 API to download.",
-                    "type": "string",
-                    "default": "off"
-                },
-                "dropboxAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "dropboxBatchCommitTimeout": {
-                    "description": "Max time to wait for a batch to finish committing",
-                    "type": "string",
-                    "default": "10m0s"
-                },
-                "dropboxBatchMode": {
-                    "description": "Upload file batching sync|async|off.",
-                    "type": "string",
-                    "default": "sync"
-                },
-                "dropboxBatchSize": {
-                    "description": "Max number of files in upload batch.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "dropboxBatchTimeout": {
-                    "description": "Max time to allow an idle upload batch before uploading.",
-                    "type": "string",
-                    "default": "0s"
-                },
-                "dropboxChunkSize": {
-                    "description": "Upload chunk size (\u003c 150Mi).",
-                    "type": "string",
-                    "default": "48Mi"
-                },
-                "dropboxClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "dropboxClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "dropboxEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
-                },
-                "dropboxImpersonate": {
-                    "description": "Impersonate this user when using a business account.",
-                    "type": "string"
-                },
-                "dropboxSharedFiles": {
-                    "description": "Instructs rclone to work on individual shared files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "dropboxSharedFolders": {
-                    "description": "Instructs rclone to work on shared folders.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "dropboxToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "dropboxTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "fichierApiKey": {
-                    "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
-                    "type": "string"
-                },
-                "fichierEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
-                },
-                "fichierFilePassword": {
-                    "description": "If you want to download a shared file that is password protected, add this parameter.",
-                    "type": "string"
-                },
-                "fichierFolderPassword": {
-                    "description": "If you want to list the files in a shared folder that is password protected, add this parameter.",
-                    "type": "string"
-                },
-                "fichierSharedFolder": {
-                    "description": "If you want to download a shared folder, add this parameter.",
-                    "type": "string"
-                },
-                "filefabricEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "filefabricPermanentToken": {
-                    "description": "Permanent Authentication Token.",
-                    "type": "string"
-                },
-                "filefabricRootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "filefabricToken": {
-                    "description": "Session Token.",
-                    "type": "string"
-                },
-                "filefabricTokenExpiry": {
-                    "description": "Token expiry time.",
-                    "type": "string"
-                },
-                "filefabricUrl": {
-                    "description": "URL of the Enterprise File Fabric to connect to.",
-                    "type": "string"
-                },
-                "filefabricVersion": {
-                    "description": "Version read from the file fabric.",
-                    "type": "string"
-                },
-                "ftpAskPassword": {
-                    "description": "Allow asking for FTP password when needed.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpCloseTimeout": {
-                    "description": "Maximum time to wait for a response to close.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "ftpConcurrency": {
-                    "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "ftpDisableEpsv": {
-                    "description": "Disable using EPSV even if server advertises support.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpDisableMlsd": {
-                    "description": "Disable using MLSD even if server advertises support.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpDisableTls13": {
-                    "description": "Disable TLS 1.3 (workaround for FTP servers with buggy TLS)",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpDisableUtf8": {
-                    "description": "Disable using UTF-8 even if server advertises support.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Del,Ctl,RightSpace,Dot"
-                },
-                "ftpExplicitTls": {
-                    "description": "Use Explicit FTPS (FTP over TLS).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpForceListHidden": {
-                    "description": "Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpHost": {
-                    "description": "FTP host to connect to.",
-                    "type": "string"
-                },
-                "ftpIdleTimeout": {
-                    "description": "Max time before closing idle connections.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "ftpNoCheckCertificate": {
-                    "description": "Do not verify the TLS certificate of the server.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpPass": {
-                    "description": "FTP password.",
-                    "type": "string"
-                },
-                "ftpPort": {
-                    "description": "FTP port number.",
-                    "type": "string",
-                    "default": "21"
-                },
-                "ftpShutTimeout": {
-                    "description": "Maximum time to wait for data connection closing status.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "ftpTls": {
-                    "description": "Use Implicit FTPS (FTP over TLS).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "ftpTlsCacheSize": {
-                    "description": "Size of TLS session cache for all control and data connections.",
-                    "type": "string",
-                    "default": "32"
-                },
-                "ftpUser": {
-                    "description": "FTP username.",
-                    "type": "string",
-                    "default": "$USER"
-                },
-                "ftpWritingMdtm": {
-                    "description": "Use MDTM to set modification time (VsFtpd quirk)",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gcsAnonymous": {
-                    "description": "Access public buckets and objects without credentials.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gcsAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "gcsBucketAcl": {
-                    "description": "Access Control List for new buckets.",
-                    "type": "string"
-                },
-                "gcsBucketPolicyOnly": {
-                    "description": "Access checks should use bucket-level IAM policies.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gcsClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "gcsClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "gcsDecompress": {
-                    "description": "If set this will decompress gzip encoded objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gcsEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,CrLf,InvalidUtf8,Dot"
-                },
-                "gcsEndpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
-                },
-                "gcsEnvAuth": {
-                    "description": "Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gcsLocation": {
-                    "description": "Location for the newly created buckets.",
-                    "type": "string"
-                },
-                "gcsNoCheckBucket": {
-                    "description": "If set, don't attempt to check the bucket exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gcsObjectAcl": {
-                    "description": "Access Control List for new objects.",
-                    "type": "string"
-                },
-                "gcsProjectNumber": {
-                    "description": "Project number.",
-                    "type": "string"
-                },
-                "gcsServiceAccountCredentials": {
-                    "description": "Service Account Credentials JSON blob.",
-                    "type": "string"
-                },
-                "gcsServiceAccountFile": {
-                    "description": "Service Account Credentials JSON file path.",
-                    "type": "string"
-                },
-                "gcsStorageClass": {
-                    "description": "The storage class to use when storing objects in Google Cloud Storage.",
-                    "type": "string"
-                },
-                "gcsToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "gcsTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "gphotosAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "gphotosClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "gphotosClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "gphotosEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,CrLf,InvalidUtf8,Dot"
-                },
-                "gphotosIncludeArchived": {
-                    "description": "Also view and download archived media.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gphotosReadOnly": {
-                    "description": "Set to make the Google Photos backend read only.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gphotosReadSize": {
-                    "description": "Set to read the size of media items.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "gphotosStartYear": {
-                    "description": "Year limits the photos to be downloaded to those which are uploaded after the given year.",
-                    "type": "string",
-                    "default": "2000"
-                },
-                "gphotosToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "gphotosTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "hdfsDataTransferProtection": {
-                    "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
-                    "type": "string"
-                },
-                "hdfsEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "hdfsNamenode": {
-                    "description": "Hadoop name node and port.",
-                    "type": "string"
-                },
-                "hdfsServicePrincipalName": {
-                    "description": "Kerberos service principal name for the namenode.",
-                    "type": "string"
-                },
-                "hdfsUsername": {
-                    "description": "Hadoop user name.",
-                    "type": "string"
-                },
-                "hidriveAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "hidriveChunkSize": {
-                    "description": "Chunksize for chunked uploads.",
-                    "type": "string",
-                    "default": "48Mi"
-                },
-                "hidriveClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "hidriveClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "hidriveDisableFetchingMemberCount": {
-                    "description": "Do not fetch number of objects in directories unless it is absolutely necessary.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "hidriveEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Dot"
-                },
-                "hidriveEndpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string",
-                    "default": "https://api.hidrive.strato.com/2.1"
-                },
-                "hidriveRootPrefix": {
-                    "description": "The root/parent folder for all paths.",
-                    "type": "string",
-                    "default": "/"
-                },
-                "hidriveScopeAccess": {
-                    "description": "Access permissions that rclone should use when requesting access from HiDrive.",
-                    "type": "string",
-                    "default": "rw"
-                },
-                "hidriveScopeRole": {
-                    "description": "User-level that rclone should use when requesting access from HiDrive.",
-                    "type": "string",
-                    "default": "user"
-                },
-                "hidriveToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "hidriveTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "hidriveUploadConcurrency": {
-                    "description": "Concurrency for chunked uploads.",
-                    "type": "string",
-                    "default": "4"
-                },
-                "hidriveUploadCutoff": {
-                    "description": "Cutoff/Threshold for chunked uploads.",
-                    "type": "string",
-                    "default": "96Mi"
-                },
-                "httpHeaders": {
-                    "description": "Set HTTP headers for all transactions.",
-                    "type": "string"
-                },
-                "httpNoHead": {
-                    "description": "Don't use HEAD requests.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "httpNoSlash": {
-                    "description": "Set this if the site doesn't end directories with /.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "httpUrl": {
-                    "description": "URL of HTTP host to connect to.",
-                    "type": "string"
-                },
-                "internetarchiveAccessKeyId": {
-                    "description": "IAS3 Access Key.",
-                    "type": "string"
-                },
-                "internetarchiveDisableChecksum": {
-                    "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "internetarchiveEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "internetarchiveEndpoint": {
-                    "description": "IAS3 Endpoint.",
-                    "type": "string",
-                    "default": "https://s3.us.archive.org"
-                },
-                "internetarchiveFrontEndpoint": {
-                    "description": "Host of InternetArchive Frontend.",
-                    "type": "string",
-                    "default": "https://archive.org"
-                },
-                "internetarchiveSecretAccessKey": {
-                    "description": "IAS3 Secret Key (password).",
-                    "type": "string"
-                },
-                "internetarchiveWaitArchive": {
-                    "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
-                    "type": "string",
-                    "default": "0s"
-                },
-                "jottacloudEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "jottacloudHardDelete": {
-                    "description": "Delete files permanently rather than putting them into the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "jottacloudMd5MemoryLimit": {
-                    "description": "Files bigger than this will be cached on disk to calculate the MD5 if required.",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "jottacloudNoVersions": {
-                    "description": "Avoid server side versioning by deleting files and recreating files instead of overwriting them.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "jottacloudTrashedOnly": {
-                    "description": "Only show files that are in the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "jottacloudUploadResumeLimit": {
-                    "description": "Files bigger than this can be resumed if the upload fail's.",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "koofrEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "koofrEndpoint": {
-                    "description": "The Koofr API endpoint to use.",
-                    "type": "string"
-                },
-                "koofrMountid": {
-                    "description": "Mount ID of the mount to use.",
-                    "type": "string"
-                },
-                "koofrPassword": {
-                    "description": "Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).",
-                    "type": "string"
-                },
-                "koofrProvider": {
-                    "description": "Choose your storage provider.",
-                    "type": "string"
-                },
-                "koofrSetmtime": {
-                    "description": "Does the backend support setting modification time.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "koofrUser": {
-                    "description": "Your user name.",
-                    "type": "string"
-                },
-                "localCaseInsensitive": {
-                    "description": "Force the filesystem to report itself as case insensitive.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localCaseSensitive": {
-                    "description": "Force the filesystem to report itself as case sensitive.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localCopyLinks": {
-                    "description": "Follow symlinks and copy the pointed to item.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Dot"
-                },
-                "localLinks": {
-                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localNoCheckUpdated": {
-                    "description": "Don't check to see if the files change during upload.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localNoPreallocate": {
-                    "description": "Disable preallocation of disk space for transferred files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localNoSetModtime": {
-                    "description": "Disable setting modtime.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localNoSparse": {
-                    "description": "Disable sparse files for multi-thread downloads.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localNounc": {
-                    "description": "Disable UNC (long path names) conversion on Windows.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localOneFileSystem": {
-                    "description": "Don't cross filesystem boundaries (unix/macOS only).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localSkipLinks": {
-                    "description": "Don't warn about skipped symlinks.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localUnicodeNormalization": {
-                    "description": "Apply unicode NFC normalization to paths and filenames.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "localZeroSizeLinks": {
-                    "description": "Assume the Stat size of links is zero (and read them instead) (deprecated).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "mailruCheckHash": {
-                    "description": "What should copy do if file checksum is mismatched or invalid.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "mailruEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "mailruPass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "mailruQuirks": {
-                    "description": "Comma separated list of internal maintenance flags.",
-                    "type": "string"
-                },
-                "mailruSpeedupEnable": {
-                    "description": "Skip full upload if there is another file with same data hash.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "mailruSpeedupFilePatterns": {
-                    "description": "Comma separated list of file name patterns eligible for speedup (put by hash).",
-                    "type": "string",
-                    "default": "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
-                },
-                "mailruSpeedupMaxDisk": {
-                    "description": "This option allows you to disable speedup (put by hash) for large files.",
-                    "type": "string",
-                    "default": "3Gi"
-                },
-                "mailruSpeedupMaxMemory": {
-                    "description": "Files larger than the size given below will always be hashed on disk.",
-                    "type": "string",
-                    "default": "32Mi"
-                },
-                "mailruUser": {
-                    "description": "User name (usually email).",
-                    "type": "string"
-                },
-                "mailruUserAgent": {
-                    "description": "HTTP user agent used internally by client.",
-                    "type": "string"
-                },
-                "megaDebug": {
-                    "description": "Output more debug from Mega.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "megaEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "megaHardDelete": {
-                    "description": "Delete files permanently rather than putting them into the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "megaPass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "megaUseHttps": {
-                    "description": "Use HTTPS for transfers.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "megaUser": {
-                    "description": "User name.",
-                    "type": "string"
-                },
-                "netstorageAccount": {
-                    "description": "Set the NetStorage account name",
-                    "type": "string"
-                },
-                "netstorageHost": {
-                    "description": "Domain+path of NetStorage host to connect to.",
-                    "type": "string"
-                },
-                "netstorageProtocol": {
-                    "description": "Select between HTTP or HTTPS protocol.",
-                    "type": "string",
-                    "default": "https"
-                },
-                "netstorageSecret": {
-                    "description": "Set the NetStorage account secret/G2O key for authentication.",
-                    "type": "string"
-                },
-                "onedriveAccessScopes": {
-                    "description": "Set scopes to be requested by rclone.",
-                    "type": "string",
-                    "default": "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
-                },
-                "onedriveAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "onedriveChunkSize": {
-                    "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "onedriveClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "onedriveClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "onedriveDisableSitePermission": {
-                    "description": "Disable the request for Sites.Read.All permission.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "onedriveDriveId": {
-                    "description": "The ID of the drive to use.",
-                    "type": "string"
-                },
-                "onedriveDriveType": {
-                    "description": "The type of the drive (personal | business | documentLibrary).",
-                    "type": "string"
-                },
-                "onedriveEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
-                },
-                "onedriveExposeOnenoteFiles": {
-                    "description": "Set to make OneNote files show up in directory listings.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "onedriveHashType": {
-                    "description": "Specify the hash in use for the backend.",
-                    "type": "string",
-                    "default": "auto"
-                },
-                "onedriveLinkPassword": {
-                    "description": "Set the password for links created by the link command.",
-                    "type": "string"
-                },
-                "onedriveLinkScope": {
-                    "description": "Set the scope of the links created by the link command.",
-                    "type": "string",
-                    "default": "anonymous"
-                },
-                "onedriveLinkType": {
-                    "description": "Set the type of the links created by the link command.",
-                    "type": "string",
-                    "default": "view"
-                },
-                "onedriveListChunk": {
-                    "description": "Size of listing chunk.",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "onedriveNoVersions": {
-                    "description": "Remove all versions on modifying operations.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "onedriveRegion": {
-                    "description": "Choose national cloud region for OneDrive.",
-                    "type": "string",
-                    "default": "global"
-                },
-                "onedriveRootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "onedriveServerSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "onedriveToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "onedriveTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "oosChunkSize": {
-                    "description": "Chunk size to use for uploading.",
-                    "type": "string",
-                    "default": "5Mi"
-                },
-                "oosCompartment": {
-                    "description": "Object storage compartment OCID",
-                    "type": "string"
-                },
-                "oosConfigFile": {
-                    "description": "Path to OCI config file",
-                    "type": "string",
-                    "default": "~/.oci/config"
-                },
-                "oosConfigProfile": {
-                    "description": "Profile name inside the oci config file",
-                    "type": "string",
-                    "default": "Default"
-                },
-                "oosCopyCutoff": {
-                    "description": "Cutoff for switching to multipart copy.",
-                    "type": "string",
-                    "default": "4.656Gi"
-                },
-                "oosCopyTimeout": {
-                    "description": "Timeout for copy.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "oosDisableChecksum": {
-                    "description": "Don't store MD5 checksum with object metadata.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "oosEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "oosEndpoint": {
-                    "description": "Endpoint for Object storage API.",
-                    "type": "string"
-                },
-                "oosLeavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "oosNamespace": {
-                    "description": "Object storage namespace",
-                    "type": "string"
-                },
-                "oosNoCheckBucket": {
-                    "description": "If set, don't attempt to check the bucket exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "oosProvider": {
-                    "description": "Choose your Auth Provider",
-                    "type": "string",
-                    "default": "env_auth"
-                },
-                "oosRegion": {
-                    "description": "Object storage Region",
-                    "type": "string"
-                },
-                "oosSseCustomerAlgorithm": {
-                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
-                    "type": "string"
-                },
-                "oosSseCustomerKey": {
-                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
-                    "type": "string"
-                },
-                "oosSseCustomerKeyFile": {
-                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
-                    "type": "string"
-                },
-                "oosSseCustomerKeySha256": {
-                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
-                    "type": "string"
-                },
-                "oosSseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
-                    "type": "string"
-                },
-                "oosStorageTier": {
-                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
-                    "type": "string",
-                    "default": "Standard"
-                },
-                "oosUploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "10"
-                },
-                "oosUploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "opendriveChunkSize": {
-                    "description": "Files will be uploaded in chunks this size.",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "opendriveEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
-                },
-                "opendrivePassword": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "opendriveUsername": {
-                    "description": "Username.",
-                    "type": "string"
-                },
-                "pcloudAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "pcloudClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "pcloudClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "pcloudEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "pcloudHostname": {
-                    "description": "Hostname to connect to.",
-                    "type": "string",
-                    "default": "api.pcloud.com"
-                },
-                "pcloudPassword": {
-                    "description": "Your pcloud password.",
-                    "type": "string"
-                },
-                "pcloudRootFolderId": {
-                    "description": "Fill in for rclone to use a non root folder as its starting point.",
-                    "type": "string",
-                    "default": "d0"
-                },
-                "pcloudToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "pcloudTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "pcloudUsername": {
-                    "description": "Your pcloud username.",
-                    "type": "string"
-                },
-                "premiumizemeApiKey": {
-                    "description": "API Key.",
-                    "type": "string"
-                },
-                "premiumizemeEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "putioEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "qingstorAccessKeyId": {
-                    "description": "QingStor Access Key ID.",
-                    "type": "string"
-                },
-                "qingstorChunkSize": {
-                    "description": "Chunk size to use for uploading.",
-                    "type": "string",
-                    "default": "4Mi"
-                },
-                "qingstorConnectionRetries": {
-                    "description": "Number of connection retries.",
-                    "type": "string",
-                    "default": "3"
-                },
-                "qingstorEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Ctl,InvalidUtf8"
-                },
-                "qingstorEndpoint": {
-                    "description": "Enter an endpoint URL to connection QingStor API.",
-                    "type": "string"
-                },
-                "qingstorEnvAuth": {
-                    "description": "Get QingStor credentials from runtime.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "qingstorSecretAccessKey": {
-                    "description": "QingStor Secret Access Key (password).",
-                    "type": "string"
-                },
-                "qingstorUploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "1"
-                },
-                "qingstorUploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "qingstorZone": {
-                    "description": "Zone to connect to.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "s3AccessKeyId": {
-                    "description": "AWS Access Key ID.",
-                    "type": "string"
-                },
-                "s3Acl": {
-                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
-                    "type": "string"
-                },
-                "s3BucketAcl": {
-                    "description": "Canned ACL used when creating buckets.",
-                    "type": "string"
-                },
-                "s3ChunkSize": {
-                    "description": "Chunk size to use for uploading.",
-                    "type": "string",
-                    "default": "5Mi"
-                },
-                "s3CopyCutoff": {
-                    "description": "Cutoff for switching to multipart copy.",
-                    "type": "string",
-                    "default": "4.656Gi"
-                },
-                "s3Decompress": {
-                    "description": "If set this will decompress gzip encoded objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3DisableChecksum": {
-                    "description": "Don't store MD5 checksum with object metadata.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3DisableHttp2": {
-                    "description": "Disable usage of http2 for S3 backends.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3DownloadUrl": {
-                    "description": "Custom endpoint for downloads.",
-                    "type": "string"
-                },
-                "s3Encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "s3Endpoint": {
-                    "description": "Endpoint for S3 API.",
-                    "type": "string"
-                },
-                "s3EnvAuth": {
-                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3ForcePathStyle": {
-                    "description": "If true use path style access if false use virtual hosted style.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "s3LeavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3ListChunk": {
-                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "s3ListUrlEncode": {
-                    "description": "Whether to url encode listings: true/false/unset",
-                    "type": "string",
-                    "default": "unset"
-                },
-                "s3ListVersion": {
-                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "s3LocationConstraint": {
-                    "description": "Location constraint - must be set to match the Region.",
-                    "type": "string"
-                },
-                "s3MaxUploadParts": {
-                    "description": "Maximum number of parts in a multipart upload.",
-                    "type": "string",
-                    "default": "10000"
-                },
-                "s3MemoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "s3MemoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3MightGzip": {
-                    "description": "Set this if the backend might gzip objects.",
-                    "type": "string",
-                    "default": "unset"
-                },
-                "s3NoCheckBucket": {
-                    "description": "If set, don't attempt to check the bucket exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3NoHead": {
-                    "description": "If set, don't HEAD uploaded objects to check integrity.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3NoHeadObject": {
-                    "description": "If set, do not do HEAD before GET when getting objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3NoSystemMetadata": {
-                    "description": "Suppress setting and reading of system metadata",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3Profile": {
-                    "description": "Profile to use in the shared credentials file.",
-                    "type": "string"
-                },
-                "s3Provider": {
-                    "description": "Choose your S3 provider.",
-                    "type": "string"
-                },
-                "s3Region": {
-                    "description": "Region to connect to.",
-                    "type": "string"
-                },
-                "s3RequesterPays": {
-                    "description": "Enables requester pays option when interacting with S3 bucket.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3SecretAccessKey": {
-                    "description": "AWS Secret Access Key (password).",
-                    "type": "string"
-                },
-                "s3ServerSideEncryption": {
-                    "description": "The server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string"
-                },
-                "s3SessionToken": {
-                    "description": "An AWS session token.",
-                    "type": "string"
-                },
-                "s3SharedCredentialsFile": {
-                    "description": "Path to the shared credentials file.",
-                    "type": "string"
-                },
-                "s3SseCustomerAlgorithm": {
-                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string"
-                },
-                "s3SseCustomerKey": {
-                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
-                    "type": "string"
-                },
-                "s3SseCustomerKeyBase64": {
-                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
-                    "type": "string"
-                },
-                "s3SseCustomerKeyMd5": {
-                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
-                    "type": "string"
-                },
-                "s3SseKmsKeyId": {
-                    "description": "If using KMS ID you must provide the ARN of Key.",
-                    "type": "string"
-                },
-                "s3StorageClass": {
-                    "description": "The storage class to use when storing new objects in S3.",
-                    "type": "string"
-                },
-                "s3StsEndpoint": {
-                    "description": "Endpoint for STS.",
-                    "type": "string"
-                },
-                "s3UploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "4"
-                },
-                "s3UploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "s3UseAccelerateEndpoint": {
-                    "description": "If true use the AWS S3 accelerated endpoint.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3UseMultipartEtag": {
-                    "description": "Whether to use ETag in multipart uploads for verification",
-                    "type": "string",
-                    "default": "unset"
-                },
-                "s3UsePresignedRequest": {
-                    "description": "Whether to use a presigned request or PutObject for single part uploads",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3V2Auth": {
-                    "description": "If true use v2 authentication.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "s3VersionAt": {
-                    "description": "Show file versions as they were at the specified time.",
-                    "type": "string",
-                    "default": "off"
-                },
-                "s3Versions": {
-                    "description": "Include old versions in directory listings.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "seafile2fa": {
-                    "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "seafileAuthToken": {
-                    "description": "Authentication token.",
-                    "type": "string"
-                },
-                "seafileCreateLibrary": {
-                    "description": "Should rclone create a library if it doesn't exist.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "seafileEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
-                },
-                "seafileLibrary": {
-                    "description": "Name of the library.",
-                    "type": "string"
-                },
-                "seafileLibraryKey": {
-                    "description": "Library password (for encrypted libraries only).",
-                    "type": "string"
-                },
-                "seafilePass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "seafileUrl": {
-                    "description": "URL of seafile host to connect to.",
-                    "type": "string"
-                },
-                "seafileUser": {
-                    "description": "User name (usually email address).",
-                    "type": "string"
-                },
-                "sftpAskPassword": {
-                    "description": "Allow asking for SFTP password when needed.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpChunkSize": {
-                    "description": "Upload and download chunk size.",
-                    "type": "string",
-                    "default": "32Ki"
-                },
-                "sftpCiphers": {
-                    "description": "Space separated list of ciphers to be used for session encryption, ordered by preference.",
-                    "type": "string"
-                },
-                "sftpConcurrency": {
-                    "description": "The maximum number of outstanding requests for one file",
-                    "type": "string",
-                    "default": "64"
-                },
-                "sftpDisableConcurrentReads": {
-                    "description": "If set don't use concurrent reads.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpDisableConcurrentWrites": {
-                    "description": "If set don't use concurrent writes.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpDisableHashcheck": {
-                    "description": "Disable the execution of SSH commands to determine if remote file hashing is available.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpHost": {
-                    "description": "SSH host to connect to.",
-                    "type": "string"
-                },
-                "sftpIdleTimeout": {
-                    "description": "Max time before closing idle connections.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "sftpKeyExchange": {
-                    "description": "Space separated list of key exchange algorithms, ordered by preference.",
-                    "type": "string"
-                },
-                "sftpKeyFile": {
-                    "description": "Path to PEM-encoded private key file.",
-                    "type": "string"
-                },
-                "sftpKeyFilePass": {
-                    "description": "The passphrase to decrypt the PEM-encoded private key file.",
-                    "type": "string"
-                },
-                "sftpKeyPem": {
-                    "description": "Raw PEM-encoded private key.",
-                    "type": "string"
-                },
-                "sftpKeyUseAgent": {
-                    "description": "When set forces the usage of the ssh-agent.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpKnownHostsFile": {
-                    "description": "Optional path to known_hosts file.",
-                    "type": "string"
-                },
-                "sftpMacs": {
-                    "description": "Space separated list of MACs (message authentication code) algorithms, ordered by preference.",
-                    "type": "string"
-                },
-                "sftpMd5sumCommand": {
-                    "description": "The command used to read md5 hashes.",
-                    "type": "string"
-                },
-                "sftpPass": {
-                    "description": "SSH password, leave blank to use ssh-agent.",
-                    "type": "string"
-                },
-                "sftpPathOverride": {
-                    "description": "Override path used by SSH shell commands.",
-                    "type": "string"
-                },
-                "sftpPort": {
-                    "description": "SSH port number.",
-                    "type": "string",
-                    "default": "22"
-                },
-                "sftpPubkeyFile": {
-                    "description": "Optional path to public key file.",
-                    "type": "string"
-                },
-                "sftpServerCommand": {
-                    "description": "Specifies the path or command to run a sftp server on the remote host.",
-                    "type": "string"
-                },
-                "sftpSetEnv": {
-                    "description": "Environment variables to pass to sftp and commands",
-                    "type": "string"
-                },
-                "sftpSetModtime": {
-                    "description": "Set the modified time on the remote if set.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "sftpSha1sumCommand": {
-                    "description": "The command used to read sha1 hashes.",
-                    "type": "string"
-                },
-                "sftpShellType": {
-                    "description": "The type of SSH shell on remote server, if any.",
-                    "type": "string"
-                },
-                "sftpSkipLinks": {
-                    "description": "Set to skip any symlinks and any other non regular files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpSubsystem": {
-                    "description": "Specifies the SSH2 subsystem on the remote host.",
-                    "type": "string",
-                    "default": "sftp"
-                },
-                "sftpUseFstat": {
-                    "description": "If set use fstat instead of stat.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpUseInsecureCipher": {
-                    "description": "Enable the use of insecure ciphers and key exchange methods.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sftpUser": {
-                    "description": "SSH username.",
-                    "type": "string",
-                    "default": "$USER"
-                },
-                "sharefileChunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "64Mi"
-                },
-                "sharefileEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
-                },
-                "sharefileEndpoint": {
-                    "description": "Endpoint for API calls.",
-                    "type": "string"
-                },
-                "sharefileRootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "sharefileUploadCutoff": {
-                    "description": "Cutoff for switching to multipart upload.",
-                    "type": "string",
-                    "default": "128Mi"
-                },
-                "siaApiPassword": {
-                    "description": "Sia Daemon API Password.",
-                    "type": "string"
-                },
-                "siaApiUrl": {
-                    "description": "Sia daemon API URL, like http://sia.daemon.host:9980.",
-                    "type": "string",
-                    "default": "http://127.0.0.1:9980"
-                },
-                "siaEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "siaUserAgent": {
-                    "description": "Siad User Agent",
-                    "type": "string",
-                    "default": "Sia-Agent"
-                },
-                "smbCaseInsensitive": {
-                    "description": "Whether the server is configured to be case-insensitive.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "smbDomain": {
-                    "description": "Domain name for NTLM authentication.",
-                    "type": "string",
-                    "default": "WORKGROUP"
-                },
-                "smbEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
-                },
-                "smbHideSpecialShare": {
-                    "description": "Hide special shares (e.g. print$) which users aren't supposed to access.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "smbHost": {
-                    "description": "SMB server hostname to connect to.",
-                    "type": "string"
-                },
-                "smbIdleTimeout": {
-                    "description": "Max time before closing idle connections.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "smbPass": {
-                    "description": "SMB password.",
-                    "type": "string"
-                },
-                "smbPort": {
-                    "description": "SMB port number.",
-                    "type": "string",
-                    "default": "445"
-                },
-                "smbSpn": {
-                    "description": "Service principal name.",
-                    "type": "string"
-                },
-                "smbUser": {
-                    "description": "SMB username.",
-                    "type": "string",
-                    "default": "$USER"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "storjAccessGrant": {
-                    "description": "Access grant.",
-                    "type": "string"
-                },
-                "storjApiKey": {
-                    "description": "API key.",
-                    "type": "string"
-                },
-                "storjPassphrase": {
-                    "description": "Encryption passphrase.",
-                    "type": "string"
-                },
-                "storjProvider": {
-                    "description": "Choose an authentication method.",
-                    "type": "string",
-                    "default": "existing"
-                },
-                "storjSatelliteAddress": {
-                    "description": "Satellite address.",
-                    "type": "string",
-                    "default": "us1.storj.io"
-                },
-                "sugarsyncAccessKeyId": {
-                    "description": "Sugarsync Access Key ID.",
-                    "type": "string"
-                },
-                "sugarsyncAppId": {
-                    "description": "Sugarsync App ID.",
-                    "type": "string"
-                },
-                "sugarsyncAuthorization": {
-                    "description": "Sugarsync authorization.",
-                    "type": "string"
-                },
-                "sugarsyncAuthorizationExpiry": {
-                    "description": "Sugarsync authorization expiry.",
-                    "type": "string"
-                },
-                "sugarsyncDeletedId": {
-                    "description": "Sugarsync deleted folder id.",
-                    "type": "string"
-                },
-                "sugarsyncEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Ctl,InvalidUtf8,Dot"
-                },
-                "sugarsyncHardDelete": {
-                    "description": "Permanently delete files if true",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sugarsyncPrivateAccessKey": {
-                    "description": "Sugarsync Private Access Key.",
-                    "type": "string"
-                },
-                "sugarsyncRefreshToken": {
-                    "description": "Sugarsync refresh token.",
-                    "type": "string"
-                },
-                "sugarsyncRootId": {
-                    "description": "Sugarsync root id.",
-                    "type": "string"
-                },
-                "sugarsyncUser": {
-                    "description": "Sugarsync user.",
-                    "type": "string"
-                },
-                "swiftApplicationCredentialId": {
-                    "description": "Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).",
-                    "type": "string"
-                },
-                "swiftApplicationCredentialName": {
-                    "description": "Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).",
-                    "type": "string"
-                },
-                "swiftApplicationCredentialSecret": {
-                    "description": "Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).",
-                    "type": "string"
-                },
-                "swiftAuth": {
-                    "description": "Authentication URL for server (OS_AUTH_URL).",
-                    "type": "string"
-                },
-                "swiftAuthToken": {
-                    "description": "Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).",
-                    "type": "string"
-                },
-                "swiftAuthVersion": {
-                    "description": "AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).",
-                    "type": "string",
-                    "default": "0"
-                },
-                "swiftChunkSize": {
-                    "description": "Above this size files will be chunked into a _segments container.",
-                    "type": "string",
-                    "default": "5Gi"
-                },
-                "swiftDomain": {
-                    "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
-                    "type": "string"
-                },
-                "swiftEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8"
-                },
-                "swiftEndpointType": {
-                    "description": "Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).",
-                    "type": "string",
-                    "default": "public"
-                },
-                "swiftEnvAuth": {
-                    "description": "Get swift credentials from environment variables in standard OpenStack form.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "swiftKey": {
-                    "description": "API key or password (OS_PASSWORD).",
-                    "type": "string"
-                },
-                "swiftLeavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "swiftNoChunk": {
-                    "description": "Don't chunk files during streaming upload.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "swiftNoLargeObjects": {
-                    "description": "Disable support for static and dynamic large objects",
-                    "type": "string",
-                    "default": "false"
-                },
-                "swiftRegion": {
-                    "description": "Region name - optional (OS_REGION_NAME).",
-                    "type": "string"
-                },
-                "swiftStoragePolicy": {
-                    "description": "The storage policy to use when creating a new container.",
-                    "type": "string"
-                },
-                "swiftStorageUrl": {
-                    "description": "Storage URL - optional (OS_STORAGE_URL).",
-                    "type": "string"
-                },
-                "swiftTenant": {
-                    "description": "Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).",
-                    "type": "string"
-                },
-                "swiftTenantDomain": {
-                    "description": "Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).",
-                    "type": "string"
-                },
-                "swiftTenantId": {
-                    "description": "Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).",
-                    "type": "string"
-                },
-                "swiftUser": {
-                    "description": "User name to log in (OS_USERNAME).",
-                    "type": "string"
-                },
-                "swiftUserId": {
-                    "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
-                    "type": "string"
-                },
-                "uptoboxAccessToken": {
-                    "description": "Your access token.",
-                    "type": "string"
-                },
-                "uptoboxEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
-                },
-                "webdavBearerToken": {
-                    "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
-                    "type": "string"
-                },
-                "webdavBearerTokenCommand": {
-                    "description": "Command to run to get a bearer token.",
-                    "type": "string"
-                },
-                "webdavEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string"
-                },
-                "webdavHeaders": {
-                    "description": "Set HTTP headers for all transactions.",
-                    "type": "string"
-                },
-                "webdavPass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "webdavUrl": {
-                    "description": "URL of http host to connect to.",
-                    "type": "string"
-                },
-                "webdavUser": {
-                    "description": "User name.",
-                    "type": "string"
-                },
-                "webdavVendor": {
-                    "description": "Name of the WebDAV site/service/software you are using.",
-                    "type": "string"
-                },
-                "yandexAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "yandexClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "yandexClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "yandexEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "yandexHardDelete": {
-                    "description": "Delete files permanently rather than putting them into the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "yandexToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "yandexTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "zohoAuthUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "zohoClientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "zohoClientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "zohoEncoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Del,Ctl,InvalidUtf8"
-                },
-                "zohoRegion": {
-                    "description": "Zoho region to connect to.",
-                    "type": "string"
-                },
-                "zohoToken": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "zohoTokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.AzureblobRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessTier": {
-                    "description": "Access tier of blob: hot, cool or archive.",
-                    "type": "string"
-                },
-                "account": {
-                    "description": "Azure Storage Account Name.",
-                    "type": "string"
-                },
-                "archiveTierDelete": {
-                    "description": "Delete archive tier blobs before overwriting.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "chunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "4Mi"
-                },
-                "clientCertificatePassword": {
-                    "description": "Password for the certificate file (optional).",
-                    "type": "string"
-                },
-                "clientCertificatePath": {
-                    "description": "Path to a PEM or PKCS12 certificate file including the private key.",
-                    "type": "string"
-                },
-                "clientId": {
-                    "description": "The ID of the client in use.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "One of the service principal's client secrets",
-                    "type": "string"
-                },
-                "clientSendCertificateChain": {
-                    "description": "Send the certificate chain when using certificate auth.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableChecksum": {
-                    "description": "Don't store MD5 checksum with object metadata.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
-                },
-                "endpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
-                },
-                "envAuth": {
-                    "description": "Read credentials from runtime (environment variables, CLI or MSI).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "key": {
-                    "description": "Storage Account Shared Key.",
-                    "type": "string"
-                },
-                "listChunk": {
-                    "description": "Size of blob list.",
-                    "type": "string",
-                    "default": "5000"
-                },
-                "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "msiClientId": {
-                    "description": "Object ID of the user-assigned MSI to use, if any.",
-                    "type": "string"
-                },
-                "msiMiResId": {
-                    "description": "Azure resource ID of the user-assigned MSI to use, if any.",
-                    "type": "string"
-                },
-                "msiObjectId": {
-                    "description": "Object ID of the user-assigned MSI to use, if any.",
-                    "type": "string"
-                },
-                "noCheckContainer": {
-                    "description": "If set, don't attempt to check the container exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noHeadObject": {
-                    "description": "If set, do not do HEAD before GET when getting objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "password": {
-                    "description": "The user's password",
-                    "type": "string"
-                },
-                "publicAccess": {
-                    "description": "Public access level of a container: blob or container.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "sasUrl": {
-                    "description": "SAS URL for container level access only.",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "servicePrincipalFile": {
-                    "description": "Path to file containing credentials for use with a service principal.",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "tenant": {
-                    "description": "ID of the service principal's tenant. Also called its directory ID.",
-                    "type": "string"
-                },
-                "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "16"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload (\u003c= 256 MiB) (deprecated).",
-                    "type": "string"
-                },
-                "useEmulator": {
-                    "description": "Uses local storage emulator if provided as 'true'.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "useMsi": {
-                    "description": "Use a managed service identity to authenticate (only works in Azure).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "username": {
-                    "description": "User name (usually an email address)",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.B2Request": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "account": {
-                    "description": "Account ID or Application Key ID.",
-                    "type": "string"
-                },
-                "chunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "96Mi"
-                },
-                "copyCutoff": {
-                    "description": "Cutoff for switching to multipart copy.",
-                    "type": "string",
-                    "default": "4Gi"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableChecksum": {
-                    "description": "Disable checksums for large (\u003e upload cutoff) files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "downloadAuthDuration": {
-                    "description": "Time before the authorization token will expire in s or suffix ms|s|m|h|d.",
-                    "type": "string",
-                    "default": "1w"
-                },
-                "downloadUrl": {
-                    "description": "Custom endpoint for downloads.",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
-                },
-                "hardDelete": {
-                    "description": "Permanently delete files on remote removal, otherwise hide files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "key": {
-                    "description": "Application Key.",
-                    "type": "string"
-                },
-                "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "testMode": {
-                    "description": "A flag string for X-Bz-Test-Mode header for debugging.",
-                    "type": "string"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "versionAt": {
-                    "description": "Show file versions as they were at the specified time.",
-                    "type": "string",
-                    "default": "off"
-                },
-                "versions": {
-                    "description": "Include old versions in directory listings.",
-                    "type": "string",
-                    "default": "false"
-                }
-            }
-        },
-        "datasource.BoxRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessToken": {
-                    "description": "Box App Primary Access Token",
-                    "type": "string"
-                },
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "boxConfigFile": {
-                    "description": "Box App config.json location",
-                    "type": "string"
-                },
-                "boxSubType": {
-                    "type": "string",
-                    "default": "user"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "commitRetries": {
-                    "description": "Max number of times to try committing a multipart file.",
-                    "type": "string",
-                    "default": "100"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
-                },
-                "listChunk": {
-                    "description": "Size of listing chunk 1-1000.",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "ownedBy": {
-                    "description": "Only show items owned by the login (email address) passed in.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootFolderId": {
-                    "description": "Fill in for rclone to use a non root folder as its starting point.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to multipart upload (\u003e= 50 MiB).",
-                    "type": "string",
-                    "default": "50Mi"
-                }
-            }
-        },
-        "datasource.CheckSourceRequest": {
-            "type": "object",
-            "properties": {
                 "path": {
-                    "description": "Path relative to the data source root",
                     "type": "string"
                 }
             }
         },
-        "datasource.CreatePackJobRequest": {
+        "dataprep.ExploreResult": {
             "type": "object",
             "properties": {
-                "fileRangeIDs": {
+                "cid": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "subEntries": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/dataprep.DirEntry"
                     }
                 }
             }
         },
-        "datasource.DriveRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "acknowledgeAbuse": {
-                    "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "allowImportNameChange": {
-                    "description": "Allow the filetype to change when uploading Google docs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "alternateExport": {
-                    "description": "Deprecated: No longer needed.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "authOwnerOnly": {
-                    "description": "Only consider files owned by the authenticated user.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "chunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "8Mi"
-                },
-                "clientId": {
-                    "description": "Google Application Client Id",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "copyShortcutContent": {
-                    "description": "Server side copy contents of shortcuts instead of the shortcut.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableHttp2": {
-                    "description": "Disable drive using http2.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "InvalidUtf8"
-                },
-                "exportFormats": {
-                    "description": "Comma separated list of preferred formats for downloading Google docs.",
-                    "type": "string",
-                    "default": "docx,xlsx,pptx,svg"
-                },
-                "formats": {
-                    "description": "Deprecated: See export_formats.",
-                    "type": "string"
-                },
-                "impersonate": {
-                    "description": "Impersonate this user when using a service account.",
-                    "type": "string"
-                },
-                "importFormats": {
-                    "description": "Comma separated list of preferred formats for uploading Google docs.",
-                    "type": "string"
-                },
-                "keepRevisionForever": {
-                    "description": "Keep new head revision of each file forever.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "listChunk": {
-                    "description": "Size of listing chunk 100-1000, 0 to disable.",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "pacerBurst": {
-                    "description": "Number of API calls to allow without sleeping.",
-                    "type": "string",
-                    "default": "100"
-                },
-                "pacerMinSleep": {
-                    "description": "Minimum time to sleep between API calls.",
-                    "type": "string",
-                    "default": "100ms"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "resourceKey": {
-                    "description": "Resource key for accessing a link-shared file.",
-                    "type": "string"
-                },
-                "rootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "scope": {
-                    "description": "Scope that rclone should use when requesting access from drive.",
-                    "type": "string"
-                },
-                "serverSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different drive configs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "serviceAccountCredentials": {
-                    "description": "Service Account Credentials JSON blob.",
-                    "type": "string"
-                },
-                "serviceAccountFile": {
-                    "description": "Service Account Credentials JSON file path.",
-                    "type": "string"
-                },
-                "sharedWithMe": {
-                    "description": "Only show files that are shared with me.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sizeAsQuota": {
-                    "description": "Show sizes as storage quota usage, not actual size.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "skipChecksumGphotos": {
-                    "description": "Skip MD5 checksum on Google photos and videos only.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "skipDanglingShortcuts": {
-                    "description": "If set skip dangling shortcut files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "skipGdocs": {
-                    "description": "Skip google documents in all listings.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "skipShortcuts": {
-                    "description": "If set skip shortcut files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "starredOnly": {
-                    "description": "Only show files that are starred.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "stopOnDownloadLimit": {
-                    "description": "Make download limit errors be fatal.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "stopOnUploadLimit": {
-                    "description": "Make upload limit errors be fatal.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "teamDrive": {
-                    "description": "ID of the Shared Drive (Team Drive).",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "trashedOnly": {
-                    "description": "Only show files that are in the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "8Mi"
-                },
-                "useCreatedDate": {
-                    "description": "Use file created date instead of modified date.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "useSharedDate": {
-                    "description": "Use date file was shared instead of modified date.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "useTrash": {
-                    "description": "Send files to the trash instead of deleting permanently.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "v2DownloadMinSize": {
-                    "description": "If Object's are greater, use drive v2 API to download.",
-                    "type": "string",
-                    "default": "off"
-                }
-            }
-        },
-        "datasource.DropboxRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "batchCommitTimeout": {
-                    "description": "Max time to wait for a batch to finish committing",
-                    "type": "string",
-                    "default": "10m0s"
-                },
-                "batchMode": {
-                    "description": "Upload file batching sync|async|off.",
-                    "type": "string",
-                    "default": "sync"
-                },
-                "batchSize": {
-                    "description": "Max number of files in upload batch.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "batchTimeout": {
-                    "description": "Max time to allow an idle upload batch before uploading.",
-                    "type": "string",
-                    "default": "0s"
-                },
-                "chunkSize": {
-                    "description": "Upload chunk size (\u003c 150Mi).",
-                    "type": "string",
-                    "default": "48Mi"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
-                },
-                "impersonate": {
-                    "description": "Impersonate this user when using a business account.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sharedFiles": {
-                    "description": "Instructs rclone to work on individual shared files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sharedFolders": {
-                    "description": "Instructs rclone to work on shared folders.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.FichierRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "apiKey": {
-                    "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
-                },
-                "filePassword": {
-                    "description": "If you want to download a shared file that is password protected, add this parameter.",
-                    "type": "string"
-                },
-                "folderPassword": {
-                    "description": "If you want to list the files in a shared folder that is password protected, add this parameter.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sharedFolder": {
-                    "description": "If you want to download a shared folder, add this parameter.",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.FileInfo": {
+        "dataprep.PieceList": {
             "type": "object",
             "properties": {
-                "path": {
-                    "description": "Path to the new file, relative to the source",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.FilefabricRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "permanentToken": {
-                    "description": "Permanent Authentication Token.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "Session Token.",
-                    "type": "string"
-                },
-                "tokenExpiry": {
-                    "description": "Token expiry time.",
-                    "type": "string"
-                },
-                "url": {
-                    "description": "URL of the Enterprise File Fabric to connect to.",
-                    "type": "string"
-                },
-                "version": {
-                    "description": "Version read from the file fabric.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.FtpRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "askPassword": {
-                    "description": "Allow asking for FTP password when needed.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "closeTimeout": {
-                    "description": "Maximum time to wait for a response to close.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "concurrency": {
-                    "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableEpsv": {
-                    "description": "Disable using EPSV even if server advertises support.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "disableMlsd": {
-                    "description": "Disable using MLSD even if server advertises support.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "disableTls13": {
-                    "description": "Disable TLS 1.3 (workaround for FTP servers with buggy TLS)",
-                    "type": "string",
-                    "default": "false"
-                },
-                "disableUtf8": {
-                    "description": "Disable using UTF-8 even if server advertises support.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Del,Ctl,RightSpace,Dot"
-                },
-                "explicitTls": {
-                    "description": "Use Explicit FTPS (FTP over TLS).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "forceListHidden": {
-                    "description": "Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "host": {
-                    "description": "FTP host to connect to.",
-                    "type": "string"
-                },
-                "idleTimeout": {
-                    "description": "Max time before closing idle connections.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "noCheckCertificate": {
-                    "description": "Do not verify the TLS certificate of the server.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "pass": {
-                    "description": "FTP password.",
-                    "type": "string"
-                },
-                "port": {
-                    "description": "FTP port number.",
-                    "type": "string",
-                    "default": "21"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "shutTimeout": {
-                    "description": "Maximum time to wait for data connection closing status.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "tls": {
-                    "description": "Use Implicit FTPS (FTP over TLS).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "tlsCacheSize": {
-                    "description": "Size of TLS session cache for all control and data connections.",
-                    "type": "string",
-                    "default": "32"
-                },
-                "user": {
-                    "description": "FTP username.",
-                    "type": "string",
-                    "default": "$USER"
-                },
-                "writingMdtm": {
-                    "description": "Use MDTM to set modification time (VsFtpd quirk)",
-                    "type": "string",
-                    "default": "false"
-                }
-            }
-        },
-        "datasource.GcsRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "anonymous": {
-                    "description": "Access public buckets and objects without credentials.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "bucketAcl": {
-                    "description": "Access Control List for new buckets.",
-                    "type": "string"
-                },
-                "bucketPolicyOnly": {
-                    "description": "Access checks should use bucket-level IAM policies.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "decompress": {
-                    "description": "If set this will decompress gzip encoded objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,CrLf,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string"
-                },
-                "envAuth": {
-                    "description": "Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "location": {
-                    "description": "Location for the newly created buckets.",
-                    "type": "string"
-                },
-                "noCheckBucket": {
-                    "description": "If set, don't attempt to check the bucket exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "objectAcl": {
-                    "description": "Access Control List for new objects.",
-                    "type": "string"
-                },
-                "projectNumber": {
-                    "description": "Project number.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "serviceAccountCredentials": {
-                    "description": "Service Account Credentials JSON blob.",
-                    "type": "string"
-                },
-                "serviceAccountFile": {
-                    "description": "Service Account Credentials JSON file path.",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "storageClass": {
-                    "description": "The storage class to use when storing objects in Google Cloud Storage.",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.GphotosRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,CrLf,InvalidUtf8,Dot"
-                },
-                "includeArchived": {
-                    "description": "Also view and download archived media.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "readOnly": {
-                    "description": "Set to make the Google Photos backend read only.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "readSize": {
-                    "description": "Set to read the size of media items.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "startYear": {
-                    "description": "Year limits the photos to be downloaded to those which are uploaded after the given year.",
-                    "type": "string",
-                    "default": "2000"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.HdfsRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "dataTransferProtection": {
-                    "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "namenode": {
-                    "description": "Hadoop name node and port.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "servicePrincipalName": {
-                    "description": "Kerberos service principal name for the namenode.",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "username": {
-                    "description": "Hadoop user name.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.HidriveRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "chunkSize": {
-                    "description": "Chunksize for chunked uploads.",
-                    "type": "string",
-                    "default": "48Mi"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableFetchingMemberCount": {
-                    "description": "Do not fetch number of objects in directories unless it is absolutely necessary.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Dot"
-                },
-                "endpoint": {
-                    "description": "Endpoint for the service.",
-                    "type": "string",
-                    "default": "https://api.hidrive.strato.com/2.1"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootPrefix": {
-                    "description": "The root/parent folder for all paths.",
-                    "type": "string",
-                    "default": "/"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "scopeAccess": {
-                    "description": "Access permissions that rclone should use when requesting access from HiDrive.",
-                    "type": "string",
-                    "default": "rw"
-                },
-                "scopeRole": {
-                    "description": "User-level that rclone should use when requesting access from HiDrive.",
-                    "type": "string",
-                    "default": "user"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "uploadConcurrency": {
-                    "description": "Concurrency for chunked uploads.",
-                    "type": "string",
-                    "default": "4"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff/Threshold for chunked uploads.",
-                    "type": "string",
-                    "default": "96Mi"
-                }
-            }
-        },
-        "datasource.HttpRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "headers": {
-                    "description": "Set HTTP headers for all transactions.",
-                    "type": "string"
-                },
-                "noHead": {
-                    "description": "Don't use HEAD requests.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noSlash": {
-                    "description": "Set this if the site doesn't end directories with /.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "url": {
-                    "description": "URL of HTTP host to connect to.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.InternetarchiveRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessKeyId": {
-                    "description": "IAS3 Access Key.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableChecksum": {
-                    "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "IAS3 Endpoint.",
-                    "type": "string",
-                    "default": "https://s3.us.archive.org"
-                },
-                "frontEndpoint": {
-                    "description": "Host of InternetArchive Frontend.",
-                    "type": "string",
-                    "default": "https://archive.org"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "secretAccessKey": {
-                    "description": "IAS3 Secret Key (password).",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "waitArchive": {
-                    "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
-                    "type": "string",
-                    "default": "0s"
-                }
-            }
-        },
-        "datasource.JottacloudRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "hardDelete": {
-                    "description": "Delete files permanently rather than putting them into the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "md5MemoryLimit": {
-                    "description": "Files bigger than this will be cached on disk to calculate the MD5 if required.",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "noVersions": {
-                    "description": "Avoid server side versioning by deleting files and recreating files instead of overwriting them.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "trashedOnly": {
-                    "description": "Only show files that are in the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "uploadResumeLimit": {
-                    "description": "Files bigger than this can be resumed if the upload fail's.",
-                    "type": "string",
-                    "default": "10Mi"
-                }
-            }
-        },
-        "datasource.KoofrRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "The Koofr API endpoint to use.",
-                    "type": "string"
-                },
-                "mountid": {
-                    "description": "Mount ID of the mount to use.",
-                    "type": "string"
-                },
-                "password": {
-                    "description": "Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).",
-                    "type": "string"
-                },
-                "provider": {
-                    "description": "Choose your storage provider.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "setmtime": {
-                    "description": "Does the backend support setting modification time.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "user": {
-                    "description": "Your user name.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.LocalRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "caseInsensitive": {
-                    "description": "Force the filesystem to report itself as case insensitive.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "caseSensitive": {
-                    "description": "Force the filesystem to report itself as case sensitive.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "copyLinks": {
-                    "description": "Follow symlinks and copy the pointed to item.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Dot"
-                },
-                "links": {
-                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noCheckUpdated": {
-                    "description": "Don't check to see if the files change during upload.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noPreallocate": {
-                    "description": "Disable preallocation of disk space for transferred files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noSetModtime": {
-                    "description": "Disable setting modtime.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noSparse": {
-                    "description": "Disable sparse files for multi-thread downloads.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "nounc": {
-                    "description": "Disable UNC (long path names) conversion on Windows.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "oneFileSystem": {
-                    "description": "Don't cross filesystem boundaries (unix/macOS only).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "skipLinks": {
-                    "description": "Don't warn about skipped symlinks.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "unicodeNormalization": {
-                    "description": "Apply unicode NFC normalization to paths and filenames.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "zeroSizeLinks": {
-                    "description": "Assume the Stat size of links is zero (and read them instead) (deprecated).",
-                    "type": "string",
-                    "default": "false"
-                }
-            }
-        },
-        "datasource.MailruRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "checkHash": {
-                    "description": "What should copy do if file checksum is mismatched or invalid.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "pass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "quirks": {
-                    "description": "Comma separated list of internal maintenance flags.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "speedupEnable": {
-                    "description": "Skip full upload if there is another file with same data hash.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "speedupFilePatterns": {
-                    "description": "Comma separated list of file name patterns eligible for speedup (put by hash).",
-                    "type": "string",
-                    "default": "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
-                },
-                "speedupMaxDisk": {
-                    "description": "This option allows you to disable speedup (put by hash) for large files.",
-                    "type": "string",
-                    "default": "3Gi"
-                },
-                "speedupMaxMemory": {
-                    "description": "Files larger than the size given below will always be hashed on disk.",
-                    "type": "string",
-                    "default": "32Mi"
-                },
-                "user": {
-                    "description": "User name (usually email).",
-                    "type": "string"
-                },
-                "userAgent": {
-                    "description": "HTTP user agent used internally by client.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.MegaRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "debug": {
-                    "description": "Output more debug from Mega.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "hardDelete": {
-                    "description": "Delete files permanently rather than putting them into the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "pass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "useHttps": {
-                    "description": "Use HTTPS for transfers.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "user": {
-                    "description": "User name.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.NetstorageRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "account": {
-                    "description": "Set the NetStorage account name",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "host": {
-                    "description": "Domain+path of NetStorage host to connect to.",
-                    "type": "string"
-                },
-                "protocol": {
-                    "description": "Select between HTTP or HTTPS protocol.",
-                    "type": "string",
-                    "default": "https"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "secret": {
-                    "description": "Set the NetStorage account secret/G2O key for authentication.",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.OnedriveRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessScopes": {
-                    "description": "Set scopes to be requested by rclone.",
-                    "type": "string",
-                    "default": "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
-                },
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "chunkSize": {
-                    "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableSitePermission": {
-                    "description": "Disable the request for Sites.Read.All permission.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "driveId": {
-                    "description": "The ID of the drive to use.",
-                    "type": "string"
-                },
-                "driveType": {
-                    "description": "The type of the drive (personal | business | documentLibrary).",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
-                },
-                "exposeOnenoteFiles": {
-                    "description": "Set to make OneNote files show up in directory listings.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "hashType": {
-                    "description": "Specify the hash in use for the backend.",
-                    "type": "string",
-                    "default": "auto"
-                },
-                "linkPassword": {
-                    "description": "Set the password for links created by the link command.",
-                    "type": "string"
-                },
-                "linkScope": {
-                    "description": "Set the scope of the links created by the link command.",
-                    "type": "string",
-                    "default": "anonymous"
-                },
-                "linkType": {
-                    "description": "Set the type of the links created by the link command.",
-                    "type": "string",
-                    "default": "view"
-                },
-                "listChunk": {
-                    "description": "Size of listing chunk.",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "noVersions": {
-                    "description": "Remove all versions on modifying operations.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "region": {
-                    "description": "Choose national cloud region for OneDrive.",
-                    "type": "string",
-                    "default": "global"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "serverSideAcrossConfigs": {
-                    "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.OosRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "chunkSize": {
-                    "description": "Chunk size to use for uploading.",
-                    "type": "string",
-                    "default": "5Mi"
-                },
-                "compartment": {
-                    "description": "Object storage compartment OCID",
-                    "type": "string"
-                },
-                "configFile": {
-                    "description": "Path to OCI config file",
-                    "type": "string",
-                    "default": "~/.oci/config"
-                },
-                "configProfile": {
-                    "description": "Profile name inside the oci config file",
-                    "type": "string",
-                    "default": "Default"
-                },
-                "copyCutoff": {
-                    "description": "Cutoff for switching to multipart copy.",
-                    "type": "string",
-                    "default": "4.656Gi"
-                },
-                "copyTimeout": {
-                    "description": "Timeout for copy.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableChecksum": {
-                    "description": "Don't store MD5 checksum with object metadata.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "Endpoint for Object storage API.",
-                    "type": "string"
-                },
-                "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "namespace": {
-                    "description": "Object storage namespace",
-                    "type": "string"
-                },
-                "noCheckBucket": {
-                    "description": "If set, don't attempt to check the bucket exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "provider": {
-                    "description": "Choose your Auth Provider",
-                    "type": "string",
-                    "default": "env_auth"
-                },
-                "region": {
-                    "description": "Object storage Region",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "sseCustomerAlgorithm": {
-                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
-                    "type": "string"
-                },
-                "sseCustomerKey": {
-                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
-                    "type": "string"
-                },
-                "sseCustomerKeyFile": {
-                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
-                    "type": "string"
-                },
-                "sseCustomerKeySha256": {
-                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
-                    "type": "string"
-                },
-                "sseKmsKeyId": {
-                    "description": "if using using your own master key in vault, this header specifies the",
-                    "type": "string"
-                },
-                "storageTier": {
-                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
-                    "type": "string",
-                    "default": "Standard"
-                },
-                "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "10"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                }
-            }
-        },
-        "datasource.OpendriveRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "chunkSize": {
-                    "description": "Files will be uploaded in chunks this size.",
-                    "type": "string",
-                    "default": "10Mi"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
-                },
-                "password": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "username": {
-                    "description": "Username.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.PackJobsByState": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "description": "number of pack jobs in this state",
+                "attachmentId": {
                     "type": "integer"
                 },
-                "state": {
-                    "description": "the state of the pack jobs",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                }
-            }
-        },
-        "datasource.PcloudRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
+                "pieces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Car"
+                    }
                 },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
+                "source": {
+                    "$ref": "#/definitions/model.Storage"
                 },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "hostname": {
-                    "description": "Hostname to connect to.",
-                    "type": "string",
-                    "default": "api.pcloud.com"
-                },
-                "password": {
-                    "description": "Your pcloud password.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootFolderId": {
-                    "description": "Fill in for rclone to use a non root folder as its starting point.",
-                    "type": "string",
-                    "default": "d0"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                },
-                "username": {
-                    "description": "Your pcloud username.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.PremiumizemeRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "apiKey": {
-                    "description": "API Key.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.PutioRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.QingstorRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessKeyId": {
-                    "description": "QingStor Access Key ID.",
-                    "type": "string"
-                },
-                "chunkSize": {
-                    "description": "Chunk size to use for uploading.",
-                    "type": "string",
-                    "default": "4Mi"
-                },
-                "connectionRetries": {
-                    "description": "Number of connection retries.",
-                    "type": "string",
-                    "default": "3"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Ctl,InvalidUtf8"
-                },
-                "endpoint": {
-                    "description": "Enter an endpoint URL to connection QingStor API.",
-                    "type": "string"
-                },
-                "envAuth": {
-                    "description": "Get QingStor credentials from runtime.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "secretAccessKey": {
-                    "description": "QingStor Secret Access Key (password).",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "1"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "zone": {
-                    "description": "Zone to connect to.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.RepackRequest": {
-            "type": "object",
-            "properties": {
-                "packJobId": {
+                "storageId": {
                     "type": "integer"
                 }
             }
         },
-        "datasource.S3Request": {
+        "dataprep.SourceStatus": {
             "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
             "properties": {
-                "accessKeyId": {
-                    "description": "AWS Access Key ID.",
-                    "type": "string"
+                "attachmentId": {
+                    "type": "integer"
                 },
-                "acl": {
-                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
-                    "type": "string"
+                "jobs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Job"
+                    }
                 },
-                "bucketAcl": {
-                    "description": "Canned ACL used when creating buckets.",
-                    "type": "string"
+                "source": {
+                    "$ref": "#/definitions/model.Storage"
                 },
-                "chunkSize": {
-                    "description": "Chunk size to use for uploading.",
-                    "type": "string",
-                    "default": "5Mi"
-                },
-                "copyCutoff": {
-                    "description": "Cutoff for switching to multipart copy.",
-                    "type": "string",
-                    "default": "4.656Gi"
-                },
-                "decompress": {
-                    "description": "If set this will decompress gzip encoded objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableChecksum": {
-                    "description": "Don't store MD5 checksum with object metadata.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "disableHttp2": {
-                    "description": "Disable usage of http2 for S3 backends.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "downloadUrl": {
-                    "description": "Custom endpoint for downloads.",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "Endpoint for S3 API.",
-                    "type": "string"
-                },
-                "envAuth": {
-                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "forcePathStyle": {
-                    "description": "If true use path style access if false use virtual hosted style.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "listChunk": {
-                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
-                    "type": "string",
-                    "default": "1000"
-                },
-                "listUrlEncode": {
-                    "description": "Whether to url encode listings: true/false/unset",
-                    "type": "string",
-                    "default": "unset"
-                },
-                "listVersion": {
-                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
-                    "type": "string",
-                    "default": "0"
-                },
-                "locationConstraint": {
-                    "description": "Location constraint - must be set to match the Region.",
-                    "type": "string"
-                },
-                "maxUploadParts": {
-                    "description": "Maximum number of parts in a multipart upload.",
-                    "type": "string",
-                    "default": "10000"
-                },
-                "memoryPoolFlushTime": {
-                    "description": "How often internal memory buffer pools will be flushed.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "memoryPoolUseMmap": {
-                    "description": "Whether to use mmap buffers in internal memory pool.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "mightGzip": {
-                    "description": "Set this if the backend might gzip objects.",
-                    "type": "string",
-                    "default": "unset"
-                },
-                "noCheckBucket": {
-                    "description": "If set, don't attempt to check the bucket exists or create it.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noHead": {
-                    "description": "If set, don't HEAD uploaded objects to check integrity.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noHeadObject": {
-                    "description": "If set, do not do HEAD before GET when getting objects.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noSystemMetadata": {
-                    "description": "Suppress setting and reading of system metadata",
-                    "type": "string",
-                    "default": "false"
-                },
-                "profile": {
-                    "description": "Profile to use in the shared credentials file.",
-                    "type": "string"
-                },
-                "provider": {
-                    "description": "Choose your S3 provider.",
-                    "type": "string"
-                },
-                "region": {
-                    "description": "Region to connect to.",
-                    "type": "string"
-                },
-                "requesterPays": {
-                    "description": "Enables requester pays option when interacting with S3 bucket.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "secretAccessKey": {
-                    "description": "AWS Secret Access Key (password).",
-                    "type": "string"
-                },
-                "serverSideEncryption": {
-                    "description": "The server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string"
-                },
-                "sessionToken": {
-                    "description": "An AWS session token.",
-                    "type": "string"
-                },
-                "sharedCredentialsFile": {
-                    "description": "Path to the shared credentials file.",
-                    "type": "string"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "sseCustomerAlgorithm": {
-                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
-                    "type": "string"
-                },
-                "sseCustomerKey": {
-                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
-                    "type": "string"
-                },
-                "sseCustomerKeyBase64": {
-                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
-                    "type": "string"
-                },
-                "sseCustomerKeyMd5": {
-                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
-                    "type": "string"
-                },
-                "sseKmsKeyId": {
-                    "description": "If using KMS ID you must provide the ARN of Key.",
-                    "type": "string"
-                },
-                "storageClass": {
-                    "description": "The storage class to use when storing new objects in S3.",
-                    "type": "string"
-                },
-                "stsEndpoint": {
-                    "description": "Endpoint for STS.",
-                    "type": "string"
-                },
-                "uploadConcurrency": {
-                    "description": "Concurrency for multipart uploads.",
-                    "type": "string",
-                    "default": "4"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to chunked upload.",
-                    "type": "string",
-                    "default": "200Mi"
-                },
-                "useAccelerateEndpoint": {
-                    "description": "If true use the AWS S3 accelerated endpoint.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "useMultipartEtag": {
-                    "description": "Whether to use ETag in multipart uploads for verification",
-                    "type": "string",
-                    "default": "unset"
-                },
-                "usePresignedRequest": {
-                    "description": "Whether to use a presigned request or PutObject for single part uploads",
-                    "type": "string",
-                    "default": "false"
-                },
-                "v2Auth": {
-                    "description": "If true use v2 authentication.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "versionAt": {
-                    "description": "Show file versions as they were at the specified time.",
-                    "type": "string",
-                    "default": "off"
-                },
-                "versions": {
-                    "description": "Include old versions in directory listings.",
-                    "type": "string",
-                    "default": "false"
+                "storageId": {
+                    "type": "integer"
                 }
             }
         },
-        "datasource.SeafileRequest": {
+        "dataprep.Version": {
             "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
             "properties": {
-                "2fa": {
-                    "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
-                    "type": "string",
-                    "default": "false"
-                },
-                "authToken": {
-                    "description": "Authentication token.",
-                    "type": "string"
-                },
-                "createLibrary": {
-                    "description": "Should rclone create a library if it doesn't exist.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
-                },
-                "library": {
-                    "description": "Name of the library.",
-                    "type": "string"
-                },
-                "libraryKey": {
-                    "description": "Library password (for encrypted libraries only).",
-                    "type": "string"
-                },
-                "pass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "url": {
-                    "description": "URL of seafile host to connect to.",
-                    "type": "string"
-                },
-                "user": {
-                    "description": "User name (usually email address).",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.SftpRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "askPassword": {
-                    "description": "Allow asking for SFTP password when needed.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "chunkSize": {
-                    "description": "Upload and download chunk size.",
-                    "type": "string",
-                    "default": "32Ki"
-                },
-                "ciphers": {
-                    "description": "Space separated list of ciphers to be used for session encryption, ordered by preference.",
-                    "type": "string"
-                },
-                "concurrency": {
-                    "description": "The maximum number of outstanding requests for one file",
-                    "type": "string",
-                    "default": "64"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "disableConcurrentReads": {
-                    "description": "If set don't use concurrent reads.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "disableConcurrentWrites": {
-                    "description": "If set don't use concurrent writes.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "disableHashcheck": {
-                    "description": "Disable the execution of SSH commands to determine if remote file hashing is available.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "host": {
-                    "description": "SSH host to connect to.",
-                    "type": "string"
-                },
-                "idleTimeout": {
-                    "description": "Max time before closing idle connections.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "keyExchange": {
-                    "description": "Space separated list of key exchange algorithms, ordered by preference.",
-                    "type": "string"
-                },
-                "keyFile": {
-                    "description": "Path to PEM-encoded private key file.",
-                    "type": "string"
-                },
-                "keyFilePass": {
-                    "description": "The passphrase to decrypt the PEM-encoded private key file.",
-                    "type": "string"
-                },
-                "keyPem": {
-                    "description": "Raw PEM-encoded private key.",
-                    "type": "string"
-                },
-                "keyUseAgent": {
-                    "description": "When set forces the usage of the ssh-agent.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "knownHostsFile": {
-                    "description": "Optional path to known_hosts file.",
-                    "type": "string"
-                },
-                "macs": {
-                    "description": "Space separated list of MACs (message authentication code) algorithms, ordered by preference.",
-                    "type": "string"
-                },
-                "md5sumCommand": {
-                    "description": "The command used to read md5 hashes.",
-                    "type": "string"
-                },
-                "pass": {
-                    "description": "SSH password, leave blank to use ssh-agent.",
-                    "type": "string"
-                },
-                "pathOverride": {
-                    "description": "Override path used by SSH shell commands.",
-                    "type": "string"
-                },
-                "port": {
-                    "description": "SSH port number.",
-                    "type": "string",
-                    "default": "22"
-                },
-                "pubkeyFile": {
-                    "description": "Optional path to public key file.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "serverCommand": {
-                    "description": "Specifies the path or command to run a sftp server on the remote host.",
-                    "type": "string"
-                },
-                "setEnv": {
-                    "description": "Environment variables to pass to sftp and commands",
-                    "type": "string"
-                },
-                "setModtime": {
-                    "description": "Set the modified time on the remote if set.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "sha1sumCommand": {
-                    "description": "The command used to read sha1 hashes.",
-                    "type": "string"
-                },
-                "shellType": {
-                    "description": "The type of SSH shell on remote server, if any.",
-                    "type": "string"
-                },
-                "skipLinks": {
-                    "description": "Set to skip any symlinks and any other non regular files.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "subsystem": {
-                    "description": "Specifies the SSH2 subsystem on the remote host.",
-                    "type": "string",
-                    "default": "sftp"
-                },
-                "useFstat": {
-                    "description": "If set use fstat instead of stat.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "useInsecureCipher": {
-                    "description": "Enable the use of insecure ciphers and key exchange methods.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "user": {
-                    "description": "SSH username.",
-                    "type": "string",
-                    "default": "$USER"
-                }
-            }
-        },
-        "datasource.SharefileRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "chunkSize": {
-                    "description": "Upload chunk size.",
-                    "type": "string",
-                    "default": "64Mi"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
-                },
-                "endpoint": {
-                    "description": "Endpoint for API calls.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootFolderId": {
-                    "description": "ID of the root folder.",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "uploadCutoff": {
-                    "description": "Cutoff for switching to multipart upload.",
-                    "type": "string",
-                    "default": "128Mi"
-                }
-            }
-        },
-        "datasource.SiaRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "apiPassword": {
-                    "description": "Sia Daemon API Password.",
-                    "type": "string"
-                },
-                "apiUrl": {
-                    "description": "Sia daemon API URL, like http://sia.daemon.host:9980.",
-                    "type": "string",
-                    "default": "http://127.0.0.1:9980"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "userAgent": {
-                    "description": "Siad User Agent",
-                    "type": "string",
-                    "default": "Sia-Agent"
-                }
-            }
-        },
-        "datasource.SmbRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "caseInsensitive": {
-                    "description": "Whether the server is configured to be case-insensitive.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "domain": {
-                    "description": "Domain name for NTLM authentication.",
-                    "type": "string",
-                    "default": "WORKGROUP"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
-                },
-                "hideSpecialShare": {
-                    "description": "Hide special shares (e.g. print$) which users aren't supposed to access.",
-                    "type": "string",
-                    "default": "true"
-                },
-                "host": {
-                    "description": "SMB server hostname to connect to.",
-                    "type": "string"
-                },
-                "idleTimeout": {
-                    "description": "Max time before closing idle connections.",
-                    "type": "string",
-                    "default": "1m0s"
-                },
-                "pass": {
-                    "description": "SMB password.",
-                    "type": "string"
-                },
-                "port": {
-                    "description": "SMB port number.",
-                    "type": "string",
-                    "default": "445"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "spn": {
-                    "description": "Service principal name.",
-                    "type": "string"
-                },
-                "user": {
-                    "description": "SMB username.",
-                    "type": "string",
-                    "default": "$USER"
-                }
-            }
-        },
-        "datasource.StorjRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessGrant": {
-                    "description": "Access grant.",
-                    "type": "string"
-                },
-                "apiKey": {
-                    "description": "API key.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "passphrase": {
-                    "description": "Encryption passphrase.",
-                    "type": "string"
-                },
-                "provider": {
-                    "description": "Choose an authentication method.",
-                    "type": "string",
-                    "default": "existing"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "satelliteAddress": {
-                    "description": "Satellite address.",
-                    "type": "string",
-                    "default": "us1.storj.io"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.SugarsyncRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessKeyId": {
-                    "description": "Sugarsync Access Key ID.",
+                "cid": {
                     "type": "string"
                 },
-                "appId": {
-                    "description": "Sugarsync App ID.",
+                "hash": {
                     "type": "string"
                 },
-                "authorization": {
-                    "description": "Sugarsync authorization.",
-                    "type": "string"
-                },
-                "authorizationExpiry": {
-                    "description": "Sugarsync authorization expiry.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "deletedId": {
-                    "description": "Sugarsync deleted folder id.",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Ctl,InvalidUtf8,Dot"
-                },
-                "hardDelete": {
-                    "description": "Permanently delete files if true",
-                    "type": "string",
-                    "default": "false"
-                },
-                "privateAccessKey": {
-                    "description": "Sugarsync Private Access Key.",
-                    "type": "string"
-                },
-                "refreshToken": {
-                    "description": "Sugarsync refresh token.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "rootId": {
-                    "description": "Sugarsync root id.",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "user": {
-                    "description": "Sugarsync user.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.SwiftRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "applicationCredentialId": {
-                    "description": "Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).",
-                    "type": "string"
-                },
-                "applicationCredentialName": {
-                    "description": "Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).",
-                    "type": "string"
-                },
-                "applicationCredentialSecret": {
-                    "description": "Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).",
-                    "type": "string"
-                },
-                "auth": {
-                    "description": "Authentication URL for server (OS_AUTH_URL).",
-                    "type": "string"
-                },
-                "authToken": {
-                    "description": "Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).",
-                    "type": "string"
-                },
-                "authVersion": {
-                    "description": "AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).",
-                    "type": "string",
-                    "default": "0"
-                },
-                "chunkSize": {
-                    "description": "Above this size files will be chunked into a _segments container.",
-                    "type": "string",
-                    "default": "5Gi"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "domain": {
-                    "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
-                    "type": "string"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,InvalidUtf8"
-                },
-                "endpointType": {
-                    "description": "Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).",
-                    "type": "string",
-                    "default": "public"
-                },
-                "envAuth": {
-                    "description": "Get swift credentials from environment variables in standard OpenStack form.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "key": {
-                    "description": "API key or password (OS_PASSWORD).",
-                    "type": "string"
-                },
-                "leavePartsOnError": {
-                    "description": "If true avoid calling abort upload on a failure.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noChunk": {
-                    "description": "Don't chunk files during streaming upload.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "noLargeObjects": {
-                    "description": "Disable support for static and dynamic large objects",
-                    "type": "string",
-                    "default": "false"
-                },
-                "region": {
-                    "description": "Region name - optional (OS_REGION_NAME).",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "storagePolicy": {
-                    "description": "The storage policy to use when creating a new container.",
-                    "type": "string"
-                },
-                "storageUrl": {
-                    "description": "Storage URL - optional (OS_STORAGE_URL).",
-                    "type": "string"
-                },
-                "tenant": {
-                    "description": "Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).",
-                    "type": "string"
-                },
-                "tenantDomain": {
-                    "description": "Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).",
-                    "type": "string"
-                },
-                "tenantId": {
-                    "description": "Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).",
-                    "type": "string"
-                },
-                "user": {
-                    "description": "User name to log in (OS_USERNAME).",
-                    "type": "string"
+                "id": {
+                    "type": "integer"
                 },
-                "userId": {
-                    "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
+                "lastModified": {
                     "type": "string"
-                }
-            }
-        },
-        "datasource.UptoboxRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "accessToken": {
-                    "description": "Your access token.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.WebdavRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "bearerToken": {
-                    "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
-                    "type": "string"
-                },
-                "bearerTokenCommand": {
-                    "description": "Command to run to get a bearer token.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string"
-                },
-                "headers": {
-                    "description": "Set HTTP headers for all transactions.",
-                    "type": "string"
-                },
-                "pass": {
-                    "description": "Password.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "url": {
-                    "description": "URL of http host to connect to.",
-                    "type": "string"
-                },
-                "user": {
-                    "description": "User name.",
-                    "type": "string"
-                },
-                "vendor": {
-                    "description": "Name of the WebDAV site/service/software you are using.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.YandexRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
-                },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
-                },
-                "hardDelete": {
-                    "description": "Delete files permanently rather than putting them into the trash.",
-                    "type": "string",
-                    "default": "false"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
-                }
-            }
-        },
-        "datasource.ZohoRequest": {
-            "type": "object",
-            "required": [
-                "deleteAfterExport",
-                "rescanInterval",
-                "scanningState",
-                "sourcePath"
-            ],
-            "properties": {
-                "authUrl": {
-                    "description": "Auth server URL.",
-                    "type": "string"
                 },
-                "clientId": {
-                    "description": "OAuth Client Id.",
-                    "type": "string"
-                },
-                "clientSecret": {
-                    "description": "OAuth Client Secret.",
-                    "type": "string"
-                },
-                "deleteAfterExport": {
-                    "description": "Delete the source after exporting to CAR files",
-                    "type": "boolean"
-                },
-                "encoding": {
-                    "description": "The encoding for the backend.",
-                    "type": "string",
-                    "default": "Del,Ctl,InvalidUtf8"
-                },
-                "region": {
-                    "description": "Zoho region to connect to.",
-                    "type": "string"
-                },
-                "rescanInterval": {
-                    "description": "Automatically rescan the source directory when this interval has passed from last successful scan",
-                    "type": "string"
-                },
-                "scanningState": {
-                    "description": "Starting state for scanning",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.WorkState"
-                        }
-                    ]
-                },
-                "sourcePath": {
-                    "description": "The path of the source to scan files",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "OAuth Access Token as a JSON blob.",
-                    "type": "string"
-                },
-                "tokenUrl": {
-                    "description": "Token server url.",
-                    "type": "string"
+                "size": {
+                    "type": "integer"
                 }
             }
         },
         "deal.ListDealRequest": {
             "type": "object",
             "properties": {
-                "datasets": {
-                    "description": "dataset name filter",
+                "preparations": {
+                    "description": "preparation ID filter",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "type": "integer"
                     }
                 },
                 "providers": {
@@ -9829,11 +5070,18 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "sources": {
+                    "description": "source filter",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "states": {
                     "description": "state filter",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.DealState"
                     }
                 }
             }
@@ -9919,56 +5167,31 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_data-preservation-programs_singularity_handler_datasource.Entry": {
+        "fs.Duration": {
+            "type": "integer",
+            "enum": [
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                3153600000000000000
+            ],
+            "x-enum-varnames": [
+                "ModTimeNotSupported"
+            ]
+        },
+        "fs.Tristate": {
             "type": "object",
             "properties": {
-                "isDir": {
+                "valid": {
                     "type": "boolean"
                 },
-                "lastModified": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                }
-            }
-        },
-        "inspect.DirDetail": {
-            "type": "object",
-            "properties": {
-                "current": {
-                    "$ref": "#/definitions/model.Directory"
-                },
-                "dirs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Directory"
-                    }
-                },
-                "files": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.File"
-                    }
-                }
-            }
-        },
-        "inspect.GetPathRequest": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string"
-                }
-            }
-        },
-        "inspect.GetSourcePackJobsRequest": {
-            "type": "object",
-            "properties": {
-                "state": {
-                    "$ref": "#/definitions/model.WorkState"
+                "value": {
+                    "type": "boolean"
                 }
             }
         },
@@ -9978,28 +5201,19 @@ const docTemplate = `{
         "model.Car": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "datasetId": {
+                "attachmentId": {
                     "type": "integer"
                 },
-                "filePath": {
+                "createdAt": {
                     "type": "string"
                 },
                 "fileSize": {
                     "type": "integer"
                 },
-                "header": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
                 "id": {
                     "type": "integer"
                 },
-                "packJobId": {
+                "jobId": {
                     "type": "integer"
                 },
                 "pieceCid": {
@@ -10008,50 +5222,26 @@ const docTemplate = `{
                 "pieceSize": {
                     "type": "integer"
                 },
+                "preparationId": {
+                    "description": "Association",
+                    "type": "integer"
+                },
                 "rootCid": {
                     "$ref": "#/definitions/model.CID"
                 },
-                "sourceId": {
+                "storageId": {
                     "type": "integer"
+                },
+                "storagePath": {
+                    "description": "StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.",
+                    "type": "string"
                 }
             }
         },
-        "model.Dataset": {
+        "model.ConfigMap": {
             "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "encryptionRecipients": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "maxSize": {
-                    "type": "integer"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/model.Config"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "outputDirs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "pieceSize": {
-                    "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
+            "additionalProperties": {
+                "type": "string"
             }
         },
         "model.Deal": {
@@ -10062,9 +5252,6 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string"
-                },
-                "datasetId": {
-                    "type": "integer"
                 },
                 "dealId": {
                     "type": "integer"
@@ -10097,6 +5284,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scheduleId": {
+                    "description": "Associations",
                     "type": "integer"
                 },
                 "sectorStartEpoch": {
@@ -10139,134 +5327,86 @@ const docTemplate = `{
                 "DealErrored"
             ]
         },
-        "model.Directory": {
+        "model.Job": {
             "type": "object",
             "properties": {
-                "cid": {
-                    "$ref": "#/definitions/model.CID"
+                "attachmentId": {
+                    "type": "integer"
                 },
-                "exported": {
+                "errorMessage": {
+                    "type": "string"
+                },
+                "errorStackTrace": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "state": {
+                    "$ref": "#/definitions/model.JobState"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.JobType"
+                },
+                "workerId": {
+                    "description": "Associations",
+                    "type": "string"
+                }
+            }
+        },
+        "model.JobState": {
+            "type": "string",
+            "enum": [
+                "created",
+                "ready",
+                "paused",
+                "processing",
+                "complete",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "Created",
+                "Ready",
+                "Paused",
+                "Processing",
+                "Complete",
+                "Error"
+            ]
+        },
+        "model.JobType": {
+            "type": "string",
+            "enum": [
+                "scan",
+                "pack",
+                "daggen"
+            ],
+            "x-enum-varnames": [
+                "Scan",
+                "Pack",
+                "DagGen"
+            ]
+        },
+        "model.Preparation": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deleteAfterExport": {
+                    "description": "DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.",
                     "type": "boolean"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "name": {
-                    "type": "string"
-                },
-                "parentId": {
+                "maxSize": {
                     "type": "integer"
                 },
-                "sourceId": {
+                "pieceSize": {
                     "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
-                }
-            }
-        },
-        "model.File": {
-            "type": "object",
-            "properties": {
-                "cid": {
-                    "$ref": "#/definitions/model.CID"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "directoryId": {
-                    "type": "integer"
-                },
-                "fileRanges": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.FileRange"
-                    }
-                },
-                "hash": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "lastModified": {
-                    "type": "integer"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "sourceId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.FileRange": {
-            "type": "object",
-            "properties": {
-                "cid": {
-                    "$ref": "#/definitions/model.CID"
-                },
-                "file": {
-                    "$ref": "#/definitions/model.File"
-                },
-                "fileId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "length": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "packJobId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.Config": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "string"
-            }
-        },
-        "model.PackJob": {
-            "type": "object",
-            "properties": {
-                "cars": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Car"
-                    }
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "errorMessage": {
-                    "type": "string"
-                },
-                "fileRanges": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.FileRange"
-                    }
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "packingState": {
-                    "$ref": "#/definitions/model.WorkState"
-                },
-                "packingWorkerId": {
-                    "type": "string"
-                },
-                "sourceId": {
-                    "type": "integer"
                 }
             }
         },
@@ -10284,9 +5424,6 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string"
-                },
-                "datasetId": {
-                    "type": "integer"
                 },
                 "duration": {
                     "type": "integer"
@@ -10314,6 +5451,10 @@ const docTemplate = `{
                 },
                 "notes": {
                     "type": "string"
+                },
+                "preparationId": {
+                    "description": "Associations",
+                    "type": "integer"
                 },
                 "pricePerDeal": {
                     "type": "number"
@@ -10374,72 +5515,37 @@ const docTemplate = `{
                 "ScheduleCompleted"
             ]
         },
-        "model.Source": {
+        "model.Storage": {
             "type": "object",
             "properties": {
+                "config": {
+                    "description": "Config is a map of key-value pairs that can be used to store RClone options.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ConfigMap"
+                        }
+                    ]
+                },
                 "createdAt": {
-                    "type": "string"
-                },
-                "dagGenErrorMessage": {
-                    "type": "string"
-                },
-                "dagGenState": {
-                    "$ref": "#/definitions/model.WorkState"
-                },
-                "dagGenWorkerId": {
-                    "type": "string"
-                },
-                "datasetId": {
-                    "type": "integer"
-                },
-                "deleteAfterExport": {
-                    "type": "boolean"
-                },
-                "errorMessage": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "lastScannedPath": {
+                "name": {
                     "type": "string"
-                },
-                "lastScannedTimestamp": {
-                    "type": "integer"
-                },
-                "metadata": {
-                    "$ref": "#/definitions/model.Config"
                 },
                 "path": {
-                    "type": "string"
-                },
-                "scanIntervalSeconds": {
-                    "type": "integer"
-                },
-                "scanningState": {
-                    "$ref": "#/definitions/model.WorkState"
-                },
-                "scanningWorkerId": {
+                    "description": "Path is the path to the storage root.",
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/model.SourceType"
+                    "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
                 }
             }
-        },
-        "model.SourceType": {
-            "type": "string",
-            "enum": [
-                "local",
-                "upload"
-            ],
-            "x-enum-varnames": [
-                "Local",
-                "Upload"
-            ]
         },
         "model.Wallet": {
             "type": "object",
@@ -10455,43 +5561,8 @@ const docTemplate = `{
                 "privateKey": {
                     "description": "PrivateKey is the private key of the wallet",
                     "type": "string"
-                },
-                "remotePeer": {
-                    "description": "RemotePeer is the remote peer ID of the wallet, for remote signing purpose",
-                    "type": "string"
                 }
             }
-        },
-        "model.WalletAssignment": {
-            "type": "object",
-            "properties": {
-                "datasetId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "walletId": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.WorkState": {
-            "type": "string",
-            "enum": [
-                "created",
-                "ready",
-                "processing",
-                "complete",
-                "error"
-            ],
-            "x-enum-varnames": [
-                "Created",
-                "Ready",
-                "Processing",
-                "Complete",
-                "Error"
-            ]
         },
         "schedule.CreateRequest": {
             "type": "object",
@@ -10502,10 +5573,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "datasetName": {
-                    "description": "Dataset name",
-                    "type": "string"
                 },
                 "duration": {
                     "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
@@ -10540,6 +5607,10 @@ const docTemplate = `{
                 "notes": {
                     "description": "Notes",
                     "type": "string"
+                },
+                "preparationId": {
+                    "description": "Preparation ID",
+                    "type": "integer"
                 },
                 "pricePerDeal": {
                     "description": "Price in FIL per deal",
@@ -10596,21 +5667,1987 @@ const docTemplate = `{
                 }
             }
         },
-        "store.PieceReader": {
-            "type": "object"
-        },
-        "wallet.AddRemoteRequest": {
+        "storage.BoxConfig": {
             "type": "object",
             "properties": {
-                "address": {
-                    "description": "Address is the Filecoin full address of the wallet",
+                "accessToken": {
+                    "description": "Box App Primary Access Token",
                     "type": "string"
                 },
-                "remotePeer": {
-                    "description": "RemotePeer is the remote peer ID of the wallet, for remote signing purpose",
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "boxConfigFile": {
+                    "description": "Box App config.json location",
+                    "type": "string"
+                },
+                "boxSubType": {
+                    "type": "string",
+                    "default": "user",
+                    "example": "user"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "commitRetries": {
+                    "description": "Max number of times to try committing a multipart file.",
+                    "type": "integer",
+                    "default": 100
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk 1-1000.",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "ownedBy": {
+                    "description": "Only show items owned by the login (email address) passed in.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "Fill in for rclone to use a non root folder as its starting point.",
+                    "type": "string",
+                    "default": "0"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to multipart upload (\u003e= 50 MiB).",
+                    "type": "string",
+                    "default": "50Mi"
+                }
+            }
+        },
+        "storage.CreateAcdStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateAzureblobStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateB2StorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateBoxStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.BoxConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
                     "type": "string"
                 }
             }
+        },
+        "storage.CreateDriveStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateDropboxStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateFichierStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.FichierConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateFilefabricStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.FilefabricConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateFtpStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateGcsStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.GcsConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateGphotosStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.GphotosConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateHdfsStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.HdfsConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateHidriveStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.HidriveConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateHttpStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.HttpConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateInternetarchiveStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateJottacloudStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.JottacloudConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateKoofrDigistorageStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.KoofrDigistorageConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateKoofrKoofrStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.KoofrKoofrConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateKoofrOtherStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.KoofrOtherConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateLocalStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.LocalConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateMailruStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.MailruConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateMegaStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.MegaConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateNetstorageStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.NetstorageConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateOnedriveStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateOosEnv_authStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateOosInstance_principal_authStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateOosNo_authStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateOosResource_principal_authStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateOosUser_principal_authStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateOpendriveStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OpendriveConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreatePcloudStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.PcloudConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreatePremiumizemeStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.PremiumizemeConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreatePutioStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.PutioConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateQingstorStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.QingstorConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "path"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateS3AWSStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3AlibabaStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3ArvanCloudStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3CephStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3ChinaMobileStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3CloudflareStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3DigitalOceanStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3DreamhostStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3HuaweiOBSStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3IBMCOSStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3IDriveStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3IONOSStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3LiaraStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3LyveCloudStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3MinioStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3NeteaseStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3OtherStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3QiniuStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3RackCorpStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3ScalewayStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3SeaweedFSStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3StackPathStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3StorjStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3TencentCOSStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateS3WasabiStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateSeafileStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SeafileConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateSftpStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateSharefileStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SharefileConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateSiaStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SiaConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateSmbStorageRequest": {
+            "type": "object"
+        },
+        "storage.CreateStorjExistingStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.StorjExistingConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateStorjNewStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.StorjNewConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateSugarsyncStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SugarsyncConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateSwiftStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SwiftConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateUptoboxStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.UptoboxConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateWebdavStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.WebdavConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateYandexStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.YandexConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.CreateZohoStorageRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.ZohoConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.DirEntry": {
+            "type": "object",
+            "properties": {
+                "dirId": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "isDir": {
+                    "type": "boolean"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "numItems": {
+                    "type": "integer"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "storage.FichierConfig": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "description": "Your API Key, get it from https://1fichier.com/console/params.pl.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
+                },
+                "filePassword": {
+                    "description": "If you want to download a shared file that is password protected, add this parameter.",
+                    "type": "string"
+                },
+                "folderPassword": {
+                    "description": "If you want to list the files in a shared folder that is password protected, add this parameter.",
+                    "type": "string"
+                },
+                "sharedFolder": {
+                    "description": "If you want to download a shared folder, add this parameter.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.FilefabricConfig": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "permanentToken": {
+                    "description": "Permanent Authentication Token.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "Session Token.",
+                    "type": "string"
+                },
+                "tokenExpiry": {
+                    "description": "Token expiry time.",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of the Enterprise File Fabric to connect to.",
+                    "type": "string",
+                    "example": "https://storagemadeeasy.com"
+                },
+                "version": {
+                    "description": "Version read from the file fabric.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.GcsConfig": {
+            "type": "object",
+            "properties": {
+                "anonymous": {
+                    "description": "Access public buckets and objects without credentials.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Access Control List for new buckets.",
+                    "type": "string",
+                    "example": "authenticatedRead"
+                },
+                "bucketPolicyOnly": {
+                    "description": "Access checks should use bucket-level IAM policies.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,CrLf,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "location": {
+                    "description": "Location for the newly created buckets.",
+                    "type": "string",
+                    "example": ""
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "objectAcl": {
+                    "description": "Access Control List for new objects.",
+                    "type": "string",
+                    "example": "authenticatedRead"
+                },
+                "projectNumber": {
+                    "description": "Project number.",
+                    "type": "string"
+                },
+                "serviceAccountCredentials": {
+                    "description": "Service Account Credentials JSON blob.",
+                    "type": "string"
+                },
+                "serviceAccountFile": {
+                    "description": "Service Account Credentials JSON file path.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing objects in Google Cloud Storage.",
+                    "type": "string",
+                    "example": ""
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.GphotosConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,CrLf,InvalidUtf8,Dot"
+                },
+                "includeArchived": {
+                    "description": "Also view and download archived media.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "readOnly": {
+                    "description": "Set to make the Google Photos backend read only.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "readSize": {
+                    "description": "Set to read the size of media items.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "startYear": {
+                    "description": "Year limits the photos to be downloaded to those which are uploaded after the given year.",
+                    "type": "integer",
+                    "default": 2000
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.HdfsConfig": {
+            "type": "object",
+            "properties": {
+                "dataTransferProtection": {
+                    "description": "Kerberos data transfer protection: authentication|integrity|privacy.",
+                    "type": "string",
+                    "example": "privacy"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "namenode": {
+                    "description": "Hadoop name node and port.",
+                    "type": "string"
+                },
+                "servicePrincipalName": {
+                    "description": "Kerberos service principal name for the namenode.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Hadoop user name.",
+                    "type": "string",
+                    "example": "root"
+                }
+            }
+        },
+        "storage.HidriveConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunksize for chunked uploads.",
+                    "type": "string",
+                    "default": "48Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "disableFetchingMemberCount": {
+                    "description": "Do not fetch number of objects in directories unless it is absolutely necessary.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string",
+                    "default": "https://api.hidrive.strato.com/2.1"
+                },
+                "rootPrefix": {
+                    "description": "The root/parent folder for all paths.",
+                    "type": "string",
+                    "default": "/",
+                    "example": "/"
+                },
+                "scopeAccess": {
+                    "description": "Access permissions that rclone should use when requesting access from HiDrive.",
+                    "type": "string",
+                    "default": "rw",
+                    "example": "rw"
+                },
+                "scopeRole": {
+                    "description": "User-level that rclone should use when requesting access from HiDrive.",
+                    "type": "string",
+                    "default": "user",
+                    "example": "user"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for chunked uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff/Threshold for chunked uploads.",
+                    "type": "string",
+                    "default": "96Mi"
+                }
+            }
+        },
+        "storage.HttpConfig": {
+            "type": "object",
+            "properties": {
+                "headers": {
+                    "description": "Set HTTP headers for all transactions.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "noHead": {
+                    "description": "Don't use HEAD requests.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSlash": {
+                    "description": "Set this if the site doesn't end directories with /.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "url": {
+                    "description": "URL of HTTP host to connect to.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.JottacloudConfig": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "md5MemoryLimit": {
+                    "description": "Files bigger than this will be cached on disk to calculate the MD5 if required.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "noVersions": {
+                    "description": "Avoid server side versioning by deleting files and recreating files instead of overwriting them.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "trashedOnly": {
+                    "description": "Only show files that are in the trash.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "uploadResumeLimit": {
+                    "description": "Files bigger than this can be resumed if the upload fail's.",
+                    "type": "string",
+                    "default": "10Mi"
+                }
+            }
+        },
+        "storage.KoofrDigistorageConfig": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "mountid": {
+                    "description": "Mount ID of the mount to use.",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password).",
+                    "type": "string"
+                },
+                "setmtime": {
+                    "description": "Does the backend support setting modification time.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "user": {
+                    "description": "Your user name.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.KoofrKoofrConfig": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "mountid": {
+                    "description": "Mount ID of the mount to use.",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password).",
+                    "type": "string"
+                },
+                "setmtime": {
+                    "description": "Does the backend support setting modification time.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "user": {
+                    "description": "Your user name.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.KoofrOtherConfig": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "The Koofr API endpoint to use.",
+                    "type": "string"
+                },
+                "mountid": {
+                    "description": "Mount ID of the mount to use.",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Your password for rclone (generate one at your service's settings page).",
+                    "type": "string"
+                },
+                "setmtime": {
+                    "description": "Does the backend support setting modification time.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "user": {
+                    "description": "Your user name.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.LocalConfig": {
+            "type": "object",
+            "properties": {
+                "caseInsensitive": {
+                    "description": "Force the filesystem to report itself as case insensitive.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "caseSensitive": {
+                    "description": "Force the filesystem to report itself as case sensitive.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "copyLinks": {
+                    "description": "Follow symlinks and copy the pointed to item.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Dot"
+                },
+                "links": {
+                    "description": "Translate symlinks to/from regular files with a '.rclonelink' extension.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noCheckUpdated": {
+                    "description": "Don't check to see if the files change during upload.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noPreallocate": {
+                    "description": "Disable preallocation of disk space for transferred files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSetModtime": {
+                    "description": "Disable setting modtime.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSparse": {
+                    "description": "Disable sparse files for multi-thread downloads.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "nounc": {
+                    "description": "Disable UNC (long path names) conversion on Windows.",
+                    "type": "boolean",
+                    "default": false,
+                    "example": true
+                },
+                "oneFileSystem": {
+                    "description": "Don't cross filesystem boundaries (unix/macOS only).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipLinks": {
+                    "description": "Don't warn about skipped symlinks.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "unicodeNormalization": {
+                    "description": "Apply unicode NFC normalization to paths and filenames.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "zeroSizeLinks": {
+                    "description": "Assume the Stat size of links is zero (and read them instead) (deprecated).",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.MailruConfig": {
+            "type": "object",
+            "properties": {
+                "checkHash": {
+                    "description": "What should copy do if file checksum is mismatched or invalid.",
+                    "type": "boolean",
+                    "default": true,
+                    "example": true
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "quirks": {
+                    "description": "Comma separated list of internal maintenance flags.",
+                    "type": "string"
+                },
+                "speedupEnable": {
+                    "description": "Skip full upload if there is another file with same data hash.",
+                    "type": "boolean",
+                    "default": true,
+                    "example": true
+                },
+                "speedupFilePatterns": {
+                    "description": "Comma separated list of file name patterns eligible for speedup (put by hash).",
+                    "type": "string",
+                    "default": "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf",
+                    "example": ""
+                },
+                "speedupMaxDisk": {
+                    "description": "This option allows you to disable speedup (put by hash) for large files.",
+                    "type": "string",
+                    "default": "3Gi",
+                    "example": "0"
+                },
+                "speedupMaxMemory": {
+                    "description": "Files larger than the size given below will always be hashed on disk.",
+                    "type": "string",
+                    "default": "32Mi",
+                    "example": "0"
+                },
+                "user": {
+                    "description": "User name (usually email).",
+                    "type": "string"
+                },
+                "userAgent": {
+                    "description": "HTTP user agent used internally by client.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.MegaConfig": {
+            "type": "object",
+            "properties": {
+                "debug": {
+                    "description": "Output more debug from Mega.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "useHttps": {
+                    "description": "Use HTTPS for transfers.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "user": {
+                    "description": "User name.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.NetstorageConfig": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "Set the NetStorage account name",
+                    "type": "string"
+                },
+                "host": {
+                    "description": "Domain+path of NetStorage host to connect to.",
+                    "type": "string"
+                },
+                "protocol": {
+                    "description": "Select between HTTP or HTTPS protocol.",
+                    "type": "string",
+                    "default": "https",
+                    "example": "http"
+                },
+                "secret": {
+                    "description": "Set the NetStorage account secret/G2O key for authentication.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.OpendriveConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Files will be uploaded in chunks this size.",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
+                },
+                "password": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Username.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.PcloudConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hostname": {
+                    "description": "Hostname to connect to.",
+                    "type": "string",
+                    "default": "api.pcloud.com",
+                    "example": "api.pcloud.com"
+                },
+                "password": {
+                    "description": "Your pcloud password.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "Fill in for rclone to use a non root folder as its starting point.",
+                    "type": "string",
+                    "default": "d0"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "Your pcloud username.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.PremiumizemeConfig": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "description": "API Key.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                }
+            }
+        },
+        "storage.PutioConfig": {
+            "type": "object",
+            "properties": {
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                }
+            }
+        },
+        "storage.QingstorConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "QingStor Access Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "4Mi"
+                },
+                "connectionRetries": {
+                    "description": "Number of connection retries.",
+                    "type": "integer",
+                    "default": 3
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Ctl,InvalidUtf8"
+                },
+                "endpoint": {
+                    "description": "Enter an endpoint URL to connection QingStor API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get QingStor credentials from runtime.",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "secretAccessKey": {
+                    "description": "QingStor Secret Access Key (password).",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 1
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "zone": {
+                    "description": "Zone to connect to.",
+                    "type": "string",
+                    "example": "pek3a"
+                }
+            }
+        },
+        "storage.SeafileConfig": {
+            "type": "object",
+            "properties": {
+                "2fa": {
+                    "description": "Two-factor authentication ('true' if the account has 2FA enabled).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "authToken": {
+                    "description": "Authentication token.",
+                    "type": "string"
+                },
+                "createLibrary": {
+                    "description": "Should rclone create a library if it doesn't exist.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
+                },
+                "library": {
+                    "description": "Name of the library.",
+                    "type": "string"
+                },
+                "libraryKey": {
+                    "description": "Library password (for encrypted libraries only).",
+                    "type": "string"
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of seafile host to connect to.",
+                    "type": "string",
+                    "example": "https://cloud.seafile.com/"
+                },
+                "user": {
+                    "description": "User name (usually email address).",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.SharefileConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "64Mi"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for API calls.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to multipart upload.",
+                    "type": "string",
+                    "default": "128Mi"
+                }
+            }
+        },
+        "storage.SiaConfig": {
+            "type": "object",
+            "properties": {
+                "apiPassword": {
+                    "description": "Sia Daemon API Password.",
+                    "type": "string"
+                },
+                "apiUrl": {
+                    "description": "Sia daemon API URL, like http://sia.daemon.host:9980.",
+                    "type": "string",
+                    "default": "http://127.0.0.1:9980"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "userAgent": {
+                    "description": "Siad User Agent",
+                    "type": "string",
+                    "default": "Sia-Agent"
+                }
+            }
+        },
+        "storage.StorjExistingConfig": {
+            "type": "object",
+            "properties": {
+                "accessGrant": {
+                    "description": "Access grant.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.StorjNewConfig": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "description": "API key.",
+                    "type": "string"
+                },
+                "passphrase": {
+                    "description": "Encryption passphrase.",
+                    "type": "string"
+                },
+                "satelliteAddress": {
+                    "description": "Satellite address.",
+                    "type": "string",
+                    "default": "us1.storj.io",
+                    "example": "us1.storj.io"
+                }
+            }
+        },
+        "storage.SugarsyncConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "Sugarsync Access Key ID.",
+                    "type": "string"
+                },
+                "appId": {
+                    "description": "Sugarsync App ID.",
+                    "type": "string"
+                },
+                "authorization": {
+                    "description": "Sugarsync authorization.",
+                    "type": "string"
+                },
+                "authorizationExpiry": {
+                    "description": "Sugarsync authorization expiry.",
+                    "type": "string"
+                },
+                "deletedId": {
+                    "description": "Sugarsync deleted folder id.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Ctl,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Permanently delete files if true",
+                    "type": "boolean",
+                    "default": false
+                },
+                "privateAccessKey": {
+                    "description": "Sugarsync Private Access Key.",
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "description": "Sugarsync refresh token.",
+                    "type": "string"
+                },
+                "rootId": {
+                    "description": "Sugarsync root id.",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Sugarsync user.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.SwiftConfig": {
+            "type": "object",
+            "properties": {
+                "applicationCredentialId": {
+                    "description": "Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).",
+                    "type": "string"
+                },
+                "applicationCredentialName": {
+                    "description": "Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME).",
+                    "type": "string"
+                },
+                "applicationCredentialSecret": {
+                    "description": "Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET).",
+                    "type": "string"
+                },
+                "auth": {
+                    "description": "Authentication URL for server (OS_AUTH_URL).",
+                    "type": "string",
+                    "example": "https://auth.api.rackspacecloud.com/v1.0"
+                },
+                "authToken": {
+                    "description": "Auth Token from alternate authentication - optional (OS_AUTH_TOKEN).",
+                    "type": "string"
+                },
+                "authVersion": {
+                    "description": "AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).",
+                    "type": "integer",
+                    "default": 0
+                },
+                "chunkSize": {
+                    "description": "Above this size files will be chunked into a _segments container.",
+                    "type": "string",
+                    "default": "5Gi"
+                },
+                "domain": {
+                    "description": "User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME)",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8"
+                },
+                "endpointType": {
+                    "description": "Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).",
+                    "type": "string",
+                    "default": "public",
+                    "example": "public"
+                },
+                "envAuth": {
+                    "description": "Get swift credentials from environment variables in standard OpenStack form.",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "key": {
+                    "description": "API key or password (OS_PASSWORD).",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noChunk": {
+                    "description": "Don't chunk files during streaming upload.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noLargeObjects": {
+                    "description": "Disable support for static and dynamic large objects",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Region name - optional (OS_REGION_NAME).",
+                    "type": "string"
+                },
+                "storagePolicy": {
+                    "description": "The storage policy to use when creating a new container.",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageUrl": {
+                    "description": "Storage URL - optional (OS_STORAGE_URL).",
+                    "type": "string"
+                },
+                "tenant": {
+                    "description": "Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME).",
+                    "type": "string"
+                },
+                "tenantDomain": {
+                    "description": "Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME).",
+                    "type": "string"
+                },
+                "tenantId": {
+                    "description": "Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID).",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "User name to log in (OS_USERNAME).",
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID).",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.UptoboxConfig": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "description": "Your access token.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
+                }
+            }
+        },
+        "storage.WebdavConfig": {
+            "type": "object",
+            "properties": {
+                "bearerToken": {
+                    "description": "Bearer token instead of user/pass (e.g. a Macaroon).",
+                    "type": "string"
+                },
+                "bearerTokenCommand": {
+                    "description": "Command to run to get a bearer token.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string"
+                },
+                "headers": {
+                    "description": "Set HTTP headers for all transactions.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "pass": {
+                    "description": "Password.",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "URL of http host to connect to.",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "User name.",
+                    "type": "string"
+                },
+                "vendor": {
+                    "description": "Name of the WebDAV site/service/software you are using.",
+                    "type": "string",
+                    "example": "nextcloud"
+                }
+            }
+        },
+        "storage.YandexConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "hardDelete": {
+                    "description": "Delete files permanently rather than putting them into the trash.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.ZohoConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Del,Ctl,InvalidUtf8"
+                },
+                "region": {
+                    "description": "Zoho region to connect to.",
+                    "type": "string",
+                    "example": "com"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "store.PieceReader": {
+            "type": "object"
         },
         "wallet.ImportRequest": {
             "type": "object",

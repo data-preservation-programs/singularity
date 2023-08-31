@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage create sftp - SSH/SFTP
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create sftp - SSH/SFTP
 
 USAGE:
-   singularity storage create sftp [command options] <name> <path>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create sftp [command options] <name> <path>
 
 DESCRIPTION:
    --host
@@ -23,32 +23,32 @@ DESCRIPTION:
    --pass
       SSH password, leave blank to use ssh-agent.
 
-   --key_pem
+   --key-pem
       Raw PEM-encoded private key.
       
       If specified, will override key_file parameter.
 
-   --key_file
+   --key-file
       Path to PEM-encoded private key file.
       
       Leave blank or set key-use-agent to use ssh-agent.
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
-   --key_file_pass
+   --key-file-pass
       The passphrase to decrypt the PEM-encoded private key file.
       
       Only PEM encrypted key files (old OpenSSH format) are supported. Encrypted keys
       in the new OpenSSH format can't be used.
 
-   --pubkey_file
+   --pubkey-file
       Optional path to public key file.
       
       Set this if you have a signed certificate you want to use for authentication.
       
       Leading `~` will be expanded in the file name as will environment variables such as `${RCLONE_CONFIG_DIR}`.
 
-   --known_hosts_file
+   --known-hosts-file
       Optional path to known_hosts file.
       
       Set this value to enable server host key validation.
@@ -58,14 +58,14 @@ DESCRIPTION:
       Examples:
          | ~/.ssh/known_hosts | Use OpenSSH's known_hosts file.
 
-   --key_use_agent
+   --key-use-agent
       When set forces the usage of the ssh-agent.
       
       When key-file is also set, the ".pub" file of the specified key-file is read and only the associated key is
       requested from the ssh-agent. This allows to avoid `Too many authentication failures for *username*` errors
       when the ssh-agent contains many keys.
 
-   --use_insecure_cipher
+   --use-insecure-cipher
       Enable the use of insecure ciphers and key exchange methods.
       
       This enables the use of the following insecure ciphers and key exchange methods:
@@ -86,12 +86,12 @@ DESCRIPTION:
          | false | Use default Cipher list.
          | true  | Enables the use of the aes128-cbc cipher and diffie-hellman-group-exchange-sha256, diffie-hellman-group-exchange-sha1 key exchange.
 
-   --disable_hashcheck
+   --disable-hashcheck
       Disable the execution of SSH commands to determine if remote file hashing is available.
       
       Leave blank or set to false to enable hashing (recommended), set to true to disable hashing.
 
-   --ask_password
+   --ask-password
       Allow asking for SFTP password when needed.
       
       If this is set and no password is supplied then rclone will:
@@ -99,7 +99,7 @@ DESCRIPTION:
       - not contact the ssh agent
       
 
-   --path_override
+   --path-override
       Override path used by SSH shell commands.
       
       This allows checksum calculation when SFTP and SSH paths are
@@ -113,10 +113,10 @@ DESCRIPTION:
       
           rclone sync /home/local/directory remote:/home/directory --sftp-path-override /volume1/homes/USER/directory
 
-   --set_modtime
+   --set-modtime
       Set the modified time on the remote if set.
 
-   --shell_type
+   --shell-type
       The type of SSH shell on remote server, if any.
       
       Leave blank for autodetect.
@@ -127,28 +127,28 @@ DESCRIPTION:
          | powershell | PowerShell
          | cmd        | Windows Command Prompt
 
-   --md5sum_command
+   --md5sum-command
       The command used to read md5 hashes.
       
       Leave blank for autodetect.
 
-   --sha1sum_command
+   --sha1sum-command
       The command used to read sha1 hashes.
       
       Leave blank for autodetect.
 
-   --skip_links
+   --skip-links
       Set to skip any symlinks and any other non regular files.
 
    --subsystem
       Specifies the SSH2 subsystem on the remote host.
 
-   --server_command
+   --server-command
       Specifies the path or command to run a sftp server on the remote host.
       
       The subsystem option is ignored when server_command is defined.
 
-   --use_fstat
+   --use-fstat
       If set use fstat instead of stat.
       
       Some servers limit the amount of open files and calling Stat after opening
@@ -160,7 +160,7 @@ DESCRIPTION:
       any given time.
       
 
-   --disable_concurrent_reads
+   --disable-concurrent-reads
       If set don't use concurrent reads.
       
       Normally concurrent reads are safe to use and not using them will
@@ -177,7 +177,7 @@ DESCRIPTION:
       If concurrent reads are disabled, the use_fstat option is ignored.
       
 
-   --disable_concurrent_writes
+   --disable-concurrent-writes
       If set don't use concurrent writes.
       
       Normally rclone uses concurrent writes to upload files. This improves
@@ -186,7 +186,7 @@ DESCRIPTION:
       This option disables concurrent writes should that be necessary.
       
 
-   --idle_timeout
+   --idle-timeout
       Max time before closing idle connections.
       
       If no connections have been returned to the connection pool in the time
@@ -195,7 +195,7 @@ DESCRIPTION:
       Set to 0 to keep connections indefinitely.
       
 
-   --chunk_size
+   --chunk-size
       Upload and download chunk size.
       
       This controls the maximum size of payload in SFTP protocol packets.
@@ -226,7 +226,7 @@ DESCRIPTION:
       cost of using more memory.
       
 
-   --set_env
+   --set-env
       Environment variables to pass to sftp and commands
       
       Set environment variables in the form:
@@ -257,7 +257,7 @@ DESCRIPTION:
           aes128-ctr aes192-ctr aes256-ctr aes128-gcm@openssh.com aes256-gcm@openssh.com
       
 
-   --key_exchange
+   --key-exchange
       Space separated list of key exchange algorithms, ordered by preference.
       
       At least one must match with server configuration. This can be checked for example using ssh -Q kex.
@@ -281,41 +281,41 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --disable_hashcheck    Disable the execution of SSH commands to determine if remote file hashing is available. (default: false) [$DISABLE_HASHCHECK]
+   --disable-hashcheck    Disable the execution of SSH commands to determine if remote file hashing is available. (default: false) [$DISABLE_HASHCHECK]
    --help, -h             show help
    --host value           SSH host to connect to. [$HOST]
-   --key_file value       Path to PEM-encoded private key file. [$KEY_FILE]
-   --key_file_pass value  The passphrase to decrypt the PEM-encoded private key file. [$KEY_FILE_PASS]
-   --key_pem value        Raw PEM-encoded private key. [$KEY_PEM]
-   --key_use_agent        When set forces the usage of the ssh-agent. (default: false) [$KEY_USE_AGENT]
+   --key-file value       Path to PEM-encoded private key file. [$KEY_FILE]
+   --key-file-pass value  The passphrase to decrypt the PEM-encoded private key file. [$KEY_FILE_PASS]
+   --key-pem value        Raw PEM-encoded private key. [$KEY_PEM]
+   --key-use-agent        When set forces the usage of the ssh-agent. (default: false) [$KEY_USE_AGENT]
    --pass value           SSH password, leave blank to use ssh-agent. [$PASS]
    --port value           SSH port number. (default: 22) [$PORT]
-   --pubkey_file value    Optional path to public key file. [$PUBKEY_FILE]
-   --use_insecure_cipher  Enable the use of insecure ciphers and key exchange methods. (default: false) [$USE_INSECURE_CIPHER]
+   --pubkey-file value    Optional path to public key file. [$PUBKEY_FILE]
+   --use-insecure-cipher  Enable the use of insecure ciphers and key exchange methods. (default: false) [$USE_INSECURE_CIPHER]
    --user value           SSH username. (default: "$USER") [$USER]
 
    Advanced
 
-   --ask_password               Allow asking for SFTP password when needed. (default: false) [$ASK_PASSWORD]
-   --chunk_size value           Upload and download chunk size. (default: "32Ki") [$CHUNK_SIZE]
+   --ask-password               Allow asking for SFTP password when needed. (default: false) [$ASK_PASSWORD]
+   --chunk-size value           Upload and download chunk size. (default: "32Ki") [$CHUNK_SIZE]
    --ciphers value              Space separated list of ciphers to be used for session encryption, ordered by preference. [$CIPHERS]
    --concurrency value          The maximum number of outstanding requests for one file (default: 64) [$CONCURRENCY]
-   --disable_concurrent_reads   If set don't use concurrent reads. (default: false) [$DISABLE_CONCURRENT_READS]
-   --disable_concurrent_writes  If set don't use concurrent writes. (default: false) [$DISABLE_CONCURRENT_WRITES]
-   --idle_timeout value         Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
-   --key_exchange value         Space separated list of key exchange algorithms, ordered by preference. [$KEY_EXCHANGE]
-   --known_hosts_file value     Optional path to known_hosts file. [$KNOWN_HOSTS_FILE]
+   --disable-concurrent-reads   If set don't use concurrent reads. (default: false) [$DISABLE_CONCURRENT_READS]
+   --disable-concurrent-writes  If set don't use concurrent writes. (default: false) [$DISABLE_CONCURRENT_WRITES]
+   --idle-timeout value         Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
+   --key-exchange value         Space separated list of key exchange algorithms, ordered by preference. [$KEY_EXCHANGE]
+   --known-hosts-file value     Optional path to known_hosts file. [$KNOWN_HOSTS_FILE]
    --macs value                 Space separated list of MACs (message authentication code) algorithms, ordered by preference. [$MACS]
-   --md5sum_command value       The command used to read md5 hashes. [$MD5SUM_COMMAND]
-   --path_override value        Override path used by SSH shell commands. [$PATH_OVERRIDE]
-   --server_command value       Specifies the path or command to run a sftp server on the remote host. [$SERVER_COMMAND]
-   --set_env value              Environment variables to pass to sftp and commands [$SET_ENV]
-   --set_modtime                Set the modified time on the remote if set. (default: true) [$SET_MODTIME]
-   --sha1sum_command value      The command used to read sha1 hashes. [$SHA1SUM_COMMAND]
-   --shell_type value           The type of SSH shell on remote server, if any. [$SHELL_TYPE]
-   --skip_links                 Set to skip any symlinks and any other non regular files. (default: false) [$SKIP_LINKS]
+   --md5sum-command value       The command used to read md5 hashes. [$MD5SUM_COMMAND]
+   --path-override value        Override path used by SSH shell commands. [$PATH_OVERRIDE]
+   --server-command value       Specifies the path or command to run a sftp server on the remote host. [$SERVER_COMMAND]
+   --set-env value              Environment variables to pass to sftp and commands [$SET_ENV]
+   --set-modtime                Set the modified time on the remote if set. (default: true) [$SET_MODTIME]
+   --sha1sum-command value      The command used to read sha1 hashes. [$SHA1SUM_COMMAND]
+   --shell-type value           The type of SSH shell on remote server, if any. [$SHELL_TYPE]
+   --skip-links                 Set to skip any symlinks and any other non regular files. (default: false) [$SKIP_LINKS]
    --subsystem value            Specifies the SSH2 subsystem on the remote host. (default: "sftp") [$SUBSYSTEM]
-   --use_fstat                  If set use fstat instead of stat. (default: false) [$USE_FSTAT]
+   --use-fstat                  If set use fstat instead of stat. (default: false) [$USE_FSTAT]
 
 ```
 {% endcode %}

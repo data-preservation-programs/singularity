@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity run content-provider - Start a content provider that serves retrieval requests
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run content-provider - Start a content provider that serves retrieval requests
 
 USAGE:
-   singularity run content-provider [command options] [arguments...]
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run content-provider [command options] [arguments...]
 
 OPTIONS:
    --help, -h  show help

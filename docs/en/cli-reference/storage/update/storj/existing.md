@@ -3,18 +3,18 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update storj existing - Use an existing access grant.
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update storj existing - Use an existing access grant.
 
 USAGE:
-   singularity storage update storj existing [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update storj existing [command options] <name>
 
 DESCRIPTION:
-   --access_grant
+   --access-grant
       Access grant.
 
 
 OPTIONS:
-   --access_grant value  Access grant. [$ACCESS_GRANT]
+   --access-grant value  Access grant. [$ACCESS_GRANT]
    --help, -h            show help
 ```
 {% endcode %}

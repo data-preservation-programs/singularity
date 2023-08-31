@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal send-manual - Send a manual deal proposal to boost or legacy market
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal send-manual - Send a manual deal proposal to boost or legacy market
 
 USAGE:
-   singularity deal send-manual [command options] <client> <provider> <piece_cid> <piece_size>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal send-manual [command options] <client> <provider> <piece_cid> <piece_size>
 
 DESCRIPTION:
    Send a manual deal proposal to boost or legacy market

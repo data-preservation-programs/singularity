@@ -1,0 +1,4 @@
+user@localhost:~/test$ singularity prep create
+ID  DeleteAfterExport  MaxSize      PieceSize    
+1   false              33822867456  34359738368  
+

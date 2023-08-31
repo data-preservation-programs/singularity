@@ -168,7 +168,7 @@ func (DefaultHandler) ExploreHandler(
 // @Param name path string true "Source storage name"
 // @Param path path string true "Directory path"
 // @Success 200 {object} ExploreResult
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/explore/{path} [get]
 func _() {}

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity extract-car - Extract folders or files from a folder of CAR files to a local directory
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity extract-car - Extract folders or files from a folder of CAR files to a local directory
 
 USAGE:
-   singularity extract-car [command options] [arguments...]
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity extract-car [command options] [arguments...]
 
 CATEGORY:
    Utility

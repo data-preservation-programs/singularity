@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity admin migrate-schedule - Migrate schedule from old singularity mongodb
+   singularity singularity singularity singularity admin migrate-schedule - Migrate schedule from old singularity mongodb
 
 USAGE:
-   singularity admin migrate-schedule [command options] [arguments...]
+   singularity singularity singularity singularity admin migrate-schedule [command options] [arguments...]
 
 DESCRIPTION:
    Migrate schedules from singularity V1 to V2. Note that

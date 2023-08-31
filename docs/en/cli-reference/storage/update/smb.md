@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update smb - SMB / CIFS
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update smb - SMB / CIFS
 
 USAGE:
-   singularity storage update smb [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update smb [command options] <name>
 
 DESCRIPTION:
    --host
@@ -37,7 +37,7 @@ DESCRIPTION:
       Leave blank if not sure.
       
 
-   --idle_timeout
+   --idle-timeout
       Max time before closing idle connections.
       
       If no connections have been returned to the connection pool in the time
@@ -46,10 +46,10 @@ DESCRIPTION:
       Set to 0 to keep connections indefinitely.
       
 
-   --hide_special_share
+   --hide-special-share
       Hide special shares (e.g. print$) which users aren't supposed to access.
 
-   --case_insensitive
+   --case-insensitive
       Whether the server is configured to be case-insensitive.
       
       Always true on Windows shares.
@@ -71,10 +71,10 @@ OPTIONS:
 
    Advanced
 
-   --case_insensitive    Whether the server is configured to be case-insensitive. (default: true) [$CASE_INSENSITIVE]
+   --case-insensitive    Whether the server is configured to be case-insensitive. (default: true) [$CASE_INSENSITIVE]
    --encoding value      The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
-   --hide_special_share  Hide special shares (e.g. print$) which users aren't supposed to access. (default: true) [$HIDE_SPECIAL_SHARE]
-   --idle_timeout value  Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
+   --hide-special-share  Hide special shares (e.g. print$) which users aren't supposed to access. (default: true) [$HIDE_SPECIAL_SHARE]
+   --idle-timeout value  Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
 
 ```
 {% endcode %}

@@ -20,9 +20,6 @@ type ScheduleCreateRequest struct {
 	// Allowed piece CIDs in this schedule
 	AllowedPieceCids []string `json:"allowedPieceCids"`
 
-	// Dataset name
-	DatasetName string `json:"datasetName,omitempty"`
-
 	// Duration in epoch or in duration format, i.e. 1500000, 2400h
 	Duration *string `json:"duration,omitempty"`
 
@@ -43,6 +40,9 @@ type ScheduleCreateRequest struct {
 
 	// Notes
 	Notes string `json:"notes,omitempty"`
+
+	// Preparation ID
+	PreparationID int64 `json:"preparationId,omitempty"`
 
 	// Price in FIL per deal
 	PricePerDeal float64 `json:"pricePerDeal,omitempty"`

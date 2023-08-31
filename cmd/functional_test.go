@@ -20,17 +20,6 @@ import (
 // The bind address needs to be different for different test package so that they don't conflict.
 const contentProviderBind = "127.0.0.1:7778"
 
-// TestDealSchedule tests the following scenario:
-// 1. Add external piece info to the preparation, total 6 pieces
-// 2. Create a deal schedule with one-off deal schedule with 5 max deals
-// 3. Run deal tracker with test data that marks 1 active, 1 slashed, 1 proposed, 1 published, 1 expired
-// 4. Create a deal schedule with one deal per second, note the expired and slashed one will be resent
-// 5. Run deal tracker with test data that marks all the rest active
-// 6. The cron schedule will now become completed.
-func TestDealSchedule(t *testing.T) {
-	t.Skip("TODO")
-}
-
 // TestDeleteAfterExportWithMultipleOutput tests two scenarios:
 // 1. The preparation is created with --delete-after-export, which will delete the source storage after export
 // 2. The preparation is created with multiple output folder so expect CAR files split into multiple folders.
@@ -215,7 +204,12 @@ func TestDataPrep(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
+	var entries []storagesystem.Entry
 	for entry := range s3Handler.Scan(context.Background(), "", "") {
+		entries = append(entries, entry)
+	}
+	for _, entry := range entries {
+		require.NoError(t, entry.Error)
 		entryPath := entry.Info.Remote()
 		destPath := filepath.Join(s3tmp, entryPath)
 		err = os.MkdirAll(filepath.Dir(destPath), 0777)
@@ -251,11 +245,13 @@ func TestDataPrep(t *testing.T) {
 	err = os.MkdirAll(folderPath, 0777)
 	require.NoError(t, err)
 	err = os.WriteFile(filepath.Join(folderPath, "file.txt"), testutil.GenerateFixedBytes(1000), 0777)
+	require.NoError(t, err)
 
 	// create file of different sizes
 	sizes := []int{0, 1, 1 << 20, 1<<20 + 1, 20 << 20}
 	for _, size := range sizes {
 		err = os.WriteFile(filepath.Join(tmp, fmt.Sprintf("size-%d.txt", size)), testutil.GenerateFixedBytes(size), 0777)
+		require.NoError(t, err)
 	}
 
 	tests := []struct {

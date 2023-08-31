@@ -101,9 +101,9 @@ func (DefaultHandler) StartPackHandler(
 // @Param id path int true "Preparation ID"
 // @Param name path string true "Storage name"
 // @Param job_id path int true "Pack Job ID"
-// @Success 200 {object} Job
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Job
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/start-pack/{job_id} [post]
 func _() {}
 
@@ -113,9 +113,9 @@ func _() {}
 // @Produce json
 // @Param id path int true "Preparation ID"
 // @Param name path string true "Storage name"
-// @Success 200 {object} Job
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Job
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/start-pack [post]
 func _() {}
 
@@ -126,9 +126,9 @@ func _() {}
 // @Param id path int true "Preparation ID"
 // @Param name path string true "Storage name"
 // @Param job_id path int true "Pack Job ID"
-// @Success 200 {object} Job
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Job
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/pause-pack/{job_id} [post]
 func _() {}
 
@@ -138,9 +138,9 @@ func _() {}
 // @Produce json
 // @Param id path int true "Preparation ID"
 // @Param name path string true "Storage name"
-// @Success 200 {object} Job
-// @Failure 400 {object} HTTPError
-// @Failure 500 {object} HTTPError
+// @Success 200 {object} model.Job
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/pause-pack [post]
 func _() {}
 

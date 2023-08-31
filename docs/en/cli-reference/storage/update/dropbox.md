@@ -3,18 +3,18 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update dropbox - Dropbox
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update dropbox - Dropbox
 
 USAGE:
-   singularity storage update dropbox [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update dropbox [command options] <name>
 
 DESCRIPTION:
-   --client_id
+   --client-id
       OAuth Client Id.
       
       Leave blank normally.
 
-   --client_secret
+   --client-secret
       OAuth Client Secret.
       
       Leave blank normally.
@@ -22,17 +22,17 @@ DESCRIPTION:
    --token
       OAuth Access Token as a JSON blob.
 
-   --auth_url
+   --auth-url
       Auth server URL.
       
       Leave blank to use the provider defaults.
 
-   --token_url
+   --token-url
       Token server url.
       
       Leave blank to use the provider defaults.
 
-   --chunk_size
+   --chunk-size
       Upload chunk size (< 150Mi).
       
       Any files larger than this will be uploaded in chunks of this size.
@@ -60,14 +60,14 @@ DESCRIPTION:
       v1.55 or later is in use everywhere.
       
 
-   --shared_files
+   --shared-files
       Instructs rclone to work on individual shared files.
       
       In this mode rclone's features are extremely limited - only list (ls, lsl, etc.) 
       operations and read operations (e.g. downloading) are supported in this mode.
       All other operations will be disabled.
 
-   --shared_folders
+   --shared-folders
       Instructs rclone to work on shared folders.
             
       When this flag is used with no path only the List operation is supported and 
@@ -81,7 +81,7 @@ DESCRIPTION:
       --dropbox-shared-folders can be omitted after the first use of a particular 
       shared folder.
 
-   --batch_mode
+   --batch-mode
       Upload file batching sync|async|off.
       
       This sets the batch mode used by rclone.
@@ -98,7 +98,7 @@ DESCRIPTION:
       a delay on quit.
       
 
-   --batch_size
+   --batch-size
       Max number of files in upload batch.
       
       This sets the batch size of files to upload. It has to be less than 1000.
@@ -118,7 +118,7 @@ DESCRIPTION:
       maximise throughput.
       
 
-   --batch_timeout
+   --batch-timeout
       Max time to allow an idle upload batch before uploading.
       
       If an upload batch is idle for more than this long then it will be
@@ -132,7 +132,7 @@ DESCRIPTION:
       - batch_mode: off - not in use
       
 
-   --batch_commit_timeout
+   --batch-commit-timeout
       Max time to wait for a batch to finish committing
 
    --encoding
@@ -142,24 +142,24 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --client_id value      OAuth Client Id. [$CLIENT_ID]
-   --client_secret value  OAuth Client Secret. [$CLIENT_SECRET]
+   --client-id value      OAuth Client Id. [$CLIENT_ID]
+   --client-secret value  OAuth Client Secret. [$CLIENT_SECRET]
    --help, -h             show help
 
    Advanced
 
-   --auth_url value              Auth server URL. [$AUTH_URL]
-   --batch_commit_timeout value  Max time to wait for a batch to finish committing (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
-   --batch_mode value            Upload file batching sync|async|off. (default: "sync") [$BATCH_MODE]
-   --batch_size value            Max number of files in upload batch. (default: 0) [$BATCH_SIZE]
-   --batch_timeout value         Max time to allow an idle upload batch before uploading. (default: "0s") [$BATCH_TIMEOUT]
-   --chunk_size value            Upload chunk size (< 150Mi). (default: "48Mi") [$CHUNK_SIZE]
+   --auth-url value              Auth server URL. [$AUTH_URL]
+   --batch-commit-timeout value  Max time to wait for a batch to finish committing (default: "10m0s") [$BATCH_COMMIT_TIMEOUT]
+   --batch-mode value            Upload file batching sync|async|off. (default: "sync") [$BATCH_MODE]
+   --batch-size value            Max number of files in upload batch. (default: 0) [$BATCH_SIZE]
+   --batch-timeout value         Max time to allow an idle upload batch before uploading. (default: "0s") [$BATCH_TIMEOUT]
+   --chunk-size value            Upload chunk size (< 150Mi). (default: "48Mi") [$CHUNK_SIZE]
    --encoding value              The encoding for the backend. (default: "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot") [$ENCODING]
    --impersonate value           Impersonate this user when using a business account. [$IMPERSONATE]
-   --shared_files                Instructs rclone to work on individual shared files. (default: false) [$SHARED_FILES]
-   --shared_folders              Instructs rclone to work on shared folders. (default: false) [$SHARED_FOLDERS]
+   --shared-files                Instructs rclone to work on individual shared files. (default: false) [$SHARED_FILES]
+   --shared-folders              Instructs rclone to work on shared folders. (default: false) [$SHARED_FOLDERS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
-   --token_url value             Token server url. [$TOKEN_URL]
+   --token-url value             Token server url. [$TOKEN_URL]
 
 ```
 {% endcode %}

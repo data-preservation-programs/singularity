@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity storage update filefabric - Enterprise File Fabric
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update filefabric - Enterprise File Fabric
 
 USAGE:
-   singularity storage update filefabric [command options] <name>
+   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update filefabric [command options] <name>
 
 DESCRIPTION:
    --url
@@ -17,7 +17,7 @@ DESCRIPTION:
          | https://eu.storagemadeeasy.com    | Storage Made Easy EU
          | https://yourfabric.smestorage.com | Connect to your Enterprise File Fabric
 
-   --root_folder_id
+   --root-folder-id
       ID of the root folder.
       
       Leave blank normally.
@@ -25,7 +25,7 @@ DESCRIPTION:
       Fill in to make rclone start with directory of a given ID.
       
 
-   --permanent_token
+   --permanent-token
       Permanent Authentication Token.
       
       A Permanent Authentication Token can be created in the Enterprise File
@@ -47,7 +47,7 @@ DESCRIPTION:
       Don't set this value - rclone will set it automatically.
       
 
-   --token_expiry
+   --token-expiry
       Token expiry time.
       
       Don't set this value - rclone will set it automatically.
@@ -67,15 +67,15 @@ DESCRIPTION:
 
 OPTIONS:
    --help, -h               show help
-   --permanent_token value  Permanent Authentication Token. [$PERMANENT_TOKEN]
-   --root_folder_id value   ID of the root folder. [$ROOT_FOLDER_ID]
+   --permanent-token value  Permanent Authentication Token. [$PERMANENT_TOKEN]
+   --root-folder-id value   ID of the root folder. [$ROOT_FOLDER_ID]
    --url value              URL of the Enterprise File Fabric to connect to. [$URL]
 
    Advanced
 
    --encoding value      The encoding for the backend. (default: "Slash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --token value         Session Token. [$TOKEN]
-   --token_expiry value  Token expiry time. [$TOKEN_EXPIRY]
+   --token-expiry value  Token expiry time. [$TOKEN_EXPIRY]
    --version value       Version read from the file fabric. [$VERSION]
 
 ```
