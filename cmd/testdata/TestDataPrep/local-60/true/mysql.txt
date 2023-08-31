@@ -1,19 +1,19 @@
 user@localhost:~/test$ singularity storage create local  source '/tempDir/0'
-ID  Name    Type   Path                             
+ID  Name    Type   Path                            
 1   source  local  /tempDir/0  
 
 user@localhost:~/test$ singularity prep create --max-size 62914560 --source source
 ID  DeleteAfterExport  MaxSize   PieceSize  
 1   false              62914560  67108864   
     Source Storages:
-        ID  Name    Type   Path                             
+        ID  Name    Type   Path                            
         1   source  local  /tempDir/0  
 
 user@localhost:~/test$ singularity prep list
 ID  DeleteAfterExport  MaxSize   PieceSize  
 1   false              62914560  67108864   
     Source Storages:
-        ID  Name    Type   Path                             
+        ID  Name    Type   Path                            
         1   source  local  /tempDir/0  
 
 user@localhost:~/test$ singularity prep start-scan 1 source
@@ -26,7 +26,7 @@ user@localhost:~/test$ singularity prep status 1
 AttachmentID  SourceStorageID  
 1             1                
     SourceStorage
-        ID  Name    Type   Path                             
+        ID  Name    Type   Path                            
         1   source  local  /tempDir/0  
     Jobs
         ID  Type  State     ErrorMessage  WorkerID  
@@ -37,7 +37,7 @@ user@localhost:~/test$ singularity prep list-pieces 1
 AttachmentID  SourceStorageID  
 1             1                
     SourceStorage
-        ID  Name    Type   Path                             
+        ID  Name    Type   Path                            
         1   source  local  /tempDir/0  
     Pieces
         PieceCID                                                          PieceSize  RootCID                                                      FileSize  StoragePath  
@@ -73,7 +73,7 @@ user@localhost:~/test$ singularity prep status 1
 AttachmentID  SourceStorageID  
 1             1                
     SourceStorage
-        ID  Name    Type   Path                             
+        ID  Name    Type   Path                            
         1   source  local  /tempDir/0  
     Jobs
         ID  Type    State     ErrorMessage  WorkerID  
@@ -85,16 +85,16 @@ user@localhost:~/test$ singularity prep list-pieces 1
 AttachmentID  SourceStorageID  
 1             1                
     SourceStorage
-        ID  Name    Type   Path                             
+        ID  Name    Type   Path                            
         1   source  local  /tempDir/0  
     Pieces
         PieceCID                                                          PieceSize  RootCID                                                      FileSize  StoragePath  
         baga6ea4seaqdkq5amkl2fmiwbf3tniubtp5zw27puoai4s7lauescumvan5hoeq  67108864   bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku  23080634               
-        baga6ea4seaqheqrwyjftcgnjqfnyyyu3ditloesg62nzwrujkahwh43cs7h7ehi  67108864   bafybeicr3gys6q5dciyuqy53qbks7dlpnxanxq4sd6dombv2cwpsdlrj7a  8671                   
+        baga6ea4seaqcczpnj4bxyjbphfwwt6mendao7nopvjviqumgu7knbe4kzarpgga  67108864   bafybeicr3gys6q5dciyuqy53qbks7dlpnxanxq4sd6dombv2cwpsdlrj7a  8671                   
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqcczpnj4bxyjbphfwwt6mendao7nopvjviqumgu7knbe4kzarpgga
 
 user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqdkq5amkl2fmiwbf3tniubtp5zw27puoai4s7lauescumvan5hoeq
-
-user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqheqrwyjftcgnjqfnyyyu3ditloesg62nzwrujkahwh43cs7h7ehi
 
 user@localhost:~/test$ singularity extract-car -i '/tempDir/2' -o '/tempDir/4' -c bafybeicr3gys6q5dciyuqy53qbks7dlpnxanxq4sd6dombv2cwpsdlrj7a
 Create Dir /tempDir/4

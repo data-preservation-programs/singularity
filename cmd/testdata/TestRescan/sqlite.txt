@@ -1,16 +1,16 @@
 user@localhost:~/test$ singularity --verbose storage create local source '/tempDir/0'
-ID  Name    CreatedAt            UpdatedAt            Type   Path                                Config              
+ID  Name    CreatedAt            UpdatedAt            Type   Path                                 Config              
 1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
 
 user@localhost:~/test$ singularity --verbose prep create --source source --local-output '/tempDir/1'
 ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize      PieceSize    
 1   2023-04-05 06:07:08  2023-04-05 06:07:08  false              33822867456  34359738368  
     Source Storages:
-        ID  Name    CreatedAt            UpdatedAt            Type   Path                                Config              
+        ID  Name    CreatedAt            UpdatedAt            Type   Path                                 Config              
         1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
     Output Storages:
-        ID  Name      CreatedAt            UpdatedAt            Type   Path                                Config              
-        2   002-2cab  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
+        ID  Name      CreatedAt            UpdatedAt            Type   Path                                 Config              
+        2   002-7f4e  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
 
 user@localhost:~/test$ singularity --verbose prep start-scan 1 source
 ID  Type  State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
@@ -73,7 +73,7 @@ user@localhost:~/test$ singularity --verbose prep list-pieces 1
 AttachmentID  SourceStorageID  
 1             1                
     SourceStorage
-        ID  Name    CreatedAt            UpdatedAt            Type   Path                                Config              
+        ID  Name    CreatedAt            UpdatedAt            Type   Path                                 Config              
         1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
     Pieces
         ID  CreatedAt            PieceCID                                                          PieceSize    RootCID                                                      FileSize  StorageID  StoragePath                                                           

@@ -1,0 +1,95 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose storage create local source '/tempDir/0'
+[32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                   [0m[32;4mConfig              [0m
+[33m1   [0msource  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep create --source source --local-output '/tempDir/1'
+[32;4mID  [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mDeleteAfterExport  [0m[32;4mMaxSize      [0m[32;4mPieceSize    [0m
+[33m1   [0m2023-04-05 06:07:08  2023-04-05 06:07:08  false              33822867456  34359738368  
+    [32;4mSource Storages:[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                   [0m[32;4mConfig              [0m
+        [33m1   [0msource  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
+    [32;4mOutput Storages:[0m
+        [32;4mID  [0m[32;4mName      [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                   [0m[32;4mConfig              [0m
+        [33m2   [0m002-d9c4  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep start-scan 1 source
+[32;4mID  [0m[32;4mType  [0m[32;4mState  [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+[33m1   [0mscan  ready                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep explore 1 source
+[32;4mPath  [0m[32;4mCID                                                          [0m
+[33m      [0mbafybeidml72rjc3rxzxaerf3embzjbyz6id5qft4p5d3fdrwpdzgczyvhy  
+    [32;4mSubEntries[0m
+        [32;4mPath        [0m[32;4mIsDir  [0m[32;4mCID                                                          [0m
+        [33m/file2.txt  [0mfalse  bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m2   [0mbafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4        11    2023-04-05 06:07:08  
+        [33m/file1.txt  [0mfalse  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m1   [0mbafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi        11    2023-04-05 06:07:08  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep start-daggen 1 source
+[32;4mID  [0m[32;4mType    [0m[32;4mState  [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+[33m3   [0mdaggen  ready                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep start-scan 1 source
+[32;4mID  [0m[32;4mType  [0m[32;4mState  [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+[33m1   [0mscan  ready                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep explore 1 source
+[32;4mPath  [0m[32;4mCID                                                          [0m
+[33m      [0mbafybeidquczymes5bbrzhwxg246rkta3m4nvkft7he4bgv65h5atid7ht4  
+    [32;4mSubEntries[0m
+        [32;4mPath        [0m[32;4mIsDir  [0m[32;4mCID                                                          [0m
+        [33m/file3.txt  [0mfalse  bafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m4   [0mbafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam        11    2023-04-05 06:07:08  
+        [33m/file1.txt  [0mfalse  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m1   [0mbafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi        11    2023-04-05 06:07:08  
+        [33m/file2.txt  [0mfalse  bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID                                                          [0m[32;4mHash  [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m2   [0mbafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4        11    2023-04-05 06:07:08  
+                [33m3   [0mbafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m        20    2023-04-05 06:07:08  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep start-daggen 1 source
+[32;4mID  [0m[32;4mType    [0m[32;4mState  [0m[32;4mErrorMessage  [0m[32;4mErrorStackTrace  [0m[32;4mWorkerID  [0m[32;4mAttachmentID  [0m
+[33m3   [0mdaggen  ready                                 <nil>     1             
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep list-pieces 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName    [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath                                   [0m[32;4mConfig              [0m
+        [33m1   [0msource  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
+    [32;4mPieces[0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mPieceCID                                                          [0m[32;4mPieceSize    [0m[32;4mRootCID                                                      [0m[32;4mFileSize  [0m[32;4mStorageID  [0m[32;4mStoragePath                                                           [0m
+        [33m1   [0m2023-04-05 06:07:08  baga6ea4seaqnrk7qeohcraq6nbf4ql7cbgzho77wevga3wpc4sn4dvqqg6ag6ka  34359738368  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  155       2          baga6ea4seaqnrk7qeohcraq6nbf4ql7cbgzho77wevga3wpc4sn4dvqqg6ag6ka.car  
+        [33m2   [0m2023-04-05 06:07:08  baga6ea4seaql7mwmplslyauijqjunex7xqs5bbvuqqdyqiftpqrztlltljseqgi  34359738368  bafybeidml72rjc3rxzxaerf3embzjbyz6id5qft4p5d3fdrwpdzgczyvhy  207       2          baga6ea4seaql7mwmplslyauijqjunex7xqs5bbvuqqdyqiftpqrztlltljseqgi.car  
+        [33m3   [0m2023-04-05 06:07:08  baga6ea4seaqnmho7ygpdbwvwf4mw24glxjgt3yp2bdwoor76uwgnmvwbb56jcky  34359738368  bafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m  164       2          baga6ea4seaqnmho7ygpdbwvwf4mw24glxjgt3yp2bdwoor76uwgnmvwbb56jcky.car  
+        [33m4   [0m2023-04-05 06:07:08  baga6ea4seaqo6rpowvoiurfw57h7jsebbaf3fmkbkead6trbnukug4e23ohrmgi  34359738368  bafybeidquczymes5bbrzhwxg246rkta3m4nvkft7he4bgv65h5atid7ht4  408       2          baga6ea4seaqo6rpowvoiurfw57h7jsebbaf3fmkbkead6trbnukug4e23ohrmgi.car  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose extract-car -i '/tempDir/1' -o '/tempDir/2' -c bafybeidml72rjc3rxzxaerf3embzjbyz6id5qft4p5d3fdrwpdzgczyvhy
+Create Dir /tempDir/2
+Writing to /tempDir/2/file1.txt
+Writing to /tempDir/2/file2.txt
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose extract-car -i '/tempDir/1' -o '/tempDir/3' -c bafybeidquczymes5bbrzhwxg246rkta3m4nvkft7he4bgv65h5atid7ht4
+Create Dir /tempDir/3
+Writing to /tempDir/3/file1.txt
+Writing to /tempDir/3/file2.txt
+Writing to /tempDir/3/file3.txt
+

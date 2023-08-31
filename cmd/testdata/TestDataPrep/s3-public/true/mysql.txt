@@ -69,9 +69,9 @@ Path       CID
 subfolder  bafybeigw35n64es7z2gz3brhxugz6ldbctk7pnjxbfcywusgdfwrhrfjcu  
     SubEntries
         Path                            IsDir  CID                                                          
+        subfolder/subfolder/1m.random   false  bafkreiexcs4yzyufix7tfsvol3g7tbklgncoobqe2rx54cdvurliwzmgni  
         subfolder/subfolder/15M.random  false  bafybeibhl5wjdjhbzid43jdyrpkn5gfwijbwrp7aspd23kpej6c5qlz3lq  
         subfolder/subfolder/1k.random   false  bafkreicsy5b3uywswfbejr2ednvngzjwftgg5yfl64by3plhcrzxqyr7zq  
-        subfolder/subfolder/1m.random   false  bafkreiexcs4yzyufix7tfsvol3g7tbklgncoobqe2rx54cdvurliwzmgni  
 
 user@localhost:~/test$ singularity prep start-daggen 1 source
 ID  Type    State  ErrorMessage  WorkerID  

@@ -1,0 +1,32 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity prep list-pieces 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName   [0m[32;4mType   [0m[32;4mPath  [0m
+        [33m1   [0mlocal  local  /tmp  
+    [32;4mPieces[0m
+        [32;4mPieceCID                                                     [0m[32;4mPieceSize  [0m[32;4mRootCID  [0m[32;4mFileSize  [0m[32;4mStoragePath  [0m
+        [33mbafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  [0m100                 200       test1.car    
+        [33mbafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  [0m300                 400       test2.car    
+[33m<nil>         [0m<nil>            
+    [32;4mPieces[0m
+        [32;4mPieceCID                                                     [0m[32;4mPieceSize  [0m[32;4mRootCID  [0m[32;4mFileSize  [0m[32;4mStoragePath  [0m
+        [33mbafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  [0m500                 600       test3.car    
+        [33mbafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  [0m700                 800       test4.car    
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep list-pieces 1
+[32;4mAttachmentID  [0m[32;4mSourceStorageID  [0m
+[33m1             [0m1                
+    [32;4mSourceStorage[0m
+        [32;4mID  [0m[32;4mName   [0m[32;4mCreatedAt            [0m[32;4mUpdatedAt            [0m[32;4mType   [0m[32;4mPath  [0m[32;4mConfig  [0m
+        [33m1   [0mlocal  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tmp  <nil>   
+    [32;4mPieces[0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mPieceCID                                                     [0m[32;4mPieceSize  [0m[32;4mRootCID  [0m[32;4mFileSize  [0m[32;4mStorageID  [0m[32;4mStoragePath  [0m
+        [33m1   [0m2023-04-05 06:07:08  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 200       1          test1.car    
+        [33m2   [0m2023-04-05 06:07:08  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  300                 400       1          test2.car    
+[33m<nil>         [0m<nil>            
+    [32;4mPieces[0m
+        [32;4mID  [0m[32;4mCreatedAt            [0m[32;4mPieceCID                                                     [0m[32;4mPieceSize  [0m[32;4mRootCID  [0m[32;4mFileSize  [0m[32;4mStorageID  [0m[32;4mStoragePath  [0m
+        [33m3   [0m2023-04-05 06:07:08  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  500                 600       1          test3.car    
+        [33m4   [0m2023-04-05 06:07:08  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  700                 800       1          test4.car    
+

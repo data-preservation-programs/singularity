@@ -3,7 +3,7 @@ ID  Name    Type  Path
 1   source  s3    public-dataset-test  
 
 user@localhost:~/test$ singularity storage create local output '/tempDir/1'
-ID  Name    Type   Path                                                  
+ID  Name    Type   Path                                                   
 2   output  local  /tempDir/1  
 
 user@localhost:~/test$ singularity prep create --max-size 3145728 --source source --output output
@@ -13,7 +13,7 @@ ID  DeleteAfterExport  MaxSize  PieceSize
         ID  Name    Type  Path                 
         1   source  s3    public-dataset-test  
     Output Storages:
-        ID  Name    Type   Path                                                  
+        ID  Name    Type   Path                                                   
         2   output  local  /tempDir/1  
 
 user@localhost:~/test$ singularity prep list
@@ -23,7 +23,7 @@ ID  DeleteAfterExport  MaxSize  PieceSize
         ID  Name    Type  Path                 
         1   source  s3    public-dataset-test  
     Output Storages:
-        ID  Name    Type   Path                                                  
+        ID  Name    Type   Path                                                   
         2   output  local  /tempDir/1  
 
 user@localhost:~/test$ singularity prep start-scan 1 source

@@ -10,7 +10,7 @@ ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize      Pi
         1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
     Output Storages:
         ID  Name      CreatedAt            UpdatedAt            Type   Path                                   Config              
-        2   002-6475  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
+        2   002-d9c4  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
 
 user@localhost:~/test$ singularity --verbose prep start-scan 1 source
 ID  Type  State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
@@ -23,14 +23,14 @@ Path  CID
       bafybeidml72rjc3rxzxaerf3embzjbyz6id5qft4p5d3fdrwpdzgczyvhy  
     SubEntries
         Path        IsDir  CID                                                          
-        /file1.txt  false  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  
-            FileVersions
-                ID  CID                                                          Hash  Size  LastModified         
-                1   bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi        11    2023-04-05 06:07:08  
         /file2.txt  false  bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4  
             FileVersions
                 ID  CID                                                          Hash  Size  LastModified         
                 2   bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4        11    2023-04-05 06:07:08  
+        /file1.txt  false  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  
+            FileVersions
+                ID  CID                                                          Hash  Size  LastModified         
+                1   bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi        11    2023-04-05 06:07:08  
 
 user@localhost:~/test$ singularity --verbose prep start-daggen 1 source
 ID  Type    State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
@@ -49,6 +49,10 @@ Path  CID
       bafybeidquczymes5bbrzhwxg246rkta3m4nvkft7he4bgv65h5atid7ht4  
     SubEntries
         Path        IsDir  CID                                                          
+        /file3.txt  false  bafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam  
+            FileVersions
+                ID  CID                                                          Hash  Size  LastModified         
+                4   bafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam        11    2023-04-05 06:07:08  
         /file1.txt  false  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  
             FileVersions
                 ID  CID                                                          Hash  Size  LastModified         
@@ -58,10 +62,6 @@ Path  CID
                 ID  CID                                                          Hash  Size  LastModified         
                 2   bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4        11    2023-04-05 06:07:08  
                 3   bafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m        20    2023-04-05 06:07:08  
-        /file3.txt  false  bafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam  
-            FileVersions
-                ID  CID                                                          Hash  Size  LastModified         
-                4   bafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam        11    2023-04-05 06:07:08  
 
 user@localhost:~/test$ singularity --verbose prep start-daggen 1 source
 ID  Type    State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
@@ -80,7 +80,7 @@ AttachmentID  SourceStorageID
         1   2023-04-05 06:07:08  baga6ea4seaqnrk7qeohcraq6nbf4ql7cbgzho77wevga3wpc4sn4dvqqg6ag6ka  34359738368  bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi  155       2          baga6ea4seaqnrk7qeohcraq6nbf4ql7cbgzho77wevga3wpc4sn4dvqqg6ag6ka.car  
         2   2023-04-05 06:07:08  baga6ea4seaql7mwmplslyauijqjunex7xqs5bbvuqqdyqiftpqrztlltljseqgi  34359738368  bafybeidml72rjc3rxzxaerf3embzjbyz6id5qft4p5d3fdrwpdzgczyvhy  207       2          baga6ea4seaql7mwmplslyauijqjunex7xqs5bbvuqqdyqiftpqrztlltljseqgi.car  
         3   2023-04-05 06:07:08  baga6ea4seaqnmho7ygpdbwvwf4mw24glxjgt3yp2bdwoor76uwgnmvwbb56jcky  34359738368  bafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m  164       2          baga6ea4seaqnmho7ygpdbwvwf4mw24glxjgt3yp2bdwoor76uwgnmvwbb56jcky.car  
-        4   2023-04-05 06:07:08  baga6ea4seaqksz26sodmz6thkxxov4fimmv7tg7eoaffsbctiubvhkzktuv3ueq  34359738368  bafybeidquczymes5bbrzhwxg246rkta3m4nvkft7he4bgv65h5atid7ht4  408       2          baga6ea4seaqksz26sodmz6thkxxov4fimmv7tg7eoaffsbctiubvhkzktuv3ueq.car  
+        4   2023-04-05 06:07:08  baga6ea4seaqo6rpowvoiurfw57h7jsebbaf3fmkbkead6trbnukug4e23ohrmgi  34359738368  bafybeidquczymes5bbrzhwxg246rkta3m4nvkft7he4bgv65h5atid7ht4  408       2          baga6ea4seaqo6rpowvoiurfw57h7jsebbaf3fmkbkead6trbnukug4e23ohrmgi.car  
 
 user@localhost:~/test$ singularity --verbose extract-car -i '/tempDir/1' -o '/tempDir/2' -c bafybeidml72rjc3rxzxaerf3embzjbyz6id5qft4p5d3fdrwpdzgczyvhy
 Create Dir /tempDir/2

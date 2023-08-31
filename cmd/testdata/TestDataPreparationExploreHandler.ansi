@@ -1,0 +1,25 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity prep explore 1 storage path
+[32;4mPath  [0m[32;4mCID       [0m
+[33m/     [0mroot_cid  
+    [32;4mSubEntries[0m
+        [32;4mPath   [0m[32;4mIsDir  [0m[32;4mCID   [0m
+        [33mfile1  [0mfalse  cid1  
+        [33mdir    [0mtrue   cid4  
+        [33mfile2  [0mfalse  cid3  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep explore 1 storage path
+[32;4mPath  [0m[32;4mCID       [0m
+[33m/     [0mroot_cid  
+    [32;4mSubEntries[0m
+        [32;4mPath   [0m[32;4mIsDir  [0m[32;4mCID   [0m
+        [33mfile1  [0mfalse  cid1  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID   [0m[32;4mHash   [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m1   [0mcid1  hash1  100   2023-04-05 06:07:08  
+                [33m2   [0mcid2  hash2  200   2023-04-05 06:07:08  
+        [33mdir    [0mtrue   cid4  
+        [33mfile2  [0mfalse  cid3  
+            [32;4mFileVersions[0m
+                [32;4mID  [0m[32;4mCID   [0m[32;4mHash   [0m[32;4mSize  [0m[32;4mLastModified         [0m
+                [33m1   [0mcid3  hash3  300   2023-04-05 06:07:08  
+

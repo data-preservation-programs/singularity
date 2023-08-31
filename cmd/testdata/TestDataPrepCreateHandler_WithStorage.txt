@@ -1,4 +1,4 @@
-user@localhost:~/test$ singularity prep create --source source --local-output '/tmp/TestDataPrepCreateHandler_WithStorage1411287986/001'
+user@localhost:~/test$ singularity prep create --source source --local-output '/tmp/TestDataPrepCreateHandler_WithStorage1869823225/001'
 ID  DeleteAfterExport  MaxSize  PieceSize  
 1   false              100      200        
     Wallets

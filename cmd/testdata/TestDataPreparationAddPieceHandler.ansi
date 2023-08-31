@@ -1,0 +1,8 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity prep add-piece --piece-cid xxx --piece-size 100 1
+[32;4mPieceCID                                                     [0m[32;4mPieceSize  [0m[32;4mRootCID  [0m[32;4mFileSize  [0m[32;4mStoragePath  [0m
+[33mbafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  [0m100                 100       test1.car    
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 1
+[32;4mID  [0m[32;4mCreatedAt            [0m[32;4mPieceCID                                                     [0m[32;4mPieceSize  [0m[32;4mRootCID  [0m[32;4mFileSize  [0m[32;4mStorageID  [0m[32;4mStoragePath  [0m
+[33m1   [0m2023-04-05 06:07:08  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  100                 100       1          test1.car    
+

@@ -1,0 +1,8 @@
+[32muser@localhost[0m:[34m~/test[0m$ singularity wallet import xxx
+[32;4mID  [0m[32;4mAddress  [0m
+[33mid  [0maddress  
+
+[32muser@localhost[0m:[34m~/test[0m$ singularity --verbose wallet import xxx
+[32;4mID  [0m[32;4mAddress  [0m
+[33mid  [0maddress  
+

@@ -124,7 +124,7 @@ AttachmentID  SourceStorageID
         baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi  4194304    bafkreidwsqhkfbpzcwocicej2bllnlcmr4gl56heri5bddstklnogvxhpy  2097289   baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi.car  
         baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly  4194304    bafkreigsrbwz5vhprefbvefx47w3zltm6cinfcmtfe2fyamrcajwwfmukm  2097289   baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly.car  
         baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja  4194304    bafkreiexktrqyjiadhbpkmqjnc2dthophlemwsoab6tpmvdul4y26g63si  2098351   baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja.car  
-        baga6ea4seaqlpo2y33nij2ut3ydavezhq7eu5gxxupsjibxfqg3eoh2rqqqiwma  4194304    bafybeiapv7qgtdb2ndvtljzhpxwcbehgu5qb3qzxtw7shonfxex3l5jkmi  1161      baga6ea4seaqlpo2y33nij2ut3ydavezhq7eu5gxxupsjibxfqg3eoh2rqqqiwma.car  
+        baga6ea4seaqmw3pr5nhmabok6yawrb45mgue6gmwsvwsab35inja3gq72yiu4ci  4194304    bafybeiapv7qgtdb2ndvtljzhpxwcbehgu5qb3qzxtw7shonfxex3l5jkmi  1161      baga6ea4seaqmw3pr5nhmabok6yawrb45mgue6gmwsvwsab35inja3gq72yiu4ci.car  
 
 user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqgl2apiunor5mfwpllqgypbvnubp6wvlbx6nqcglxb2ga6nu4r2di
 
@@ -136,9 +136,9 @@ user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778
 
 user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly
 
-user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqlpo2y33nij2ut3ydavezhq7eu5gxxupsjibxfqg3eoh2rqqqiwma
-
 user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqmw3pr5nhmabok6yawrb45mgue6gmwsvwsab35inja3gq72yiu4ci
 
 user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqpq35cx7vorecvr76khfqgnt6jweyccwayvlp6dnaxiseai4scseq
 
