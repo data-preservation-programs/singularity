@@ -1,0 +1,2 @@
+user@localhost:~/test$ singularity wallet remove xxx
+

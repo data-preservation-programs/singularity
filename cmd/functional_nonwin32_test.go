@@ -42,7 +42,7 @@ func TestEzPrep(t *testing.T) {
 										databaseFile = filepath.Join(output, "test.db")
 									}
 
-									outFlag := ""
+									outFlag := "-o ''"
 									if !inline {
 										outFlag = fmt.Sprintf("-o %s", testutil.EscapePath(output))
 									}

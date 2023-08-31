@@ -4,7 +4,6 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
-	"github.com/libp2p/go-libp2p/p2p/muxer/mplex"
 	"github.com/libp2p/go-libp2p/p2p/muxer/yamux"
 	"github.com/libp2p/go-libp2p/p2p/security/noise"
 	tls "github.com/libp2p/go-libp2p/p2p/security/tls"
@@ -16,7 +15,6 @@ import (
 )
 
 const yamuxID = "/yamux/1.0.0"
-const mplexID = "/mplex/6.7.0"
 
 // InitHost initializes a new libp2p host with the provided options and listen addresses.
 //
@@ -50,8 +48,7 @@ func InitHost(opts []libp2p.Option, listenAddrs ...multiaddr.Multiaddr) (host.Ho
 
 	// add muxers
 	opts = append([]libp2p.Option{
-		libp2p.Muxer(yamuxID, yamuxTransport()),
-		libp2p.Muxer(mplexID, mplex.DefaultTransport)},
+		libp2p.Muxer(yamuxID, yamuxTransport())},
 		opts...)
 
 	//nolint:wrapcheck

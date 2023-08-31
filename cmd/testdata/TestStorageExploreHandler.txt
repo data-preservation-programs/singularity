@@ -1,0 +1,10 @@
+user@localhost:~/test$ singularity storage explore name path
+Path   LastModified         Size  IsDir  
+path1  2023-04-05 06:07:08  100   true   
+path2  2023-04-05 06:07:08  100   false  
+
+user@localhost:~/test$ singularity --verbose storage explore name path
+Path   LastModified         Size  IsDir  DirID  NumItems  Hash   
+path1  2023-04-05 06:07:08  100   true   xx     100       hash1  
+path2  2023-04-05 06:07:08  100   false         -1        hash2  
+

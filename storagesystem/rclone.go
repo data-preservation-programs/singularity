@@ -75,8 +75,8 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 		return errors.WithStack(err)
 	}
 
-	slices.SortFunc(entries, func(i, j fs.DirEntry) bool {
-		return strings.Compare(i.Remote(), j.Remote()) < 0
+	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
+		return strings.Compare(i.Remote(), j.Remote())
 	})
 
 	startScanning := last == "" // Start scanning immediately if 'last' is empty.

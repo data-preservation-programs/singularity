@@ -1,0 +1,25 @@
+user@localhost:~/test$ singularity prep explore 1 storage path
+Path  CID       
+/     root_cid  
+    SubEntries
+        Path   IsDir  CID   
+        file1  false  cid1  
+        dir    true   cid4  
+        file2  false  cid3  
+
+user@localhost:~/test$ singularity --verbose prep explore 1 storage path
+Path  CID       
+/     root_cid  
+    SubEntries
+        Path   IsDir  CID   
+        file1  false  cid1  
+            FileVersions
+                ID  CID   Hash   Size  LastModified         
+                1   cid1  hash1  100   2023-04-05 06:07:08  
+                2   cid2  hash2  200   2023-04-05 06:07:08  
+        dir    true   cid4  
+        file2  false  cid3  
+            FileVersions
+                ID  CID   Hash   Size  LastModified         
+                1   cid3  hash3  300   2023-04-05 06:07:08  
+

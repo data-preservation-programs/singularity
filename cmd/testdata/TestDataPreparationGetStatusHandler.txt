@@ -1,0 +1,20 @@
+user@localhost:~/test$ singularity prep status 1
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    Type   Path  
+        1   source  local  /tmp  
+    Jobs
+        ID  Type  State       ErrorMessage  WorkerID                              
+        1   pack  processing                59802f08-4b28-4c49-9172-7c90d6eafc20  
+
+user@localhost:~/test$ singularity --verbose prep status 1
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    CreatedAt            UpdatedAt            Type   Path  Config  
+        1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tmp  <nil>   
+    Jobs
+        ID  Type  State       ErrorMessage  ErrorStackTrace  WorkerID                              AttachmentID  
+        1   pack  processing                                 59802f08-4b28-4c49-9172-7c90d6eafc20  1             
+

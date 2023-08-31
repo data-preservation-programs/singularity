@@ -1,0 +1,8 @@
+user@localhost:~/test$ singularity storage create s3 aws --region us-east-1 name bucket
+ID  Name  Type  Path    
+1   name  s3    bucket  
+
+user@localhost:~/test$ singularity --verbose storage create s3 aws --region us-east-1 name bucket
+ID  Name  CreatedAt            UpdatedAt            Type  Path    Config            
+1   name  2023-04-05 06:07:08  2023-04-05 06:07:08  s3    bucket  region:us-east-1  
+

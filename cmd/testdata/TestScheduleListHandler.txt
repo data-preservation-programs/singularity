@@ -1,0 +1,8 @@
+user@localhost:~/test$ singularity deal schedule list
+ID  Provider  TotalDealSize  Verified  StartDelay  Duration  State   ScheduleCron  ScheduleDealNumber  ScheduleDealSize  MaxPendingDealNumber  MaxPendingDealSize  Notes    PreparationID  
+1   provider  200            true      300ns       400ns     active  * * * * *     500                 600               700                   800                 my note  5              
+
+user@localhost:~/test$ singularity --verbose deal schedule list
+ID  CreatedAt            UpdatedAt            URLTemplate                    HTTPHeaders  Provider  PricePerGBEpoch  PricePerGB  PricePerDeal  TotalDealNumber  TotalDealSize  Verified  KeepUnsealed  AnnounceToIPNI  StartDelay  Duration  State   ScheduleCron  ScheduleDealNumber  ScheduleDealSize  MaxPendingDealNumber  MaxPendingDealSize  Notes    ErrorMessage  AllowedPieceCIDs  PreparationID  
+1   2023-04-05 06:07:08  2023-04-05 06:07:08  https://127.0.0.1/{PIECE_CID}  [a=b]        provider  0                0           0             100              200            true      true          true            300ns       400ns     active  * * * * *     500                 600               700                   800                 my note                []                5              
+

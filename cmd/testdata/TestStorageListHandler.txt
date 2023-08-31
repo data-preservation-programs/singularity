@@ -1,0 +1,22 @@
+user@localhost:~/test$ singularity storage list
+ID  Name   Type   Path  
+1   name1  local  path  
+    As Source: 
+        ID  DeleteAfterExport  MaxSize  PieceSize  
+        1   true               100      200        
+    As Output: 
+        ID  DeleteAfterExport  MaxSize  PieceSize  
+        2   true               300      400        
+2   name   local  path  
+
+user@localhost:~/test$ singularity --verbose storage list
+ID  Name   CreatedAt            UpdatedAt            Type   Path  Config  
+1   name1  2023-04-05 06:07:08  2023-04-05 06:07:08  local  path  <nil>   
+    As Source: 
+        ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize  PieceSize  
+        1   2023-04-05 06:07:08  2023-04-05 06:07:08  true               100      200        
+    As Output: 
+        ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize  PieceSize  
+        2   2023-04-05 06:07:08  2023-04-05 06:07:08  true               300      400        
+2   name   2023-04-05 06:07:08  2023-04-05 06:07:08  local  path  <nil>   
+

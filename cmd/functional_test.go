@@ -286,6 +286,7 @@ func TestDataPrep(t *testing.T) {
 			sourceType:  "local",
 			sourcePath:  tmp,
 			sourceFlags: "",
+			compare:     tmp,
 		},
 	}
 

@@ -1,0 +1,8 @@
+user@localhost:~/test$ singularity deal send-manual client provider piece_cid 1024
+DealID  State     Provider  PieceCID                                                     PieceSize  StartEpoch  Price  Verified  ClientID   
+<nil>   proposed  f01       bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  1024       1001        0      true      client_id  
+
+user@localhost:~/test$ singularity --verbose deal send-manual client provider piece_cid 1024
+ID  CreatedAt            UpdatedAt            DealID  State     Provider  ProposalID   Label  PieceCID                                                     PieceSize  StartEpoch  EndEpoch  SectorStartEpoch  Price  Verified  ErrorMessage  ScheduleID  ClientID   
+1   2023-04-05 06:07:08  2023-04-05 06:07:08  <nil>   proposed  f01       proposal_id  label  bafkreie7q3iidccmpvszul7kudcvvuavuo7u6gzlbobczuk5nqk3b4akba  1024       1001        1999      1500              0      true                    <nil>       client_id  
+

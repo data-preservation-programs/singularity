@@ -1,0 +1,8 @@
+user@localhost:~/test$ singularity prep list-wallets 1
+ID         Address         
+client_id  client_address  
+
+user@localhost:~/test$ singularity --verbose prep list-wallets 1
+ID         Address         
+client_id  client_address  
+

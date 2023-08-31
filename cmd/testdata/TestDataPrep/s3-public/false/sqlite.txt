@@ -1,0 +1,153 @@
+user@localhost:~/test$ singularity storage create s3 aws --region us-west-2 source 'public-dataset-test'
+ID  Name    Type  Path                 
+1   source  s3    public-dataset-test  
+
+user@localhost:~/test$ singularity storage create local output '/tempDir/1'
+ID  Name    Type   Path                                                 
+2   output  local  /tempDir/1  
+
+user@localhost:~/test$ singularity prep create --max-size 3145728 --source source --output output
+ID  DeleteAfterExport  MaxSize  PieceSize  
+1   false              3145728  4194304    
+    Source Storages:
+        ID  Name    Type  Path                 
+        1   source  s3    public-dataset-test  
+    Output Storages:
+        ID  Name    Type   Path                                                 
+        2   output  local  /tempDir/1  
+
+user@localhost:~/test$ singularity prep list
+ID  DeleteAfterExport  MaxSize  PieceSize  
+1   false              3145728  4194304    
+    Source Storages:
+        ID  Name    Type  Path                 
+        1   source  s3    public-dataset-test  
+    Output Storages:
+        ID  Name    Type   Path                                                 
+        2   output  local  /tempDir/1  
+
+user@localhost:~/test$ singularity prep start-scan 1 source
+ID  Type  State  ErrorMessage  WorkerID  
+1   scan  ready                <nil>     
+
+user@localhost:~/test$ singularity run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+user@localhost:~/test$ singularity prep status 1
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    Type  Path                 
+        1   source  s3    public-dataset-test  
+    Jobs
+        ID  Type  State     ErrorMessage  WorkerID  
+        1   scan  complete                <nil>     
+        2   pack  complete                <nil>     
+        3   pack  complete                <nil>     
+        4   pack  complete                <nil>     
+        5   pack  complete                <nil>     
+        6   pack  complete                <nil>     
+        7   pack  complete                <nil>     
+        8   pack  complete                <nil>     
+        9   pack  complete                <nil>     
+
+user@localhost:~/test$ singularity prep list-pieces 1
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    Type  Path                 
+        1   source  s3    public-dataset-test  
+    Pieces
+        PieceCID                                                          PieceSize  RootCID                                                      FileSize  StoragePath                                                           
+        baga6ea4seaqh3smsr7bshdrsdrdfgjurzbsavfhbx4d64aylwx4c2zaowv23shi  4194304    bafkreihapgghmthdtobwrxswcf4j5whyb2qcqkglus5t3n7vyiu2tmnlj4  2097289   baga6ea4seaqh3smsr7bshdrsdrdfgjurzbsavfhbx4d64aylwx4c2zaowv23shi.car  
+        baga6ea4seaqjkjjoo74igel5gtasefidspjph5w7ekbul7hzgn4ytkiqezjs6ja  4194304    bafkreibfqcqumxxoink3qzyq3mrlps2ubrajybvfdzpnsaxgepipe2witi  2097289   baga6ea4seaqjkjjoo74igel5gtasefidspjph5w7ekbul7hzgn4ytkiqezjs6ja.car  
+        baga6ea4seaqpq35cx7vorecvr76khfqgnt6jweyccwayvlp6dnaxiseai4scseq  4194304    bafkreiaq7ophpn6zcmwwvjdd5o2ox5yw57ypi7pklxvsuvmsuzrfbxgcg4  2097289   baga6ea4seaqpq35cx7vorecvr76khfqgnt6jweyccwayvlp6dnaxiseai4scseq.car  
+        baga6ea4seaqpy36djo7fwwbapfkj6dshtlwgyumnspmxeo74xthbbfmscqkkgjy  4194304    bafkreigyvfppwx4wdecurtuyhdwzpkgpc6y7gxj2toxi2czgd6mc3a5uvy  2097289   baga6ea4seaqpy36djo7fwwbapfkj6dshtlwgyumnspmxeo74xthbbfmscqkkgjy.car  
+        baga6ea4seaqgl2apiunor5mfwpllqgypbvnubp6wvlbx6nqcglxb2ga6nu4r2di  4194304    bafkreih35kwmk4jdxg3zcul4fxh3vdq5ncbrxr3mns4dlmfcj2jy54rgle  2097289   baga6ea4seaqgl2apiunor5mfwpllqgypbvnubp6wvlbx6nqcglxb2ga6nu4r2di.car  
+        baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi  4194304    bafkreidwsqhkfbpzcwocicej2bllnlcmr4gl56heri5bddstklnogvxhpy  2097289   baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi.car  
+        baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly  4194304    bafkreigsrbwz5vhprefbvefx47w3zltm6cinfcmtfe2fyamrcajwwfmukm  2097289   baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly.car  
+        baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja  4194304    bafkreiexktrqyjiadhbpkmqjnc2dthophlemwsoab6tpmvdul4y26g63si  2098351   baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja.car  
+
+user@localhost:~/test$ singularity prep explore 1 source
+Path  CID                                                          
+      bafybeiapv7qgtdb2ndvtljzhpxwcbehgu5qb3qzxtw7shonfxex3l5jkmi  
+    SubEntries
+        Path        IsDir  CID                                                          
+        /subfolder  true   bafybeigw35n64es7z2gz3brhxugz6ldbctk7pnjxbfcywusgdfwrhrfjcu  
+
+user@localhost:~/test$ singularity prep explore 1 source subfolder
+Path       CID                                                          
+subfolder  bafybeigw35n64es7z2gz3brhxugz6ldbctk7pnjxbfcywusgdfwrhrfjcu  
+    SubEntries
+        Path                            IsDir  CID                                                          
+        subfolder/subfolder/15M.random  false  bafybeibhl5wjdjhbzid43jdyrpkn5gfwijbwrp7aspd23kpej6c5qlz3lq  
+        subfolder/subfolder/1k.random   false  bafkreicsy5b3uywswfbejr2ednvngzjwftgg5yfl64by3plhcrzxqyr7zq  
+        subfolder/subfolder/1m.random   false  bafkreiexcs4yzyufix7tfsvol3g7tbklgncoobqe2rx54cdvurliwzmgni  
+
+user@localhost:~/test$ singularity prep start-daggen 1 source
+ID  Type    State  ErrorMessage  WorkerID  
+10  daggen  ready                <nil>     
+
+user@localhost:~/test$ singularity run dataset-worker --exit-on-complete=true --exit-on-error=true
+
+user@localhost:~/test$ singularity prep status 1
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    Type  Path                 
+        1   source  s3    public-dataset-test  
+    Jobs
+        ID  Type    State     ErrorMessage  WorkerID  
+        1   scan    complete                <nil>     
+        2   pack    complete                <nil>     
+        3   pack    complete                <nil>     
+        4   pack    complete                <nil>     
+        5   pack    complete                <nil>     
+        6   pack    complete                <nil>     
+        7   pack    complete                <nil>     
+        8   pack    complete                <nil>     
+        9   pack    complete                <nil>     
+        10  daggen  complete                <nil>     
+
+user@localhost:~/test$ singularity prep list-pieces 1
+AttachmentID  SourceStorageID  
+1             1                
+    SourceStorage
+        ID  Name    Type  Path                 
+        1   source  s3    public-dataset-test  
+    Pieces
+        PieceCID                                                          PieceSize  RootCID                                                      FileSize  StoragePath                                                           
+        baga6ea4seaqh3smsr7bshdrsdrdfgjurzbsavfhbx4d64aylwx4c2zaowv23shi  4194304    bafkreihapgghmthdtobwrxswcf4j5whyb2qcqkglus5t3n7vyiu2tmnlj4  2097289   baga6ea4seaqh3smsr7bshdrsdrdfgjurzbsavfhbx4d64aylwx4c2zaowv23shi.car  
+        baga6ea4seaqjkjjoo74igel5gtasefidspjph5w7ekbul7hzgn4ytkiqezjs6ja  4194304    bafkreibfqcqumxxoink3qzyq3mrlps2ubrajybvfdzpnsaxgepipe2witi  2097289   baga6ea4seaqjkjjoo74igel5gtasefidspjph5w7ekbul7hzgn4ytkiqezjs6ja.car  
+        baga6ea4seaqpq35cx7vorecvr76khfqgnt6jweyccwayvlp6dnaxiseai4scseq  4194304    bafkreiaq7ophpn6zcmwwvjdd5o2ox5yw57ypi7pklxvsuvmsuzrfbxgcg4  2097289   baga6ea4seaqpq35cx7vorecvr76khfqgnt6jweyccwayvlp6dnaxiseai4scseq.car  
+        baga6ea4seaqpy36djo7fwwbapfkj6dshtlwgyumnspmxeo74xthbbfmscqkkgjy  4194304    bafkreigyvfppwx4wdecurtuyhdwzpkgpc6y7gxj2toxi2czgd6mc3a5uvy  2097289   baga6ea4seaqpy36djo7fwwbapfkj6dshtlwgyumnspmxeo74xthbbfmscqkkgjy.car  
+        baga6ea4seaqgl2apiunor5mfwpllqgypbvnubp6wvlbx6nqcglxb2ga6nu4r2di  4194304    bafkreih35kwmk4jdxg3zcul4fxh3vdq5ncbrxr3mns4dlmfcj2jy54rgle  2097289   baga6ea4seaqgl2apiunor5mfwpllqgypbvnubp6wvlbx6nqcglxb2ga6nu4r2di.car  
+        baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi  4194304    bafkreidwsqhkfbpzcwocicej2bllnlcmr4gl56heri5bddstklnogvxhpy  2097289   baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi.car  
+        baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly  4194304    bafkreigsrbwz5vhprefbvefx47w3zltm6cinfcmtfe2fyamrcajwwfmukm  2097289   baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly.car  
+        baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja  4194304    bafkreiexktrqyjiadhbpkmqjnc2dthophlemwsoab6tpmvdul4y26g63si  2098351   baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja.car  
+        baga6ea4seaqmw3pr5nhmabok6yawrb45mgue6gmwsvwsab35inja3gq72yiu4ci  4194304    bafybeiapv7qgtdb2ndvtljzhpxwcbehgu5qb3qzxtw7shonfxex3l5jkmi  1161      baga6ea4seaqmw3pr5nhmabok6yawrb45mgue6gmwsvwsab35inja3gq72yiu4ci.car  
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqgl2apiunor5mfwpllqgypbvnubp6wvlbx6nqcglxb2ga6nu4r2di
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqh3smsr7bshdrsdrdfgjurzbsavfhbx4d64aylwx4c2zaowv23shi
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqi5hggfbi5cj4knaqpudflxvhmzs5nuqvidqrhpo52cxajvbrxcja
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqjkjjoo74igel5gtasefidspjph5w7ekbul7hzgn4ytkiqezjs6ja
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaql5gewvtn3zbtdr4c6qvpzmamtthw7effk33tu5ke2btp4o6vgcly
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqmfj5z5zxhozcigx5dn5fq3vzx7yngw5faz6eym7xpovpiaqgqioi
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqmw3pr5nhmabok6yawrb45mgue6gmwsvwsab35inja3gq72yiu4ci
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqpq35cx7vorecvr76khfqgnt6jweyccwayvlp6dnaxiseai4scseq
+
+user@localhost:~/test$ singularity download  --quiet --api http://127.0.0.1:7778 --out-dir '/tempDir/3' baga6ea4seaqpy36djo7fwwbapfkj6dshtlwgyumnspmxeo74xthbbfmscqkkgjy
+
+user@localhost:~/test$ singularity extract-car -i '/tempDir/2' -o '/tempDir/4' -c bafybeiapv7qgtdb2ndvtljzhpxwcbehgu5qb3qzxtw7shonfxex3l5jkmi
+Create Dir /tempDir/4
+Create Dir /tempDir/4/subfolder
+Writing to /tempDir/4/subfolder/15M.random
+Writing to /tempDir/4/subfolder/1k.random
+Writing to /tempDir/4/subfolder/1m.random
+

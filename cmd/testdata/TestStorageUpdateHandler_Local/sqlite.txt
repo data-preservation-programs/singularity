@@ -1,0 +1,8 @@
+user@localhost:~/test$ singularity storage update local name
+ID  Name  Type   Path  
+1   name  local  /tmp  
+
+user@localhost:~/test$ singularity --verbose storage update local name
+ID  Name  CreatedAt            UpdatedAt            Type   Path  Config  
+1   name  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tmp  <nil>   
+

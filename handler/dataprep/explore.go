@@ -9,7 +9,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rjNemo/underscore"
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
@@ -132,9 +131,6 @@ func (DefaultHandler) ExploreHandler(
 	}
 
 	for filePath, files := range filesByPath {
-		slices.SortFunc(files, func(i, j model.File) bool {
-			return i.LastModifiedNano > j.LastModifiedNano
-		})
 		entry := DirEntry{
 			Path:  path + "/" + filePath,
 			IsDir: false,

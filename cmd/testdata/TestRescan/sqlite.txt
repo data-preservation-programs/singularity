@@ -1,16 +1,16 @@
 user@localhost:~/test$ singularity --verbose storage create local source '/tempDir/0'
-ID  Name    CreatedAt            UpdatedAt            Type   Path                                 Config              
+ID  Name    CreatedAt            UpdatedAt            Type   Path                                Config              
 1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
 
 user@localhost:~/test$ singularity --verbose prep create --source source --local-output '/tempDir/1'
 ID  CreatedAt            UpdatedAt            DeleteAfterExport  MaxSize      PieceSize    
 1   2023-04-05 06:07:08  2023-04-05 06:07:08  false              33822867456  34359738368  
     Source Storages:
-        ID  Name    CreatedAt            UpdatedAt            Type   Path                                 Config              
+        ID  Name    CreatedAt            UpdatedAt            Type   Path                                Config              
         1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
     Output Storages:
-        ID  Name      CreatedAt            UpdatedAt            Type   Path                                 Config              
-        2   002-ecf0  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
+        ID  Name      CreatedAt            UpdatedAt            Type   Path                                Config              
+        2   002-2cab  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/1  encoding:Slash,Dot  
 
 user@localhost:~/test$ singularity --verbose prep start-scan 1 source
 ID  Type  State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
@@ -53,11 +53,11 @@ Path  CID
             FileVersions
                 ID  CID                                                          Hash  Size  LastModified         
                 1   bafkreib74obpvy2vpf364efcptdrxzceggfdpskrkvcowfj52hcom2fgzi        11    2023-04-05 06:07:08  
-        /file2.txt  false  bafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m  
+        /file2.txt  false  bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4  
             FileVersions
                 ID  CID                                                          Hash  Size  LastModified         
-                3   bafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m        20    2023-04-05 06:07:08  
                 2   bafkreiallnhgwu6aypczzp2mpjbxkgchzjvnwg7s6t2bh36w7h2czrlwd4        11    2023-04-05 06:07:08  
+                3   bafkreierqw2zopygiabrxusjnslsidehufr4dlkxxdpzy6ypvcljh72g4m        20    2023-04-05 06:07:08  
         /file3.txt  false  bafkreidzi7kg652p4pmqr75qngfznfoh3rw6uiobyhsjn23vftz5dbyaam  
             FileVersions
                 ID  CID                                                          Hash  Size  LastModified         
@@ -73,7 +73,7 @@ user@localhost:~/test$ singularity --verbose prep list-pieces 1
 AttachmentID  SourceStorageID  
 1             1                
     SourceStorage
-        ID  Name    CreatedAt            UpdatedAt            Type   Path                                 Config              
+        ID  Name    CreatedAt            UpdatedAt            Type   Path                                Config              
         1   source  2023-04-05 06:07:08  2023-04-05 06:07:08  local  /tempDir/0  encoding:Slash,Dot  
     Pieces
         ID  CreatedAt            PieceCID                                                          PieceSize    RootCID                                                      FileSize  StorageID  StoragePath                                                           

@@ -1,0 +1,16 @@
+user@localhost:~/test$ singularity prep pause-pack 1 name
+ID  Type  State  ErrorMessage  WorkerID  
+1   pack  ready                <nil>     
+
+user@localhost:~/test$ singularity --verbose prep pause-pack 1 name
+ID  Type  State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
+1   pack  ready                                 <nil>     1             
+
+user@localhost:~/test$ singularity prep pause-pack 1 name 1
+ID  Type  State  ErrorMessage  WorkerID  
+1   pack  ready                <nil>     
+
+user@localhost:~/test$ singularity --verbose prep pause-pack 1 name 1
+ID  Type  State  ErrorMessage  ErrorStackTrace  WorkerID  AttachmentID  
+1   pack  ready                                 <nil>     1             
+
