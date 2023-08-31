@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler"
@@ -42,13 +43,13 @@ func importHandler(
 ) (*model.Wallet, error) {
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid private key")
+		return nil, handler.InvalidParameterError{Err: fmt.Errorf("invalid private key: %w", err)}
 	}
 
 	var result string
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid private key")
+		return nil, handler.InvalidParameterError{Err: fmt.Errorf("invalid private key: %w", err)}
 	}
 
 	_, err = address.NewFromString(result)
