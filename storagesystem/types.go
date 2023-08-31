@@ -148,7 +148,7 @@ func (option *Option) ToCLIFlag(prefix string, useBuiltIn bool, category string)
 		required = option.Required
 	}
 	var flag cli.Flag
-	name := prefix + option.Name
+	name := prefix + strings.ReplaceAll(option.Name, "_", "-")
 	usage := strings.Split(option.Help, "\n")[0]
 	switch (*fs.Option)(option).Type() {
 	case "string":

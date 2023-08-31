@@ -137,7 +137,7 @@ func Pack(
 	car := &model.Car{
 		PieceCID:      model.CID(pieceCid),
 		PieceSize:     int64(finalPieceSize),
-		RootCID:       model.CID(packutil.EmptyFileCid),
+		RootCID:       model.CID(assembler.rootCID),
 		FileSize:      fileSize,
 		StorageID:     storageID,
 		StoragePath:   filename,

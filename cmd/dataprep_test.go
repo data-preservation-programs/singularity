@@ -83,10 +83,8 @@ func TestDataPrepCreateHandler_WithStorage(t *testing.T) {
 	defer swapDataPrepHandler(mockHandler)()
 
 	mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	source := t.TempDir()
 	output := t.TempDir()
-	_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --local-source %s --local-output %s",
-		testutil.EscapePath(source),
+	_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --source source --local-output %s",
 		testutil.EscapePath(output)))
 	require.NoError(t, err)
 }

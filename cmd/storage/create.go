@@ -59,7 +59,7 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 	config := make(map[string]string)
 	for _, flagName := range c.LocalFlagNames() {
 		if c.IsSet(flagName) {
-			config[flagName] = c.String(flagName)
+			config[strings.ReplaceAll(flagName, "-", "_")] = c.String(flagName)
 		}
 	}
 	s, err := storage.Default.CreateStorageHandler(c.Context, db, storageType, storage.CreateRequest{

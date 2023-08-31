@@ -112,24 +112,24 @@ func TestStringSliceValueScan_Nil(t *testing.T) {
 }
 
 func TestStringMapValueScan(t *testing.T) {
-	s := StringMap{"key": "value"}
+	s := ConfigMap{"key": "value"}
 	data, err := s.Value()
 	require.NoError(t, err)
 	require.NotEmpty(t, data)
 
-	var s2 StringMap
+	var s2 ConfigMap
 	err = s2.Scan(data)
 	require.NoError(t, err)
 	require.Equal(t, s, s2)
 }
 
 func TestStringMapValueScan_Nil(t *testing.T) {
-	s := StringMap(nil)
+	s := ConfigMap(nil)
 	data, err := s.Value()
 	require.NoError(t, err)
 	require.NotEmpty(t, data)
 
-	var s2 StringMap
+	var s2 ConfigMap
 	err = s2.Scan(data)
 	require.NoError(t, err)
 	require.Equal(t, s, s2)

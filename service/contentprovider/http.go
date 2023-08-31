@@ -6,12 +6,14 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/errors/oserror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/fxamacker/cbor/v2"
@@ -191,9 +193,13 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
-	// Remove all relevant credentials
+	// Remove all credentials
 	for i := range metadata.Storages {
-		metadata.Storages[i].Metadata = nil
+		for k, _ := range metadata.Storages[i].Config {
+			if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
+				delete(metadata.Storages[i].Config, k)
+			}
+		}
 	}
 
 	acceptHeader := c.Request().Header.Get("Accept")
@@ -217,6 +223,58 @@ type PieceMetadata struct {
 	Storages  []model.Storage  `json:"storages"`
 	CarBlocks []model.CarBlock `json:"carBlocks"`
 	Files     []model.File     `json:"files"`
+}
+
+type rcloneSeeker struct {
+	path    string
+	size    int64
+	handler storagesystem.Handler
+	offset  int64
+	file    io.ReadCloser
+}
+
+func (r *rcloneSeeker) Read(p []byte) (n int, err error) {
+	if r.file == nil {
+		var err error
+		r.file, _, err = r.handler.Read(context.Background(), r.path, r.offset, r.size-r.offset)
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+	}
+	return r.file.Read(p)
+}
+
+func (r *rcloneSeeker) Seek(offset int64, whence int) (int64, error) {
+	if r.file != nil {
+		err := r.file.Close()
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+	}
+	switch whence {
+	case io.SeekStart:
+		r.offset = offset
+	case io.SeekCurrent:
+		r.offset += offset
+	case io.SeekEnd:
+		r.offset = r.size + offset
+	default:
+		return 0, errors.New("Unknown seek mode")
+	}
+	if r.offset > r.size {
+		return 0, errors.New("Seeking past end of file")
+	}
+	if r.offset < 0 {
+		return 0, errors.New("Seeking before start of file")
+	}
+	return r.offset, nil
+}
+
+func (r *rcloneSeeker) Close() error {
+	if r.file != nil {
+		return r.file.Close()
+	}
+	return nil
 }
 
 // findPiece is a method on the HTTPServer struct that finds a piece by its CID.
@@ -253,7 +311,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 ) {
 	db := s.dbNoContext.WithContext(ctx)
 	var cars []model.Car
-	err := db.Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
+	err := db.Preload("Storage").Where("piece_cid = ?", model.CID(pieceCid)).Find(&cars).Error
 	if err != nil {
 		return nil, time.Time{}, errors.WithStack(err)
 	}
@@ -266,6 +324,25 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	for _, car := range cars {
 		if car.StoragePath == "" {
 			continue
+		}
+
+		if car.Storage != nil {
+			rclone, err := storagesystem.NewRCloneHandler(ctx, *car.Storage)
+			if err != nil {
+				errs = append(errs, errors.Wrapf(err, "failed to create rclone handler with storage %d", car.Storage.ID))
+				continue
+			}
+			obj, err := rclone.Check(ctx, car.StoragePath)
+			if err != nil {
+				errs = append(errs, errors.Wrapf(err, "failed to check storage path %s", car.StoragePath))
+				continue
+			}
+			seeker := &rcloneSeeker{
+				path:    car.StoragePath,
+				size:    obj.Size(),
+				handler: rclone,
+			}
+			return seeker, obj.ModTime(ctx), nil
 		}
 
 		file, err := os.Open(car.StoragePath)

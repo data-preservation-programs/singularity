@@ -29,13 +29,8 @@ var CreateCmd = &cli.Command{
 			Usage: "The name of the output storage to be used for the preparation",
 		},
 		&cli.StringSliceFlag{
-			Name:     "local-source",
-			Category: "Quick creation with local paths",
-			Usage:    "The local source path to be used for the preparation. This is a convenient flag that will create a source storage with the provided path",
-		},
-		&cli.StringSliceFlag{
 			Name:     "local-output",
-			Category: "Quick creation with local paths",
+			Category: "Quick creation with local output paths",
 			Usage:    "The local output path to be used for the preparation. This is a convenient flag that will create a output storage with the provided path",
 		},
 		&cli.StringFlag{
@@ -61,13 +56,6 @@ var CreateCmd = &cli.Command{
 		outputStorages := c.StringSlice("output")
 		maxSizeStr := c.String("max-size")
 		pieceSizeStr := c.String("piece-size")
-		for _, sourcePath := range c.StringSlice("local-source") {
-			source, err := createStorageIfNotExist(c.Context, db, sourcePath)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			sourceStorages = append(sourceStorages, source.Name)
-		}
 		for _, outputPath := range c.StringSlice("local-output") {
 			output, err := createStorageIfNotExist(c.Context, db, outputPath)
 			if err != nil {

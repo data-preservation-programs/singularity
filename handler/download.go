@@ -67,7 +67,10 @@ func DownloadHandler(ctx *cli.Context,
 		}
 
 		prefix := storage.Type + "-"
-		provider := config[prefix+"provider"]
+		provider := storage.Config["provider"]
+		if provider == "" {
+			provider = config[prefix+"provider"]
+		}
 		providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
 			return providerOption.Provider == provider
 		})
@@ -171,7 +174,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 			reader := io.LimitReader(clonedReader, end-start)
 			buffer := make([]byte, 4096)
 			if !cctx.Bool("quiet") {
-				cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Downloading part %d - %d\n", i, end, start)))
+				_, _ = cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Downloading part %d - %d\n", i, end, start)))
 			}
 			for {
 				if ctx.Err() != nil {
@@ -200,7 +203,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 				start += int64(n)
 			}
 			if !cctx.Bool("quiet") {
-				cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Completed\n", i)))
+				_, _ = cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Completed\n", i)))
 			}
 		}(i)
 	}
@@ -214,7 +217,7 @@ func download(cctx *cli.Context, reader *store.PieceReader, outPath string, conc
 	select {
 	case <-done:
 		if !cctx.Bool("quiet") {
-			cctx.App.Writer.Write([]byte("Download Complete\n"))
+			_, _ = cctx.App.Writer.Write([]byte("Download Complete\n"))
 		}
 		return file.Close()
 	case err := <-errChan:

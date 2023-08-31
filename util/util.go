@@ -136,3 +136,5 @@ func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
 	}
 	return privateBytes, publicBytes, peerID, nil
 }
+
+var ErrNotImplemented = errors.New("not implemented")

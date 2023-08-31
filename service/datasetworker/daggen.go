@@ -184,6 +184,11 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		}
 		fileSize = obj.Size()
 
+		if len(dagGenerator.carBlocks) == 0 {
+			logger.Info("Nothing to export to dag. Skipping.")
+			return nil
+		}
+
 		pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
 		if err != nil {
 			return errors.WithStack(err)
@@ -200,6 +205,12 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		if err != nil {
 			return errors.WithStack(err)
 		}
+
+		if len(dagGenerator.carBlocks) == 0 {
+			logger.Info("Nothing to export to dag. Skipping.")
+			return nil
+		}
+		
 		pieceCid, finalPieceSize, err = pack.GetCommp(calc, uint64(pieceSize))
 		if err != nil {
 			return errors.WithStack(err)

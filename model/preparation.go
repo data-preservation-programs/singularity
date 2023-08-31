@@ -45,8 +45,7 @@ type Storage struct {
 	UpdatedAt time.Time `json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
 	Type      string    `json:"type"`
 	Path      string    `json:"path"`                       // Path is the path to the storage root.
-	Config    StringMap `gorm:"type:JSON"  table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
-	Metadata  StringMap `gorm:"type:JSON"  table:"verbose"` // Metadata is a map of key-value pairs that can be used to store arbitrary information about the source storage.
+	Config    ConfigMap `gorm:"type:JSON"  table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
 
 	// Associations
 	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" swaggerignore:"true" table:"expand;header:As Source: "`

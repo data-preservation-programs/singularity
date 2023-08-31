@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/gotidy/ptr"
 	"github.com/rjNemo/underscore"
 )
 
@@ -34,6 +35,18 @@ func (w *Thread) scan(ctx context.Context, job model.Job) error {
 		return errors.WithStack(err)
 	}
 	entryChan := sourceScanner.Scan(ctx, "", job.Attachment.LastScannedPath)
+	var lastScannedPath *string
+	defer func() {
+		if lastScannedPath != nil {
+			err = database.DoRetry(ctx, func() error {
+				return db.Model(&model.SourceAttachment{}).Where("id = ?", job.AttachmentID).
+					Update("last_scanned_path", lastScannedPath).Error
+			})
+			if err != nil {
+				w.logger.Errorw("failed to update last scanned path", "error", err)
+			}
+		}
+	}()
 	for entry := range entryChan {
 		if entry.Error != nil {
 			w.logger.Errorw("failed to scan", "error", entry.Error)
@@ -48,13 +61,8 @@ func (w *Thread) scan(ctx context.Context, job model.Job) error {
 			w.logger.Infow("file already exists", "path", entry.Info.Remote())
 			continue
 		}
-		err = database.DoRetry(ctx, func() error {
-			return db.Model(&model.SourceAttachment{}).Where("id = ?", job.AttachmentID).
-				Update("last_scanned_path", file.Path).Error
-		})
-		if err != nil {
-			return errors.Wrapf(err, "failed to update last scanned path to %s", file.Path)
-		}
+
+		lastScannedPath = &file.Path
 
 		remaining.add(fileRanges)
 		for remaining.carSize >= job.Attachment.Preparation.MaxSize {
@@ -64,6 +72,8 @@ func (w *Thread) scan(ctx context.Context, job model.Job) error {
 			}
 		}
 	}
+
+	lastScannedPath = ptr.Of("")
 
 	for len(remaining.fileRanges) > 0 {
 		err = w.chunkOnce(ctx, *job.Attachment, remaining)

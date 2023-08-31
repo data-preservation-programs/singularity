@@ -3,9 +3,11 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
+	"golang.org/x/exp/slices"
 )
 
 var ErrInvalidCIDEntry = errors.New("invalid CID entry in the database")
@@ -14,7 +16,7 @@ var ErrInvalidStringMapEntry = errors.New("invalid string map entry in the datab
 
 type StringSlice []string
 
-type StringMap map[string]string
+type ConfigMap map[string]string
 
 type CID cid.Cid
 
@@ -106,7 +108,7 @@ func (c *CID) Scan(src any) error {
 func (ss StringSlice) Value() (driver.Value, error) {
 	return json.Marshal(ss)
 }
-func (m StringMap) Value() (driver.Value, error) {
+func (m ConfigMap) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
 
@@ -124,7 +126,7 @@ func (ss *StringSlice) Scan(src any) error {
 	return json.Unmarshal(source, ss)
 }
 
-func (m *StringMap) Scan(src any) error {
+func (m *ConfigMap) Scan(src any) error {
 	if src == nil {
 		*m = nil
 		return nil
@@ -136,6 +138,24 @@ func (m *StringMap) Scan(src any) error {
 	}
 
 	return json.Unmarshal(source, m)
+}
+
+func (m ConfigMap) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	var values []string
+	for k, v := range m {
+		if v == "" || v == "0" || v == "false" {
+			continue
+		}
+		if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
+			v = "*"
+		}
+		values = append(values, k+":"+v)
+	}
+	slices.Sort(values)
+	return strings.Join(values, " ")
 }
 
 type WorkerType string

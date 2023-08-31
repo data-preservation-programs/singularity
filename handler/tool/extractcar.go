@@ -9,6 +9,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/cockroachdb/errors/oserror"
+	"github.com/data-preservation-programs/singularity/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -26,7 +27,7 @@ type multiBlockstore struct {
 }
 
 func (m multiBlockstore) DeleteBlock(ctx context.Context, c cid.Cid) error {
-	panic("implement me")
+	return util.ErrNotImplemented
 }
 
 func (m multiBlockstore) Has(ctx context.Context, c cid.Cid) (bool, error) {
@@ -75,19 +76,19 @@ func (m multiBlockstore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 }
 
 func (m multiBlockstore) Put(ctx context.Context, block blocks.Block) error {
-	panic("implement me")
+	return util.ErrNotImplemented
 }
 
 func (m multiBlockstore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	panic("implement me")
+	return util.ErrNotImplemented
 }
 
 func (m multiBlockstore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
-	panic("implement me")
+	return nil, util.ErrNotImplemented
 }
 
 func (m multiBlockstore) HashOnRead(enabled bool) {
-	panic("implement me")
+	return
 }
 
 func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.Cid) error {
@@ -167,7 +168,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to get output path for CID %s", c)
 			}
 		}
-		ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
+		_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
 		return os.WriteFile(outPath, node.RawData(), 0600)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
@@ -191,7 +192,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 				return errors.Wrapf(err, "failed to create output file %s", outPath)
 			}
 			defer f.Close()
-			ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
+			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
 			_, err = reader.WriteTo(f)
 			if err != nil {
 				return errors.Wrapf(err, "failed to write to output file %s", outPath)
@@ -201,7 +202,7 @@ func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c 
 			if err != nil {
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
-			ctx.App.Writer.Write([]byte(fmt.Sprintf("Create Dir %s\n", outPath)))
+			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Create Dir %s\n", outPath)))
 			err = os.MkdirAll(outPath, 0755)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)

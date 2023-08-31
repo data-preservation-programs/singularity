@@ -273,7 +273,6 @@ func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) erro
 //	         putting
 func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	buf := &bytes.Buffer{}
-	oldNode := d.node
 	newNode, err := d.Node()
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -282,16 +281,11 @@ func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	if oldNode != nil {
-		err = d.bstore.DeleteBlock(ctx, oldNode.Cid())
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-	}
 	err = d.bstore.Put(ctx, newNode)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
 	ch, err := d.bstore.AllKeysChan(ctx)
 	if err != nil {
 		return nil, errors.WithStack(err)

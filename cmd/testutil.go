@@ -73,6 +73,7 @@ func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 }
 
 var removeANSI = regexp.MustCompile(`\x1B\[[0-?]*[ -/]*[@-~]`)
+var timeRegex = regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}`)
 
 func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	t.Helper()
@@ -82,6 +83,8 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	for i, tempDir := range tempDirs {
 		ansi = strings.ReplaceAll(ansi, tempDir, "/tempDir/"+strconv.Itoa(i))
 	}
+
+	ansi = timeRegex.ReplaceAllString(ansi, "2023-04-05 06:07:08")
 
 	err := os.MkdirAll(filepath.Dir(path), 0700)
 	require.NoError(t, err)

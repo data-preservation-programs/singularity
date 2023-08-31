@@ -24,6 +24,7 @@ var ErrFileModified = errors.New("file has been modified")
 // Assembler assembles various objects and data streams into a coherent output stream.
 // It uses the provided file ranges, and internal buffers to produce the desired output.
 type Assembler struct {
+	rootCID cid.Cid
 	// objects represents a map of object IDs to their corresponding fs.Object representations.
 	objects map[uint64]fs.Object
 	// ctx provides the context for the assembler's operations.
@@ -97,11 +98,11 @@ func (a *Assembler) readBuffer(p []byte) (int, error) {
 func (a *Assembler) populateBuffer(carBlocks []model.CarBlock) error {
 	var readers []io.Reader
 	if a.carOffset == 0 {
-		rootCid := packutil.EmptyFileCid
+		a.rootCID = packutil.EmptyFileCid
 		if len(carBlocks) > 0 {
-			rootCid = cid.Cid(carBlocks[0].CID)
+			a.rootCID = cid.Cid(carBlocks[0].CID)
 		}
-		header, err := util.GenerateCarHeader(rootCid)
+		header, err := util.GenerateCarHeader(a.rootCID)
 		if err != nil {
 			return errors.WithStack(err)
 		}

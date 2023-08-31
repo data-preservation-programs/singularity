@@ -7,14 +7,13 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/data-preservation-programs/singularity/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 
 	format "github.com/ipfs/go-ipld-format"
 	"gorm.io/gorm"
 )
-
-var ErrNotImplemented = errors.New("not implemented")
 
 // FileReferenceBlockStore is a struct that represents a block store backed by file references.
 // It uses a GORM database.
@@ -100,20 +99,20 @@ func (i *FileReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, 
 }
 
 func (i *FileReferenceBlockStore) Put(ctx context.Context, block blocks.Block) error {
-	return ErrNotImplemented
+	return util.ErrNotImplemented
 }
 
 func (i *FileReferenceBlockStore) PutMany(ctx context.Context, i2 []blocks.Block) error {
-	return ErrNotImplemented
+	return util.ErrNotImplemented
 }
 
 func (i *FileReferenceBlockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
-	return nil, ErrNotImplemented
+	return nil, util.ErrNotImplemented
 }
 
 func (i *FileReferenceBlockStore) HashOnRead(enabled bool) {
 }
 
 func (i *FileReferenceBlockStore) DeleteBlock(ctx context.Context, cid cid.Cid) error {
-	return ErrNotImplemented
+	return util.ErrNotImplemented
 }

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
+	util2 "github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/boxo/util"
@@ -47,12 +48,12 @@ func TestFileReferenceBlockStore_Has(t *testing.T) {
 
 func TestFileReferenceBlockStore_NotImplemented(t *testing.T) {
 	store := &FileReferenceBlockStore{}
-	require.ErrorIs(t, store.Put(context.Background(), nil), ErrNotImplemented)
-	require.ErrorIs(t, store.PutMany(context.Background(), nil), ErrNotImplemented)
+	require.ErrorIs(t, store.Put(context.Background(), nil), util2.ErrNotImplemented)
+	require.ErrorIs(t, store.PutMany(context.Background(), nil), util2.ErrNotImplemented)
 	c, err := store.AllKeysChan(context.Background())
-	require.ErrorIs(t, err, ErrNotImplemented)
+	require.ErrorIs(t, err, util2.ErrNotImplemented)
 	require.Nil(t, c)
-	require.ErrorIs(t, store.DeleteBlock(context.Background(), cid.Undef), ErrNotImplemented)
+	require.ErrorIs(t, store.DeleteBlock(context.Background(), cid.Undef), util2.ErrNotImplemented)
 	store.HashOnRead(true)
 }
 

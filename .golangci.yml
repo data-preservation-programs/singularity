@@ -6,6 +6,8 @@ run:
     - docs
     - dashboard/model2ts
     - handler/datasource/generate
+  skip-files:
+    - cmd/testutil.go
 
 linters:
   enable-all: true
