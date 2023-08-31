@@ -67,7 +67,7 @@ type PostStorageS3SeaweedfsParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3SeaweedFSStorageRequest
+	Request *models.StorageCreateS3SeaweedFSStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3SeaweedfsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 seaweedfs params
-func (o *PostStorageS3SeaweedfsParams) WithRequest(request models.StorageCreateS3SeaweedFSStorageRequest) *PostStorageS3SeaweedfsParams {
+func (o *PostStorageS3SeaweedfsParams) WithRequest(request *models.StorageCreateS3SeaweedFSStorageRequest) *PostStorageS3SeaweedfsParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 seaweedfs params
-func (o *PostStorageS3SeaweedfsParams) SetRequest(request models.StorageCreateS3SeaweedFSStorageRequest) {
+func (o *PostStorageS3SeaweedfsParams) SetRequest(request *models.StorageCreateS3SeaweedFSStorageRequest) {
 	o.Request = request
 }
 

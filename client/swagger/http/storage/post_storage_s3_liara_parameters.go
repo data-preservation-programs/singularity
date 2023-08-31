@@ -67,7 +67,7 @@ type PostStorageS3LiaraParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3LiaraStorageRequest
+	Request *models.StorageCreateS3LiaraStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3LiaraParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 liara params
-func (o *PostStorageS3LiaraParams) WithRequest(request models.StorageCreateS3LiaraStorageRequest) *PostStorageS3LiaraParams {
+func (o *PostStorageS3LiaraParams) WithRequest(request *models.StorageCreateS3LiaraStorageRequest) *PostStorageS3LiaraParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 liara params
-func (o *PostStorageS3LiaraParams) SetRequest(request models.StorageCreateS3LiaraStorageRequest) {
+func (o *PostStorageS3LiaraParams) SetRequest(request *models.StorageCreateS3LiaraStorageRequest) {
 	o.Request = request
 }
 

@@ -67,7 +67,7 @@ type PostStorageS3NeteaseParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3NeteaseStorageRequest
+	Request *models.StorageCreateS3NeteaseStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3NeteaseParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 netease params
-func (o *PostStorageS3NeteaseParams) WithRequest(request models.StorageCreateS3NeteaseStorageRequest) *PostStorageS3NeteaseParams {
+func (o *PostStorageS3NeteaseParams) WithRequest(request *models.StorageCreateS3NeteaseStorageRequest) *PostStorageS3NeteaseParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 netease params
-func (o *PostStorageS3NeteaseParams) SetRequest(request models.StorageCreateS3NeteaseStorageRequest) {
+func (o *PostStorageS3NeteaseParams) SetRequest(request *models.StorageCreateS3NeteaseStorageRequest) {
 	o.Request = request
 }
 

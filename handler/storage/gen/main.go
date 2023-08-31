@@ -19,9 +19,6 @@ const header = `//lint:file-ignore U1000 Ignore all unused code, it's generated
 // Code generated. DO NOT EDIT.
 package storage
 
-import (
-	"github.com/rclone/rclone/fs"
-)
 `
 
 const structTemplate = `
@@ -150,7 +147,7 @@ func main() {
 				if option.Default != nil {
 					tp = reflect.TypeOf(option.Default).String()
 				}
-				if tp == "fs.SizeSuffix" || tp == "encoder.MultiEncoder" {
+				if strings.HasPrefix(tp, "fs.") || strings.HasPrefix(tp, "encoder.") {
 					tp = "string"
 				}
 				description := strings.Split(option.Help, "\n")[0]

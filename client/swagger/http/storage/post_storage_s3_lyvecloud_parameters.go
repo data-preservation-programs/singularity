@@ -67,7 +67,7 @@ type PostStorageS3LyvecloudParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3LyveCloudStorageRequest
+	Request *models.StorageCreateS3LyveCloudStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3LyvecloudParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 lyvecloud params
-func (o *PostStorageS3LyvecloudParams) WithRequest(request models.StorageCreateS3LyveCloudStorageRequest) *PostStorageS3LyvecloudParams {
+func (o *PostStorageS3LyvecloudParams) WithRequest(request *models.StorageCreateS3LyveCloudStorageRequest) *PostStorageS3LyvecloudParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 lyvecloud params
-func (o *PostStorageS3LyvecloudParams) SetRequest(request models.StorageCreateS3LyveCloudStorageRequest) {
+func (o *PostStorageS3LyvecloudParams) SetRequest(request *models.StorageCreateS3LyveCloudStorageRequest) {
 	o.Request = request
 }
 

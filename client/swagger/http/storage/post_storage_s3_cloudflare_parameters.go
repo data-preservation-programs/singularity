@@ -67,7 +67,7 @@ type PostStorageS3CloudflareParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3CloudflareStorageRequest
+	Request *models.StorageCreateS3CloudflareStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3CloudflareParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 cloudflare params
-func (o *PostStorageS3CloudflareParams) WithRequest(request models.StorageCreateS3CloudflareStorageRequest) *PostStorageS3CloudflareParams {
+func (o *PostStorageS3CloudflareParams) WithRequest(request *models.StorageCreateS3CloudflareStorageRequest) *PostStorageS3CloudflareParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 cloudflare params
-func (o *PostStorageS3CloudflareParams) SetRequest(request models.StorageCreateS3CloudflareStorageRequest) {
+func (o *PostStorageS3CloudflareParams) SetRequest(request *models.StorageCreateS3CloudflareStorageRequest) {
 	o.Request = request
 }
 

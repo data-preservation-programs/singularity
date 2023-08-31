@@ -67,7 +67,7 @@ type PostStorageS3CephParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3CephStorageRequest
+	Request *models.StorageCreateS3CephStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3CephParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 ceph params
-func (o *PostStorageS3CephParams) WithRequest(request models.StorageCreateS3CephStorageRequest) *PostStorageS3CephParams {
+func (o *PostStorageS3CephParams) WithRequest(request *models.StorageCreateS3CephStorageRequest) *PostStorageS3CephParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 ceph params
-func (o *PostStorageS3CephParams) SetRequest(request models.StorageCreateS3CephStorageRequest) {
+func (o *PostStorageS3CephParams) SetRequest(request *models.StorageCreateS3CephStorageRequest) {
 	o.Request = request
 }
 

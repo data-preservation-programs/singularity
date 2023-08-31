@@ -67,7 +67,7 @@ type PostStorageS3IdriveParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3IDriveStorageRequest
+	Request *models.StorageCreateS3IDriveStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3IdriveParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 idrive params
-func (o *PostStorageS3IdriveParams) WithRequest(request models.StorageCreateS3IDriveStorageRequest) *PostStorageS3IdriveParams {
+func (o *PostStorageS3IdriveParams) WithRequest(request *models.StorageCreateS3IDriveStorageRequest) *PostStorageS3IdriveParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 idrive params
-func (o *PostStorageS3IdriveParams) SetRequest(request models.StorageCreateS3IDriveStorageRequest) {
+func (o *PostStorageS3IdriveParams) SetRequest(request *models.StorageCreateS3IDriveStorageRequest) {
 	o.Request = request
 }
 

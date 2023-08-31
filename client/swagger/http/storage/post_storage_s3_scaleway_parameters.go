@@ -67,7 +67,7 @@ type PostStorageS3ScalewayParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3ScalewayStorageRequest
+	Request *models.StorageCreateS3ScalewayStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3ScalewayParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 scaleway params
-func (o *PostStorageS3ScalewayParams) WithRequest(request models.StorageCreateS3ScalewayStorageRequest) *PostStorageS3ScalewayParams {
+func (o *PostStorageS3ScalewayParams) WithRequest(request *models.StorageCreateS3ScalewayStorageRequest) *PostStorageS3ScalewayParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 scaleway params
-func (o *PostStorageS3ScalewayParams) SetRequest(request models.StorageCreateS3ScalewayStorageRequest) {
+func (o *PostStorageS3ScalewayParams) SetRequest(request *models.StorageCreateS3ScalewayStorageRequest) {
 	o.Request = request
 }
 

@@ -67,7 +67,7 @@ type PostStorageS3AwsParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3AWSStorageRequest
+	Request *models.StorageCreateS3AWSStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3AwsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 aws params
-func (o *PostStorageS3AwsParams) WithRequest(request models.StorageCreateS3AWSStorageRequest) *PostStorageS3AwsParams {
+func (o *PostStorageS3AwsParams) WithRequest(request *models.StorageCreateS3AWSStorageRequest) *PostStorageS3AwsParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 aws params
-func (o *PostStorageS3AwsParams) SetRequest(request models.StorageCreateS3AWSStorageRequest) {
+func (o *PostStorageS3AwsParams) SetRequest(request *models.StorageCreateS3AWSStorageRequest) {
 	o.Request = request
 }
 

@@ -67,7 +67,7 @@ type PostStorageSftpParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateSftpStorageRequest
+	Request *models.StorageCreateSftpStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageSftpParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage sftp params
-func (o *PostStorageSftpParams) WithRequest(request models.StorageCreateSftpStorageRequest) *PostStorageSftpParams {
+func (o *PostStorageSftpParams) WithRequest(request *models.StorageCreateSftpStorageRequest) *PostStorageSftpParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage sftp params
-func (o *PostStorageSftpParams) SetRequest(request models.StorageCreateSftpStorageRequest) {
+func (o *PostStorageSftpParams) SetRequest(request *models.StorageCreateSftpStorageRequest) {
 	o.Request = request
 }
 

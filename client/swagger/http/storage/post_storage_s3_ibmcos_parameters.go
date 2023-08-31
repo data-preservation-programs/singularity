@@ -67,7 +67,7 @@ type PostStorageS3IbmcosParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3IBMCOSStorageRequest
+	Request *models.StorageCreateS3IBMCOSStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3IbmcosParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 ibmcos params
-func (o *PostStorageS3IbmcosParams) WithRequest(request models.StorageCreateS3IBMCOSStorageRequest) *PostStorageS3IbmcosParams {
+func (o *PostStorageS3IbmcosParams) WithRequest(request *models.StorageCreateS3IBMCOSStorageRequest) *PostStorageS3IbmcosParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 ibmcos params
-func (o *PostStorageS3IbmcosParams) SetRequest(request models.StorageCreateS3IBMCOSStorageRequest) {
+func (o *PostStorageS3IbmcosParams) SetRequest(request *models.StorageCreateS3IBMCOSStorageRequest) {
 	o.Request = request
 }
 

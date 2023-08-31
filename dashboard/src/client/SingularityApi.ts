@@ -153,15 +153,6 @@ export interface DealProposal {
   verified?: boolean;
 }
 
-export enum FsDuration {
-  ModTimeNotSupported = -9223372036854776000,
-}
-
-export interface FsTristate {
-  valid?: boolean;
-  value?: boolean;
-}
-
 export type ModelCID = object;
 
 export interface ModelCar {
@@ -378,6 +369,216 @@ export interface ScheduleCreateRequest {
   verified?: boolean;
 }
 
+export interface StorageAcdConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /** Checkpoint for internal polling (debug). */
+  checkpoint?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Files >= this size will be downloaded via their tempLink.
+   * @default "9Gi"
+   */
+  templinkThreshold?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /**
+   * Additional time per GiB to wait after a failed complete upload to see if it appears.
+   * @default "3m0s"
+   */
+  uploadWaitPerGb?: string;
+}
+
+export interface StorageAzureblobConfig {
+  /** Access tier of blob: hot, cool or archive. */
+  accessTier?: string;
+  /** Azure Storage Account Name. */
+  account?: string;
+  /**
+   * Delete archive tier blobs before overwriting.
+   * @default false
+   */
+  archiveTierDelete?: boolean;
+  /**
+   * Upload chunk size.
+   * @default "4Mi"
+   */
+  chunkSize?: string;
+  /** Password for the certificate file (optional). */
+  clientCertificatePassword?: string;
+  /** Path to a PEM or PKCS12 certificate file including the private key. */
+  clientCertificatePath?: string;
+  /** The ID of the client in use. */
+  clientId?: string;
+  /** One of the service principal's client secrets */
+  clientSecret?: string;
+  /**
+   * Send the certificate chain when using certificate auth.
+   * @default false
+   */
+  clientSendCertificateChain?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
+   */
+  encoding?: string;
+  /** Endpoint for the service. */
+  endpoint?: string;
+  /**
+   * Read credentials from runtime (environment variables, CLI or MSI).
+   * @default false
+   */
+  envAuth?: boolean;
+  /** Storage Account Shared Key. */
+  key?: string;
+  /**
+   * Size of blob list.
+   * @default 5000
+   */
+  listChunk?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /** Object ID of the user-assigned MSI to use, if any. */
+  msiClientId?: string;
+  /** Azure resource ID of the user-assigned MSI to use, if any. */
+  msiMiResId?: string;
+  /** Object ID of the user-assigned MSI to use, if any. */
+  msiObjectId?: string;
+  /**
+   * If set, don't attempt to check the container exists or create it.
+   * @default false
+   */
+  noCheckContainer?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /** The user's password */
+  password?: string;
+  /**
+   * Public access level of a container: blob or container.
+   * @example ""
+   */
+  publicAccess?: string;
+  /** SAS URL for container level access only. */
+  sasUrl?: string;
+  /** Path to file containing credentials for use with a service principal. */
+  servicePrincipalFile?: string;
+  /** ID of the service principal's tenant. Also called its directory ID. */
+  tenant?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 16
+   */
+  uploadConcurrency?: number;
+  /** Cutoff for switching to chunked upload (<= 256 MiB) (deprecated). */
+  uploadCutoff?: string;
+  /**
+   * Uses local storage emulator if provided as 'true'.
+   * @default false
+   */
+  useEmulator?: boolean;
+  /**
+   * Use a managed service identity to authenticate (only works in Azure).
+   * @default false
+   */
+  useMsi?: boolean;
+  /** User name (usually an email address) */
+  username?: string;
+}
+
+export interface StorageB2Config {
+  /** Account ID or Application Key ID. */
+  account?: string;
+  /**
+   * Upload chunk size.
+   * @default "96Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Disable checksums for large (> upload cutoff) files.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Time before the authorization token will expire in s or suffix ms|s|m|h|d.
+   * @default "1w"
+   */
+  downloadAuthDuration?: string;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for the service. */
+  endpoint?: string;
+  /**
+   * Permanently delete files on remote removal, otherwise hide files.
+   * @default false
+   */
+  hardDelete?: boolean;
+  /** Application Key. */
+  key?: string;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /** A flag string for X-Bz-Test-Mode header for debugging. */
+  testMode?: string;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
 export interface StorageBoxConfig {
   /** Box App Primary Access Token */
   accessToken?: string;
@@ -427,11 +628,38 @@ export interface StorageBoxConfig {
   uploadCutoff?: string;
 }
 
-export type StorageCreateAcdStorageRequest = object;
+export interface StorageCreateAcdStorageRequest {
+  config?: StorageAcdConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateAzureblobStorageRequest = object;
+export interface StorageCreateAzureblobStorageRequest {
+  config?: StorageAzureblobConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateB2StorageRequest = object;
+export interface StorageCreateB2StorageRequest {
+  config?: StorageB2Config;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateBoxStorageRequest {
   config?: StorageBoxConfig;
@@ -444,9 +672,27 @@ export interface StorageCreateBoxStorageRequest {
   path?: string;
 }
 
-export type StorageCreateDriveStorageRequest = object;
+export interface StorageCreateDriveStorageRequest {
+  config?: StorageDriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateDropboxStorageRequest = object;
+export interface StorageCreateDropboxStorageRequest {
+  config?: StorageDropboxConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateFichierStorageRequest {
   config?: StorageFichierConfig;
@@ -470,7 +716,16 @@ export interface StorageCreateFilefabricStorageRequest {
   path?: string;
 }
 
-export type StorageCreateFtpStorageRequest = object;
+export interface StorageCreateFtpStorageRequest {
+  config?: StorageFtpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateGcsStorageRequest {
   config?: StorageGcsConfig;
@@ -527,7 +782,16 @@ export interface StorageCreateHttpStorageRequest {
   path?: string;
 }
 
-export type StorageCreateInternetarchiveStorageRequest = object;
+export interface StorageCreateInternetarchiveStorageRequest {
+  config?: StorageInternetarchiveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateJottacloudStorageRequest {
   config?: StorageJottacloudConfig;
@@ -617,17 +881,71 @@ export interface StorageCreateNetstorageStorageRequest {
   path?: string;
 }
 
-export type StorageCreateOnedriveStorageRequest = object;
+export interface StorageCreateOnedriveStorageRequest {
+  config?: StorageOnedriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateOosEnvAuthStorageRequest = object;
+export interface StorageCreateOosEnvAuthStorageRequest {
+  config?: StorageOosEnvAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateOosInstancePrincipalAuthStorageRequest = object;
+export interface StorageCreateOosInstancePrincipalAuthStorageRequest {
+  config?: StorageOosInstancePrincipalAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateOosNoAuthStorageRequest = object;
+export interface StorageCreateOosNoAuthStorageRequest {
+  config?: StorageOosNoAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateOosResourcePrincipalAuthStorageRequest = object;
+export interface StorageCreateOosResourcePrincipalAuthStorageRequest {
+  config?: StorageOosResourcePrincipalAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateOosUserPrincipalAuthStorageRequest = object;
+export interface StorageCreateOosUserPrincipalAuthStorageRequest {
+  config?: StorageOosUserPrincipalAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateOpendriveStorageRequest {
   config?: StorageOpendriveConfig;
@@ -691,55 +1009,280 @@ export interface StorageCreateRequest {
   provider?: string;
 }
 
-export type StorageCreateS3AWSStorageRequest = object;
+export interface StorageCreateS3AWSStorageRequest {
+  config?: StorageS3AWSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3AlibabaStorageRequest = object;
+export interface StorageCreateS3AlibabaStorageRequest {
+  config?: StorageS3AlibabaConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3ArvanCloudStorageRequest = object;
+export interface StorageCreateS3ArvanCloudStorageRequest {
+  config?: StorageS3ArvanCloudConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3CephStorageRequest = object;
+export interface StorageCreateS3CephStorageRequest {
+  config?: StorageS3CephConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3ChinaMobileStorageRequest = object;
+export interface StorageCreateS3ChinaMobileStorageRequest {
+  config?: StorageS3ChinaMobileConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3CloudflareStorageRequest = object;
+export interface StorageCreateS3CloudflareStorageRequest {
+  config?: StorageS3CloudflareConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3DigitalOceanStorageRequest = object;
+export interface StorageCreateS3DigitalOceanStorageRequest {
+  config?: StorageS3DigitalOceanConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3DreamhostStorageRequest = object;
+export interface StorageCreateS3DreamhostStorageRequest {
+  config?: StorageS3DreamhostConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3HuaweiOBSStorageRequest = object;
+export interface StorageCreateS3HuaweiOBSStorageRequest {
+  config?: StorageS3HuaweiOBSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3IBMCOSStorageRequest = object;
+export interface StorageCreateS3IBMCOSStorageRequest {
+  config?: StorageS3IBMCOSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3IDriveStorageRequest = object;
+export interface StorageCreateS3IDriveStorageRequest {
+  config?: StorageS3IDriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3IONOSStorageRequest = object;
+export interface StorageCreateS3IONOSStorageRequest {
+  config?: StorageS3IONOSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3LiaraStorageRequest = object;
+export interface StorageCreateS3LiaraStorageRequest {
+  config?: StorageS3LiaraConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3LyveCloudStorageRequest = object;
+export interface StorageCreateS3LyveCloudStorageRequest {
+  config?: StorageS3LyveCloudConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3MinioStorageRequest = object;
+export interface StorageCreateS3MinioStorageRequest {
+  config?: StorageS3MinioConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3NeteaseStorageRequest = object;
+export interface StorageCreateS3NeteaseStorageRequest {
+  config?: StorageS3NeteaseConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3OtherStorageRequest = object;
+export interface StorageCreateS3OtherStorageRequest {
+  config?: StorageS3OtherConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3QiniuStorageRequest = object;
+export interface StorageCreateS3QiniuStorageRequest {
+  config?: StorageS3QiniuConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3RackCorpStorageRequest = object;
+export interface StorageCreateS3RackCorpStorageRequest {
+  config?: StorageS3RackCorpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3ScalewayStorageRequest = object;
+export interface StorageCreateS3ScalewayStorageRequest {
+  config?: StorageS3ScalewayConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3SeaweedFSStorageRequest = object;
+export interface StorageCreateS3SeaweedFSStorageRequest {
+  config?: StorageS3SeaweedFSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3StackPathStorageRequest = object;
+export interface StorageCreateS3StackPathStorageRequest {
+  config?: StorageS3StackPathConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3StorjStorageRequest = object;
+export interface StorageCreateS3StorjStorageRequest {
+  config?: StorageS3StorjConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3TencentCOSStorageRequest = object;
+export interface StorageCreateS3TencentCOSStorageRequest {
+  config?: StorageS3TencentCOSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
-export type StorageCreateS3WasabiStorageRequest = object;
+export interface StorageCreateS3WasabiStorageRequest {
+  config?: StorageS3WasabiConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateSeafileStorageRequest {
   config?: StorageSeafileConfig;
@@ -752,7 +1295,16 @@ export interface StorageCreateSeafileStorageRequest {
   path?: string;
 }
 
-export type StorageCreateSftpStorageRequest = object;
+export interface StorageCreateSftpStorageRequest {
+  config?: StorageSftpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateSharefileStorageRequest {
   config?: StorageSharefileConfig;
@@ -776,7 +1328,16 @@ export interface StorageCreateSiaStorageRequest {
   path?: string;
 }
 
-export type StorageCreateSmbStorageRequest = object;
+export interface StorageCreateSmbStorageRequest {
+  config?: StorageSmbConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
 
 export interface StorageCreateStorjExistingStorageRequest {
   config?: StorageStorjExistingConfig;
@@ -876,6 +1437,240 @@ export interface StorageDirEntry {
   size?: number;
 }
 
+export interface StorageDriveConfig {
+  /**
+   * Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
+   * @default false
+   */
+  acknowledgeAbuse?: boolean;
+  /**
+   * Allow the filetype to change when uploading Google docs.
+   * @default false
+   */
+  allowImportNameChange?: boolean;
+  /**
+   * Deprecated: No longer needed.
+   * @default false
+   */
+  alternateExport?: boolean;
+  /**
+   * Only consider files owned by the authenticated user.
+   * @default false
+   */
+  authOwnerOnly?: boolean;
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Upload chunk size.
+   * @default "8Mi"
+   */
+  chunkSize?: string;
+  /** Google Application Client Id */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * Server side copy contents of shortcuts instead of the shortcut.
+   * @default false
+   */
+  copyShortcutContent?: boolean;
+  /**
+   * Disable drive using http2.
+   * @default true
+   */
+  disableHttp2?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "InvalidUtf8"
+   */
+  encoding?: string;
+  /**
+   * Comma separated list of preferred formats for downloading Google docs.
+   * @default "docx,xlsx,pptx,svg"
+   */
+  exportFormats?: string;
+  /** Deprecated: See export_formats. */
+  formats?: string;
+  /** Impersonate this user when using a service account. */
+  impersonate?: string;
+  /** Comma separated list of preferred formats for uploading Google docs. */
+  importFormats?: string;
+  /**
+   * Keep new head revision of each file forever.
+   * @default false
+   */
+  keepRevisionForever?: boolean;
+  /**
+   * Size of listing chunk 100-1000, 0 to disable.
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Number of API calls to allow without sleeping.
+   * @default 100
+   */
+  pacerBurst?: number;
+  /**
+   * Minimum time to sleep between API calls.
+   * @default "100ms"
+   */
+  pacerMinSleep?: string;
+  /** Resource key for accessing a link-shared file. */
+  resourceKey?: string;
+  /** ID of the root folder. */
+  rootFolderId?: string;
+  /**
+   * Scope that rclone should use when requesting access from drive.
+   * @example "drive"
+   */
+  scope?: string;
+  /**
+   * Allow server-side operations (e.g. copy) to work across different drive configs.
+   * @default false
+   */
+  serverSideAcrossConfigs?: boolean;
+  /** Service Account Credentials JSON blob. */
+  serviceAccountCredentials?: string;
+  /** Service Account Credentials JSON file path. */
+  serviceAccountFile?: string;
+  /**
+   * Only show files that are shared with me.
+   * @default false
+   */
+  sharedWithMe?: boolean;
+  /**
+   * Show sizes as storage quota usage, not actual size.
+   * @default false
+   */
+  sizeAsQuota?: boolean;
+  /**
+   * Skip MD5 checksum on Google photos and videos only.
+   * @default false
+   */
+  skipChecksumGphotos?: boolean;
+  /**
+   * If set skip dangling shortcut files.
+   * @default false
+   */
+  skipDanglingShortcuts?: boolean;
+  /**
+   * Skip google documents in all listings.
+   * @default false
+   */
+  skipGdocs?: boolean;
+  /**
+   * If set skip shortcut files.
+   * @default false
+   */
+  skipShortcuts?: boolean;
+  /**
+   * Only show files that are starred.
+   * @default false
+   */
+  starredOnly?: boolean;
+  /**
+   * Make download limit errors be fatal.
+   * @default false
+   */
+  stopOnDownloadLimit?: boolean;
+  /**
+   * Make upload limit errors be fatal.
+   * @default false
+   */
+  stopOnUploadLimit?: boolean;
+  /** ID of the Shared Drive (Team Drive). */
+  teamDrive?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /**
+   * Only show files that are in the trash.
+   * @default false
+   */
+  trashedOnly?: boolean;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "8Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Use file created date instead of modified date.
+   * @default false
+   */
+  useCreatedDate?: boolean;
+  /**
+   * Use date file was shared instead of modified date.
+   * @default false
+   */
+  useSharedDate?: boolean;
+  /**
+   * Send files to the trash instead of deleting permanently.
+   * @default true
+   */
+  useTrash?: boolean;
+  /**
+   * If Object's are greater, use drive v2 API to download.
+   * @default "off"
+   */
+  v2DownloadMinSize?: string;
+}
+
+export interface StorageDropboxConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Max time to wait for a batch to finish committing
+   * @default "10m0s"
+   */
+  batchCommitTimeout?: string;
+  /**
+   * Upload file batching sync|async|off.
+   * @default "sync"
+   */
+  batchMode?: string;
+  /**
+   * Max number of files in upload batch.
+   * @default 0
+   */
+  batchSize?: number;
+  /**
+   * Max time to allow an idle upload batch before uploading.
+   * @default "0s"
+   */
+  batchTimeout?: string;
+  /**
+   * Upload chunk size (< 150Mi).
+   * @default "48Mi"
+   */
+  chunkSize?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Impersonate this user when using a business account. */
+  impersonate?: string;
+  /**
+   * Instructs rclone to work on individual shared files.
+   * @default false
+   */
+  sharedFiles?: boolean;
+  /**
+   * Instructs rclone to work on shared folders.
+   * @default false
+   */
+  sharedFolders?: boolean;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
 export interface StorageFichierConfig {
   /** Your API Key, get it from https://1fichier.com/console/params.pl. */
   apiKey?: string;
@@ -913,6 +1708,104 @@ export interface StorageFilefabricConfig {
   url?: string;
   /** Version read from the file fabric. */
   version?: string;
+}
+
+export interface StorageFtpConfig {
+  /**
+   * Allow asking for FTP password when needed.
+   * @default false
+   */
+  askPassword?: boolean;
+  /**
+   * Maximum time to wait for a response to close.
+   * @default "1m0s"
+   */
+  closeTimeout?: string;
+  /**
+   * Maximum number of FTP simultaneous connections, 0 for unlimited.
+   * @default 0
+   */
+  concurrency?: number;
+  /**
+   * Disable using EPSV even if server advertises support.
+   * @default false
+   */
+  disableEpsv?: boolean;
+  /**
+   * Disable using MLSD even if server advertises support.
+   * @default false
+   */
+  disableMlsd?: boolean;
+  /**
+   * Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+   * @default false
+   */
+  disableTls13?: boolean;
+  /**
+   * Disable using UTF-8 even if server advertises support.
+   * @default false
+   */
+  disableUtf8?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Del,Ctl,RightSpace,Dot"
+   * @example "Asterisk,Ctl,Dot,Slash"
+   */
+  encoding?: string;
+  /**
+   * Use Explicit FTPS (FTP over TLS).
+   * @default false
+   */
+  explicitTls?: boolean;
+  /**
+   * Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
+   * @default false
+   */
+  forceListHidden?: boolean;
+  /** FTP host to connect to. */
+  host?: string;
+  /**
+   * Max time before closing idle connections.
+   * @default "1m0s"
+   */
+  idleTimeout?: string;
+  /**
+   * Do not verify the TLS certificate of the server.
+   * @default false
+   */
+  noCheckCertificate?: boolean;
+  /** FTP password. */
+  pass?: string;
+  /**
+   * FTP port number.
+   * @default 21
+   */
+  port?: number;
+  /**
+   * Maximum time to wait for data connection closing status.
+   * @default "1m0s"
+   */
+  shutTimeout?: string;
+  /**
+   * Use Implicit FTPS (FTP over TLS).
+   * @default false
+   */
+  tls?: boolean;
+  /**
+   * Size of TLS session cache for all control and data connections.
+   * @default 32
+   */
+  tlsCacheSize?: number;
+  /**
+   * FTP username.
+   * @default "$USER"
+   */
+  user?: string;
+  /**
+   * Use MDTM to set modification time (VsFtpd quirk)
+   * @default false
+   */
+  writingMdtm?: boolean;
 }
 
 export interface StorageGcsConfig {
@@ -1110,7 +2003,7 @@ export interface StorageHidriveConfig {
 
 export interface StorageHttpConfig {
   /** Set HTTP headers for all transactions. */
-  headers?: string[];
+  headers?: string;
   /**
    * Don't use HEAD requests.
    * @default false
@@ -1123,6 +2016,38 @@ export interface StorageHttpConfig {
   noSlash?: boolean;
   /** URL of HTTP host to connect to. */
   url?: string;
+}
+
+export interface StorageInternetarchiveConfig {
+  /** IAS3 Access Key. */
+  accessKeyId?: string;
+  /**
+   * Don't ask the server to test against MD5 checksum calculated by rclone.
+   * @default true
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * IAS3 Endpoint.
+   * @default "https://s3.us.archive.org"
+   */
+  endpoint?: string;
+  /**
+   * Host of InternetArchive Frontend.
+   * @default "https://archive.org"
+   */
+  frontEndpoint?: string;
+  /** IAS3 Secret Key (password). */
+  secretAccessKey?: string;
+  /**
+   * Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
+   * @default "0s"
+   */
+  waitArchive?: string;
 }
 
 export interface StorageJottacloudConfig {
@@ -1379,6 +2304,537 @@ export interface StorageNetstorageConfig {
   secret?: string;
 }
 
+export interface StorageOnedriveConfig {
+  /**
+   * Set scopes to be requested by rclone.
+   * @default "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+   * @example "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+   */
+  accessScopes?: string;
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
+   * @default "10Mi"
+   */
+  chunkSize?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * Disable the request for Sites.Read.All permission.
+   * @default false
+   */
+  disableSitePermission?: boolean;
+  /** The ID of the drive to use. */
+  driveId?: string;
+  /** The type of the drive (personal | business | documentLibrary). */
+  driveType?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Set to make OneNote files show up in directory listings.
+   * @default false
+   */
+  exposeOnenoteFiles?: boolean;
+  /**
+   * Specify the hash in use for the backend.
+   * @default "auto"
+   * @example "auto"
+   */
+  hashType?: string;
+  /** Set the password for links created by the link command. */
+  linkPassword?: string;
+  /**
+   * Set the scope of the links created by the link command.
+   * @default "anonymous"
+   * @example "anonymous"
+   */
+  linkScope?: string;
+  /**
+   * Set the type of the links created by the link command.
+   * @default "view"
+   * @example "view"
+   */
+  linkType?: string;
+  /**
+   * Size of listing chunk.
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Remove all versions on modifying operations.
+   * @default false
+   */
+  noVersions?: boolean;
+  /**
+   * Choose national cloud region for OneDrive.
+   * @default "global"
+   * @example "global"
+   */
+  region?: string;
+  /** ID of the root folder. */
+  rootFolderId?: string;
+  /**
+   * Allow server-side operations (e.g. copy) to work across different onedrive configs.
+   * @default false
+   */
+  serverSideAcrossConfigs?: boolean;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export interface StorageOosEnvAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosInstancePrincipalAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosNoAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosResourcePrincipalAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosUserPrincipalAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Path to OCI config file
+   * @default "~/.oci/config"
+   * @example "~/.oci/config"
+   */
+  configFile?: string;
+  /**
+   * Profile name inside the oci config file
+   * @default "Default"
+   * @example "Default"
+   */
+  configProfile?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
 export interface StorageOpendriveConfig {
   /**
    * Files will be uploaded in chunks this size.
@@ -1492,6 +2948,4245 @@ export interface StorageQingstorConfig {
   zone?: string;
 }
 
+export interface StorageS3AWSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must be set to match the Region.
+   * @example ""
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "us-east-1"
+   */
+  region?: string;
+  /**
+   * Enables requester pays option when interacting with S3 bucket.
+   * @default false
+   */
+  requesterPays?: boolean;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * If using KMS ID you must provide the ARN of Key.
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in S3.
+   * @example ""
+   */
+  storageClass?: string;
+  /** Endpoint for STS. */
+  stsEndpoint?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * If true use the AWS S3 accelerated endpoint.
+   * @default false
+   */
+  useAccelerateEndpoint?: boolean;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3AlibabaConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for OSS API.
+   * @example "oss-accelerate.aliyuncs.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in OSS.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3ArvanCloudConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Arvan Cloud Object Storage (AOS) API.
+   * @example "s3.ir-thr-at1.arvanstorage.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must match endpoint.
+   * @example "ir-thr-at1"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in ArvanCloud.
+   * @example "STANDARD"
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3CephConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * If using KMS ID you must provide the ARN of Key.
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3ChinaMobileConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for China Mobile Ecloud Elastic Object Storage (EOS) API.
+   * @example "eos-wuxi-1.cmecloud.cn"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must match endpoint.
+   * @example "wuxi1"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * The storage class to use when storing new objects in ChinaMobile.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3CloudflareConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "auto"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3DigitalOceanConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "syd1.digitaloceanspaces.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3DreamhostConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "objects-us-east-1.dream.io"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3HuaweiOBSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for OBS API.
+   * @example "obs.af-south-1.myhuaweicloud.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to. - the location where your bucket will be created and your data stored. Need bo be same with your endpoint.
+   * @example "af-south-1"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3IBMCOSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets and storing or copying objects.
+   * @example "private"
+   */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for IBM COS S3 API.
+   * @example "s3.us.cloud-object-storage.appdomain.cloud"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must match endpoint when using IBM Cloud Public.
+   * @example "us-standard"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3IDriveConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3IONOSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for IONOS S3 Object Storage.
+   * @example "s3-eu-central-1.ionoscloud.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region where your bucket will be created and your data stored.
+   * @example "de"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3LiaraConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Liara Object Storage API.
+   * @example "storage.iran.liara.space"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in Liara
+   * @example "STANDARD"
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3LyveCloudConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "s3.us-east-1.lyvecloud.seagate.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3MinioConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * If using KMS ID you must provide the ARN of Key.
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3NeteaseConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3OtherConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3QiniuConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Qiniu Object Storage.
+   * @example "s3-cn-east-1.qiniucs.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must be set to match the Region.
+   * @example "cn-east-1"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "cn-east-1"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in Qiniu.
+   * @example "STANDARD"
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3RackCorpConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for RackCorp Object Storage.
+   * @example "s3.rackcorp.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - the location where your bucket will be located and your data stored.
+   * @example "global"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * region - the location where your bucket will be created and your data stored.
+   * @example "global"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3ScalewayConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Scaleway Object Storage.
+   * @example "s3.nl-ams.scw.cloud"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "nl-ams"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in S3.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3SeaweedFSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "localhost:8333"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3StackPathConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for StackPath Object Storage.
+   * @example "s3.us-east-2.stackpathstorage.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3StorjConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Storj Gateway.
+   * @example "gateway.storjshare.io"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3TencentCOSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets and storing or copying objects.
+   * @example "default"
+   */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Tencent COS API.
+   * @example "cos.ap-beijing.myqcloud.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in Tencent COS.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3WasabiConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "s3.wasabisys.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
 export interface StorageSeafileConfig {
   /**
    * Two-factor authentication ('true' if the account has 2FA enabled).
@@ -1522,6 +7217,123 @@ export interface StorageSeafileConfig {
    */
   url?: string;
   /** User name (usually email address). */
+  user?: string;
+}
+
+export interface StorageSftpConfig {
+  /**
+   * Allow asking for SFTP password when needed.
+   * @default false
+   */
+  askPassword?: boolean;
+  /**
+   * Upload and download chunk size.
+   * @default "32Ki"
+   */
+  chunkSize?: string;
+  /** Space separated list of ciphers to be used for session encryption, ordered by preference. */
+  ciphers?: string;
+  /**
+   * The maximum number of outstanding requests for one file
+   * @default 64
+   */
+  concurrency?: number;
+  /**
+   * If set don't use concurrent reads.
+   * @default false
+   */
+  disableConcurrentReads?: boolean;
+  /**
+   * If set don't use concurrent writes.
+   * @default false
+   */
+  disableConcurrentWrites?: boolean;
+  /**
+   * Disable the execution of SSH commands to determine if remote file hashing is available.
+   * @default false
+   */
+  disableHashcheck?: boolean;
+  /** SSH host to connect to. */
+  host?: string;
+  /**
+   * Max time before closing idle connections.
+   * @default "1m0s"
+   */
+  idleTimeout?: string;
+  /** Space separated list of key exchange algorithms, ordered by preference. */
+  keyExchange?: string;
+  /** Path to PEM-encoded private key file. */
+  keyFile?: string;
+  /** The passphrase to decrypt the PEM-encoded private key file. */
+  keyFilePass?: string;
+  /** Raw PEM-encoded private key. */
+  keyPem?: string;
+  /**
+   * When set forces the usage of the ssh-agent.
+   * @default false
+   */
+  keyUseAgent?: boolean;
+  /**
+   * Optional path to known_hosts file.
+   * @example "~/.ssh/known_hosts"
+   */
+  knownHostsFile?: string;
+  /** Space separated list of MACs (message authentication code) algorithms, ordered by preference. */
+  macs?: string;
+  /** The command used to read md5 hashes. */
+  md5sumCommand?: string;
+  /** SSH password, leave blank to use ssh-agent. */
+  pass?: string;
+  /** Override path used by SSH shell commands. */
+  pathOverride?: string;
+  /**
+   * SSH port number.
+   * @default 22
+   */
+  port?: number;
+  /** Optional path to public key file. */
+  pubkeyFile?: string;
+  /** Specifies the path or command to run a sftp server on the remote host. */
+  serverCommand?: string;
+  /** Environment variables to pass to sftp and commands */
+  setEnv?: string;
+  /**
+   * Set the modified time on the remote if set.
+   * @default true
+   */
+  setModtime?: boolean;
+  /** The command used to read sha1 hashes. */
+  sha1sumCommand?: string;
+  /**
+   * The type of SSH shell on remote server, if any.
+   * @example "none"
+   */
+  shellType?: string;
+  /**
+   * Set to skip any symlinks and any other non regular files.
+   * @default false
+   */
+  skipLinks?: boolean;
+  /**
+   * Specifies the SSH2 subsystem on the remote host.
+   * @default "sftp"
+   */
+  subsystem?: string;
+  /**
+   * If set use fstat instead of stat.
+   * @default false
+   */
+  useFstat?: boolean;
+  /**
+   * Enable the use of insecure ciphers and key exchange methods.
+   * @default false
+   * @example false
+   */
+  useInsecureCipher?: boolean;
+  /**
+   * SSH username.
+   * @default "$USER"
+   */
   user?: string;
 }
 
@@ -1568,6 +7380,50 @@ export interface StorageSiaConfig {
    * @default "Sia-Agent"
    */
   userAgent?: string;
+}
+
+export interface StorageSmbConfig {
+  /**
+   * Whether the server is configured to be case-insensitive.
+   * @default true
+   */
+  caseInsensitive?: boolean;
+  /**
+   * Domain name for NTLM authentication.
+   * @default "WORKGROUP"
+   */
+  domain?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Hide special shares (e.g. print$) which users aren't supposed to access.
+   * @default true
+   */
+  hideSpecialShare?: boolean;
+  /** SMB server hostname to connect to. */
+  host?: string;
+  /**
+   * Max time before closing idle connections.
+   * @default "1m0s"
+   */
+  idleTimeout?: string;
+  /** SMB password. */
+  pass?: string;
+  /**
+   * SMB port number.
+   * @default 445
+   */
+  port?: number;
+  /** Service principal name. */
+  spn?: string;
+  /**
+   * SMB username.
+   * @default "$USER"
+   */
+  user?: string;
 }
 
 export interface StorageStorjExistingConfig {
@@ -1718,7 +7574,7 @@ export interface StorageWebdavConfig {
   /** The encoding for the backend. */
   encoding?: string;
   /** Set HTTP headers for all transactions. */
-  headers?: string[];
+  headers?: string;
   /** Password. */
   pass?: string;
   /** URL of http host to connect to. */

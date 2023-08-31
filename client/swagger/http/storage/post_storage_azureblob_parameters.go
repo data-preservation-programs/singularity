@@ -67,7 +67,7 @@ type PostStorageAzureblobParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateAzureblobStorageRequest
+	Request *models.StorageCreateAzureblobStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageAzureblobParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage azureblob params
-func (o *PostStorageAzureblobParams) WithRequest(request models.StorageCreateAzureblobStorageRequest) *PostStorageAzureblobParams {
+func (o *PostStorageAzureblobParams) WithRequest(request *models.StorageCreateAzureblobStorageRequest) *PostStorageAzureblobParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage azureblob params
-func (o *PostStorageAzureblobParams) SetRequest(request models.StorageCreateAzureblobStorageRequest) {
+func (o *PostStorageAzureblobParams) SetRequest(request *models.StorageCreateAzureblobStorageRequest) {
 	o.Request = request
 }
 

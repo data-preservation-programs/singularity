@@ -67,7 +67,7 @@ type PostStorageOosEnvAuthParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateOosEnvAuthStorageRequest
+	Request *models.StorageCreateOosEnvAuthStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageOosEnvAuthParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage oos env auth params
-func (o *PostStorageOosEnvAuthParams) WithRequest(request models.StorageCreateOosEnvAuthStorageRequest) *PostStorageOosEnvAuthParams {
+func (o *PostStorageOosEnvAuthParams) WithRequest(request *models.StorageCreateOosEnvAuthStorageRequest) *PostStorageOosEnvAuthParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage oos env auth params
-func (o *PostStorageOosEnvAuthParams) SetRequest(request models.StorageCreateOosEnvAuthStorageRequest) {
+func (o *PostStorageOosEnvAuthParams) SetRequest(request *models.StorageCreateOosEnvAuthStorageRequest) {
 	o.Request = request
 }
 

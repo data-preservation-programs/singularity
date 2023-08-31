@@ -67,7 +67,7 @@ type PostStorageS3ChinamobileParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3ChinaMobileStorageRequest
+	Request *models.StorageCreateS3ChinaMobileStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3ChinamobileParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 chinamobile params
-func (o *PostStorageS3ChinamobileParams) WithRequest(request models.StorageCreateS3ChinaMobileStorageRequest) *PostStorageS3ChinamobileParams {
+func (o *PostStorageS3ChinamobileParams) WithRequest(request *models.StorageCreateS3ChinaMobileStorageRequest) *PostStorageS3ChinamobileParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 chinamobile params
-func (o *PostStorageS3ChinamobileParams) SetRequest(request models.StorageCreateS3ChinaMobileStorageRequest) {
+func (o *PostStorageS3ChinamobileParams) SetRequest(request *models.StorageCreateS3ChinaMobileStorageRequest) {
 	o.Request = request
 }
 

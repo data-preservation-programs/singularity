@@ -67,7 +67,7 @@ type PostStorageS3MinioParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3MinioStorageRequest
+	Request *models.StorageCreateS3MinioStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3MinioParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 minio params
-func (o *PostStorageS3MinioParams) WithRequest(request models.StorageCreateS3MinioStorageRequest) *PostStorageS3MinioParams {
+func (o *PostStorageS3MinioParams) WithRequest(request *models.StorageCreateS3MinioStorageRequest) *PostStorageS3MinioParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 minio params
-func (o *PostStorageS3MinioParams) SetRequest(request models.StorageCreateS3MinioStorageRequest) {
+func (o *PostStorageS3MinioParams) SetRequest(request *models.StorageCreateS3MinioStorageRequest) {
 	o.Request = request
 }
 

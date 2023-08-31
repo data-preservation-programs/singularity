@@ -18,7 +18,7 @@ import (
 type StorageHTTPConfig struct {
 
 	// Set HTTP headers for all transactions.
-	Headers []string `json:"headers"`
+	Headers string `json:"headers,omitempty"`
 
 	// Don't use HEAD requests.
 	NoHead *bool `json:"noHead,omitempty"`

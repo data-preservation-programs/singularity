@@ -67,7 +67,7 @@ type PostStorageB2Params struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateB2StorageRequest
+	Request *models.StorageCreateB2StorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageB2Params) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage b2 params
-func (o *PostStorageB2Params) WithRequest(request models.StorageCreateB2StorageRequest) *PostStorageB2Params {
+func (o *PostStorageB2Params) WithRequest(request *models.StorageCreateB2StorageRequest) *PostStorageB2Params {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage b2 params
-func (o *PostStorageB2Params) SetRequest(request models.StorageCreateB2StorageRequest) {
+func (o *PostStorageB2Params) SetRequest(request *models.StorageCreateB2StorageRequest) {
 	o.Request = request
 }
 

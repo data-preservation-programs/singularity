@@ -67,7 +67,7 @@ type PostStorageS3ArvancloudParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3ArvanCloudStorageRequest
+	Request *models.StorageCreateS3ArvanCloudStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3ArvancloudParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 arvancloud params
-func (o *PostStorageS3ArvancloudParams) WithRequest(request models.StorageCreateS3ArvanCloudStorageRequest) *PostStorageS3ArvancloudParams {
+func (o *PostStorageS3ArvancloudParams) WithRequest(request *models.StorageCreateS3ArvanCloudStorageRequest) *PostStorageS3ArvancloudParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 arvancloud params
-func (o *PostStorageS3ArvancloudParams) SetRequest(request models.StorageCreateS3ArvanCloudStorageRequest) {
+func (o *PostStorageS3ArvancloudParams) SetRequest(request *models.StorageCreateS3ArvanCloudStorageRequest) {
 	o.Request = request
 }
 

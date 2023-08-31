@@ -67,7 +67,7 @@ type PostStorageS3DigitaloceanParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3DigitalOceanStorageRequest
+	Request *models.StorageCreateS3DigitalOceanStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3DigitaloceanParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 digitalocean params
-func (o *PostStorageS3DigitaloceanParams) WithRequest(request models.StorageCreateS3DigitalOceanStorageRequest) *PostStorageS3DigitaloceanParams {
+func (o *PostStorageS3DigitaloceanParams) WithRequest(request *models.StorageCreateS3DigitalOceanStorageRequest) *PostStorageS3DigitaloceanParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 digitalocean params
-func (o *PostStorageS3DigitaloceanParams) SetRequest(request models.StorageCreateS3DigitalOceanStorageRequest) {
+func (o *PostStorageS3DigitaloceanParams) SetRequest(request *models.StorageCreateS3DigitalOceanStorageRequest) {
 	o.Request = request
 }
 

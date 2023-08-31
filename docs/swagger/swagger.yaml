@@ -205,27 +205,6 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
-  fs.Duration:
-    enum:
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - 3153600000000000000
-    type: integer
-    x-enum-varnames:
-    - ModTimeNotSupported
-  fs.Tristate:
-    properties:
-      valid:
-        type: boolean
-      value:
-        type: boolean
-    type: object
   model.CID:
     type: object
   model.Car:
@@ -567,6 +546,222 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
+  storage.AcdConfig:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      checkpoint:
+        description: Checkpoint for internal polling (debug).
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      templinkThreshold:
+        default: 9Gi
+        description: Files >= this size will be downloaded via their tempLink.
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      uploadWaitPerGb:
+        default: 3m0s
+        description: Additional time per GiB to wait after a failed complete upload
+          to see if it appears.
+        type: string
+    type: object
+  storage.AzureblobConfig:
+    properties:
+      accessTier:
+        description: 'Access tier of blob: hot, cool or archive.'
+        type: string
+      account:
+        description: Azure Storage Account Name.
+        type: string
+      archiveTierDelete:
+        default: false
+        description: Delete archive tier blobs before overwriting.
+        type: boolean
+      chunkSize:
+        default: 4Mi
+        description: Upload chunk size.
+        type: string
+      clientCertificatePassword:
+        description: Password for the certificate file (optional).
+        type: string
+      clientCertificatePath:
+        description: Path to a PEM or PKCS12 certificate file including the private
+          key.
+        type: string
+      clientId:
+        description: The ID of the client in use.
+        type: string
+      clientSecret:
+        description: One of the service principal's client secrets
+        type: string
+      clientSendCertificateChain:
+        default: false
+        description: Send the certificate chain when using certificate auth.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for the service.
+        type: string
+      envAuth:
+        default: false
+        description: Read credentials from runtime (environment variables, CLI or
+          MSI).
+        type: boolean
+      key:
+        description: Storage Account Shared Key.
+        type: string
+      listChunk:
+        default: 5000
+        description: Size of blob list.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      msiClientId:
+        description: Object ID of the user-assigned MSI to use, if any.
+        type: string
+      msiMiResId:
+        description: Azure resource ID of the user-assigned MSI to use, if any.
+        type: string
+      msiObjectId:
+        description: Object ID of the user-assigned MSI to use, if any.
+        type: string
+      noCheckContainer:
+        default: false
+        description: If set, don't attempt to check the container exists or create
+          it.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      password:
+        description: The user's password
+        type: string
+      publicAccess:
+        description: 'Public access level of a container: blob or container.'
+        example: ""
+        type: string
+      sasUrl:
+        description: SAS URL for container level access only.
+        type: string
+      servicePrincipalFile:
+        description: Path to file containing credentials for use with a service principal.
+        type: string
+      tenant:
+        description: ID of the service principal's tenant. Also called its directory
+          ID.
+        type: string
+      uploadConcurrency:
+        default: 16
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        description: Cutoff for switching to chunked upload (<= 256 MiB) (deprecated).
+        type: string
+      useEmulator:
+        default: false
+        description: Uses local storage emulator if provided as 'true'.
+        type: boolean
+      useMsi:
+        default: false
+        description: Use a managed service identity to authenticate (only works in
+          Azure).
+        type: boolean
+      username:
+        description: User name (usually an email address)
+        type: string
+    type: object
+  storage.B2Config:
+    properties:
+      account:
+        description: Account ID or Application Key ID.
+        type: string
+      chunkSize:
+        default: 96Mi
+        description: Upload chunk size.
+        type: string
+      copyCutoff:
+        default: 4Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      disableChecksum:
+        default: false
+        description: Disable checksums for large (> upload cutoff) files.
+        type: boolean
+      downloadAuthDuration:
+        default: 1w
+        description: Time before the authorization token will expire in s or suffix
+          ms|s|m|h|d.
+        type: string
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for the service.
+        type: string
+      hardDelete:
+        default: false
+        description: Permanently delete files on remote removal, otherwise hide files.
+        type: boolean
+      key:
+        description: Application Key.
+        type: string
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      testMode:
+        description: A flag string for X-Bz-Test-Mode header for debugging.
+        type: string
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
   storage.BoxConfig:
     properties:
       accessToken:
@@ -619,10 +814,40 @@ definitions:
         type: string
     type: object
   storage.CreateAcdStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.AcdConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateAzureblobStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.AzureblobConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateB2StorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.B2Config'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateBoxStorageRequest:
     properties:
@@ -637,8 +862,28 @@ definitions:
         type: string
     type: object
   storage.CreateDriveStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.DriveConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateDropboxStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.DropboxConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateFichierStorageRequest:
     properties:
@@ -665,6 +910,16 @@ definitions:
         type: string
     type: object
   storage.CreateFtpStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.FtpConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateGcsStorageRequest:
     properties:
@@ -727,6 +982,16 @@ definitions:
         type: string
     type: object
   storage.CreateInternetarchiveStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.InternetarchiveConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateJottacloudStorageRequest:
     properties:
@@ -825,16 +1090,76 @@ definitions:
         type: string
     type: object
   storage.CreateOnedriveStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.OnedriveConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateOosEnv_authStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.OosEnv_authConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateOosInstance_principal_authStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.OosInstance_principal_authConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateOosNo_authStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.OosNo_authConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateOosResource_principal_authStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.OosResource_principal_authConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateOosUser_principal_authStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.OosUser_principal_authConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateOpendriveStorageRequest:
     properties:
@@ -913,54 +1238,304 @@ definitions:
     - path
     type: object
   storage.CreateS3AWSStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3AWSConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3AlibabaStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3AlibabaConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3ArvanCloudStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3ArvanCloudConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3CephStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3CephConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3ChinaMobileStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3ChinaMobileConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3CloudflareStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3CloudflareConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3DigitalOceanStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3DigitalOceanConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3DreamhostStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3DreamhostConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3HuaweiOBSStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3HuaweiOBSConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3IBMCOSStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3IBMCOSConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3IDriveStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3IDriveConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3IONOSStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3IONOSConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3LiaraStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3LiaraConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3LyveCloudStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3LyveCloudConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3MinioStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3MinioConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3NeteaseStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3NeteaseConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3OtherStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3OtherConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3QiniuStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3QiniuConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3RackCorpStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3RackCorpConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3ScalewayStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3ScalewayConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3SeaweedFSStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3SeaweedFSConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3StackPathStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3StackPathConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3StorjStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3StorjConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3TencentCOSStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3TencentCOSConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateS3WasabiStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.S3WasabiConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateSeafileStorageRequest:
     properties:
@@ -975,6 +1550,16 @@ definitions:
         type: string
     type: object
   storage.CreateSftpStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.SftpConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateSharefileStorageRequest:
     properties:
@@ -1001,6 +1586,16 @@ definitions:
         type: string
     type: object
   storage.CreateSmbStorageRequest:
+    properties:
+      config:
+        $ref: '#/definitions/storage.SmbConfig'
+      name:
+        description: Name of the storage, must be unique
+        example: my-storage
+        type: string
+      path:
+        description: Path of the storage
+        type: string
     type: object
   storage.CreateStorjExistingStorageRequest:
     properties:
@@ -1115,6 +1710,225 @@ definitions:
       size:
         type: integer
     type: object
+  storage.DriveConfig:
+    properties:
+      acknowledgeAbuse:
+        default: false
+        description: Set to allow files which return cannotDownloadAbusiveFile to
+          be downloaded.
+        type: boolean
+      allowImportNameChange:
+        default: false
+        description: Allow the filetype to change when uploading Google docs.
+        type: boolean
+      alternateExport:
+        default: false
+        description: 'Deprecated: No longer needed.'
+        type: boolean
+      authOwnerOnly:
+        default: false
+        description: Only consider files owned by the authenticated user.
+        type: boolean
+      authUrl:
+        description: Auth server URL.
+        type: string
+      chunkSize:
+        default: 8Mi
+        description: Upload chunk size.
+        type: string
+      clientId:
+        description: Google Application Client Id
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      copyShortcutContent:
+        default: false
+        description: Server side copy contents of shortcuts instead of the shortcut.
+        type: boolean
+      disableHttp2:
+        default: true
+        description: Disable drive using http2.
+        type: boolean
+      encoding:
+        default: InvalidUtf8
+        description: The encoding for the backend.
+        type: string
+      exportFormats:
+        default: docx,xlsx,pptx,svg
+        description: Comma separated list of preferred formats for downloading Google
+          docs.
+        type: string
+      formats:
+        description: 'Deprecated: See export_formats.'
+        type: string
+      impersonate:
+        description: Impersonate this user when using a service account.
+        type: string
+      importFormats:
+        description: Comma separated list of preferred formats for uploading Google
+          docs.
+        type: string
+      keepRevisionForever:
+        default: false
+        description: Keep new head revision of each file forever.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk 100-1000, 0 to disable.
+        type: integer
+      pacerBurst:
+        default: 100
+        description: Number of API calls to allow without sleeping.
+        type: integer
+      pacerMinSleep:
+        default: 100ms
+        description: Minimum time to sleep between API calls.
+        type: string
+      resourceKey:
+        description: Resource key for accessing a link-shared file.
+        type: string
+      rootFolderId:
+        description: ID of the root folder.
+        type: string
+      scope:
+        description: Scope that rclone should use when requesting access from drive.
+        example: drive
+        type: string
+      serverSideAcrossConfigs:
+        default: false
+        description: Allow server-side operations (e.g. copy) to work across different
+          drive configs.
+        type: boolean
+      serviceAccountCredentials:
+        description: Service Account Credentials JSON blob.
+        type: string
+      serviceAccountFile:
+        description: Service Account Credentials JSON file path.
+        type: string
+      sharedWithMe:
+        default: false
+        description: Only show files that are shared with me.
+        type: boolean
+      sizeAsQuota:
+        default: false
+        description: Show sizes as storage quota usage, not actual size.
+        type: boolean
+      skipChecksumGphotos:
+        default: false
+        description: Skip MD5 checksum on Google photos and videos only.
+        type: boolean
+      skipDanglingShortcuts:
+        default: false
+        description: If set skip dangling shortcut files.
+        type: boolean
+      skipGdocs:
+        default: false
+        description: Skip google documents in all listings.
+        type: boolean
+      skipShortcuts:
+        default: false
+        description: If set skip shortcut files.
+        type: boolean
+      starredOnly:
+        default: false
+        description: Only show files that are starred.
+        type: boolean
+      stopOnDownloadLimit:
+        default: false
+        description: Make download limit errors be fatal.
+        type: boolean
+      stopOnUploadLimit:
+        default: false
+        description: Make upload limit errors be fatal.
+        type: boolean
+      teamDrive:
+        description: ID of the Shared Drive (Team Drive).
+        type: string
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+      trashedOnly:
+        default: false
+        description: Only show files that are in the trash.
+        type: boolean
+      uploadCutoff:
+        default: 8Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useCreatedDate:
+        default: false
+        description: Use file created date instead of modified date.
+        type: boolean
+      useSharedDate:
+        default: false
+        description: Use date file was shared instead of modified date.
+        type: boolean
+      useTrash:
+        default: true
+        description: Send files to the trash instead of deleting permanently.
+        type: boolean
+      v2DownloadMinSize:
+        default: "off"
+        description: If Object's are greater, use drive v2 API to download.
+        type: string
+    type: object
+  storage.DropboxConfig:
+    properties:
+      authUrl:
+        description: Auth server URL.
+        type: string
+      batchCommitTimeout:
+        default: 10m0s
+        description: Max time to wait for a batch to finish committing
+        type: string
+      batchMode:
+        default: sync
+        description: Upload file batching sync|async|off.
+        type: string
+      batchSize:
+        default: 0
+        description: Max number of files in upload batch.
+        type: integer
+      batchTimeout:
+        default: 0s
+        description: Max time to allow an idle upload batch before uploading.
+        type: string
+      chunkSize:
+        default: 48Mi
+        description: Upload chunk size (< 150Mi).
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      encoding:
+        default: Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      impersonate:
+        description: Impersonate this user when using a business account.
+        type: string
+      sharedFiles:
+        default: false
+        description: Instructs rclone to work on individual shared files.
+        type: boolean
+      sharedFolders:
+        default: false
+        description: Instructs rclone to work on shared folders.
+        type: boolean
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
   storage.FichierConfig:
     properties:
       apiKey:
@@ -1161,6 +1975,89 @@ definitions:
       version:
         description: Version read from the file fabric.
         type: string
+    type: object
+  storage.FtpConfig:
+    properties:
+      askPassword:
+        default: false
+        description: Allow asking for FTP password when needed.
+        type: boolean
+      closeTimeout:
+        default: 1m0s
+        description: Maximum time to wait for a response to close.
+        type: string
+      concurrency:
+        default: 0
+        description: Maximum number of FTP simultaneous connections, 0 for unlimited.
+        type: integer
+      disableEpsv:
+        default: false
+        description: Disable using EPSV even if server advertises support.
+        type: boolean
+      disableMlsd:
+        default: false
+        description: Disable using MLSD even if server advertises support.
+        type: boolean
+      disableTls13:
+        default: false
+        description: Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+        type: boolean
+      disableUtf8:
+        default: false
+        description: Disable using UTF-8 even if server advertises support.
+        type: boolean
+      encoding:
+        default: Slash,Del,Ctl,RightSpace,Dot
+        description: The encoding for the backend.
+        example: Asterisk,Ctl,Dot,Slash
+        type: string
+      explicitTls:
+        default: false
+        description: Use Explicit FTPS (FTP over TLS).
+        type: boolean
+      forceListHidden:
+        default: false
+        description: Use LIST -a to force listing of hidden files and folders. This
+          will disable the use of MLSD.
+        type: boolean
+      host:
+        description: FTP host to connect to.
+        type: string
+      idleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      noCheckCertificate:
+        default: false
+        description: Do not verify the TLS certificate of the server.
+        type: boolean
+      pass:
+        description: FTP password.
+        type: string
+      port:
+        default: 21
+        description: FTP port number.
+        type: integer
+      shutTimeout:
+        default: 1m0s
+        description: Maximum time to wait for data connection closing status.
+        type: string
+      tls:
+        default: false
+        description: Use Implicit FTPS (FTP over TLS).
+        type: boolean
+      tlsCacheSize:
+        default: 32
+        description: Size of TLS session cache for all control and data connections.
+        type: integer
+      user:
+        default: $USER
+        description: FTP username.
+        type: string
+      writingMdtm:
+        default: false
+        description: Use MDTM to set modification time (VsFtpd quirk)
+        type: boolean
     type: object
   storage.GcsConfig:
     properties:
@@ -1359,9 +2256,7 @@ definitions:
     properties:
       headers:
         description: Set HTTP headers for all transactions.
-        items:
-          type: string
-        type: array
+        type: string
       noHead:
         default: false
         description: Don't use HEAD requests.
@@ -1372,6 +2267,37 @@ definitions:
         type: boolean
       url:
         description: URL of HTTP host to connect to.
+        type: string
+    type: object
+  storage.InternetarchiveConfig:
+    properties:
+      accessKeyId:
+        description: IAS3 Access Key.
+        type: string
+      disableChecksum:
+        default: true
+        description: Don't ask the server to test against MD5 checksum calculated
+          by rclone.
+        type: boolean
+      encoding:
+        default: Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        default: https://s3.us.archive.org
+        description: IAS3 Endpoint.
+        type: string
+      frontEndpoint:
+        default: https://archive.org
+        description: Host of InternetArchive Frontend.
+        type: string
+      secretAccessKey:
+        description: IAS3 Secret Key (password).
+        type: string
+      waitArchive:
+        default: 0s
+        description: Timeout for waiting the server's processing tasks (specifically
+          archive and book_op) to finish.
         type: string
     type: object
   storage.JottacloudConfig:
@@ -1618,6 +2544,515 @@ definitions:
         description: Set the NetStorage account secret/G2O key for authentication.
         type: string
     type: object
+  storage.OnedriveConfig:
+    properties:
+      accessScopes:
+        default: Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All
+          offline_access
+        description: Set scopes to be requested by rclone.
+        example: Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All
+          offline_access
+        type: string
+      authUrl:
+        description: Auth server URL.
+        type: string
+      chunkSize:
+        default: 10Mi
+        description: Chunk size to upload files with - must be multiple of 320k (327,680
+          bytes).
+        type: string
+      clientId:
+        description: OAuth Client Id.
+        type: string
+      clientSecret:
+        description: OAuth Client Secret.
+        type: string
+      disableSitePermission:
+        default: false
+        description: Disable the request for Sites.Read.All permission.
+        type: boolean
+      driveId:
+        description: The ID of the drive to use.
+        type: string
+      driveType:
+        description: The type of the drive (personal | business | documentLibrary).
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      exposeOnenoteFiles:
+        default: false
+        description: Set to make OneNote files show up in directory listings.
+        type: boolean
+      hashType:
+        default: auto
+        description: Specify the hash in use for the backend.
+        example: auto
+        type: string
+      linkPassword:
+        description: Set the password for links created by the link command.
+        type: string
+      linkScope:
+        default: anonymous
+        description: Set the scope of the links created by the link command.
+        example: anonymous
+        type: string
+      linkType:
+        default: view
+        description: Set the type of the links created by the link command.
+        example: view
+        type: string
+      listChunk:
+        default: 1000
+        description: Size of listing chunk.
+        type: integer
+      noVersions:
+        default: false
+        description: Remove all versions on modifying operations.
+        type: boolean
+      region:
+        default: global
+        description: Choose national cloud region for OneDrive.
+        example: global
+        type: string
+      rootFolderId:
+        description: ID of the root folder.
+        type: string
+      serverSideAcrossConfigs:
+        default: false
+        description: Allow server-side operations (e.g. copy) to work across different
+          onedrive configs.
+        type: boolean
+      token:
+        description: OAuth Access Token as a JSON blob.
+        type: string
+      tokenUrl:
+        description: Token server url.
+        type: string
+    type: object
+  storage.OosEnv_authConfig:
+    properties:
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      compartment:
+        description: Object storage compartment OCID
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: boolean
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      region:
+        description: Object storage Region
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        example: ""
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        example: ""
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        example: ""
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        example: Standard
+        type: string
+      uploadConcurrency:
+        default: 10
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
+  storage.OosInstance_principal_authConfig:
+    properties:
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      compartment:
+        description: Object storage compartment OCID
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: boolean
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      region:
+        description: Object storage Region
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        example: ""
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        example: ""
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        example: ""
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        example: Standard
+        type: string
+      uploadConcurrency:
+        default: 10
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
+  storage.OosNo_authConfig:
+    properties:
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: boolean
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      region:
+        description: Object storage Region
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        example: ""
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        example: ""
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        example: ""
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        example: Standard
+        type: string
+      uploadConcurrency:
+        default: 10
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
+  storage.OosResource_principal_authConfig:
+    properties:
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      compartment:
+        description: Object storage compartment OCID
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: boolean
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      region:
+        description: Object storage Region
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        example: ""
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        example: ""
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        example: ""
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        example: Standard
+        type: string
+      uploadConcurrency:
+        default: 10
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
+  storage.OosUser_principal_authConfig:
+    properties:
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      compartment:
+        description: Object storage compartment OCID
+        type: string
+      configFile:
+        default: ~/.oci/config
+        description: Path to OCI config file
+        example: ~/.oci/config
+        type: string
+      configProfile:
+        default: Default
+        description: Profile name inside the oci config file
+        example: Default
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      copyTimeout:
+        default: 1m0s
+        description: Timeout for copy.
+        type: string
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Object storage API.
+        type: string
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: boolean
+      namespace:
+        description: Object storage namespace
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      region:
+        description: Object storage Region
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the optional header that specifies "AES256" as
+          the encryption algorithm.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C, the optional header that specifies the base64-encoded
+          256-bit encryption key to use to
+        example: ""
+        type: string
+      sseCustomerKeyFile:
+        description: To use SSE-C, a file containing the base64-encoded string of
+          the AES-256 encryption key associated
+        example: ""
+        type: string
+      sseCustomerKeySha256:
+        description: If using SSE-C, The optional header that specifies the base64-encoded
+          SHA256 hash of the encryption
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: if using using your own master key in vault, this header specifies
+          the
+        example: ""
+        type: string
+      storageTier:
+        default: Standard
+        description: The storage class to use when storing new objects in storage.
+          https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+        example: Standard
+        type: string
+      uploadConcurrency:
+        default: 10
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+    type: object
   storage.OpendriveConfig:
     properties:
       chunkSize:
@@ -1730,6 +3165,3779 @@ definitions:
         example: pek3a
         type: string
     type: object
+  storage.S3AWSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      leavePartsOnError:
+        default: false
+        description: If true avoid calling abort upload on a failure, leaving all
+          successfully uploaded parts on S3 for manual recovery.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        example: ""
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: us-east-1
+        type: string
+      requesterPays:
+        default: false
+        description: Enables requester pays option when interacting with S3 bucket.
+        type: boolean
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      serverSideEncryption:
+        description: The server-side encryption algorithm used when storing this object
+          in S3.
+        example: ""
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the server-side encryption algorithm used when
+          storing this object in S3.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C you may provide the secret encryption key used to
+          encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyBase64:
+        description: If using SSE-C you must provide the secret encryption key encoded
+          in base64 format to encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyMd5:
+        description: If using SSE-C you may provide the secret encryption key MD5
+          checksum (optional).
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: If using KMS ID you must provide the ARN of Key.
+        example: ""
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in S3.
+        example: ""
+        type: string
+      stsEndpoint:
+        description: Endpoint for STS.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useAccelerateEndpoint:
+        default: false
+        description: If true use the AWS S3 accelerated endpoint.
+        type: boolean
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3AlibabaConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for OSS API.
+        example: oss-accelerate.aliyuncs.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in OSS.
+        example: ""
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3ArvanCloudConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Arvan Cloud Object Storage (AOS) API.
+        example: s3.ir-thr-at1.arvanstorage.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must match endpoint.
+        example: ir-thr-at1
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in ArvanCloud.
+        example: STANDARD
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3CephConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      serverSideEncryption:
+        description: The server-side encryption algorithm used when storing this object
+          in S3.
+        example: ""
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the server-side encryption algorithm used when
+          storing this object in S3.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C you may provide the secret encryption key used to
+          encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyBase64:
+        description: If using SSE-C you must provide the secret encryption key encoded
+          in base64 format to encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyMd5:
+        description: If using SSE-C you may provide the secret encryption key MD5
+          checksum (optional).
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: If using KMS ID you must provide the ARN of Key.
+        example: ""
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3ChinaMobileConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for China Mobile Ecloud Elastic Object Storage (EOS)
+          API.
+        example: eos-wuxi-1.cmecloud.cn
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must match endpoint.
+        example: wuxi1
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      serverSideEncryption:
+        description: The server-side encryption algorithm used when storing this object
+          in S3.
+        example: ""
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the server-side encryption algorithm used when
+          storing this object in S3.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C you may provide the secret encryption key used to
+          encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyBase64:
+        description: If using SSE-C you must provide the secret encryption key encoded
+          in base64 format to encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyMd5:
+        description: If using SSE-C you may provide the secret encryption key MD5
+          checksum (optional).
+        example: ""
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in ChinaMobile.
+        example: ""
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3CloudflareConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: auto
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3DigitalOceanConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        example: syd1.digitaloceanspaces.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3DreamhostConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        example: objects-us-east-1.dream.io
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3HuaweiOBSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for OBS API.
+        example: obs.af-south-1.myhuaweicloud.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to. - the location where your bucket will be
+          created and your data stored. Need bo be same with your endpoint.
+        example: af-south-1
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3IBMCOSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        example: private
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for IBM COS S3 API.
+        example: s3.us.cloud-object-storage.appdomain.cloud
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must match endpoint when using IBM Cloud
+          Public.
+        example: us-standard
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3IDriveConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3IONOSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for IONOS S3 Object Storage.
+        example: s3-eu-central-1.ionoscloud.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region where your bucket will be created and your data stored.
+        example: de
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3LiaraConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Liara Object Storage API.
+        example: storage.iran.liara.space
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in Liara
+        example: STANDARD
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3LyveCloudConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        example: s3.us-east-1.lyvecloud.seagate.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3MinioConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      serverSideEncryption:
+        description: The server-side encryption algorithm used when storing this object
+          in S3.
+        example: ""
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      sseCustomerAlgorithm:
+        description: If using SSE-C, the server-side encryption algorithm used when
+          storing this object in S3.
+        example: ""
+        type: string
+      sseCustomerKey:
+        description: To use SSE-C you may provide the secret encryption key used to
+          encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyBase64:
+        description: If using SSE-C you must provide the secret encryption key encoded
+          in base64 format to encrypt/decrypt your data.
+        example: ""
+        type: string
+      sseCustomerKeyMd5:
+        description: If using SSE-C you may provide the secret encryption key MD5
+          checksum (optional).
+        example: ""
+        type: string
+      sseKmsKeyId:
+        description: If using KMS ID you must provide the ARN of Key.
+        example: ""
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3NeteaseConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3OtherConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3QiniuConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Qiniu Object Storage.
+        example: s3-cn-east-1.qiniucs.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        example: cn-east-1
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: cn-east-1
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in Qiniu.
+        example: STANDARD
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3RackCorpConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for RackCorp Object Storage.
+        example: s3.rackcorp.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - the location where your bucket will be
+          located and your data stored.
+        example: global
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: region - the location where your bucket will be created and your
+          data stored.
+        example: global
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3ScalewayConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Scaleway Object Storage.
+        example: s3.nl-ams.scw.cloud
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: nl-ams
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in S3.
+        example: ""
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3SeaweedFSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        example: localhost:8333
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3StackPathConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for StackPath Object Storage.
+        example: s3.us-east-2.stackpathstorage.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3StorjConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Storj Gateway.
+        example: gateway.storjshare.io
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3TencentCOSConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        example: default
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for Tencent COS API.
+        example: cos.ap-beijing.myqcloud.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      storageClass:
+        description: The storage class to use when storing new objects in Tencent
+          COS.
+        example: ""
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
+  storage.S3WasabiConfig:
+    properties:
+      accessKeyId:
+        description: AWS Access Key ID.
+        type: string
+      acl:
+        description: Canned ACL used when creating buckets and storing or copying
+          objects.
+        type: string
+      bucketAcl:
+        description: Canned ACL used when creating buckets.
+        example: private
+        type: string
+      chunkSize:
+        default: 5Mi
+        description: Chunk size to use for uploading.
+        type: string
+      copyCutoff:
+        default: 4.656Gi
+        description: Cutoff for switching to multipart copy.
+        type: string
+      decompress:
+        default: false
+        description: If set this will decompress gzip encoded objects.
+        type: boolean
+      disableChecksum:
+        default: false
+        description: Don't store MD5 checksum with object metadata.
+        type: boolean
+      disableHttp2:
+        default: false
+        description: Disable usage of http2 for S3 backends.
+        type: boolean
+      downloadUrl:
+        description: Custom endpoint for downloads.
+        type: string
+      encoding:
+        default: Slash,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      endpoint:
+        description: Endpoint for S3 API.
+        example: s3.wasabisys.com
+        type: string
+      envAuth:
+        default: false
+        description: Get AWS credentials from runtime (environment variables or EC2/ECS
+          meta data if no env vars).
+        example: false
+        type: boolean
+      forcePathStyle:
+        default: true
+        description: If true use path style access if false use virtual hosted style.
+        type: boolean
+      listChunk:
+        default: 1000
+        description: Size of listing chunk (response list for each ListObject S3 request).
+        type: integer
+      listUrlEncode:
+        default: unset
+        description: 'Whether to url encode listings: true/false/unset'
+        type: string
+      listVersion:
+        default: 0
+        description: 'Version of ListObjects to use: 1,2 or 0 for auto.'
+        type: integer
+      locationConstraint:
+        description: Location constraint - must be set to match the Region.
+        type: string
+      maxUploadParts:
+        default: 10000
+        description: Maximum number of parts in a multipart upload.
+        type: integer
+      memoryPoolFlushTime:
+        default: 1m0s
+        description: How often internal memory buffer pools will be flushed.
+        type: string
+      memoryPoolUseMmap:
+        default: false
+        description: Whether to use mmap buffers in internal memory pool.
+        type: boolean
+      mightGzip:
+        default: unset
+        description: Set this if the backend might gzip objects.
+        type: string
+      noCheckBucket:
+        default: false
+        description: If set, don't attempt to check the bucket exists or create it.
+        type: boolean
+      noHead:
+        default: false
+        description: If set, don't HEAD uploaded objects to check integrity.
+        type: boolean
+      noHeadObject:
+        default: false
+        description: If set, do not do HEAD before GET when getting objects.
+        type: boolean
+      noSystemMetadata:
+        default: false
+        description: Suppress setting and reading of system metadata
+        type: boolean
+      profile:
+        description: Profile to use in the shared credentials file.
+        type: string
+      region:
+        description: Region to connect to.
+        example: ""
+        type: string
+      secretAccessKey:
+        description: AWS Secret Access Key (password).
+        type: string
+      sessionToken:
+        description: An AWS session token.
+        type: string
+      sharedCredentialsFile:
+        description: Path to the shared credentials file.
+        type: string
+      uploadConcurrency:
+        default: 4
+        description: Concurrency for multipart uploads.
+        type: integer
+      uploadCutoff:
+        default: 200Mi
+        description: Cutoff for switching to chunked upload.
+        type: string
+      useMultipartEtag:
+        default: unset
+        description: Whether to use ETag in multipart uploads for verification
+        type: string
+      usePresignedRequest:
+        default: false
+        description: Whether to use a presigned request or PutObject for single part
+          uploads
+        type: boolean
+      v2Auth:
+        default: false
+        description: If true use v2 authentication.
+        type: boolean
+      versionAt:
+        default: "off"
+        description: Show file versions as they were at the specified time.
+        type: string
+      versions:
+        default: false
+        description: Include old versions in directory listings.
+        type: boolean
+    type: object
   storage.SeafileConfig:
     properties:
       2fa:
@@ -1762,6 +6970,124 @@ definitions:
         type: string
       user:
         description: User name (usually email address).
+        type: string
+    type: object
+  storage.SftpConfig:
+    properties:
+      askPassword:
+        default: false
+        description: Allow asking for SFTP password when needed.
+        type: boolean
+      chunkSize:
+        default: 32Ki
+        description: Upload and download chunk size.
+        type: string
+      ciphers:
+        description: Space separated list of ciphers to be used for session encryption,
+          ordered by preference.
+        type: string
+      concurrency:
+        default: 64
+        description: The maximum number of outstanding requests for one file
+        type: integer
+      disableConcurrentReads:
+        default: false
+        description: If set don't use concurrent reads.
+        type: boolean
+      disableConcurrentWrites:
+        default: false
+        description: If set don't use concurrent writes.
+        type: boolean
+      disableHashcheck:
+        default: false
+        description: Disable the execution of SSH commands to determine if remote
+          file hashing is available.
+        type: boolean
+      host:
+        description: SSH host to connect to.
+        type: string
+      idleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      keyExchange:
+        description: Space separated list of key exchange algorithms, ordered by preference.
+        type: string
+      keyFile:
+        description: Path to PEM-encoded private key file.
+        type: string
+      keyFilePass:
+        description: The passphrase to decrypt the PEM-encoded private key file.
+        type: string
+      keyPem:
+        description: Raw PEM-encoded private key.
+        type: string
+      keyUseAgent:
+        default: false
+        description: When set forces the usage of the ssh-agent.
+        type: boolean
+      knownHostsFile:
+        description: Optional path to known_hosts file.
+        example: ~/.ssh/known_hosts
+        type: string
+      macs:
+        description: Space separated list of MACs (message authentication code) algorithms,
+          ordered by preference.
+        type: string
+      md5sumCommand:
+        description: The command used to read md5 hashes.
+        type: string
+      pass:
+        description: SSH password, leave blank to use ssh-agent.
+        type: string
+      pathOverride:
+        description: Override path used by SSH shell commands.
+        type: string
+      port:
+        default: 22
+        description: SSH port number.
+        type: integer
+      pubkeyFile:
+        description: Optional path to public key file.
+        type: string
+      serverCommand:
+        description: Specifies the path or command to run a sftp server on the remote
+          host.
+        type: string
+      setEnv:
+        description: Environment variables to pass to sftp and commands
+        type: string
+      setModtime:
+        default: true
+        description: Set the modified time on the remote if set.
+        type: boolean
+      sha1sumCommand:
+        description: The command used to read sha1 hashes.
+        type: string
+      shellType:
+        description: The type of SSH shell on remote server, if any.
+        example: none
+        type: string
+      skipLinks:
+        default: false
+        description: Set to skip any symlinks and any other non regular files.
+        type: boolean
+      subsystem:
+        default: sftp
+        description: Specifies the SSH2 subsystem on the remote host.
+        type: string
+      useFstat:
+        default: false
+        description: If set use fstat instead of stat.
+        type: boolean
+      useInsecureCipher:
+        default: false
+        description: Enable the use of insecure ciphers and key exchange methods.
+        example: false
+        type: boolean
+      user:
+        default: $USER
+        description: SSH username.
         type: string
     type: object
   storage.SharefileConfig:
@@ -1802,6 +7128,47 @@ definitions:
       userAgent:
         default: Sia-Agent
         description: Siad User Agent
+        type: string
+    type: object
+  storage.SmbConfig:
+    properties:
+      caseInsensitive:
+        default: true
+        description: Whether the server is configured to be case-insensitive.
+        type: boolean
+      domain:
+        default: WORKGROUP
+        description: Domain name for NTLM authentication.
+        type: string
+      encoding:
+        default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot
+        description: The encoding for the backend.
+        type: string
+      hideSpecialShare:
+        default: true
+        description: Hide special shares (e.g. print$) which users aren't supposed
+          to access.
+        type: boolean
+      host:
+        description: SMB server hostname to connect to.
+        type: string
+      idleTimeout:
+        default: 1m0s
+        description: Max time before closing idle connections.
+        type: string
+      pass:
+        description: SMB password.
+        type: string
+      port:
+        default: 445
+        description: SMB port number.
+        type: integer
+      spn:
+        description: Service principal name.
+        type: string
+      user:
+        default: $USER
+        description: SMB username.
         type: string
     type: object
   storage.StorjExistingConfig:
@@ -1974,9 +7341,7 @@ definitions:
         type: string
       headers:
         description: Set HTTP headers for all transactions.
-        items:
-          type: string
-        type: array
+        type: string
       pass:
         description: Password.
         type: string

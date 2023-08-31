@@ -27,7 +27,7 @@ type StorageWebdavConfig struct {
 	Encoding string `json:"encoding,omitempty"`
 
 	// Set HTTP headers for all transactions.
-	Headers []string `json:"headers"`
+	Headers string `json:"headers,omitempty"`
 
 	// Password.
 	Pass string `json:"pass,omitempty"`

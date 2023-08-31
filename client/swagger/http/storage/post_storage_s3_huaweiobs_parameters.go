@@ -67,7 +67,7 @@ type PostStorageS3HuaweiobsParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3HuaweiOBSStorageRequest
+	Request *models.StorageCreateS3HuaweiOBSStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3HuaweiobsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 huaweiobs params
-func (o *PostStorageS3HuaweiobsParams) WithRequest(request models.StorageCreateS3HuaweiOBSStorageRequest) *PostStorageS3HuaweiobsParams {
+func (o *PostStorageS3HuaweiobsParams) WithRequest(request *models.StorageCreateS3HuaweiOBSStorageRequest) *PostStorageS3HuaweiobsParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 huaweiobs params
-func (o *PostStorageS3HuaweiobsParams) SetRequest(request models.StorageCreateS3HuaweiOBSStorageRequest) {
+func (o *PostStorageS3HuaweiobsParams) SetRequest(request *models.StorageCreateS3HuaweiOBSStorageRequest) {
 	o.Request = request
 }
 

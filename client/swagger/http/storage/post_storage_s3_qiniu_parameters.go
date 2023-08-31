@@ -67,7 +67,7 @@ type PostStorageS3QiniuParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3QiniuStorageRequest
+	Request *models.StorageCreateS3QiniuStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3QiniuParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 qiniu params
-func (o *PostStorageS3QiniuParams) WithRequest(request models.StorageCreateS3QiniuStorageRequest) *PostStorageS3QiniuParams {
+func (o *PostStorageS3QiniuParams) WithRequest(request *models.StorageCreateS3QiniuStorageRequest) *PostStorageS3QiniuParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 qiniu params
-func (o *PostStorageS3QiniuParams) SetRequest(request models.StorageCreateS3QiniuStorageRequest) {
+func (o *PostStorageS3QiniuParams) SetRequest(request *models.StorageCreateS3QiniuStorageRequest) {
 	o.Request = request
 }
 

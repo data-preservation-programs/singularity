@@ -67,7 +67,7 @@ type PostStorageOosNoAuthParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateOosNoAuthStorageRequest
+	Request *models.StorageCreateOosNoAuthStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageOosNoAuthParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage oos no auth params
-func (o *PostStorageOosNoAuthParams) WithRequest(request models.StorageCreateOosNoAuthStorageRequest) *PostStorageOosNoAuthParams {
+func (o *PostStorageOosNoAuthParams) WithRequest(request *models.StorageCreateOosNoAuthStorageRequest) *PostStorageOosNoAuthParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage oos no auth params
-func (o *PostStorageOosNoAuthParams) SetRequest(request models.StorageCreateOosNoAuthStorageRequest) {
+func (o *PostStorageOosNoAuthParams) SetRequest(request *models.StorageCreateOosNoAuthStorageRequest) {
 	o.Request = request
 }
 

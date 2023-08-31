@@ -67,7 +67,7 @@ type PostStorageS3IonosParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3IONOSStorageRequest
+	Request *models.StorageCreateS3IONOSStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3IonosParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 ionos params
-func (o *PostStorageS3IonosParams) WithRequest(request models.StorageCreateS3IONOSStorageRequest) *PostStorageS3IonosParams {
+func (o *PostStorageS3IonosParams) WithRequest(request *models.StorageCreateS3IONOSStorageRequest) *PostStorageS3IonosParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 ionos params
-func (o *PostStorageS3IonosParams) SetRequest(request models.StorageCreateS3IONOSStorageRequest) {
+func (o *PostStorageS3IonosParams) SetRequest(request *models.StorageCreateS3IONOSStorageRequest) {
 	o.Request = request
 }
 

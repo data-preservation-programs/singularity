@@ -67,7 +67,7 @@ type PostStorageSmbParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateSmbStorageRequest
+	Request *models.StorageCreateSmbStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageSmbParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage smb params
-func (o *PostStorageSmbParams) WithRequest(request models.StorageCreateSmbStorageRequest) *PostStorageSmbParams {
+func (o *PostStorageSmbParams) WithRequest(request *models.StorageCreateSmbStorageRequest) *PostStorageSmbParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage smb params
-func (o *PostStorageSmbParams) SetRequest(request models.StorageCreateSmbStorageRequest) {
+func (o *PostStorageSmbParams) SetRequest(request *models.StorageCreateSmbStorageRequest) {
 	o.Request = request
 }
 

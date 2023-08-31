@@ -5167,34 +5167,6 @@ const docTemplate = `{
                 }
             }
         },
-        "fs.Duration": {
-            "type": "integer",
-            "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                3153600000000000000
-            ],
-            "x-enum-varnames": [
-                "ModTimeNotSupported"
-            ]
-        },
-        "fs.Tristate": {
-            "type": "object",
-            "properties": {
-                "valid": {
-                    "type": "boolean"
-                },
-                "value": {
-                    "type": "boolean"
-                }
-            }
-        },
         "model.CID": {
             "type": "object"
         },
@@ -5667,6 +5639,278 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.AcdConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "checkpoint": {
+                    "description": "Checkpoint for internal polling (debug).",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "templinkThreshold": {
+                    "description": "Files \u003e= this size will be downloaded via their tempLink.",
+                    "type": "string",
+                    "default": "9Gi"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "uploadWaitPerGb": {
+                    "description": "Additional time per GiB to wait after a failed complete upload to see if it appears.",
+                    "type": "string",
+                    "default": "3m0s"
+                }
+            }
+        },
+        "storage.AzureblobConfig": {
+            "type": "object",
+            "properties": {
+                "accessTier": {
+                    "description": "Access tier of blob: hot, cool or archive.",
+                    "type": "string"
+                },
+                "account": {
+                    "description": "Azure Storage Account Name.",
+                    "type": "string"
+                },
+                "archiveTierDelete": {
+                    "description": "Delete archive tier blobs before overwriting.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "4Mi"
+                },
+                "clientCertificatePassword": {
+                    "description": "Password for the certificate file (optional).",
+                    "type": "string"
+                },
+                "clientCertificatePath": {
+                    "description": "Path to a PEM or PKCS12 certificate file including the private key.",
+                    "type": "string"
+                },
+                "clientId": {
+                    "description": "The ID of the client in use.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "One of the service principal's client secrets",
+                    "type": "string"
+                },
+                "clientSendCertificateChain": {
+                    "description": "Send the certificate chain when using certificate auth.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Read credentials from runtime (environment variables, CLI or MSI).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "key": {
+                    "description": "Storage Account Shared Key.",
+                    "type": "string"
+                },
+                "listChunk": {
+                    "description": "Size of blob list.",
+                    "type": "integer",
+                    "default": 5000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "msiClientId": {
+                    "description": "Object ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "msiMiResId": {
+                    "description": "Azure resource ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "msiObjectId": {
+                    "description": "Object ID of the user-assigned MSI to use, if any.",
+                    "type": "string"
+                },
+                "noCheckContainer": {
+                    "description": "If set, don't attempt to check the container exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "password": {
+                    "description": "The user's password",
+                    "type": "string"
+                },
+                "publicAccess": {
+                    "description": "Public access level of a container: blob or container.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sasUrl": {
+                    "description": "SAS URL for container level access only.",
+                    "type": "string"
+                },
+                "servicePrincipalFile": {
+                    "description": "Path to file containing credentials for use with a service principal.",
+                    "type": "string"
+                },
+                "tenant": {
+                    "description": "ID of the service principal's tenant. Also called its directory ID.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 16
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload (\u003c= 256 MiB) (deprecated).",
+                    "type": "string"
+                },
+                "useEmulator": {
+                    "description": "Uses local storage emulator if provided as 'true'.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMsi": {
+                    "description": "Use a managed service identity to authenticate (only works in Azure).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "username": {
+                    "description": "User name (usually an email address)",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.B2Config": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "Account ID or Application Key ID.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "96Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4Gi"
+                },
+                "disableChecksum": {
+                    "description": "Disable checksums for large (\u003e upload cutoff) files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadAuthDuration": {
+                    "description": "Time before the authorization token will expire in s or suffix ms|s|m|h|d.",
+                    "type": "string",
+                    "default": "1w"
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for the service.",
+                    "type": "string"
+                },
+                "hardDelete": {
+                    "description": "Permanently delete files on remote removal, otherwise hide files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "key": {
+                    "description": "Application Key.",
+                    "type": "string"
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "testMode": {
+                    "description": "A flag string for X-Bz-Test-Mode header for debugging.",
+                    "type": "string"
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
         "storage.BoxConfig": {
             "type": "object",
             "properties": {
@@ -5735,13 +5979,55 @@ const docTemplate = `{
             }
         },
         "storage.CreateAcdStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.AcdConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateAzureblobStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.AzureblobConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateB2StorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.B2Config"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateBoxStorageRequest": {
             "type": "object",
@@ -5761,10 +6047,38 @@ const docTemplate = `{
             }
         },
         "storage.CreateDriveStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.DriveConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateDropboxStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.DropboxConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateFichierStorageRequest": {
             "type": "object",
@@ -5801,7 +6115,21 @@ const docTemplate = `{
             }
         },
         "storage.CreateFtpStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.FtpConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateGcsStorageRequest": {
             "type": "object",
@@ -5889,7 +6217,21 @@ const docTemplate = `{
             }
         },
         "storage.CreateInternetarchiveStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.InternetarchiveConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateJottacloudStorageRequest": {
             "type": "object",
@@ -6028,22 +6370,106 @@ const docTemplate = `{
             }
         },
         "storage.CreateOnedriveStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OnedriveConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateOosEnv_authStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OosEnv_authConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateOosInstance_principal_authStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OosInstance_principal_authConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateOosNo_authStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OosNo_authConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateOosResource_principal_authStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OosResource_principal_authConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateOosUser_principal_authStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.OosUser_principal_authConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateOpendriveStorageRequest": {
             "type": "object",
@@ -6155,79 +6581,429 @@ const docTemplate = `{
             }
         },
         "storage.CreateS3AWSStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3AWSConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3AlibabaStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3AlibabaConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3ArvanCloudStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3ArvanCloudConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3CephStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3CephConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3ChinaMobileStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3ChinaMobileConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3CloudflareStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3CloudflareConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3DigitalOceanStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3DigitalOceanConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3DreamhostStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3DreamhostConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3HuaweiOBSStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3HuaweiOBSConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3IBMCOSStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3IBMCOSConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3IDriveStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3IDriveConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3IONOSStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3IONOSConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3LiaraStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3LiaraConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3LyveCloudStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3LyveCloudConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3MinioStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3MinioConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3NeteaseStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3NeteaseConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3OtherStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3OtherConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3QiniuStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3QiniuConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3RackCorpStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3RackCorpConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3ScalewayStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3ScalewayConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3SeaweedFSStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3SeaweedFSConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3StackPathStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3StackPathConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3StorjStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3StorjConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3TencentCOSStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3TencentCOSConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateS3WasabiStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.S3WasabiConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateSeafileStorageRequest": {
             "type": "object",
@@ -6247,7 +7023,21 @@ const docTemplate = `{
             }
         },
         "storage.CreateSftpStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SftpConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateSharefileStorageRequest": {
             "type": "object",
@@ -6284,7 +7074,21 @@ const docTemplate = `{
             }
         },
         "storage.CreateSmbStorageRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/storage.SmbConfig"
+                },
+                "name": {
+                    "description": "Name of the storage, must be unique",
+                    "type": "string",
+                    "example": "my-storage"
+                },
+                "path": {
+                    "description": "Path of the storage",
+                    "type": "string"
+                }
+            }
         },
         "storage.CreateStorjExistingStorageRequest": {
             "type": "object",
@@ -6448,6 +7252,282 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.DriveConfig": {
+            "type": "object",
+            "properties": {
+                "acknowledgeAbuse": {
+                    "description": "Set to allow files which return cannotDownloadAbusiveFile to be downloaded.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "allowImportNameChange": {
+                    "description": "Allow the filetype to change when uploading Google docs.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "alternateExport": {
+                    "description": "Deprecated: No longer needed.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "authOwnerOnly": {
+                    "description": "Only consider files owned by the authenticated user.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
+                "clientId": {
+                    "description": "Google Application Client Id",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "copyShortcutContent": {
+                    "description": "Server side copy contents of shortcuts instead of the shortcut.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable drive using http2.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "InvalidUtf8"
+                },
+                "exportFormats": {
+                    "description": "Comma separated list of preferred formats for downloading Google docs.",
+                    "type": "string",
+                    "default": "docx,xlsx,pptx,svg"
+                },
+                "formats": {
+                    "description": "Deprecated: See export_formats.",
+                    "type": "string"
+                },
+                "impersonate": {
+                    "description": "Impersonate this user when using a service account.",
+                    "type": "string"
+                },
+                "importFormats": {
+                    "description": "Comma separated list of preferred formats for uploading Google docs.",
+                    "type": "string"
+                },
+                "keepRevisionForever": {
+                    "description": "Keep new head revision of each file forever.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk 100-1000, 0 to disable.",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "pacerBurst": {
+                    "description": "Number of API calls to allow without sleeping.",
+                    "type": "integer",
+                    "default": 100
+                },
+                "pacerMinSleep": {
+                    "description": "Minimum time to sleep between API calls.",
+                    "type": "string",
+                    "default": "100ms"
+                },
+                "resourceKey": {
+                    "description": "Resource key for accessing a link-shared file.",
+                    "type": "string"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "scope": {
+                    "description": "Scope that rclone should use when requesting access from drive.",
+                    "type": "string",
+                    "example": "drive"
+                },
+                "serverSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different drive configs.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "serviceAccountCredentials": {
+                    "description": "Service Account Credentials JSON blob.",
+                    "type": "string"
+                },
+                "serviceAccountFile": {
+                    "description": "Service Account Credentials JSON file path.",
+                    "type": "string"
+                },
+                "sharedWithMe": {
+                    "description": "Only show files that are shared with me.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "sizeAsQuota": {
+                    "description": "Show sizes as storage quota usage, not actual size.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipChecksumGphotos": {
+                    "description": "Skip MD5 checksum on Google photos and videos only.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipDanglingShortcuts": {
+                    "description": "If set skip dangling shortcut files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipGdocs": {
+                    "description": "Skip google documents in all listings.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "skipShortcuts": {
+                    "description": "If set skip shortcut files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "starredOnly": {
+                    "description": "Only show files that are starred.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "stopOnDownloadLimit": {
+                    "description": "Make download limit errors be fatal.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "stopOnUploadLimit": {
+                    "description": "Make upload limit errors be fatal.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "teamDrive": {
+                    "description": "ID of the Shared Drive (Team Drive).",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                },
+                "trashedOnly": {
+                    "description": "Only show files that are in the trash.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "8Mi"
+                },
+                "useCreatedDate": {
+                    "description": "Use file created date instead of modified date.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useSharedDate": {
+                    "description": "Use date file was shared instead of modified date.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useTrash": {
+                    "description": "Send files to the trash instead of deleting permanently.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "v2DownloadMinSize": {
+                    "description": "If Object's are greater, use drive v2 API to download.",
+                    "type": "string",
+                    "default": "off"
+                }
+            }
+        },
+        "storage.DropboxConfig": {
+            "type": "object",
+            "properties": {
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "batchCommitTimeout": {
+                    "description": "Max time to wait for a batch to finish committing",
+                    "type": "string",
+                    "default": "10m0s"
+                },
+                "batchMode": {
+                    "description": "Upload file batching sync|async|off.",
+                    "type": "string",
+                    "default": "sync"
+                },
+                "batchSize": {
+                    "description": "Max number of files in upload batch.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "batchTimeout": {
+                    "description": "Max time to allow an idle upload batch before uploading.",
+                    "type": "string",
+                    "default": "0s"
+                },
+                "chunkSize": {
+                    "description": "Upload chunk size (\u003c 150Mi).",
+                    "type": "string",
+                    "default": "48Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
+                },
+                "impersonate": {
+                    "description": "Impersonate this user when using a business account.",
+                    "type": "string"
+                },
+                "sharedFiles": {
+                    "description": "Instructs rclone to work on individual shared files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "sharedFolders": {
+                    "description": "Instructs rclone to work on shared folders.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
         "storage.FichierConfig": {
             "type": "object",
             "properties": {
@@ -6506,6 +7586,110 @@ const docTemplate = `{
                 "version": {
                     "description": "Version read from the file fabric.",
                     "type": "string"
+                }
+            }
+        },
+        "storage.FtpConfig": {
+            "type": "object",
+            "properties": {
+                "askPassword": {
+                    "description": "Allow asking for FTP password when needed.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "closeTimeout": {
+                    "description": "Maximum time to wait for a response to close.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "concurrency": {
+                    "description": "Maximum number of FTP simultaneous connections, 0 for unlimited.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "disableEpsv": {
+                    "description": "Disable using EPSV even if server advertises support.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableMlsd": {
+                    "description": "Disable using MLSD even if server advertises support.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableTls13": {
+                    "description": "Disable TLS 1.3 (workaround for FTP servers with buggy TLS)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableUtf8": {
+                    "description": "Disable using UTF-8 even if server advertises support.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,Del,Ctl,RightSpace,Dot",
+                    "example": "Asterisk,Ctl,Dot,Slash"
+                },
+                "explicitTls": {
+                    "description": "Use Explicit FTPS (FTP over TLS).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "forceListHidden": {
+                    "description": "Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "host": {
+                    "description": "FTP host to connect to.",
+                    "type": "string"
+                },
+                "idleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "noCheckCertificate": {
+                    "description": "Do not verify the TLS certificate of the server.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "pass": {
+                    "description": "FTP password.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "FTP port number.",
+                    "type": "integer",
+                    "default": 21
+                },
+                "shutTimeout": {
+                    "description": "Maximum time to wait for data connection closing status.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "tls": {
+                    "description": "Use Implicit FTPS (FTP over TLS).",
+                    "type": "boolean",
+                    "default": false
+                },
+                "tlsCacheSize": {
+                    "description": "Size of TLS session cache for all control and data connections.",
+                    "type": "integer",
+                    "default": 32
+                },
+                "user": {
+                    "description": "FTP username.",
+                    "type": "string",
+                    "default": "$USER"
+                },
+                "writingMdtm": {
+                    "description": "Use MDTM to set modification time (VsFtpd quirk)",
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },
@@ -6757,10 +7941,7 @@ const docTemplate = `{
             "properties": {
                 "headers": {
                     "description": "Set HTTP headers for all transactions.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "noHead": {
                     "description": "Don't use HEAD requests.",
@@ -6775,6 +7956,44 @@ const docTemplate = `{
                 "url": {
                     "description": "URL of HTTP host to connect to.",
                     "type": "string"
+                }
+            }
+        },
+        "storage.InternetarchiveConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "IAS3 Access Key.",
+                    "type": "string"
+                },
+                "disableChecksum": {
+                    "description": "Don't ask the server to test against MD5 checksum calculated by rclone.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "IAS3 Endpoint.",
+                    "type": "string",
+                    "default": "https://s3.us.archive.org"
+                },
+                "frontEndpoint": {
+                    "description": "Host of InternetArchive Frontend.",
+                    "type": "string",
+                    "default": "https://archive.org"
+                },
+                "secretAccessKey": {
+                    "description": "IAS3 Secret Key (password).",
+                    "type": "string"
+                },
+                "waitArchive": {
+                    "description": "Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.",
+                    "type": "string",
+                    "default": "0s"
                 }
             }
         },
@@ -7086,6 +8305,605 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.OnedriveConfig": {
+            "type": "object",
+            "properties": {
+                "accessScopes": {
+                    "description": "Set scopes to be requested by rclone.",
+                    "type": "string",
+                    "default": "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access",
+                    "example": "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+                },
+                "authUrl": {
+                    "description": "Auth server URL.",
+                    "type": "string"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to upload files with - must be multiple of 320k (327,680 bytes).",
+                    "type": "string",
+                    "default": "10Mi"
+                },
+                "clientId": {
+                    "description": "OAuth Client Id.",
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "description": "OAuth Client Secret.",
+                    "type": "string"
+                },
+                "disableSitePermission": {
+                    "description": "Disable the request for Sites.Read.All permission.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "driveId": {
+                    "description": "The ID of the drive to use.",
+                    "type": "string"
+                },
+                "driveType": {
+                    "description": "The type of the drive (personal | business | documentLibrary).",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "exposeOnenoteFiles": {
+                    "description": "Set to make OneNote files show up in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "hashType": {
+                    "description": "Specify the hash in use for the backend.",
+                    "type": "string",
+                    "default": "auto",
+                    "example": "auto"
+                },
+                "linkPassword": {
+                    "description": "Set the password for links created by the link command.",
+                    "type": "string"
+                },
+                "linkScope": {
+                    "description": "Set the scope of the links created by the link command.",
+                    "type": "string",
+                    "default": "anonymous",
+                    "example": "anonymous"
+                },
+                "linkType": {
+                    "description": "Set the type of the links created by the link command.",
+                    "type": "string",
+                    "default": "view",
+                    "example": "view"
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk.",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "noVersions": {
+                    "description": "Remove all versions on modifying operations.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Choose national cloud region for OneDrive.",
+                    "type": "string",
+                    "default": "global",
+                    "example": "global"
+                },
+                "rootFolderId": {
+                    "description": "ID of the root folder.",
+                    "type": "string"
+                },
+                "serverSideAcrossConfigs": {
+                    "description": "Allow server-side operations (e.g. copy) to work across different onedrive configs.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "token": {
+                    "description": "OAuth Access Token as a JSON blob.",
+                    "type": "string"
+                },
+                "tokenUrl": {
+                    "description": "Token server url.",
+                    "type": "string"
+                }
+            }
+        },
+        "storage.OosEnv_authConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "compartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard",
+                    "example": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 10
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
+        "storage.OosInstance_principal_authConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "compartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard",
+                    "example": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 10
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
+        "storage.OosNo_authConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard",
+                    "example": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 10
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
+        "storage.OosResource_principal_authConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "compartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard",
+                    "example": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 10
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
+        "storage.OosUser_principal_authConfig": {
+            "type": "object",
+            "properties": {
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "compartment": {
+                    "description": "Object storage compartment OCID",
+                    "type": "string"
+                },
+                "configFile": {
+                    "description": "Path to OCI config file",
+                    "type": "string",
+                    "default": "~/.oci/config",
+                    "example": "~/.oci/config"
+                },
+                "configProfile": {
+                    "description": "Profile name inside the oci config file",
+                    "type": "string",
+                    "default": "Default",
+                    "example": "Default"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "copyTimeout": {
+                    "description": "Timeout for copy.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Object storage API.",
+                    "type": "string"
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "namespace": {
+                    "description": "Object storage namespace",
+                    "type": "string"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "region": {
+                    "description": "Object storage Region",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the optional header that specifies \"AES256\" as the encryption algorithm.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyFile": {
+                    "description": "To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeySha256": {
+                    "description": "If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "if using using your own master key in vault, this header specifies the",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageTier": {
+                    "description": "The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm",
+                    "type": "string",
+                    "default": "Standard",
+                    "example": "Standard"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 10
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                }
+            }
+        },
         "storage.OpendriveConfig": {
             "type": "object",
             "properties": {
@@ -7235,6 +9053,4669 @@ const docTemplate = `{
                 }
             }
         },
+        "storage.S3AWSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "leavePartsOnError": {
+                    "description": "If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string",
+                    "example": ""
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "us-east-1"
+                },
+                "requesterPays": {
+                    "description": "Enables requester pays option when interacting with S3 bucket.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "serverSideEncryption": {
+                    "description": "The server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyBase64": {
+                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "If using KMS ID you must provide the ARN of Key.",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "stsEndpoint": {
+                    "description": "Endpoint for STS.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useAccelerateEndpoint": {
+                    "description": "If true use the AWS S3 accelerated endpoint.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3AlibabaConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for OSS API.",
+                    "type": "string",
+                    "example": "oss-accelerate.aliyuncs.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in OSS.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3ArvanCloudConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Arvan Cloud Object Storage (AOS) API.",
+                    "type": "string",
+                    "example": "s3.ir-thr-at1.arvanstorage.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must match endpoint.",
+                    "type": "string",
+                    "example": "ir-thr-at1"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in ArvanCloud.",
+                    "type": "string",
+                    "example": "STANDARD"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3CephConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "serverSideEncryption": {
+                    "description": "The server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyBase64": {
+                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "If using KMS ID you must provide the ARN of Key.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3ChinaMobileConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for China Mobile Ecloud Elastic Object Storage (EOS) API.",
+                    "type": "string",
+                    "example": "eos-wuxi-1.cmecloud.cn"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must match endpoint.",
+                    "type": "string",
+                    "example": "wuxi1"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "serverSideEncryption": {
+                    "description": "The server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyBase64": {
+                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string",
+                    "example": ""
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in ChinaMobile.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3CloudflareConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "auto"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3DigitalOceanConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "syd1.digitaloceanspaces.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3DreamhostConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "objects-us-east-1.dream.io"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3HuaweiOBSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for OBS API.",
+                    "type": "string",
+                    "example": "obs.af-south-1.myhuaweicloud.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to. - the location where your bucket will be created and your data stored. Need bo be same with your endpoint.",
+                    "type": "string",
+                    "example": "af-south-1"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3IBMCOSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for IBM COS S3 API.",
+                    "type": "string",
+                    "example": "s3.us.cloud-object-storage.appdomain.cloud"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must match endpoint when using IBM Cloud Public.",
+                    "type": "string",
+                    "example": "us-standard"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3IDriveConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3IONOSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for IONOS S3 Object Storage.",
+                    "type": "string",
+                    "example": "s3-eu-central-1.ionoscloud.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region where your bucket will be created and your data stored.",
+                    "type": "string",
+                    "example": "de"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3LiaraConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Liara Object Storage API.",
+                    "type": "string",
+                    "example": "storage.iran.liara.space"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in Liara",
+                    "type": "string",
+                    "example": "STANDARD"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3LyveCloudConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.us-east-1.lyvecloud.seagate.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3MinioConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "serverSideEncryption": {
+                    "description": "The server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "sseCustomerAlgorithm": {
+                    "description": "If using SSE-C, the server-side encryption algorithm used when storing this object in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKey": {
+                    "description": "To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyBase64": {
+                    "description": "If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseCustomerKeyMd5": {
+                    "description": "If using SSE-C you may provide the secret encryption key MD5 checksum (optional).",
+                    "type": "string",
+                    "example": ""
+                },
+                "sseKmsKeyId": {
+                    "description": "If using KMS ID you must provide the ARN of Key.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3NeteaseConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3OtherConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3QiniuConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Qiniu Object Storage.",
+                    "type": "string",
+                    "example": "s3-cn-east-1.qiniucs.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string",
+                    "example": "cn-east-1"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "cn-east-1"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in Qiniu.",
+                    "type": "string",
+                    "example": "STANDARD"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3RackCorpConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for RackCorp Object Storage.",
+                    "type": "string",
+                    "example": "s3.rackcorp.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - the location where your bucket will be located and your data stored.",
+                    "type": "string",
+                    "example": "global"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "region - the location where your bucket will be created and your data stored.",
+                    "type": "string",
+                    "example": "global"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3ScalewayConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Scaleway Object Storage.",
+                    "type": "string",
+                    "example": "s3.nl-ams.scw.cloud"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": "nl-ams"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in S3.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3SeaweedFSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "localhost:8333"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3StackPathConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for StackPath Object Storage.",
+                    "type": "string",
+                    "example": "s3.us-east-2.stackpathstorage.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3StorjConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Storj Gateway.",
+                    "type": "string",
+                    "example": "gateway.storjshare.io"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3TencentCOSConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string",
+                    "example": "default"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for Tencent COS API.",
+                    "type": "string",
+                    "example": "cos.ap-beijing.myqcloud.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "storageClass": {
+                    "description": "The storage class to use when storing new objects in Tencent COS.",
+                    "type": "string",
+                    "example": ""
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "storage.S3WasabiConfig": {
+            "type": "object",
+            "properties": {
+                "accessKeyId": {
+                    "description": "AWS Access Key ID.",
+                    "type": "string"
+                },
+                "acl": {
+                    "description": "Canned ACL used when creating buckets and storing or copying objects.",
+                    "type": "string"
+                },
+                "bucketAcl": {
+                    "description": "Canned ACL used when creating buckets.",
+                    "type": "string",
+                    "example": "private"
+                },
+                "chunkSize": {
+                    "description": "Chunk size to use for uploading.",
+                    "type": "string",
+                    "default": "5Mi"
+                },
+                "copyCutoff": {
+                    "description": "Cutoff for switching to multipart copy.",
+                    "type": "string",
+                    "default": "4.656Gi"
+                },
+                "decompress": {
+                    "description": "If set this will decompress gzip encoded objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableChecksum": {
+                    "description": "Don't store MD5 checksum with object metadata.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHttp2": {
+                    "description": "Disable usage of http2 for S3 backends.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "downloadUrl": {
+                    "description": "Custom endpoint for downloads.",
+                    "type": "string"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,InvalidUtf8,Dot"
+                },
+                "endpoint": {
+                    "description": "Endpoint for S3 API.",
+                    "type": "string",
+                    "example": "s3.wasabisys.com"
+                },
+                "envAuth": {
+                    "description": "Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "forcePathStyle": {
+                    "description": "If true use path style access if false use virtual hosted style.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "listChunk": {
+                    "description": "Size of listing chunk (response list for each ListObject S3 request).",
+                    "type": "integer",
+                    "default": 1000
+                },
+                "listUrlEncode": {
+                    "description": "Whether to url encode listings: true/false/unset",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "listVersion": {
+                    "description": "Version of ListObjects to use: 1,2 or 0 for auto.",
+                    "type": "integer",
+                    "default": 0
+                },
+                "locationConstraint": {
+                    "description": "Location constraint - must be set to match the Region.",
+                    "type": "string"
+                },
+                "maxUploadParts": {
+                    "description": "Maximum number of parts in a multipart upload.",
+                    "type": "integer",
+                    "default": 10000
+                },
+                "memoryPoolFlushTime": {
+                    "description": "How often internal memory buffer pools will be flushed.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "memoryPoolUseMmap": {
+                    "description": "Whether to use mmap buffers in internal memory pool.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mightGzip": {
+                    "description": "Set this if the backend might gzip objects.",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "noCheckBucket": {
+                    "description": "If set, don't attempt to check the bucket exists or create it.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHead": {
+                    "description": "If set, don't HEAD uploaded objects to check integrity.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noHeadObject": {
+                    "description": "If set, do not do HEAD before GET when getting objects.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noSystemMetadata": {
+                    "description": "Suppress setting and reading of system metadata",
+                    "type": "boolean",
+                    "default": false
+                },
+                "profile": {
+                    "description": "Profile to use in the shared credentials file.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region to connect to.",
+                    "type": "string",
+                    "example": ""
+                },
+                "secretAccessKey": {
+                    "description": "AWS Secret Access Key (password).",
+                    "type": "string"
+                },
+                "sessionToken": {
+                    "description": "An AWS session token.",
+                    "type": "string"
+                },
+                "sharedCredentialsFile": {
+                    "description": "Path to the shared credentials file.",
+                    "type": "string"
+                },
+                "uploadConcurrency": {
+                    "description": "Concurrency for multipart uploads.",
+                    "type": "integer",
+                    "default": 4
+                },
+                "uploadCutoff": {
+                    "description": "Cutoff for switching to chunked upload.",
+                    "type": "string",
+                    "default": "200Mi"
+                },
+                "useMultipartEtag": {
+                    "description": "Whether to use ETag in multipart uploads for verification",
+                    "type": "string",
+                    "default": "unset"
+                },
+                "usePresignedRequest": {
+                    "description": "Whether to use a presigned request or PutObject for single part uploads",
+                    "type": "boolean",
+                    "default": false
+                },
+                "v2Auth": {
+                    "description": "If true use v2 authentication.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "versionAt": {
+                    "description": "Show file versions as they were at the specified time.",
+                    "type": "string",
+                    "default": "off"
+                },
+                "versions": {
+                    "description": "Include old versions in directory listings.",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
         "storage.SeafileConfig": {
             "type": "object",
             "properties": {
@@ -7277,6 +13758,153 @@ const docTemplate = `{
                 "user": {
                     "description": "User name (usually email address).",
                     "type": "string"
+                }
+            }
+        },
+        "storage.SftpConfig": {
+            "type": "object",
+            "properties": {
+                "askPassword": {
+                    "description": "Allow asking for SFTP password when needed.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "chunkSize": {
+                    "description": "Upload and download chunk size.",
+                    "type": "string",
+                    "default": "32Ki"
+                },
+                "ciphers": {
+                    "description": "Space separated list of ciphers to be used for session encryption, ordered by preference.",
+                    "type": "string"
+                },
+                "concurrency": {
+                    "description": "The maximum number of outstanding requests for one file",
+                    "type": "integer",
+                    "default": 64
+                },
+                "disableConcurrentReads": {
+                    "description": "If set don't use concurrent reads.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableConcurrentWrites": {
+                    "description": "If set don't use concurrent writes.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "disableHashcheck": {
+                    "description": "Disable the execution of SSH commands to determine if remote file hashing is available.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "host": {
+                    "description": "SSH host to connect to.",
+                    "type": "string"
+                },
+                "idleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "keyExchange": {
+                    "description": "Space separated list of key exchange algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "keyFile": {
+                    "description": "Path to PEM-encoded private key file.",
+                    "type": "string"
+                },
+                "keyFilePass": {
+                    "description": "The passphrase to decrypt the PEM-encoded private key file.",
+                    "type": "string"
+                },
+                "keyPem": {
+                    "description": "Raw PEM-encoded private key.",
+                    "type": "string"
+                },
+                "keyUseAgent": {
+                    "description": "When set forces the usage of the ssh-agent.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "knownHostsFile": {
+                    "description": "Optional path to known_hosts file.",
+                    "type": "string",
+                    "example": "~/.ssh/known_hosts"
+                },
+                "macs": {
+                    "description": "Space separated list of MACs (message authentication code) algorithms, ordered by preference.",
+                    "type": "string"
+                },
+                "md5sumCommand": {
+                    "description": "The command used to read md5 hashes.",
+                    "type": "string"
+                },
+                "pass": {
+                    "description": "SSH password, leave blank to use ssh-agent.",
+                    "type": "string"
+                },
+                "pathOverride": {
+                    "description": "Override path used by SSH shell commands.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "SSH port number.",
+                    "type": "integer",
+                    "default": 22
+                },
+                "pubkeyFile": {
+                    "description": "Optional path to public key file.",
+                    "type": "string"
+                },
+                "serverCommand": {
+                    "description": "Specifies the path or command to run a sftp server on the remote host.",
+                    "type": "string"
+                },
+                "setEnv": {
+                    "description": "Environment variables to pass to sftp and commands",
+                    "type": "string"
+                },
+                "setModtime": {
+                    "description": "Set the modified time on the remote if set.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "sha1sumCommand": {
+                    "description": "The command used to read sha1 hashes.",
+                    "type": "string"
+                },
+                "shellType": {
+                    "description": "The type of SSH shell on remote server, if any.",
+                    "type": "string",
+                    "example": "none"
+                },
+                "skipLinks": {
+                    "description": "Set to skip any symlinks and any other non regular files.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "subsystem": {
+                    "description": "Specifies the SSH2 subsystem on the remote host.",
+                    "type": "string",
+                    "default": "sftp"
+                },
+                "useFstat": {
+                    "description": "If set use fstat instead of stat.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useInsecureCipher": {
+                    "description": "Enable the use of insecure ciphers and key exchange methods.",
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                },
+                "user": {
+                    "description": "SSH username.",
+                    "type": "string",
+                    "default": "$USER"
                 }
             }
         },
@@ -7330,6 +13958,58 @@ const docTemplate = `{
                     "description": "Siad User Agent",
                     "type": "string",
                     "default": "Sia-Agent"
+                }
+            }
+        },
+        "storage.SmbConfig": {
+            "type": "object",
+            "properties": {
+                "caseInsensitive": {
+                    "description": "Whether the server is configured to be case-insensitive.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "domain": {
+                    "description": "Domain name for NTLM authentication.",
+                    "type": "string",
+                    "default": "WORKGROUP"
+                },
+                "encoding": {
+                    "description": "The encoding for the backend.",
+                    "type": "string",
+                    "default": "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
+                },
+                "hideSpecialShare": {
+                    "description": "Hide special shares (e.g. print$) which users aren't supposed to access.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "host": {
+                    "description": "SMB server hostname to connect to.",
+                    "type": "string"
+                },
+                "idleTimeout": {
+                    "description": "Max time before closing idle connections.",
+                    "type": "string",
+                    "default": "1m0s"
+                },
+                "pass": {
+                    "description": "SMB password.",
+                    "type": "string"
+                },
+                "port": {
+                    "description": "SMB port number.",
+                    "type": "integer",
+                    "default": 445
+                },
+                "spn": {
+                    "description": "Service principal name.",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "SMB username.",
+                    "type": "string",
+                    "default": "$USER"
                 }
             }
         },
@@ -7552,10 +14232,7 @@ const docTemplate = `{
                 },
                 "headers": {
                     "description": "Set HTTP headers for all transactions.",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "pass": {
                     "description": "Password.",

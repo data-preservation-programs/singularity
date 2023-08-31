@@ -67,7 +67,7 @@ type PostStorageOnedriveParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateOnedriveStorageRequest
+	Request *models.StorageCreateOnedriveStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageOnedriveParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage onedrive params
-func (o *PostStorageOnedriveParams) WithRequest(request models.StorageCreateOnedriveStorageRequest) *PostStorageOnedriveParams {
+func (o *PostStorageOnedriveParams) WithRequest(request *models.StorageCreateOnedriveStorageRequest) *PostStorageOnedriveParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage onedrive params
-func (o *PostStorageOnedriveParams) SetRequest(request models.StorageCreateOnedriveStorageRequest) {
+func (o *PostStorageOnedriveParams) SetRequest(request *models.StorageCreateOnedriveStorageRequest) {
 	o.Request = request
 }
 

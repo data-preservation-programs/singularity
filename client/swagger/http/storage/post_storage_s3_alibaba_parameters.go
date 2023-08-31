@@ -67,7 +67,7 @@ type PostStorageS3AlibabaParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3AlibabaStorageRequest
+	Request *models.StorageCreateS3AlibabaStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3AlibabaParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 alibaba params
-func (o *PostStorageS3AlibabaParams) WithRequest(request models.StorageCreateS3AlibabaStorageRequest) *PostStorageS3AlibabaParams {
+func (o *PostStorageS3AlibabaParams) WithRequest(request *models.StorageCreateS3AlibabaStorageRequest) *PostStorageS3AlibabaParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 alibaba params
-func (o *PostStorageS3AlibabaParams) SetRequest(request models.StorageCreateS3AlibabaStorageRequest) {
+func (o *PostStorageS3AlibabaParams) SetRequest(request *models.StorageCreateS3AlibabaStorageRequest) {
 	o.Request = request
 }
 

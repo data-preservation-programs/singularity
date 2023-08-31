@@ -67,7 +67,7 @@ type PostStorageOosInstancePrincipalAuthParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateOosInstancePrincipalAuthStorageRequest
+	Request *models.StorageCreateOosInstancePrincipalAuthStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageOosInstancePrincipalAuthParams) SetHTTPClient(client *http.C
 }
 
 // WithRequest adds the request to the post storage oos instance principal auth params
-func (o *PostStorageOosInstancePrincipalAuthParams) WithRequest(request models.StorageCreateOosInstancePrincipalAuthStorageRequest) *PostStorageOosInstancePrincipalAuthParams {
+func (o *PostStorageOosInstancePrincipalAuthParams) WithRequest(request *models.StorageCreateOosInstancePrincipalAuthStorageRequest) *PostStorageOosInstancePrincipalAuthParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage oos instance principal auth params
-func (o *PostStorageOosInstancePrincipalAuthParams) SetRequest(request models.StorageCreateOosInstancePrincipalAuthStorageRequest) {
+func (o *PostStorageOosInstancePrincipalAuthParams) SetRequest(request *models.StorageCreateOosInstancePrincipalAuthStorageRequest) {
 	o.Request = request
 }
 

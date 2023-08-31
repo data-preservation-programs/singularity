@@ -67,7 +67,7 @@ type PostStorageS3WasabiParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3WasabiStorageRequest
+	Request *models.StorageCreateS3WasabiStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3WasabiParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 wasabi params
-func (o *PostStorageS3WasabiParams) WithRequest(request models.StorageCreateS3WasabiStorageRequest) *PostStorageS3WasabiParams {
+func (o *PostStorageS3WasabiParams) WithRequest(request *models.StorageCreateS3WasabiStorageRequest) *PostStorageS3WasabiParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 wasabi params
-func (o *PostStorageS3WasabiParams) SetRequest(request models.StorageCreateS3WasabiStorageRequest) {
+func (o *PostStorageS3WasabiParams) SetRequest(request *models.StorageCreateS3WasabiStorageRequest) {
 	o.Request = request
 }
 

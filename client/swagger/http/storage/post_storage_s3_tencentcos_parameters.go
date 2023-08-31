@@ -67,7 +67,7 @@ type PostStorageS3TencentcosParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3TencentCOSStorageRequest
+	Request *models.StorageCreateS3TencentCOSStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3TencentcosParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 tencentcos params
-func (o *PostStorageS3TencentcosParams) WithRequest(request models.StorageCreateS3TencentCOSStorageRequest) *PostStorageS3TencentcosParams {
+func (o *PostStorageS3TencentcosParams) WithRequest(request *models.StorageCreateS3TencentCOSStorageRequest) *PostStorageS3TencentcosParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 tencentcos params
-func (o *PostStorageS3TencentcosParams) SetRequest(request models.StorageCreateS3TencentCOSStorageRequest) {
+func (o *PostStorageS3TencentcosParams) SetRequest(request *models.StorageCreateS3TencentCOSStorageRequest) {
 	o.Request = request
 }
 

@@ -67,7 +67,7 @@ type PostStorageDriveParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateDriveStorageRequest
+	Request *models.StorageCreateDriveStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageDriveParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage drive params
-func (o *PostStorageDriveParams) WithRequest(request models.StorageCreateDriveStorageRequest) *PostStorageDriveParams {
+func (o *PostStorageDriveParams) WithRequest(request *models.StorageCreateDriveStorageRequest) *PostStorageDriveParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage drive params
-func (o *PostStorageDriveParams) SetRequest(request models.StorageCreateDriveStorageRequest) {
+func (o *PostStorageDriveParams) SetRequest(request *models.StorageCreateDriveStorageRequest) {
 	o.Request = request
 }
 

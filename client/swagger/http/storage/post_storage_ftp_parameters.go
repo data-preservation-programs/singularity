@@ -67,7 +67,7 @@ type PostStorageFtpParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateFtpStorageRequest
+	Request *models.StorageCreateFtpStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageFtpParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage ftp params
-func (o *PostStorageFtpParams) WithRequest(request models.StorageCreateFtpStorageRequest) *PostStorageFtpParams {
+func (o *PostStorageFtpParams) WithRequest(request *models.StorageCreateFtpStorageRequest) *PostStorageFtpParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage ftp params
-func (o *PostStorageFtpParams) SetRequest(request models.StorageCreateFtpStorageRequest) {
+func (o *PostStorageFtpParams) SetRequest(request *models.StorageCreateFtpStorageRequest) {
 	o.Request = request
 }
 

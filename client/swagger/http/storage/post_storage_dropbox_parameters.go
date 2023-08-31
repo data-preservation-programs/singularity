@@ -67,7 +67,7 @@ type PostStorageDropboxParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateDropboxStorageRequest
+	Request *models.StorageCreateDropboxStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageDropboxParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage dropbox params
-func (o *PostStorageDropboxParams) WithRequest(request models.StorageCreateDropboxStorageRequest) *PostStorageDropboxParams {
+func (o *PostStorageDropboxParams) WithRequest(request *models.StorageCreateDropboxStorageRequest) *PostStorageDropboxParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage dropbox params
-func (o *PostStorageDropboxParams) SetRequest(request models.StorageCreateDropboxStorageRequest) {
+func (o *PostStorageDropboxParams) SetRequest(request *models.StorageCreateDropboxStorageRequest) {
 	o.Request = request
 }
 

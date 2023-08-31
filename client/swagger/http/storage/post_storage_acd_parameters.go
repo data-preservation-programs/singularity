@@ -67,7 +67,7 @@ type PostStorageAcdParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateAcdStorageRequest
+	Request *models.StorageCreateAcdStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageAcdParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage acd params
-func (o *PostStorageAcdParams) WithRequest(request models.StorageCreateAcdStorageRequest) *PostStorageAcdParams {
+func (o *PostStorageAcdParams) WithRequest(request *models.StorageCreateAcdStorageRequest) *PostStorageAcdParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage acd params
-func (o *PostStorageAcdParams) SetRequest(request models.StorageCreateAcdStorageRequest) {
+func (o *PostStorageAcdParams) SetRequest(request *models.StorageCreateAcdStorageRequest) {
 	o.Request = request
 }
 

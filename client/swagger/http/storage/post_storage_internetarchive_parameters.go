@@ -67,7 +67,7 @@ type PostStorageInternetarchiveParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateInternetarchiveStorageRequest
+	Request *models.StorageCreateInternetarchiveStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageInternetarchiveParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage internetarchive params
-func (o *PostStorageInternetarchiveParams) WithRequest(request models.StorageCreateInternetarchiveStorageRequest) *PostStorageInternetarchiveParams {
+func (o *PostStorageInternetarchiveParams) WithRequest(request *models.StorageCreateInternetarchiveStorageRequest) *PostStorageInternetarchiveParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage internetarchive params
-func (o *PostStorageInternetarchiveParams) SetRequest(request models.StorageCreateInternetarchiveStorageRequest) {
+func (o *PostStorageInternetarchiveParams) SetRequest(request *models.StorageCreateInternetarchiveStorageRequest) {
 	o.Request = request
 }
 

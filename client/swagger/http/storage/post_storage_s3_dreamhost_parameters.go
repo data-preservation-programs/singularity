@@ -67,7 +67,7 @@ type PostStorageS3DreamhostParams struct {
 
 	   Request body
 	*/
-	Request models.StorageCreateS3DreamhostStorageRequest
+	Request *models.StorageCreateS3DreamhostStorageRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *PostStorageS3DreamhostParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithRequest adds the request to the post storage s3 dreamhost params
-func (o *PostStorageS3DreamhostParams) WithRequest(request models.StorageCreateS3DreamhostStorageRequest) *PostStorageS3DreamhostParams {
+func (o *PostStorageS3DreamhostParams) WithRequest(request *models.StorageCreateS3DreamhostStorageRequest) *PostStorageS3DreamhostParams {
 	o.SetRequest(request)
 	return o
 }
 
 // SetRequest adds the request to the post storage s3 dreamhost params
-func (o *PostStorageS3DreamhostParams) SetRequest(request models.StorageCreateS3DreamhostStorageRequest) {
+func (o *PostStorageS3DreamhostParams) SetRequest(request *models.StorageCreateS3DreamhostStorageRequest) {
 	o.Request = request
 }
 
