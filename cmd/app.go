@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
+	"github.com/filecoin-project/go-address"
 	"github.com/mattn/go-shellwords"
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/lib/terminal"
@@ -74,6 +75,18 @@ Network Support:
 			Value:    "",
 			EnvVars:  []string{"LOTUS_TOKEN"},
 		},
+		&cli.BoolFlag{
+			Name:     "lotus-test",
+			Category: "Lotus",
+			EnvVars:  []string{"LOTUS_TEST"},
+		},
+	},
+	Before: func(ctx *cli.Context) error {
+		lotusTest := ctx.Bool("lotus-test")
+		if lotusTest {
+			address.CurrentNetwork = address.Testnet
+		}
+		return nil
 	},
 	Commands: []*cli.Command{
 		ez.PrepCmd,

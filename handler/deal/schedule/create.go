@@ -109,17 +109,26 @@ func createHandler(
 		}
 	}
 
-	totalDealSize, err := humanize.ParseBytes(request.TotalDealSize)
-	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid total deal size")
+	var totalDealSize uint64
+	if request.TotalDealSize != "" {
+		totalDealSize, err = humanize.ParseBytes(request.TotalDealSize)
+		if err != nil {
+			return nil, handler.NewInvalidParameterErr("invalid total deal size")
+		}
 	}
-	scheduleDealSize, err := humanize.ParseBytes(request.ScheduleDealSize)
-	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid schedule deal size")
+	var scheduleDealSize uint64
+	if request.ScheduleDealSize != "" {
+		scheduleDealSize, err = humanize.ParseBytes(request.ScheduleDealSize)
+		if err != nil {
+			return nil, handler.NewInvalidParameterErr("invalid schedule deal size")
+		}
 	}
-	pendingDealSize, err := humanize.ParseBytes(request.MaxPendingDealSize)
-	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid pending deal size")
+	var pendingDealSize uint64
+	if request.MaxPendingDealSize != "" {
+		pendingDealSize, err = humanize.ParseBytes(request.MaxPendingDealSize)
+		if err != nil {
+			return nil, handler.NewInvalidParameterErr("invalid pending deal size")
+		}
 	}
 	if scheduleCron != "" && scheduleDealSize == 0 && request.ScheduleDealNumber == 0 {
 		return nil, handler.NewInvalidParameterErr("schedule deal number or size must be set when using cron schedule")
