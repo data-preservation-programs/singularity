@@ -264,6 +264,7 @@ func AssembleCar(
 			continue
 		}
 		if len(links) == 1 {
+			// nolint:gosec // https://github.com/securego/gosec/issues/1005#issuecomment-1698219521
 			result.FileRangeCIDs[fileRange.ID] = links[0].Cid
 			continue
 		}

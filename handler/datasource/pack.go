@@ -175,6 +175,8 @@ func Pack(
 		return db.Transaction(
 			func(db *gorm.DB) error {
 				for _, result := range result.CarResults {
+					result := result
+
 					car := model.Car{
 						PieceCID:  model.CID(result.PieceCID),
 						PieceSize: result.PieceSize,

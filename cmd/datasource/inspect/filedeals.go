@@ -25,7 +25,7 @@ var FileDealsCmd = &cli.Command{
 			return err
 		}
 
-		deals, err := inspect.GetFileDealsHandler(db, uint64(fileID))
+		deals, err := inspect.GetFileDealsHandler(db, fileID)
 		if err != nil {
 			return err
 		}

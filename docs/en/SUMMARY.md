@@ -141,6 +141,7 @@
     * [Packjobdetail](cli-reference/datasource/inspect/packjobdetail.md)
     * [Filedetail](cli-reference/datasource/inspect/filedetail.md)
     * [Path](cli-reference/datasource/inspect/path.md)
+    * [Filedeals](cli-reference/datasource/inspect/filedeals.md)
 * [Wallet](cli-reference/wallet/README.md)
   * [Import](cli-reference/wallet/import.md)
   * [List](cli-reference/wallet/list.md)

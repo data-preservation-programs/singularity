@@ -15,6 +15,7 @@ COMMANDS:
    packjobdetail  Get details about a specific pack job
    filedetail     Get details about a specific file
    path           Get details about a path within a data source
+   filedeals      Get all that have been created for a file
    help, h        Shows a list of commands or help for one command
 
 OPTIONS:
