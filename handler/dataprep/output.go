@@ -58,6 +58,9 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 
 	var preparation model.Preparation
 	err = db.Preload("SourceStorages").Preload("OutputStorages").First(&preparation, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)
+	}
 
 	return &preparation, errors.WithStack(err)
 }

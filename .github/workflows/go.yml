@@ -19,10 +19,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.20
+          go-version: '1.20.x'
 
       - name: Lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.53
+          version: v1.54
           args: --timeout=10m
