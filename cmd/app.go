@@ -114,9 +114,9 @@ Network Support:
 			},
 		},
 		{
-			Name:     "run",
+			Name:     "runWithCapture",
 			Category: "Daemons",
-			Usage:    "Run different singularity components",
+			Usage:    "runWithCapture different singularity components",
 			Subcommands: []*cli.Command{
 				run.APICmd,
 				run.DatasetWorkerCmd,

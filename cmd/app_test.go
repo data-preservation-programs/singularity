@@ -17,7 +17,7 @@ func TestHelpPage(t *testing.T) {
 		testCommand = func(ctx context.Context, t *testing.T, db *gorm.DB, cmd string, cliCommand *cli.Command) {
 			cmd = cmd + " " + cliCommand.Name
 			t.Run(cmd, func(t *testing.T) {
-				_, _, err := Run(ctx, cmd+" -h")
+				_, _, err := NewRunner().Run(ctx, cmd+" -h")
 				require.NoError(t, err)
 			})
 			for _, subcommand := range cliCommand.Subcommands {
@@ -30,7 +30,7 @@ func TestHelpPage(t *testing.T) {
 
 		cmd := "singularity"
 		t.Run(cmd, func(t *testing.T) {
-			_, _, err := Run(ctx, cmd+" -h")
+			_, _, err := NewRunner().Run(ctx, cmd+" -h")
 			require.NoError(t, err)
 		})
 		for _, subcommand := range App.Commands {
@@ -43,7 +43,7 @@ func TestVersion(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		err := SetVersion([]byte(`{"version":"v0.0.1"}`))
 		require.NoError(t, err)
-		out, _, err := Run(ctx, "singularity version")
+		out, _, err := NewRunner().Run(ctx, "singularity version")
 		require.NoError(t, err)
 		require.Contains(t, out, "singularity v0.0.1-unknown-unknown")
 	})

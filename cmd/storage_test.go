@@ -22,41 +22,41 @@ func swapStorageHandler(mockHandler storage.Handler) func() {
 }
 
 func TestStorageExploreHandler(t *testing.T) {
-	runner := Runner{}
-	defer runner.Save(t)
-	ctx := context.Background()
-	mockHandler := new(MockStorage)
-	defer swapStorageHandler(mockHandler)()
-	mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]storage.DirEntry{
-		{
-			Path:         "path1",
-			LastModified: time.Time{},
-			Size:         100,
-			IsDir:        true,
-			DirID:        "xx",
-			NumItems:     100,
-			Hash:         "hash1",
-		},
-		{
-			Path:         "path2",
-			LastModified: time.Time{},
-			Size:         100,
-			IsDir:        false,
-			DirID:        "",
-			NumItems:     -1,
-			Hash:         "hash2",
-		},
-	}, nil)
-	_, _, err := runner.Run(ctx, "singularity storage explore name path")
-	require.NoError(t, err)
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(MockStorage)
+		defer swapStorageHandler(mockHandler)()
+		mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]storage.DirEntry{
+			{
+				Path:         "path1",
+				LastModified: time.Time{},
+				Size:         100,
+				IsDir:        true,
+				DirID:        "xx",
+				NumItems:     100,
+				Hash:         "hash1",
+			},
+			{
+				Path:         "path2",
+				LastModified: time.Time{},
+				Size:         100,
+				IsDir:        false,
+				DirID:        "",
+				NumItems:     -1,
+				Hash:         "hash2",
+			},
+		}, nil)
+		_, _, err := runner.Run(ctx, "singularity storage explore name path")
+		require.NoError(t, err)
 
-	_, _, err = runner.Run(ctx, "singularity --verbose storage explore name path")
-	require.NoError(t, err)
-
+		_, _, err = runner.Run(ctx, "singularity --verbose storage explore name path")
+		require.NoError(t, err)
+	})
 }
 
 func TestStorageCreateHandler_S3Provider(t *testing.T) {
-	runner := Runner{}
+	runner := NewRunner()
 	defer runner.Save(t)
 	ctx := context.Background()
 	mockHandler := new(MockStorage)
@@ -79,89 +79,90 @@ func TestStorageCreateHandler_S3Provider(t *testing.T) {
 }
 
 func TestStorageCreateHandler_Local(t *testing.T) {
-	runner := Runner{}
-	defer runner.Save(t)
-	ctx := context.Background()
-	mockHandler := new(MockStorage)
-	defer swapStorageHandler(mockHandler)()
-	mockHandler.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
-		ID:        1,
-		Name:      "name",
-		CreatedAt: time.Time{},
-		UpdatedAt: time.Time{},
-		Type:      "local",
-		Path:      "path",
-	}, nil)
-	_, _, err := runner.Run(ctx, "singularity storage create local name path")
-	require.NoError(t, err)
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(MockStorage)
+		defer swapStorageHandler(mockHandler)()
+		mockHandler.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
+			ID:        1,
+			Name:      "name",
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			Type:      "local",
+			Path:      "path",
+		}, nil)
+		_, _, err := runner.Run(ctx, "singularity storage create local name path")
+		require.NoError(t, err)
 
-	_, _, err = runner.Run(ctx, "singularity --verbose storage create local name path")
-	require.NoError(t, err)
-
+		_, _, err = runner.Run(ctx, "singularity --verbose storage create local name path")
+		require.NoError(t, err)
+	})
 }
 
 func TestStorageListHandler(t *testing.T) {
-	runner := Runner{}
-	defer runner.Save(t)
-	ctx := context.Background()
-	mockHandler := new(MockStorage)
-	defer swapStorageHandler(mockHandler)()
-	mockHandler.On("ListStoragesHandler", mock.Anything, mock.Anything).Return([]model.Storage{{
-		ID:        1,
-		Name:      "name1",
-		CreatedAt: time.Time{},
-		UpdatedAt: time.Time{},
-		Type:      "local",
-		Path:      "path",
-		PreparationsAsSource: []model.Preparation{
-			{
-				ID:                1,
-				CreatedAt:         time.Time{},
-				UpdatedAt:         time.Time{},
-				DeleteAfterExport: true,
-				MaxSize:           100,
-				PieceSize:         200,
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(MockStorage)
+		defer swapStorageHandler(mockHandler)()
+		mockHandler.On("ListStoragesHandler", mock.Anything, mock.Anything).Return([]model.Storage{{
+			ID:        1,
+			Name:      "name1",
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			Type:      "local",
+			Path:      "path",
+			PreparationsAsSource: []model.Preparation{
+				{
+					ID:                1,
+					CreatedAt:         time.Time{},
+					UpdatedAt:         time.Time{},
+					DeleteAfterExport: true,
+					MaxSize:           100,
+					PieceSize:         200,
+				},
 			},
-		},
-		PreparationsAsOutput: []model.Preparation{
-			{
-				ID:                2,
-				CreatedAt:         time.Time{},
-				UpdatedAt:         time.Time{},
-				DeleteAfterExport: true,
-				MaxSize:           300,
-				PieceSize:         400,
-			}},
-	}, {
-		ID:        2,
-		Name:      "name",
-		CreatedAt: time.Time{},
-		UpdatedAt: time.Time{},
-		Type:      "local",
-		Path:      "path",
-	}}, nil)
-	_, _, err := runner.Run(ctx, "singularity storage list")
-	require.NoError(t, err)
+			PreparationsAsOutput: []model.Preparation{
+				{
+					ID:                2,
+					CreatedAt:         time.Time{},
+					UpdatedAt:         time.Time{},
+					DeleteAfterExport: true,
+					MaxSize:           300,
+					PieceSize:         400,
+				}},
+		}, {
+			ID:        2,
+			Name:      "name",
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			Type:      "local",
+			Path:      "path",
+		}}, nil)
+		_, _, err := runner.Run(ctx, "singularity storage list")
+		require.NoError(t, err)
 
-	_, _, err = runner.Run(ctx, "singularity --verbose storage list")
-	require.NoError(t, err)
-
+		_, _, err = runner.Run(ctx, "singularity --verbose storage list")
+		require.NoError(t, err)
+	})
 }
 
 func TestStorageRemoveHandler(t *testing.T) {
-	runner := Runner{}
-	defer runner.Save(t)
-	ctx := context.Background()
-	mockHandler := new(MockStorage)
-	defer swapStorageHandler(mockHandler)()
-	mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	_, _, err := runner.Run(ctx, "singularity storage remove name")
-	require.NoError(t, err)
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(MockStorage)
+		defer swapStorageHandler(mockHandler)()
+		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		_, _, err := runner.Run(ctx, "singularity storage remove name")
+		require.NoError(t, err)
+	})
 }
 
 func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		runner := Runner{}
+		runner := NewRunner()
 		defer runner.Save(t)
 		err := db.Create(&model.Storage{
 			Name:   "name",
@@ -192,7 +193,7 @@ func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 }
 func TestStorageUpdateHandler_Local(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		runner := Runner{}
+		runner := NewRunner()
 		defer runner.Save(t)
 		err := db.Create(&model.Storage{
 			Name: "name",

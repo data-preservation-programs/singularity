@@ -55,6 +55,15 @@ type Runner struct {
 	mode RunnerMode
 }
 
+func NewRunner() *Runner {
+	return &Runner{}
+}
+
+func (r *Runner) WithMode(mode RunnerMode) *Runner {
+	r.mode = mode
+	return r
+}
+
 func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 	color.NoColor = false
 	if strings.HasPrefix(args, "singularity ") {
@@ -65,7 +74,7 @@ func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 			args = "singularity --json " + args[len("singularity "):]
 		}
 	}
-	out, stderr, err := Run(ctx, args)
+	out, stderr, err := runWithCapture(ctx, args)
 	green := color.New(color.FgGreen).SprintFunc()
 	blue := color.New(color.FgBlue).SprintFunc()
 	r.sb.WriteString(green("user@localhost") + ":" + blue("~/test") + "$ " + args + "\n")
@@ -145,8 +154,8 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	require.NoError(t, err)
 }
 
-func Run(ctx context.Context, args string) (string, string, error) {
-	// Create a clone of the app so that we can run from different tests concurrently
+func runWithCapture(ctx context.Context, args string) (string, string, error) {
+	// Create a clone of the app so that we can runWithCapture from different tests concurrently
 	app := *App
 	for i, flag := range app.Flags {
 		if flag.Names()[0] == "database-connection-string" {
