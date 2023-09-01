@@ -69,6 +69,9 @@ type ModelSchedule struct {
 	// schedule cron
 	ScheduleCron string `json:"scheduleCron,omitempty"`
 
+	// schedule cron perpetual
+	ScheduleCronPerpetual bool `json:"scheduleCronPerpetual,omitempty"`
+
 	// schedule deal number
 	ScheduleDealNumber int64 `json:"scheduleDealNumber,omitempty"`
 
