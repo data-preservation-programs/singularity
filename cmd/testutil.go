@@ -119,6 +119,7 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 		LineCount:     1,
 		SlideWidth:    1,
 		FileExtension: ".png",
+		FontFile:      "RobotoMono-Regular.ttf",
 	}
 
 	err = c.Adjust([]string{ansi}, config.EnvVars{})

@@ -32,6 +32,7 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 					Where("type = ? AND state = ? OR (state = ? AND worker_id is null)", jobType, model.Ready, model.Processing).
 					First(&job).Error
 				if errors.Is(err, gorm.ErrRecordNotFound) {
+					job.ID = 0
 					return nil
 				}
 
@@ -50,8 +51,8 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		if job.ID == 0 {
-			continue
+		if job.ID != 0 {
+			break
 		}
 	}
 
@@ -59,6 +60,8 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 		//nolint: nilnil
 		return nil, nil
 	}
+
+	w.logger.Debugw("found job", "jobID", job.ID, "jobType", job.Type, "workerID", w.id)
 
 	if job.Type == model.Pack {
 		var fileRanges []model.FileRange

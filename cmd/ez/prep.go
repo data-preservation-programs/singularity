@@ -75,10 +75,6 @@ var PrepCmd = &cli.Command{
 			if err != nil {
 				return errors.Wrap(err, "failed to get absolute path")
 			}
-		} else {
-			if c.Int("concurrency") > 1 {
-				return database.ErrInmemoryWithHighConcurrency
-			}
 		}
 		db, closer, err := database.OpenWithLogger("sqlite:" + databaseFile)
 		if err != nil {
@@ -138,16 +134,27 @@ var PrepCmd = &cli.Command{
 		worker := datasetworker.NewWorker(
 			db,
 			datasetworker.Config{
-				Concurrency:    c.Int("concurrency"),
+				Concurrency:    1,
 				EnableScan:     true,
-				EnablePack:     true,
-				EnableDag:      true,
 				ExitOnComplete: true,
 				ExitOnError:    true,
 			})
 		err = worker.Run(c.Context)
 		if err != nil {
-			return errors.Wrap(err, "failed to run dataset worker")
+			return errors.Wrap(err, "failed to run dataset worker for scanning")
+		}
+
+		worker = datasetworker.NewWorker(
+			db,
+			datasetworker.Config{
+				Concurrency:    c.Int("concurrency"),
+				EnablePack:     true,
+				ExitOnComplete: true,
+				ExitOnError:    true,
+			})
+		err = worker.Run(c.Context)
+		if err != nil {
+			return errors.Wrap(err, "failed to run dataset worker for packing")
 		}
 
 		// Step 4, Initiate dag gen
@@ -157,6 +164,14 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 5, start dataset worker again
+		worker = datasetworker.NewWorker(
+			db,
+			datasetworker.Config{
+				Concurrency:    1,
+				EnableDag:      true,
+				ExitOnComplete: true,
+				ExitOnError:    true,
+			})
 		err = worker.Run(c.Context)
 		if err != nil {
 			return errors.Wrap(err, "failed to run dataset worker")
