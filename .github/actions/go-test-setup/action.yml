@@ -26,11 +26,6 @@ runs:
     - name: Create MySQL database
       shell: bash
       run: mysql -u root -e "create database singularity"
-    - name: Setup no parallel for win32 test
-      if: matrix.os == 'windows'
-      shell: bash
-      run: |
-          echo "GOMAXPROCS=1" >> $GITHUB_ENV
     - name: Start MongoDB
       uses: supercharge/mongodb-github-action@v1.10.0
       if: matrix.os == 'ubuntu'

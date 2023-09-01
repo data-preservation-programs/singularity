@@ -13,6 +13,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 var testPreparation = model.Preparation{
@@ -76,17 +77,18 @@ func TestDataPrepCreateHandler(t *testing.T) {
 
 }
 func TestDataPrepCreateHandler_WithStorage(t *testing.T) {
-	runner := Runner{}
-	defer runner.Save(t)
-	ctx := context.Background()
-	mockHandler := new(MockDataPrep)
-	defer swapDataPrepHandler(mockHandler)()
+	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := Runner{}
+		defer runner.Save(t)
+		mockHandler := new(MockDataPrep)
+		defer swapDataPrepHandler(mockHandler)()
 
-	mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-	output := t.TempDir()
-	_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --source source --local-output %s",
-		testutil.EscapePath(output)))
-	require.NoError(t, err)
+		mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
+		output := t.TempDir()
+		_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --source source --local-output %s",
+			testutil.EscapePath(output)))
+		require.NoError(t, err)
+	})
 }
 
 func TestDataPrepListHandler(t *testing.T) {
