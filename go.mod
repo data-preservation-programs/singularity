@@ -211,7 +211,6 @@ require (
 	github.com/libp2p/go-flow-metrics v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-asn-util v0.3.0 // indirect
 	github.com/libp2p/go-libp2p-record v0.2.0 // indirect
-	github.com/libp2p/go-mplex v0.7.0 // indirect
 	github.com/libp2p/go-msgio v0.3.0 // indirect
 	github.com/libp2p/go-nat v0.2.0 // indirect
 	github.com/libp2p/go-netroute v0.2.1 // indirect
@@ -263,7 +262,6 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/putdotio/go-putio/putio v0.0.0-20200123120452-16d982cac2b8 // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
-	github.com/quic-go/qtls-go1-19 v0.3.3 // indirect
 	github.com/quic-go/qtls-go1-20 v0.3.2 // indirect
 	github.com/quic-go/quic-go v0.37.6 // indirect
 	github.com/quic-go/webtransport-go v0.5.3 // indirect
