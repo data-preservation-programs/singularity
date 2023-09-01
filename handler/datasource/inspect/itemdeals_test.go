@@ -83,11 +83,11 @@ func TestFileDeals(t *testing.T) {
 	}
 
 	// Test file deals
-	deals, err := inspect.GetFileDealsHandler(db.WithContext(ctx), fileA.ID)
+	deals, err := inspect.GetFileDealsHandler(ctx, db.WithContext(ctx), fileA.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 
-	deals, err = inspect.GetFileDealsHandler(db.WithContext(ctx), fileB.ID)
+	deals, err = inspect.GetFileDealsHandler(ctx, db.WithContext(ctx), fileB.ID)
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 }
