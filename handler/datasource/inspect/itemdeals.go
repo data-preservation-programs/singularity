@@ -29,12 +29,11 @@ func getFileDealsHandler(
 	id uint64,
 ) ([]model.Deal, error) {
 	var deals []model.Deal
-	query := db.
-		Model(&model.FileRange{}).
-		Select("deals.*").
-		Joins("JOIN cars ON file_ranges.pack_job_id = cars.pack_job_id").
-		Joins("JOIN deals ON cars.piece_cid = deals.piece_cid").
-		Where("file_ranges.file_id = ?", id)
+	query := db.Where("deals.id IN (?)", db.Table("deals").
+		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
+		Joins("JOIN file_ranges ON cars.pack_job_id = file_ranges.pack_job_id").
+		Where("file_ranges.file_id = ?", id).
+		Distinct("deals.id"))
 	if err := query.Find(&deals).Error; err != nil {
 		return nil, err
 	}
