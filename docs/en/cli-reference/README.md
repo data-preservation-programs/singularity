@@ -53,6 +53,7 @@ GLOBAL OPTIONS:
    Lotus
 
    --lotus-api value    Lotus RPC API endpoint (default: "https://api.node.glif.io/rpc/v1") [$LOTUS_API]
+   --lotus-test         (default: false) [$LOTUS_TEST]
    --lotus-token value  Lotus RPC API token [$LOTUS_TOKEN]
 
 ```
