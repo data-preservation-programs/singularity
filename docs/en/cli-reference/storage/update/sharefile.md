@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update sharefile - Citrix Sharefile
+   singularity storage update sharefile - Citrix Sharefile
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update sharefile [command options] <name>
+   singularity storage update sharefile [command options] <name>
 
 DESCRIPTION:
    --upload-cutoff

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create storj - Storj Decentralized Cloud Storage
+   singularity storage create storj - Storj Decentralized Cloud Storage
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create storj command [command options] [arguments...]
+   singularity storage create storj command [command options] [arguments...]
 
 COMMANDS:
    existing  Use an existing access grant.

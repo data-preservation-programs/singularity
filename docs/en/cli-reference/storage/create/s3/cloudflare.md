@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 cloudflare - Cloudflare R2 Storage
+   singularity storage create s3 cloudflare - Cloudflare R2 Storage
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 cloudflare [command options] <name> <path>
+   singularity storage create s3 cloudflare [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

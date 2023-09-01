@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update koofr - Koofr, Digi Storage and other Koofr-compatible storage providers
+   singularity storage update koofr - Koofr, Digi Storage and other Koofr-compatible storage providers
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update koofr command [command options] [arguments...]
+   singularity storage update koofr command [command options] [arguments...]
 
 COMMANDS:
    digistorage  Digi Storage, https://storage.rcs-rds.ro/

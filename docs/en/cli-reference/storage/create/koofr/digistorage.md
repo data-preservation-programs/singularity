@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create koofr digistorage - Digi Storage, https://storage.rcs-rds.ro/
+   singularity storage create koofr digistorage - Digi Storage, https://storage.rcs-rds.ro/
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create koofr digistorage [command options] <name> <path>
+   singularity storage create koofr digistorage [command options] <name> <path>
 
 DESCRIPTION:
    --mountid

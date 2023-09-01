@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity version - Print version information
+   singularity version - Print version information
 
 USAGE:
-   singularity singularity singularity version [command options] [arguments...]
+   singularity version [command options] [arguments...]
 
 OPTIONS:
    --help, -h  show help

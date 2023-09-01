@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update gcs - Google Cloud Storage (this is not Google Drive)
+   singularity storage update gcs - Google Cloud Storage (this is not Google Drive)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update gcs [command options] <name>
+   singularity storage update gcs [command options] <name>
 
 DESCRIPTION:
    --client-id

@@ -115,8 +115,8 @@ func One(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm
 }
 
 func OneWithoutReset(t *testing.T, testFunc func(ctx context.Context, t *testing.T, db *gorm.DB)) {
-	backend := SupportedTestDialects[0]
 	t.Helper()
+	backend := SupportedTestDialects[0]
 	db, closer, connStr := getTestDB(t, backend)
 	if db == nil {
 		t.Log("Skip " + backend)

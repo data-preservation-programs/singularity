@@ -49,8 +49,8 @@ func TestDeleteAfterExportWithMultipleOutput(t *testing.T) {
 		_, _, err = runner.Run(ctx, "singularity prep start-scan 1 source")
 		require.NoError(t, err)
 
-		// runWithCapture the dataset worker
-		_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+		// run the dataset worker
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 
 		// List Pieces
@@ -101,8 +101,8 @@ func TestRescan(t *testing.T) {
 		_, _, err = runner.Run(ctx, "singularity prep start-scan 1 source")
 		require.NoError(t, err)
 
-		// runWithCapture the dataset worker
-		_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+		// run the dataset worker
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 
 		// Explore rootpath
@@ -110,12 +110,12 @@ func TestRescan(t *testing.T) {
 		require.NoError(t, err)
 		rootCID1 := GetFirstCID(exploreRootResult)
 
-		// runWithCapture the daggen
+		// run the daggen
 		_, _, err = runner.Run(ctx, "singularity prep start-daggen 1 source")
 		require.NoError(t, err)
 
-		// runWithCapture the dataset worker again
-		_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+		// run the dataset worker again
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 
 		// Make some change to the file system
@@ -128,8 +128,8 @@ func TestRescan(t *testing.T) {
 		_, _, err = runner.Run(ctx, "singularity prep start-scan 1 source")
 		require.NoError(t, err)
 
-		// runWithCapture the dataset worker
-		_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+		// run the dataset worker
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 
 		// Explore rootpath
@@ -137,12 +137,12 @@ func TestRescan(t *testing.T) {
 		require.NoError(t, err)
 		rootCID2 := GetFirstCID(exploreRootResult)
 
-		// runWithCapture the daggen
+		// run the daggen
 		_, _, err = runner.Run(ctx, "singularity prep start-daggen 1 source")
 		require.NoError(t, err)
 
-		// runWithCapture the dataset worker again
-		_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+		// run the dataset worker again
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 
 		// Check prepared pieces again
@@ -327,8 +327,8 @@ func TestDataPrep(t *testing.T) {
 						_, _, err = runner.Run(ctx, "singularity prep start-scan 1 source")
 						require.NoError(t, err)
 
-						// runWithCapture the dataset worker
-						_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+						// run the dataset worker
+						_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 						require.NoError(t, err)
 
 						// Check preparation status
@@ -348,12 +348,12 @@ func TestDataPrep(t *testing.T) {
 						_, _, err = runner.Run(ctx, "singularity prep explore 1 source subfolder")
 						require.NoError(t, err)
 
-						// runWithCapture the daggen
+						// run the daggen
 						_, _, err = runner.Run(ctx, "singularity prep start-daggen 1 source")
 						require.NoError(t, err)
 
-						// runWithCapture the dataset worker again
-						_, _, err = runner.Run(ctx, "singularity runWithCapture dataset-worker --exit-on-complete=true --exit-on-error=true")
+						// run the dataset worker again
+						_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 						require.NoError(t, err)
 
 						// Check preparation status again
@@ -367,13 +367,13 @@ func TestDataPrep(t *testing.T) {
 						// Get all PieceCIDs from stdout
 						pieceCIDs := GetAllPieceCIDs(listPiecesStdout)
 
-						// runWithCapture the content provider
+						// run the content provider
 						contentProviderCtx, cancel := context.WithCancel(ctx)
 						contentProviderDone := make(chan struct{})
 						defer func() { <-contentProviderDone }()
 						defer cancel()
 						go func() {
-							NewRunner().Run(contentProviderCtx, "singularity runWithCapture content-provider --http-bind "+contentProviderBind)
+							NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
 							close(contentProviderDone)
 						}()
 

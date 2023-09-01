@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create koofr other - Any other Koofr API compatible storage service
+   singularity storage create koofr other - Any other Koofr API compatible storage service
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create koofr other [command options] <name> <path>
+   singularity storage create koofr other [command options] <name> <path>
 
 DESCRIPTION:
    --endpoint

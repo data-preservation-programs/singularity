@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 digitalocean - DigitalOcean Spaces
+   singularity storage update s3 digitalocean - DigitalOcean Spaces
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 digitalocean [command options] <name>
+   singularity storage update s3 digitalocean [command options] <name>
 
 DESCRIPTION:
    --env-auth

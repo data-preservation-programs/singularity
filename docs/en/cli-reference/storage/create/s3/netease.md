@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 netease - Netease Object Storage (NOS)
+   singularity storage create s3 netease - Netease Object Storage (NOS)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 netease [command options] <name> <path>
+   singularity storage create s3 netease [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

@@ -148,7 +148,6 @@ func getStdout(args []string) string {
 
 func runArgsInTest(ctx context.Context, args string) (string, string, error) {
 	// Create a clone of the app so that we can run from different tests concurrently
-	app := *cmd.App
 	parser := shellwords.NewParser()
 	parser.ParseEnv = true // Enable environment variable parsing
 	parsedArgs, err := parser.Parse(args)
@@ -160,9 +159,9 @@ func runArgsInTest(ctx context.Context, args string) (string, string, error) {
 	errWriter := bytes.NewBuffer(nil)
 
 	// Overwrite the stdout and stderr
-	app.Writer = outWriter
-	app.ErrWriter = errWriter
+	cmd.App.Writer = outWriter
+	cmd.App.ErrWriter = errWriter
 
-	err = app.RunContext(ctx, parsedArgs)
+	err = cmd.App.RunContext(ctx, parsedArgs)
 	return outWriter.String(), errWriter.String(), err
 }

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 dreamhost - Dreamhost DreamObjects
+   singularity storage update s3 dreamhost - Dreamhost DreamObjects
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 dreamhost [command options] <name>
+   singularity storage update s3 dreamhost [command options] <name>
 
 DESCRIPTION:
    --env-auth

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 dreamhost - Dreamhost DreamObjects
+   singularity storage create s3 dreamhost - Dreamhost DreamObjects
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 dreamhost [command options] <name> <path>
+   singularity storage create s3 dreamhost [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
+   singularity storage update oos env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos env_auth [command options] <name>
+   singularity storage update oos env_auth [command options] <name>
 
 DESCRIPTION:
    --namespace

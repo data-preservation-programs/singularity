@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 qiniu - Qiniu Object Storage (Kodo)
+   singularity storage create s3 qiniu - Qiniu Object Storage (Kodo)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 qiniu [command options] <name> <path>
+   singularity storage create s3 qiniu [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

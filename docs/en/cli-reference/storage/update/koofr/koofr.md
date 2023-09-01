@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update koofr koofr - Koofr, https://app.koofr.net/
+   singularity storage update koofr koofr - Koofr, https://app.koofr.net/
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update koofr koofr [command options] <name>
+   singularity storage update koofr koofr [command options] <name>
 
 DESCRIPTION:
    --mountid

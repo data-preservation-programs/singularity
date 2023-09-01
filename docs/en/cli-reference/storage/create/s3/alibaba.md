@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
+   singularity storage create s3 alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 alibaba [command options] <name> <path>
+   singularity storage create s3 alibaba [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

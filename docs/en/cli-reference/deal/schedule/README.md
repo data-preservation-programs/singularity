@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal schedule - Schedule deals
+   singularity deal schedule - Schedule deals
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal schedule command [command options] [arguments...]
+   singularity deal schedule command [command options] [arguments...]
 
 COMMANDS:
    create   Create a schedule to send out deals to a storage provider

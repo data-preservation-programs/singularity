@@ -31,7 +31,7 @@ COMMANDS:
    version, v  Print version information
    help, h     Shows a list of commands or help for one command
    Daemons:
-     run  Run different singularity components
+     run  run different singularity components
    Operations:
      admin    Admin commands
      deal     Replication / Deal making management

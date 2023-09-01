@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 arvancloud - Arvan Cloud Object Storage (AOS)
+   singularity storage update s3 arvancloud - Arvan Cloud Object Storage (AOS)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 arvancloud [command options] <name>
+   singularity storage update s3 arvancloud [command options] <name>
 
 DESCRIPTION:
    --env-auth

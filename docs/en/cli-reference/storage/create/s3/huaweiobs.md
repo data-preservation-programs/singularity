@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 huaweiobs - Huawei Object Storage Service
+   singularity storage create s3 huaweiobs - Huawei Object Storage Service
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 huaweiobs [command options] <name> <path>
+   singularity storage create s3 huaweiobs [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

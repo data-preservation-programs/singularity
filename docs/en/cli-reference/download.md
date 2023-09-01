@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity download - Download a CAR file from the metadata API
+   singularity download - Download a CAR file from the metadata API
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity download [command options] <piece_cid>
+   singularity download [command options] <piece_cid>
 
 CATEGORY:
    Utility

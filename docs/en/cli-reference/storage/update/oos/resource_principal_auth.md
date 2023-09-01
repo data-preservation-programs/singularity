@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos resource_principal_auth - use resource principals to make API calls
+   singularity storage update oos resource_principal_auth - use resource principals to make API calls
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos resource_principal_auth [command options] <name>
+   singularity storage update oos resource_principal_auth [command options] <name>
 
 DESCRIPTION:
    --namespace

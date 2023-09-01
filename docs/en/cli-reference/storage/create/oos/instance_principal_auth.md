@@ -5,12 +5,12 @@ https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfromins
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create oos instance_principal_auth - use instance principals to authorize an instance to make API calls. 
-                                                                                                                                                                                                                                                                                                                                                                                                            each instance has its own identity, and authenticates using the certificates that are read from instance metadata. 
-                                                                                                                                                                                                                                                                                                                                                                                                            https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+   singularity storage create oos instance_principal_auth - use instance principals to authorize an instance to make API calls. 
+                                                            each instance has its own identity, and authenticates using the certificates that are read from instance metadata. 
+                                                            https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create oos instance_principal_auth [command options] <name> <path>
+   singularity storage create oos instance_principal_auth [command options] <name> <path>
 
 DESCRIPTION:
    --namespace

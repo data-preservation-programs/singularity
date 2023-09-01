@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 aws - Amazon Web Services (AWS) S3
+   singularity storage create s3 aws - Amazon Web Services (AWS) S3
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 aws [command options] <name> <path>
+   singularity storage create s3 aws [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

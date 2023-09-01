@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create oos no_auth - no credentials needed, this is typically for reading public buckets
+   singularity storage create oos no_auth - no credentials needed, this is typically for reading public buckets
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create oos no_auth [command options] <name> <path>
+   singularity storage create oos no_auth [command options] <name> <path>
 
 DESCRIPTION:
    --namespace

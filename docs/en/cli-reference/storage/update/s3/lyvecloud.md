@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 lyvecloud - Seagate Lyve Cloud
+   singularity storage update s3 lyvecloud - Seagate Lyve Cloud
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 lyvecloud [command options] <name>
+   singularity storage update s3 lyvecloud [command options] <name>
 
 DESCRIPTION:
    --env-auth

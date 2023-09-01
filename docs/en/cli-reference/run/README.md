@@ -1,12 +1,12 @@
-# Run different singularity components
+# run different singularity components
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run - Run different singularity components
+   singularity run - run different singularity components
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run command [command options] [arguments...]
+   singularity run command [command options] [arguments...]
 
 COMMANDS:
    api               Run the singularity API

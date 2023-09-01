@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 seaweedfs - SeaweedFS S3
+   singularity storage create s3 seaweedfs - SeaweedFS S3
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 seaweedfs [command options] <name> <path>
+   singularity storage create s3 seaweedfs [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

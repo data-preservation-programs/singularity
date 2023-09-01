@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run deal-tracker - Start a deal tracker that tracks the deal for all relevant wallets
+   singularity run deal-tracker - Start a deal tracker that tracks the deal for all relevant wallets
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run deal-tracker [command options] [arguments...]
+   singularity run deal-tracker [command options] [arguments...]
 
 OPTIONS:
    --market-deal-url value, -m value  The URL for ZST compressed state market deals json. Set to empty to use Lotus API. (default: "https://marketdeals.s3.amazonaws.com/StateMarketDeals.json.zst") [$MARKET_DEAL_URL]

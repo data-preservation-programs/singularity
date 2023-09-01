@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 chinamobile - China Mobile Ecloud Elastic Object Storage (EOS)
+   singularity storage create s3 chinamobile - China Mobile Ecloud Elastic Object Storage (EOS)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 chinamobile [command options] <name> <path>
+   singularity storage create s3 chinamobile [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

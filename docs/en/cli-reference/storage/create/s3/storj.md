@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 storj - Storj (S3 Compatible Gateway)
+   singularity storage create s3 storj - Storj (S3 Compatible Gateway)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create s3 storj [command options] <name> <path>
+   singularity storage create s3 storj [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

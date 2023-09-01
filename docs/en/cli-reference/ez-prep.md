@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity ez-prep - Prepare a dataset from a local path
+   singularity ez-prep - Prepare a dataset from a local path
 
 USAGE:
-   singularity singularity ez-prep [command options] <path>
+   singularity ez-prep [command options] <path>
 
 CATEGORY:
    Utility

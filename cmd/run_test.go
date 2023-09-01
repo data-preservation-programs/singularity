@@ -16,7 +16,7 @@ func TestRunDealTracker(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity runWithCapture deal-tracker")
+		_, _, err := NewRunner().Run(ctx, "singularity run deal-tracker")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }
@@ -26,7 +26,7 @@ func TestRunAPI(t *testing.T) {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 		go func() {
-			_, _, err := NewRunner().Run(ctx, "singularity runWithCapture api")
+			_, _, err := NewRunner().Run(ctx, "singularity run api")
 			require.ErrorIs(t, err, context.Canceled)
 		}()
 		var resp *http.Response
@@ -51,7 +51,7 @@ func TestRunDatasetWorker(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity runWithCapture dataset-worker")
+		_, _, err := NewRunner().Run(ctx, "singularity run dataset-worker")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }
@@ -60,7 +60,7 @@ func TestRunContentProvider(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity runWithCapture content-provider --http-bind "+contentProviderBind)
+		_, _, err := NewRunner().Run(ctx, "singularity run content-provider --http-bind "+contentProviderBind)
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }
@@ -69,7 +69,7 @@ func TestRunDealPusher(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithTimeout(ctx, time.Second)
 		defer cancel()
-		_, _, err := NewRunner().Run(ctx, "singularity runWithCapture deal-pusher")
+		_, _, err := NewRunner().Run(ctx, "singularity run deal-pusher")
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }

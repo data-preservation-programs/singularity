@@ -5,12 +5,12 @@ https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos user_principal_auth - use an OCI user and an API key for authentication.
-                                                                                                                                                                                                                                                                                                                                                                                                        you’ll need to put in a config file your tenancy OCID, user OCID, region, the path, fingerprint to an API key.
-                                                                                                                                                                                                                                                                                                                                                                                                        https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
+   singularity storage update oos user_principal_auth - use an OCI user and an API key for authentication.
+                                                        you’ll need to put in a config file your tenancy OCID, user OCID, region, the path, fingerprint to an API key.
+                                                        https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdkconfig.htm
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update oos user_principal_auth [command options] <name>
+   singularity storage update oos user_principal_auth [command options] <name>
 
 DESCRIPTION:
    --namespace

@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create storj new - Create a new access grant from satellite address, API key, and passphrase.
+   singularity storage create storj new - Create a new access grant from satellite address, API key, and passphrase.
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create storj new [command options] <name> <path>
+   singularity storage create storj new [command options] <name> <path>
 
 DESCRIPTION:
    --satellite-address

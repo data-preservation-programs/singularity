@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run dataset-worker - Start a dataset preparation worker to process dataset scanning and preparation tasks
+   singularity run dataset-worker - Start a dataset preparation worker to process dataset scanning and preparation tasks
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity run dataset-worker [command options] [arguments...]
+   singularity run dataset-worker [command options] [arguments...]
 
 OPTIONS:
    --concurrency value  Number of concurrent workers to run (default: 1)

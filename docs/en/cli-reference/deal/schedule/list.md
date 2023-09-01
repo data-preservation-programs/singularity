@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal schedule list - List all deal making schedules
+   singularity deal schedule list - List all deal making schedules
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal schedule list [command options] [arguments...]
+   singularity deal schedule list [command options] [arguments...]
 
 OPTIONS:
    --help, -h  show help

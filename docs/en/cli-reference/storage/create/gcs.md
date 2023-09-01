@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create gcs - Google Cloud Storage (this is not Google Drive)
+   singularity storage create gcs - Google Cloud Storage (this is not Google Drive)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create gcs [command options] <name> <path>
+   singularity storage create gcs [command options] <name> <path>
 
 DESCRIPTION:
    --client-id

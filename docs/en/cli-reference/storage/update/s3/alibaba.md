@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
+   singularity storage update s3 alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 alibaba [command options] <name>
+   singularity storage update s3 alibaba [command options] <name>
 
 DESCRIPTION:
    --env-auth

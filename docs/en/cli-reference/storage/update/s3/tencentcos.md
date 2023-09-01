@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 tencentcos - Tencent Cloud Object Storage (COS)
+   singularity storage update s3 tencentcos - Tencent Cloud Object Storage (COS)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage update s3 tencentcos [command options] <name>
+   singularity storage update s3 tencentcos [command options] <name>
 
 DESCRIPTION:
    --env-auth

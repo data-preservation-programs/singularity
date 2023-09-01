@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal - Replication / Deal making management
+   singularity deal - Replication / Deal making management
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity deal command [command options] [arguments...]
+   singularity deal command [command options] [arguments...]
 
 COMMANDS:
    schedule     Schedule deals

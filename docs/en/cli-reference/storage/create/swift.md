@@ -3,10 +3,10 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
+   singularity storage create swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
 
 USAGE:
-   singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity singularity storage create swift [command options] <name> <path>
+   singularity storage create swift [command options] <name> <path>
 
 DESCRIPTION:
    --env-auth

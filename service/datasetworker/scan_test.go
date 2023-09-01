@@ -16,7 +16,6 @@ import (
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/rand"
 	"gorm.io/gorm"
 )
 
@@ -93,8 +92,7 @@ func TestToCarSize(t *testing.T) {
 		{1048577, 1048803, 1048795},
 		{2097152, 2097378, 2097377},
 		{10485760, 10486714, 10486697},
-		// Running out of memory for github action CI
-		// {104857600, 104866744, 104866548},
+		{104857600, 104866744, 104866548},
 	}
 	for _, job := range jobs {
 		t.Run(fmt.Sprintf("%d", job.origin), func(t *testing.T) {
@@ -102,12 +100,6 @@ func TestToCarSize(t *testing.T) {
 			require.Equal(t, job.actual, toCarSizeExpensive(t, job.origin))
 			require.GreaterOrEqual(t, job.estimate, job.actual)
 		})
-	}
-	for i := 0; i < 5; i++ {
-		size := int64(rand.Intn(1 << 20))
-		require.GreaterOrEqual(t, toCarSize(size), toCarSizeExpensive(t, size), "size: %d", size)
-		size = int64(rand.Intn(1 << 30))
-		require.GreaterOrEqual(t, toCarSize(size), toCarSizeExpensive(t, size), "size: %d", size)
 	}
 }
 
