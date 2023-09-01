@@ -81,33 +81,34 @@ func (d Deal) Key() string {
 }
 
 type Schedule struct {
-	ID                   uint32        `gorm:"primaryKey"                                       json:"id"`
-	CreatedAt            time.Time     `json:"createdAt"`
-	UpdatedAt            time.Time     `json:"updatedAt"`
-	DatasetID            uint32        `json:"datasetId"`
-	Dataset              *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"        swaggerignore:"true"`
-	URLTemplate          string        `json:"urlTemplate"`
-	HTTPHeaders          StringSlice   `gorm:"type:JSON"                                        json:"httpHeaders"`
-	Provider             string        `json:"provider"`
-	PricePerGBEpoch      float64       `json:"pricePerGbEpoch"`
-	PricePerGB           float64       `json:"pricePerGb"`
-	PricePerDeal         float64       `json:"pricePerDeal"`
-	TotalDealNumber      int           `json:"totalDealNumber"`
-	TotalDealSize        int64         `json:"totalDealSize"`
-	Verified             bool          `json:"verified"`
-	KeepUnsealed         bool          `json:"keepUnsealed"`
-	AnnounceToIPNI       bool          `json:"announceToIpni"`
-	StartDelay           time.Duration `json:"startDelay"                                       swaggertype:"primitive,integer"`
-	Duration             time.Duration `json:"duration"                                         swaggertype:"primitive,integer"`
-	State                ScheduleState `gorm:"index"                                            json:"state"`
-	ScheduleCron         string        `json:"scheduleCron"`
-	ScheduleDealNumber   int           `json:"scheduleDealNumber"`
-	ScheduleDealSize     int64         `json:"scheduleDealSize"`
-	MaxPendingDealNumber int           `json:"maxPendingDealNumber"`
-	MaxPendingDealSize   int64         `json:"maxPendingDealSize"`
-	Notes                string        `json:"notes"`
-	ErrorMessage         string        `json:"errorMessage"`
-	AllowedPieceCIDs     StringSlice   `gorm:"type:JSON"                                        json:"allowedPieceCids"`
+	ID                    uint32        `gorm:"primaryKey"                                       json:"id"`
+	CreatedAt             time.Time     `json:"createdAt"`
+	UpdatedAt             time.Time     `json:"updatedAt"`
+	DatasetID             uint32        `json:"datasetId"`
+	Dataset               *Dataset      `gorm:"foreignKey:DatasetID;constraint:OnDelete:CASCADE" json:"dataset,omitempty"        swaggerignore:"true"`
+	URLTemplate           string        `json:"urlTemplate"`
+	HTTPHeaders           StringSlice   `gorm:"type:JSON"                                        json:"httpHeaders"`
+	Provider              string        `json:"provider"`
+	PricePerGBEpoch       float64       `json:"pricePerGbEpoch"`
+	PricePerGB            float64       `json:"pricePerGb"`
+	PricePerDeal          float64       `json:"pricePerDeal"`
+	TotalDealNumber       int           `json:"totalDealNumber"`
+	TotalDealSize         int64         `json:"totalDealSize"`
+	Verified              bool          `json:"verified"`
+	KeepUnsealed          bool          `json:"keepUnsealed"`
+	AnnounceToIPNI        bool          `json:"announceToIpni"`
+	StartDelay            time.Duration `json:"startDelay"                                       swaggertype:"primitive,integer"`
+	Duration              time.Duration `json:"duration"                                         swaggertype:"primitive,integer"`
+	State                 ScheduleState `gorm:"index"                                            json:"state"`
+	ScheduleCron          string        `json:"scheduleCron"`
+	ScheduleCronPerpetual bool          `json:"scheduleCronPerpetual"`
+	ScheduleDealNumber    int           `json:"scheduleDealNumber"`
+	ScheduleDealSize      int64         `json:"scheduleDealSize"`
+	MaxPendingDealNumber  int           `json:"maxPendingDealNumber"`
+	MaxPendingDealSize    int64         `json:"maxPendingDealSize"`
+	Notes                 string        `json:"notes"`
+	ErrorMessage          string        `json:"errorMessage"`
+	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON"                                        json:"allowedPieceCids"`
 }
 
 type Wallet struct {

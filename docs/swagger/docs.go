@@ -10390,6 +10390,9 @@ const docTemplate = `{
                 "scheduleCron": {
                     "type": "string"
                 },
+                "scheduleCronPerpetual": {
+                    "type": "boolean"
+                },
                 "scheduleDealNumber": {
                     "type": "integer"
                 },
@@ -10623,6 +10626,10 @@ const docTemplate = `{
                 "scheduleCron": {
                     "description": "Schedule cron patter",
                     "type": "string"
+                },
+                "scheduleCronPerpetual": {
+                    "description": "Whether a cron schedule should run in definitely",
+                    "type": "boolean"
                 },
                 "scheduleDealNumber": {
                     "description": "Number of deals per scheduled time",
