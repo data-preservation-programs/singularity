@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -27,7 +28,7 @@ func TestServerStart(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, "api", server.Name())
-		_, _, err = server.Start(ctx)
-		require.NoError(t, err)
+		err = service.StartServers(ctx, logger, server)
+		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }

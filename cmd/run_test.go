@@ -25,9 +25,11 @@ func TestRunAPI(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
+		done := make(chan struct{})
 		go func() {
 			_, _, err := NewRunner().Run(ctx, "singularity run api")
 			require.ErrorIs(t, err, context.Canceled)
+			close(done)
 		}()
 		var resp *http.Response
 		var body string
@@ -44,6 +46,8 @@ func TestRunAPI(t *testing.T) {
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		require.Contains(t, body, "robotstxt.org")
+		cancel()
+		<-done
 	})
 }
 

@@ -55,7 +55,12 @@ type Runner struct {
 	mode RunnerMode
 }
 
+var colorMutex = sync.RWMutex{}
+
 func NewRunner() *Runner {
+	colorMutex.Lock()
+	defer colorMutex.Unlock()
+	color.NoColor = false
 	return &Runner{}
 }
 
@@ -65,7 +70,6 @@ func (r *Runner) WithMode(mode RunnerMode) *Runner {
 }
 
 func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
-	color.NoColor = false
 	if strings.HasPrefix(args, "singularity ") {
 		switch r.mode {
 		case Verbose:
@@ -74,6 +78,8 @@ func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 			args = "singularity --json " + args[len("singularity "):]
 		}
 	}
+	colorMutex.RLock()
+	defer colorMutex.RUnlock()
 	out, stderr, err := runWithCapture(ctx, args)
 	green := color.New(color.FgGreen).SprintFunc()
 	blue := color.New(color.FgBlue).SprintFunc()
