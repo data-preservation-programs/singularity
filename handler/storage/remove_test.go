@@ -13,13 +13,17 @@ import (
 
 func TestRemoveStorageHandler(t *testing.T) {
 	t.Run("remove storage", func(t *testing.T) {
-		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-			tmp := t.TempDir()
-			_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
-			require.NoError(t, err)
-			err = Default.RemoveHandler(ctx, db, "name")
-			require.NoError(t, err)
-		})
+		for _, name := range []string{"1", "name"} {
+			t.Run(name, func(t *testing.T) {
+				testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+					tmp := t.TempDir()
+					_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
+					require.NoError(t, err)
+					err = Default.RemoveHandler(ctx, db, name)
+					require.NoError(t, err)
+				})
+			})
+		}
 	})
 	t.Run("remove storage that does not exist", func(t *testing.T) {
 		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

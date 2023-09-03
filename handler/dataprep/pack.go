@@ -24,8 +24,8 @@ var pausableStatesForPack = []model.JobState{model.Processing, model.Ready}
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
 //   - db: A pointer to the gorm.DB instance representing the database connection.
-//   - id: The unique identifier for the desired Preparation record.
-//   - name: The name of the source storage.
+//   - id: The ID or name of Preparation record.
+//   - name: The ID or name of the source storage.
 //   - jobID: The unique identifier of the job to be started. If set to 0, all eligible jobs
 //     for the source will be initiated.
 //
@@ -36,7 +36,7 @@ var pausableStatesForPack = []model.JobState{model.Processing, model.Ready}
 func (DefaultHandler) StartPackHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string,
 	jobID int64) ([]model.Job, error) {
 	db = db.WithContext(ctx)
@@ -81,13 +81,13 @@ func (DefaultHandler) StartPackHandler(
 		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Where("id = ? AND type = ? AND attachment_id = ?", jobID, model.Pack, sourceAttachment.ID).First(&job).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for sourceAttachment '%s' does not exist", jobID, name)
+				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for source '%s' does not exist", jobID, name)
 			}
 			if slices.Contains(startableStatesForPack, job.State) {
 				return errors.WithStack(db.Model(&job).Update("state", model.Ready).Error)
 			}
 
-			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for sourceAttachment '%s' is running or complete", jobID, name)
+			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for source '%s' is running or complete", jobID, name)
 		})
 	})
 
@@ -98,8 +98,8 @@ func (DefaultHandler) StartPackHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Param job_id path int true "Pack Job ID"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
@@ -111,8 +111,8 @@ func _() {}
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -123,8 +123,8 @@ func _() {}
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Param job_id path int true "Pack Job ID"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
@@ -136,8 +136,8 @@ func _() {}
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -153,8 +153,8 @@ func _() {}
 // Parameters:
 //   - ctx: The context for database transactions and other operations.
 //   - db: A pointer to the gorm.DB instance representing the database connection.
-//   - id: The unique identifier for the desired Preparation record.
-//   - name: The name of the source storage.
+//   - id: The ID or name for the desired Preparation record.
+//   - name: The ID or name of the source storage.
 //   - jobID: The unique identifier of the job to be paused. If set to 0, all eligible jobs
 //     for the source will be paused.
 //
@@ -165,7 +165,7 @@ func _() {}
 func (DefaultHandler) PausePackHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string,
 	jobID int64) ([]model.Job, error) {
 	db = db.WithContext(ctx)
@@ -206,13 +206,13 @@ func (DefaultHandler) PausePackHandler(
 		return db.Transaction(func(db *gorm.DB) error {
 			err := db.Where("id = ? AND type = ? AND attachment_id = ?", jobID, model.Pack, sourceAttachment.ID).First(&job).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for sourceAttachment '%s' does not exist", jobID, name)
+				return errors.Wrapf(handlererror.ErrNotFound, "pack job %d for source '%s' does not exist", jobID, name)
 			}
 			if slices.Contains(pausableStatesForPack, job.State) {
 				return errors.WithStack(db.Model(&job).Update("state", model.Paused).Error)
 			}
 
-			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for sourceAttachment '%s' is not running", jobID, name)
+			return errors.Wrapf(handlererror.ErrInvalidParameter, "pack job %d for source '%s' is not running", jobID, name)
 		})
 	})
 

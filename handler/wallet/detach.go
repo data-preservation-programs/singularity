@@ -16,7 +16,7 @@ import (
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - preparationID: The ID of the preparation from which the wallet will be removed.
+// - preparationID: The ID or name of the preparation from which the wallet will be removed.
 // - wallet: The address or ID of the wallet to be removed from the preparation.
 //
 // Returns:
@@ -25,12 +25,12 @@ import (
 func (DefaultHandler) DetachHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	preparationID uint32,
+	preparationID string,
 	wallet string,
 ) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := db.Preload("SourceStorages").Preload("OutputStorages").Preload("Wallets").First(&preparation, preparationID).Error
+	err := preparation.FindByIDOrName(db, preparationID, "SourceStorages", "OutputStorages", "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -61,7 +61,7 @@ func (DefaultHandler) DetachHandler(
 // @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param id path int true "Preparation ID"
+// @Param id path int true "Preparation ID or name"
 // @Param wallet path string true "Wallet Address"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError

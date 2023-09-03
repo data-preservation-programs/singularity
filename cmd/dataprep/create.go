@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"path/filepath"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -20,13 +21,23 @@ var CreateCmd = &cli.Command{
 	Usage:    "Create a new preparation",
 	Category: "Preparation Management",
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:        "name",
+			Usage:       "The name for the preparation",
+			DefaultText: "Auto generated",
+		},
 		&cli.StringSliceFlag{
 			Name:  "source",
-			Usage: "The name of the source storage to be used for the preparation",
+			Usage: "The id or name of the source storage to be used for the preparation",
 		},
 		&cli.StringSliceFlag{
 			Name:  "output",
-			Usage: "The name of the output storage to be used for the preparation",
+			Usage: "The id or name of the output storage to be used for the preparation",
+		},
+		&cli.StringSliceFlag{
+			Name:     "local-source",
+			Category: "Quick creation with local source paths",
+			Usage:    "The local source path to be used for the preparation. This is a convenient flag that will create a source storage with the provided path",
 		},
 		&cli.StringSliceFlag{
 			Name:     "local-output",
@@ -56,10 +67,21 @@ var CreateCmd = &cli.Command{
 		}
 		defer closer.Close()
 		db = db.WithContext(c.Context)
+		name := c.String("name")
+		if name == "" {
+			name = gofakeit.Noun()
+		}
 		sourceStorages := c.StringSlice("source")
 		outputStorages := c.StringSlice("output")
 		maxSizeStr := c.String("max-size")
 		pieceSizeStr := c.String("piece-size")
+		for _, sourcePath := range c.StringSlice("local-source") {
+			source, err := createStorageIfNotExist(c.Context, db, sourcePath)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			sourceStorages = append(sourceStorages, source.Name)
+		}
 		for _, outputPath := range c.StringSlice("local-output") {
 			output, err := createStorageIfNotExist(c.Context, db, outputPath)
 			if err != nil {
@@ -74,6 +96,7 @@ var CreateCmd = &cli.Command{
 			MaxSizeStr:        maxSizeStr,
 			PieceSizeStr:      pieceSizeStr,
 			DeleteAfterExport: c.Bool("delete-after-export"),
+			Name:              name,
 		})
 		if err != nil {
 			return errors.WithStack(err)

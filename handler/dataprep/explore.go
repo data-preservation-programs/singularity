@@ -47,8 +47,8 @@ type Version struct {
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID of the preparation associated with the storage.
-// - name: The name of the desired Storage record.
+// - id: The ID or name of the preparation associated with the storage.
+// - name: The ID or name of the desired Storage record.
 // - path: The directory path in the storage system to explore.
 //
 // Returns:
@@ -57,13 +57,13 @@ type Version struct {
 func (DefaultHandler) ExploreHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string,
 	path string,
 ) (*ExploreResult, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
-	err := db.Where("name = ?", name).First(&storage).Error
+	err := storage.FindByIDOrName(db, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "storage '%s' does not exist", name)
 	}
@@ -71,8 +71,17 @@ func (DefaultHandler) ExploreHandler(
 		return nil, errors.WithStack(err)
 	}
 
+	var preparation model.Preparation
+	err = preparation.FindByIDOrName(db, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	var source model.SourceAttachment
-	err = db.Where("preparation_id = ? AND storage_id = ?", id, storage.ID).First(&source).Error
+	err = db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, storage.ID).First(&source).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "source '%s' is not attached to preparation %d", name, id)
 	}
@@ -160,8 +169,8 @@ func (DefaultHandler) ExploreHandler(
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Source storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Source storage ID or name"
 // @Param path path string true "Directory path"
 // @Success 200 {object} ExploreResult
 // @Failure 400 {object} api.HTTPError

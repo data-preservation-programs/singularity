@@ -14,13 +14,13 @@ var ListCmd = &cli.Command{
 	Name:  "list",
 	Usage: "List all deals",
 	Flags: []cli.Flag{
-		&cli.UintSliceFlag{
+		&cli.StringSliceFlag{
 			Name:  "preparation",
-			Usage: "Filter deals by preparation id",
+			Usage: "Filter deals by preparation id or name",
 		},
 		&cli.StringSliceFlag{
 			Name:  "source",
-			Usage: "Filter deals by source storage name",
+			Usage: "Filter deals by source storage id or name",
 		},
 		&cli.UintSliceFlag{
 			Name:  "schedule",
@@ -42,7 +42,7 @@ var ListCmd = &cli.Command{
 		}
 		defer closer.Close()
 		deals, err := deal.Default.ListHandler(c.Context, db, deal.ListDealRequest{
-			Preparations: underscore.Map(c.IntSlice("preparation"), func(i int) uint32 { return uint32(i) }),
+			Preparations: c.StringSlice("preparation"),
 			Sources:      c.StringSlice("source"),
 			Schedules:    underscore.Map(c.IntSlice("schedules"), func(i int) uint32 { return uint32(i) }),
 			Providers:    c.StringSlice("provider"),

@@ -23,7 +23,7 @@ type SourceStatus struct {
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
+// - id: The ID or name for the desired Preparation record.
 //
 // Returns:
 //   - A pointer to a Status structure that encapsulates the Preparation record and
@@ -34,11 +34,10 @@ type SourceStatus struct {
 // Note:
 // The function fetches not only the Preparation record but also all associated SourceAttachment
 // records with their associated Job records, providing a comprehensive status of a specific preparation.
-func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) ([]SourceStatus, error) {
+func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]SourceStatus, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := db.First(&preparation, id).Error
-
+	err := preparation.FindByIDOrName(db, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d cannot be found", id)
 	}
@@ -47,7 +46,7 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint
 	}
 
 	var sourceAttachments []model.SourceAttachment
-	err = db.Preload("Storage").Where("preparation_id = ?", id).Find(&sourceAttachments).Error
+	err = db.Preload("Storage").Where("preparation_id = ?", preparation.ID).Find(&sourceAttachments).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -73,7 +72,7 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint
 
 // @Summary Get the status of a preparation
 // @Tags Preparation
-// @Param id path integer true "ID"
+// @Param id path integer true "Preparation ID or name"
 // @Produce json
 // @Success 200 {array} SourceStatus
 // @Failure 400 {object} api.HTTPError

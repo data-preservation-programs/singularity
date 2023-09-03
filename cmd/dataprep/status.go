@@ -1,8 +1,6 @@
 package dataprep
 
 import (
-	"strconv"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -14,7 +12,7 @@ var StatusCmd = &cli.Command{
 	Name:      "status",
 	Usage:     "Get the preparation job status of a preparation",
 	Category:  "Job Management",
-	ArgsUsage: "<preparation_id>",
+	ArgsUsage: "<preparation id|name>",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -22,12 +20,8 @@ var StatusCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
 
-		status, err := dataprep.Default.GetStatusHandler(c.Context, db, uint32(id))
+		status, err := dataprep.Default.GetStatusHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return errors.WithStack(err)
 		}

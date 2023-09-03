@@ -13,6 +13,7 @@ import (
 )
 
 type CreateRequest struct {
+	Name              string   `json:"name"           validate:"required"`                          // Name of the preparation
 	SourceStorages    []string `json:"sourceStorages" validate:"required"`                          // Name of Source storage systems to be used for the source
 	OutputStorages    []string `json:"outputStorages" validate:"optional"`                          // Name of Output storage systems to be used for the output
 	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"           validate:"required"` // Maximum size of the CAR files to be created
@@ -41,6 +42,11 @@ type CreateRequest struct {
 // defaults or constraints, like the pieceSize defaulting to a power of two value.
 func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateRequest) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
+
+	if util.IsAllDigits(request.Name) || request.Name == "" {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "preparation name '%s' cannot be all digits or empty", request.Name)
+	}
+
 	maxSize, err := humanize.ParseBytes(request.MaxSizeStr)
 	if err != nil {
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid value for maxSize: %s", request.MaxSizeStr))
@@ -102,6 +108,7 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		SourceStorages:    sources,
 		OutputStorages:    outputs,
 		DeleteAfterExport: request.DeleteAfterExport,
+		Name:              request.Name,
 	}, nil
 }
 

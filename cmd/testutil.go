@@ -97,6 +97,9 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	t.Helper()
 	t.Helper()
 	ansi := r.sb.String()
+	if ansi == "" {
+		return
+	}
 
 	for i, tempDir := range tempDirs {
 		ansi = strings.ReplaceAll(ansi, tempDir, "/tempDir/"+strconv.Itoa(i))
@@ -217,17 +220,17 @@ func (m *MockDataPrep) CreatePreparationHandler(ctx context.Context, db *gorm.DB
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) StartDagGenHandler(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.Job, error) {
+func (m *MockDataPrep) StartDagGenHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
 	args := m.Called(ctx, db, id, name)
 	return args.Get(0).(*model.Job), args.Error(1)
 }
 
-func (m *MockDataPrep) PauseDagGenHandler(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.Job, error) {
+func (m *MockDataPrep) PauseDagGenHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
 	args := m.Called(ctx, db, id, name)
 	return args.Get(0).(*model.Job), args.Error(1)
 }
 
-func (m *MockDataPrep) ExploreHandler(ctx context.Context, db *gorm.DB, id uint32, name string, path string) (*dataprep.ExploreResult, error) {
+func (m *MockDataPrep) ExploreHandler(ctx context.Context, db *gorm.DB, id string, name string, path string) (*dataprep.ExploreResult, error) {
 	args := m.Called(ctx, db, id, name, path)
 	return args.Get(0).(*dataprep.ExploreResult), args.Error(1)
 }
@@ -237,52 +240,52 @@ func (m *MockDataPrep) ListHandler(ctx context.Context, db *gorm.DB) ([]model.Pr
 	return args.Get(0).([]model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
+func (m *MockDataPrep) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error) {
 	args := m.Called(ctx, db, id, output)
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
+func (m *MockDataPrep) RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error) {
 	args := m.Called(ctx, db, id, output)
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) StartPackHandler(ctx context.Context, db *gorm.DB, id uint32, name string, jobID int64) ([]model.Job, error) {
+func (m *MockDataPrep) StartPackHandler(ctx context.Context, db *gorm.DB, id string, name string, jobID int64) ([]model.Job, error) {
 	args := m.Called(ctx, db, id, name, jobID)
 	return args.Get(0).([]model.Job), args.Error(1)
 }
 
-func (m *MockDataPrep) PausePackHandler(ctx context.Context, db *gorm.DB, id uint32, name string, jobID int64) ([]model.Job, error) {
+func (m *MockDataPrep) PausePackHandler(ctx context.Context, db *gorm.DB, id string, name string, jobID int64) ([]model.Job, error) {
 	args := m.Called(ctx, db, id, name, jobID)
 	return args.Get(0).([]model.Job), args.Error(1)
 }
 
-func (m *MockDataPrep) ListPiecesHandler(ctx context.Context, db *gorm.DB, id uint32) ([]dataprep.PieceList, error) {
+func (m *MockDataPrep) ListPiecesHandler(ctx context.Context, db *gorm.DB, id string) ([]dataprep.PieceList, error) {
 	args := m.Called(ctx, db, id)
 	return args.Get(0).([]dataprep.PieceList), args.Error(1)
 }
 
-func (m *MockDataPrep) AddPieceHandler(ctx context.Context, db *gorm.DB, id uint32, request dataprep.AddPieceRequest) (*model.Car, error) {
+func (m *MockDataPrep) AddPieceHandler(ctx context.Context, db *gorm.DB, id string, request dataprep.AddPieceRequest) (*model.Car, error) {
 	args := m.Called(ctx, db, id, request)
 	return args.Get(0).(*model.Car), args.Error(1)
 }
 
-func (m *MockDataPrep) StartScanHandler(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.Job, error) {
+func (m *MockDataPrep) StartScanHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
 	args := m.Called(ctx, db, id, name)
 	return args.Get(0).(*model.Job), args.Error(1)
 }
 
-func (m *MockDataPrep) PauseScanHandler(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.Job, error) {
+func (m *MockDataPrep) PauseScanHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
 	args := m.Called(ctx, db, id, name)
 	return args.Get(0).(*model.Job), args.Error(1)
 }
 
-func (m *MockDataPrep) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source string) (*model.Preparation, error) {
+func (m *MockDataPrep) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error) {
 	args := m.Called(ctx, db, id, source)
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) ([]dataprep.SourceStatus, error) {
+func (m *MockDataPrep) GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]dataprep.SourceStatus, error) {
 	args := m.Called(ctx, db, id)
 	return args.Get(0).([]dataprep.SourceStatus), args.Error(1)
 }
@@ -358,13 +361,13 @@ type MockWallet struct {
 	mock.Mock
 }
 
-func (m *MockWallet) AttachHandler(ctx context.Context, db *gorm.DB, preparationID uint32, wallet string) (*model.Preparation, error) {
-	args := m.Called(ctx, db, preparationID, wallet)
+func (m *MockWallet) AttachHandler(ctx context.Context, db *gorm.DB, preparation string, wallet string) (*model.Preparation, error) {
+	args := m.Called(ctx, db, preparation, wallet)
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockWallet) DetachHandler(ctx context.Context, db *gorm.DB, preparationID uint32, wallet string) (*model.Preparation, error) {
-	args := m.Called(ctx, db, preparationID, wallet)
+func (m *MockWallet) DetachHandler(ctx context.Context, db *gorm.DB, preparation string, wallet string) (*model.Preparation, error) {
+	args := m.Called(ctx, db, preparation, wallet)
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
@@ -378,8 +381,8 @@ func (m *MockWallet) ListHandler(ctx context.Context, db *gorm.DB) ([]model.Wall
 	return args.Get(0).([]model.Wallet), args.Error(1)
 }
 
-func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, preparationID uint32) ([]model.Wallet, error) {
-	args := m.Called(ctx, db, preparationID)
+func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, preparation string) ([]model.Wallet, error) {
+	args := m.Called(ctx, db, preparation)
 	return args.Get(0).([]model.Wallet), args.Error(1)
 }
 

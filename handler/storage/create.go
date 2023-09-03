@@ -48,6 +48,11 @@ func (DefaultHandler) CreateStorageHandler(
 	name := request.Name
 	path := request.Path
 	config := request.Config
+
+	if util.IsAllDigits(name) || name == "" {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "storage name %s cannot be all digits or empty", name)
+	}
+
 	backend, ok := storagesystem.BackendMap[storageType]
 	if !ok {
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "storage type %s is not supported", storageType)

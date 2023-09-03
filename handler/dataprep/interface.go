@@ -17,71 +17,71 @@ type Handler interface {
 	StartDagGenHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string) (*model.Job, error)
 
 	PauseDagGenHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string) (*model.Job, error)
 
 	ExploreHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string,
 		path string,
 	) (*ExploreResult, error)
 
 	ListHandler(ctx context.Context, db *gorm.DB) ([]model.Preparation, error)
 
-	AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error)
+	AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error)
 
-	RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error)
+	RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error)
 
 	StartPackHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string,
 		jobID int64) ([]model.Job, error)
 
 	PausePackHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string,
 		jobID int64) ([]model.Job, error)
 
 	ListPiecesHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 	) ([]PieceList, error)
 
 	AddPieceHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		request AddPieceRequest,
 	) (*model.Car, error)
 
 	StartScanHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string) (*model.Job, error)
 
 	PauseScanHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint32,
+		id string,
 		name string) (*model.Job, error)
 
-	AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id uint32, source string) (*model.Preparation, error)
+	AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error)
 
-	GetStatusHandler(ctx context.Context, db *gorm.DB, id uint32) ([]SourceStatus, error)
+	GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]SourceStatus, error)
 }
 
 type DefaultHandler struct{}

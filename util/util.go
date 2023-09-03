@@ -2,6 +2,7 @@ package util
 
 import (
 	"crypto/rand"
+	"unicode"
 
 	"github.com/cockroachdb/errors"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -57,6 +58,16 @@ func NewLotusClient(lotusAPI string, lotusToken string) jsonrpc.RPCClient {
 			},
 		})
 	}
+}
+
+// IsAllDigits is a function that checks if a string contains only digits.
+func IsAllDigits(s string) bool {
+	for _, r := range s {
+		if !unicode.IsDigit(r) {
+			return false
+		}
+	}
+	return true
 }
 
 // ChunkMapKeys is a generic function that takes a map with keys of any comparable type and values of any type, and an integer as input.

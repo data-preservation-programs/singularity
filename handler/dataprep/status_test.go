@@ -12,32 +12,37 @@ import (
 )
 
 func TestGetStatusHandler(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			SourceStorages: []model.Storage{{
-				Name: "source",
-			}},
-		}).Error
-		require.NoError(t, err)
+	for _, name := range []string{"1", "name"} {
+		t.Run(name, func(t *testing.T) {
+			testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+				err := db.Create(&model.Preparation{
+					Name: "name",
+					SourceStorages: []model.Storage{{
+						Name: "source",
+					}},
+				}).Error
+				require.NoError(t, err)
 
-		err = db.Create(&model.Job{
-			AttachmentID: 1,
-			State:        model.Ready,
-			Type:         model.Pack,
-		}).Error
-		require.NoError(t, err)
+				err = db.Create(&model.Job{
+					AttachmentID: 1,
+					State:        model.Ready,
+					Type:         model.Pack,
+				}).Error
+				require.NoError(t, err)
 
-		status, err := Default.GetStatusHandler(ctx, db, 1)
-		require.NoError(t, err)
-		require.Len(t, status, 1)
-		require.Len(t, status[0].Jobs, 1)
-		require.Equal(t, model.Ready, status[0].Jobs[0].State)
-	})
+				status, err := Default.GetStatusHandler(ctx, db, name)
+				require.NoError(t, err)
+				require.Len(t, status, 1)
+				require.Len(t, status[0].Jobs, 1)
+				require.Equal(t, model.Ready, status[0].Jobs[0].State)
+			})
+		})
+	}
 }
 
 func TestGetStatusHandler_NotFound(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		_, err := Default.GetStatusHandler(ctx, db, 1)
+		_, err := Default.GetStatusHandler(ctx, db, "1")
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
 	})
 }

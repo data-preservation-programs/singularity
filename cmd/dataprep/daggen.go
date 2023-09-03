@@ -1,8 +1,6 @@
 package dataprep
 
 import (
-	"strconv"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -14,7 +12,7 @@ var StartDagGenCmd = &cli.Command{
 	Name:      "start-daggen",
 	Usage:     "Start a DAG generation that creates a snapshot of all folder structures",
 	Category:  "Job Management",
-	ArgsUsage: "<preparation_id> <storage_name>",
+	ArgsUsage: "<preparation id|name> <storage id|name>",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -22,11 +20,7 @@ var StartDagGenCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
-		job, err := dataprep.Default.StartDagGenHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		job, err := dataprep.Default.StartDagGenHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -47,11 +41,7 @@ var PauseDagGenCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
-		job, err := dataprep.Default.PauseDagGenHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		job, err := dataprep.Default.PauseDagGenHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}

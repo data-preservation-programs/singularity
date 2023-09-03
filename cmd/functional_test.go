@@ -39,14 +39,12 @@ func TestDeleteAfterExportWithMultipleOutput(t *testing.T) {
 		defer runner.Save(t, source, output1, output2)
 
 		// Create prep with both source and output
-		_, _, err := runner.Run(ctx, fmt.Sprintf("singularity storage create local source %s", testutil.EscapePath(source)))
-		require.NoError(t, err)
-
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity prep create --delete-after-export --max-size 3MB --source source --local-output %s --local-output %s", testutil.EscapePath(output1), testutil.EscapePath(output2)))
+		_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --delete-after-export --max-size 3MB --name prep --local-source %s --local-output %s --local-output %s",
+			testutil.EscapePath(source), testutil.EscapePath(output1), testutil.EscapePath(output2)))
 		require.NoError(t, err)
 
 		// Start scanning
-		_, _, err = runner.Run(ctx, "singularity prep start-scan 1 source")
+		_, _, err = runner.Run(ctx, "singularity prep start-scan 1 1")
 		require.NoError(t, err)
 
 		// run the dataset worker
@@ -91,7 +89,7 @@ func TestRescan(t *testing.T) {
 		runner := Runner{mode: Verbose}
 		defer runner.Save(t, source, output, extract1, extract2)
 		// Create prep with both source and output
-		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity storage create local source %s", testutil.EscapePath(source)))
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity storage create local --name source --path %s", testutil.EscapePath(source)))
 		require.NoError(t, err)
 
 		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity prep create --source source --local-output %s", testutil.EscapePath(output)))
@@ -304,13 +302,13 @@ func TestDataPrep(t *testing.T) {
 						runner := Runner{mode: Normal}
 						defer runner.Save(t, tmp, outDir, downloadDir, downloadDir2, extractDir)
 						// Create source storage
-						_, _, err := runner.Run(ctx, fmt.Sprintf("singularity storage create %s %s source %s", tt.sourceType, tt.sourceFlags, testutil.EscapePath(tt.sourcePath)))
+						_, _, err := runner.Run(ctx, fmt.Sprintf("singularity storage create %s %s --name source --path %s", tt.sourceType, tt.sourceFlags, testutil.EscapePath(tt.sourcePath)))
 						require.NoError(t, err)
 
 						var outputStorage string
 						// Create output storage if not inline
 						if !inline {
-							_, _, err = runner.Run(ctx, fmt.Sprintf("singularity storage create local output %s", testutil.EscapePath(outDir)))
+							_, _, err = runner.Run(ctx, fmt.Sprintf("singularity storage create local --name output --path %s", testutil.EscapePath(outDir)))
 							require.NoError(t, err)
 							outputStorage = " --output output"
 						}

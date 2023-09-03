@@ -34,6 +34,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 	}
 
 	preparation := model.Preparation{
+		Name:      scanning.Name,
 		MaxSize:   int64(scanning.MaxSize),
 		PieceSize: int64(util.NextPowerOfTwo(scanning.MaxSize)),
 		SourceStorages: []model.Storage{{

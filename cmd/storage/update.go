@@ -28,7 +28,7 @@ var UpdateCmd = &cli.Command{
 					command.Action = func(c *cli.Context) error {
 						return updateAction(c, backend.Prefix, providerOption.Provider)
 					}
-					command.ArgsUsage = "<name>"
+					command.ArgsUsage = "<name|id>"
 					command.Before = cliutil.CheckNArgs
 					return command
 				}),
@@ -38,7 +38,7 @@ var UpdateCmd = &cli.Command{
 		command.Action = func(c *cli.Context) error {
 			return updateAction(c, backend.Prefix, "")
 		}
-		command.ArgsUsage = "<name>"
+		command.ArgsUsage = "<name|id>"
 		command.Before = cliutil.CheckNArgs
 		return command
 	}),
@@ -53,7 +53,7 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 	name := c.Args().Get(0)
 
 	var s model.Storage
-	err = db.WithContext(c.Context).Where("name = ?", name).First(&s).Error
+	err = s.FindByIDOrName(db, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.Wrapf(handlererror.ErrNotFound, "storage %s does not exist", name)
 	}

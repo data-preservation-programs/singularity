@@ -34,6 +34,7 @@ func TestMigrateSchedule_DatasetNotExist(t *testing.T) {
 		}, flagSet, nil)
 
 		err = db.Create(&model.Preparation{
+			Name: "test",
 			SourceStorages: []model.Storage{{
 				Name: "test-source",
 			}},

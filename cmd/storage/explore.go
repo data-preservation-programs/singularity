@@ -11,7 +11,7 @@ import (
 var ExploreCmd = &cli.Command{
 	Name:      "explore",
 	Usage:     "Explore a storage by listing all entries under a path",
-	ArgsUsage: "<name> [path]",
+	ArgsUsage: "<name|id> [path]",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)

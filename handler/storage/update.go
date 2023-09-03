@@ -26,7 +26,7 @@ func (DefaultHandler) UpdateStorageHandler(
 	}
 
 	var storage model.Storage
-	err := db.Where("name = ?", name).First(&storage).Error
+	err := storage.FindByIDOrName(db, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "storage %s does not exist", name)
 	}
@@ -88,7 +88,7 @@ func (DefaultHandler) UpdateStorageHandler(
 
 // @Summary Update a storage connection
 // @Tags Storage
-// @Param name path string true "Name"
+// @Param name path string true "Storage ID or name"
 // @Param config body object true "Configuration"
 // @Accept json
 // @Produce json

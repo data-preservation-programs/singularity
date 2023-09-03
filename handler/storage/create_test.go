@@ -74,4 +74,12 @@ func TestCreate(t *testing.T) {
 			require.ErrorIs(t, err, handlererror.ErrDuplicateRecord)
 		})
 	})
+
+	t.Run("name is digits", func(t *testing.T) {
+		tmp := t.TempDir()
+		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+			_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "123", tmp, nil})
+			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		})
+	})
 }

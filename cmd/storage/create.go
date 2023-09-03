@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -26,8 +27,17 @@ var CreateCmd = &cli.Command{
 					command.Action = func(c *cli.Context) error {
 						return createAction(c, backend.Prefix, providerOption.Provider)
 					}
-					command.ArgsUsage = "<name> <path>"
-					command.Before = cliutil.CheckNArgs
+					command.Flags = append(command.Flags, &cli.StringFlag{
+						Name:        "name",
+						Usage:       "Name of the storage",
+						DefaultText: "Auto generated",
+						Category:    "General",
+					}, &cli.StringFlag{
+						Name:     "path",
+						Usage:    "Path of the storage",
+						Category: "General",
+						Required: true,
+					})
 					return command
 				}),
 			}
@@ -36,8 +46,17 @@ var CreateCmd = &cli.Command{
 		command.Action = func(c *cli.Context) error {
 			return createAction(c, backend.Prefix, "")
 		}
-		command.ArgsUsage = "<name> <path>"
-		command.Before = cliutil.CheckNArgs
+		command.Flags = append(command.Flags, &cli.StringFlag{
+			Name:        "name",
+			Usage:       "Name of the storage",
+			DefaultText: "Auto generated",
+			Category:    "General",
+		}, &cli.StringFlag{
+			Name:     "path",
+			Usage:    "Path of the storage",
+			Category: "General",
+			Required: true,
+		})
 		return command
 	}),
 }
@@ -48,8 +67,11 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 		return errors.WithStack(err)
 	}
 	defer closer.Close()
-	name := c.Args().Get(0)
-	path := c.Args().Get(1)
+	name := c.String("name")
+	if name == "" {
+		name = gofakeit.Noun()
+	}
+	path := c.String("path")
 	if storageType == "local" {
 		path, err = filepath.Abs(path)
 		if err != nil {
@@ -58,6 +80,9 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 	}
 	config := make(map[string]string)
 	for _, flagName := range c.LocalFlagNames() {
+		if flagName == "name" || flagName == "path" {
+			continue
+		}
 		if c.IsSet(flagName) {
 			config[strings.ReplaceAll(flagName, "-", "_")] = c.String(flagName)
 		}

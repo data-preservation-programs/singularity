@@ -24,16 +24,20 @@ func TestUpdateStorageHandler(t *testing.T) {
 		})
 	})
 	t.Run("change local path config", func(t *testing.T) {
-		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-			tmp := t.TempDir()
-			_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
-			require.NoError(t, err)
-			storage, err := Default.UpdateStorageHandler(ctx, db, "name", map[string]string{
-				"copy_links": "true",
+		for _, name := range []string{"1", "name"} {
+			t.Run(name, func(t *testing.T) {
+				testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+					tmp := t.TempDir()
+					_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
+					require.NoError(t, err)
+					storage, err := Default.UpdateStorageHandler(ctx, db, name, map[string]string{
+						"copy_links": "true",
+					})
+					require.NoError(t, err)
+					require.Equal(t, "true", storage.Config["copy_links"])
+				})
 			})
-			require.NoError(t, err)
-			require.Equal(t, "true", storage.Config["copy_links"])
-		})
+		}
 	})
 	t.Run("invalid config", func(t *testing.T) {
 		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

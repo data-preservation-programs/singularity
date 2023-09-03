@@ -12,10 +12,10 @@ import (
 func (DefaultHandler) ListAttachedHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	preparationID uint32,
+	preparationID string,
 ) ([]model.Wallet, error) {
 	var preparation model.Preparation
-	err := db.Preload("Wallets").Where("id = ?", preparationID).First(&preparation).Error
+	err := preparation.FindByIDOrName(db, preparationID, "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", preparationID)
 	}
@@ -30,7 +30,7 @@ func (DefaultHandler) ListAttachedHandler(
 // @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param id path int true "Preparation ID"
+// @Param id path int true "Preparation ID or name"
 // @Success 200 {object} model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

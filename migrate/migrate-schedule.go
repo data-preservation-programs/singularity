@@ -78,16 +78,10 @@ func MigrateSchedule(c *cli.Context) error {
 			return errors.Wrapf(err, "failed to decode dataset %s", replication.DatasetID)
 		}
 
-		var source model.Storage
-		err = db.Where("name = ?", scanning.Name+"-source").First(&source).Error
+		var preparation model.Preparation
+		err = preparation.FindByIDOrName(db, scanning.Name)
 		if err != nil {
-			return errors.Wrapf(err, "failed to find source %s", scanning.Name+"-source")
-		}
-
-		var sourceAttachment model.SourceAttachment
-		err = db.Where("storage_id = ?", source.ID).First(&sourceAttachment).Error
-		if err != nil {
-			return errors.Wrapf(err, "failed to find source attachment for storage %d", source.ID)
+			return errors.Wrapf(err, "failed to find preparation %s", scanning.Name)
 		}
 
 		var urlTemplate string
@@ -141,7 +135,7 @@ func MigrateSchedule(c *cli.Context) error {
 				Notes:                replication.Notes,
 				ErrorMessage:         replication.ErrorMessage,
 				AllowedPieceCIDs:     allowedCIDs,
-				PreparationID:        sourceAttachment.PreparationID,
+				PreparationID:        preparation.ID,
 			}
 			schedules = append(schedules, schedule)
 		}

@@ -1,8 +1,6 @@
 package dataprep
 
 import (
-	"strconv"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -13,7 +11,7 @@ import (
 var AttachWalletCmd = &cli.Command{
 	Name:      "attach-wallet",
 	Usage:     "Attach a wallet to a preparation",
-	ArgsUsage: "<preparation_id> <wallet_id>",
+	ArgsUsage: "<preparation id|name> <wallet_id>",
 	Category:  "Wallet Management",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
@@ -22,11 +20,7 @@ var AttachWalletCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
-		prep, err := wallet.Default.AttachHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := wallet.Default.AttachHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -38,7 +32,7 @@ var AttachWalletCmd = &cli.Command{
 var ListWalletsCmd = &cli.Command{
 	Name:      "list-wallets",
 	Usage:     "List attached wallets with a preparation",
-	ArgsUsage: "<preparation_id>",
+	ArgsUsage: "<preparation id|name>",
 	Category:  "Wallet Management",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
@@ -47,11 +41,7 @@ var ListWalletsCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
-		prep, err := wallet.Default.ListAttachedHandler(c.Context, db, uint32(id))
+		prep, err := wallet.Default.ListAttachedHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -63,7 +53,7 @@ var ListWalletsCmd = &cli.Command{
 var DetachWalletCmd = &cli.Command{
 	Name:      "detach-wallet",
 	Usage:     "Detach a wallet to a preparation",
-	ArgsUsage: "<preparation_id> <wallet_id>",
+	ArgsUsage: "<preparation id|name> <wallet_id>",
 	Category:  "Wallet Management",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
@@ -72,11 +62,7 @@ var DetachWalletCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
-		prep, err := wallet.Default.DetachHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := wallet.Default.DetachHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}

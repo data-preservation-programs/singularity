@@ -1,8 +1,6 @@
 package dataprep
 
 import (
-	"strconv"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -13,7 +11,7 @@ import (
 var AttachSourceCmd = &cli.Command{
 	Name:      "attach-source",
 	Usage:     "Attach a source storage to a preparation",
-	ArgsUsage: "<preparation_id> <storage_name>",
+	ArgsUsage: "<preparation id|name> <storage id|name>",
 	Category:  "Preparation Management",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
@@ -22,11 +20,7 @@ var AttachSourceCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
-		prep, err := dataprep.Default.AddSourceStorageHandler(c.Context, db, uint32(id), c.Args().Get(1))
+		prep, err := dataprep.Default.AddSourceStorageHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}

@@ -19,7 +19,7 @@ import (
 
 //nolint:lll
 type CreateRequest struct {
-	PreparationID        uint32   `json:"preparationId"        validation:"required"`  // Preparation ID
+	Preparation          string   `json:"preparation"          validation:"required"`  // Preparation ID or name
 	Provider             string   `json:"provider"             validation:"required"`  // Provider
 	HTTPHeaders          []string `json:"httpHeaders"`                                 // http headers to be passed with the request (i.e. key=value)
 	URLTemplate          string   `json:"urlTemplate"`                                 // URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
@@ -97,9 +97,9 @@ func (DefaultHandler) CreateHandler(
 		request.MaxPendingDealSize = "0"
 	}
 	var preparation model.Preparation
-	err := db.Preload("Wallets").First(&preparation, request.PreparationID).Error
+	err := preparation.FindByIDOrName(db, request.Preparation, "Wallets")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", request.PreparationID)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", request.Preparation)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)

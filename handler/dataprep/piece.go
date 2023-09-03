@@ -40,7 +40,7 @@ type PieceList struct {
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
+// - id: The ID or name for the desired Preparation record.
 //
 // Returns:
 // - A slice of PieceList, each representing a source attachment and its associated pieces.
@@ -48,11 +48,19 @@ type PieceList struct {
 func (DefaultHandler) ListPiecesHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 ) ([]PieceList, error) {
 	db = db.WithContext(ctx)
+	var preparation model.Preparation
+	err := preparation.FindByIDOrName(db, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 	var sourceAttachments []model.SourceAttachment
-	err := db.Preload("Storage").Where("preparation_id = ?", id).Find(&sourceAttachments).Error
+	err = db.Preload("Storage").Where("preparation_id = ?", preparation.ID).Find(&sourceAttachments).Error
 	if len(sourceAttachments) == 0 {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", id)
 	}
@@ -76,7 +84,7 @@ func (DefaultHandler) ListPiecesHandler(
 	}
 
 	var cars []model.Car
-	err = db.Where("attachment_id IS NULL AND preparation_id = ?", id).Find(&cars).Error
+	err = db.Where("attachment_id IS NULL AND preparation_id = ?", preparation.ID).Find(&cars).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -94,7 +102,7 @@ func (DefaultHandler) ListPiecesHandler(
 // @Tags Piece
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
+// @Param id path int true "Preparation ID or name"
 // @Success 200 {array} PieceList
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -105,7 +113,7 @@ func _() {}
 // @Tags Piece
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
+// @Param id path int true "Preparation ID or name"
 // @Param request body AddPieceRequest true "Piece information"
 // @Success 200 {object} model.Car
 // @Failure 400 {object} api.HTTPError
@@ -125,7 +133,7 @@ func _() {}
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
+// - id: The ID or name for the desired Preparation record.
 // - request: A struct of AddPieceRequest which contains the information for the piece to be added.
 //
 // Returns:
@@ -134,12 +142,12 @@ func _() {}
 func (DefaultHandler) AddPieceHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	request AddPieceRequest,
 ) (*model.Car, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := db.Where("id = ?", id).First(&preparation).Error
+	err := preparation.FindByIDOrName(db, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d not found", id)
 	}

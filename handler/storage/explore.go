@@ -48,7 +48,7 @@ func (DefaultHandler) ExploreHandler(
 ) ([]DirEntry, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
-	err := db.Where("name = ?", name).First(&storage).Error
+	err := storage.FindByIDOrName(db, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "storage %s not found", name)
 	}
@@ -100,7 +100,7 @@ func (DefaultHandler) ExploreHandler(
 // @Tags Storage
 // @Accept json
 // @Produce json
-// @Param name path string true "Storage name"
+// @Param name path string true "Storage ID or name"
 // @Param path path string true "Path in the storage system to explore"
 // @Success 200 {array} DirEntry
 // @Failure 400 {object} api.HTTPError

@@ -15,19 +15,28 @@ var pausableStatesForScan = []model.JobState{model.Processing, model.Ready}
 
 var startableStatesForScan = []model.JobState{model.Paused, model.Created, model.Error, model.Complete}
 
-func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name string) (*model.SourceAttachment, error) {
+func validateSourceStorage(ctx context.Context, db *gorm.DB, id string, name string) (*model.SourceAttachment, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
-	err := db.Where("name = ?", name).First(&storage).Error
+	err := storage.FindByIDOrName(db, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "storage '%s' does not exist", name)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "source storage '%s' does not exist", name)
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	var preparation model.Preparation
+	err = preparation.FindByIDOrName(db, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	var sourceAttachment model.SourceAttachment
-	err = db.Where("preparation_id = ? AND storage_id = ?", id, storage.ID).First(&sourceAttachment).Error
+	err = db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, storage.ID).First(&sourceAttachment).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "sourceAttachment '%s' is not attached to preparation %d", name, id)
 	}
@@ -47,8 +56,8 @@ func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name str
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
-// - name: The name of the source storage.
+// - id: The ID or name for the desired Preparation record.
+// - name: The ID or name of the source storage.
 // - jobType: The type of the job (e.g., Scan, Upload).
 //
 // Returns:
@@ -61,7 +70,7 @@ func validateSourceStorage(ctx context.Context, db *gorm.DB, id uint32, name str
 func StartJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string,
 	jobType model.JobType) (*model.Job, error) {
 	db = db.WithContext(ctx)
@@ -100,7 +109,7 @@ func StartJobHandler(
 func (DefaultHandler) StartScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string) (*model.Job, error) {
 	return StartJobHandler(ctx, db, id, name, model.Scan)
 }
@@ -109,8 +118,8 @@ func (DefaultHandler) StartScanHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -137,7 +146,7 @@ func _() {}
 func PauseJobHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string,
 	jobType model.JobType) (*model.Job, error) {
 	db = db.WithContext(ctx)
@@ -167,7 +176,7 @@ func PauseJobHandler(
 func (DefaultHandler) PauseScanHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }
@@ -176,8 +185,8 @@ func (DefaultHandler) PauseScanHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

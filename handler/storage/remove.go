@@ -17,7 +17,7 @@ import (
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - name: The name of the storage entry to be deleted.
+// - name: The ID or name of the storage entry to be deleted.
 //
 // Returns:
 //   - An error, if any occurred during the operation. Returns a specific error
@@ -28,9 +28,9 @@ func (DefaultHandler) RemoveHandler(
 	name string) error {
 	db = db.WithContext(ctx)
 	err := database.DoRetry(ctx, func() error {
-		return db.Transaction(func(tx *gorm.DB) error {
+		return db.Transaction(func(db *gorm.DB) error {
 			var storage model.Storage
-			err := db.Where("name = ?", name).First(&storage).Error
+			err := storage.FindByIDOrName(db, name)
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return errors.Wrapf(handlererror.ErrNotFound, "storage %s does not exist", name)
 			}
@@ -65,7 +65,7 @@ func (DefaultHandler) RemoveHandler(
 
 // @Summary Remove a storage
 // @Tags Storage
-// @Param name path string true "Name"
+// @Param name path string true "Storage ID or name"
 // @Success 204
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

@@ -21,17 +21,17 @@ func TestAttachHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("preparation not found", func(t *testing.T) {
-			_, err := Default.AttachHandler(ctx, db, 2, "test")
+			_, err := Default.AttachHandler(ctx, db, "2", "test")
 			require.ErrorIs(t, err, handlererror.ErrNotFound)
 		})
 
 		t.Run("wallet not found", func(t *testing.T) {
-			_, err := Default.AttachHandler(ctx, db, 1, "invalid")
+			_, err := Default.AttachHandler(ctx, db, "1", "invalid")
 			require.ErrorIs(t, err, handlererror.ErrNotFound)
 		})
 
 		t.Run("success", func(t *testing.T) {
-			preparation, err := Default.AttachHandler(ctx, db, 1, "test")
+			preparation, err := Default.AttachHandler(ctx, db, "1", "test")
 			require.NoError(t, err)
 			require.Len(t, preparation.Wallets, 1)
 		})

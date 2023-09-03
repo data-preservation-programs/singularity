@@ -2,6 +2,7 @@ package deal
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
@@ -9,8 +10,8 @@ import (
 )
 
 type ListDealRequest struct {
-	Preparations []uint32          `json:"preparations"` // preparation ID filter
-	Sources      []string          `json:"sources"`      // source filter
+	Preparations []string          `json:"preparations"` // preparation ID or name filter
+	Sources      []string          `json:"sources"`      // source ID or name filter
 	Schedules    []uint32          `json:"schedules"`    // schedule id filter
 	Providers    []string          `json:"providers"`    // provider filter
 	States       []model.DealState `json:"states"`       // state filter
@@ -41,15 +42,34 @@ func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB, request List
 	var deals []model.Deal
 	statement := db
 	if len(request.Preparations) > 0 {
+		var ids []uint64
+		var names []string
+		for _, preparation := range request.Preparations {
+			if id, err := strconv.ParseUint(preparation, 10, 32); err == nil {
+				ids = append(ids, id)
+			} else {
+				names = append(names, preparation)
+			}
+		}
 		statement = statement.Where("schedule_id IN (?)", db.Model(&model.Schedule{}).Select("id").
-			Where("preparation_id in ?", request.Preparations))
+			Where("preparation_id in (?)", db.Model(&model.Preparation{}).Select("id").
+				Where("id in ? OR name in ?", ids, names)))
 	}
 
 	if len(request.Sources) > 0 {
+		var ids []uint64
+		var names []string
+		for _, source := range request.Sources {
+			if id, err := strconv.ParseUint(source, 10, 32); err == nil {
+				ids = append(ids, id)
+			} else {
+				names = append(names, source)
+			}
+		}
 		statement = statement.Where("schedule_id IN (?)", db.Model(&model.Schedule{}).Select("id").
 			Where("preparation_id in (?)", db.Model(&model.SourceAttachment{}).Select("preparation_id").
 				Where("storage_id in (?)", db.Model(&model.Storage{}).Select("id").
-					Where("name in ?", request.Sources))))
+					Where("id in ? OR name in ?", ids, names))))
 	}
 
 	if len(request.Schedules) > 0 {

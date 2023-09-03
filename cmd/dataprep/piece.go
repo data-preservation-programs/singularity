@@ -1,8 +1,6 @@
 package dataprep
 
 import (
-	"strconv"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -14,7 +12,7 @@ var ListPiecesCmd = &cli.Command{
 	Name:      "list-pieces",
 	Usage:     "List all generated pieces for a preparation",
 	Category:  "Piece Management",
-	ArgsUsage: "<preparation_id>",
+	ArgsUsage: "<preparation id|name>",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -22,12 +20,8 @@ var ListPiecesCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
 
-		pieces, err := dataprep.Default.ListPiecesHandler(c.Context, db, uint32(id))
+		pieces, err := dataprep.Default.ListPiecesHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -40,7 +34,7 @@ var AddPieceCmd = &cli.Command{
 	Name:      "add-piece",
 	Usage:     "Manually add piece info to a preparation. This is useful for pieces prepared by external tools.",
 	Category:  "Piece Management",
-	ArgsUsage: "<preparation_id>",
+	ArgsUsage: "<preparation id|name>",
 	Before:    cliutil.CheckNArgs,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
@@ -69,12 +63,8 @@ var AddPieceCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
 
-		pieces, err := dataprep.Default.AddPieceHandler(c.Context, db, uint32(id), dataprep.AddPieceRequest{
+		pieces, err := dataprep.Default.AddPieceHandler(c.Context, db, c.Args().Get(0), dataprep.AddPieceRequest{
 			PieceCID:  c.String("piece-cid"),
 			PieceSize: c.String("piece-size"),
 			FilePath:  c.String("file-path"),

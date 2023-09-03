@@ -34,7 +34,7 @@ func TestListHandler(t *testing.T) {
 		}).Error
 		require.NoError(t, err)
 		deals, err := Default.ListHandler(ctx, db, ListDealRequest{
-			Preparations: []uint32{1},
+			Preparations: []string{"1"},
 			Sources:      []string{"storage"},
 			Schedules:    []uint32{1},
 			Providers:    []string{"provider"},

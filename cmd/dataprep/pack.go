@@ -14,7 +14,7 @@ var StartPackCmd = &cli.Command{
 	Name:      "start-pack",
 	Usage:     "Start / Restart all pack jobs or a specific one",
 	Category:  "Job Management",
-	ArgsUsage: "<preparation_id> <storage_name> [job_id]",
+	ArgsUsage: "<preparation id|name> <storage id|name> [job_id]",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -22,10 +22,6 @@ var StartPackCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
 		var jobID int64
 		if c.Args().Get(2) != "" {
 			jobID, err = strconv.ParseInt(c.Args().Get(2), 10, 64)
@@ -33,7 +29,7 @@ var StartPackCmd = &cli.Command{
 				return errors.Wrapf(err, "invalid job ID '%s'", c.Args().Get(2))
 			}
 		}
-		job, err := dataprep.Default.StartPackHandler(c.Context, db, uint32(id), c.Args().Get(1), jobID)
+		job, err := dataprep.Default.StartPackHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), jobID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -46,7 +42,7 @@ var PausePackCmd = &cli.Command{
 	Name:      "pause-pack",
 	Usage:     "Pause all pack jobs or a specific one",
 	Category:  "Job Management",
-	ArgsUsage: "<preparation_id> <storage_name> [job_id]",
+	ArgsUsage: "<preparation id|name> <storage id|name> [job_id]",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -54,10 +50,6 @@ var PausePackCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
-		if err != nil {
-			return errors.Wrapf(err, "invalid preparation ID '%s'", c.Args().Get(0))
-		}
 		var jobID int64
 		if c.Args().Get(2) != "" {
 			jobID, err = strconv.ParseInt(c.Args().Get(2), 10, 64)
@@ -65,7 +57,7 @@ var PausePackCmd = &cli.Command{
 				return errors.Wrapf(err, "invalid job ID '%s'", c.Args().Get(2))
 			}
 		}
-		job, err := dataprep.Default.PausePackHandler(c.Context, db, uint32(id), c.Args().Get(1), jobID)
+		job, err := dataprep.Default.PausePackHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), jobID)
 		if err != nil {
 			return errors.WithStack(err)
 		}

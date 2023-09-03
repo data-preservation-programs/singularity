@@ -13,23 +13,29 @@ import (
 
 func TestStartDagGenHandler_StorageNotFound(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{}).Error
+		err := db.Create(&model.Preparation{
+			Name: "name",
+		}).Error
 		require.NoError(t, err)
-		_, err = Default.StartDagGenHandler(ctx, db, 1, "not found")
+		_, err = Default.StartDagGenHandler(ctx, db, "1", "not found")
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
 	})
 }
 
 func TestPauseDagGenHandler_NoJob(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			SourceStorages: []model.Storage{{
-				Name: "source",
-			}},
-		}).Error
-		require.NoError(t, err)
-		_, err = Default.PauseDagGenHandler(ctx, db, 1, "source")
-		require.ErrorIs(t, err, handlererror.ErrNotFound)
-	})
-
+	for _, name := range []string{"1", "name"} {
+		t.Run(name, func(t *testing.T) {
+			testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+				err := db.Create(&model.Preparation{
+					Name: "name",
+					SourceStorages: []model.Storage{{
+						Name: "source",
+					}},
+				}).Error
+				require.NoError(t, err)
+				_, err = Default.PauseDagGenHandler(ctx, db, name, "source")
+				require.ErrorIs(t, err, handlererror.ErrNotFound)
+			})
+		})
+	}
 }

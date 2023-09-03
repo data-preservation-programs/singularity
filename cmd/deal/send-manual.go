@@ -18,7 +18,6 @@ import (
 var SendManualCmd = &cli.Command{
 	Name:      "send-manual",
 	Usage:     "Send a manual deal proposal to boost or legacy market",
-	Before:    cliutil.CheckNArgs,
 	ArgsUsage: "<client> <provider> <piece_cid> <piece_size>",
 	Description: `Send a manual deal proposal to boost or legacy market
   Example: singularity deal send-manual f01234 f05678 bagaxxxx 32GiB
@@ -27,6 +26,31 @@ Notes:
   * The deal proposal will not be saved in the database however will eventually be tracked if the deal tracker is running
   * There is a quick address verification using GLIF API which can be made faster by setting LOTUS_API and LOTUS_TOKEN to your own lotus node`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "client",
+			Category: "Deal Proposal",
+			Usage:    "Client address to send deal from",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "provider",
+			Category: "Deal Proposal",
+			Usage:    "Storage Provider ID to send deal to",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "piece-cid",
+			Category: "Deal Proposal",
+			Usage:    "Piece CID of the deal",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "piece-size",
+			Category: "Deal Proposal",
+			Usage:    "Piece Size of the deal",
+			Value:    "32GiB",
+			Required: true,
+		},
 		&cli.StringSliceFlag{
 			Name:     "http-header",
 			Category: "Boost Only",
@@ -129,10 +153,10 @@ Notes:
 			KeepUnsealed:    c.Bool("keep-unsealed"),
 			StartDelay:      c.String("start-delay"),
 			Duration:        c.String("duration"),
-			ClientAddress:   c.Args().Get(0),
-			ProviderID:      c.Args().Get(1),
-			PieceCID:        c.Args().Get(2),
-			PieceSize:       c.Args().Get(3),
+			ClientAddress:   c.String("client"),
+			ProviderID:      c.String("provider"),
+			PieceCID:        c.String("piece-cid"),
+			PieceSize:       c.String("piece-size"),
 			FileSize:        c.Uint64("file-size"),
 		}
 		timeout := c.Duration("timeout")

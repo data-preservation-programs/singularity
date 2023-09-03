@@ -12,13 +12,13 @@ type Handler interface {
 	AttachHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		preparationID uint32,
+		preparation string,
 		wallet string,
 	) (*model.Preparation, error)
 	DetachHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		preparationID uint32,
+		preparation string,
 		wallet string,
 	) (*model.Preparation, error)
 	ImportHandler(
@@ -34,7 +34,7 @@ type Handler interface {
 	ListAttachedHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		preparationID uint32,
+		preparation string,
 	) ([]model.Wallet, error)
 	RemoveHandler(
 		ctx context.Context,

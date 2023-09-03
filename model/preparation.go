@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ type Global struct {
 // Preparation is a data preparation definition that can attach multiple source storages and up to one output storage.
 type Preparation struct {
 	ID                uint32    `gorm:"primaryKey"        json:"id"`
+	Name              string    `gorm:"unique"            json:"name"`
 	CreatedAt         time.Time `json:"createdAt"         table:"verbose;format:2006-01-02 15:04:05"`
 	UpdatedAt         time.Time `json:"updatedAt"         table:"verbose;format:2006-01-02 15:04:05"`
 	DeleteAfterExport bool      `json:"deleteAfterExport"` // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
@@ -35,6 +37,21 @@ type Preparation struct {
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true" table:"expand"`
 	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" swaggerignore:"true" table:"expand;header:Source Storages:"`
 	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" swaggerignore:"true" table:"expand;header:Output Storages:"`
+}
+
+func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
+	id, err := strconv.ParseUint(name, 10, 32)
+	if err == nil {
+		for _, preload := range preloads {
+			db = db.Preload(preload)
+		}
+		return db.First(s, id).Error
+	} else {
+		for _, preload := range preloads {
+			db = db.Preload(preload)
+		}
+		return db.Where("name = ?", name).First(s).Error
+	}
 }
 
 // Storage is a storage system definition that can be used as either source or output of a Preparation.
@@ -52,6 +69,21 @@ type Storage struct {
 	PreparationsAsOutput []Preparation `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" swaggerignore:"true" table:"expand;header:As Output: "`
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
+}
+
+func (s *Storage) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
+	id, err := strconv.ParseUint(name, 10, 32)
+	if err == nil {
+		for _, preload := range preloads {
+			db = db.Preload(preload)
+		}
+		return db.First(s, id).Error
+	} else {
+		for _, preload := range preloads {
+			db = db.Preload(preload)
+		}
+		return db.Where("name = ?", name).First(s).Error
+	}
 }
 
 // SourceAttachment is a link between a Preparation and a Storage that is used as a source.

@@ -51,7 +51,7 @@ func getMockLotusClient() jsonrpc.RPCClient {
 }
 
 var createRequest = CreateRequest{
-	PreparationID:        1,
+	Preparation:          "1",
 	Provider:             "f01000",
 	HTTPHeaders:          []string{"a=b"},
 	URLTemplate:          "http://127.0.0.1",
@@ -222,17 +222,23 @@ func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 }
 
 func TestCreateHandler_Success(t *testing.T) {
-	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := db.Create(&model.Preparation{
-			Wallets: []model.Wallet{{
-				ID: "f01",
-			}},
-		}).Error
-		require.NoError(t, err)
-		createRequest := createRequest
-		createRequest.ScheduleCron = "@daily"
-		schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
-		require.NoError(t, err)
-		require.NotNil(t, schedule)
-	})
+	for _, name := range []string{"1", "name"} {
+		t.Run(name, func(t *testing.T) {
+			testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+				err := db.Create(&model.Preparation{
+					Name: "name",
+					Wallets: []model.Wallet{{
+						ID: "f01",
+					}},
+				}).Error
+				require.NoError(t, err)
+				createRequest := createRequest
+				createRequest.ScheduleCron = "@daily"
+				createRequest.Preparation = name
+				schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+				require.NoError(t, err)
+				require.NotNil(t, schedule)
+			})
+		})
+	}
 }

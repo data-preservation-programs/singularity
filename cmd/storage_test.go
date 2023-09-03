@@ -70,10 +70,16 @@ func TestStorageCreateHandler_S3Provider(t *testing.T) {
 			Path:      "bucket",
 			Config:    map[string]string{"region": "us-east-1"},
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity storage create s3 aws --region us-east-1 name bucket")
+		_, _, err := runner.Run(ctx, "singularity storage create s3 aws --region us-east-1 --name name --path bucket")
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, "singularity --verbose storage create s3 aws --region us-east-1 name bucket")
+		_, _, err = runner.Run(ctx, "singularity --verbose storage create s3 aws --region us-east-1 --name name --path bucket")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity storage create s3 aws --region us-east-1 --path bucket")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose storage create s3 aws --region us-east-1 --path bucket")
 		require.NoError(t, err)
 	})
 }
@@ -92,10 +98,16 @@ func TestStorageCreateHandler_Local(t *testing.T) {
 			Type:      "local",
 			Path:      "path",
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity storage create local name path")
+		_, _, err := runner.Run(ctx, "singularity storage create local --name name --path path")
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, "singularity --verbose storage create local name path")
+		_, _, err = runner.Run(ctx, "singularity --verbose storage create local --name name --path path")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity storage create local --path path")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose storage create local --path path")
 		require.NoError(t, err)
 	})
 }

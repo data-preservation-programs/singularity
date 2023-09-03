@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -21,17 +20,6 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 	return func() {
 		deal.Default = actual
 	}
-}
-
-func TestSendDealHandler_TooFewArgs(t *testing.T) {
-	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		runner := NewRunner()
-		defer runner.Save(t)
-		out, stderr, err := runner.Run(ctx, "singularity deal send-manual")
-		require.ErrorIs(t, err, cliutil.ErrIncorrectNArgs)
-		require.Contains(t, out, "USAGE:")
-		require.Empty(t, stderr)
-	})
 }
 
 func TestSendDealHandler(t *testing.T) {
@@ -57,10 +45,10 @@ func TestSendDealHandler(t *testing.T) {
 			Verified:         true,
 			ClientID:         "client_id",
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity deal send-manual client provider piece_cid 1024")
+		_, _, err := runner.Run(ctx, "singularity deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024")
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, "singularity --verbose deal send-manual client provider piece_cid 1024")
+		_, _, err = runner.Run(ctx, "singularity --verbose deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024")
 		require.NoError(t, err)
 	})
 }

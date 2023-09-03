@@ -19,8 +19,8 @@ import (
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID of the Preparation to which the output storage should be attached.
-// - output: The name of the output storage to be attached.
+// - id: The ID or name of the Preparation to which the output storage should be attached.
+// - output: The ID or name of the output storage to be attached.
 //
 // Returns:
 // - A pointer to the updated Preparation model with the new output storage associated.
@@ -29,12 +29,21 @@ import (
 // Note:
 // This function performs several checks to ensure the output storage and the Preparation exist.
 // It also checks for potential duplicate associations and handles potential errors accordingly.
-func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
+func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
-	err := db.Where("name = ?", output).First(&storage).Error
+	err := storage.FindByIDOrName(db, output)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage '%s' does not exist", output)
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	var preparation model.Preparation
+	err = preparation.FindByIDOrName(db, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -43,12 +52,9 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 	err = database.DoRetry(ctx, func() error {
 		return db.Create(&model.OutputAttachment{
 			StorageID:     storage.ID,
-			PreparationID: id,
+			PreparationID: preparation.ID,
 		}).Error
 	})
-	if util.IsForeignKeyConstraintError(err) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)
-	}
 	if util.IsDuplicateKeyError(err) {
 		return nil, errors.Wrapf(handlererror.ErrDuplicateRecord, "output storage %s is already attached to preparation %d", output, id)
 	}
@@ -56,11 +62,7 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 		return nil, errors.WithStack(err)
 	}
 
-	var preparation model.Preparation
-	err = db.Preload("SourceStorages").Preload("OutputStorages").First(&preparation, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)
-	}
+	err = db.Preload("SourceStorages").Preload("OutputStorages").First(&preparation, preparation.ID).Error
 
 	return &preparation, errors.WithStack(err)
 }
@@ -69,8 +71,8 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Output storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Output storage ID or name"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -81,8 +83,8 @@ func _() {}
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Output storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Output storage ID or name"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -98,8 +100,8 @@ func _() {}
 // Parameters:
 // - ctx: The context for database transactions and other operations.
 // - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID of the Preparation from which the output storage should be detached.
-// - output: The name of the output storage to be detached.
+// - id: The ID or name of the Preparation from which the output storage should be detached.
+// - output: The ID or name of the output storage to be detached.
 //
 // Returns:
 // - A pointer to the updated Preparation model with the output storage removed.
@@ -108,10 +110,10 @@ func _() {}
 // Note:
 // This function performs several validation steps to ensure integrity while removing the association.
 // It also preloads associated storages to return an updated version of the Preparation.
-func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id uint32, output string) (*model.Preparation, error) {
+func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error) {
 	db = db.WithContext(ctx)
 	var storage model.Storage
-	err := db.Where("name = ?", output).First(&storage).Error
+	err := storage.FindByIDOrName(db, output)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage '%s' does not exist", output)
 	}
@@ -120,9 +122,9 @@ func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.D
 	}
 
 	var preparation model.Preparation
-	err = db.Preload("OutputStorages").First(&preparation, id).Error
+	err = preparation.FindByIDOrName(db, id, "OutputStorages")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d does not exist", id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -137,13 +139,13 @@ func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.D
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Where("storage_id = ? AND preparation_id = ?", storage.ID, id).Delete(&model.OutputAttachment{}).Error
+		return db.Where("storage_id = ? AND preparation_id = ?", storage.ID, preparation.ID).Delete(&model.OutputAttachment{}).Error
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	err = db.Preload("SourceStorages").Preload("OutputStorages").First(&preparation, id).Error
+	err = db.Preload("SourceStorages").Preload("OutputStorages").First(&preparation, preparation.ID).Error
 
 	return &preparation, errors.WithStack(err)
 }

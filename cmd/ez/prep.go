@@ -120,12 +120,13 @@ var PrepCmd = &cli.Command{
 			SourceStorages: []string{"source"},
 			OutputStorages: outputStorages,
 			MaxSizeStr:     c.String("max-size"),
+			Name:           "preparation",
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to create preparation")
 		}
 
-		_, err = dataprep.Default.StartScanHandler(c.Context, db, 1, "source")
+		_, err = dataprep.Default.StartScanHandler(c.Context, db, "preparation", "source")
 		if err != nil {
 			return errors.Wrap(err, "failed to start scan")
 		}
@@ -158,7 +159,7 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 4, Initiate dag gen
-		_, err = dataprep.Default.StartDagGenHandler(c.Context, db, 1, "source")
+		_, err = dataprep.Default.StartDagGenHandler(c.Context, db, "preparation", "source")
 		if err != nil {
 			return errors.Wrap(err, "failed to start dag gen")
 		}
@@ -179,7 +180,7 @@ var PrepCmd = &cli.Command{
 
 		// Step 6, print all information
 		pieceLists, err := dataprep.Default.ListPiecesHandler(
-			c.Context, db, 1,
+			c.Context, db, "preparation",
 		)
 		if err != nil {
 			return errors.Wrap(err, "failed to list pieces")

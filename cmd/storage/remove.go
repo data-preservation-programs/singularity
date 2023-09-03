@@ -11,7 +11,7 @@ import (
 var RemoveCmd = &cli.Command{
 	Name:      "remove",
 	Usage:     "Remove a storage connection if it's not used by any preparation",
-	ArgsUsage: "<name>",
+	ArgsUsage: "<name|id>",
 	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)

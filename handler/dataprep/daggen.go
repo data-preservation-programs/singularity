@@ -23,7 +23,7 @@ import (
 func (DefaultHandler) StartDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string) (*model.Job, error) {
 	return StartJobHandler(ctx, db, id, name, model.DagGen)
 }
@@ -32,8 +32,8 @@ func (DefaultHandler) StartDagGenHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -56,7 +56,7 @@ func _() {}
 func (DefaultHandler) PauseDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint32,
+	id string,
 	name string) (*model.Job, error) {
 	return PauseJobHandler(ctx, db, id, name, model.DagGen)
 }
@@ -65,8 +65,8 @@ func (DefaultHandler) PauseDagGenHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID"
-// @Param name path string true "Storage name"
+// @Param id path int true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

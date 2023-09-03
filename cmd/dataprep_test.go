@@ -148,7 +148,7 @@ func TestDataPrepPauseDagGenHandler(t *testing.T) {
 	})
 }
 
-var testScanob = model.Job{
+var testScanJob = model.Job{
 	ID:           1,
 	Type:         model.Scan,
 	State:        model.Ready,
@@ -163,7 +163,7 @@ func TestDataPrepStartScanHandler(t *testing.T) {
 		mockHandler := new(MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
-		mockHandler.On("StartScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanob, nil)
+		mockHandler.On("StartScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanJob, nil)
 		_, _, err := runner.Run(ctx, "singularity prep start-scan 1 name")
 		require.NoError(t, err)
 
@@ -179,7 +179,7 @@ func TestDataPrepPauseScanHandler(t *testing.T) {
 		mockHandler := new(MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
-		mockHandler.On("PauseScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanob, nil)
+		mockHandler.On("PauseScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanJob, nil)
 		_, _, err := runner.Run(ctx, "singularity prep pause-scan 1 name")
 		require.NoError(t, err)
 

@@ -21,12 +21,12 @@ func TestListAttachedHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("preparation not found", func(t *testing.T) {
-			_, err := Default.ListAttachedHandler(ctx, db, 2)
+			_, err := Default.ListAttachedHandler(ctx, db, "2")
 			require.ErrorIs(t, err, handlererror.ErrNotFound)
 		})
 
 		t.Run("success", func(t *testing.T) {
-			wallets, err := Default.ListAttachedHandler(ctx, db, 1)
+			wallets, err := Default.ListAttachedHandler(ctx, db, "1")
 			require.NoError(t, err)
 			require.Len(t, wallets, 1)
 		})
