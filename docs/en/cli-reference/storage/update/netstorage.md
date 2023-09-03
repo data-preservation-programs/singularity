@@ -6,7 +6,7 @@ NAME:
    singularity storage update netstorage - Akamai NetStorage
 
 USAGE:
-   singularity storage update netstorage [command options] <name>
+   singularity storage update netstorage [command options] <name|id>
 
 DESCRIPTION:
    --protocol

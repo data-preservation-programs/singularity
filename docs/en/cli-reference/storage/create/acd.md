@@ -6,7 +6,7 @@ NAME:
    singularity storage create acd - Amazon Drive
 
 USAGE:
-   singularity storage create acd [command options] <name> <path>
+   singularity storage create acd [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -90,6 +90,11 @@ OPTIONS:
    --token value               OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value           Token server url. [$TOKEN_URL]
    --upload-wait-per-gb value  Additional time per GiB to wait after a failed complete upload to see if it appears. (default: "3m0s") [$UPLOAD_WAIT_PER_GB]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

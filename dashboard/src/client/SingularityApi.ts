@@ -35,6 +35,8 @@ export interface DataprepCreateRequest {
    * @default "31.5GiB"
    */
   maxSize: string;
+  /** Name of the preparation */
+  name: string;
   /** Name of Output storage systems to be used for the output */
   outputStorages?: string[];
   /** Target piece size of the CAR files used for piece commitment calculation */
@@ -79,13 +81,13 @@ export interface DataprepVersion {
 }
 
 export interface DealListDealRequest {
-  /** preparation ID filter */
-  preparations?: number[];
+  /** preparation ID or name filter */
+  preparations?: string[];
   /** provider filter */
   providers?: string[];
   /** schedule id filter */
   schedules?: number[];
-  /** source filter */
+  /** source ID or name filter */
   sources?: string[];
   /** state filter */
   states?: ModelDealState[];
@@ -238,6 +240,7 @@ export interface ModelPreparation {
   deleteAfterExport?: boolean;
   id?: number;
   maxSize?: number;
+  name?: string;
   pieceSize?: number;
   updatedAt?: string;
 }
@@ -326,8 +329,8 @@ export interface ScheduleCreateRequest {
   maxPendingDealSize?: string;
   /** Notes */
   notes?: string;
-  /** Preparation ID */
-  preparationId?: number;
+  /** Preparation ID or name */
+  preparation?: string;
   /**
    * Price in FIL per deal
    * @default 0

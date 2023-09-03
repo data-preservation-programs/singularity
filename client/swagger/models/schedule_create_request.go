@@ -41,8 +41,8 @@ type ScheduleCreateRequest struct {
 	// Notes
 	Notes string `json:"notes,omitempty"`
 
-	// Preparation ID
-	PreparationID int64 `json:"preparationId,omitempty"`
+	// Preparation ID or name
+	Preparation string `json:"preparation,omitempty"`
 
 	// Price in FIL per deal
 	PricePerDeal float64 `json:"pricePerDeal,omitempty"`

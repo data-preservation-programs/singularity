@@ -6,7 +6,7 @@ NAME:
    singularity storage update koofr other - Any other Koofr API compatible storage service
 
 USAGE:
-   singularity storage update koofr other [command options] <name>
+   singularity storage update koofr other [command options] <name|id>
 
 DESCRIPTION:
    --endpoint

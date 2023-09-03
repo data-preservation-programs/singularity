@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 scaleway - Scaleway Object Storage
 
 USAGE:
-   singularity storage update s3 scaleway [command options] <name>
+   singularity storage update s3 scaleway [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

@@ -6,7 +6,7 @@ NAME:
    singularity storage create sftp - SSH/SFTP
 
 USAGE:
-   singularity storage create sftp [command options] <name> <path>
+   singularity storage create sftp [command options] [arguments...]
 
 DESCRIPTION:
    --host
@@ -316,6 +316,11 @@ OPTIONS:
    --skip-links                 Set to skip any symlinks and any other non regular files. (default: false) [$SKIP_LINKS]
    --subsystem value            Specifies the SSH2 subsystem on the remote host. (default: "sftp") [$SUBSYSTEM]
    --use-fstat                  If set use fstat instead of stat. (default: false) [$USE_FSTAT]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

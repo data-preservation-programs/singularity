@@ -6,7 +6,7 @@ NAME:
    singularity storage create drive - Google Drive
 
 USAGE:
-   singularity storage create drive [command options] <name> <path>
+   singularity storage create drive [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -368,6 +368,11 @@ OPTIONS:
    --use-shared-date                    Use date file was shared instead of modified date. (default: false) [$USE_SHARED_DATE]
    --use-trash                          Send files to the trash instead of deleting permanently. (default: true) [$USE_TRASH]
    --v2-download-min-size value         If Object's are greater, use drive v2 API to download. (default: "off") [$V2_DOWNLOAD_MIN_SIZE]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

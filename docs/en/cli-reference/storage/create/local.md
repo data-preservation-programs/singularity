@@ -6,7 +6,7 @@ NAME:
    singularity storage create local - Local Disk
 
 USAGE:
-   singularity storage create local [command options] <name> <path>
+   singularity storage create local [command options] [arguments...]
 
 DESCRIPTION:
    --nounc
@@ -151,6 +151,11 @@ OPTIONS:
    --skip-links             Don't warn about skipped symlinks. (default: false) [$SKIP_LINKS]
    --unicode-normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
    --zero-size-links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

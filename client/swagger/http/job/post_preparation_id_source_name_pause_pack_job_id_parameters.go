@@ -64,7 +64,7 @@ type PostPreparationIDSourceNamePausePackJobIDParams struct {
 
 	/* ID.
 
-	   Preparation ID
+	   Preparation ID or name
 	*/
 	ID int64
 
@@ -76,7 +76,7 @@ type PostPreparationIDSourceNamePausePackJobIDParams struct {
 
 	/* Name.
 
-	   Storage name
+	   Storage ID or name
 	*/
 	Name string
 

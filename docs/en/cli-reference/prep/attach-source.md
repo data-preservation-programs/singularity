@@ -6,7 +6,7 @@ NAME:
    singularity prep attach-source - Attach a source storage to a preparation
 
 USAGE:
-   singularity prep attach-source [command options] <preparation_id> <storage_name>
+   singularity prep attach-source [command options] <preparation id|name> <storage id|name>
 
 CATEGORY:
    Preparation Management

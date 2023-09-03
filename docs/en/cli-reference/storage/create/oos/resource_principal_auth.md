@@ -6,7 +6,7 @@ NAME:
    singularity storage create oos resource_principal_auth - use resource principals to make API calls
 
 USAGE:
-   singularity storage create oos resource_principal_auth [command options] <name> <path>
+   singularity storage create oos resource_principal_auth [command options] [arguments...]
 
 DESCRIPTION:
    --namespace
@@ -187,6 +187,11 @@ OPTIONS:
    --storage-tier value             The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm (default: "Standard") [$STORAGE_TIER]
    --upload-concurrency value       Concurrency for multipart uploads. (default: 10) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value            Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

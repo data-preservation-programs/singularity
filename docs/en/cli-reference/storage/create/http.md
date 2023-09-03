@@ -6,7 +6,7 @@ NAME:
    singularity storage create http - HTTP
 
 USAGE:
-   singularity storage create http [command options] <name> <path>
+   singularity storage create http [command options] [arguments...]
 
 DESCRIPTION:
    --url
@@ -66,6 +66,11 @@ OPTIONS:
    --headers value  Set HTTP headers for all transactions. [$HEADERS]
    --no-head        Don't use HEAD requests. (default: false) [$NO_HEAD]
    --no-slash       Set this if the site doesn't end directories with /. (default: false) [$NO_SLASH]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

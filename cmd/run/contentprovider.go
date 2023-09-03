@@ -3,7 +3,6 @@ package run
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/urfave/cli/v2"
 )
@@ -49,9 +48,6 @@ var ContentProviderCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		if err := model.AutoMigrate(db); err != nil {
-			return errors.WithStack(err)
-		}
 
 		config := contentprovider.Config{
 			HTTP: contentprovider.HTTPConfig{

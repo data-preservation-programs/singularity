@@ -6,7 +6,7 @@ NAME:
    singularity storage create dropbox - Dropbox
 
 USAGE:
-   singularity storage create dropbox [command options] <name> <path>
+   singularity storage create dropbox [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -160,6 +160,11 @@ OPTIONS:
    --shared-folders              Instructs rclone to work on shared folders. (default: false) [$SHARED_FOLDERS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value             Token server url. [$TOKEN_URL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

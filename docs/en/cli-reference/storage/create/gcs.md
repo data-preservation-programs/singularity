@@ -6,7 +6,7 @@ NAME:
    singularity storage create gcs - Google Cloud Storage (this is not Google Drive)
 
 USAGE:
-   singularity storage create gcs [command options] <name> <path>
+   singularity storage create gcs [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -217,6 +217,11 @@ OPTIONS:
    --no-check-bucket  If set, don't attempt to check the bucket exists or create it. (default: false) [$NO_CHECK_BUCKET]
    --token value      OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value  Token server url. [$TOKEN_URL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

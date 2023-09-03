@@ -6,7 +6,7 @@ NAME:
    singularity storage create azureblob - Microsoft Azure Blob Storage
 
 USAGE:
-   singularity storage create azureblob [command options] <name> <path>
+   singularity storage create azureblob [command options] [arguments...]
 
 DESCRIPTION:
    --account
@@ -303,6 +303,11 @@ OPTIONS:
    --use-emulator                   Uses local storage emulator if provided as 'true'. (default: false) [$USE_EMULATOR]
    --use-msi                        Use a managed service identity to authenticate (only works in Azure). (default: false) [$USE_MSI]
    --username value                 User name (usually an email address) [$USERNAME]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

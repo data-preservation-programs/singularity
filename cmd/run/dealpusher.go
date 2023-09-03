@@ -3,7 +3,6 @@ package run
 import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
@@ -27,9 +26,6 @@ var DealPusherCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		if err := model.AutoMigrate(db); err != nil {
-			return errors.WithStack(err)
-		}
 
 		lotusAPI := c.String("lotus-api")
 		lotusToken := c.String("lotus-token")

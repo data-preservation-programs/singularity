@@ -19,8 +19,8 @@ import (
 // swagger:model deal.ListDealRequest
 type DealListDealRequest struct {
 
-	// preparation ID filter
-	Preparations []int64 `json:"preparations"`
+	// preparation ID or name filter
+	Preparations []string `json:"preparations"`
 
 	// provider filter
 	Providers []string `json:"providers"`
@@ -28,7 +28,7 @@ type DealListDealRequest struct {
 	// schedule id filter
 	Schedules []int64 `json:"schedules"`
 
-	// source filter
+	// source ID or name filter
 	Sources []string `json:"sources"`
 
 	// state filter

@@ -6,7 +6,7 @@ NAME:
    singularity storage create netstorage - Akamai NetStorage
 
 USAGE:
-   singularity storage create netstorage [command options] <name> <path>
+   singularity storage create netstorage [command options] [arguments...]
 
 DESCRIPTION:
    --protocol
@@ -42,6 +42,11 @@ OPTIONS:
    Advanced
 
    --protocol value  Select between HTTP or HTTPS protocol. (default: "https") [$PROTOCOL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

@@ -6,7 +6,7 @@ NAME:
    singularity storage create zoho - Zoho
 
 USAGE:
-   singularity storage create zoho [command options] <name> <path>
+   singularity storage create zoho [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -65,6 +65,11 @@ OPTIONS:
    --encoding value   The encoding for the backend. (default: "Del,Ctl,InvalidUtf8") [$ENCODING]
    --token value      OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value  Token server url. [$TOKEN_URL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

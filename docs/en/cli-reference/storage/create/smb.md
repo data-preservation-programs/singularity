@@ -6,7 +6,7 @@ NAME:
    singularity storage create smb - SMB / CIFS
 
 USAGE:
-   singularity storage create smb [command options] <name> <path>
+   singularity storage create smb [command options] [arguments...]
 
 DESCRIPTION:
    --host
@@ -75,6 +75,11 @@ OPTIONS:
    --encoding value      The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
    --hide-special-share  Hide special shares (e.g. print$) which users aren't supposed to access. (default: true) [$HIDE_SPECIAL_SHARE]
    --idle-timeout value  Max time before closing idle connections. (default: "1m0s") [$IDLE_TIMEOUT]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

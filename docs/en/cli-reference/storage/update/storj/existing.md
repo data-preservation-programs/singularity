@@ -6,7 +6,7 @@ NAME:
    singularity storage update storj existing - Use an existing access grant.
 
 USAGE:
-   singularity storage update storj existing [command options] <name>
+   singularity storage update storj existing [command options] <name|id>
 
 DESCRIPTION:
    --access-grant

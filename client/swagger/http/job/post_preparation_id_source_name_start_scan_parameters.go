@@ -64,13 +64,13 @@ type PostPreparationIDSourceNameStartScanParams struct {
 
 	/* ID.
 
-	   Preparation ID
+	   Preparation ID or name
 	*/
 	ID int64
 
 	/* Name.
 
-	   Storage name
+	   Storage ID or name
 	*/
 	Name string
 

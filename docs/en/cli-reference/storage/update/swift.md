@@ -6,7 +6,7 @@ NAME:
    singularity storage update swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
 
 USAGE:
-   singularity storage update swift [command options] <name>
+   singularity storage update swift [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

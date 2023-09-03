@@ -6,7 +6,7 @@ NAME:
    singularity storage create internetarchive - Internet Archive
 
 USAGE:
-   singularity storage create internetarchive [command options] <name> <path>
+   singularity storage create internetarchive [command options] [arguments...]
 
 DESCRIPTION:
    --access-key-id
@@ -60,6 +60,11 @@ OPTIONS:
    --endpoint value        IAS3 Endpoint. (default: "https://s3.us.archive.org") [$ENDPOINT]
    --front-endpoint value  Host of InternetArchive Frontend. (default: "https://archive.org") [$FRONT_ENDPOINT]
    --wait-archive value    Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish. (default: "0s") [$WAIT_ARCHIVE]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

@@ -6,7 +6,7 @@ NAME:
    singularity storage create fichier - 1Fichier
 
 USAGE:
-   singularity storage create fichier [command options] <name> <path>
+   singularity storage create fichier [command options] [arguments...]
 
 DESCRIPTION:
    --api-key
@@ -37,6 +37,11 @@ OPTIONS:
    --file-password value    If you want to download a shared file that is password protected, add this parameter. [$FILE_PASSWORD]
    --folder-password value  If you want to list the files in a shared folder that is password protected, add this parameter. [$FOLDER_PASSWORD]
    --shared-folder value    If you want to download a shared folder, add this parameter. [$SHARED_FOLDER]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

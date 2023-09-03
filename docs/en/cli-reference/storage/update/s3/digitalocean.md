@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 digitalocean - DigitalOcean Spaces
 
 USAGE:
-   singularity storage update s3 digitalocean [command options] <name>
+   singularity storage update s3 digitalocean [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

@@ -6,7 +6,7 @@ NAME:
    singularity storage update mailru - Mail.ru Cloud
 
 USAGE:
-   singularity storage update mailru [command options] <name>
+   singularity storage update mailru [command options] <name|id>
 
 DESCRIPTION:
    --user

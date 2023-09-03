@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 netease - Netease Object Storage (NOS)
 
 USAGE:
-   singularity storage update s3 netease [command options] <name>
+   singularity storage update s3 netease [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

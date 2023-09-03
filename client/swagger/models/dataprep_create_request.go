@@ -26,6 +26,10 @@ type DataprepCreateRequest struct {
 	// Required: true
 	MaxSize *string `json:"maxSize"`
 
+	// Name of the preparation
+	// Required: true
+	Name *string `json:"name"`
+
 	// Name of Output storage systems to be used for the output
 	OutputStorages []string `json:"outputStorages"`
 
@@ -45,6 +49,10 @@ func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateSourceStorages(formats); err != nil {
 		res = append(res, err)
 	}
@@ -58,6 +66,15 @@ func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
 func (m *DataprepCreateRequest) validateMaxSize(formats strfmt.Registry) error {
 
 	if err := validate.Required("maxSize", "body", m.MaxSize); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DataprepCreateRequest) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
 		return err
 	}
 

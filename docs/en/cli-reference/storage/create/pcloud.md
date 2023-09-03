@@ -6,7 +6,7 @@ NAME:
    singularity storage create pcloud - Pcloud
 
 USAGE:
-   singularity storage create pcloud [command options] <name> <path>
+   singularity storage create pcloud [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -78,6 +78,11 @@ OPTIONS:
    --token value           OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value       Token server url. [$TOKEN_URL]
    --username value        Your pcloud username. [$USERNAME]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

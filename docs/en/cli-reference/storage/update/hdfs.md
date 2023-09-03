@@ -6,7 +6,7 @@ NAME:
    singularity storage update hdfs - Hadoop distributed file system
 
 USAGE:
-   singularity storage update hdfs [command options] <name>
+   singularity storage update hdfs [command options] <name|id>
 
 DESCRIPTION:
    --namenode

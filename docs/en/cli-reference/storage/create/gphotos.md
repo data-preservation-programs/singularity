@@ -6,7 +6,7 @@ NAME:
    singularity storage create gphotos - Google Photos
 
 USAGE:
-   singularity storage create gphotos [command options] <name> <path>
+   singularity storage create gphotos [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -86,6 +86,11 @@ OPTIONS:
    --start-year value  Year limits the photos to be downloaded to those which are uploaded after the given year. (default: 2000) [$START_YEAR]
    --token value       OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value   Token server url. [$TOKEN_URL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

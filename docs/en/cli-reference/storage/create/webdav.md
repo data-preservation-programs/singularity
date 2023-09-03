@@ -6,7 +6,7 @@ NAME:
    singularity storage create webdav - WebDAV
 
 USAGE:
-   singularity storage create webdav [command options] <name> <path>
+   singularity storage create webdav [command options] [arguments...]
 
 DESCRIPTION:
    --url
@@ -72,6 +72,11 @@ OPTIONS:
    --bearer-token-command value  Command to run to get a bearer token. [$BEARER_TOKEN_COMMAND]
    --encoding value              The encoding for the backend. [$ENCODING]
    --headers value               Set HTTP headers for all transactions. [$HEADERS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

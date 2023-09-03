@@ -6,7 +6,7 @@ NAME:
    singularity storage update yandex - Yandex Disk
 
 USAGE:
-   singularity storage update yandex [command options] <name>
+   singularity storage update yandex [command options] <name|id>
 
 DESCRIPTION:
    --client-id

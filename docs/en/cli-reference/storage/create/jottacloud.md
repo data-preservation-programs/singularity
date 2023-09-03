@@ -6,7 +6,7 @@ NAME:
    singularity storage create jottacloud - Jottacloud
 
 USAGE:
-   singularity storage create jottacloud [command options] <name> <path>
+   singularity storage create jottacloud [command options] [arguments...]
 
 DESCRIPTION:
    --md5-memory-limit
@@ -43,6 +43,11 @@ OPTIONS:
    --no-versions                Avoid server side versioning by deleting files and recreating files instead of overwriting them. (default: false) [$NO_VERSIONS]
    --trashed-only               Only show files that are in the trash. (default: false) [$TRASHED_ONLY]
    --upload-resume-limit value  Files bigger than this can be resumed if the upload fail's. (default: "10Mi") [$UPLOAD_RESUME_LIMIT]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

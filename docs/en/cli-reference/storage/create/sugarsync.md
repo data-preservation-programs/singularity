@@ -6,7 +6,7 @@ NAME:
    singularity storage create sugarsync - Sugarsync
 
 USAGE:
-   singularity storage create sugarsync [command options] <name> <path>
+   singularity storage create sugarsync [command options] [arguments...]
 
 DESCRIPTION:
    --app-id
@@ -80,6 +80,11 @@ OPTIONS:
    --refresh-token value         Sugarsync refresh token. [$REFRESH_TOKEN]
    --root-id value               Sugarsync root id. [$ROOT_ID]
    --user value                  Sugarsync user. [$USER]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

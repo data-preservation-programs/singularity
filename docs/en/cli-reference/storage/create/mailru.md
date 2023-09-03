@@ -6,7 +6,7 @@ NAME:
    singularity storage create mailru - Mail.ru Cloud
 
 USAGE:
-   singularity storage create mailru [command options] <name> <path>
+   singularity storage create mailru [command options] [arguments...]
 
 DESCRIPTION:
    --user
@@ -107,6 +107,11 @@ OPTIONS:
    --speedup-max-disk value       This option allows you to disable speedup (put by hash) for large files. (default: "3Gi") [$SPEEDUP_MAX_DISK]
    --speedup-max-memory value     Files larger than the size given below will always be hashed on disk. (default: "32Mi") [$SPEEDUP_MAX_MEMORY]
    --user-agent value             HTTP user agent used internally by client. [$USER_AGENT]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

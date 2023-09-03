@@ -6,7 +6,7 @@ NAME:
    singularity storage create filefabric - Enterprise File Fabric
 
 USAGE:
-   singularity storage create filefabric [command options] <name> <path>
+   singularity storage create filefabric [command options] [arguments...]
 
 DESCRIPTION:
    --url
@@ -77,6 +77,11 @@ OPTIONS:
    --token value         Session Token. [$TOKEN]
    --token-expiry value  Token expiry time. [$TOKEN_EXPIRY]
    --version value       Version read from the file fabric. [$VERSION]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

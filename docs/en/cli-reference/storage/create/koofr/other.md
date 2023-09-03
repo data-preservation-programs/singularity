@@ -6,7 +6,7 @@ NAME:
    singularity storage create koofr other - Any other Koofr API compatible storage service
 
 USAGE:
-   singularity storage create koofr other [command options] <name> <path>
+   singularity storage create koofr other [command options] [arguments...]
 
 DESCRIPTION:
    --endpoint
@@ -45,6 +45,11 @@ OPTIONS:
    --encoding value  The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --mountid value   Mount ID of the mount to use. [$MOUNTID]
    --setmtime        Does the backend support setting modification time. (default: true) [$SETMTIME]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

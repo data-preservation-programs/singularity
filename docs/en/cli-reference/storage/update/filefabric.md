@@ -6,7 +6,7 @@ NAME:
    singularity storage update filefabric - Enterprise File Fabric
 
 USAGE:
-   singularity storage update filefabric [command options] <name>
+   singularity storage update filefabric [command options] <name|id>
 
 DESCRIPTION:
    --url

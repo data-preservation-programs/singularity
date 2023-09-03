@@ -6,7 +6,7 @@ NAME:
    singularity storage create onedrive - Microsoft OneDrive
 
 USAGE:
-   singularity storage create onedrive [command options] <name> <path>
+   singularity storage create onedrive [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -202,6 +202,11 @@ OPTIONS:
    --server-side-across-configs  Allow server-side operations (e.g. copy) to work across different onedrive configs. (default: false) [$SERVER_SIDE_ACROSS_CONFIGS]
    --token value                 OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value             Token server url. [$TOKEN_URL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

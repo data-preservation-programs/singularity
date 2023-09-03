@@ -6,7 +6,7 @@ NAME:
    singularity storage update smb - SMB / CIFS
 
 USAGE:
-   singularity storage update smb [command options] <name>
+   singularity storage update smb [command options] <name|id>
 
 DESCRIPTION:
    --host

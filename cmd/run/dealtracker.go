@@ -5,7 +5,6 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealtracker"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
@@ -41,9 +40,6 @@ var DealTrackerCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		if err := model.AutoMigrate(db); err != nil {
-			return errors.WithStack(err)
-		}
 
 		lotusAPI := c.String("lotus-api")
 		lotusToken := c.String("lotus-token")

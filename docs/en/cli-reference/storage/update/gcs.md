@@ -6,7 +6,7 @@ NAME:
    singularity storage update gcs - Google Cloud Storage (this is not Google Drive)
 
 USAGE:
-   singularity storage update gcs [command options] <name>
+   singularity storage update gcs [command options] <name|id>
 
 DESCRIPTION:
    --client-id

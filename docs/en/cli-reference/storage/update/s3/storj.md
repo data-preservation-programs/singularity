@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 storj - Storj (S3 Compatible Gateway)
 
 USAGE:
-   singularity storage update s3 storj [command options] <name>
+   singularity storage update s3 storj [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

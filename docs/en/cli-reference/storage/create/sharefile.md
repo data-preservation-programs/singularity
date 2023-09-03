@@ -6,7 +6,7 @@ NAME:
    singularity storage create sharefile - Citrix Sharefile
 
 USAGE:
-   singularity storage create sharefile [command options] <name> <path>
+   singularity storage create sharefile [command options] [arguments...]
 
 DESCRIPTION:
    --upload-cutoff
@@ -58,6 +58,11 @@ OPTIONS:
    --encoding value       The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot") [$ENCODING]
    --endpoint value       Endpoint for API calls. [$ENDPOINT]
    --upload-cutoff value  Cutoff for switching to multipart upload. (default: "128Mi") [$UPLOAD_CUTOFF]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

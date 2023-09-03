@@ -6,7 +6,7 @@ NAME:
    singularity storage create mega - Mega
 
 USAGE:
-   singularity storage create mega [command options] <name> <path>
+   singularity storage create mega [command options] [arguments...]
 
 DESCRIPTION:
    --user
@@ -54,6 +54,11 @@ OPTIONS:
    --encoding value  The encoding for the backend. (default: "Slash,InvalidUtf8,Dot") [$ENCODING]
    --hard-delete     Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
    --use-https       Use HTTPS for transfers. (default: false) [$USE_HTTPS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

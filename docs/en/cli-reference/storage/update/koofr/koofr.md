@@ -6,7 +6,7 @@ NAME:
    singularity storage update koofr koofr - Koofr, https://app.koofr.net/
 
 USAGE:
-   singularity storage update koofr koofr [command options] <name>
+   singularity storage update koofr koofr [command options] <name|id>
 
 DESCRIPTION:
    --mountid

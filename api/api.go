@@ -28,7 +28,6 @@ import (
 	"github.com/data-preservation-programs/singularity/dashboard"
 	"github.com/data-preservation-programs/singularity/database"
 	_ "github.com/data-preservation-programs/singularity/docs/swagger"
-	"github.com/data-preservation-programs/singularity/model"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -99,9 +98,6 @@ type APIParams struct {
 func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	db, closer, err := database.OpenWithLogger(params.ConnString)
 	if err != nil {
-		return Server{}, errors.WithStack(err)
-	}
-	if err := model.AutoMigrate(db.WithContext(ctx)); err != nil {
 		return Server{}, errors.WithStack(err)
 	}
 	h, err := util.InitHost(nil)

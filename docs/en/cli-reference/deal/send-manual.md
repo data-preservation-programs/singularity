@@ -29,11 +29,15 @@ OPTIONS:
 
    Deal Proposal
 
+   --client value                 Client address to send deal from
    --duration value, -d value     Duration in epoch or in duration format, i.e. 1500000, 2400h (default: 12840h[535 days])
    --keep-unsealed                Whether to keep unsealed copy (default: true)
+   --piece-cid value              Piece CID of the deal
+   --piece-size value             Piece Size of the deal (default: "32GiB")
    --price-per-deal value         Price in FIL per deal (default: 0)
    --price-per-gb value           Price in FIL  per GiB (default: 0)
    --price-per-gb-epoch value     Price in FIL per GiB per epoch (default: 0)
+   --provider value               Storage Provider ID to send deal to
    --root-cid value               Root CID that is required as part of the deal proposal, if empty, will be set to empty CID (default: Empty CID)
    --start-delay value, -s value  Deal start delay in epoch or in duration format, i.e. 1000, 72h (default: 72h[3 days])
    --verified                     Whether to propose deals as verified (default: true)

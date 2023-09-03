@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 idrive - IDrive e2
 
 USAGE:
-   singularity storage update s3 idrive [command options] <name>
+   singularity storage update s3 idrive [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

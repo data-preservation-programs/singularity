@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 cloudflare - Cloudflare R2 Storage
 
 USAGE:
-   singularity storage update s3 cloudflare [command options] <name>
+   singularity storage update s3 cloudflare [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

@@ -6,7 +6,7 @@ NAME:
    singularity prep detach-wallet - Detach a wallet to a preparation
 
 USAGE:
-   singularity prep detach-wallet [command options] <preparation_id> <wallet_id>
+   singularity prep detach-wallet [command options] <preparation id|name> <wallet_id>
 
 CATEGORY:
    Wallet Management

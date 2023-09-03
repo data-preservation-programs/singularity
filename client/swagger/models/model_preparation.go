@@ -29,6 +29,9 @@ type ModelPreparation struct {
 	// max size
 	MaxSize int64 `json:"maxSize,omitempty"`
 
+	// name
+	Name string `json:"name,omitempty"`
+
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`
 

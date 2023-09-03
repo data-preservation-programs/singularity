@@ -6,7 +6,7 @@ NAME:
    singularity storage update qingstor - QingCloud Object Storage
 
 USAGE:
-   singularity storage update qingstor [command options] <name>
+   singularity storage update qingstor [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

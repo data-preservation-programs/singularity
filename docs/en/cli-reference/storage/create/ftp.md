@@ -6,7 +6,7 @@ NAME:
    singularity storage create ftp - FTP
 
 USAGE:
-   singularity storage create ftp [command options] <name> <path>
+   singularity storage create ftp [command options] [arguments...]
 
 DESCRIPTION:
    --host
@@ -140,6 +140,11 @@ OPTIONS:
    --shut-timeout value    Maximum time to wait for data connection closing status. (default: "1m0s") [$SHUT_TIMEOUT]
    --tls-cache-size value  Size of TLS session cache for all control and data connections. (default: 32) [$TLS_CACHE_SIZE]
    --writing-mdtm          Use MDTM to set modification time (VsFtpd quirk) (default: false) [$WRITING_MDTM]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

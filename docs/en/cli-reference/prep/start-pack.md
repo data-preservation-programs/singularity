@@ -6,7 +6,7 @@ NAME:
    singularity prep start-pack - Start / Restart all pack jobs or a specific one
 
 USAGE:
-   singularity prep start-pack [command options] <preparation_id> <storage_name> [job_id]
+   singularity prep start-pack [command options] <preparation id|name> <storage id|name> [job_id]
 
 CATEGORY:
    Job Management

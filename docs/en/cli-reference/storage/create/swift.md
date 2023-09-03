@@ -6,7 +6,7 @@ NAME:
    singularity storage create swift - OpenStack Swift (Rackspace Cloud Files, Memset Memstore, OVH)
 
 USAGE:
-   singularity storage create swift [command options] <name> <path>
+   singularity storage create swift [command options] [arguments...]
 
 DESCRIPTION:
    --env-auth
@@ -172,6 +172,11 @@ OPTIONS:
    --leave-parts-on-error  If true avoid calling abort upload on a failure. (default: false) [$LEAVE_PARTS_ON_ERROR]
    --no-chunk              Don't chunk files during streaming upload. (default: false) [$NO_CHUNK]
    --no-large-objects      Disable support for static and dynamic large objects (default: false) [$NO_LARGE_OBJECTS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

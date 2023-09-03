@@ -211,7 +211,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -257,14 +257,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Output storage name",
+                        "description": "Output storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -305,14 +305,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Output storage name",
+                        "description": "Output storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -355,7 +355,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -399,7 +399,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -451,14 +451,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Source storage name",
+                        "description": "Source storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -501,14 +501,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Source storage name",
+                        "description": "Source storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -558,14 +558,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -608,14 +608,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -658,14 +658,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -715,14 +715,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -765,14 +765,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -815,14 +815,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -865,14 +865,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -922,14 +922,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -972,7 +972,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1015,7 +1015,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1063,7 +1063,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Preparation ID",
+                        "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -4590,7 +4590,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -4628,7 +4628,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -4680,7 +4680,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Storage name",
+                        "description": "Storage ID or name",
                         "name": "name",
                         "in": "path",
                         "required": true
@@ -4916,6 +4916,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "maxSize",
+                "name",
                 "sourceStorages"
             ],
             "properties": {
@@ -4928,6 +4929,10 @@ const docTemplate = `{
                     "description": "Maximum size of the CAR files to be created",
                     "type": "string",
                     "default": "31.5GiB"
+                },
+                "name": {
+                    "description": "Name of the preparation",
+                    "type": "string"
                 },
                 "outputStorages": {
                     "description": "Name of Output storage systems to be used for the output",
@@ -5050,10 +5055,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "preparations": {
-                    "description": "preparation ID filter",
+                    "description": "preparation ID or name filter",
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "string"
                     }
                 },
                 "providers": {
@@ -5071,7 +5076,7 @@ const docTemplate = `{
                     }
                 },
                 "sources": {
-                    "description": "source filter",
+                    "description": "source ID or name filter",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -5374,6 +5379,9 @@ const docTemplate = `{
                 "maxSize": {
                     "type": "integer"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "pieceSize": {
                     "type": "integer"
                 },
@@ -5580,9 +5588,9 @@ const docTemplate = `{
                     "description": "Notes",
                     "type": "string"
                 },
-                "preparationId": {
-                    "description": "Preparation ID",
-                    "type": "integer"
+                "preparation": {
+                    "description": "Preparation ID or name",
+                    "type": "string"
                 },
                 "pricePerDeal": {
                     "description": "Price in FIL per deal",

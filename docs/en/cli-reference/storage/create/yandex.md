@@ -6,7 +6,7 @@ NAME:
    singularity storage create yandex - Yandex Disk
 
 USAGE:
-   singularity storage create yandex [command options] <name> <path>
+   singularity storage create yandex [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -53,6 +53,11 @@ OPTIONS:
    --hard-delete      Delete files permanently rather than putting them into the trash. (default: false) [$HARD_DELETE]
    --token value      OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value  Token server url. [$TOKEN_URL]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

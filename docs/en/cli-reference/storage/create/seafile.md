@@ -6,7 +6,7 @@ NAME:
    singularity storage create seafile - seafile
 
 USAGE:
-   singularity storage create seafile [command options] <name> <path>
+   singularity storage create seafile [command options] [arguments...]
 
 DESCRIPTION:
    --url
@@ -60,6 +60,11 @@ OPTIONS:
 
    --create-library  Should rclone create a library if it doesn't exist. (default: false) [$CREATE_LIBRARY]
    --encoding value  The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8") [$ENCODING]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

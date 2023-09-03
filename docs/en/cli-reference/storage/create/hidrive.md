@@ -6,7 +6,7 @@ NAME:
    singularity storage create hidrive - HiDrive
 
 USAGE:
-   singularity storage create hidrive [command options] <name> <path>
+   singularity storage create hidrive [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -127,6 +127,11 @@ OPTIONS:
    --token-url value                Token server url. [$TOKEN_URL]
    --upload-concurrency value       Concurrency for chunked uploads. (default: 4) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value            Cutoff/Threshold for chunked uploads. (default: "96Mi") [$UPLOAD_CUTOFF]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

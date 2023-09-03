@@ -6,7 +6,7 @@ NAME:
    singularity storage update sftp - SSH/SFTP
 
 USAGE:
-   singularity storage update sftp [command options] <name>
+   singularity storage update sftp [command options] <name|id>
 
 DESCRIPTION:
    --host

@@ -6,7 +6,7 @@ NAME:
    singularity storage update acd - Amazon Drive
 
 USAGE:
-   singularity storage update acd [command options] <name>
+   singularity storage update acd [command options] <name|id>
 
 DESCRIPTION:
    --client-id

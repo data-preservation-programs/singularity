@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 tencentcos - Tencent Cloud Object Storage (COS)
 
 USAGE:
-   singularity storage update s3 tencentcos [command options] <name>
+   singularity storage update s3 tencentcos [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

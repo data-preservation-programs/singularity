@@ -6,7 +6,7 @@ NAME:
    singularity storage update sugarsync - Sugarsync
 
 USAGE:
-   singularity storage update sugarsync [command options] <name>
+   singularity storage update sugarsync [command options] <name|id>
 
 DESCRIPTION:
    --app-id

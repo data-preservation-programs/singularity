@@ -6,7 +6,7 @@ NAME:
    singularity storage create hdfs - Hadoop distributed file system
 
 USAGE:
-   singularity storage create hdfs [command options] <name> <path>
+   singularity storage create hdfs [command options] [arguments...]
 
 DESCRIPTION:
    --namenode
@@ -54,6 +54,11 @@ OPTIONS:
    --data-transfer-protection value  Kerberos data transfer protection: authentication|integrity|privacy. [$DATA_TRANSFER_PROTECTION]
    --encoding value                  The encoding for the backend. (default: "Slash,Colon,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --service-principal-name value    Kerberos service principal name for the namenode. [$SERVICE_PRINCIPAL_NAME]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

@@ -6,7 +6,7 @@ NAME:
    singularity prep start-daggen - Start a DAG generation that creates a snapshot of all folder structures
 
 USAGE:
-   singularity prep start-daggen [command options] <preparation_id> <storage_name>
+   singularity prep start-daggen [command options] <preparation id|name> <storage id|name>
 
 CATEGORY:
    Job Management

@@ -63,7 +63,7 @@ type GetStorageNameExplorePathParams struct {
 
 	/* Name.
 
-	   Storage name
+	   Storage ID or name
 	*/
 	Name string
 

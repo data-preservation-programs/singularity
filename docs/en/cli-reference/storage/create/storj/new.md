@@ -6,7 +6,7 @@ NAME:
    singularity storage create storj new - Create a new access grant from satellite address, API key, and passphrase.
 
 USAGE:
-   singularity storage create storj new [command options] <name> <path>
+   singularity storage create storj new [command options] [arguments...]
 
 DESCRIPTION:
    --satellite-address
@@ -29,9 +29,15 @@ DESCRIPTION:
 
 
 OPTIONS:
-   --satellite-address value  Satellite address. (default: "us1.storj.io") [$SATELLITE_ADDRESS]
    --api-key value            API key. [$API_KEY]
-   --passphrase value         Encryption passphrase. [$PASSPHRASE]
    --help, -h                 show help
+   --passphrase value         Encryption passphrase. [$PASSPHRASE]
+   --satellite-address value  Satellite address. (default: "us1.storj.io") [$SATELLITE_ADDRESS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
+
 ```
 {% endcode %}

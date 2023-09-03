@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 ionos - IONOS Cloud
 
 USAGE:
-   singularity storage create s3 ionos [command options] <name> <path>
+   singularity storage create s3 ionos [command options] [arguments...]
 
 DESCRIPTION:
    --env-auth
@@ -425,6 +425,11 @@ OPTIONS:
    --v2-auth                        If true use v2 authentication. (default: false) [$V2_AUTH]
    --version-at value               Show file versions as they were at the specified time. (default: "off") [$VERSION_AT]
    --versions                       Include old versions in directory listings. (default: false) [$VERSIONS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

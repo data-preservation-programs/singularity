@@ -6,7 +6,7 @@ NAME:
    singularity storage update sharefile - Citrix Sharefile
 
 USAGE:
-   singularity storage update sharefile [command options] <name>
+   singularity storage update sharefile [command options] <name|id>
 
 DESCRIPTION:
    --upload-cutoff

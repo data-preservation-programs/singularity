@@ -6,7 +6,7 @@ NAME:
    singularity storage create qingstor - QingCloud Object Storage
 
 USAGE:
-   singularity storage create qingstor [command options] <name> <path>
+   singularity storage create qingstor [command options] [arguments...]
 
 DESCRIPTION:
    --env-auth
@@ -101,6 +101,11 @@ OPTIONS:
    --encoding value            The encoding for the backend. (default: "Slash,Ctl,InvalidUtf8") [$ENCODING]
    --upload-concurrency value  Concurrency for multipart uploads. (default: 1) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value       Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

@@ -6,7 +6,7 @@ NAME:
    singularity prep attach-output - Attach a output storage to a preparation
 
 USAGE:
-   singularity prep attach-output [command options] <preparation_id> <storage_name>
+   singularity prep attach-output [command options] <preparation id|name> <storage id|name>
 
 CATEGORY:
    Preparation Management

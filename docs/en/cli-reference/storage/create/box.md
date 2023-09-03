@@ -6,7 +6,7 @@ NAME:
    singularity storage create box - Box
 
 USAGE:
-   singularity storage create box [command options] <name> <path>
+   singularity storage create box [command options] [arguments...]
 
 DESCRIPTION:
    --client-id
@@ -91,6 +91,11 @@ OPTIONS:
    --token value           OAuth Access Token as a JSON blob. [$TOKEN]
    --token-url value       Token server url. [$TOKEN_URL]
    --upload-cutoff value   Cutoff for switching to multipart upload (>= 50 MiB). (default: "50Mi") [$UPLOAD_CUTOFF]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

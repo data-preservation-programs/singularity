@@ -6,7 +6,7 @@ NAME:
    singularity prep pause-pack - Pause all pack jobs or a specific one
 
 USAGE:
-   singularity prep pause-pack [command options] <preparation_id> <storage_name> [job_id]
+   singularity prep pause-pack [command options] <preparation id|name> <storage id|name> [job_id]
 
 CATEGORY:
    Job Management

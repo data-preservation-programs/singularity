@@ -6,7 +6,7 @@ NAME:
    singularity storage update storj new - Create a new access grant from satellite address, API key, and passphrase.
 
 USAGE:
-   singularity storage update storj new [command options] <name>
+   singularity storage update storj new [command options] <name|id>
 
 DESCRIPTION:
    --satellite-address

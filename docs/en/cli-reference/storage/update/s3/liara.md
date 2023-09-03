@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 liara - Liara Object Storage
 
 USAGE:
-   singularity storage update s3 liara [command options] <name>
+   singularity storage update s3 liara [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

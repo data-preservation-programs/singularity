@@ -6,7 +6,7 @@ NAME:
    singularity storage create sia - Sia Decentralized Cloud
 
 USAGE:
-   singularity storage create sia [command options] <name> <path>
+   singularity storage create sia [command options] [arguments...]
 
 DESCRIPTION:
    --api-url
@@ -40,6 +40,11 @@ OPTIONS:
 
    --encoding value    The encoding for the backend. (default: "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --user-agent value  Siad User Agent (default: "Sia-Agent") [$USER_AGENT]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

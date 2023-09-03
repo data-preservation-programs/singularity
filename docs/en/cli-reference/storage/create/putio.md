@@ -6,7 +6,7 @@ NAME:
    singularity storage create putio - Put.io
 
 USAGE:
-   singularity storage create putio [command options] <name> <path>
+   singularity storage create putio [command options] [arguments...]
 
 DESCRIPTION:
    --encoding
@@ -21,6 +21,11 @@ OPTIONS:
    Advanced
 
    --encoding value  The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

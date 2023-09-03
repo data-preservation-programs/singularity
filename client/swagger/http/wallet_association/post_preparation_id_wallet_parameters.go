@@ -64,7 +64,7 @@ type PostPreparationIDWalletParams struct {
 
 	/* ID.
 
-	   Preparation ID
+	   Preparation ID or name
 	*/
 	ID int64
 

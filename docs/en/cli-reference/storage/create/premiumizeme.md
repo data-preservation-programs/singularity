@@ -6,7 +6,7 @@ NAME:
    singularity storage create premiumizeme - premiumize.me
 
 USAGE:
-   singularity storage create premiumizeme [command options] <name> <path>
+   singularity storage create premiumizeme [command options] [arguments...]
 
 DESCRIPTION:
    --api-key
@@ -28,6 +28,11 @@ OPTIONS:
    Advanced
 
    --encoding value  The encoding for the backend. (default: "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

@@ -6,7 +6,7 @@ NAME:
    singularity storage create opendrive - OpenDrive
 
 USAGE:
-   singularity storage create opendrive [command options] <name> <path>
+   singularity storage create opendrive [command options] [arguments...]
 
 DESCRIPTION:
    --username
@@ -36,6 +36,11 @@ OPTIONS:
 
    --chunk-size value  Files will be uploaded in chunks this size. (default: "10Mi") [$CHUNK_SIZE]
    --encoding value    The encoding for the backend. (default: "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot") [$ENCODING]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

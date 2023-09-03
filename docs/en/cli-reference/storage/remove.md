@@ -6,7 +6,7 @@ NAME:
    singularity storage remove - Remove a storage connection if it's not used by any preparation
 
 USAGE:
-   singularity storage remove [command options] <name>
+   singularity storage remove [command options] <name|id>
 
 OPTIONS:
    --help, -h  show help

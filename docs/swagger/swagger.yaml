@@ -32,6 +32,9 @@ definitions:
         default: 31.5GiB
         description: Maximum size of the CAR files to be created
         type: string
+      name:
+        description: Name of the preparation
+        type: string
       outputStorages:
         description: Name of Output storage systems to be used for the output
         items:
@@ -48,6 +51,7 @@ definitions:
         type: array
     required:
     - maxSize
+    - name
     - sourceStorages
     type: object
   dataprep.DirEntry:
@@ -116,9 +120,9 @@ definitions:
   deal.ListDealRequest:
     properties:
       preparations:
-        description: preparation ID filter
+        description: preparation ID or name filter
         items:
-          type: integer
+          type: string
         type: array
       providers:
         description: provider filter
@@ -131,7 +135,7 @@ definitions:
           type: integer
         type: array
       sources:
-        description: source filter
+        description: source ID or name filter
         items:
           type: string
         type: array
@@ -356,6 +360,8 @@ definitions:
         type: integer
       maxSize:
         type: integer
+      name:
+        type: string
       pieceSize:
         type: integer
       updatedAt:
@@ -499,9 +505,9 @@ definitions:
       notes:
         description: Notes
         type: string
-      preparationId:
-        description: Preparation ID
-        type: integer
+      preparation:
+        description: Preparation ID or name
+        type: string
       pricePerDeal:
         default: 0
         description: Price in FIL per deal
@@ -7551,7 +7557,7 @@ paths:
   /preparation/{id}:
     get:
       parameters:
-      - description: ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
@@ -7581,12 +7587,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Output storage name
+      - description: Output storage ID or name
         in: path
         name: name
         required: true
@@ -7613,12 +7619,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Output storage name
+      - description: Output storage ID or name
         in: path
         name: name
         required: true
@@ -7646,7 +7652,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
@@ -7675,7 +7681,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
@@ -7709,12 +7715,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Source storage name
+      - description: Source storage ID or name
         in: path
         name: name
         required: true
@@ -7742,12 +7748,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Source storage name
+      - description: Source storage ID or name
         in: path
         name: name
         required: true
@@ -7780,12 +7786,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -7813,12 +7819,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -7846,12 +7852,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -7884,12 +7890,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -7917,12 +7923,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -7950,12 +7956,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -7983,12 +7989,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -8021,12 +8027,12 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
         type: integer
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -8054,7 +8060,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
@@ -8082,7 +8088,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
@@ -8114,7 +8120,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Preparation ID
+      - description: Preparation ID or name
         in: path
         name: id
         required: true
@@ -8303,7 +8309,7 @@ paths:
   /storage/{name}:
     delete:
       parameters:
-      - description: Name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -8326,7 +8332,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Name
+      - description: Storage ID or name
         in: path
         name: name
         required: true
@@ -8360,7 +8366,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Storage name
+      - description: Storage ID or name
         in: path
         name: name
         required: true

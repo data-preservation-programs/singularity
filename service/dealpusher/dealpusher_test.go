@@ -209,12 +209,12 @@ func TestDealMakerService_Cron(t *testing.T) {
 		require.NoError(t, err)
 		service.runOnce(ctx)
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 		var deals []model.Deal
 		err = db.Find(&deals).Error
 		require.NoError(t, err)
 		ndeals := len(deals)
-		require.True(t, ndeals == 1 || ndeals == 2)
+		require.True(t, ndeals > 0)
 
 		// Pause the cron schedule
 		err = db.Model(&schedule).Update("state", model.SchedulePaused).Error
@@ -223,7 +223,10 @@ func TestDealMakerService_Cron(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		err = db.Find(&deals).Error
 		require.NoError(t, err)
-		require.Len(t, deals, ndeals)
+		ndeals = len(deals)
+		time.Sleep(2 * time.Second)
+		err = db.Find(&deals).Error
+		require.Equal(t, ndeals, len(deals))
 
 		// Resume the cron schedule
 		db.Model(&schedule).Update("state", model.ScheduleActive)

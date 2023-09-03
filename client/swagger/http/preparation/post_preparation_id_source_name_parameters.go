@@ -64,13 +64,13 @@ type PostPreparationIDSourceNameParams struct {
 
 	/* ID.
 
-	   Preparation ID
+	   Preparation ID or name
 	*/
 	ID int64
 
 	/* Name.
 
-	   Source storage name
+	   Source storage ID or name
 	*/
 	Name string
 

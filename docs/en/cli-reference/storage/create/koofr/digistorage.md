@@ -6,7 +6,7 @@ NAME:
    singularity storage create koofr digistorage - Digi Storage, https://storage.rcs-rds.ro/
 
 USAGE:
-   singularity storage create koofr digistorage [command options] <name> <path>
+   singularity storage create koofr digistorage [command options] [arguments...]
 
 DESCRIPTION:
    --mountid
@@ -41,6 +41,11 @@ OPTIONS:
    --encoding value  The encoding for the backend. (default: "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot") [$ENCODING]
    --mountid value   Mount ID of the mount to use. [$MOUNTID]
    --setmtime        Does the backend support setting modification time. (default: true) [$SETMTIME]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

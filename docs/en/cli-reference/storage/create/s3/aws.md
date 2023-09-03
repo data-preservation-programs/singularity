@@ -6,7 +6,7 @@ NAME:
    singularity storage create s3 aws - Amazon Web Services (AWS) S3
 
 USAGE:
-   singularity storage create s3 aws [command options] <name> <path>
+   singularity storage create s3 aws [command options] [arguments...]
 
 DESCRIPTION:
    --env-auth
@@ -592,6 +592,11 @@ OPTIONS:
    --v2-auth                        If true use v2 authentication. (default: false) [$V2_AUTH]
    --version-at value               Show file versions as they were at the specified time. (default: "off") [$VERSION_AT]
    --versions                       Include old versions in directory listings. (default: false) [$VERSIONS]
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
 ```
 {% endcode %}

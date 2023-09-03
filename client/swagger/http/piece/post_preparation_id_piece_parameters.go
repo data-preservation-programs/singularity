@@ -66,7 +66,7 @@ type PostPreparationIDPieceParams struct {
 
 	/* ID.
 
-	   Preparation ID
+	   Preparation ID or name
 	*/
 	ID int64
 

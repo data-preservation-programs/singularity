@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 wasabi - Wasabi Object Storage
 
 USAGE:
-   singularity storage update s3 wasabi [command options] <name>
+   singularity storage update s3 wasabi [command options] <name|id>
 
 DESCRIPTION:
    --env-auth

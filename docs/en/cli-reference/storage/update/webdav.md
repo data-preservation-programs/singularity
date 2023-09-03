@@ -6,7 +6,7 @@ NAME:
    singularity storage update webdav - WebDAV
 
 USAGE:
-   singularity storage update webdav [command options] <name>
+   singularity storage update webdav [command options] <name|id>
 
 DESCRIPTION:
    --url

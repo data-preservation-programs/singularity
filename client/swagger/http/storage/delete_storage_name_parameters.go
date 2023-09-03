@@ -63,7 +63,7 @@ type DeleteStorageNameParams struct {
 
 	/* Name.
 
-	   Name
+	   Storage ID or name
 	*/
 	Name string
 

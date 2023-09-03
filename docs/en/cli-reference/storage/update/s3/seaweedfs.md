@@ -6,7 +6,7 @@ NAME:
    singularity storage update s3 seaweedfs - SeaweedFS S3
 
 USAGE:
-   singularity storage update s3 seaweedfs [command options] <name>
+   singularity storage update s3 seaweedfs [command options] <name|id>
 
 DESCRIPTION:
    --env-auth
