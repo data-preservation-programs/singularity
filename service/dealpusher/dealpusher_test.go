@@ -226,6 +226,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 		ndeals = len(deals)
 		time.Sleep(2 * time.Second)
 		err = db.Find(&deals).Error
+		require.NoError(t, err)
 		require.Equal(t, ndeals, len(deals))
 
 		// Resume the cron schedule

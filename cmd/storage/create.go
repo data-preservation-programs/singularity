@@ -4,12 +4,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 )
@@ -69,7 +69,7 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 	defer closer.Close()
 	name := c.String("name")
 	if name == "" {
-		name = gofakeit.Noun()
+		name = util.RandomName()
 	}
 	path := c.String("path")
 	if storageType == "local" {

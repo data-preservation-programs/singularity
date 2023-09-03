@@ -5,13 +5,13 @@ import (
 	"math/rand"
 	"path/filepath"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
@@ -69,7 +69,7 @@ var CreateCmd = &cli.Command{
 		db = db.WithContext(c.Context)
 		name := c.String("name")
 		if name == "" {
-			name = gofakeit.Noun()
+			name = util.RandomName()
 		}
 		sourceStorages := c.StringSlice("source")
 		outputStorages := c.StringSlice("output")

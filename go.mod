@@ -6,6 +6,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/bcicen/jstream v1.0.1
+	github.com/brianvoe/gofakeit/v6 v6.23.2
 	github.com/cockroachdb/errors v1.10.1-0.20230823160506-3a3abaca5af3
 	github.com/data-preservation-programs/table v0.0.3
 	github.com/dustin/go-humanize v1.0.1
@@ -92,7 +93,6 @@ require (
 	github.com/aws/aws-sdk-go v1.44.218 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/brianvoe/gofakeit/v6 v6.23.2 // indirect
 	github.com/calebcase/tmpfile v1.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect

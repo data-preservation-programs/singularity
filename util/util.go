@@ -2,8 +2,10 @@ package util
 
 import (
 	"crypto/rand"
+	"strings"
 	"unicode"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/cockroachdb/errors"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -149,3 +151,13 @@ func GenerateNewPeer() ([]byte, []byte, peer.ID, error) {
 }
 
 var ErrNotImplemented = errors.New("not implemented")
+
+func RandomName() string {
+	for {
+		candidate := gofakeit.AdjectiveDescriptive() + "_" + gofakeit.NounCollectiveThing()
+		if strings.ContainsRune(candidate, ' ') {
+			continue
+		}
+		return strings.ToLower(candidate)
+	}
+}
