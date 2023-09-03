@@ -44,7 +44,6 @@ require (
 	github.com/ipld/go-car v0.6.1
 	github.com/ipld/go-car/v2 v2.10.2-0.20230622090957-499d0c909d33
 	github.com/jellydator/ttlcache/v3 v3.0.1
-	github.com/jiro4989/textimg/v3 v3.1.9
 	github.com/joho/godotenv v1.5.1
 	github.com/jsign/go-filsigner v0.4.1
 	github.com/klauspost/compress v1.16.7
@@ -222,7 +221,6 @@ require (
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/miekg/dns v1.1.55 // indirect
@@ -242,7 +240,6 @@ require (
 	github.com/ncw/go-acd v0.0.0-20201019170801-fe55f33415b1 // indirect
 	github.com/ncw/swift/v2 v2.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
-	github.com/oliamb/cutter v0.2.2 // indirect
 	github.com/onsi/ginkgo/v2 v2.11.0 // indirect
 	github.com/opencontainers/runtime-spec v1.1.0 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
@@ -269,7 +266,6 @@ require (
 	github.com/raulk/go-watchdog v1.3.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rfjakob/eme v1.1.2 // indirect
-	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.3 // indirect
@@ -309,7 +305,6 @@ require (
 	go.uber.org/fx v1.20.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
-	golang.org/x/image v0.11.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect

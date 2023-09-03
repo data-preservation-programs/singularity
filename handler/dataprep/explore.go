@@ -141,7 +141,7 @@ func (DefaultHandler) ExploreHandler(
 
 	for filePath, files := range filesByPath {
 		entry := DirEntry{
-			Path:  path + "/" + filePath,
+			Path:  filePath,
 			IsDir: false,
 			CID:   files[0].CID.String(),
 		}

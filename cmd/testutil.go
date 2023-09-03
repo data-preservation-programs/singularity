@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	color2 "image/color"
 	"io"
 	"net/http"
 	"os"
@@ -28,9 +27,6 @@ import (
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/fatih/color"
 	commp "github.com/filecoin-project/go-fil-commp-hashhash"
-	"github.com/jiro4989/textimg/v3/config"
-	"github.com/jiro4989/textimg/v3/image"
-	"github.com/jiro4989/textimg/v3/parser"
 	"github.com/mattn/go-shellwords"
 	"github.com/parnurzeal/gorequest"
 	"github.com/rjNemo/underscore"
@@ -116,51 +112,6 @@ func (r *Runner) Save(t *testing.T, tempDirs ...string) {
 	plain := removeANSI.ReplaceAllString(ansi, "")
 	plainPath := filepath.Join("testdata", t.Name()+".txt")
 	err = os.WriteFile(plainPath, []byte(plain), 0600)
-	require.NoError(t, err)
-
-	imagePath := filepath.Join("testdata", t.Name()+".png")
-
-	c := config.Config{
-		Foreground:    "255,255,255,255",
-		Background:    "40,20,20,255",
-		Outpath:       imagePath,
-		FontSize:      20,
-		LineCount:     1,
-		SlideWidth:    1,
-		FileExtension: ".png",
-		FontFile:      "RobotoMono-Regular.ttf",
-	}
-
-	err = c.Adjust([]string{ansi}, config.EnvVars{})
-	require.NoError(t, err)
-	defer c.Writer.Close()
-
-	tokens, err := parser.Parse(strings.Join(c.Texts, "\n"))
-	require.NoError(t, err)
-
-	bw := tokens.MaxStringWidth()
-	bh := len(tokens.StringLines())
-	param := &image.ImageParam{
-		BaseWidth:          bw,
-		BaseHeight:         bh,
-		ForegroundColor:    color2.RGBA(c.ForegroundColor),
-		BackgroundColor:    color2.RGBA(c.BackgroundColor),
-		FontFace:           c.FontFace,
-		EmojiFontFace:      c.EmojiFontFace,
-		EmojiDir:           c.EmojiDir,
-		FontSize:           c.FontSize,
-		Delay:              c.Delay,
-		UseAnimation:       c.UseAnimation,
-		AnimationLineCount: c.LineCount,
-		ResizeWidth:        c.ResizeWidth,
-		ResizeHeight:       c.ResizeHeight,
-		UseEmoji:           c.UseEmojiFont,
-	}
-	img := image.NewImage(param)
-	err = img.Draw(tokens)
-	require.NoError(t, err)
-
-	err = img.Encode(c.Writer, c.FileExtension)
 	require.NoError(t, err)
 }
 
