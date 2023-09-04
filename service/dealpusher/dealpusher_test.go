@@ -95,7 +95,7 @@ func TestDealMakerService_MultipleInstances(t *testing.T) {
 func TestDealMakerService_FailtoSend(t *testing.T) {
 	waitPendingInterval = 100 * time.Millisecond
 	defer func() {
-		waitPendingInterval = time.Second
+		waitPendingInterval = time.Minute
 	}()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 2)
@@ -147,6 +147,10 @@ func TestDealMakerService_FailtoSend(t *testing.T) {
 }
 
 func TestDealMakerService_Cron(t *testing.T) {
+	waitPendingInterval = 100 * time.Millisecond
+	defer func() {
+		waitPendingInterval = time.Minute
+	}()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
 		require.NoError(t, err)
@@ -242,7 +246,7 @@ func TestDealMakerService_Cron(t *testing.T) {
 func TestDealMakerService_ScheduleWithConstraints(t *testing.T) {
 	waitPendingInterval = 100 * time.Millisecond
 	defer func() {
-		waitPendingInterval = time.Second
+		waitPendingInterval = time.Minute
 	}()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		service, err := NewDealPusher(db, "https://api.node.glif.io", "", 1)
