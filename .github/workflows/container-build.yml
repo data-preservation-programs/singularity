@@ -16,3 +16,5 @@ jobs:
         with:
           context: .
           push: false
+          cache-from: type=gha,scope=${GITHUB_REF_NAME}
+          cache-to: type=gha,mode=max,scope=${GITHUB_REF_NAME}
