@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // NewGetPreparationIDParams creates a new GetPreparationIDParams object,
@@ -66,7 +65,7 @@ type GetPreparationIDParams struct {
 
 	   Preparation ID or name
 	*/
-	ID int64
+	ID string
 
 	timeout    time.Duration
 	Context    context.Context
@@ -122,13 +121,13 @@ func (o *GetPreparationIDParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithID adds the id to the get preparation ID params
-func (o *GetPreparationIDParams) WithID(id int64) *GetPreparationIDParams {
+func (o *GetPreparationIDParams) WithID(id string) *GetPreparationIDParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the get preparation ID params
-func (o *GetPreparationIDParams) SetID(id int64) {
+func (o *GetPreparationIDParams) SetID(id string) {
 	o.ID = id
 }
 
@@ -141,7 +140,7 @@ func (o *GetPreparationIDParams) WriteToRequest(r runtime.ClientRequest, reg str
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

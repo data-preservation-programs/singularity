@@ -65,13 +65,6 @@ export interface DataprepPieceList {
   storageId?: number;
 }
 
-export interface DataprepSourceStatus {
-  attachmentId?: number;
-  jobs?: ModelJob[];
-  source?: ModelStorage;
-  storageId?: number;
-}
-
 export interface DataprepVersion {
   cid?: string;
   hash?: string;
@@ -155,6 +148,18 @@ export interface DealProposal {
   verified?: boolean;
 }
 
+export interface FileInfo {
+  /** Path to the new file, relative to the source */
+  path?: string;
+}
+
+export interface JobSourceStatus {
+  attachmentId?: number;
+  jobs?: ModelJob[];
+  source?: ModelStorage;
+  storageId?: number;
+}
+
 export type ModelCID = object;
 
 export interface ModelCar {
@@ -206,6 +211,22 @@ export enum ModelDealState {
   DealRejected = "rejected",
   DealSlashed = "slashed",
   DealErrored = "error",
+}
+
+export interface ModelFile {
+  /** Associations */
+  attachmentId?: number;
+  /** CID is the CID of the file. */
+  cid?: ModelCID;
+  directoryId?: number;
+  /** Hash is the hash of the file. */
+  hash?: string;
+  id?: number;
+  lastModifiedNano?: number;
+  /** Path is the relative path to the file inside the storage. */
+  path?: string;
+  /** Size is the size of the file in bytes. */
+  size?: number;
 }
 
 export interface ModelJob {
@@ -7884,6 +7905,76 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
+  file = {
+    /**
+     * No description
+     *
+     * @tags File
+     * @name FileDetail
+     * @summary Get details about a file
+     * @request GET:/file/{id}
+     */
+    fileDetail: (id: number, params: RequestParams = {}) =>
+      this.request<ModelFile, ApiHTTPError>({
+        path: `/file/${id}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags File
+     * @name DealsDetail
+     * @summary Get all deals that have been made for a file
+     * @request GET:/file/{id}/deals
+     */
+    dealsDetail: (id: number, params: RequestParams = {}) =>
+      this.request<ModelDeal[], ApiHTTPError>({
+        path: `/file/${id}/deals`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags File
+     * @name PrepareToPackCreate
+     * @summary prepare job for a given item
+     * @request POST:/file/{id}/prepare_to_pack
+     */
+    prepareToPackCreate: (id: number, params: RequestParams = {}) =>
+      this.request<number, string>({
+        path: `/file/${id}/prepare_to_pack`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  job = {
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name PackCreate
+     * @summary Pack a pack job into car files
+     * @request POST:/job/{id}/pack
+     */
+    packCreate: (id: string, params: RequestParams = {}) =>
+      this.request<ModelCar, string>({
+        path: `/job/${id}/pack`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
   piece = {
     /**
      * @description Get metadata for a piece for how it may be reassembled from the data source
@@ -7945,8 +8036,8 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Get the status of a preparation
      * @request GET:/preparation/{id}
      */
-    preparationDetail: (id: number, params: RequestParams = {}) =>
-      this.request<DataprepSourceStatus[], ApiHTTPError>({
+    preparationDetail: (id: string, params: RequestParams = {}) =>
+      this.request<JobSourceStatus[], ApiHTTPError>({
         path: `/preparation/${id}`,
         method: "GET",
         format: "json",
@@ -7961,7 +8052,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Attach an output storage with a preparation
      * @request POST:/preparation/{id}/output/{name}
      */
-    outputCreate: (id: number, name: string, params: RequestParams = {}) =>
+    outputCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/output/${name}`,
         method: "POST",
@@ -7978,7 +8069,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Detach an output storage from a preparation
      * @request DELETE:/preparation/{id}/output/{name}
      */
-    outputDelete: (id: number, name: string, params: RequestParams = {}) =>
+    outputDelete: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/output/${name}`,
         method: "DELETE",
@@ -7995,7 +8086,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary List all prepared pieces for a preparation
      * @request GET:/preparation/{id}/piece
      */
-    pieceDetail: (id: number, params: RequestParams = {}) =>
+    pieceDetail: (id: string, params: RequestParams = {}) =>
       this.request<DataprepPieceList[], ApiHTTPError>({
         path: `/preparation/${id}/piece`,
         method: "GET",
@@ -8012,7 +8103,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Add a piece to a preparation
      * @request POST:/preparation/{id}/piece
      */
-    pieceCreate: (id: number, request: DataprepAddPieceRequest, params: RequestParams = {}) =>
+    pieceCreate: (id: string, request: DataprepAddPieceRequest, params: RequestParams = {}) =>
       this.request<ModelCar, ApiHTTPError>({
         path: `/preparation/${id}/piece`,
         method: "POST",
@@ -8030,7 +8121,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Attach a source storage with a preparation
      * @request POST:/preparation/{id}/source/{name}
      */
-    sourceCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourceCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}`,
         method: "POST",
@@ -8047,12 +8138,46 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Explore a directory in a prepared source storage
      * @request GET:/preparation/{id}/source/{name}/explore/{path}
      */
-    sourceExploreDetail: (id: number, name: string, path: string, params: RequestParams = {}) =>
+    sourceExploreDetail: (id: string, name: string, path: string, params: RequestParams = {}) =>
       this.request<DataprepExploreResult, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/explore/${path}`,
         method: "GET",
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tells Singularity that something is ready to be grabbed for data preparation
+     *
+     * @tags Data Source
+     * @name SourceFileCreate
+     * @summary Push a file to be queued
+     * @request POST:/preparation/{id}/source/{name}/file
+     */
+    sourceFileCreate: (id: string, name: string, file: FileInfo, params: RequestParams = {}) =>
+      this.request<ModelFile, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/file`,
+        method: "POST",
+        body: file,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourceFinalizeCreate
+     * @summary prepare to pack a data source
+     * @request POST:/preparation/{id}/source/{name}/finalize
+     */
+    sourceFinalizeCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<void, string>({
+        path: `/preparation/${id}/source/${name}/finalize`,
+        method: "POST",
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -8064,7 +8189,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Pause an ongoing DAG generation job
      * @request POST:/preparation/{id}/source/{name}/pause-daggen
      */
-    sourcePauseDaggenCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourcePauseDaggenCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-daggen`,
         method: "POST",
@@ -8081,7 +8206,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Pause all packing job
      * @request POST:/preparation/{id}/source/{name}/pause-pack
      */
-    sourcePausePackCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourcePausePackCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-pack`,
         method: "POST",
@@ -8100,7 +8225,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @originalName sourcePausePackCreate
      * @duplicate
      */
-    sourcePausePackCreate2: (id: number, name: string, jobId: number, params: RequestParams = {}) =>
+    sourcePausePackCreate2: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-pack/${jobId}`,
         method: "POST",
@@ -8117,7 +8242,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Pause an ongoing scanning job
      * @request POST:/preparation/{id}/source/{name}/pause-scan
      */
-    sourcePauseScanCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourcePauseScanCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-scan`,
         method: "POST",
@@ -8134,7 +8259,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Start a new DAG generation job
      * @request POST:/preparation/{id}/source/{name}/start-daggen
      */
-    sourceStartDaggenCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourceStartDaggenCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-daggen`,
         method: "POST",
@@ -8151,7 +8276,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Start or restart all packing job
      * @request POST:/preparation/{id}/source/{name}/start-pack
      */
-    sourceStartPackCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourceStartPackCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-pack`,
         method: "POST",
@@ -8170,7 +8295,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @originalName sourceStartPackCreate
      * @duplicate
      */
-    sourceStartPackCreate2: (id: number, name: string, jobId: number, params: RequestParams = {}) =>
+    sourceStartPackCreate2: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-pack/${jobId}`,
         method: "POST",
@@ -8187,7 +8312,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Start a new scanning job
      * @request POST:/preparation/{id}/source/{name}/start-scan
      */
-    sourceStartScanCreate: (id: number, name: string, params: RequestParams = {}) =>
+    sourceStartScanCreate: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-scan`,
         method: "POST",
@@ -8204,7 +8329,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary List all wallets of a preparation.
      * @request POST:/preparation/{id}/wallet
      */
-    walletCreate: (id: number, params: RequestParams = {}) =>
+    walletCreate: (id: string, params: RequestParams = {}) =>
       this.request<ModelWallet, ApiHTTPError>({
         path: `/preparation/${id}/wallet`,
         method: "POST",
@@ -8223,7 +8348,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @originalName walletCreate
      * @duplicate
      */
-    walletCreate2: (id: number, wallet: string, params: RequestParams = {}) =>
+    walletCreate2: (id: string, wallet: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/wallet/${wallet}`,
         method: "POST",
@@ -8240,7 +8365,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Detach a new wallet from a preparation
      * @request DELETE:/preparation/{id}/wallet/{wallet}
      */
-    walletDelete: (id: number, wallet: string, params: RequestParams = {}) =>
+    walletDelete: (id: string, wallet: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/wallet/${wallet}`,
         method: "DELETE",

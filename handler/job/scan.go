@@ -1,4 +1,4 @@
-package dataprep
+package job
 
 import (
 	"context"
@@ -17,33 +17,14 @@ var startableStatesForScan = []model.JobState{model.Paused, model.Created, model
 
 func validateSourceStorage(ctx context.Context, db *gorm.DB, id string, name string) (*model.SourceAttachment, error) {
 	db = db.WithContext(ctx)
-	var storage model.Storage
-	err := storage.FindByIDOrName(db, name)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "source storage '%s' does not exist", name)
-	}
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	var preparation model.Preparation
-	err = preparation.FindByIDOrName(db, id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
-	}
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
 	var sourceAttachment model.SourceAttachment
-	err = db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, storage.ID).First(&sourceAttachment).Error
+	err := sourceAttachment.FindByPreparationAndSource(db, id, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "sourceAttachment '%s' is not attached to preparation %d", name, id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "sourceAttachment '%s' is not attached to preparation %s", name, id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	sourceAttachment.Storage = &storage
 	return &sourceAttachment, nil
 }
 
@@ -118,7 +99,7 @@ func (DefaultHandler) StartScanHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
@@ -185,7 +166,7 @@ func (DefaultHandler) PauseScanHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError

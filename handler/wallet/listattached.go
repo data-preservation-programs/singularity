@@ -30,7 +30,7 @@ func (DefaultHandler) ListAttachedHandler(
 // @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Success 200 {object} model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

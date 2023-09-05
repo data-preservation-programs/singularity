@@ -71,7 +71,7 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Output storage ID or name"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
@@ -83,7 +83,7 @@ func _() {}
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Output storage ID or name"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
@@ -131,7 +131,7 @@ func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.D
 	}
 
 	if !underscore.Any(preparation.OutputStorages, func(s model.Storage) bool { return s.ID == storage.ID }) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage %s is not attached to preparation %d", output, id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage %s is not attached to preparation %s", output, id)
 	}
 
 	if preparation.DeleteAfterExport && len(preparation.OutputStorages) == 1 {

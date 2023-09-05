@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // NewGetPreparationIDSourceNameExplorePathParams creates a new GetPreparationIDSourceNameExplorePathParams object,
@@ -66,7 +65,7 @@ type GetPreparationIDSourceNameExplorePathParams struct {
 
 	   Preparation ID or name
 	*/
-	ID int64
+	ID string
 
 	/* Name.
 
@@ -134,13 +133,13 @@ func (o *GetPreparationIDSourceNameExplorePathParams) SetHTTPClient(client *http
 }
 
 // WithID adds the id to the get preparation ID source name explore path params
-func (o *GetPreparationIDSourceNameExplorePathParams) WithID(id int64) *GetPreparationIDSourceNameExplorePathParams {
+func (o *GetPreparationIDSourceNameExplorePathParams) WithID(id string) *GetPreparationIDSourceNameExplorePathParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the get preparation ID source name explore path params
-func (o *GetPreparationIDSourceNameExplorePathParams) SetID(id int64) {
+func (o *GetPreparationIDSourceNameExplorePathParams) SetID(id string) {
 	o.ID = id
 }
 
@@ -175,7 +174,7 @@ func (o *GetPreparationIDSourceNameExplorePathParams) WriteToRequest(r runtime.C
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

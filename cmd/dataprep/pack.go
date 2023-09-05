@@ -6,7 +6,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,7 +29,7 @@ var StartPackCmd = &cli.Command{
 				return errors.Wrapf(err, "invalid job ID '%s'", c.Args().Get(2))
 			}
 		}
-		job, err := dataprep.Default.StartPackHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), jobID)
+		job, err := job.Default.StartPackHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), jobID)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -57,7 +57,7 @@ var PausePackCmd = &cli.Command{
 				return errors.Wrapf(err, "invalid job ID '%s'", c.Args().Get(2))
 			}
 		}
-		job, err := dataprep.Default.PausePackHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), jobID)
+		job, err := job.Default.PausePackHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1), jobID)
 		if err != nil {
 			return errors.WithStack(err)
 		}

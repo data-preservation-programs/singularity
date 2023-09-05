@@ -14,18 +14,6 @@ type Handler interface {
 		request CreateRequest,
 	) (*model.Preparation, error)
 
-	StartDagGenHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		id string,
-		name string) (*model.Job, error)
-
-	PauseDagGenHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		id string,
-		name string) (*model.Job, error)
-
 	ExploreHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -40,20 +28,6 @@ type Handler interface {
 
 	RemoveOutputStorageHandler(ctx context.Context, db *gorm.DB, id string, output string) (*model.Preparation, error)
 
-	StartPackHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		id string,
-		name string,
-		jobID int64) ([]model.Job, error)
-
-	PausePackHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		id string,
-		name string,
-		jobID int64) ([]model.Job, error)
-
 	ListPiecesHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -67,21 +41,7 @@ type Handler interface {
 		request AddPieceRequest,
 	) (*model.Car, error)
 
-	StartScanHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		id string,
-		name string) (*model.Job, error)
-
-	PauseScanHandler(
-		ctx context.Context,
-		db *gorm.DB,
-		id string,
-		name string) (*model.Job, error)
-
 	AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error)
-
-	GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]SourceStatus, error)
 }
 
 type DefaultHandler struct{}

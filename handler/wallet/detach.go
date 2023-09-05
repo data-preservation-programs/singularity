@@ -61,7 +61,7 @@ func (DefaultHandler) DetachHandler(
 // @Tags Wallet Association
 // @Produce json
 // @Accept json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param wallet path string true "Wallet Address"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError

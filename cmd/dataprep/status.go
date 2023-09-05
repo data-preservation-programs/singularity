@@ -4,7 +4,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,7 +21,7 @@ var StatusCmd = &cli.Command{
 		}
 		defer closer.Close()
 
-		status, err := dataprep.Default.GetStatusHandler(c.Context, db, c.Args().Get(0))
+		status, err := job.Default.GetStatusHandler(c.Context, db, c.Args().Get(0))
 		if err != nil {
 			return errors.WithStack(err)
 		}

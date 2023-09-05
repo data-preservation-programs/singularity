@@ -17,9 +17,12 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/file"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
@@ -51,12 +54,18 @@ type Runner struct {
 	mode RunnerMode
 }
 
-var colorMutex = sync.RWMutex{}
+var colorMutex = sync.Mutex{}
 
+// NewRunner creates a new Runner to capture CLI args
+// Note: tests invoking this function should stay in cmd.Test package
+// because this function relies on environment variables to set database connection string
+// so it won't work with parallel execution of different test packages.
 func NewRunner() *Runner {
 	colorMutex.Lock()
 	defer colorMutex.Unlock()
-	color.NoColor = false
+	if color.NoColor {
+		color.NoColor = false
+	}
 	return &Runner{}
 }
 
@@ -74,8 +83,6 @@ func (r *Runner) Run(ctx context.Context, args string) (string, string, error) {
 			args = "singularity --json " + args[len("singularity "):]
 		}
 	}
-	colorMutex.RLock()
-	defer colorMutex.RUnlock()
 	out, stderr, err := runWithCapture(ctx, args)
 	green := color.New(color.FgGreen).SprintFunc()
 	blue := color.New(color.FgBlue).SprintFunc()
@@ -148,6 +155,14 @@ func runWithCapture(ctx context.Context, args string) (string, string, error) {
 	return outWriter.String(), errWriter.String(), err
 }
 
+var _ dataprep.Handler = &MockDataPrep{}
+var _ admin.Handler = &MockAdmin{}
+var _ storage.Handler = &MockStorage{}
+var _ deal.Handler = &MockDeal{}
+var _ wallet.Handler = &MockWallet{}
+var _ file.Handler = &MockFile{}
+var _ job.Handler = &MockJob{}
+
 type MockAdmin struct {
 	mock.Mock
 }
@@ -171,16 +186,6 @@ func (m *MockDataPrep) CreatePreparationHandler(ctx context.Context, db *gorm.DB
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) StartDagGenHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
-	args := m.Called(ctx, db, id, name)
-	return args.Get(0).(*model.Job), args.Error(1)
-}
-
-func (m *MockDataPrep) PauseDagGenHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
-	args := m.Called(ctx, db, id, name)
-	return args.Get(0).(*model.Job), args.Error(1)
-}
-
 func (m *MockDataPrep) ExploreHandler(ctx context.Context, db *gorm.DB, id string, name string, path string) (*dataprep.ExploreResult, error) {
 	args := m.Called(ctx, db, id, name, path)
 	return args.Get(0).(*dataprep.ExploreResult), args.Error(1)
@@ -201,16 +206,6 @@ func (m *MockDataPrep) RemoveOutputStorageHandler(ctx context.Context, db *gorm.
 	return args.Get(0).(*model.Preparation), args.Error(1)
 }
 
-func (m *MockDataPrep) StartPackHandler(ctx context.Context, db *gorm.DB, id string, name string, jobID int64) ([]model.Job, error) {
-	args := m.Called(ctx, db, id, name, jobID)
-	return args.Get(0).([]model.Job), args.Error(1)
-}
-
-func (m *MockDataPrep) PausePackHandler(ctx context.Context, db *gorm.DB, id string, name string, jobID int64) ([]model.Job, error) {
-	args := m.Called(ctx, db, id, name, jobID)
-	return args.Get(0).([]model.Job), args.Error(1)
-}
-
 func (m *MockDataPrep) ListPiecesHandler(ctx context.Context, db *gorm.DB, id string) ([]dataprep.PieceList, error) {
 	args := m.Called(ctx, db, id)
 	return args.Get(0).([]dataprep.PieceList), args.Error(1)
@@ -221,24 +216,9 @@ func (m *MockDataPrep) AddPieceHandler(ctx context.Context, db *gorm.DB, id stri
 	return args.Get(0).(*model.Car), args.Error(1)
 }
 
-func (m *MockDataPrep) StartScanHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
-	args := m.Called(ctx, db, id, name)
-	return args.Get(0).(*model.Job), args.Error(1)
-}
-
-func (m *MockDataPrep) PauseScanHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
-	args := m.Called(ctx, db, id, name)
-	return args.Get(0).(*model.Job), args.Error(1)
-}
-
 func (m *MockDataPrep) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error) {
 	args := m.Called(ctx, db, id, source)
 	return args.Get(0).(*model.Preparation), args.Error(1)
-}
-
-func (m *MockDataPrep) GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]dataprep.SourceStatus, error) {
-	args := m.Called(ctx, db, id)
-	return args.Get(0).([]dataprep.SourceStatus), args.Error(1)
 }
 
 type MockSchedule struct {
@@ -340,6 +320,83 @@ func (m *MockWallet) ListAttachedHandler(ctx context.Context, db *gorm.DB, prepa
 func (m *MockWallet) RemoveHandler(ctx context.Context, db *gorm.DB, address string) error {
 	args := m.Called(ctx, db, address)
 	return args.Error(0)
+}
+
+type MockFile struct {
+	mock.Mock
+}
+
+func (m *MockFile) PrepareToPackFileHandler(ctx context.Context, db *gorm.DB, fileID uint64) (int64, error) {
+	args := m.Called(ctx, db, fileID)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockFile) PushFileHandler(ctx context.Context, db *gorm.DB, preparation string, source string, fileInfo file.Info) (*model.File, error) {
+	args := m.Called(ctx, db, preparation, source, fileInfo)
+	return args.Get(0).(*model.File), args.Error(1)
+}
+
+func (m *MockFile) GetFileHandler(ctx context.Context, db *gorm.DB, id uint64) (*model.File, error) {
+	args := m.Called(ctx, db, id)
+	return args.Get(0).(*model.File), args.Error(1)
+}
+
+func (m *MockFile) GetFileDealsHandler(
+	ctx context.Context,
+	db *gorm.DB,
+	id uint64,
+) ([]model.Deal, error) {
+	args := m.Called(ctx, db, id)
+	return args.Get(0).([]model.Deal), args.Error(1)
+}
+
+type MockJob struct {
+	mock.Mock
+}
+
+func (m *MockJob) PackHandler(ctx context.Context, db *gorm.DB, jobID int64) (*model.Car, error) {
+	args := m.Called(ctx, db, jobID)
+	return args.Get(0).(*model.Car), args.Error(1)
+}
+
+func (m *MockJob) PrepareToPackSourceHandler(ctx context.Context, db *gorm.DB, id string, name string) error {
+	args := m.Called(ctx, db, id, name)
+	return args.Error(0)
+}
+
+func (m *MockJob) StartScanHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
+	args := m.Called(ctx, db, id, name)
+	return args.Get(0).(*model.Job), args.Error(1)
+}
+
+func (m *MockJob) PauseScanHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
+	args := m.Called(ctx, db, id, name)
+	return args.Get(0).(*model.Job), args.Error(1)
+}
+
+func (m *MockJob) GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]job.SourceStatus, error) {
+	args := m.Called(ctx, db, id)
+	return args.Get(0).([]job.SourceStatus), args.Error(1)
+}
+
+func (m *MockJob) StartPackHandler(ctx context.Context, db *gorm.DB, id string, name string, jobID int64) ([]model.Job, error) {
+	args := m.Called(ctx, db, id, name, jobID)
+	return args.Get(0).([]model.Job), args.Error(1)
+}
+
+func (m *MockJob) PausePackHandler(ctx context.Context, db *gorm.DB, id string, name string, jobID int64) ([]model.Job, error) {
+	args := m.Called(ctx, db, id, name, jobID)
+	return args.Get(0).([]model.Job), args.Error(1)
+}
+
+func (m *MockJob) StartDagGenHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
+	args := m.Called(ctx, db, id, name)
+	return args.Get(0).(*model.Job), args.Error(1)
+}
+
+func (m *MockJob) PauseDagGenHandler(ctx context.Context, db *gorm.DB, id string, name string) (*model.Job, error) {
+	args := m.Called(ctx, db, id, name)
+	return args.Get(0).(*model.Job), args.Error(1)
 }
 
 var pieceCIDRegex = regexp.MustCompile("baga6ea[0-9a-z]+")

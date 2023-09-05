@@ -66,7 +66,7 @@ type PostPreparationIDSourceNameStartPackJobIDParams struct {
 
 	   Preparation ID or name
 	*/
-	ID int64
+	ID string
 
 	/* JobID.
 
@@ -134,13 +134,13 @@ func (o *PostPreparationIDSourceNameStartPackJobIDParams) SetHTTPClient(client *
 }
 
 // WithID adds the id to the post preparation ID source name start pack job ID params
-func (o *PostPreparationIDSourceNameStartPackJobIDParams) WithID(id int64) *PostPreparationIDSourceNameStartPackJobIDParams {
+func (o *PostPreparationIDSourceNameStartPackJobIDParams) WithID(id string) *PostPreparationIDSourceNameStartPackJobIDParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the post preparation ID source name start pack job ID params
-func (o *PostPreparationIDSourceNameStartPackJobIDParams) SetID(id int64) {
+func (o *PostPreparationIDSourceNameStartPackJobIDParams) SetID(id string) {
 	o.ID = id
 }
 
@@ -175,7 +175,7 @@ func (o *PostPreparationIDSourceNameStartPackJobIDParams) WriteToRequest(r runti
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

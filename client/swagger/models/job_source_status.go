@@ -14,10 +14,10 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// DataprepSourceStatus dataprep source status
+// JobSourceStatus job source status
 //
-// swagger:model dataprep.SourceStatus
-type DataprepSourceStatus struct {
+// swagger:model job.SourceStatus
+type JobSourceStatus struct {
 
 	// attachment Id
 	AttachmentID int64 `json:"attachmentId,omitempty"`
@@ -32,8 +32,8 @@ type DataprepSourceStatus struct {
 	StorageID int64 `json:"storageId,omitempty"`
 }
 
-// Validate validates this dataprep source status
-func (m *DataprepSourceStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this job source status
+func (m *JobSourceStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateJobs(formats); err != nil {
@@ -50,7 +50,7 @@ func (m *DataprepSourceStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DataprepSourceStatus) validateJobs(formats strfmt.Registry) error {
+func (m *JobSourceStatus) validateJobs(formats strfmt.Registry) error {
 	if swag.IsZero(m.Jobs) { // not required
 		return nil
 	}
@@ -76,7 +76,7 @@ func (m *DataprepSourceStatus) validateJobs(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *DataprepSourceStatus) validateSource(formats strfmt.Registry) error {
+func (m *JobSourceStatus) validateSource(formats strfmt.Registry) error {
 	if swag.IsZero(m.Source) { // not required
 		return nil
 	}
@@ -95,8 +95,8 @@ func (m *DataprepSourceStatus) validateSource(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validate this dataprep source status based on the context it is used
-func (m *DataprepSourceStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validate this job source status based on the context it is used
+func (m *JobSourceStatus) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateJobs(ctx, formats); err != nil {
@@ -113,7 +113,7 @@ func (m *DataprepSourceStatus) ContextValidate(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *DataprepSourceStatus) contextValidateJobs(ctx context.Context, formats strfmt.Registry) error {
+func (m *JobSourceStatus) contextValidateJobs(ctx context.Context, formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Jobs); i++ {
 
@@ -138,7 +138,7 @@ func (m *DataprepSourceStatus) contextValidateJobs(ctx context.Context, formats 
 	return nil
 }
 
-func (m *DataprepSourceStatus) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
+func (m *JobSourceStatus) contextValidateSource(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Source != nil {
 
@@ -160,7 +160,7 @@ func (m *DataprepSourceStatus) contextValidateSource(ctx context.Context, format
 }
 
 // MarshalBinary interface implementation
-func (m *DataprepSourceStatus) MarshalBinary() ([]byte, error) {
+func (m *JobSourceStatus) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -168,8 +168,8 @@ func (m *DataprepSourceStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *DataprepSourceStatus) UnmarshalBinary(b []byte) error {
-	var res DataprepSourceStatus
+func (m *JobSourceStatus) UnmarshalBinary(b []byte) error {
+	var res JobSourceStatus
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

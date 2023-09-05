@@ -257,8 +257,10 @@
 ## 🌐 Web API Reference <a href="#web-api-reference" id="web-api-reference"></a>
 <!-- webapi begin -->
 
+* [Data Source](web-api-reference/data-source.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
 * [Deal](web-api-reference/deal.md)
+* [File](web-api-reference/file.md)
 * [Job](web-api-reference/job.md)
 * [Piece](web-api-reference/piece.md)
 * [Preparation](web-api-reference/preparation.md)

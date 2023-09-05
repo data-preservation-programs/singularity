@@ -30,6 +30,10 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	PostJobIDPack(params *PostJobIDPackParams, opts ...ClientOption) (*PostJobIDPackOK, error)
+
+	PostPreparationIDSourceNameFinalize(params *PostPreparationIDSourceNameFinalizeParams, opts ...ClientOption) (*PostPreparationIDSourceNameFinalizeCreated, error)
+
 	PostPreparationIDSourceNamePauseDaggen(params *PostPreparationIDSourceNamePauseDaggenParams, opts ...ClientOption) (*PostPreparationIDSourceNamePauseDaggenOK, error)
 
 	PostPreparationIDSourceNamePausePack(params *PostPreparationIDSourceNamePausePackParams, opts ...ClientOption) (*PostPreparationIDSourceNamePausePackOK, error)
@@ -47,6 +51,82 @@ type ClientService interface {
 	PostPreparationIDSourceNameStartScan(params *PostPreparationIDSourceNameStartScanParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartScanOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+PostJobIDPack packs a pack job into car files
+*/
+func (a *Client) PostJobIDPack(params *PostJobIDPackParams, opts ...ClientOption) (*PostJobIDPackOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostJobIDPackParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostJobIDPack",
+		Method:             "POST",
+		PathPattern:        "/job/{id}/pack",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostJobIDPackReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostJobIDPackOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostJobIDPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PostPreparationIDSourceNameFinalize prepares to pack a data source
+*/
+func (a *Client) PostPreparationIDSourceNameFinalize(params *PostPreparationIDSourceNameFinalizeParams, opts ...ClientOption) (*PostPreparationIDSourceNameFinalizeCreated, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostPreparationIDSourceNameFinalizeParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostPreparationIDSourceNameFinalize",
+		Method:             "POST",
+		PathPattern:        "/preparation/{id}/source/{name}/finalize",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostPreparationIDSourceNameFinalizeReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostPreparationIDSourceNameFinalizeCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameFinalize: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*

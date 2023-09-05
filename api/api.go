@@ -15,7 +15,9 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
+	"github.com/data-preservation-programs/singularity/handler/file"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/replication"
@@ -265,17 +267,19 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	// Preparation
 	e.POST("/api/preparation", s.toEchoHandler(dataprep.Default.CreatePreparationHandler))
 	e.GET("/api/preparation", s.toEchoHandler(dataprep.Default.ListHandler))
-	e.GET("/api/preparation/:id", s.toEchoHandler(dataprep.Default.GetStatusHandler))
+	e.GET("/api/preparation/:id", s.toEchoHandler(job.Default.GetStatusHandler))
 
 	// Job management
-	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(dataprep.Default.StartDagGenHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-daggen", s.toEchoHandler(dataprep.Default.PauseDagGenHandler))
-	e.POST("/api/preparation/:id/source/:name/start-scan", s.toEchoHandler(dataprep.Default.StartScanHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-scan", s.toEchoHandler(dataprep.Default.PauseScanHandler))
-	e.POST("/api/preparation/:id/source/:name/start-pack", s.toEchoHandler(dataprep.Default.StartPackHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-pack", s.toEchoHandler(dataprep.Default.PausePackHandler))
-	e.POST("/api/preparation/:id/source/:name/start-pack/:job_id", s.toEchoHandler(dataprep.Default.StartPackHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-pack/:job_id", s.toEchoHandler(dataprep.Default.PausePackHandler))
+	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(job.Default.StartDagGenHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-daggen", s.toEchoHandler(job.Default.PauseDagGenHandler))
+	e.POST("/api/preparation/:id/source/:name/start-scan", s.toEchoHandler(job.Default.StartScanHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-scan", s.toEchoHandler(job.Default.PauseScanHandler))
+	e.POST("/api/preparation/:id/source/:name/start-pack", s.toEchoHandler(job.Default.StartPackHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-pack", s.toEchoHandler(job.Default.PausePackHandler))
+	e.POST("/api/preparation/:id/source/:name/start-pack/:job_id", s.toEchoHandler(job.Default.StartPackHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-pack/:job_id", s.toEchoHandler(job.Default.PausePackHandler))
+	e.POST("/api/preparation/:id/source/:name/finalize", s.toEchoHandler(job.Default.PrepareToPackSourceHandler))
+	e.POST("/api/job/:id/pack", s.toEchoHandler(job.Default.PackHandler))
 
 	// storage attachment
 	e.POST("/api/preparation/:id/output/:name", s.toEchoHandler(dataprep.Default.AddOutputStorageHandler))
@@ -311,6 +315,12 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(deal.Default.ListHandler))
+
+	// File
+	e.GET("/api/file/:id/deals", s.toEchoHandler(file.Default.GetFileDealsHandler))
+	e.GET("/api/file/:id", s.toEchoHandler(file.Default.GetFileHandler))
+	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(file.Default.PrepareToPackFileHandler))
+	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(file.Default.PushFileHandler))
 }
 
 var logger = logging.Logger("api")

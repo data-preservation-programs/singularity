@@ -4,7 +4,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/urfave/cli/v2"
 )
 
@@ -20,7 +20,7 @@ var StartDagGenCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		job, err := dataprep.Default.StartDagGenHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
+		job, err := job.Default.StartDagGenHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -41,7 +41,7 @@ var PauseDagGenCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		job, err := dataprep.Default.PauseDagGenHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
+		job, err := job.Default.PauseDagGenHandler(c.Context, db, c.Args().Get(0), c.Args().Get(1))
 		if err != nil {
 			return errors.WithStack(err)
 		}

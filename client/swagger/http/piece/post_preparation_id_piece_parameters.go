@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
 )
@@ -68,7 +67,7 @@ type PostPreparationIDPieceParams struct {
 
 	   Preparation ID or name
 	*/
-	ID int64
+	ID string
 
 	/* Request.
 
@@ -130,13 +129,13 @@ func (o *PostPreparationIDPieceParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithID adds the id to the post preparation ID piece params
-func (o *PostPreparationIDPieceParams) WithID(id int64) *PostPreparationIDPieceParams {
+func (o *PostPreparationIDPieceParams) WithID(id string) *PostPreparationIDPieceParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the post preparation ID piece params
-func (o *PostPreparationIDPieceParams) SetID(id int64) {
+func (o *PostPreparationIDPieceParams) SetID(id string) {
 	o.ID = id
 }
 
@@ -160,7 +159,7 @@ func (o *PostPreparationIDPieceParams) WriteToRequest(r runtime.ClientRequest, r
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 	if o.Request != nil {

@@ -57,7 +57,7 @@ GetPreparationIDOK describes a response with status code 200, with default heade
 OK
 */
 type GetPreparationIDOK struct {
-	Payload []*models.DataprepSourceStatus
+	Payload []*models.JobSourceStatus
 }
 
 // IsSuccess returns true when this get preparation Id o k response has a 2xx status code
@@ -98,7 +98,7 @@ func (o *GetPreparationIDOK) String() string {
 	return fmt.Sprintf("[GET /preparation/{id}][%d] getPreparationIdOK  %+v", 200, o.Payload)
 }
 
-func (o *GetPreparationIDOK) GetPayload() []*models.DataprepSourceStatus {
+func (o *GetPreparationIDOK) GetPayload() []*models.JobSourceStatus {
 	return o.Payload
 }
 

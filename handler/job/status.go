@@ -1,4 +1,4 @@
-package dataprep
+package job
 
 import (
 	"context"
@@ -72,7 +72,7 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id stri
 
 // @Summary Get the status of a preparation
 // @Tags Preparation
-// @Param id path integer true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Produce json
 // @Success 200 {array} SourceStatus
 // @Failure 400 {object} api.HTTPError

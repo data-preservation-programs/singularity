@@ -165,7 +165,7 @@ func (w *Thread) handleWorkComplete(ctx context.Context, jobID uint64) error {
 func (w *Thread) handleWorkError(ctx context.Context, jobID uint64, err error) error {
 	updates := make(map[string]any)
 	updates["worker_id"] = nil
-	// reset the state to ready if the context was canceled
+	// Reset the state to ready if the context was canceled
 	if errors.Is(err, context.Canceled) {
 		updates["error_message"] = ""
 		updates["error_stack_trace"] = ""
@@ -237,7 +237,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 
 		switch job.Type {
 		case model.Scan:
-			err = w.scan(ctx, *job)
+			err = w.scan(ctx, *job.Attachment)
 		case model.Pack:
 			err = w.pack(ctx, *job)
 		case model.DagGen:

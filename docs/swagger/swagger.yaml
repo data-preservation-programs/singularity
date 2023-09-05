@@ -91,19 +91,6 @@ definitions:
       storageId:
         type: integer
     type: object
-  dataprep.SourceStatus:
-    properties:
-      attachmentId:
-        type: integer
-      jobs:
-        items:
-          $ref: '#/definitions/model.Job'
-        type: array
-      source:
-        $ref: '#/definitions/model.Storage'
-      storageId:
-        type: integer
-    type: object
   dataprep.Version:
     properties:
       cid:
@@ -209,6 +196,25 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
+  file.Info:
+    properties:
+      path:
+        description: Path to the new file, relative to the source
+        type: string
+    type: object
+  job.SourceStatus:
+    properties:
+      attachmentId:
+        type: integer
+      jobs:
+        items:
+          $ref: '#/definitions/model.Job'
+        type: array
+      source:
+        $ref: '#/definitions/model.Storage'
+      storageId:
+        type: integer
+    type: object
   model.CID:
     type: object
   model.Car:
@@ -304,6 +310,31 @@ definitions:
     - DealRejected
     - DealSlashed
     - DealErrored
+  model.File:
+    properties:
+      attachmentId:
+        description: Associations
+        type: integer
+      cid:
+        allOf:
+        - $ref: '#/definitions/model.CID'
+        description: CID is the CID of the file.
+      directoryId:
+        type: integer
+      hash:
+        description: Hash is the hash of the file.
+        type: string
+      id:
+        type: integer
+      lastModifiedNano:
+        type: integer
+      path:
+        description: Path is the relative path to the file inside the storage.
+        type: string
+      size:
+        description: Size is the size of the file in bytes.
+        type: integer
+    type: object
   model.Job:
     properties:
       attachmentId:
@@ -7470,6 +7501,112 @@ paths:
       summary: List all deals
       tags:
       - Deal
+  /file/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.File'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get details about a file
+      tags:
+      - File
+  /file/{id}/deals:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Deal'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get all deals that have been made for a file
+      tags:
+      - File
+  /file/{id}/prepare_to_pack:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: prepare job for a given item
+      tags:
+      - File
+  /job/{id}/pack:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Car'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Pack a pack job into car files
+      tags:
+      - Job
   /piece/{id}/metadata:
     get:
       description: Get metadata for a piece for how it may be reassembled from the
@@ -7561,7 +7698,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -7569,7 +7706,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dataprep.SourceStatus'
+              $ref: '#/definitions/job.SourceStatus'
             type: array
         "400":
           description: Bad Request
@@ -7591,7 +7728,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Output storage ID or name
         in: path
         name: name
@@ -7623,7 +7760,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Output storage ID or name
         in: path
         name: name
@@ -7656,7 +7793,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -7685,7 +7822,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Piece information
         in: body
         name: request
@@ -7719,7 +7856,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Source storage ID or name
         in: path
         name: name
@@ -7752,7 +7889,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Source storage ID or name
         in: path
         name: name
@@ -7781,6 +7918,78 @@ paths:
       summary: Explore a directory in a prepared source storage
       tags:
       - Preparation
+  /preparation/{id}/source/{name}/file:
+    post:
+      consumes:
+      - application/json
+      description: Tells Singularity that something is ready to be grabbed for data
+        preparation
+      parameters:
+      - description: Preparation ID or name
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Source storage ID or name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: File Info
+        in: body
+        name: file
+        required: true
+        schema:
+          $ref: '#/definitions/file.Info'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.File'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Push a file to be queued
+      tags:
+      - Data Source
+  /preparation/{id}/source/{name}/finalize:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Preparation ID or name
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Storage ID or name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: prepare to pack a data source
+      tags:
+      - Job
   /preparation/{id}/source/{name}/pause-daggen:
     post:
       consumes:
@@ -7790,7 +7999,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -7823,7 +8032,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -7856,7 +8065,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -7894,7 +8103,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -7927,7 +8136,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -7960,7 +8169,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -7993,7 +8202,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -8031,7 +8240,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Storage ID or name
         in: path
         name: name
@@ -8064,7 +8273,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -8092,7 +8301,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Wallet Address
         in: path
         name: wallet
@@ -8124,7 +8333,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Wallet Address
         in: path
         name: wallet

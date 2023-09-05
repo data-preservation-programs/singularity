@@ -12,6 +12,7 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
 	"github.com/urfave/cli/v2"
@@ -126,7 +127,7 @@ var PrepCmd = &cli.Command{
 			return errors.Wrap(err, "failed to create preparation")
 		}
 
-		_, err = dataprep.Default.StartScanHandler(c.Context, db, "preparation", "source")
+		_, err = job.Default.StartScanHandler(c.Context, db, "preparation", "source")
 		if err != nil {
 			return errors.Wrap(err, "failed to start scan")
 		}
@@ -159,7 +160,7 @@ var PrepCmd = &cli.Command{
 		}
 
 		// Step 4, Initiate dag gen
-		_, err = dataprep.Default.StartDagGenHandler(c.Context, db, "preparation", "source")
+		_, err = job.Default.StartDagGenHandler(c.Context, db, "preparation", "source")
 		if err != nil {
 			return errors.Wrap(err, "failed to start dag gen")
 		}

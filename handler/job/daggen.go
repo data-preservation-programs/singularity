@@ -1,4 +1,4 @@
-package dataprep
+package job
 
 import (
 	"context"
@@ -32,7 +32,7 @@ func (DefaultHandler) StartDagGenHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
@@ -65,7 +65,7 @@ func (DefaultHandler) PauseDagGenHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError

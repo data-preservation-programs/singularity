@@ -62,28 +62,11 @@ func (DefaultHandler) ExploreHandler(
 	path string,
 ) (*ExploreResult, error) {
 	db = db.WithContext(ctx)
-	var storage model.Storage
-	err := storage.FindByIDOrName(db, name)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "storage '%s' does not exist", name)
-	}
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	var preparation model.Preparation
-	err = preparation.FindByIDOrName(db, id)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation '%s' does not exist", id)
-	}
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
 
 	var source model.SourceAttachment
-	err = db.Where("preparation_id = ? AND storage_id = ?", preparation.ID, storage.ID).First(&source).Error
+	err := source.FindByPreparationAndSource(db, id, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.Wrapf(handlererror.ErrNotFound, "source '%s' is not attached to preparation %d", name, id)
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "source '%s' is not attached to preparation %s", name, id)
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -169,7 +152,7 @@ func (DefaultHandler) ExploreHandler(
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Source storage ID or name"
 // @Param path path string true "Directory path"
 // @Success 200 {object} ExploreResult

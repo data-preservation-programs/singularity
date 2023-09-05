@@ -102,7 +102,7 @@ func (DefaultHandler) ListPiecesHandler(
 // @Tags Piece
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Success 200 {array} PieceList
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
@@ -113,7 +113,7 @@ func _() {}
 // @Tags Piece
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param request body AddPieceRequest true "Piece information"
 // @Success 200 {object} model.Car
 // @Failure 400 {object} api.HTTPError

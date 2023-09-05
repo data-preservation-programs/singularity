@@ -83,7 +83,7 @@ func (DefaultHandler) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, 
 // @Tags Preparation
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Source storage ID or name"
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError

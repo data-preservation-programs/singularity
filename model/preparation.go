@@ -98,6 +98,29 @@ type SourceAttachment struct {
 	LastScannedPath string       `json:"lastScannedPath"`
 }
 
+func (s *SourceAttachment) FindByPreparationAndSource(db *gorm.DB, preparation string, source string) error {
+	var prep Preparation
+	err := prep.FindByIDOrName(db, preparation)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	var storage Storage
+	err = storage.FindByIDOrName(db, source)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = db.Where("preparation_id = ? AND storage_id = ?", prep.ID, storage.ID).First(s).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	s.Preparation = &prep
+	s.Storage = &storage
+	return nil
+}
+
 func (s SourceAttachment) RootDirectoryCID(ctx context.Context, db *gorm.DB) (cid.Cid, error) {
 	db = db.WithContext(ctx)
 	var root Directory

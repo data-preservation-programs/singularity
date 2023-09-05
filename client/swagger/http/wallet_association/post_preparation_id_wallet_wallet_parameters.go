@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // NewPostPreparationIDWalletWalletParams creates a new PostPreparationIDWalletWalletParams object,
@@ -66,7 +65,7 @@ type PostPreparationIDWalletWalletParams struct {
 
 	   Preparation ID or name
 	*/
-	ID int64
+	ID string
 
 	/* Wallet.
 
@@ -128,13 +127,13 @@ func (o *PostPreparationIDWalletWalletParams) SetHTTPClient(client *http.Client)
 }
 
 // WithID adds the id to the post preparation ID wallet wallet params
-func (o *PostPreparationIDWalletWalletParams) WithID(id int64) *PostPreparationIDWalletWalletParams {
+func (o *PostPreparationIDWalletWalletParams) WithID(id string) *PostPreparationIDWalletWalletParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the post preparation ID wallet wallet params
-func (o *PostPreparationIDWalletWalletParams) SetID(id int64) {
+func (o *PostPreparationIDWalletWalletParams) SetID(id string) {
 	o.ID = id
 }
 
@@ -158,7 +157,7 @@ func (o *PostPreparationIDWalletWalletParams) WriteToRequest(r runtime.ClientReq
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

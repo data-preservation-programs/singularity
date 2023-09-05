@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
 )
 
 // NewPostPreparationIDSourceNamePauseDaggenParams creates a new PostPreparationIDSourceNamePauseDaggenParams object,
@@ -66,7 +65,7 @@ type PostPreparationIDSourceNamePauseDaggenParams struct {
 
 	   Preparation ID or name
 	*/
-	ID int64
+	ID string
 
 	/* Name.
 
@@ -128,13 +127,13 @@ func (o *PostPreparationIDSourceNamePauseDaggenParams) SetHTTPClient(client *htt
 }
 
 // WithID adds the id to the post preparation ID source name pause daggen params
-func (o *PostPreparationIDSourceNamePauseDaggenParams) WithID(id int64) *PostPreparationIDSourceNamePauseDaggenParams {
+func (o *PostPreparationIDSourceNamePauseDaggenParams) WithID(id string) *PostPreparationIDSourceNamePauseDaggenParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the post preparation ID source name pause daggen params
-func (o *PostPreparationIDSourceNamePauseDaggenParams) SetID(id int64) {
+func (o *PostPreparationIDSourceNamePauseDaggenParams) SetID(id string) {
 	o.ID = id
 }
 
@@ -158,7 +157,7 @@ func (o *PostPreparationIDSourceNamePauseDaggenParams) WriteToRequest(r runtime.
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
+	if err := r.SetPathParam("id", o.ID); err != nil {
 		return err
 	}
 

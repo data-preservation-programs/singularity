@@ -16,7 +16,6 @@ func TestExploreHandler_StorageNotFound(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		_, err := Default.ExploreHandler(ctx, db, "1", "source", "path")
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
-		require.ErrorContains(t, err, "storage")
 	})
 }
 
@@ -26,7 +25,6 @@ func TestExploreHandler_PrepNotFound(t *testing.T) {
 		require.NoError(t, err)
 		_, err = Default.ExploreHandler(ctx, db, "1", "source", "path")
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
-		require.ErrorContains(t, err, "storage")
 	})
 }
 

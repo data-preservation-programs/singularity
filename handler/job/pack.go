@@ -1,4 +1,4 @@
-package dataprep
+package job
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/data-preservation-programs/singularity/scan"
 	"github.com/data-preservation-programs/singularity/util"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
@@ -98,7 +100,7 @@ func (DefaultHandler) StartPackHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Param job_id path int true "Pack Job ID"
 // @Success 200 {object} model.Job
@@ -111,7 +113,7 @@ func _() {}
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
@@ -123,7 +125,7 @@ func _() {}
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Param job_id path int true "Pack Job ID"
 // @Success 200 {object} model.Job
@@ -136,7 +138,7 @@ func _() {}
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path int true "Preparation ID or name"
+// @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Success 200 {object} model.Job
 // @Failure 400 {object} api.HTTPError
@@ -218,3 +220,96 @@ func (DefaultHandler) PausePackHandler(
 
 	return []model.Job{job}, errors.WithStack(err)
 }
+
+// PackHandler packs the given job's files and returns the corresponding CAR (Content Addressable Archive) info.
+//
+// This function retrieves a job from the database with the specified job ID, preloading its associated file ranges,
+// attachments, storages, and output storages. If the retrieval is successful, it then packs the job's files into a
+// CAR format.
+//
+// Parameters:
+// - ctx: The context for managing timeouts and cancellation.
+// - db: The gorm.DB instance for database operations.
+// - jobID: The ID of the job to be packed.
+//
+// Returns:
+// - A pointer to the packed model.Car, if successful.
+// - An error if any issues occur during the operation, including database retrieval errors or packing errors.
+func (DefaultHandler) PackHandler(
+	ctx context.Context,
+	db *gorm.DB,
+	jobID int64) (*model.Car, error) {
+	db = db.WithContext(ctx)
+	var packJob model.Job
+	err := db.
+		Preload("Attachment.Storage").
+		Preload("Attachment.Preparation.OutputStorages").
+		First(&packJob, jobID).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "pack job %d does not exist", jobID)
+	}
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	var fileRanges []model.FileRange
+	err = db.Joins("File").Where("file_ranges.job_id = ?", packJob.ID).Order("file_ranges.id asc").Find(&fileRanges).Error
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	packJob.FileRanges = fileRanges
+
+	car, err := pack.Pack(ctx, db, packJob)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	err = db.Model(&packJob).Update("state", model.Complete).Error
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return car, nil
+}
+
+// @Summary Pack a pack job into car files
+// @Tags Job
+// @Accept json
+// @Produce json
+// @Param id path string true "Pack job ID"
+// @Success 200 {object} model.Car
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /job/{id}/pack [post]
+func _() {}
+
+func (DefaultHandler) PrepareToPackSourceHandler(
+	ctx context.Context,
+	db *gorm.DB,
+	id string,
+	name string,
+) error {
+	db = db.WithContext(ctx)
+	var attachment model.SourceAttachment
+	err := attachment.FindByPreparationAndSource(db, id, name)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return errors.Wrapf(handlererror.ErrNotFound, "source '%s' does not exist", name)
+	}
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return errors.WithStack(scan.PrepareSource(ctx, db, attachment))
+}
+
+// @Summary prepare to pack a data source
+// @Tags Job
+// @Accept json
+// @Produce json
+// @Param id path string true "Preparation ID or name"
+// @Param name path string true "Storage ID or name"
+// @Success 201
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /preparation/{id}/source/{name}/finalize [post]
+func _() {}

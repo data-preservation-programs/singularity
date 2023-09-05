@@ -10,8 +10,10 @@ import (
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/data-preservation-programs/singularity/client/swagger/http/data_source"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_schedule"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/file"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
@@ -62,8 +64,10 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Singularit
 
 	cli := new(SingularityAPI)
 	cli.Transport = transport
+	cli.DataSource = data_source.New(transport, formats)
 	cli.Deal = deal.New(transport, formats)
 	cli.DealSchedule = deal_schedule.New(transport, formats)
+	cli.File = file.New(transport, formats)
 	cli.Job = job.New(transport, formats)
 	cli.Piece = piece.New(transport, formats)
 	cli.Preparation = preparation.New(transport, formats)
@@ -114,9 +118,13 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // SingularityAPI is a client for singularity API
 type SingularityAPI struct {
+	DataSource data_source.ClientService
+
 	Deal deal.ClientService
 
 	DealSchedule deal_schedule.ClientService
+
+	File file.ClientService
 
 	Job job.ClientService
 
@@ -136,8 +144,10 @@ type SingularityAPI struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *SingularityAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
+	c.DataSource.SetTransport(transport)
 	c.Deal.SetTransport(transport)
 	c.DealSchedule.SetTransport(transport)
+	c.File.SetTransport(transport)
 	c.Job.SetTransport(transport)
 	c.Piece.SetTransport(transport)
 	c.Preparation.SetTransport(transport)

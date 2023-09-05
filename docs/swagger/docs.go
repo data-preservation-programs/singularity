@@ -72,6 +72,169 @@ const docTemplate = `{
                 }
             }
         },
+        "/file/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "Get details about a file",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.File"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/{id}/deals": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "Get all deals that have been made for a file",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Deal"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/{id}/prepare_to_pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "prepare job for a given item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "File ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/job/{id}/pack": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "Pack a pack job into car files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Car"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/piece/{id}/metadata": {
             "get": {
                 "description": "Get metadata for a piece for how it may be reassembled from the data source",
@@ -210,7 +373,7 @@ const docTemplate = `{
                 "summary": "Get the status of a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -223,7 +386,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dataprep.SourceStatus"
+                                "$ref": "#/definitions/job.SourceStatus"
                             }
                         }
                     },
@@ -256,7 +419,7 @@ const docTemplate = `{
                 "summary": "Attach an output storage with a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -304,7 +467,7 @@ const docTemplate = `{
                 "summary": "Detach an output storage from a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -354,7 +517,7 @@ const docTemplate = `{
                 "summary": "List all prepared pieces for a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -398,7 +561,7 @@ const docTemplate = `{
                 "summary": "Add a piece to a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -450,7 +613,7 @@ const docTemplate = `{
                 "summary": "Attach a source storage with a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -500,7 +663,7 @@ const docTemplate = `{
                 "summary": "Explore a directory in a prepared source storage",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -543,6 +706,113 @@ const docTemplate = `{
                 }
             }
         },
+        "/preparation/{id}/source/{name}/file": {
+            "post": {
+                "description": "Tells Singularity that something is ready to be grabbed for data preparation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Source"
+                ],
+                "summary": "Push a file to be queued",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preparation ID or name",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Source storage ID or name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "File Info",
+                        "name": "file",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/file.Info"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.File"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/preparation/{id}/source/{name}/finalize": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Job"
+                ],
+                "summary": "prepare to pack a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preparation ID or name",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage ID or name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/preparation/{id}/source/{name}/pause-daggen": {
             "post": {
                 "consumes": [
@@ -557,7 +827,7 @@ const docTemplate = `{
                 "summary": "Pause an ongoing DAG generation job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -607,7 +877,7 @@ const docTemplate = `{
                 "summary": "Pause all packing job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -657,7 +927,7 @@ const docTemplate = `{
                 "summary": "Pause a specific packing job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -714,7 +984,7 @@ const docTemplate = `{
                 "summary": "Pause an ongoing scanning job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -764,7 +1034,7 @@ const docTemplate = `{
                 "summary": "Start a new DAG generation job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -814,7 +1084,7 @@ const docTemplate = `{
                 "summary": "Start or restart all packing job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -864,7 +1134,7 @@ const docTemplate = `{
                 "summary": "Start or restart a specific packing job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -921,7 +1191,7 @@ const docTemplate = `{
                 "summary": "Start a new scanning job",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -971,7 +1241,7 @@ const docTemplate = `{
                 "summary": "List all wallets of a preparation.",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -1014,7 +1284,7 @@ const docTemplate = `{
                 "summary": "Attach a new wallet with a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -1062,7 +1332,7 @@ const docTemplate = `{
                 "summary": "Detach a new wallet from a preparation",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Preparation ID or name",
                         "name": "id",
                         "in": "path",
@@ -5011,26 +5281,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dataprep.SourceStatus": {
-            "type": "object",
-            "properties": {
-                "attachmentId": {
-                    "type": "integer"
-                },
-                "jobs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Job"
-                    }
-                },
-                "source": {
-                    "$ref": "#/definitions/model.Storage"
-                },
-                "storageId": {
-                    "type": "integer"
-                }
-            }
-        },
         "dataprep.Version": {
             "type": "object",
             "properties": {
@@ -5172,6 +5422,35 @@ const docTemplate = `{
                 }
             }
         },
+        "file.Info": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "Path to the new file, relative to the source",
+                    "type": "string"
+                }
+            }
+        },
+        "job.SourceStatus": {
+            "type": "object",
+            "properties": {
+                "attachmentId": {
+                    "type": "integer"
+                },
+                "jobs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Job"
+                    }
+                },
+                "source": {
+                    "$ref": "#/definitions/model.Storage"
+                },
+                "storageId": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.CID": {
             "type": "object"
         },
@@ -5303,6 +5582,44 @@ const docTemplate = `{
                 "DealSlashed",
                 "DealErrored"
             ]
+        },
+        "model.File": {
+            "type": "object",
+            "properties": {
+                "attachmentId": {
+                    "description": "Associations",
+                    "type": "integer"
+                },
+                "cid": {
+                    "description": "CID is the CID of the file.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.CID"
+                        }
+                    ]
+                },
+                "directoryId": {
+                    "type": "integer"
+                },
+                "hash": {
+                    "description": "Hash is the hash of the file.",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastModifiedNano": {
+                    "type": "integer"
+                },
+                "path": {
+                    "description": "Path is the relative path to the file inside the storage.",
+                    "type": "string"
+                },
+                "size": {
+                    "description": "Size is the size of the file in bytes.",
+                    "type": "integer"
+                }
+            }
         },
         "model.Job": {
             "type": "object",
