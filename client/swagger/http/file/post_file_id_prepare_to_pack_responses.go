@@ -21,8 +21,8 @@ type PostFileIDPrepareToPackReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *PostFileIDPrepareToPackReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 201:
-		result := NewPostFileIDPrepareToPackCreated()
+	case 200:
+		result := NewPostFileIDPrepareToPackOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -44,63 +44,63 @@ func (o *PostFileIDPrepareToPackReader) ReadResponse(response runtime.ClientResp
 	}
 }
 
-// NewPostFileIDPrepareToPackCreated creates a PostFileIDPrepareToPackCreated with default headers values
-func NewPostFileIDPrepareToPackCreated() *PostFileIDPrepareToPackCreated {
-	return &PostFileIDPrepareToPackCreated{}
+// NewPostFileIDPrepareToPackOK creates a PostFileIDPrepareToPackOK with default headers values
+func NewPostFileIDPrepareToPackOK() *PostFileIDPrepareToPackOK {
+	return &PostFileIDPrepareToPackOK{}
 }
 
 /*
-PostFileIDPrepareToPackCreated describes a response with status code 201, with default header values.
+PostFileIDPrepareToPackOK describes a response with status code 200, with default header values.
 
-Created
+OK
 */
-type PostFileIDPrepareToPackCreated struct {
+type PostFileIDPrepareToPackOK struct {
 	Payload int64
 }
 
-// IsSuccess returns true when this post file Id prepare to pack created response has a 2xx status code
-func (o *PostFileIDPrepareToPackCreated) IsSuccess() bool {
+// IsSuccess returns true when this post file Id prepare to pack o k response has a 2xx status code
+func (o *PostFileIDPrepareToPackOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this post file Id prepare to pack created response has a 3xx status code
-func (o *PostFileIDPrepareToPackCreated) IsRedirect() bool {
+// IsRedirect returns true when this post file Id prepare to pack o k response has a 3xx status code
+func (o *PostFileIDPrepareToPackOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this post file Id prepare to pack created response has a 4xx status code
-func (o *PostFileIDPrepareToPackCreated) IsClientError() bool {
+// IsClientError returns true when this post file Id prepare to pack o k response has a 4xx status code
+func (o *PostFileIDPrepareToPackOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this post file Id prepare to pack created response has a 5xx status code
-func (o *PostFileIDPrepareToPackCreated) IsServerError() bool {
+// IsServerError returns true when this post file Id prepare to pack o k response has a 5xx status code
+func (o *PostFileIDPrepareToPackOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this post file Id prepare to pack created response a status code equal to that given
-func (o *PostFileIDPrepareToPackCreated) IsCode(code int) bool {
-	return code == 201
+// IsCode returns true when this post file Id prepare to pack o k response a status code equal to that given
+func (o *PostFileIDPrepareToPackOK) IsCode(code int) bool {
+	return code == 200
 }
 
-// Code gets the status code for the post file Id prepare to pack created response
-func (o *PostFileIDPrepareToPackCreated) Code() int {
-	return 201
+// Code gets the status code for the post file Id prepare to pack o k response
+func (o *PostFileIDPrepareToPackOK) Code() int {
+	return 200
 }
 
-func (o *PostFileIDPrepareToPackCreated) Error() string {
-	return fmt.Sprintf("[POST /file/{id}/prepare_to_pack][%d] postFileIdPrepareToPackCreated  %+v", 201, o.Payload)
+func (o *PostFileIDPrepareToPackOK) Error() string {
+	return fmt.Sprintf("[POST /file/{id}/prepare_to_pack][%d] postFileIdPrepareToPackOK  %+v", 200, o.Payload)
 }
 
-func (o *PostFileIDPrepareToPackCreated) String() string {
-	return fmt.Sprintf("[POST /file/{id}/prepare_to_pack][%d] postFileIdPrepareToPackCreated  %+v", 201, o.Payload)
+func (o *PostFileIDPrepareToPackOK) String() string {
+	return fmt.Sprintf("[POST /file/{id}/prepare_to_pack][%d] postFileIdPrepareToPackOK  %+v", 200, o.Payload)
 }
 
-func (o *PostFileIDPrepareToPackCreated) GetPayload() int64 {
+func (o *PostFileIDPrepareToPackOK) GetPayload() int64 {
 	return o.Payload
 }
 
-func (o *PostFileIDPrepareToPackCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *PostFileIDPrepareToPackOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {

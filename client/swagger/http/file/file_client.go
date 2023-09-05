@@ -34,7 +34,9 @@ type ClientService interface {
 
 	GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOption) (*GetFileIDDealsOK, error)
 
-	PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackCreated, error)
+	PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackOK, error)
+
+	PostPreparationIDSourceNameFile(params *PostPreparationIDSourceNameFileParams, opts ...ClientOption) (*PostPreparationIDSourceNameFileOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -118,7 +120,7 @@ func (a *Client) GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOpti
 /*
 PostFileIDPrepareToPack prepares job for a given item
 */
-func (a *Client) PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackCreated, error) {
+func (a *Client) PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPostFileIDPrepareToPackParams()
@@ -143,13 +145,53 @@ func (a *Client) PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostFileIDPrepareToPackCreated)
+	success, ok := result.(*PostFileIDPrepareToPackOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PostFileIDPrepareToPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PostPreparationIDSourceNameFile pushes a file to be queued
+
+Tells Singularity that something is ready to be grabbed for data preparation
+*/
+func (a *Client) PostPreparationIDSourceNameFile(params *PostPreparationIDSourceNameFileParams, opts ...ClientOption) (*PostPreparationIDSourceNameFileOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPostPreparationIDSourceNameFileParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PostPreparationIDSourceNameFile",
+		Method:             "POST",
+		PathPattern:        "/preparation/{id}/source/{name}/file",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostPreparationIDSourceNameFileReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PostPreparationIDSourceNameFileOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

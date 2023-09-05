@@ -121,14 +121,14 @@ func (s *SourceAttachment) FindByPreparationAndSource(db *gorm.DB, preparation s
 	return nil
 }
 
-func (s SourceAttachment) RootDirectoryCID(ctx context.Context, db *gorm.DB) (cid.Cid, error) {
+func (s *SourceAttachment) RootDirectoryCID(ctx context.Context, db *gorm.DB) (cid.Cid, error) {
 	db = db.WithContext(ctx)
 	var root Directory
 	err := db.Select("cid").Where("attachment_id = ? AND parent_id is null", s.ID).First(&root).Error
 	return cid.Cid(root.CID), errors.WithStack(err)
 }
 
-func (s SourceAttachment) RootDirectoryID(ctx context.Context, db *gorm.DB) (uint64, error) {
+func (s *SourceAttachment) RootDirectoryID(ctx context.Context, db *gorm.DB) (uint64, error) {
 	db = db.WithContext(ctx)
 	var root Directory
 	err := db.Select("id").Where("attachment_id = ? AND parent_id is null", s.ID).First(&root).Error
@@ -168,10 +168,10 @@ type Job struct {
 // The index on DirectoryID is used to find all files in a directory.
 type File struct {
 	ID               uint64 `gorm:"primaryKey"                     json:"id"`
-	CID              CID    `gorm:"column:cid;type:bytes;size:255" json:"cid"`  // CID is the CID of the file.
-	Path             string `gorm:"index"                          json:"path"` // Path is the relative path to the file inside the storage.
-	Hash             string `json:"hash"`                                       // Hash is the hash of the file.
-	Size             int64  `json:"size"`                                       // Size is the size of the file in bytes.
+	CID              CID    `gorm:"column:cid;type:bytes;size:255" json:"cid" swaggertype:"string" ` // CID is the CID of the file.
+	Path             string `gorm:"index"                          json:"path"`                      // Path is the relative path to the file inside the storage.
+	Hash             string `json:"hash"`                                                            // Hash is the hash of the file.
+	Size             int64  `json:"size"`                                                            // Size is the size of the file in bytes.
 	LastModifiedNano int64  `json:"lastModifiedNano"`
 
 	// Associations
@@ -179,7 +179,7 @@ type File struct {
 	Attachment   *SourceAttachment `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
 	DirectoryID  *uint64           `gorm:"index"                                               json:"directoryId"`
 	Directory    *Directory        `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
-	FileRanges   []FileRange       `gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty" swaggerignore:"true"`
+	FileRanges   []FileRange       `gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
 
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
@@ -193,10 +193,10 @@ func (i File) FileName() string {
 // The index on AttachmentID and ParentID is used to find all root directories, as well as all directories in a directory.
 type Directory struct {
 	ID       uint64 `gorm:"primaryKey"            json:"id"`
-	CID      CID    `gorm:"column:cid;type:bytes" json:"cid"`                      // CID is the CID of the directory.
-	Data     []byte `gorm:"column:data"           json:"-"   swaggerignore:"true"` // Data is the serialized directory data.
-	Name     string `json:"name"`                                                  // Name is the name of the directory.
-	Exported bool   `json:"exported"`                                              // Exported is a flag that indicates whether the directory has been exported to the DAG.
+	CID      CID    `gorm:"column:cid;type:bytes" json:"cid" swaggertype:"string" ` // CID is the CID of the directory.
+	Data     []byte `gorm:"column:data"           json:"-"   swaggerignore:"true"`  // Data is the serialized directory data.
+	Name     string `json:"name"`                                                   // Name is the name of the directory.
+	Exported bool   `json:"exported"`                                               // Exported is a flag that indicates whether the directory has been exported to the DAG.
 
 	// Associations
 	AttachmentID uint32            `gorm:"index:directory_source_parent"                       json:"attachmentId"`
@@ -210,9 +210,9 @@ type Directory struct {
 // The index on JobID is used to find all FileRange in a job.
 type FileRange struct {
 	ID     uint64 `gorm:"primaryKey"            json:"id"`
-	Offset int64  `json:"offset"`                           // Offset is the offset of the range inside the file.
-	Length int64  `json:"length"`                           // Length is the length of the range in bytes.
-	CID    CID    `gorm:"column:cid;type:bytes" json:"cid"` // CID is the CID of the range.
+	Offset int64  `json:"offset"`                                                 // Offset is the offset of the range inside the file.
+	Length int64  `json:"length"`                                                 // Length is the length of the range in bytes.
+	CID    CID    `gorm:"column:cid;type:bytes" json:"cid" swaggertype:"string" ` // CID is the CID of the range.
 
 	// Associations
 	JobID  *uint64 `gorm:"index"                                         json:"jobId"`
@@ -228,9 +228,9 @@ type FileRange struct {
 type Car struct {
 	ID          uint32    `gorm:"primaryKey"                                        json:"id"                                  table:"verbose"`
 	CreatedAt   time.Time `json:"createdAt"                                         table:"verbose;format:2006-01-02 15:04:05"`
-	PieceCID    CID       `gorm:"column:piece_cid;index;type:bytes;size:255"        json:"pieceCid"`
+	PieceCID    CID       `gorm:"column:piece_cid;index;type:bytes;size:255"        json:"pieceCid" swaggertype:"string" `
 	PieceSize   int64     `json:"pieceSize"`
-	RootCID     CID       `gorm:"column:root_cid;type:bytes"                        json:"rootCid"`
+	RootCID     CID       `gorm:"column:root_cid;type:bytes"                        json:"rootCid" swaggertype:"string" `
 	FileSize    int64     `json:"fileSize"`
 	StorageID   *uint32   `json:"storageId"                                         table:"verbose"`
 	Storage     *Storage  `gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty"                   swaggerignore:"true" table:"expand"`
@@ -256,12 +256,12 @@ type Car struct {
 // The index on CID is used to find a specific block with CID.
 type CarBlock struct {
 	ID             uint64 `gorm:"primaryKey"                           json:"id"`
-	CID            CID    `gorm:"index;column:cid;type:bytes;size:255" json:"cid"` // CID is the CID of the block.
-	CarOffset      int64  `json:"carOffset"`                                       // Offset of the block in the Car
-	CarBlockLength int32  `json:"carBlockLength"`                                  // Length of the block in the Car, including varint, CID and raw block
-	Varint         []byte `json:"varint"`                                          // Varint is the varint that represents the length of the block and the CID.
-	RawBlock       []byte `json:"rawBlock"`                                        // Raw block
-	FileOffset     int64  `json:"fileOffset"`                                      // Offset of the block in the File
+	CID            CID    `gorm:"index;column:cid;type:bytes;size:255" json:"cid" swaggertype:"string" ` // CID is the CID of the block.
+	CarOffset      int64  `json:"carOffset"`                                                             // Offset of the block in the Car
+	CarBlockLength int32  `json:"carBlockLength"`                                                        // Length of the block in the Car, including varint, CID and raw block
+	Varint         []byte `json:"varint"`                                                                // Varint is the varint that represents the length of the block and the CID.
+	RawBlock       []byte `json:"rawBlock"`                                                              // Raw block
+	FileOffset     int64  `json:"fileOffset"`                                                            // Offset of the block in the File
 
 	// Internal Caching
 	blockLength int32 // Block length in bytes

@@ -40,7 +40,7 @@ type ModelDeal struct {
 	Label string `json:"label,omitempty"`
 
 	// piece cid
-	PieceCid ModelCID `json:"pieceCid,omitempty"`
+	PieceCid string `json:"pieceCid,omitempty"`
 
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`

@@ -81,7 +81,7 @@ type Deal struct {
 	Provider         string    `json:"provider"`
 	ProposalID       string    `json:"proposalId"                      table:"verbose"`
 	Label            string    `json:"label"                           table:"verbose"`
-	PieceCID         CID       `gorm:"column:piece_cid;index;size:255" json:"pieceCid"`
+	PieceCID         CID       `gorm:"column:piece_cid;index;size:255" json:"pieceCid" swaggertype:"string" `
 	PieceSize        int64     `json:"pieceSize"`
 	StartEpoch       int32     `json:"startEpoch"`
 	EndEpoch         int32     `json:"endEpoch"                        table:"verbose"`

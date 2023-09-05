@@ -39,7 +39,7 @@ func (DefaultHandler) PrepareToPackFileHandler(
 // @Accept json
 // @Produce json
 // @Param id path integer true "File ID"
-// @Success 201 {object} int64
+// @Success 200 {object} int64
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /file/{id}/prepare_to_pack [post]

@@ -160,19 +160,17 @@ export interface JobSourceStatus {
   storageId?: number;
 }
 
-export type ModelCID = object;
-
 export interface ModelCar {
   attachmentId?: number;
   createdAt?: string;
   fileSize?: number;
   id?: number;
   jobId?: number;
-  pieceCid?: ModelCID;
+  pieceCid?: string;
   pieceSize?: number;
   /** Association */
   preparationId?: number;
-  rootCid?: ModelCID;
+  rootCid?: string;
   storageId?: number;
   /** StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path. */
   storagePath?: string;
@@ -188,7 +186,7 @@ export interface ModelDeal {
   errorMessage?: string;
   id?: number;
   label?: string;
-  pieceCid?: ModelCID;
+  pieceCid?: string;
   pieceSize?: number;
   price?: string;
   proposalId?: string;
@@ -217,8 +215,9 @@ export interface ModelFile {
   /** Associations */
   attachmentId?: number;
   /** CID is the CID of the file. */
-  cid?: ModelCID;
+  cid?: string;
   directoryId?: number;
+  fileRanges?: ModelFileRange[];
   /** Hash is the hash of the file. */
   hash?: string;
   id?: number;
@@ -227,6 +226,19 @@ export interface ModelFile {
   path?: string;
   /** Size is the size of the file in bytes. */
   size?: number;
+}
+
+export interface ModelFileRange {
+  /** CID is the CID of the range. */
+  cid?: string;
+  fileId?: number;
+  id?: number;
+  /** Associations */
+  jobId?: number;
+  /** Length is the length of the range in bytes. */
+  length?: number;
+  /** Offset is the offset of the range inside the file. */
+  offset?: number;
 }
 
 export interface ModelJob {
@@ -8150,7 +8162,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * @description Tells Singularity that something is ready to be grabbed for data preparation
      *
-     * @tags Data Source
+     * @tags File
      * @name SourceFileCreate
      * @summary Push a file to be queued
      * @request POST:/preparation/{id}/source/{name}/file
@@ -9819,7 +9831,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update a storage connection
      * @request PATCH:/storage/{name}
      */
-    storagePartialUpdate: (name: string, config: ModelCID, params: RequestParams = {}) =>
+    storagePartialUpdate: (name: string, config: StorePieceReader, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/${name}`,
         method: "PATCH",

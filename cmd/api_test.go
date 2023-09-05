@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/client/swagger/http"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/file"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/job"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
@@ -54,54 +55,136 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 	}
 }
 
-func TestBasicDataPrep(t *testing.T) {
-	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		source := t.TempDir()
-		err := os.WriteFile(filepath.Join(source, "test.txt"), []byte("hello world"), 0644)
-		require.NoError(t, err)
-		output := t.TempDir()
+// TestMotionIntegration tests the basic data preparation flow with Motion.
+// 1. Create a local source storage
+// 2. Create a local output storage
+// 3. Create a preparation with the source and output storage
+// 4. Push a file to the source storage
+// 5. Prepare this file for packing
+// 6. Check this file status
+// 7. Get all jobs
+// 8. Pack each job
+func TestMotionIntegration(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithCancel(ctx)
-		defer runAPI(t, ctx)()
+		client, done := setupPreparation(t, ctx)
+		defer done()
 		defer cancel()
-		client := http.NewHTTPClientWithConfig(nil, &http.TransportConfig{
-			Host:     apiBind,
-			BasePath: http.DefaultBasePath,
-		})
-		// Create source storage
-		response, err := client.Storage.PostStorageLocal(&storage.PostStorageLocalParams{
-			Request: &models.StorageCreateLocalStorageRequest{
-				Name: "source",
-				Path: source,
+		// Push a file
+		pushResp, err := client.File.PostPreparationIDSourceNameFile(&file.PostPreparationIDSourceNameFileParams{
+			File: &models.FileInfo{
+				Path: "test.txt",
 			},
+			ID:      "prep",
+			Name:    "source",
 			Context: ctx,
 		})
 		require.NoError(t, err)
-		require.True(t, response.IsSuccess())
-		require.NotZero(t, response.Payload.ID)
-		// Create output storage
-		response, err = client.Storage.PostStorageLocal(&storage.PostStorageLocalParams{
-			Request: &models.StorageCreateLocalStorageRequest{
-				Name: "output",
-				Path: output,
-			},
+		require.True(t, pushResp.IsSuccess())
+		require.NotZero(t, pushResp.Payload.ID)
+		// Prepare a file
+		prepareResp, err := client.File.PostFileIDPrepareToPack(&file.PostFileIDPrepareToPackParams{
+			ID:      pushResp.Payload.ID,
 			Context: ctx,
 		})
 		require.NoError(t, err)
-		require.True(t, response.IsSuccess())
-		require.NotZero(t, response.Payload.ID)
-		// Create preparation
-		createPrepResp, err := client.Preparation.PostPreparation(&preparation.PostPreparationParams{
-			Request: &models.DataprepCreateRequest{
-				MaxSize:        ptr.Of("3MB"),
-				Name:           ptr.Of("prep"),
-				OutputStorages: []string{"output"},
-				SourceStorages: []string{"source"},
-			},
+		require.True(t, prepareResp.IsSuccess())
+		require.NotZero(t, prepareResp.Payload)
+		// Get this file
+		getFileResp, err := client.File.GetFileID(&file.GetFileIDParams{
+			ID:      pushResp.Payload.ID,
 			Context: ctx,
 		})
 		require.NoError(t, err)
-		require.True(t, createPrepResp.IsSuccess())
-		require.NotZero(t, createPrepResp.Payload.ID)
+		require.True(t, getFileResp.IsSuccess())
+		require.NotNil(t, getFileResp.Payload)
+		require.Len(t, getFileResp.Payload.FileRanges, 1)
+		// Get all jobs
+		jobs, err := client.Preparation.GetPreparationID(&preparation.GetPreparationIDParams{
+			ID:      "prep",
+			Context: ctx,
+		})
+		require.NoError(t, err)
+		require.True(t, jobs.IsSuccess())
+		require.Len(t, jobs.Payload, 1)
+		require.Len(t, jobs.Payload[0].Jobs, 1)
+		// Pack that job
+		car, err := client.Job.PostJobIDPack(&job.PostJobIDPackParams{
+			ID:      fmt.Sprint(jobs.Payload[0].Jobs[0].ID),
+			Context: ctx,
+		})
+		require.NoError(t, err)
+		require.True(t, car.IsSuccess())
+		require.NotZero(t, car.Payload.ID)
+		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", car.Payload.PieceCid)
+	})
+}
+
+func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, func()) {
+	t.Helper()
+	source := t.TempDir()
+	err := os.WriteFile(filepath.Join(source, "test.txt"), []byte("hello world"), 0644)
+	require.NoError(t, err)
+	output := t.TempDir()
+	done := runAPI(t, ctx)
+	client := http.NewHTTPClientWithConfig(nil, &http.TransportConfig{
+		Host:     apiBind,
+		BasePath: http.DefaultBasePath,
+	})
+	// Create source storage
+	response, err := client.Storage.PostStorageLocal(&storage.PostStorageLocalParams{
+		Request: &models.StorageCreateLocalStorageRequest{
+			Name: "source",
+			Path: source,
+		},
+		Context: ctx,
+	})
+	require.NoError(t, err)
+	require.True(t, response.IsSuccess())
+	require.NotZero(t, response.Payload.ID)
+	// Create output storage
+	response, err = client.Storage.PostStorageLocal(&storage.PostStorageLocalParams{
+		Request: &models.StorageCreateLocalStorageRequest{
+			Name: "output",
+			Path: output,
+		},
+		Context: ctx,
+	})
+	require.NoError(t, err)
+	require.True(t, response.IsSuccess())
+	require.NotZero(t, response.Payload.ID)
+	// Create preparation
+	createPrepResp, err := client.Preparation.PostPreparation(&preparation.PostPreparationParams{
+		Request: &models.DataprepCreateRequest{
+			MaxSize:        ptr.Of("3MB"),
+			Name:           ptr.Of("prep"),
+			OutputStorages: []string{"output"},
+			SourceStorages: []string{"source"},
+		},
+		Context: ctx,
+	})
+	require.NoError(t, err)
+	require.True(t, createPrepResp.IsSuccess())
+	require.NotZero(t, createPrepResp.Payload.ID)
+	return client, done
+}
+
+// TestBasicDataPrep tests the basic data preparation flow.
+// 1. Create a local source storage
+// 2. Create a local output storage
+// 3. Create a preparation with the source and output storage
+// 4. Start scanning the source storage
+// 5. Run the dataset worker
+// 6. List the pieces
+// 7. Start daggen
+// 8. Run the dataset worker
+// 9. List the pieces
+func TestBasicDataPrep(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		ctx, cancel := context.WithCancel(ctx)
+		client, done := setupPreparation(t, ctx)
+		defer done()
+		defer cancel()
 		// Start Scanning
 		startScanResp, err := client.Job.PostPreparationIDSourceNameStartScan(&job.PostPreparationIDSourceNameStartScanParams{
 			ID:      "prep",
@@ -123,6 +206,29 @@ func TestBasicDataPrep(t *testing.T) {
 		require.True(t, listPiecesResp.IsSuccess())
 		require.Len(t, listPiecesResp.Payload, 1)
 		require.Len(t, listPiecesResp.Payload[0].Pieces, 1)
-		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid.(string))
+		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid)
+		// Start daggen
+		startDagGenResp, err := client.Job.PostPreparationIDSourceNameStartDaggen(&job.PostPreparationIDSourceNameStartDaggenParams{
+			ID:      "prep",
+			Name:    "source",
+			Context: ctx,
+		})
+		require.NoError(t, err)
+		require.True(t, startDagGenResp.IsSuccess())
+		require.NotZero(t, startDagGenResp.Payload.ID)
+		// Run dataset worker
+		_, _, err = NewRunner().Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
+		require.NoError(t, err)
+		// List pieces
+		listPiecesResp, err = client.Piece.GetPreparationIDPiece(&piece.GetPreparationIDPieceParams{
+			ID:      "prep",
+			Context: ctx,
+		})
+		require.NoError(t, err)
+		require.True(t, listPiecesResp.IsSuccess())
+		require.Len(t, listPiecesResp.Payload, 1)
+		require.Len(t, listPiecesResp.Payload[0].Pieces, 2)
+		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid)
+		require.Equal(t, "baga6ea4seaqikgg6djdjtgro2pwsipxkjo754gwykmyglrv5yhjkgqi23dtqubq", listPiecesResp.Payload[0].Pieces[1].PieceCid)
 	})
 }

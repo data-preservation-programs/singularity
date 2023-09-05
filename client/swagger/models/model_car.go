@@ -33,7 +33,7 @@ type ModelCar struct {
 	JobID int64 `json:"jobId,omitempty"`
 
 	// piece cid
-	PieceCid ModelCID `json:"pieceCid,omitempty"`
+	PieceCid string `json:"pieceCid,omitempty"`
 
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`
@@ -42,7 +42,7 @@ type ModelCar struct {
 	PreparationID int64 `json:"preparationId,omitempty"`
 
 	// root cid
-	RootCid ModelCID `json:"rootCid,omitempty"`
+	RootCid string `json:"rootCid,omitempty"`
 
 	// storage Id
 	StorageID int64 `json:"storageId,omitempty"`

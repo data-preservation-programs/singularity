@@ -215,8 +215,6 @@ definitions:
       storageId:
         type: integer
     type: object
-  model.CID:
-    type: object
   model.Car:
     properties:
       attachmentId:
@@ -230,14 +228,14 @@ definitions:
       jobId:
         type: integer
       pieceCid:
-        $ref: '#/definitions/model.CID'
+        type: string
       pieceSize:
         type: integer
       preparationId:
         description: Association
         type: integer
       rootCid:
-        $ref: '#/definitions/model.CID'
+        type: string
       storageId:
         type: integer
       storagePath:
@@ -267,7 +265,7 @@ definitions:
       label:
         type: string
       pieceCid:
-        $ref: '#/definitions/model.CID'
+        type: string
       pieceSize:
         type: integer
       price:
@@ -316,11 +314,14 @@ definitions:
         description: Associations
         type: integer
       cid:
-        allOf:
-        - $ref: '#/definitions/model.CID'
         description: CID is the CID of the file.
+        type: string
       directoryId:
         type: integer
+      fileRanges:
+        items:
+          $ref: '#/definitions/model.FileRange'
+        type: array
       hash:
         description: Hash is the hash of the file.
         type: string
@@ -333,6 +334,25 @@ definitions:
         type: string
       size:
         description: Size is the size of the file in bytes.
+        type: integer
+    type: object
+  model.FileRange:
+    properties:
+      cid:
+        description: CID is the CID of the range.
+        type: string
+      fileId:
+        type: integer
+      id:
+        type: integer
+      jobId:
+        description: Associations
+        type: integer
+      length:
+        description: Length is the length of the range in bytes.
+        type: integer
+      offset:
+        description: Offset is the offset of the range inside the file.
         type: integer
     type: object
   model.Job:
@@ -7564,8 +7584,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             type: integer
         "400":
@@ -7958,7 +7978,7 @@ paths:
             $ref: '#/definitions/api.HTTPError'
       summary: Push a file to be queued
       tags:
-      - Data Source
+      - File
   /preparation/{id}/source/{name}/finalize:
     post:
       consumes:

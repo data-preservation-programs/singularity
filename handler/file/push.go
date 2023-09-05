@@ -83,7 +83,7 @@ func (DefaultHandler) PushFileHandler(
 
 // @Summary Push a file to be queued
 // @Description Tells Singularity that something is ready to be grabbed for data preparation
-// @Tags Data Source
+// @Tags File
 // @Accept json
 // @Produce json
 // @Param id path string true "Preparation ID or name"

@@ -171,8 +171,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "type": "integer"
                         }
@@ -716,7 +716,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Data Source"
+                    "File"
                 ],
                 "summary": "Push a file to be queued",
                 "parameters": [
@@ -5451,9 +5451,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.CID": {
-            "type": "object"
-        },
         "model.Car": {
             "type": "object",
             "properties": {
@@ -5473,7 +5470,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "pieceCid": {
-                    "$ref": "#/definitions/model.CID"
+                    "type": "string"
                 },
                 "pieceSize": {
                     "type": "integer"
@@ -5483,7 +5480,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "rootCid": {
-                    "$ref": "#/definitions/model.CID"
+                    "type": "string"
                 },
                 "storageId": {
                     "type": "integer"
@@ -5525,7 +5522,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pieceCid": {
-                    "$ref": "#/definitions/model.CID"
+                    "type": "string"
                 },
                 "pieceSize": {
                     "type": "integer"
@@ -5592,14 +5589,16 @@ const docTemplate = `{
                 },
                 "cid": {
                     "description": "CID is the CID of the file.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.CID"
-                        }
-                    ]
+                    "type": "string"
                 },
                 "directoryId": {
                     "type": "integer"
+                },
+                "fileRanges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FileRange"
+                    }
                 },
                 "hash": {
                     "description": "Hash is the hash of the file.",
@@ -5617,6 +5616,33 @@ const docTemplate = `{
                 },
                 "size": {
                     "description": "Size is the size of the file in bytes.",
+                    "type": "integer"
+                }
+            }
+        },
+        "model.FileRange": {
+            "type": "object",
+            "properties": {
+                "cid": {
+                    "description": "CID is the CID of the range.",
+                    "type": "string"
+                },
+                "fileId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "jobId": {
+                    "description": "Associations",
+                    "type": "integer"
+                },
+                "length": {
+                    "description": "Length is the length of the range in bytes.",
+                    "type": "integer"
+                },
+                "offset": {
+                    "description": "Offset is the offset of the range inside the file.",
                     "type": "integer"
                 }
             }

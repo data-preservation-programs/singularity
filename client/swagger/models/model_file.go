@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -22,12 +23,13 @@ type ModelFile struct {
 	AttachmentID int64 `json:"attachmentId,omitempty"`
 
 	// CID is the CID of the file.
-	Cid struct {
-		ModelCID
-	} `json:"cid,omitempty"`
+	Cid string `json:"cid,omitempty"`
 
 	// directory Id
 	DirectoryID int64 `json:"directoryId,omitempty"`
+
+	// file ranges
+	FileRanges []*ModelFileRange `json:"fileRanges"`
 
 	// Hash is the hash of the file.
 	Hash string `json:"hash,omitempty"`
@@ -49,7 +51,7 @@ type ModelFile struct {
 func (m *ModelFile) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateCid(formats); err != nil {
+	if err := m.validateFileRanges(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -59,16 +61,68 @@ func (m *ModelFile) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ModelFile) validateCid(formats strfmt.Registry) error {
-	if swag.IsZero(m.Cid) { // not required
+func (m *ModelFile) validateFileRanges(formats strfmt.Registry) error {
+	if swag.IsZero(m.FileRanges) { // not required
 		return nil
+	}
+
+	for i := 0; i < len(m.FileRanges); i++ {
+		if swag.IsZero(m.FileRanges[i]) { // not required
+			continue
+		}
+
+		if m.FileRanges[i] != nil {
+			if err := m.FileRanges[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fileRanges" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("fileRanges" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
 }
 
-// ContextValidate validates this model file based on context it is used
+// ContextValidate validate this model file based on the context it is used
 func (m *ModelFile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateFileRanges(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ModelFile) contextValidateFileRanges(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.FileRanges); i++ {
+
+		if m.FileRanges[i] != nil {
+
+			if swag.IsZero(m.FileRanges[i]) { // not required
+				return nil
+			}
+
+			if err := m.FileRanges[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("fileRanges" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("fileRanges" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 
