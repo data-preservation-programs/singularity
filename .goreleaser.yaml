@@ -1,0 +1,46 @@
+#file: noinspection YAMLSchemaValidation
+builds:
+  - env:
+      - CGO_ENABLED=0
+    binary: singularity
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - 386
+    mod_timestamp: '{{.CommitTimestamp}}'
+
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+      - goos: darwin
+        format: zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}mac_os
+      {{- else }}{{ .Os }}{{ end }}_{{ .Arch }}
+    files:
+      - LICENSE
+      - README.md
+      - docs/*
+
+release:
+  mode: keep-existing
+changelog:
+  skip: true
+checksum:
+  disable: false
+nfpms:
+  - formats:
+      - deb
+      - rpm
+      - archlinux
+    vendor: Data Programs
+    homepage: https://github.com/data-preservation-programs/singularity
+    maintainer: Xinan Xu <xinan.xu@protocol.ai>
+    description: The new pure-go implementation of Singularity provides everything you need to onboard your, or your client's data to Filecoin network.
+    license: MIT + Apache 2.0

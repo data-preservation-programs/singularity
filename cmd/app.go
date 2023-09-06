@@ -200,7 +200,7 @@ var originalHelpPrinter = cli.HelpPrinter
 
 var Version string
 
-func SetVersion(versionJSON []byte) error {
+func SetVersionJSON(versionJSON []byte) error {
 	var v struct {
 		Version string `json:"version"`
 	}

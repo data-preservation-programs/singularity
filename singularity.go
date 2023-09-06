@@ -16,7 +16,7 @@ import (
 //go:generate go run docs/gen/webapireference/main.go
 
 //go:embed version.json
-var version []byte
+var versionJSON []byte
 
 func init() {
 	if os.Getenv("GOLOG_LOG_LEVEL") == "" {
@@ -41,7 +41,7 @@ func main() {
 		log2.SetAllLoggers(log2.LevelInfo)
 	}
 	cmd.SetupHelpPager()
-	err := cmd.SetVersion(version)
+	err := cmd.SetVersionJSON(versionJSON)
 	if err != nil {
 		log.Fatal(err)
 	}
