@@ -6,6 +6,8 @@ on:
   workflow_run:
     workflows: [Releaser]
     types: [completed]
+  pull_request:
+    branches: [ "main" ]
 jobs:
   bin-releaser:
     name: Release Binaries
@@ -24,6 +26,6 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: ${{ github.event_name == 'pull_request' && 'release --snapshot --skip-publish' || 'release --clean' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
