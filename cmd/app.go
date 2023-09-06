@@ -20,11 +20,15 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/run"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
+	"github.com/filecoin-project/go-address"
+	"github.com/ipfs/go-log/v2"
 	"github.com/mattn/go-shellwords"
 	"github.com/pkg/errors"
 	"github.com/rclone/rclone/lib/terminal"
 	"github.com/urfave/cli/v2"
 )
+
+var logger = log.Logger("singularity/cmd")
 
 var App = &cli.App{
 	Name:  "singularity",
@@ -73,6 +77,19 @@ Network Support:
 			Usage:    "Lotus RPC API token",
 			Value:    "",
 			EnvVars:  []string{"LOTUS_TOKEN"},
+		},
+		&cli.BoolFlag{
+			Name:     "lotus-test",
+			Category: "Lotus",
+			Usage:    "Whether the runtime environment is using Testnet.",
+			EnvVars:  []string{"LOTUS_TEST"},
+			Action: func(c *cli.Context, testnet bool) error {
+				if testnet {
+					address.CurrentNetwork = address.Testnet
+					logger.Infow("Current network is set to Testnet")
+				}
+				return nil
+			},
 		},
 	},
 	Commands: []*cli.Command{
