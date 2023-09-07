@@ -67,7 +67,7 @@ func (c *Client) GetFile(ctx context.Context, id uint64) (*model.File, error) {
 }
 
 func (c *Client) GetFileDeals(ctx context.Context, id uint64) ([]model.Deal, error) {
-	return inspect.GetFileDealsHandler(c.db.WithContext(ctx), id)
+	return inspect.GetFileDealsHandler(c.db.WithContext(ctx), strconv.FormatUint(id, 10))
 }
 
 func (c *Client) PushFile(ctx context.Context, sourceID uint32, fileInfo dshandler.FileInfo) (*model.File, error) {
