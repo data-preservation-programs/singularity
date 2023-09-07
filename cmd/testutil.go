@@ -349,7 +349,7 @@ func (m *MockFile) GetFileHandler(ctx context.Context, db *gorm.DB, id uint64) (
 func (m *MockFile) GetFileDealsHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint64,
+	id string,
 ) ([]model.Deal, error) {
 	args := m.Called(ctx, db, id)
 	return args.Get(0).([]model.Deal), args.Error(1)

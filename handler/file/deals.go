@@ -2,8 +2,10 @@ package file
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -25,15 +27,19 @@ import (
 func (DefaultHandler) GetFileDealsHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	id uint64,
+	id string,
 ) ([]model.Deal, error) {
 	db = db.WithContext(ctx)
+	fileID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid file ID: %s", id)
+	}
 
 	var deals []model.Deal
 	query := db.Where("deals.id IN (?)", db.Table("deals").
 		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
 		Joins("JOIN file_ranges ON cars.job_id = file_ranges.job_id").
-		Where("file_ranges.file_id = ?", id).
+		Where("file_ranges.file_id = ?", fileID).
 		Distinct("deals.id"))
 	if err := query.Find(&deals).Error; err != nil {
 		return nil, errors.WithStack(err)

@@ -16,7 +16,7 @@ type Handler interface {
 	GetFileDealsHandler(
 		ctx context.Context,
 		db *gorm.DB,
-		id uint64,
+		id string,
 	) ([]model.Deal, error)
 
 	GetFileHandler(
