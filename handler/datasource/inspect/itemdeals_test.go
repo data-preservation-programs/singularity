@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path"
+	"strconv"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/database"
@@ -83,11 +84,11 @@ func TestFileDeals(t *testing.T) {
 	}
 
 	// Test file deals
-	deals, err := inspect.GetFileDealsHandler(db.WithContext(ctx), fileA.ID)
+	deals, err := inspect.GetFileDealsHandler(db.WithContext(ctx), strconv.FormatUint(fileA.ID, 10))
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 
-	deals, err = inspect.GetFileDealsHandler(db.WithContext(ctx), fileB.ID)
+	deals, err = inspect.GetFileDealsHandler(db.WithContext(ctx), strconv.FormatUint(fileB.ID, 10))
 	require.NoError(t, err)
 	require.Len(t, deals, 1)
 }
