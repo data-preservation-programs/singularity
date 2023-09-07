@@ -86,6 +86,7 @@ func (DefaultHandler) UpdateStorageHandler(
 	return &storage, err
 }
 
+// @ID UpdateStorage
 // @Summary Update a storage connection
 // @Tags Storage
 // @Param name path string true "Storage ID or name"

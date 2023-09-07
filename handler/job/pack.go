@@ -96,6 +96,7 @@ func (DefaultHandler) StartPackHandler(
 	return []model.Job{job}, errors.WithStack(err)
 }
 
+// @ID StartPack
 // @Summary Start or restart a specific packing job
 // @Tags Job
 // @Accept json
@@ -109,6 +110,7 @@ func (DefaultHandler) StartPackHandler(
 // @Router /preparation/{id}/source/{name}/start-pack/{job_id} [post]
 func _() {}
 
+// @ID StartPackAll
 // @Summary Start or restart all packing job
 // @Tags Job
 // @Accept json
@@ -121,6 +123,7 @@ func _() {}
 // @Router /preparation/{id}/source/{name}/start-pack [post]
 func _() {}
 
+// @ID PausePack
 // @Summary Pause a specific packing job
 // @Tags Job
 // @Accept json
@@ -134,6 +137,7 @@ func _() {}
 // @Router /preparation/{id}/source/{name}/pause-pack/{job_id} [post]
 func _() {}
 
+// @ID PausePackAll
 // @Summary Pause all packing job
 // @Tags Job
 // @Accept json
@@ -272,6 +276,7 @@ func (DefaultHandler) PackHandler(
 	return car, nil
 }
 
+// @ID Pack
 // @Summary Pack a pack job into car files
 // @Tags Job
 // @Accept json
@@ -302,6 +307,7 @@ func (DefaultHandler) PrepareToPackSourceHandler(
 	return errors.WithStack(scan.PrepareSource(ctx, db, attachment))
 }
 
+// @ID PrepareToPackSource
 // @Summary prepare to pack a data source
 // @Tags Job
 // @Accept json

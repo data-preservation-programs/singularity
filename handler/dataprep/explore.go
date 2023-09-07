@@ -148,6 +148,7 @@ func (DefaultHandler) ExploreHandler(
 	}, nil
 }
 
+// @ID ExplorePreparation
 // @Summary Explore a directory in a prepared source storage
 // @Tags Preparation
 // @Accept json

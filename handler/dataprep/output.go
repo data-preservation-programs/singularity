@@ -67,6 +67,7 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 	return &preparation, errors.WithStack(err)
 }
 
+// @ID AddOutputStorage
 // @Summary Attach an output storage with a preparation
 // @Tags Preparation
 // @Accept json
@@ -79,6 +80,7 @@ func (DefaultHandler) AddOutputStorageHandler(ctx context.Context, db *gorm.DB, 
 // @Router /preparation/{id}/output/{name} [post]
 func _() {}
 
+// @ID RemoveOutputStorage
 // @Summary Detach an output storage from a preparation
 // @Tags Preparation
 // @Accept json

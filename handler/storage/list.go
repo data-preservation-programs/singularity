@@ -28,6 +28,7 @@ func (DefaultHandler) ListStoragesHandler(
 	return storages, nil
 }
 
+// @ID ListStorages
 // @Summary List all storages
 // @Tags Storage
 // @Accept json

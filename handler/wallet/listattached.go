@@ -26,6 +26,7 @@ func (DefaultHandler) ListAttachedHandler(
 	return preparation.Wallets, nil
 }
 
+// @ID ListAttachedWallets
 // @Summary List all wallets of a preparation.
 // @Tags Wallet Association
 // @Produce json

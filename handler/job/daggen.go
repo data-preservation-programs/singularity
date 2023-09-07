@@ -28,6 +28,7 @@ func (DefaultHandler) StartDagGenHandler(
 	return StartJobHandler(ctx, db, id, name, model.DagGen)
 }
 
+// @ID StartDagGen
 // @Summary Start a new DAG generation job
 // @Tags Job
 // @Accept json
@@ -61,6 +62,7 @@ func (DefaultHandler) PauseDagGenHandler(
 	return PauseJobHandler(ctx, db, id, name, model.DagGen)
 }
 
+// @ID PauseDagGen
 // @Summary Pause an ongoing DAG generation job
 // @Tags Job
 // @Accept json

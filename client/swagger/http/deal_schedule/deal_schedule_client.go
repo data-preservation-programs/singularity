@@ -30,17 +30,57 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	CreateSchedule(params *CreateScheduleParams, opts ...ClientOption) (*CreateScheduleOK, error)
+
 	GetPreparationIDSchedules(params *GetPreparationIDSchedulesParams, opts ...ClientOption) (*GetPreparationIDSchedulesOK, error)
 
-	GetSchedules(params *GetSchedulesParams, opts ...ClientOption) (*GetSchedulesOK, error)
+	ListSchedules(params *ListSchedulesParams, opts ...ClientOption) (*ListSchedulesOK, error)
 
-	PostSchedule(params *PostScheduleParams, opts ...ClientOption) (*PostScheduleOK, error)
+	PauseSchedule(params *PauseScheduleParams, opts ...ClientOption) (*PauseScheduleOK, error)
 
-	PostScheduleIDPause(params *PostScheduleIDPauseParams, opts ...ClientOption) (*PostScheduleIDPauseOK, error)
-
-	PostScheduleIDResume(params *PostScheduleIDResumeParams, opts ...ClientOption) (*PostScheduleIDResumeOK, error)
+	ResumeSchedule(params *ResumeScheduleParams, opts ...ClientOption) (*ResumeScheduleOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+CreateSchedule creates a new schedule
+
+Create a new schedule
+*/
+func (a *Client) CreateSchedule(params *CreateScheduleParams, opts ...ClientOption) (*CreateScheduleOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateScheduleParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateSchedule",
+		Method:             "POST",
+		PathPattern:        "/schedule",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateScheduleReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateScheduleOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -82,22 +122,22 @@ func (a *Client) GetPreparationIDSchedules(params *GetPreparationIDSchedulesPara
 }
 
 /*
-GetSchedules lists all deal making schedules
+ListSchedules lists all deal making schedules
 */
-func (a *Client) GetSchedules(params *GetSchedulesParams, opts ...ClientOption) (*GetSchedulesOK, error) {
+func (a *Client) ListSchedules(params *ListSchedulesParams, opts ...ClientOption) (*ListSchedulesOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetSchedulesParams()
+		params = NewListSchedulesParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetSchedules",
+		ID:                 "ListSchedules",
 		Method:             "GET",
 		PathPattern:        "/schedules",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetSchedulesReader{formats: a.formats},
+		Reader:             &ListSchedulesReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -109,73 +149,33 @@ func (a *Client) GetSchedules(params *GetSchedulesParams, opts ...ClientOption) 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetSchedulesOK)
+	success, ok := result.(*ListSchedulesOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetSchedules: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListSchedules: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostSchedule creates a new schedule
-
-Create a new schedule
+PauseSchedule pauses a specific schedule
 */
-func (a *Client) PostSchedule(params *PostScheduleParams, opts ...ClientOption) (*PostScheduleOK, error) {
+func (a *Client) PauseSchedule(params *PauseScheduleParams, opts ...ClientOption) (*PauseScheduleOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostScheduleParams()
+		params = NewPauseScheduleParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostSchedule",
-		Method:             "POST",
-		PathPattern:        "/schedule",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostScheduleReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostScheduleOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostScheduleIDPause pauses a specific schedule
-*/
-func (a *Client) PostScheduleIDPause(params *PostScheduleIDPauseParams, opts ...ClientOption) (*PostScheduleIDPauseOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostScheduleIDPauseParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostScheduleIDPause",
+		ID:                 "PauseSchedule",
 		Method:             "POST",
 		PathPattern:        "/schedule/{id}/pause",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostScheduleIDPauseReader{formats: a.formats},
+		Reader:             &PauseScheduleReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -187,33 +187,33 @@ func (a *Client) PostScheduleIDPause(params *PostScheduleIDPauseParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostScheduleIDPauseOK)
+	success, ok := result.(*PauseScheduleOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostScheduleIDPause: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PauseSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostScheduleIDResume resumes a specific schedule
+ResumeSchedule resumes a specific schedule
 */
-func (a *Client) PostScheduleIDResume(params *PostScheduleIDResumeParams, opts ...ClientOption) (*PostScheduleIDResumeOK, error) {
+func (a *Client) ResumeSchedule(params *ResumeScheduleParams, opts ...ClientOption) (*ResumeScheduleOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostScheduleIDResumeParams()
+		params = NewResumeScheduleParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostScheduleIDResume",
+		ID:                 "ResumeSchedule",
 		Method:             "POST",
 		PathPattern:        "/schedule/{id}/resume",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostScheduleIDResumeReader{formats: a.formats},
+		Reader:             &ResumeScheduleReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -225,13 +225,13 @@ func (a *Client) PostScheduleIDResume(params *PostScheduleIDResumeParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostScheduleIDResumeOK)
+	success, ok := result.(*ResumeScheduleOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostScheduleIDResume: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ResumeSchedule: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

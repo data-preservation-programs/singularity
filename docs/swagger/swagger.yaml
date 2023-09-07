@@ -7499,6 +7499,7 @@ paths:
       consumes:
       - application/json
       description: List all deals
+      operationId: ListDeals
       parameters:
       - description: ListDealRequest
         in: body
@@ -7530,6 +7531,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: GetFile
       parameters:
       - description: File ID
         in: path
@@ -7554,6 +7556,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: GetFileDeals
       parameters:
       - description: File ID
         in: path
@@ -7580,6 +7583,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: PrepareToPackFile
       parameters:
       - description: File ID
         in: path
@@ -7608,6 +7612,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: Pack
       parameters:
       - description: Pack job ID
         in: path
@@ -7668,6 +7673,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: ListPreparations
       produces:
       - application/json
       responses:
@@ -7691,6 +7697,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreatePreparation
       parameters:
       - description: Create Request
         in: body
@@ -7718,6 +7725,7 @@ paths:
       - Preparation
   /preparation/{id}:
     get:
+      operationId: GetPreparationStatus
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7748,6 +7756,7 @@ paths:
     delete:
       consumes:
       - application/json
+      operationId: RemoveOutputStorage
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7780,6 +7789,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: AddOutputStorage
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7813,6 +7823,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: ListPieces
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7842,6 +7853,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: AddPiece
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7906,6 +7918,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: AddSourceStorage
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7939,6 +7952,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: ExplorePreparation
       parameters:
       - description: Preparation ID or name
         in: path
@@ -7979,6 +7993,7 @@ paths:
       - application/json
       description: Tells Singularity that something is ready to be grabbed for data
         preparation
+      operationId: PushFile
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8018,6 +8033,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: PrepareToPackSource
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8049,6 +8065,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: PauseDagGen
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8082,6 +8099,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: PausePackAll
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8115,6 +8133,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: PausePack
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8153,6 +8172,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: PauseScan
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8186,6 +8206,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: StartDagGen
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8219,6 +8240,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: StartPackAll
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8252,6 +8274,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: StartPack
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8290,6 +8313,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: StartScan
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8323,6 +8347,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: ListAttachedWallets
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8351,6 +8376,7 @@ paths:
     delete:
       consumes:
       - application/json
+      operationId: DetachWallet
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8383,6 +8409,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: AttachWallet
       parameters:
       - description: Preparation ID or name
         in: path
@@ -8417,6 +8444,7 @@ paths:
       consumes:
       - application/json
       description: Create a new schedule
+      operationId: CreateSchedule
       parameters:
       - description: CreateRequest
         in: body
@@ -8444,6 +8472,7 @@ paths:
       - Deal Schedule
   /schedule/{id}/pause:
     post:
+      operationId: PauseSchedule
       parameters:
       - description: Schedule ID
         in: path
@@ -8470,6 +8499,7 @@ paths:
       - Deal Schedule
   /schedule/{id}/resume:
     post:
+      operationId: ResumeSchedule
       parameters:
       - description: Schedule ID
         in: path
@@ -8496,6 +8526,7 @@ paths:
       - Deal Schedule
   /schedules:
     get:
+      operationId: ListSchedules
       produces:
       - application/json
       responses:
@@ -8521,6 +8552,7 @@ paths:
       consumes:
       - application/json
       description: Send a manual deal proposal
+      operationId: SendManual
       parameters:
       - description: Proposal
         in: body
@@ -8550,6 +8582,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: ListStorages
       produces:
       - application/json
       responses:
@@ -8572,6 +8605,7 @@ paths:
       - Storage
   /storage/{name}:
     delete:
+      operationId: RemoveStorage
       parameters:
       - description: Storage ID or name
         in: path
@@ -8595,6 +8629,7 @@ paths:
     patch:
       consumes:
       - application/json
+      operationId: UpdateStorage
       parameters:
       - description: Storage ID or name
         in: path
@@ -8629,6 +8664,7 @@ paths:
     get:
       consumes:
       - application/json
+      operationId: ExploreStorage
       parameters:
       - description: Storage ID or name
         in: path
@@ -8664,6 +8700,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateStorage
       parameters:
       - description: Storage type
         in: path
@@ -8698,6 +8735,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateAcdStorage
       parameters:
       - description: Request body
         in: body
@@ -8727,6 +8765,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateAzureblobStorage
       parameters:
       - description: Request body
         in: body
@@ -8756,6 +8795,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateB2Storage
       parameters:
       - description: Request body
         in: body
@@ -8785,6 +8825,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateBoxStorage
       parameters:
       - description: Request body
         in: body
@@ -8814,6 +8855,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateDriveStorage
       parameters:
       - description: Request body
         in: body
@@ -8843,6 +8885,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateDropboxStorage
       parameters:
       - description: Request body
         in: body
@@ -8872,6 +8915,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateFichierStorage
       parameters:
       - description: Request body
         in: body
@@ -8901,6 +8945,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateFilefabricStorage
       parameters:
       - description: Request body
         in: body
@@ -8930,6 +8975,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateFtpStorage
       parameters:
       - description: Request body
         in: body
@@ -8959,6 +9005,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateGcsStorage
       parameters:
       - description: Request body
         in: body
@@ -8988,6 +9035,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateGphotosStorage
       parameters:
       - description: Request body
         in: body
@@ -9017,6 +9065,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateHdfsStorage
       parameters:
       - description: Request body
         in: body
@@ -9046,6 +9095,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateHidriveStorage
       parameters:
       - description: Request body
         in: body
@@ -9075,6 +9125,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateHttpStorage
       parameters:
       - description: Request body
         in: body
@@ -9104,6 +9155,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateInternetarchiveStorage
       parameters:
       - description: Request body
         in: body
@@ -9133,6 +9185,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateJottacloudStorage
       parameters:
       - description: Request body
         in: body
@@ -9162,6 +9215,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateKoofrDigistorageStorage
       parameters:
       - description: Request body
         in: body
@@ -9191,6 +9245,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateKoofrKoofrStorage
       parameters:
       - description: Request body
         in: body
@@ -9220,6 +9275,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateKoofrOtherStorage
       parameters:
       - description: Request body
         in: body
@@ -9250,6 +9306,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateLocalStorage
       parameters:
       - description: Request body
         in: body
@@ -9279,6 +9336,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateMailruStorage
       parameters:
       - description: Request body
         in: body
@@ -9308,6 +9366,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateMegaStorage
       parameters:
       - description: Request body
         in: body
@@ -9337,6 +9396,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateNetstorageStorage
       parameters:
       - description: Request body
         in: body
@@ -9366,6 +9426,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOnedriveStorage
       parameters:
       - description: Request body
         in: body
@@ -9395,6 +9456,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOosEnv_authStorage
       parameters:
       - description: Request body
         in: body
@@ -9425,6 +9487,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOosInstance_principal_authStorage
       parameters:
       - description: Request body
         in: body
@@ -9455,6 +9518,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOosNo_authStorage
       parameters:
       - description: Request body
         in: body
@@ -9485,6 +9549,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOosResource_principal_authStorage
       parameters:
       - description: Request body
         in: body
@@ -9515,6 +9580,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOosUser_principal_authStorage
       parameters:
       - description: Request body
         in: body
@@ -9545,6 +9611,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateOpendriveStorage
       parameters:
       - description: Request body
         in: body
@@ -9574,6 +9641,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreatePcloudStorage
       parameters:
       - description: Request body
         in: body
@@ -9603,6 +9671,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreatePremiumizemeStorage
       parameters:
       - description: Request body
         in: body
@@ -9632,6 +9701,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreatePutioStorage
       parameters:
       - description: Request body
         in: body
@@ -9661,6 +9731,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateQingstorStorage
       parameters:
       - description: Request body
         in: body
@@ -9690,6 +9761,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3AlibabaStorage
       parameters:
       - description: Request body
         in: body
@@ -9720,6 +9792,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3ArvanCloudStorage
       parameters:
       - description: Request body
         in: body
@@ -9749,6 +9822,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3AWSStorage
       parameters:
       - description: Request body
         in: body
@@ -9778,6 +9852,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3CephStorage
       parameters:
       - description: Request body
         in: body
@@ -9807,6 +9882,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3ChinaMobileStorage
       parameters:
       - description: Request body
         in: body
@@ -9837,6 +9913,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3CloudflareStorage
       parameters:
       - description: Request body
         in: body
@@ -9866,6 +9943,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3DigitalOceanStorage
       parameters:
       - description: Request body
         in: body
@@ -9895,6 +9973,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3DreamhostStorage
       parameters:
       - description: Request body
         in: body
@@ -9924,6 +10003,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3HuaweiOBSStorage
       parameters:
       - description: Request body
         in: body
@@ -9953,6 +10033,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3IBMCOSStorage
       parameters:
       - description: Request body
         in: body
@@ -9982,6 +10063,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3IDriveStorage
       parameters:
       - description: Request body
         in: body
@@ -10011,6 +10093,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3IONOSStorage
       parameters:
       - description: Request body
         in: body
@@ -10040,6 +10123,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3LiaraStorage
       parameters:
       - description: Request body
         in: body
@@ -10069,6 +10153,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3LyveCloudStorage
       parameters:
       - description: Request body
         in: body
@@ -10098,6 +10183,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3MinioStorage
       parameters:
       - description: Request body
         in: body
@@ -10127,6 +10213,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3NeteaseStorage
       parameters:
       - description: Request body
         in: body
@@ -10156,6 +10243,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3OtherStorage
       parameters:
       - description: Request body
         in: body
@@ -10185,6 +10273,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3QiniuStorage
       parameters:
       - description: Request body
         in: body
@@ -10214,6 +10303,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3RackCorpStorage
       parameters:
       - description: Request body
         in: body
@@ -10243,6 +10333,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3ScalewayStorage
       parameters:
       - description: Request body
         in: body
@@ -10272,6 +10363,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3SeaweedFSStorage
       parameters:
       - description: Request body
         in: body
@@ -10301,6 +10393,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3StackPathStorage
       parameters:
       - description: Request body
         in: body
@@ -10330,6 +10423,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3StorjStorage
       parameters:
       - description: Request body
         in: body
@@ -10359,6 +10453,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3TencentCOSStorage
       parameters:
       - description: Request body
         in: body
@@ -10388,6 +10483,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateS3WasabiStorage
       parameters:
       - description: Request body
         in: body
@@ -10417,6 +10513,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSeafileStorage
       parameters:
       - description: Request body
         in: body
@@ -10446,6 +10543,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSftpStorage
       parameters:
       - description: Request body
         in: body
@@ -10475,6 +10573,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSharefileStorage
       parameters:
       - description: Request body
         in: body
@@ -10504,6 +10603,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSiaStorage
       parameters:
       - description: Request body
         in: body
@@ -10533,6 +10633,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSmbStorage
       parameters:
       - description: Request body
         in: body
@@ -10562,6 +10663,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateStorjExistingStorage
       parameters:
       - description: Request body
         in: body
@@ -10591,6 +10693,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateStorjNewStorage
       parameters:
       - description: Request body
         in: body
@@ -10621,6 +10724,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSugarsyncStorage
       parameters:
       - description: Request body
         in: body
@@ -10650,6 +10754,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateSwiftStorage
       parameters:
       - description: Request body
         in: body
@@ -10679,6 +10784,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateUptoboxStorage
       parameters:
       - description: Request body
         in: body
@@ -10708,6 +10814,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateWebdavStorage
       parameters:
       - description: Request body
         in: body
@@ -10737,6 +10844,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateYandexStorage
       parameters:
       - description: Request body
         in: body
@@ -10766,6 +10874,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: CreateZohoStorage
       parameters:
       - description: Request body
         in: body
@@ -10793,6 +10902,7 @@ paths:
       - Storage
   /wallet:
     get:
+      operationId: ListWallets
       produces:
       - application/json
       responses:
@@ -10816,6 +10926,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: ImportWallet
       parameters:
       - description: Request body
         in: body
@@ -10843,6 +10954,7 @@ paths:
       - Wallet
   /wallet/{address}:
     delete:
+      operationId: RemoveWallet
       parameters:
       - description: Address
         in: path

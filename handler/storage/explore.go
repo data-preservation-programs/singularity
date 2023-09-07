@@ -96,6 +96,7 @@ func (DefaultHandler) ExploreHandler(
 	return result, nil
 }
 
+// @ID ExploreStorage
 // @Summary Explore directory entries in a storage system
 // @Tags Storage
 // @Accept json

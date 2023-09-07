@@ -48,6 +48,7 @@ func (DefaultHandler) GetFileDealsHandler(
 	return deals, nil
 }
 
+// @ID GetFileDeals
 // @Summary Get all deals that have been made for a file
 // @Tags File
 // @Accept json
