@@ -41,7 +41,7 @@ func TestHelpPage(t *testing.T) {
 
 func TestVersion(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		err := SetVersion([]byte(`{"version":"v0.0.1"}`))
+		err := SetVersionJSON([]byte(`{"version":"v0.0.1"}`))
 		require.NoError(t, err)
 		out, _, err := NewRunner().Run(ctx, "singularity version")
 		require.NoError(t, err)

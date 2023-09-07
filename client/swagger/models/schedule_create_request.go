@@ -59,6 +59,9 @@ type ScheduleCreateRequest struct {
 	// Schedule cron patter
 	ScheduleCron string `json:"scheduleCron,omitempty"`
 
+	// Whether a cron schedule should run in definitely
+	ScheduleCronPerpetual bool `json:"scheduleCronPerpetual,omitempty"`
+
 	// Number of deals per scheduled time
 	ScheduleDealNumber int64 `json:"scheduleDealNumber,omitempty"`
 

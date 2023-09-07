@@ -268,6 +268,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/preparation", s.toEchoHandler(dataprep.Default.CreatePreparationHandler))
 	e.GET("/api/preparation", s.toEchoHandler(dataprep.Default.ListHandler))
 	e.GET("/api/preparation/:id", s.toEchoHandler(job.Default.GetStatusHandler))
+	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(dataprep.Default.ListSchedulesHandler))
 
 	// Job management
 	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(job.Default.StartDagGenHandler))

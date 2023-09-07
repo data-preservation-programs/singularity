@@ -302,6 +302,10 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						})).First(&car).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				Logger.Infow("no more pieces to send deal", "schedule_id", schedule.ID)
+				// we're out of deals to schedule, but if we're running a perpetual cron, we simply put things on hold till next cron
+				if schedule.ScheduleCron != "" && schedule.ScheduleCronPerpetual {
+					return "", nil
+				}
 				return model.ScheduleCompleted, nil
 			}
 			if err != nil {

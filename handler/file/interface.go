@@ -12,7 +12,7 @@ type Handler interface {
 		ctx context.Context,
 		db *gorm.DB,
 		fileID uint64) (int64, error)
-	
+
 	GetFileDealsHandler(
 		ctx context.Context,
 		db *gorm.DB,

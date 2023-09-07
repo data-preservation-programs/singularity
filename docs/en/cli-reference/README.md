@@ -22,9 +22,11 @@ DESCRIPTION:
        For Calibration network:
          * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
          * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+         * Set LOTUS_TEST to 1
        For all other networks:
          * Set LOTUS_API to your network's Lotus API endpoint
          * Set MARKET_DEAL_URL to empty string
+         * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
        Switching between different networks with the same database instance is not recommended.
 
 COMMANDS:
@@ -52,6 +54,7 @@ GLOBAL OPTIONS:
    Lotus
 
    --lotus-api value    Lotus RPC API endpoint (default: "https://api.node.glif.io/rpc/v1") [$LOTUS_API]
+   --lotus-test         Whether the runtime environment is using Testnet. (default: false) [$LOTUS_TEST]
    --lotus-token value  Lotus RPC API token [$LOTUS_TOKEN]
 
 ```

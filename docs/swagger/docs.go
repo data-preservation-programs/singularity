@@ -599,6 +599,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/preparation/{id}/schedules": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "List all schedules for a preparation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preparation ID or name",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Schedule"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/preparation/{id}/source/{name}": {
             "post": {
                 "consumes": [
@@ -5794,6 +5840,9 @@ const docTemplate = `{
                 "scheduleCron": {
                     "type": "string"
                 },
+                "scheduleCronPerpetual": {
+                    "type": "boolean"
+                },
                 "scheduleDealNumber": {
                     "type": "integer"
                 },
@@ -5957,6 +6006,10 @@ const docTemplate = `{
                 "scheduleCron": {
                     "description": "Schedule cron patter",
                     "type": "string"
+                },
+                "scheduleCronPerpetual": {
+                    "description": "Whether a cron schedule should run in definitely",
+                    "type": "boolean"
                 },
                 "scheduleDealNumber": {
                     "description": "Number of deals per scheduled time",

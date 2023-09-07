@@ -297,6 +297,7 @@ export interface ModelSchedule {
   pricePerGbEpoch?: number;
   provider?: string;
   scheduleCron?: string;
+  scheduleCronPerpetual?: boolean;
   scheduleDealNumber?: number;
   scheduleDealSize?: number;
   startDelay?: number;
@@ -383,6 +384,8 @@ export interface ScheduleCreateRequest {
   provider?: string;
   /** Schedule cron patter */
   scheduleCron?: string;
+  /** Whether a cron schedule should run in definitely */
+  scheduleCronPerpetual?: boolean;
   /** Number of deals per scheduled time */
   scheduleDealNumber?: number;
   /** Size of deals per schedule trigger in human readable format, i.e. 100 TiB */
@@ -8120,6 +8123,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/preparation/${id}/piece`,
         method: "POST",
         body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Deal Schedule
+     * @name SchedulesDetail
+     * @summary List all schedules for a preparation
+     * @request GET:/preparation/{id}/schedules
+     */
+    schedulesDetail: (id: string, params: RequestParams = {}) =>
+      this.request<ModelSchedule[], ApiHTTPError>({
+        path: `/preparation/${id}/schedules`,
+        method: "GET",
         type: ContentType.Json,
         format: "json",
         ...params,

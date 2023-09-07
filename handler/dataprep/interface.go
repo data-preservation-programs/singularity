@@ -42,6 +42,10 @@ type Handler interface {
 	) (*model.Car, error)
 
 	AddSourceStorageHandler(ctx context.Context, db *gorm.DB, id string, source string) (*model.Preparation, error)
+	ListSchedulesHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		id string) ([]model.Schedule, error)
 }
 
 type DefaultHandler struct{}

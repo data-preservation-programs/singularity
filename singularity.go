@@ -18,7 +18,7 @@ import (
 //go:generate npm run gen
 
 //go:embed version.json
-var version []byte
+var versionJSON []byte
 
 func init() {
 	if os.Getenv("GOLOG_LOG_LEVEL") == "" {
@@ -44,7 +44,7 @@ func main() {
 	}
 	cmd.SetupHelpPager()
 	cmd.SetupErrorHandler()
-	err := cmd.SetVersion(version)
+	err := cmd.SetVersionJSON(versionJSON)
 	if err != nil {
 		log.Fatal(err)
 	}

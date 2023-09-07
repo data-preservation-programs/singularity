@@ -459,6 +459,8 @@ definitions:
         type: string
       scheduleCron:
         type: string
+      scheduleCronPerpetual:
+        type: boolean
       scheduleDealNumber:
         type: integer
       scheduleDealSize:
@@ -577,6 +579,9 @@ definitions:
       scheduleCron:
         description: Schedule cron patter
         type: string
+      scheduleCronPerpetual:
+        description: Whether a cron schedule should run in definitely
+        type: boolean
       scheduleDealNumber:
         description: Number of deals per scheduled time
         type: integer
@@ -7867,6 +7872,36 @@ paths:
       summary: Add a piece to a preparation
       tags:
       - Piece
+  /preparation/{id}/schedules:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Preparation ID or name
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Schedule'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List all schedules for a preparation
+      tags:
+      - Deal Schedule
   /preparation/{id}/source/{name}:
     post:
       consumes:

@@ -20,9 +20,13 @@ import (
 	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
+	"github.com/filecoin-project/go-address"
+	"github.com/ipfs/go-log/v2"
 	"github.com/rclone/rclone/lib/terminal"
 	"github.com/urfave/cli/v2"
 )
+
+var logger = log.Logger("singularity/cmd")
 
 var App = &cli.App{
 	Name:  "singularity",
@@ -40,9 +44,11 @@ Network Support:
     For Calibration network:
       * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
       * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+      * Set LOTUS_TEST to 1
     For all other networks:
       * Set LOTUS_API to your network's Lotus API endpoint
       * Set MARKET_DEAL_URL to empty string
+      * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
     Switching between different networks with the same database instance is not recommended.`,
 	EnableBashCompletion: true,
 	Flags: []cli.Flag{
@@ -76,6 +82,19 @@ Network Support:
 			Usage:    "Lotus RPC API token",
 			Value:    "",
 			EnvVars:  []string{"LOTUS_TOKEN"},
+		},
+		&cli.BoolFlag{
+			Name:     "lotus-test",
+			Category: "Lotus",
+			Usage:    "Whether the runtime environment is using Testnet.",
+			EnvVars:  []string{"LOTUS_TEST"},
+			Action: func(c *cli.Context, testnet bool) error {
+				if testnet {
+					address.CurrentNetwork = address.Testnet
+					logger.Infow("Current network is set to Testnet")
+				}
+				return nil
+			},
 		},
 	},
 	Commands: []*cli.Command{
@@ -179,7 +198,7 @@ var originalHelpPrinter = cli.HelpPrinter
 
 var Version string
 
-func SetVersion(versionJSON []byte) error {
+func SetVersionJSON(versionJSON []byte) error {
 	var v struct {
 		Version string `json:"version"`
 	}

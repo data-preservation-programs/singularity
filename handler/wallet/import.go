@@ -9,10 +9,13 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-address"
+	"github.com/ipfs/go-log/v2"
 	"github.com/jsign/go-filsigner/wallet"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
+
+var logger = log.Logger("singularity/handler/wallet")
 
 type ImportRequest struct {
 	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
@@ -52,12 +55,14 @@ func (DefaultHandler) ImportHandler(
 	db = db.WithContext(ctx)
 	addr, err := wallet.PublicKey(request.PrivateKey)
 	if err != nil {
+		logger.Errorw("failed to instantiate wallet address from private key", "err", err)
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "invalid private key")
 	}
 
 	var result string
 	err = lotusClient.CallFor(ctx, &result, "Filecoin.StateLookupID", addr.String(), nil)
 	if err != nil {
+		logger.Errorw("failed to lookup state for wallet address", "addr", addr, "err", err)
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrap(err, "failed to lookup actor ID"))
 	}
 

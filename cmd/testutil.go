@@ -181,6 +181,11 @@ type MockDataPrep struct {
 	mock.Mock
 }
 
+func (m *MockDataPrep) ListSchedulesHandler(ctx context.Context, db *gorm.DB, id string) ([]model.Schedule, error) {
+	args := m.Called(ctx, db, id)
+	return args.Get(0).([]model.Schedule), args.Error(1)
+}
+
 func (m *MockDataPrep) CreatePreparationHandler(ctx context.Context, db *gorm.DB, request dataprep.CreateRequest) (*model.Preparation, error) {
 	args := m.Called(ctx, db, request)
 	return args.Get(0).(*model.Preparation), args.Error(1)
