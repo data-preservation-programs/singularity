@@ -111,6 +111,7 @@ func (DefaultHandler) CreateStorageHandler(
 	return &storage, err
 }
 
+// @ID CreateStorage
 // @Summary Create a new storage
 // @Tags Storage
 // @Accept json

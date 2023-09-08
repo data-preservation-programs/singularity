@@ -21,6 +21,7 @@ type ImportRequest struct {
 	PrivateKey string `json:"privateKey"` // This is the exported private key from lotus wallet export
 }
 
+// @ID ImportWallet
 // @Summary Import a private key
 // @Tags Wallet
 // @Accept json

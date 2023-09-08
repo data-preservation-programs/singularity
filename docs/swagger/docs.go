@@ -36,6 +36,7 @@ const docTemplate = `{
                     "Deal"
                 ],
                 "summary": "List all deals",
+                "operationId": "ListDeals",
                 "parameters": [
                     {
                         "description": "ListDealRequest",
@@ -84,6 +85,7 @@ const docTemplate = `{
                     "File"
                 ],
                 "summary": "Get details about a file",
+                "operationId": "GetFile",
                 "parameters": [
                     {
                         "type": "integer",
@@ -121,6 +123,7 @@ const docTemplate = `{
                     "File"
                 ],
                 "summary": "Get all deals that have been made for a file",
+                "operationId": "GetFileDeals",
                 "parameters": [
                     {
                         "type": "integer",
@@ -161,6 +164,7 @@ const docTemplate = `{
                     "File"
                 ],
                 "summary": "prepare job for a given item",
+                "operationId": "PrepareToPackFile",
                 "parameters": [
                     {
                         "type": "integer",
@@ -204,6 +208,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Pack a pack job into car files",
+                "operationId": "Pack",
                 "parameters": [
                     {
                         "type": "string",
@@ -294,6 +299,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "List all preparations",
+                "operationId": "ListPreparations",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -329,6 +335,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "Create a new preparation",
+                "operationId": "CreatePreparation",
                 "parameters": [
                     {
                         "description": "Create Request",
@@ -371,6 +378,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "Get the status of a preparation",
+                "operationId": "GetPreparationStatus",
                 "parameters": [
                     {
                         "type": "string",
@@ -417,6 +425,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "Attach an output storage with a preparation",
+                "operationId": "AddOutputStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -465,6 +474,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "Detach an output storage from a preparation",
+                "operationId": "RemoveOutputStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -515,6 +525,7 @@ const docTemplate = `{
                     "Piece"
                 ],
                 "summary": "List all prepared pieces for a preparation",
+                "operationId": "ListPieces",
                 "parameters": [
                     {
                         "type": "string",
@@ -559,6 +570,7 @@ const docTemplate = `{
                     "Piece"
                 ],
                 "summary": "Add a piece to a preparation",
+                "operationId": "AddPiece",
                 "parameters": [
                     {
                         "type": "string",
@@ -611,6 +623,7 @@ const docTemplate = `{
                     "Deal Schedule"
                 ],
                 "summary": "List all schedules for a preparation",
+                "operationId": "ListPreparationSchedules",
                 "parameters": [
                     {
                         "type": "string",
@@ -657,6 +670,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "Attach a source storage with a preparation",
+                "operationId": "AddSourceStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -707,6 +721,7 @@ const docTemplate = `{
                     "Preparation"
                 ],
                 "summary": "Explore a directory in a prepared source storage",
+                "operationId": "ExplorePreparation",
                 "parameters": [
                     {
                         "type": "string",
@@ -765,6 +780,7 @@ const docTemplate = `{
                     "File"
                 ],
                 "summary": "Push a file to be queued",
+                "operationId": "PushFile",
                 "parameters": [
                     {
                         "type": "string",
@@ -824,6 +840,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "prepare to pack a data source",
+                "operationId": "PrepareToPackSource",
                 "parameters": [
                     {
                         "type": "string",
@@ -871,6 +888,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Pause an ongoing DAG generation job",
+                "operationId": "PauseDagGen",
                 "parameters": [
                     {
                         "type": "string",
@@ -921,6 +939,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Pause all packing job",
+                "operationId": "PausePackAll",
                 "parameters": [
                     {
                         "type": "string",
@@ -971,6 +990,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Pause a specific packing job",
+                "operationId": "PausePack",
                 "parameters": [
                     {
                         "type": "string",
@@ -1028,6 +1048,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Pause an ongoing scanning job",
+                "operationId": "PauseScan",
                 "parameters": [
                     {
                         "type": "string",
@@ -1078,6 +1099,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Start a new DAG generation job",
+                "operationId": "StartDagGen",
                 "parameters": [
                     {
                         "type": "string",
@@ -1128,6 +1150,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Start or restart all packing job",
+                "operationId": "StartPackAll",
                 "parameters": [
                     {
                         "type": "string",
@@ -1178,6 +1201,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Start or restart a specific packing job",
+                "operationId": "StartPack",
                 "parameters": [
                     {
                         "type": "string",
@@ -1235,6 +1259,7 @@ const docTemplate = `{
                     "Job"
                 ],
                 "summary": "Start a new scanning job",
+                "operationId": "StartScan",
                 "parameters": [
                     {
                         "type": "string",
@@ -1285,6 +1310,7 @@ const docTemplate = `{
                     "Wallet Association"
                 ],
                 "summary": "List all wallets of a preparation.",
+                "operationId": "ListAttachedWallets",
                 "parameters": [
                     {
                         "type": "string",
@@ -1298,7 +1324,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Wallet"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Wallet"
+                            }
                         }
                     },
                     "400": {
@@ -1328,6 +1357,7 @@ const docTemplate = `{
                     "Wallet Association"
                 ],
                 "summary": "Attach a new wallet with a preparation",
+                "operationId": "AttachWallet",
                 "parameters": [
                     {
                         "type": "string",
@@ -1376,6 +1406,7 @@ const docTemplate = `{
                     "Wallet Association"
                 ],
                 "summary": "Detach a new wallet from a preparation",
+                "operationId": "DetachWallet",
                 "parameters": [
                     {
                         "type": "string",
@@ -1427,6 +1458,7 @@ const docTemplate = `{
                     "Deal Schedule"
                 ],
                 "summary": "Create a new schedule",
+                "operationId": "CreateSchedule",
                 "parameters": [
                     {
                         "description": "CreateRequest",
@@ -1469,6 +1501,7 @@ const docTemplate = `{
                     "Deal Schedule"
                 ],
                 "summary": "Pause a specific schedule",
+                "operationId": "PauseSchedule",
                 "parameters": [
                     {
                         "type": "string",
@@ -1509,6 +1542,7 @@ const docTemplate = `{
                     "Deal Schedule"
                 ],
                 "summary": "Resume a specific schedule",
+                "operationId": "ResumeSchedule",
                 "parameters": [
                     {
                         "type": "string",
@@ -1549,6 +1583,7 @@ const docTemplate = `{
                     "Deal Schedule"
                 ],
                 "summary": "List all deal making schedules",
+                "operationId": "ListSchedules",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1587,6 +1622,7 @@ const docTemplate = `{
                     "Deal"
                 ],
                 "summary": "Send a manual deal proposal",
+                "operationId": "SendManual",
                 "parameters": [
                     {
                         "description": "Proposal",
@@ -1632,6 +1668,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "List all storages",
+                "operationId": "ListStorages",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1669,6 +1706,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Acd storage",
+                "operationId": "CreateAcdStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1714,6 +1752,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Azureblob storage",
+                "operationId": "CreateAzureblobStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1759,6 +1798,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create B2 storage",
+                "operationId": "CreateB2Storage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1804,6 +1844,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Box storage",
+                "operationId": "CreateBoxStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1849,6 +1890,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Drive storage",
+                "operationId": "CreateDriveStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1894,6 +1936,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Dropbox storage",
+                "operationId": "CreateDropboxStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1939,6 +1982,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Fichier storage",
+                "operationId": "CreateFichierStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -1984,6 +2028,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Filefabric storage",
+                "operationId": "CreateFilefabricStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2029,6 +2074,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Ftp storage",
+                "operationId": "CreateFtpStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2074,6 +2120,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Gcs storage",
+                "operationId": "CreateGcsStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2119,6 +2166,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Gphotos storage",
+                "operationId": "CreateGphotosStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2164,6 +2212,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Hdfs storage",
+                "operationId": "CreateHdfsStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2209,6 +2258,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Hidrive storage",
+                "operationId": "CreateHidriveStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2254,6 +2304,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Http storage",
+                "operationId": "CreateHttpStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2299,6 +2350,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Internetarchive storage",
+                "operationId": "CreateInternetarchiveStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2344,6 +2396,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Jottacloud storage",
+                "operationId": "CreateJottacloudStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2389,6 +2442,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Koofr storage with digistorage - Digi Storage, https://storage.rcs-rds.ro/",
+                "operationId": "CreateKoofrDigistorageStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2434,6 +2488,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Koofr storage with koofr - Koofr, https://app.koofr.net/",
+                "operationId": "CreateKoofrKoofrStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2479,6 +2534,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Koofr storage with other - Any other Koofr API compatible storage service",
+                "operationId": "CreateKoofrOtherStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2524,6 +2580,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Local storage",
+                "operationId": "CreateLocalStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2569,6 +2626,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Mailru storage",
+                "operationId": "CreateMailruStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2614,6 +2672,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Mega storage",
+                "operationId": "CreateMegaStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2659,6 +2718,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Netstorage storage",
+                "operationId": "CreateNetstorageStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2704,6 +2764,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Onedrive storage",
+                "operationId": "CreateOnedriveStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2749,6 +2810,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Oos storage with env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins",
+                "operationId": "CreateOosEnv_authStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2794,6 +2856,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Oos storage with instance_principal_auth - use instance principals to authorize an instance to make API calls.",
+                "operationId": "CreateOosInstance_principal_authStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2839,6 +2902,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Oos storage with no_auth - no credentials needed, this is typically for reading public buckets",
+                "operationId": "CreateOosNo_authStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2884,6 +2948,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Oos storage with resource_principal_auth - use resource principals to make API calls",
+                "operationId": "CreateOosResource_principal_authStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2929,6 +2994,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Oos storage with user_principal_auth - use an OCI user and an API key for authentication.",
+                "operationId": "CreateOosUser_principal_authStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -2974,6 +3040,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Opendrive storage",
+                "operationId": "CreateOpendriveStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3019,6 +3086,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Pcloud storage",
+                "operationId": "CreatePcloudStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3064,6 +3132,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Premiumizeme storage",
+                "operationId": "CreatePremiumizemeStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3109,6 +3178,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Putio storage",
+                "operationId": "CreatePutioStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3154,6 +3224,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Qingstor storage",
+                "operationId": "CreateQingstorStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3199,6 +3270,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun",
+                "operationId": "CreateS3AlibabaStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3244,6 +3316,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with ArvanCloud - Arvan Cloud Object Storage (AOS)",
+                "operationId": "CreateS3ArvanCloudStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3289,6 +3362,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with AWS - Amazon Web Services (AWS) S3",
+                "operationId": "CreateS3AWSStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3334,6 +3408,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Ceph - Ceph Object Storage",
+                "operationId": "CreateS3CephStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3379,6 +3454,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with ChinaMobile - China Mobile Ecloud Elastic Object Storage (EOS)",
+                "operationId": "CreateS3ChinaMobileStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3424,6 +3500,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Cloudflare - Cloudflare R2 Storage",
+                "operationId": "CreateS3CloudflareStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3469,6 +3546,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with DigitalOcean - DigitalOcean Spaces",
+                "operationId": "CreateS3DigitalOceanStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3514,6 +3592,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Dreamhost - Dreamhost DreamObjects",
+                "operationId": "CreateS3DreamhostStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3559,6 +3638,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with HuaweiOBS - Huawei Object Storage Service",
+                "operationId": "CreateS3HuaweiOBSStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3604,6 +3684,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with IBMCOS - IBM COS S3",
+                "operationId": "CreateS3IBMCOSStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3649,6 +3730,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with IDrive - IDrive e2",
+                "operationId": "CreateS3IDriveStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3694,6 +3776,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with IONOS - IONOS Cloud",
+                "operationId": "CreateS3IONOSStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3739,6 +3822,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Liara - Liara Object Storage",
+                "operationId": "CreateS3LiaraStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3784,6 +3868,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with LyveCloud - Seagate Lyve Cloud",
+                "operationId": "CreateS3LyveCloudStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3829,6 +3914,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Minio - Minio Object Storage",
+                "operationId": "CreateS3MinioStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3874,6 +3960,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Netease - Netease Object Storage (NOS)",
+                "operationId": "CreateS3NeteaseStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3919,6 +4006,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Other - Any other S3 compatible provider",
+                "operationId": "CreateS3OtherStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -3964,6 +4052,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Qiniu - Qiniu Object Storage (Kodo)",
+                "operationId": "CreateS3QiniuStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4009,6 +4098,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with RackCorp - RackCorp Object Storage",
+                "operationId": "CreateS3RackCorpStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4054,6 +4144,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Scaleway - Scaleway Object Storage",
+                "operationId": "CreateS3ScalewayStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4099,6 +4190,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with SeaweedFS - SeaweedFS S3",
+                "operationId": "CreateS3SeaweedFSStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4144,6 +4236,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with StackPath - StackPath Object Storage",
+                "operationId": "CreateS3StackPathStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4189,6 +4282,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Storj - Storj (S3 Compatible Gateway)",
+                "operationId": "CreateS3StorjStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4234,6 +4328,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with TencentCOS - Tencent Cloud Object Storage (COS)",
+                "operationId": "CreateS3TencentCOSStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4279,6 +4374,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create S3 storage with Wasabi - Wasabi Object Storage",
+                "operationId": "CreateS3WasabiStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4324,6 +4420,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Seafile storage",
+                "operationId": "CreateSeafileStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4369,6 +4466,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Sftp storage",
+                "operationId": "CreateSftpStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4414,6 +4512,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Sharefile storage",
+                "operationId": "CreateSharefileStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4459,6 +4558,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Sia storage",
+                "operationId": "CreateSiaStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4504,6 +4604,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Smb storage",
+                "operationId": "CreateSmbStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4549,6 +4650,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Storj storage with existing - Use an existing access grant.",
+                "operationId": "CreateStorjExistingStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4594,6 +4696,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Storj storage with new - Create a new access grant from satellite address, API key, and passphrase.",
+                "operationId": "CreateStorjNewStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4639,6 +4742,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Sugarsync storage",
+                "operationId": "CreateSugarsyncStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4684,6 +4788,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Swift storage",
+                "operationId": "CreateSwiftStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4729,6 +4834,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Uptobox storage",
+                "operationId": "CreateUptoboxStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4774,6 +4880,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Webdav storage",
+                "operationId": "CreateWebdavStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4819,6 +4926,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Yandex storage",
+                "operationId": "CreateYandexStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4864,6 +4972,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create Zoho storage",
+                "operationId": "CreateZohoStorage",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -4903,6 +5012,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Remove a storage",
+                "operationId": "RemoveStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -4941,6 +5051,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Update a storage connection",
+                "operationId": "UpdateStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -4993,6 +5104,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Explore directory entries in a storage system",
+                "operationId": "ExploreStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -5046,6 +5158,7 @@ const docTemplate = `{
                     "Storage"
                 ],
                 "summary": "Create a new storage",
+                "operationId": "CreateStorage",
                 "parameters": [
                     {
                         "type": "string",
@@ -5095,6 +5208,7 @@ const docTemplate = `{
                     "Wallet"
                 ],
                 "summary": "List all imported wallets",
+                "operationId": "ListWallets",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5130,6 +5244,7 @@ const docTemplate = `{
                     "Wallet"
                 ],
                 "summary": "Import a private key",
+                "operationId": "ImportWallet",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -5169,6 +5284,7 @@ const docTemplate = `{
                     "Wallet"
                 ],
                 "summary": "Remove a wallet",
+                "operationId": "RemoveWallet",
                 "parameters": [
                     {
                         "type": "string",

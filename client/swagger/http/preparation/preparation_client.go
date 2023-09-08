@@ -30,230 +30,40 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeletePreparationIDOutputName(params *DeletePreparationIDOutputNameParams, opts ...ClientOption) (*DeletePreparationIDOutputNameOK, error)
+	AddOutputStorage(params *AddOutputStorageParams, opts ...ClientOption) (*AddOutputStorageOK, error)
 
-	GetPreparation(params *GetPreparationParams, opts ...ClientOption) (*GetPreparationOK, error)
+	AddSourceStorage(params *AddSourceStorageParams, opts ...ClientOption) (*AddSourceStorageOK, error)
 
-	GetPreparationID(params *GetPreparationIDParams, opts ...ClientOption) (*GetPreparationIDOK, error)
+	CreatePreparation(params *CreatePreparationParams, opts ...ClientOption) (*CreatePreparationOK, error)
 
-	GetPreparationIDSourceNameExplorePath(params *GetPreparationIDSourceNameExplorePathParams, opts ...ClientOption) (*GetPreparationIDSourceNameExplorePathOK, error)
+	ExplorePreparation(params *ExplorePreparationParams, opts ...ClientOption) (*ExplorePreparationOK, error)
 
-	PostPreparation(params *PostPreparationParams, opts ...ClientOption) (*PostPreparationOK, error)
+	GetPreparationStatus(params *GetPreparationStatusParams, opts ...ClientOption) (*GetPreparationStatusOK, error)
 
-	PostPreparationIDOutputName(params *PostPreparationIDOutputNameParams, opts ...ClientOption) (*PostPreparationIDOutputNameOK, error)
+	ListPreparations(params *ListPreparationsParams, opts ...ClientOption) (*ListPreparationsOK, error)
 
-	PostPreparationIDSourceName(params *PostPreparationIDSourceNameParams, opts ...ClientOption) (*PostPreparationIDSourceNameOK, error)
+	RemoveOutputStorage(params *RemoveOutputStorageParams, opts ...ClientOption) (*RemoveOutputStorageOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-DeletePreparationIDOutputName detaches an output storage from a preparation
+AddOutputStorage attaches an output storage with a preparation
 */
-func (a *Client) DeletePreparationIDOutputName(params *DeletePreparationIDOutputNameParams, opts ...ClientOption) (*DeletePreparationIDOutputNameOK, error) {
+func (a *Client) AddOutputStorage(params *AddOutputStorageParams, opts ...ClientOption) (*AddOutputStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeletePreparationIDOutputNameParams()
+		params = NewAddOutputStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "DeletePreparationIDOutputName",
-		Method:             "DELETE",
-		PathPattern:        "/preparation/{id}/output/{name}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &DeletePreparationIDOutputNameReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*DeletePreparationIDOutputNameOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeletePreparationIDOutputName: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetPreparation lists all preparations
-*/
-func (a *Client) GetPreparation(params *GetPreparationParams, opts ...ClientOption) (*GetPreparationOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetPreparationParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetPreparation",
-		Method:             "GET",
-		PathPattern:        "/preparation",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetPreparationReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetPreparationOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetPreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetPreparationID gets the status of a preparation
-*/
-func (a *Client) GetPreparationID(params *GetPreparationIDParams, opts ...ClientOption) (*GetPreparationIDOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetPreparationIDParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetPreparationID",
-		Method:             "GET",
-		PathPattern:        "/preparation/{id}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetPreparationIDReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetPreparationIDOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetPreparationID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetPreparationIDSourceNameExplorePath explores a directory in a prepared source storage
-*/
-func (a *Client) GetPreparationIDSourceNameExplorePath(params *GetPreparationIDSourceNameExplorePathParams, opts ...ClientOption) (*GetPreparationIDSourceNameExplorePathOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetPreparationIDSourceNameExplorePathParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetPreparationIDSourceNameExplorePath",
-		Method:             "GET",
-		PathPattern:        "/preparation/{id}/source/{name}/explore/{path}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetPreparationIDSourceNameExplorePathReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetPreparationIDSourceNameExplorePathOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetPreparationIDSourceNameExplorePath: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostPreparation creates a new preparation
-*/
-func (a *Client) PostPreparation(params *PostPreparationParams, opts ...ClientOption) (*PostPreparationOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostPreparationParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostPreparation",
-		Method:             "POST",
-		PathPattern:        "/preparation",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostPreparationReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostPreparationOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostPreparationIDOutputName attaches an output storage with a preparation
-*/
-func (a *Client) PostPreparationIDOutputName(params *PostPreparationIDOutputNameParams, opts ...ClientOption) (*PostPreparationIDOutputNameOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostPreparationIDOutputNameParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDOutputName",
+		ID:                 "AddOutputStorage",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/output/{name}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDOutputNameReader{formats: a.formats},
+		Reader:             &AddOutputStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -265,33 +75,33 @@ func (a *Client) PostPreparationIDOutputName(params *PostPreparationIDOutputName
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDOutputNameOK)
+	success, ok := result.(*AddOutputStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDOutputName: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for AddOutputStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceName attaches a source storage with a preparation
+AddSourceStorage attaches a source storage with a preparation
 */
-func (a *Client) PostPreparationIDSourceName(params *PostPreparationIDSourceNameParams, opts ...ClientOption) (*PostPreparationIDSourceNameOK, error) {
+func (a *Client) AddSourceStorage(params *AddSourceStorageParams, opts ...ClientOption) (*AddSourceStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNameParams()
+		params = NewAddSourceStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceName",
+		ID:                 "AddSourceStorage",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNameReader{formats: a.formats},
+		Reader:             &AddSourceStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -303,13 +113,203 @@ func (a *Client) PostPreparationIDSourceName(params *PostPreparationIDSourceName
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNameOK)
+	success, ok := result.(*AddSourceStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceName: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for AddSourceStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreatePreparation creates a new preparation
+*/
+func (a *Client) CreatePreparation(params *CreatePreparationParams, opts ...ClientOption) (*CreatePreparationOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreatePreparationParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreatePreparation",
+		Method:             "POST",
+		PathPattern:        "/preparation",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreatePreparationReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreatePreparationOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreatePreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+ExplorePreparation explores a directory in a prepared source storage
+*/
+func (a *Client) ExplorePreparation(params *ExplorePreparationParams, opts ...ClientOption) (*ExplorePreparationOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExplorePreparationParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ExplorePreparation",
+		Method:             "GET",
+		PathPattern:        "/preparation/{id}/source/{name}/explore/{path}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ExplorePreparationReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExplorePreparationOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ExplorePreparation: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetPreparationStatus gets the status of a preparation
+*/
+func (a *Client) GetPreparationStatus(params *GetPreparationStatusParams, opts ...ClientOption) (*GetPreparationStatusOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetPreparationStatusParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "GetPreparationStatus",
+		Method:             "GET",
+		PathPattern:        "/preparation/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetPreparationStatusReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetPreparationStatusOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetPreparationStatus: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+ListPreparations lists all preparations
+*/
+func (a *Client) ListPreparations(params *ListPreparationsParams, opts ...ClientOption) (*ListPreparationsOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewListPreparationsParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ListPreparations",
+		Method:             "GET",
+		PathPattern:        "/preparation",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ListPreparationsReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ListPreparationsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ListPreparations: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+RemoveOutputStorage detaches an output storage from a preparation
+*/
+func (a *Client) RemoveOutputStorage(params *RemoveOutputStorageParams, opts ...ClientOption) (*RemoveOutputStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRemoveOutputStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "RemoveOutputStorage",
+		Method:             "DELETE",
+		PathPattern:        "/preparation/{id}/output/{name}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &RemoveOutputStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RemoveOutputStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RemoveOutputStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

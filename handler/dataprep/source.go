@@ -79,6 +79,7 @@ func (DefaultHandler) AddSourceStorageHandler(ctx context.Context, db *gorm.DB, 
 	return &preparation, errors.WithStack(err)
 }
 
+// @ID AddSourceStorage
 // @Summary Attach a source storage with a preparation
 // @Tags Preparation
 // @Accept json

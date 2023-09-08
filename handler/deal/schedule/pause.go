@@ -56,6 +56,7 @@ func (DefaultHandler) PauseHandler(
 	return &schedule, nil
 }
 
+// @ID PauseSchedule
 // @Summary Pause a specific schedule
 // @Tags Deal Schedule
 // @Produce json

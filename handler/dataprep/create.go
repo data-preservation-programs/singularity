@@ -169,6 +169,7 @@ func (DefaultHandler) CreatePreparationHandler(
 	return preparation, nil
 }
 
+// @ID CreatePreparation
 // @Summary Create a new preparation
 // @Tags Preparation
 // @Accept json

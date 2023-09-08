@@ -30,332 +30,180 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeleteStorageName(params *DeleteStorageNameParams, opts ...ClientOption) (*DeleteStorageNameNoContent, error)
+	CreateAcdStorage(params *CreateAcdStorageParams, opts ...ClientOption) (*CreateAcdStorageOK, error)
 
-	GetStorage(params *GetStorageParams, opts ...ClientOption) (*GetStorageOK, error)
+	CreateAzureblobStorage(params *CreateAzureblobStorageParams, opts ...ClientOption) (*CreateAzureblobStorageOK, error)
 
-	GetStorageNameExplorePath(params *GetStorageNameExplorePathParams, opts ...ClientOption) (*GetStorageNameExplorePathOK, error)
+	CreateB2Storage(params *CreateB2StorageParams, opts ...ClientOption) (*CreateB2StorageOK, error)
 
-	PatchStorageName(params *PatchStorageNameParams, opts ...ClientOption) (*PatchStorageNameOK, error)
+	CreateBoxStorage(params *CreateBoxStorageParams, opts ...ClientOption) (*CreateBoxStorageOK, error)
 
-	PostStorageAcd(params *PostStorageAcdParams, opts ...ClientOption) (*PostStorageAcdOK, error)
+	CreateDriveStorage(params *CreateDriveStorageParams, opts ...ClientOption) (*CreateDriveStorageOK, error)
 
-	PostStorageAzureblob(params *PostStorageAzureblobParams, opts ...ClientOption) (*PostStorageAzureblobOK, error)
+	CreateDropboxStorage(params *CreateDropboxStorageParams, opts ...ClientOption) (*CreateDropboxStorageOK, error)
 
-	PostStorageB2(params *PostStorageB2Params, opts ...ClientOption) (*PostStorageB2OK, error)
+	CreateFichierStorage(params *CreateFichierStorageParams, opts ...ClientOption) (*CreateFichierStorageOK, error)
 
-	PostStorageBox(params *PostStorageBoxParams, opts ...ClientOption) (*PostStorageBoxOK, error)
+	CreateFilefabricStorage(params *CreateFilefabricStorageParams, opts ...ClientOption) (*CreateFilefabricStorageOK, error)
 
-	PostStorageDrive(params *PostStorageDriveParams, opts ...ClientOption) (*PostStorageDriveOK, error)
+	CreateFtpStorage(params *CreateFtpStorageParams, opts ...ClientOption) (*CreateFtpStorageOK, error)
 
-	PostStorageDropbox(params *PostStorageDropboxParams, opts ...ClientOption) (*PostStorageDropboxOK, error)
+	CreateGcsStorage(params *CreateGcsStorageParams, opts ...ClientOption) (*CreateGcsStorageOK, error)
 
-	PostStorageFichier(params *PostStorageFichierParams, opts ...ClientOption) (*PostStorageFichierOK, error)
+	CreateGphotosStorage(params *CreateGphotosStorageParams, opts ...ClientOption) (*CreateGphotosStorageOK, error)
 
-	PostStorageFilefabric(params *PostStorageFilefabricParams, opts ...ClientOption) (*PostStorageFilefabricOK, error)
+	CreateHdfsStorage(params *CreateHdfsStorageParams, opts ...ClientOption) (*CreateHdfsStorageOK, error)
 
-	PostStorageFtp(params *PostStorageFtpParams, opts ...ClientOption) (*PostStorageFtpOK, error)
+	CreateHidriveStorage(params *CreateHidriveStorageParams, opts ...ClientOption) (*CreateHidriveStorageOK, error)
 
-	PostStorageGcs(params *PostStorageGcsParams, opts ...ClientOption) (*PostStorageGcsOK, error)
+	CreateHTTPStorage(params *CreateHTTPStorageParams, opts ...ClientOption) (*CreateHTTPStorageOK, error)
 
-	PostStorageGphotos(params *PostStorageGphotosParams, opts ...ClientOption) (*PostStorageGphotosOK, error)
+	CreateInternetarchiveStorage(params *CreateInternetarchiveStorageParams, opts ...ClientOption) (*CreateInternetarchiveStorageOK, error)
 
-	PostStorageHTTP(params *PostStorageHTTPParams, opts ...ClientOption) (*PostStorageHTTPOK, error)
+	CreateJottacloudStorage(params *CreateJottacloudStorageParams, opts ...ClientOption) (*CreateJottacloudStorageOK, error)
 
-	PostStorageHdfs(params *PostStorageHdfsParams, opts ...ClientOption) (*PostStorageHdfsOK, error)
+	CreateKoofrDigistorageStorage(params *CreateKoofrDigistorageStorageParams, opts ...ClientOption) (*CreateKoofrDigistorageStorageOK, error)
 
-	PostStorageHidrive(params *PostStorageHidriveParams, opts ...ClientOption) (*PostStorageHidriveOK, error)
+	CreateKoofrKoofrStorage(params *CreateKoofrKoofrStorageParams, opts ...ClientOption) (*CreateKoofrKoofrStorageOK, error)
 
-	PostStorageInternetarchive(params *PostStorageInternetarchiveParams, opts ...ClientOption) (*PostStorageInternetarchiveOK, error)
+	CreateKoofrOtherStorage(params *CreateKoofrOtherStorageParams, opts ...ClientOption) (*CreateKoofrOtherStorageOK, error)
 
-	PostStorageJottacloud(params *PostStorageJottacloudParams, opts ...ClientOption) (*PostStorageJottacloudOK, error)
+	CreateLocalStorage(params *CreateLocalStorageParams, opts ...ClientOption) (*CreateLocalStorageOK, error)
 
-	PostStorageKoofrDigistorage(params *PostStorageKoofrDigistorageParams, opts ...ClientOption) (*PostStorageKoofrDigistorageOK, error)
+	CreateMailruStorage(params *CreateMailruStorageParams, opts ...ClientOption) (*CreateMailruStorageOK, error)
 
-	PostStorageKoofrKoofr(params *PostStorageKoofrKoofrParams, opts ...ClientOption) (*PostStorageKoofrKoofrOK, error)
+	CreateMegaStorage(params *CreateMegaStorageParams, opts ...ClientOption) (*CreateMegaStorageOK, error)
 
-	PostStorageKoofrOther(params *PostStorageKoofrOtherParams, opts ...ClientOption) (*PostStorageKoofrOtherOK, error)
+	CreateNetstorageStorage(params *CreateNetstorageStorageParams, opts ...ClientOption) (*CreateNetstorageStorageOK, error)
 
-	PostStorageLocal(params *PostStorageLocalParams, opts ...ClientOption) (*PostStorageLocalOK, error)
+	CreateOnedriveStorage(params *CreateOnedriveStorageParams, opts ...ClientOption) (*CreateOnedriveStorageOK, error)
 
-	PostStorageMailru(params *PostStorageMailruParams, opts ...ClientOption) (*PostStorageMailruOK, error)
+	CreateOosEnvAuthStorage(params *CreateOosEnvAuthStorageParams, opts ...ClientOption) (*CreateOosEnvAuthStorageOK, error)
 
-	PostStorageMega(params *PostStorageMegaParams, opts ...ClientOption) (*PostStorageMegaOK, error)
+	CreateOosInstancePrincipalAuthStorage(params *CreateOosInstancePrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosInstancePrincipalAuthStorageOK, error)
 
-	PostStorageNetstorage(params *PostStorageNetstorageParams, opts ...ClientOption) (*PostStorageNetstorageOK, error)
+	CreateOosNoAuthStorage(params *CreateOosNoAuthStorageParams, opts ...ClientOption) (*CreateOosNoAuthStorageOK, error)
 
-	PostStorageOnedrive(params *PostStorageOnedriveParams, opts ...ClientOption) (*PostStorageOnedriveOK, error)
+	CreateOosResourcePrincipalAuthStorage(params *CreateOosResourcePrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosResourcePrincipalAuthStorageOK, error)
 
-	PostStorageOosEnvAuth(params *PostStorageOosEnvAuthParams, opts ...ClientOption) (*PostStorageOosEnvAuthOK, error)
+	CreateOosUserPrincipalAuthStorage(params *CreateOosUserPrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosUserPrincipalAuthStorageOK, error)
 
-	PostStorageOosInstancePrincipalAuth(params *PostStorageOosInstancePrincipalAuthParams, opts ...ClientOption) (*PostStorageOosInstancePrincipalAuthOK, error)
+	CreateOpendriveStorage(params *CreateOpendriveStorageParams, opts ...ClientOption) (*CreateOpendriveStorageOK, error)
 
-	PostStorageOosNoAuth(params *PostStorageOosNoAuthParams, opts ...ClientOption) (*PostStorageOosNoAuthOK, error)
+	CreatePcloudStorage(params *CreatePcloudStorageParams, opts ...ClientOption) (*CreatePcloudStorageOK, error)
 
-	PostStorageOosResourcePrincipalAuth(params *PostStorageOosResourcePrincipalAuthParams, opts ...ClientOption) (*PostStorageOosResourcePrincipalAuthOK, error)
+	CreatePremiumizemeStorage(params *CreatePremiumizemeStorageParams, opts ...ClientOption) (*CreatePremiumizemeStorageOK, error)
 
-	PostStorageOosUserPrincipalAuth(params *PostStorageOosUserPrincipalAuthParams, opts ...ClientOption) (*PostStorageOosUserPrincipalAuthOK, error)
+	CreatePutioStorage(params *CreatePutioStorageParams, opts ...ClientOption) (*CreatePutioStorageOK, error)
 
-	PostStorageOpendrive(params *PostStorageOpendriveParams, opts ...ClientOption) (*PostStorageOpendriveOK, error)
+	CreateQingstorStorage(params *CreateQingstorStorageParams, opts ...ClientOption) (*CreateQingstorStorageOK, error)
 
-	PostStoragePcloud(params *PostStoragePcloudParams, opts ...ClientOption) (*PostStoragePcloudOK, error)
+	CreateS3AWSStorage(params *CreateS3AWSStorageParams, opts ...ClientOption) (*CreateS3AWSStorageOK, error)
 
-	PostStoragePremiumizeme(params *PostStoragePremiumizemeParams, opts ...ClientOption) (*PostStoragePremiumizemeOK, error)
+	CreateS3AlibabaStorage(params *CreateS3AlibabaStorageParams, opts ...ClientOption) (*CreateS3AlibabaStorageOK, error)
 
-	PostStoragePutio(params *PostStoragePutioParams, opts ...ClientOption) (*PostStoragePutioOK, error)
+	CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStorageParams, opts ...ClientOption) (*CreateS3ArvanCloudStorageOK, error)
 
-	PostStorageQingstor(params *PostStorageQingstorParams, opts ...ClientOption) (*PostStorageQingstorOK, error)
+	CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...ClientOption) (*CreateS3CephStorageOK, error)
 
-	PostStorageS3Alibaba(params *PostStorageS3AlibabaParams, opts ...ClientOption) (*PostStorageS3AlibabaOK, error)
+	CreateS3ChinaMobileStorage(params *CreateS3ChinaMobileStorageParams, opts ...ClientOption) (*CreateS3ChinaMobileStorageOK, error)
 
-	PostStorageS3Arvancloud(params *PostStorageS3ArvancloudParams, opts ...ClientOption) (*PostStorageS3ArvancloudOK, error)
+	CreateS3CloudflareStorage(params *CreateS3CloudflareStorageParams, opts ...ClientOption) (*CreateS3CloudflareStorageOK, error)
 
-	PostStorageS3Aws(params *PostStorageS3AwsParams, opts ...ClientOption) (*PostStorageS3AwsOK, error)
+	CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorageParams, opts ...ClientOption) (*CreateS3DigitalOceanStorageOK, error)
 
-	PostStorageS3Ceph(params *PostStorageS3CephParams, opts ...ClientOption) (*PostStorageS3CephOK, error)
+	CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams, opts ...ClientOption) (*CreateS3DreamhostStorageOK, error)
 
-	PostStorageS3Chinamobile(params *PostStorageS3ChinamobileParams, opts ...ClientOption) (*PostStorageS3ChinamobileOK, error)
+	CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams, opts ...ClientOption) (*CreateS3HuaweiOBSStorageOK, error)
 
-	PostStorageS3Cloudflare(params *PostStorageS3CloudflareParams, opts ...ClientOption) (*PostStorageS3CloudflareOK, error)
+	CreateS3IBMCOSStorage(params *CreateS3IBMCOSStorageParams, opts ...ClientOption) (*CreateS3IBMCOSStorageOK, error)
 
-	PostStorageS3Digitalocean(params *PostStorageS3DigitaloceanParams, opts ...ClientOption) (*PostStorageS3DigitaloceanOK, error)
+	CreateS3IDriveStorage(params *CreateS3IDriveStorageParams, opts ...ClientOption) (*CreateS3IDriveStorageOK, error)
 
-	PostStorageS3Dreamhost(params *PostStorageS3DreamhostParams, opts ...ClientOption) (*PostStorageS3DreamhostOK, error)
+	CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts ...ClientOption) (*CreateS3IONOSStorageOK, error)
 
-	PostStorageS3Huaweiobs(params *PostStorageS3HuaweiobsParams, opts ...ClientOption) (*PostStorageS3HuaweiobsOK, error)
+	CreateS3LiaraStorage(params *CreateS3LiaraStorageParams, opts ...ClientOption) (*CreateS3LiaraStorageOK, error)
 
-	PostStorageS3Ibmcos(params *PostStorageS3IbmcosParams, opts ...ClientOption) (*PostStorageS3IbmcosOK, error)
+	CreateS3LyveCloudStorage(params *CreateS3LyveCloudStorageParams, opts ...ClientOption) (*CreateS3LyveCloudStorageOK, error)
 
-	PostStorageS3Idrive(params *PostStorageS3IdriveParams, opts ...ClientOption) (*PostStorageS3IdriveOK, error)
+	CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts ...ClientOption) (*CreateS3MinioStorageOK, error)
 
-	PostStorageS3Ionos(params *PostStorageS3IonosParams, opts ...ClientOption) (*PostStorageS3IonosOK, error)
+	CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, opts ...ClientOption) (*CreateS3NeteaseStorageOK, error)
 
-	PostStorageS3Liara(params *PostStorageS3LiaraParams, opts ...ClientOption) (*PostStorageS3LiaraOK, error)
+	CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts ...ClientOption) (*CreateS3OtherStorageOK, error)
 
-	PostStorageS3Lyvecloud(params *PostStorageS3LyvecloudParams, opts ...ClientOption) (*PostStorageS3LyvecloudOK, error)
+	CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts ...ClientOption) (*CreateS3QiniuStorageOK, error)
 
-	PostStorageS3Minio(params *PostStorageS3MinioParams, opts ...ClientOption) (*PostStorageS3MinioOK, error)
+	CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, opts ...ClientOption) (*CreateS3RackCorpStorageOK, error)
 
-	PostStorageS3Netease(params *PostStorageS3NeteaseParams, opts ...ClientOption) (*PostStorageS3NeteaseOK, error)
+	CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, opts ...ClientOption) (*CreateS3ScalewayStorageOK, error)
 
-	PostStorageS3Other(params *PostStorageS3OtherParams, opts ...ClientOption) (*PostStorageS3OtherOK, error)
+	CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams, opts ...ClientOption) (*CreateS3SeaweedFSStorageOK, error)
 
-	PostStorageS3Qiniu(params *PostStorageS3QiniuParams, opts ...ClientOption) (*PostStorageS3QiniuOK, error)
+	CreateS3StackPathStorage(params *CreateS3StackPathStorageParams, opts ...ClientOption) (*CreateS3StackPathStorageOK, error)
 
-	PostStorageS3Rackcorp(params *PostStorageS3RackcorpParams, opts ...ClientOption) (*PostStorageS3RackcorpOK, error)
+	CreateS3StorjStorage(params *CreateS3StorjStorageParams, opts ...ClientOption) (*CreateS3StorjStorageOK, error)
 
-	PostStorageS3Scaleway(params *PostStorageS3ScalewayParams, opts ...ClientOption) (*PostStorageS3ScalewayOK, error)
+	CreateS3TencentCOSStorage(params *CreateS3TencentCOSStorageParams, opts ...ClientOption) (*CreateS3TencentCOSStorageOK, error)
 
-	PostStorageS3Seaweedfs(params *PostStorageS3SeaweedfsParams, opts ...ClientOption) (*PostStorageS3SeaweedfsOK, error)
+	CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts ...ClientOption) (*CreateS3WasabiStorageOK, error)
 
-	PostStorageS3Stackpath(params *PostStorageS3StackpathParams, opts ...ClientOption) (*PostStorageS3StackpathOK, error)
+	CreateSeafileStorage(params *CreateSeafileStorageParams, opts ...ClientOption) (*CreateSeafileStorageOK, error)
 
-	PostStorageS3Storj(params *PostStorageS3StorjParams, opts ...ClientOption) (*PostStorageS3StorjOK, error)
+	CreateSftpStorage(params *CreateSftpStorageParams, opts ...ClientOption) (*CreateSftpStorageOK, error)
 
-	PostStorageS3Tencentcos(params *PostStorageS3TencentcosParams, opts ...ClientOption) (*PostStorageS3TencentcosOK, error)
+	CreateSharefileStorage(params *CreateSharefileStorageParams, opts ...ClientOption) (*CreateSharefileStorageOK, error)
 
-	PostStorageS3Wasabi(params *PostStorageS3WasabiParams, opts ...ClientOption) (*PostStorageS3WasabiOK, error)
+	CreateSiaStorage(params *CreateSiaStorageParams, opts ...ClientOption) (*CreateSiaStorageOK, error)
 
-	PostStorageSeafile(params *PostStorageSeafileParams, opts ...ClientOption) (*PostStorageSeafileOK, error)
+	CreateSmbStorage(params *CreateSmbStorageParams, opts ...ClientOption) (*CreateSmbStorageOK, error)
 
-	PostStorageSftp(params *PostStorageSftpParams, opts ...ClientOption) (*PostStorageSftpOK, error)
+	CreateStorage(params *CreateStorageParams, opts ...ClientOption) (*CreateStorageOK, error)
 
-	PostStorageSharefile(params *PostStorageSharefileParams, opts ...ClientOption) (*PostStorageSharefileOK, error)
+	CreateStorjExistingStorage(params *CreateStorjExistingStorageParams, opts ...ClientOption) (*CreateStorjExistingStorageOK, error)
 
-	PostStorageSia(params *PostStorageSiaParams, opts ...ClientOption) (*PostStorageSiaOK, error)
+	CreateStorjNewStorage(params *CreateStorjNewStorageParams, opts ...ClientOption) (*CreateStorjNewStorageOK, error)
 
-	PostStorageSmb(params *PostStorageSmbParams, opts ...ClientOption) (*PostStorageSmbOK, error)
+	CreateSugarsyncStorage(params *CreateSugarsyncStorageParams, opts ...ClientOption) (*CreateSugarsyncStorageOK, error)
 
-	PostStorageStorageType(params *PostStorageStorageTypeParams, opts ...ClientOption) (*PostStorageStorageTypeOK, error)
+	CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...ClientOption) (*CreateSwiftStorageOK, error)
 
-	PostStorageStorjExisting(params *PostStorageStorjExistingParams, opts ...ClientOption) (*PostStorageStorjExistingOK, error)
+	CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts ...ClientOption) (*CreateUptoboxStorageOK, error)
 
-	PostStorageStorjNew(params *PostStorageStorjNewParams, opts ...ClientOption) (*PostStorageStorjNewOK, error)
+	CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...ClientOption) (*CreateWebdavStorageOK, error)
 
-	PostStorageSugarsync(params *PostStorageSugarsyncParams, opts ...ClientOption) (*PostStorageSugarsyncOK, error)
+	CreateYandexStorage(params *CreateYandexStorageParams, opts ...ClientOption) (*CreateYandexStorageOK, error)
 
-	PostStorageSwift(params *PostStorageSwiftParams, opts ...ClientOption) (*PostStorageSwiftOK, error)
+	CreateZohoStorage(params *CreateZohoStorageParams, opts ...ClientOption) (*CreateZohoStorageOK, error)
 
-	PostStorageUptobox(params *PostStorageUptoboxParams, opts ...ClientOption) (*PostStorageUptoboxOK, error)
+	ExploreStorage(params *ExploreStorageParams, opts ...ClientOption) (*ExploreStorageOK, error)
 
-	PostStorageWebdav(params *PostStorageWebdavParams, opts ...ClientOption) (*PostStorageWebdavOK, error)
+	ListStorages(params *ListStoragesParams, opts ...ClientOption) (*ListStoragesOK, error)
 
-	PostStorageYandex(params *PostStorageYandexParams, opts ...ClientOption) (*PostStorageYandexOK, error)
+	RemoveStorage(params *RemoveStorageParams, opts ...ClientOption) (*RemoveStorageNoContent, error)
 
-	PostStorageZoho(params *PostStorageZohoParams, opts ...ClientOption) (*PostStorageZohoOK, error)
+	UpdateStorage(params *UpdateStorageParams, opts ...ClientOption) (*UpdateStorageOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-DeleteStorageName removes a storage
+CreateAcdStorage creates acd storage
 */
-func (a *Client) DeleteStorageName(params *DeleteStorageNameParams, opts ...ClientOption) (*DeleteStorageNameNoContent, error) {
+func (a *Client) CreateAcdStorage(params *CreateAcdStorageParams, opts ...ClientOption) (*CreateAcdStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeleteStorageNameParams()
+		params = NewCreateAcdStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "DeleteStorageName",
-		Method:             "DELETE",
-		PathPattern:        "/storage/{name}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &DeleteStorageNameReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*DeleteStorageNameNoContent)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeleteStorageName: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetStorage lists all storages
-*/
-func (a *Client) GetStorage(params *GetStorageParams, opts ...ClientOption) (*GetStorageOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetStorageParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetStorage",
-		Method:             "GET",
-		PathPattern:        "/storage",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetStorageReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetStorageOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-GetStorageNameExplorePath explores directory entries in a storage system
-*/
-func (a *Client) GetStorageNameExplorePath(params *GetStorageNameExplorePathParams, opts ...ClientOption) (*GetStorageNameExplorePathOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewGetStorageNameExplorePathParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "GetStorageNameExplorePath",
-		Method:             "GET",
-		PathPattern:        "/storage/{name}/explore/{path}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &GetStorageNameExplorePathReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*GetStorageNameExplorePathOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetStorageNameExplorePath: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PatchStorageName updates a storage connection
-*/
-func (a *Client) PatchStorageName(params *PatchStorageNameParams, opts ...ClientOption) (*PatchStorageNameOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPatchStorageNameParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PatchStorageName",
-		Method:             "PATCH",
-		PathPattern:        "/storage/{name}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PatchStorageNameReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PatchStorageNameOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PatchStorageName: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostStorageAcd creates acd storage
-*/
-func (a *Client) PostStorageAcd(params *PostStorageAcdParams, opts ...ClientOption) (*PostStorageAcdOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostStorageAcdParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostStorageAcd",
+		ID:                 "CreateAcdStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/acd",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageAcdReader{formats: a.formats},
+		Reader:             &CreateAcdStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -367,33 +215,33 @@ func (a *Client) PostStorageAcd(params *PostStorageAcdParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageAcdOK)
+	success, ok := result.(*CreateAcdStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageAcd: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateAcdStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageAzureblob creates azureblob storage
+CreateAzureblobStorage creates azureblob storage
 */
-func (a *Client) PostStorageAzureblob(params *PostStorageAzureblobParams, opts ...ClientOption) (*PostStorageAzureblobOK, error) {
+func (a *Client) CreateAzureblobStorage(params *CreateAzureblobStorageParams, opts ...ClientOption) (*CreateAzureblobStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageAzureblobParams()
+		params = NewCreateAzureblobStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageAzureblob",
+		ID:                 "CreateAzureblobStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/azureblob",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageAzureblobReader{formats: a.formats},
+		Reader:             &CreateAzureblobStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -405,33 +253,33 @@ func (a *Client) PostStorageAzureblob(params *PostStorageAzureblobParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageAzureblobOK)
+	success, ok := result.(*CreateAzureblobStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageAzureblob: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateAzureblobStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageB2 creates b2 storage
+CreateB2Storage creates b2 storage
 */
-func (a *Client) PostStorageB2(params *PostStorageB2Params, opts ...ClientOption) (*PostStorageB2OK, error) {
+func (a *Client) CreateB2Storage(params *CreateB2StorageParams, opts ...ClientOption) (*CreateB2StorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageB2Params()
+		params = NewCreateB2StorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageB2",
+		ID:                 "CreateB2Storage",
 		Method:             "POST",
 		PathPattern:        "/storage/b2",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageB2Reader{formats: a.formats},
+		Reader:             &CreateB2StorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -443,33 +291,33 @@ func (a *Client) PostStorageB2(params *PostStorageB2Params, opts ...ClientOption
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageB2OK)
+	success, ok := result.(*CreateB2StorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageB2: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateB2Storage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageBox creates box storage
+CreateBoxStorage creates box storage
 */
-func (a *Client) PostStorageBox(params *PostStorageBoxParams, opts ...ClientOption) (*PostStorageBoxOK, error) {
+func (a *Client) CreateBoxStorage(params *CreateBoxStorageParams, opts ...ClientOption) (*CreateBoxStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageBoxParams()
+		params = NewCreateBoxStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageBox",
+		ID:                 "CreateBoxStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/box",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageBoxReader{formats: a.formats},
+		Reader:             &CreateBoxStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -481,33 +329,33 @@ func (a *Client) PostStorageBox(params *PostStorageBoxParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageBoxOK)
+	success, ok := result.(*CreateBoxStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageBox: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateBoxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageDrive creates drive storage
+CreateDriveStorage creates drive storage
 */
-func (a *Client) PostStorageDrive(params *PostStorageDriveParams, opts ...ClientOption) (*PostStorageDriveOK, error) {
+func (a *Client) CreateDriveStorage(params *CreateDriveStorageParams, opts ...ClientOption) (*CreateDriveStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageDriveParams()
+		params = NewCreateDriveStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageDrive",
+		ID:                 "CreateDriveStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/drive",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageDriveReader{formats: a.formats},
+		Reader:             &CreateDriveStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -519,33 +367,33 @@ func (a *Client) PostStorageDrive(params *PostStorageDriveParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageDriveOK)
+	success, ok := result.(*CreateDriveStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageDrive: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateDriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageDropbox creates dropbox storage
+CreateDropboxStorage creates dropbox storage
 */
-func (a *Client) PostStorageDropbox(params *PostStorageDropboxParams, opts ...ClientOption) (*PostStorageDropboxOK, error) {
+func (a *Client) CreateDropboxStorage(params *CreateDropboxStorageParams, opts ...ClientOption) (*CreateDropboxStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageDropboxParams()
+		params = NewCreateDropboxStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageDropbox",
+		ID:                 "CreateDropboxStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/dropbox",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageDropboxReader{formats: a.formats},
+		Reader:             &CreateDropboxStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -557,33 +405,33 @@ func (a *Client) PostStorageDropbox(params *PostStorageDropboxParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageDropboxOK)
+	success, ok := result.(*CreateDropboxStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageDropbox: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateDropboxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageFichier creates fichier storage
+CreateFichierStorage creates fichier storage
 */
-func (a *Client) PostStorageFichier(params *PostStorageFichierParams, opts ...ClientOption) (*PostStorageFichierOK, error) {
+func (a *Client) CreateFichierStorage(params *CreateFichierStorageParams, opts ...ClientOption) (*CreateFichierStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageFichierParams()
+		params = NewCreateFichierStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageFichier",
+		ID:                 "CreateFichierStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/fichier",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageFichierReader{formats: a.formats},
+		Reader:             &CreateFichierStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -595,33 +443,33 @@ func (a *Client) PostStorageFichier(params *PostStorageFichierParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageFichierOK)
+	success, ok := result.(*CreateFichierStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageFichier: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateFichierStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageFilefabric creates filefabric storage
+CreateFilefabricStorage creates filefabric storage
 */
-func (a *Client) PostStorageFilefabric(params *PostStorageFilefabricParams, opts ...ClientOption) (*PostStorageFilefabricOK, error) {
+func (a *Client) CreateFilefabricStorage(params *CreateFilefabricStorageParams, opts ...ClientOption) (*CreateFilefabricStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageFilefabricParams()
+		params = NewCreateFilefabricStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageFilefabric",
+		ID:                 "CreateFilefabricStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/filefabric",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageFilefabricReader{formats: a.formats},
+		Reader:             &CreateFilefabricStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -633,33 +481,33 @@ func (a *Client) PostStorageFilefabric(params *PostStorageFilefabricParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageFilefabricOK)
+	success, ok := result.(*CreateFilefabricStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageFilefabric: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateFilefabricStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageFtp creates ftp storage
+CreateFtpStorage creates ftp storage
 */
-func (a *Client) PostStorageFtp(params *PostStorageFtpParams, opts ...ClientOption) (*PostStorageFtpOK, error) {
+func (a *Client) CreateFtpStorage(params *CreateFtpStorageParams, opts ...ClientOption) (*CreateFtpStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageFtpParams()
+		params = NewCreateFtpStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageFtp",
+		ID:                 "CreateFtpStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/ftp",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageFtpReader{formats: a.formats},
+		Reader:             &CreateFtpStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -671,33 +519,33 @@ func (a *Client) PostStorageFtp(params *PostStorageFtpParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageFtpOK)
+	success, ok := result.(*CreateFtpStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageFtp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateFtpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageGcs creates gcs storage
+CreateGcsStorage creates gcs storage
 */
-func (a *Client) PostStorageGcs(params *PostStorageGcsParams, opts ...ClientOption) (*PostStorageGcsOK, error) {
+func (a *Client) CreateGcsStorage(params *CreateGcsStorageParams, opts ...ClientOption) (*CreateGcsStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageGcsParams()
+		params = NewCreateGcsStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageGcs",
+		ID:                 "CreateGcsStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/gcs",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageGcsReader{formats: a.formats},
+		Reader:             &CreateGcsStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -709,33 +557,33 @@ func (a *Client) PostStorageGcs(params *PostStorageGcsParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageGcsOK)
+	success, ok := result.(*CreateGcsStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageGcs: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateGcsStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageGphotos creates gphotos storage
+CreateGphotosStorage creates gphotos storage
 */
-func (a *Client) PostStorageGphotos(params *PostStorageGphotosParams, opts ...ClientOption) (*PostStorageGphotosOK, error) {
+func (a *Client) CreateGphotosStorage(params *CreateGphotosStorageParams, opts ...ClientOption) (*CreateGphotosStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageGphotosParams()
+		params = NewCreateGphotosStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageGphotos",
+		ID:                 "CreateGphotosStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/gphotos",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageGphotosReader{formats: a.formats},
+		Reader:             &CreateGphotosStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -747,71 +595,33 @@ func (a *Client) PostStorageGphotos(params *PostStorageGphotosParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageGphotosOK)
+	success, ok := result.(*CreateGphotosStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageGphotos: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateGphotosStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageHTTP creates Http storage
+CreateHdfsStorage creates hdfs storage
 */
-func (a *Client) PostStorageHTTP(params *PostStorageHTTPParams, opts ...ClientOption) (*PostStorageHTTPOK, error) {
+func (a *Client) CreateHdfsStorage(params *CreateHdfsStorageParams, opts ...ClientOption) (*CreateHdfsStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageHTTPParams()
+		params = NewCreateHdfsStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageHTTP",
-		Method:             "POST",
-		PathPattern:        "/storage/http",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostStorageHTTPReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostStorageHTTPOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageHTTP: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostStorageHdfs creates hdfs storage
-*/
-func (a *Client) PostStorageHdfs(params *PostStorageHdfsParams, opts ...ClientOption) (*PostStorageHdfsOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostStorageHdfsParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostStorageHdfs",
+		ID:                 "CreateHdfsStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/hdfs",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageHdfsReader{formats: a.formats},
+		Reader:             &CreateHdfsStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -823,33 +633,33 @@ func (a *Client) PostStorageHdfs(params *PostStorageHdfsParams, opts ...ClientOp
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageHdfsOK)
+	success, ok := result.(*CreateHdfsStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageHdfs: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateHdfsStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageHidrive creates hidrive storage
+CreateHidriveStorage creates hidrive storage
 */
-func (a *Client) PostStorageHidrive(params *PostStorageHidriveParams, opts ...ClientOption) (*PostStorageHidriveOK, error) {
+func (a *Client) CreateHidriveStorage(params *CreateHidriveStorageParams, opts ...ClientOption) (*CreateHidriveStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageHidriveParams()
+		params = NewCreateHidriveStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageHidrive",
+		ID:                 "CreateHidriveStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/hidrive",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageHidriveReader{formats: a.formats},
+		Reader:             &CreateHidriveStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -861,33 +671,71 @@ func (a *Client) PostStorageHidrive(params *PostStorageHidriveParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageHidriveOK)
+	success, ok := result.(*CreateHidriveStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageHidrive: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateHidriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageInternetarchive creates internetarchive storage
+CreateHTTPStorage creates Http storage
 */
-func (a *Client) PostStorageInternetarchive(params *PostStorageInternetarchiveParams, opts ...ClientOption) (*PostStorageInternetarchiveOK, error) {
+func (a *Client) CreateHTTPStorage(params *CreateHTTPStorageParams, opts ...ClientOption) (*CreateHTTPStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageInternetarchiveParams()
+		params = NewCreateHTTPStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageInternetarchive",
+		ID:                 "CreateHttpStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/http",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateHTTPStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateHTTPStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateHttpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateInternetarchiveStorage creates internetarchive storage
+*/
+func (a *Client) CreateInternetarchiveStorage(params *CreateInternetarchiveStorageParams, opts ...ClientOption) (*CreateInternetarchiveStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateInternetarchiveStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateInternetarchiveStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/internetarchive",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageInternetarchiveReader{formats: a.formats},
+		Reader:             &CreateInternetarchiveStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -899,33 +747,33 @@ func (a *Client) PostStorageInternetarchive(params *PostStorageInternetarchivePa
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageInternetarchiveOK)
+	success, ok := result.(*CreateInternetarchiveStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageInternetarchive: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateInternetarchiveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageJottacloud creates jottacloud storage
+CreateJottacloudStorage creates jottacloud storage
 */
-func (a *Client) PostStorageJottacloud(params *PostStorageJottacloudParams, opts ...ClientOption) (*PostStorageJottacloudOK, error) {
+func (a *Client) CreateJottacloudStorage(params *CreateJottacloudStorageParams, opts ...ClientOption) (*CreateJottacloudStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageJottacloudParams()
+		params = NewCreateJottacloudStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageJottacloud",
+		ID:                 "CreateJottacloudStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/jottacloud",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageJottacloudReader{formats: a.formats},
+		Reader:             &CreateJottacloudStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -937,33 +785,33 @@ func (a *Client) PostStorageJottacloud(params *PostStorageJottacloudParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageJottacloudOK)
+	success, ok := result.(*CreateJottacloudStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageJottacloud: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateJottacloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageKoofrDigistorage creates koofr storage with digistorage digi storage https storage rcs rds ro
+CreateKoofrDigistorageStorage creates koofr storage with digistorage digi storage https storage rcs rds ro
 */
-func (a *Client) PostStorageKoofrDigistorage(params *PostStorageKoofrDigistorageParams, opts ...ClientOption) (*PostStorageKoofrDigistorageOK, error) {
+func (a *Client) CreateKoofrDigistorageStorage(params *CreateKoofrDigistorageStorageParams, opts ...ClientOption) (*CreateKoofrDigistorageStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageKoofrDigistorageParams()
+		params = NewCreateKoofrDigistorageStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageKoofrDigistorage",
+		ID:                 "CreateKoofrDigistorageStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/koofr/digistorage",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageKoofrDigistorageReader{formats: a.formats},
+		Reader:             &CreateKoofrDigistorageStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -975,33 +823,33 @@ func (a *Client) PostStorageKoofrDigistorage(params *PostStorageKoofrDigistorage
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageKoofrDigistorageOK)
+	success, ok := result.(*CreateKoofrDigistorageStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageKoofrDigistorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateKoofrDigistorageStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageKoofrKoofr creates koofr storage with koofr koofr https app koofr net
+CreateKoofrKoofrStorage creates koofr storage with koofr koofr https app koofr net
 */
-func (a *Client) PostStorageKoofrKoofr(params *PostStorageKoofrKoofrParams, opts ...ClientOption) (*PostStorageKoofrKoofrOK, error) {
+func (a *Client) CreateKoofrKoofrStorage(params *CreateKoofrKoofrStorageParams, opts ...ClientOption) (*CreateKoofrKoofrStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageKoofrKoofrParams()
+		params = NewCreateKoofrKoofrStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageKoofrKoofr",
+		ID:                 "CreateKoofrKoofrStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/koofr/koofr",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageKoofrKoofrReader{formats: a.formats},
+		Reader:             &CreateKoofrKoofrStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1013,33 +861,33 @@ func (a *Client) PostStorageKoofrKoofr(params *PostStorageKoofrKoofrParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageKoofrKoofrOK)
+	success, ok := result.(*CreateKoofrKoofrStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageKoofrKoofr: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateKoofrKoofrStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageKoofrOther creates koofr storage with other any other koofr API compatible storage service
+CreateKoofrOtherStorage creates koofr storage with other any other koofr API compatible storage service
 */
-func (a *Client) PostStorageKoofrOther(params *PostStorageKoofrOtherParams, opts ...ClientOption) (*PostStorageKoofrOtherOK, error) {
+func (a *Client) CreateKoofrOtherStorage(params *CreateKoofrOtherStorageParams, opts ...ClientOption) (*CreateKoofrOtherStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageKoofrOtherParams()
+		params = NewCreateKoofrOtherStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageKoofrOther",
+		ID:                 "CreateKoofrOtherStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/koofr/other",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageKoofrOtherReader{formats: a.formats},
+		Reader:             &CreateKoofrOtherStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1051,33 +899,33 @@ func (a *Client) PostStorageKoofrOther(params *PostStorageKoofrOtherParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageKoofrOtherOK)
+	success, ok := result.(*CreateKoofrOtherStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageKoofrOther: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateKoofrOtherStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageLocal creates local storage
+CreateLocalStorage creates local storage
 */
-func (a *Client) PostStorageLocal(params *PostStorageLocalParams, opts ...ClientOption) (*PostStorageLocalOK, error) {
+func (a *Client) CreateLocalStorage(params *CreateLocalStorageParams, opts ...ClientOption) (*CreateLocalStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageLocalParams()
+		params = NewCreateLocalStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageLocal",
+		ID:                 "CreateLocalStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/local",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageLocalReader{formats: a.formats},
+		Reader:             &CreateLocalStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1089,33 +937,33 @@ func (a *Client) PostStorageLocal(params *PostStorageLocalParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageLocalOK)
+	success, ok := result.(*CreateLocalStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageLocal: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateLocalStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageMailru creates mailru storage
+CreateMailruStorage creates mailru storage
 */
-func (a *Client) PostStorageMailru(params *PostStorageMailruParams, opts ...ClientOption) (*PostStorageMailruOK, error) {
+func (a *Client) CreateMailruStorage(params *CreateMailruStorageParams, opts ...ClientOption) (*CreateMailruStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageMailruParams()
+		params = NewCreateMailruStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageMailru",
+		ID:                 "CreateMailruStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/mailru",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageMailruReader{formats: a.formats},
+		Reader:             &CreateMailruStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1127,33 +975,33 @@ func (a *Client) PostStorageMailru(params *PostStorageMailruParams, opts ...Clie
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageMailruOK)
+	success, ok := result.(*CreateMailruStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageMailru: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateMailruStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageMega creates mega storage
+CreateMegaStorage creates mega storage
 */
-func (a *Client) PostStorageMega(params *PostStorageMegaParams, opts ...ClientOption) (*PostStorageMegaOK, error) {
+func (a *Client) CreateMegaStorage(params *CreateMegaStorageParams, opts ...ClientOption) (*CreateMegaStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageMegaParams()
+		params = NewCreateMegaStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageMega",
+		ID:                 "CreateMegaStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/mega",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageMegaReader{formats: a.formats},
+		Reader:             &CreateMegaStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1165,33 +1013,33 @@ func (a *Client) PostStorageMega(params *PostStorageMegaParams, opts ...ClientOp
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageMegaOK)
+	success, ok := result.(*CreateMegaStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageMega: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateMegaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageNetstorage creates netstorage storage
+CreateNetstorageStorage creates netstorage storage
 */
-func (a *Client) PostStorageNetstorage(params *PostStorageNetstorageParams, opts ...ClientOption) (*PostStorageNetstorageOK, error) {
+func (a *Client) CreateNetstorageStorage(params *CreateNetstorageStorageParams, opts ...ClientOption) (*CreateNetstorageStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageNetstorageParams()
+		params = NewCreateNetstorageStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageNetstorage",
+		ID:                 "CreateNetstorageStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/netstorage",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageNetstorageReader{formats: a.formats},
+		Reader:             &CreateNetstorageStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1203,33 +1051,33 @@ func (a *Client) PostStorageNetstorage(params *PostStorageNetstorageParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageNetstorageOK)
+	success, ok := result.(*CreateNetstorageStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageNetstorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateNetstorageStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOnedrive creates onedrive storage
+CreateOnedriveStorage creates onedrive storage
 */
-func (a *Client) PostStorageOnedrive(params *PostStorageOnedriveParams, opts ...ClientOption) (*PostStorageOnedriveOK, error) {
+func (a *Client) CreateOnedriveStorage(params *CreateOnedriveStorageParams, opts ...ClientOption) (*CreateOnedriveStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOnedriveParams()
+		params = NewCreateOnedriveStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOnedrive",
+		ID:                 "CreateOnedriveStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/onedrive",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOnedriveReader{formats: a.formats},
+		Reader:             &CreateOnedriveStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1241,33 +1089,33 @@ func (a *Client) PostStorageOnedrive(params *PostStorageOnedriveParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOnedriveOK)
+	success, ok := result.(*CreateOnedriveStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOnedrive: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOnedriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOosEnvAuth creates oos storage with env auth automatically pickup the credentials from runtime env first one to provide auth wins
+CreateOosEnvAuthStorage creates oos storage with env auth automatically pickup the credentials from runtime env first one to provide auth wins
 */
-func (a *Client) PostStorageOosEnvAuth(params *PostStorageOosEnvAuthParams, opts ...ClientOption) (*PostStorageOosEnvAuthOK, error) {
+func (a *Client) CreateOosEnvAuthStorage(params *CreateOosEnvAuthStorageParams, opts ...ClientOption) (*CreateOosEnvAuthStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOosEnvAuthParams()
+		params = NewCreateOosEnvAuthStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOosEnvAuth",
+		ID:                 "CreateOosEnv_authStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/oos/env_auth",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOosEnvAuthReader{formats: a.formats},
+		Reader:             &CreateOosEnvAuthStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1279,33 +1127,33 @@ func (a *Client) PostStorageOosEnvAuth(params *PostStorageOosEnvAuthParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOosEnvAuthOK)
+	success, ok := result.(*CreateOosEnvAuthStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOosEnvAuth: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOosEnv_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOosInstancePrincipalAuth creates oos storage with instance principal auth use instance principals to authorize an instance to make API calls
+CreateOosInstancePrincipalAuthStorage creates oos storage with instance principal auth use instance principals to authorize an instance to make API calls
 */
-func (a *Client) PostStorageOosInstancePrincipalAuth(params *PostStorageOosInstancePrincipalAuthParams, opts ...ClientOption) (*PostStorageOosInstancePrincipalAuthOK, error) {
+func (a *Client) CreateOosInstancePrincipalAuthStorage(params *CreateOosInstancePrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosInstancePrincipalAuthStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOosInstancePrincipalAuthParams()
+		params = NewCreateOosInstancePrincipalAuthStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOosInstancePrincipalAuth",
+		ID:                 "CreateOosInstance_principal_authStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/oos/instance_principal_auth",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOosInstancePrincipalAuthReader{formats: a.formats},
+		Reader:             &CreateOosInstancePrincipalAuthStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1317,33 +1165,33 @@ func (a *Client) PostStorageOosInstancePrincipalAuth(params *PostStorageOosInsta
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOosInstancePrincipalAuthOK)
+	success, ok := result.(*CreateOosInstancePrincipalAuthStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOosInstancePrincipalAuth: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOosInstance_principal_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOosNoAuth creates oos storage with no auth no credentials needed this is typically for reading public buckets
+CreateOosNoAuthStorage creates oos storage with no auth no credentials needed this is typically for reading public buckets
 */
-func (a *Client) PostStorageOosNoAuth(params *PostStorageOosNoAuthParams, opts ...ClientOption) (*PostStorageOosNoAuthOK, error) {
+func (a *Client) CreateOosNoAuthStorage(params *CreateOosNoAuthStorageParams, opts ...ClientOption) (*CreateOosNoAuthStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOosNoAuthParams()
+		params = NewCreateOosNoAuthStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOosNoAuth",
+		ID:                 "CreateOosNo_authStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/oos/no_auth",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOosNoAuthReader{formats: a.formats},
+		Reader:             &CreateOosNoAuthStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1355,33 +1203,33 @@ func (a *Client) PostStorageOosNoAuth(params *PostStorageOosNoAuthParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOosNoAuthOK)
+	success, ok := result.(*CreateOosNoAuthStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOosNoAuth: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOosNo_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOosResourcePrincipalAuth creates oos storage with resource principal auth use resource principals to make API calls
+CreateOosResourcePrincipalAuthStorage creates oos storage with resource principal auth use resource principals to make API calls
 */
-func (a *Client) PostStorageOosResourcePrincipalAuth(params *PostStorageOosResourcePrincipalAuthParams, opts ...ClientOption) (*PostStorageOosResourcePrincipalAuthOK, error) {
+func (a *Client) CreateOosResourcePrincipalAuthStorage(params *CreateOosResourcePrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosResourcePrincipalAuthStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOosResourcePrincipalAuthParams()
+		params = NewCreateOosResourcePrincipalAuthStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOosResourcePrincipalAuth",
+		ID:                 "CreateOosResource_principal_authStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/oos/resource_principal_auth",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOosResourcePrincipalAuthReader{formats: a.formats},
+		Reader:             &CreateOosResourcePrincipalAuthStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1393,33 +1241,33 @@ func (a *Client) PostStorageOosResourcePrincipalAuth(params *PostStorageOosResou
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOosResourcePrincipalAuthOK)
+	success, ok := result.(*CreateOosResourcePrincipalAuthStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOosResourcePrincipalAuth: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOosResource_principal_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOosUserPrincipalAuth creates oos storage with user principal auth use an o c i user and an API key for authentication
+CreateOosUserPrincipalAuthStorage creates oos storage with user principal auth use an o c i user and an API key for authentication
 */
-func (a *Client) PostStorageOosUserPrincipalAuth(params *PostStorageOosUserPrincipalAuthParams, opts ...ClientOption) (*PostStorageOosUserPrincipalAuthOK, error) {
+func (a *Client) CreateOosUserPrincipalAuthStorage(params *CreateOosUserPrincipalAuthStorageParams, opts ...ClientOption) (*CreateOosUserPrincipalAuthStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOosUserPrincipalAuthParams()
+		params = NewCreateOosUserPrincipalAuthStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOosUserPrincipalAuth",
+		ID:                 "CreateOosUser_principal_authStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/oos/user_principal_auth",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOosUserPrincipalAuthReader{formats: a.formats},
+		Reader:             &CreateOosUserPrincipalAuthStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1431,33 +1279,33 @@ func (a *Client) PostStorageOosUserPrincipalAuth(params *PostStorageOosUserPrinc
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOosUserPrincipalAuthOK)
+	success, ok := result.(*CreateOosUserPrincipalAuthStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOosUserPrincipalAuth: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOosUser_principal_authStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageOpendrive creates opendrive storage
+CreateOpendriveStorage creates opendrive storage
 */
-func (a *Client) PostStorageOpendrive(params *PostStorageOpendriveParams, opts ...ClientOption) (*PostStorageOpendriveOK, error) {
+func (a *Client) CreateOpendriveStorage(params *CreateOpendriveStorageParams, opts ...ClientOption) (*CreateOpendriveStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageOpendriveParams()
+		params = NewCreateOpendriveStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageOpendrive",
+		ID:                 "CreateOpendriveStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/opendrive",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageOpendriveReader{formats: a.formats},
+		Reader:             &CreateOpendriveStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1469,33 +1317,33 @@ func (a *Client) PostStorageOpendrive(params *PostStorageOpendriveParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageOpendriveOK)
+	success, ok := result.(*CreateOpendriveStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageOpendrive: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateOpendriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStoragePcloud creates pcloud storage
+CreatePcloudStorage creates pcloud storage
 */
-func (a *Client) PostStoragePcloud(params *PostStoragePcloudParams, opts ...ClientOption) (*PostStoragePcloudOK, error) {
+func (a *Client) CreatePcloudStorage(params *CreatePcloudStorageParams, opts ...ClientOption) (*CreatePcloudStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStoragePcloudParams()
+		params = NewCreatePcloudStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStoragePcloud",
+		ID:                 "CreatePcloudStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/pcloud",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStoragePcloudReader{formats: a.formats},
+		Reader:             &CreatePcloudStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1507,33 +1355,33 @@ func (a *Client) PostStoragePcloud(params *PostStoragePcloudParams, opts ...Clie
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStoragePcloudOK)
+	success, ok := result.(*CreatePcloudStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStoragePcloud: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreatePcloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStoragePremiumizeme creates premiumizeme storage
+CreatePremiumizemeStorage creates premiumizeme storage
 */
-func (a *Client) PostStoragePremiumizeme(params *PostStoragePremiumizemeParams, opts ...ClientOption) (*PostStoragePremiumizemeOK, error) {
+func (a *Client) CreatePremiumizemeStorage(params *CreatePremiumizemeStorageParams, opts ...ClientOption) (*CreatePremiumizemeStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStoragePremiumizemeParams()
+		params = NewCreatePremiumizemeStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStoragePremiumizeme",
+		ID:                 "CreatePremiumizemeStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/premiumizeme",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStoragePremiumizemeReader{formats: a.formats},
+		Reader:             &CreatePremiumizemeStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1545,33 +1393,33 @@ func (a *Client) PostStoragePremiumizeme(params *PostStoragePremiumizemeParams, 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStoragePremiumizemeOK)
+	success, ok := result.(*CreatePremiumizemeStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStoragePremiumizeme: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreatePremiumizemeStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStoragePutio creates putio storage
+CreatePutioStorage creates putio storage
 */
-func (a *Client) PostStoragePutio(params *PostStoragePutioParams, opts ...ClientOption) (*PostStoragePutioOK, error) {
+func (a *Client) CreatePutioStorage(params *CreatePutioStorageParams, opts ...ClientOption) (*CreatePutioStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStoragePutioParams()
+		params = NewCreatePutioStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStoragePutio",
+		ID:                 "CreatePutioStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/putio",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStoragePutioReader{formats: a.formats},
+		Reader:             &CreatePutioStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1583,33 +1431,33 @@ func (a *Client) PostStoragePutio(params *PostStoragePutioParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStoragePutioOK)
+	success, ok := result.(*CreatePutioStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStoragePutio: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreatePutioStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageQingstor creates qingstor storage
+CreateQingstorStorage creates qingstor storage
 */
-func (a *Client) PostStorageQingstor(params *PostStorageQingstorParams, opts ...ClientOption) (*PostStorageQingstorOK, error) {
+func (a *Client) CreateQingstorStorage(params *CreateQingstorStorageParams, opts ...ClientOption) (*CreateQingstorStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageQingstorParams()
+		params = NewCreateQingstorStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageQingstor",
+		ID:                 "CreateQingstorStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/qingstor",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageQingstorReader{formats: a.formats},
+		Reader:             &CreateQingstorStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1621,109 +1469,33 @@ func (a *Client) PostStorageQingstor(params *PostStorageQingstorParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageQingstorOK)
+	success, ok := result.(*CreateQingstorStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageQingstor: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateQingstorStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Alibaba creates s3 storage with alibaba alibaba cloud object storage system o s s formerly aliyun
+CreateS3AWSStorage creates s3 storage with a w s amazon web services a w s s3
 */
-func (a *Client) PostStorageS3Alibaba(params *PostStorageS3AlibabaParams, opts ...ClientOption) (*PostStorageS3AlibabaOK, error) {
+func (a *Client) CreateS3AWSStorage(params *CreateS3AWSStorageParams, opts ...ClientOption) (*CreateS3AWSStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3AlibabaParams()
+		params = NewCreateS3AWSStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Alibaba",
-		Method:             "POST",
-		PathPattern:        "/storage/s3/alibaba",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostStorageS3AlibabaReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostStorageS3AlibabaOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Alibaba: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostStorageS3Arvancloud creates s3 storage with arvan cloud arvan cloud object storage a o s
-*/
-func (a *Client) PostStorageS3Arvancloud(params *PostStorageS3ArvancloudParams, opts ...ClientOption) (*PostStorageS3ArvancloudOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostStorageS3ArvancloudParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Arvancloud",
-		Method:             "POST",
-		PathPattern:        "/storage/s3/arvancloud",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostStorageS3ArvancloudReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostStorageS3ArvancloudOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Arvancloud: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostStorageS3Aws creates s3 storage with a w s amazon web services a w s s3
-*/
-func (a *Client) PostStorageS3Aws(params *PostStorageS3AwsParams, opts ...ClientOption) (*PostStorageS3AwsOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostStorageS3AwsParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Aws",
+		ID:                 "CreateS3AWSStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/aws",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3AwsReader{formats: a.formats},
+		Reader:             &CreateS3AWSStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1735,33 +1507,109 @@ func (a *Client) PostStorageS3Aws(params *PostStorageS3AwsParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3AwsOK)
+	success, ok := result.(*CreateS3AWSStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Aws: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3AWSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Ceph creates s3 storage with ceph ceph object storage
+CreateS3AlibabaStorage creates s3 storage with alibaba alibaba cloud object storage system o s s formerly aliyun
 */
-func (a *Client) PostStorageS3Ceph(params *PostStorageS3CephParams, opts ...ClientOption) (*PostStorageS3CephOK, error) {
+func (a *Client) CreateS3AlibabaStorage(params *CreateS3AlibabaStorageParams, opts ...ClientOption) (*CreateS3AlibabaStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3CephParams()
+		params = NewCreateS3AlibabaStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Ceph",
+		ID:                 "CreateS3AlibabaStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/alibaba",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3AlibabaStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateS3AlibabaStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3AlibabaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3ArvanCloudStorage creates s3 storage with arvan cloud arvan cloud object storage a o s
+*/
+func (a *Client) CreateS3ArvanCloudStorage(params *CreateS3ArvanCloudStorageParams, opts ...ClientOption) (*CreateS3ArvanCloudStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateS3ArvanCloudStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3ArvanCloudStorage",
+		Method:             "POST",
+		PathPattern:        "/storage/s3/arvancloud",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &CreateS3ArvanCloudStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateS3ArvanCloudStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for CreateS3ArvanCloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+CreateS3CephStorage creates s3 storage with ceph ceph object storage
+*/
+func (a *Client) CreateS3CephStorage(params *CreateS3CephStorageParams, opts ...ClientOption) (*CreateS3CephStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateS3CephStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "CreateS3CephStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/ceph",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3CephReader{formats: a.formats},
+		Reader:             &CreateS3CephStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1773,33 +1621,33 @@ func (a *Client) PostStorageS3Ceph(params *PostStorageS3CephParams, opts ...Clie
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3CephOK)
+	success, ok := result.(*CreateS3CephStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Ceph: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3CephStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Chinamobile creates s3 storage with china mobile china mobile ecloud elastic object storage e o s
+CreateS3ChinaMobileStorage creates s3 storage with china mobile china mobile ecloud elastic object storage e o s
 */
-func (a *Client) PostStorageS3Chinamobile(params *PostStorageS3ChinamobileParams, opts ...ClientOption) (*PostStorageS3ChinamobileOK, error) {
+func (a *Client) CreateS3ChinaMobileStorage(params *CreateS3ChinaMobileStorageParams, opts ...ClientOption) (*CreateS3ChinaMobileStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3ChinamobileParams()
+		params = NewCreateS3ChinaMobileStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Chinamobile",
+		ID:                 "CreateS3ChinaMobileStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/chinamobile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3ChinamobileReader{formats: a.formats},
+		Reader:             &CreateS3ChinaMobileStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1811,33 +1659,33 @@ func (a *Client) PostStorageS3Chinamobile(params *PostStorageS3ChinamobileParams
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3ChinamobileOK)
+	success, ok := result.(*CreateS3ChinaMobileStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Chinamobile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3ChinaMobileStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Cloudflare creates s3 storage with cloudflare cloudflare r2 storage
+CreateS3CloudflareStorage creates s3 storage with cloudflare cloudflare r2 storage
 */
-func (a *Client) PostStorageS3Cloudflare(params *PostStorageS3CloudflareParams, opts ...ClientOption) (*PostStorageS3CloudflareOK, error) {
+func (a *Client) CreateS3CloudflareStorage(params *CreateS3CloudflareStorageParams, opts ...ClientOption) (*CreateS3CloudflareStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3CloudflareParams()
+		params = NewCreateS3CloudflareStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Cloudflare",
+		ID:                 "CreateS3CloudflareStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/cloudflare",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3CloudflareReader{formats: a.formats},
+		Reader:             &CreateS3CloudflareStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1849,33 +1697,33 @@ func (a *Client) PostStorageS3Cloudflare(params *PostStorageS3CloudflareParams, 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3CloudflareOK)
+	success, ok := result.(*CreateS3CloudflareStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Cloudflare: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3CloudflareStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Digitalocean creates s3 storage with digital ocean digital ocean spaces
+CreateS3DigitalOceanStorage creates s3 storage with digital ocean digital ocean spaces
 */
-func (a *Client) PostStorageS3Digitalocean(params *PostStorageS3DigitaloceanParams, opts ...ClientOption) (*PostStorageS3DigitaloceanOK, error) {
+func (a *Client) CreateS3DigitalOceanStorage(params *CreateS3DigitalOceanStorageParams, opts ...ClientOption) (*CreateS3DigitalOceanStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3DigitaloceanParams()
+		params = NewCreateS3DigitalOceanStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Digitalocean",
+		ID:                 "CreateS3DigitalOceanStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/digitalocean",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3DigitaloceanReader{formats: a.formats},
+		Reader:             &CreateS3DigitalOceanStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1887,33 +1735,33 @@ func (a *Client) PostStorageS3Digitalocean(params *PostStorageS3DigitaloceanPara
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3DigitaloceanOK)
+	success, ok := result.(*CreateS3DigitalOceanStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Digitalocean: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3DigitalOceanStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Dreamhost creates s3 storage with dreamhost dreamhost dream objects
+CreateS3DreamhostStorage creates s3 storage with dreamhost dreamhost dream objects
 */
-func (a *Client) PostStorageS3Dreamhost(params *PostStorageS3DreamhostParams, opts ...ClientOption) (*PostStorageS3DreamhostOK, error) {
+func (a *Client) CreateS3DreamhostStorage(params *CreateS3DreamhostStorageParams, opts ...ClientOption) (*CreateS3DreamhostStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3DreamhostParams()
+		params = NewCreateS3DreamhostStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Dreamhost",
+		ID:                 "CreateS3DreamhostStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/dreamhost",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3DreamhostReader{formats: a.formats},
+		Reader:             &CreateS3DreamhostStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1925,33 +1773,33 @@ func (a *Client) PostStorageS3Dreamhost(params *PostStorageS3DreamhostParams, op
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3DreamhostOK)
+	success, ok := result.(*CreateS3DreamhostStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Dreamhost: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3DreamhostStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Huaweiobs creates s3 storage with huawei o b s huawei object storage service
+CreateS3HuaweiOBSStorage creates s3 storage with huawei o b s huawei object storage service
 */
-func (a *Client) PostStorageS3Huaweiobs(params *PostStorageS3HuaweiobsParams, opts ...ClientOption) (*PostStorageS3HuaweiobsOK, error) {
+func (a *Client) CreateS3HuaweiOBSStorage(params *CreateS3HuaweiOBSStorageParams, opts ...ClientOption) (*CreateS3HuaweiOBSStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3HuaweiobsParams()
+		params = NewCreateS3HuaweiOBSStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Huaweiobs",
+		ID:                 "CreateS3HuaweiOBSStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/huaweiobs",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3HuaweiobsReader{formats: a.formats},
+		Reader:             &CreateS3HuaweiOBSStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -1963,33 +1811,33 @@ func (a *Client) PostStorageS3Huaweiobs(params *PostStorageS3HuaweiobsParams, op
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3HuaweiobsOK)
+	success, ok := result.(*CreateS3HuaweiOBSStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Huaweiobs: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3HuaweiOBSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Ibmcos creates s3 storage with i b m c o s i b m c o s s3
+CreateS3IBMCOSStorage creates s3 storage with i b m c o s i b m c o s s3
 */
-func (a *Client) PostStorageS3Ibmcos(params *PostStorageS3IbmcosParams, opts ...ClientOption) (*PostStorageS3IbmcosOK, error) {
+func (a *Client) CreateS3IBMCOSStorage(params *CreateS3IBMCOSStorageParams, opts ...ClientOption) (*CreateS3IBMCOSStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3IbmcosParams()
+		params = NewCreateS3IBMCOSStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Ibmcos",
+		ID:                 "CreateS3IBMCOSStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/ibmcos",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3IbmcosReader{formats: a.formats},
+		Reader:             &CreateS3IBMCOSStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2001,33 +1849,33 @@ func (a *Client) PostStorageS3Ibmcos(params *PostStorageS3IbmcosParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3IbmcosOK)
+	success, ok := result.(*CreateS3IBMCOSStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Ibmcos: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3IBMCOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Idrive creates s3 storage with i drive i drive e2
+CreateS3IDriveStorage creates s3 storage with i drive i drive e2
 */
-func (a *Client) PostStorageS3Idrive(params *PostStorageS3IdriveParams, opts ...ClientOption) (*PostStorageS3IdriveOK, error) {
+func (a *Client) CreateS3IDriveStorage(params *CreateS3IDriveStorageParams, opts ...ClientOption) (*CreateS3IDriveStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3IdriveParams()
+		params = NewCreateS3IDriveStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Idrive",
+		ID:                 "CreateS3IDriveStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/idrive",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3IdriveReader{formats: a.formats},
+		Reader:             &CreateS3IDriveStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2039,33 +1887,33 @@ func (a *Client) PostStorageS3Idrive(params *PostStorageS3IdriveParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3IdriveOK)
+	success, ok := result.(*CreateS3IDriveStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Idrive: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3IDriveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Ionos creates s3 storage with i o n o s i o n o s cloud
+CreateS3IONOSStorage creates s3 storage with i o n o s i o n o s cloud
 */
-func (a *Client) PostStorageS3Ionos(params *PostStorageS3IonosParams, opts ...ClientOption) (*PostStorageS3IonosOK, error) {
+func (a *Client) CreateS3IONOSStorage(params *CreateS3IONOSStorageParams, opts ...ClientOption) (*CreateS3IONOSStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3IonosParams()
+		params = NewCreateS3IONOSStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Ionos",
+		ID:                 "CreateS3IONOSStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/ionos",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3IonosReader{formats: a.formats},
+		Reader:             &CreateS3IONOSStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2077,33 +1925,33 @@ func (a *Client) PostStorageS3Ionos(params *PostStorageS3IonosParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3IonosOK)
+	success, ok := result.(*CreateS3IONOSStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Ionos: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3IONOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Liara creates s3 storage with liara liara object storage
+CreateS3LiaraStorage creates s3 storage with liara liara object storage
 */
-func (a *Client) PostStorageS3Liara(params *PostStorageS3LiaraParams, opts ...ClientOption) (*PostStorageS3LiaraOK, error) {
+func (a *Client) CreateS3LiaraStorage(params *CreateS3LiaraStorageParams, opts ...ClientOption) (*CreateS3LiaraStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3LiaraParams()
+		params = NewCreateS3LiaraStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Liara",
+		ID:                 "CreateS3LiaraStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/liara",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3LiaraReader{formats: a.formats},
+		Reader:             &CreateS3LiaraStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2115,33 +1963,33 @@ func (a *Client) PostStorageS3Liara(params *PostStorageS3LiaraParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3LiaraOK)
+	success, ok := result.(*CreateS3LiaraStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Liara: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3LiaraStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Lyvecloud creates s3 storage with lyve cloud seagate lyve cloud
+CreateS3LyveCloudStorage creates s3 storage with lyve cloud seagate lyve cloud
 */
-func (a *Client) PostStorageS3Lyvecloud(params *PostStorageS3LyvecloudParams, opts ...ClientOption) (*PostStorageS3LyvecloudOK, error) {
+func (a *Client) CreateS3LyveCloudStorage(params *CreateS3LyveCloudStorageParams, opts ...ClientOption) (*CreateS3LyveCloudStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3LyvecloudParams()
+		params = NewCreateS3LyveCloudStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Lyvecloud",
+		ID:                 "CreateS3LyveCloudStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/lyvecloud",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3LyvecloudReader{formats: a.formats},
+		Reader:             &CreateS3LyveCloudStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2153,33 +2001,33 @@ func (a *Client) PostStorageS3Lyvecloud(params *PostStorageS3LyvecloudParams, op
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3LyvecloudOK)
+	success, ok := result.(*CreateS3LyveCloudStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Lyvecloud: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3LyveCloudStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Minio creates s3 storage with minio minio object storage
+CreateS3MinioStorage creates s3 storage with minio minio object storage
 */
-func (a *Client) PostStorageS3Minio(params *PostStorageS3MinioParams, opts ...ClientOption) (*PostStorageS3MinioOK, error) {
+func (a *Client) CreateS3MinioStorage(params *CreateS3MinioStorageParams, opts ...ClientOption) (*CreateS3MinioStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3MinioParams()
+		params = NewCreateS3MinioStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Minio",
+		ID:                 "CreateS3MinioStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/minio",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3MinioReader{formats: a.formats},
+		Reader:             &CreateS3MinioStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2191,33 +2039,33 @@ func (a *Client) PostStorageS3Minio(params *PostStorageS3MinioParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3MinioOK)
+	success, ok := result.(*CreateS3MinioStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Minio: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3MinioStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Netease creates s3 storage with netease netease object storage n o s
+CreateS3NeteaseStorage creates s3 storage with netease netease object storage n o s
 */
-func (a *Client) PostStorageS3Netease(params *PostStorageS3NeteaseParams, opts ...ClientOption) (*PostStorageS3NeteaseOK, error) {
+func (a *Client) CreateS3NeteaseStorage(params *CreateS3NeteaseStorageParams, opts ...ClientOption) (*CreateS3NeteaseStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3NeteaseParams()
+		params = NewCreateS3NeteaseStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Netease",
+		ID:                 "CreateS3NeteaseStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/netease",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3NeteaseReader{formats: a.formats},
+		Reader:             &CreateS3NeteaseStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2229,33 +2077,33 @@ func (a *Client) PostStorageS3Netease(params *PostStorageS3NeteaseParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3NeteaseOK)
+	success, ok := result.(*CreateS3NeteaseStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Netease: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3NeteaseStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Other creates s3 storage with other any other s3 compatible provider
+CreateS3OtherStorage creates s3 storage with other any other s3 compatible provider
 */
-func (a *Client) PostStorageS3Other(params *PostStorageS3OtherParams, opts ...ClientOption) (*PostStorageS3OtherOK, error) {
+func (a *Client) CreateS3OtherStorage(params *CreateS3OtherStorageParams, opts ...ClientOption) (*CreateS3OtherStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3OtherParams()
+		params = NewCreateS3OtherStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Other",
+		ID:                 "CreateS3OtherStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/other",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3OtherReader{formats: a.formats},
+		Reader:             &CreateS3OtherStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2267,33 +2115,33 @@ func (a *Client) PostStorageS3Other(params *PostStorageS3OtherParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3OtherOK)
+	success, ok := result.(*CreateS3OtherStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Other: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3OtherStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Qiniu creates s3 storage with qiniu qiniu object storage kodo
+CreateS3QiniuStorage creates s3 storage with qiniu qiniu object storage kodo
 */
-func (a *Client) PostStorageS3Qiniu(params *PostStorageS3QiniuParams, opts ...ClientOption) (*PostStorageS3QiniuOK, error) {
+func (a *Client) CreateS3QiniuStorage(params *CreateS3QiniuStorageParams, opts ...ClientOption) (*CreateS3QiniuStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3QiniuParams()
+		params = NewCreateS3QiniuStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Qiniu",
+		ID:                 "CreateS3QiniuStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/qiniu",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3QiniuReader{formats: a.formats},
+		Reader:             &CreateS3QiniuStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2305,33 +2153,33 @@ func (a *Client) PostStorageS3Qiniu(params *PostStorageS3QiniuParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3QiniuOK)
+	success, ok := result.(*CreateS3QiniuStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Qiniu: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3QiniuStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Rackcorp creates s3 storage with rack corp rack corp object storage
+CreateS3RackCorpStorage creates s3 storage with rack corp rack corp object storage
 */
-func (a *Client) PostStorageS3Rackcorp(params *PostStorageS3RackcorpParams, opts ...ClientOption) (*PostStorageS3RackcorpOK, error) {
+func (a *Client) CreateS3RackCorpStorage(params *CreateS3RackCorpStorageParams, opts ...ClientOption) (*CreateS3RackCorpStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3RackcorpParams()
+		params = NewCreateS3RackCorpStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Rackcorp",
+		ID:                 "CreateS3RackCorpStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/rackcorp",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3RackcorpReader{formats: a.formats},
+		Reader:             &CreateS3RackCorpStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2343,33 +2191,33 @@ func (a *Client) PostStorageS3Rackcorp(params *PostStorageS3RackcorpParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3RackcorpOK)
+	success, ok := result.(*CreateS3RackCorpStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Rackcorp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3RackCorpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Scaleway creates s3 storage with scaleway scaleway object storage
+CreateS3ScalewayStorage creates s3 storage with scaleway scaleway object storage
 */
-func (a *Client) PostStorageS3Scaleway(params *PostStorageS3ScalewayParams, opts ...ClientOption) (*PostStorageS3ScalewayOK, error) {
+func (a *Client) CreateS3ScalewayStorage(params *CreateS3ScalewayStorageParams, opts ...ClientOption) (*CreateS3ScalewayStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3ScalewayParams()
+		params = NewCreateS3ScalewayStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Scaleway",
+		ID:                 "CreateS3ScalewayStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/scaleway",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3ScalewayReader{formats: a.formats},
+		Reader:             &CreateS3ScalewayStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2381,33 +2229,33 @@ func (a *Client) PostStorageS3Scaleway(params *PostStorageS3ScalewayParams, opts
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3ScalewayOK)
+	success, ok := result.(*CreateS3ScalewayStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Scaleway: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3ScalewayStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Seaweedfs creates s3 storage with seaweed f s seaweed f s s3
+CreateS3SeaweedFSStorage creates s3 storage with seaweed f s seaweed f s s3
 */
-func (a *Client) PostStorageS3Seaweedfs(params *PostStorageS3SeaweedfsParams, opts ...ClientOption) (*PostStorageS3SeaweedfsOK, error) {
+func (a *Client) CreateS3SeaweedFSStorage(params *CreateS3SeaweedFSStorageParams, opts ...ClientOption) (*CreateS3SeaweedFSStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3SeaweedfsParams()
+		params = NewCreateS3SeaweedFSStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Seaweedfs",
+		ID:                 "CreateS3SeaweedFSStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/seaweedfs",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3SeaweedfsReader{formats: a.formats},
+		Reader:             &CreateS3SeaweedFSStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2419,33 +2267,33 @@ func (a *Client) PostStorageS3Seaweedfs(params *PostStorageS3SeaweedfsParams, op
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3SeaweedfsOK)
+	success, ok := result.(*CreateS3SeaweedFSStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Seaweedfs: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3SeaweedFSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Stackpath creates s3 storage with stack path stack path object storage
+CreateS3StackPathStorage creates s3 storage with stack path stack path object storage
 */
-func (a *Client) PostStorageS3Stackpath(params *PostStorageS3StackpathParams, opts ...ClientOption) (*PostStorageS3StackpathOK, error) {
+func (a *Client) CreateS3StackPathStorage(params *CreateS3StackPathStorageParams, opts ...ClientOption) (*CreateS3StackPathStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3StackpathParams()
+		params = NewCreateS3StackPathStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Stackpath",
+		ID:                 "CreateS3StackPathStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/stackpath",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3StackpathReader{formats: a.formats},
+		Reader:             &CreateS3StackPathStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2457,33 +2305,33 @@ func (a *Client) PostStorageS3Stackpath(params *PostStorageS3StackpathParams, op
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3StackpathOK)
+	success, ok := result.(*CreateS3StackPathStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Stackpath: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3StackPathStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Storj creates s3 storage with storj storj s3 compatible gateway
+CreateS3StorjStorage creates s3 storage with storj storj s3 compatible gateway
 */
-func (a *Client) PostStorageS3Storj(params *PostStorageS3StorjParams, opts ...ClientOption) (*PostStorageS3StorjOK, error) {
+func (a *Client) CreateS3StorjStorage(params *CreateS3StorjStorageParams, opts ...ClientOption) (*CreateS3StorjStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3StorjParams()
+		params = NewCreateS3StorjStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Storj",
+		ID:                 "CreateS3StorjStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/storj",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3StorjReader{formats: a.formats},
+		Reader:             &CreateS3StorjStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2495,33 +2343,33 @@ func (a *Client) PostStorageS3Storj(params *PostStorageS3StorjParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3StorjOK)
+	success, ok := result.(*CreateS3StorjStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Storj: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3StorjStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Tencentcos creates s3 storage with tencent c o s tencent cloud object storage c o s
+CreateS3TencentCOSStorage creates s3 storage with tencent c o s tencent cloud object storage c o s
 */
-func (a *Client) PostStorageS3Tencentcos(params *PostStorageS3TencentcosParams, opts ...ClientOption) (*PostStorageS3TencentcosOK, error) {
+func (a *Client) CreateS3TencentCOSStorage(params *CreateS3TencentCOSStorageParams, opts ...ClientOption) (*CreateS3TencentCOSStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3TencentcosParams()
+		params = NewCreateS3TencentCOSStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Tencentcos",
+		ID:                 "CreateS3TencentCOSStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/tencentcos",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3TencentcosReader{formats: a.formats},
+		Reader:             &CreateS3TencentCOSStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2533,33 +2381,33 @@ func (a *Client) PostStorageS3Tencentcos(params *PostStorageS3TencentcosParams, 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3TencentcosOK)
+	success, ok := result.(*CreateS3TencentCOSStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Tencentcos: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3TencentCOSStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageS3Wasabi creates s3 storage with wasabi wasabi object storage
+CreateS3WasabiStorage creates s3 storage with wasabi wasabi object storage
 */
-func (a *Client) PostStorageS3Wasabi(params *PostStorageS3WasabiParams, opts ...ClientOption) (*PostStorageS3WasabiOK, error) {
+func (a *Client) CreateS3WasabiStorage(params *CreateS3WasabiStorageParams, opts ...ClientOption) (*CreateS3WasabiStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageS3WasabiParams()
+		params = NewCreateS3WasabiStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageS3Wasabi",
+		ID:                 "CreateS3WasabiStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/s3/wasabi",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageS3WasabiReader{formats: a.formats},
+		Reader:             &CreateS3WasabiStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2571,33 +2419,33 @@ func (a *Client) PostStorageS3Wasabi(params *PostStorageS3WasabiParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageS3WasabiOK)
+	success, ok := result.(*CreateS3WasabiStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageS3Wasabi: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateS3WasabiStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSeafile creates seafile storage
+CreateSeafileStorage creates seafile storage
 */
-func (a *Client) PostStorageSeafile(params *PostStorageSeafileParams, opts ...ClientOption) (*PostStorageSeafileOK, error) {
+func (a *Client) CreateSeafileStorage(params *CreateSeafileStorageParams, opts ...ClientOption) (*CreateSeafileStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSeafileParams()
+		params = NewCreateSeafileStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSeafile",
+		ID:                 "CreateSeafileStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/seafile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSeafileReader{formats: a.formats},
+		Reader:             &CreateSeafileStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2609,33 +2457,33 @@ func (a *Client) PostStorageSeafile(params *PostStorageSeafileParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSeafileOK)
+	success, ok := result.(*CreateSeafileStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSeafile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSeafileStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSftp creates sftp storage
+CreateSftpStorage creates sftp storage
 */
-func (a *Client) PostStorageSftp(params *PostStorageSftpParams, opts ...ClientOption) (*PostStorageSftpOK, error) {
+func (a *Client) CreateSftpStorage(params *CreateSftpStorageParams, opts ...ClientOption) (*CreateSftpStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSftpParams()
+		params = NewCreateSftpStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSftp",
+		ID:                 "CreateSftpStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/sftp",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSftpReader{formats: a.formats},
+		Reader:             &CreateSftpStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2647,33 +2495,33 @@ func (a *Client) PostStorageSftp(params *PostStorageSftpParams, opts ...ClientOp
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSftpOK)
+	success, ok := result.(*CreateSftpStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSftp: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSftpStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSharefile creates sharefile storage
+CreateSharefileStorage creates sharefile storage
 */
-func (a *Client) PostStorageSharefile(params *PostStorageSharefileParams, opts ...ClientOption) (*PostStorageSharefileOK, error) {
+func (a *Client) CreateSharefileStorage(params *CreateSharefileStorageParams, opts ...ClientOption) (*CreateSharefileStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSharefileParams()
+		params = NewCreateSharefileStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSharefile",
+		ID:                 "CreateSharefileStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/sharefile",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSharefileReader{formats: a.formats},
+		Reader:             &CreateSharefileStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2685,33 +2533,33 @@ func (a *Client) PostStorageSharefile(params *PostStorageSharefileParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSharefileOK)
+	success, ok := result.(*CreateSharefileStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSharefile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSharefileStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSia creates sia storage
+CreateSiaStorage creates sia storage
 */
-func (a *Client) PostStorageSia(params *PostStorageSiaParams, opts ...ClientOption) (*PostStorageSiaOK, error) {
+func (a *Client) CreateSiaStorage(params *CreateSiaStorageParams, opts ...ClientOption) (*CreateSiaStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSiaParams()
+		params = NewCreateSiaStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSia",
+		ID:                 "CreateSiaStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/sia",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSiaReader{formats: a.formats},
+		Reader:             &CreateSiaStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2723,33 +2571,33 @@ func (a *Client) PostStorageSia(params *PostStorageSiaParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSiaOK)
+	success, ok := result.(*CreateSiaStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSia: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSiaStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSmb creates smb storage
+CreateSmbStorage creates smb storage
 */
-func (a *Client) PostStorageSmb(params *PostStorageSmbParams, opts ...ClientOption) (*PostStorageSmbOK, error) {
+func (a *Client) CreateSmbStorage(params *CreateSmbStorageParams, opts ...ClientOption) (*CreateSmbStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSmbParams()
+		params = NewCreateSmbStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSmb",
+		ID:                 "CreateSmbStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/smb",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSmbReader{formats: a.formats},
+		Reader:             &CreateSmbStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2761,33 +2609,33 @@ func (a *Client) PostStorageSmb(params *PostStorageSmbParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSmbOK)
+	success, ok := result.(*CreateSmbStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSmb: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSmbStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageStorageType creates a new storage
+CreateStorage creates a new storage
 */
-func (a *Client) PostStorageStorageType(params *PostStorageStorageTypeParams, opts ...ClientOption) (*PostStorageStorageTypeOK, error) {
+func (a *Client) CreateStorage(params *CreateStorageParams, opts ...ClientOption) (*CreateStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageStorageTypeParams()
+		params = NewCreateStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageStorageType",
+		ID:                 "CreateStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/{storageType}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageStorageTypeReader{formats: a.formats},
+		Reader:             &CreateStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2799,33 +2647,33 @@ func (a *Client) PostStorageStorageType(params *PostStorageStorageTypeParams, op
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageStorageTypeOK)
+	success, ok := result.(*CreateStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageStorageType: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageStorjExisting creates storj storage with existing use an existing access grant
+CreateStorjExistingStorage creates storj storage with existing use an existing access grant
 */
-func (a *Client) PostStorageStorjExisting(params *PostStorageStorjExistingParams, opts ...ClientOption) (*PostStorageStorjExistingOK, error) {
+func (a *Client) CreateStorjExistingStorage(params *CreateStorjExistingStorageParams, opts ...ClientOption) (*CreateStorjExistingStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageStorjExistingParams()
+		params = NewCreateStorjExistingStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageStorjExisting",
+		ID:                 "CreateStorjExistingStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/storj/existing",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageStorjExistingReader{formats: a.formats},
+		Reader:             &CreateStorjExistingStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2837,33 +2685,33 @@ func (a *Client) PostStorageStorjExisting(params *PostStorageStorjExistingParams
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageStorjExistingOK)
+	success, ok := result.(*CreateStorjExistingStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageStorjExisting: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateStorjExistingStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageStorjNew creates storj storage with new create a new access grant from satellite address API key and passphrase
+CreateStorjNewStorage creates storj storage with new create a new access grant from satellite address API key and passphrase
 */
-func (a *Client) PostStorageStorjNew(params *PostStorageStorjNewParams, opts ...ClientOption) (*PostStorageStorjNewOK, error) {
+func (a *Client) CreateStorjNewStorage(params *CreateStorjNewStorageParams, opts ...ClientOption) (*CreateStorjNewStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageStorjNewParams()
+		params = NewCreateStorjNewStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageStorjNew",
+		ID:                 "CreateStorjNewStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/storj/new",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageStorjNewReader{formats: a.formats},
+		Reader:             &CreateStorjNewStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2875,33 +2723,33 @@ func (a *Client) PostStorageStorjNew(params *PostStorageStorjNewParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageStorjNewOK)
+	success, ok := result.(*CreateStorjNewStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageStorjNew: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateStorjNewStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSugarsync creates sugarsync storage
+CreateSugarsyncStorage creates sugarsync storage
 */
-func (a *Client) PostStorageSugarsync(params *PostStorageSugarsyncParams, opts ...ClientOption) (*PostStorageSugarsyncOK, error) {
+func (a *Client) CreateSugarsyncStorage(params *CreateSugarsyncStorageParams, opts ...ClientOption) (*CreateSugarsyncStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSugarsyncParams()
+		params = NewCreateSugarsyncStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSugarsync",
+		ID:                 "CreateSugarsyncStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/sugarsync",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSugarsyncReader{formats: a.formats},
+		Reader:             &CreateSugarsyncStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2913,33 +2761,33 @@ func (a *Client) PostStorageSugarsync(params *PostStorageSugarsyncParams, opts .
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSugarsyncOK)
+	success, ok := result.(*CreateSugarsyncStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSugarsync: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSugarsyncStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageSwift creates swift storage
+CreateSwiftStorage creates swift storage
 */
-func (a *Client) PostStorageSwift(params *PostStorageSwiftParams, opts ...ClientOption) (*PostStorageSwiftOK, error) {
+func (a *Client) CreateSwiftStorage(params *CreateSwiftStorageParams, opts ...ClientOption) (*CreateSwiftStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageSwiftParams()
+		params = NewCreateSwiftStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageSwift",
+		ID:                 "CreateSwiftStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/swift",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageSwiftReader{formats: a.formats},
+		Reader:             &CreateSwiftStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2951,33 +2799,33 @@ func (a *Client) PostStorageSwift(params *PostStorageSwiftParams, opts ...Client
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageSwiftOK)
+	success, ok := result.(*CreateSwiftStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageSwift: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateSwiftStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageUptobox creates uptobox storage
+CreateUptoboxStorage creates uptobox storage
 */
-func (a *Client) PostStorageUptobox(params *PostStorageUptoboxParams, opts ...ClientOption) (*PostStorageUptoboxOK, error) {
+func (a *Client) CreateUptoboxStorage(params *CreateUptoboxStorageParams, opts ...ClientOption) (*CreateUptoboxStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageUptoboxParams()
+		params = NewCreateUptoboxStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageUptobox",
+		ID:                 "CreateUptoboxStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/uptobox",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageUptoboxReader{formats: a.formats},
+		Reader:             &CreateUptoboxStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -2989,33 +2837,33 @@ func (a *Client) PostStorageUptobox(params *PostStorageUptoboxParams, opts ...Cl
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageUptoboxOK)
+	success, ok := result.(*CreateUptoboxStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageUptobox: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateUptoboxStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageWebdav creates webdav storage
+CreateWebdavStorage creates webdav storage
 */
-func (a *Client) PostStorageWebdav(params *PostStorageWebdavParams, opts ...ClientOption) (*PostStorageWebdavOK, error) {
+func (a *Client) CreateWebdavStorage(params *CreateWebdavStorageParams, opts ...ClientOption) (*CreateWebdavStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageWebdavParams()
+		params = NewCreateWebdavStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageWebdav",
+		ID:                 "CreateWebdavStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/webdav",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageWebdavReader{formats: a.formats},
+		Reader:             &CreateWebdavStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -3027,33 +2875,33 @@ func (a *Client) PostStorageWebdav(params *PostStorageWebdavParams, opts ...Clie
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageWebdavOK)
+	success, ok := result.(*CreateWebdavStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageWebdav: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateWebdavStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageYandex creates yandex storage
+CreateYandexStorage creates yandex storage
 */
-func (a *Client) PostStorageYandex(params *PostStorageYandexParams, opts ...ClientOption) (*PostStorageYandexOK, error) {
+func (a *Client) CreateYandexStorage(params *CreateYandexStorageParams, opts ...ClientOption) (*CreateYandexStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageYandexParams()
+		params = NewCreateYandexStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageYandex",
+		ID:                 "CreateYandexStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/yandex",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageYandexReader{formats: a.formats},
+		Reader:             &CreateYandexStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -3065,33 +2913,33 @@ func (a *Client) PostStorageYandex(params *PostStorageYandexParams, opts ...Clie
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageYandexOK)
+	success, ok := result.(*CreateYandexStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageYandex: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateYandexStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostStorageZoho creates zoho storage
+CreateZohoStorage creates zoho storage
 */
-func (a *Client) PostStorageZoho(params *PostStorageZohoParams, opts ...ClientOption) (*PostStorageZohoOK, error) {
+func (a *Client) CreateZohoStorage(params *CreateZohoStorageParams, opts ...ClientOption) (*CreateZohoStorageOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostStorageZohoParams()
+		params = NewCreateZohoStorageParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostStorageZoho",
+		ID:                 "CreateZohoStorage",
 		Method:             "POST",
 		PathPattern:        "/storage/zoho",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostStorageZohoReader{formats: a.formats},
+		Reader:             &CreateZohoStorageReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -3103,13 +2951,165 @@ func (a *Client) PostStorageZoho(params *PostStorageZohoParams, opts ...ClientOp
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostStorageZohoOK)
+	success, ok := result.(*CreateZohoStorageOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostStorageZoho: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for CreateZohoStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+ExploreStorage explores directory entries in a storage system
+*/
+func (a *Client) ExploreStorage(params *ExploreStorageParams, opts ...ClientOption) (*ExploreStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewExploreStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ExploreStorage",
+		Method:             "GET",
+		PathPattern:        "/storage/{name}/explore/{path}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ExploreStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ExploreStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ExploreStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+ListStorages lists all storages
+*/
+func (a *Client) ListStorages(params *ListStoragesParams, opts ...ClientOption) (*ListStoragesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewListStoragesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "ListStorages",
+		Method:             "GET",
+		PathPattern:        "/storage",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &ListStoragesReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*ListStoragesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for ListStorages: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+RemoveStorage removes a storage
+*/
+func (a *Client) RemoveStorage(params *RemoveStorageParams, opts ...ClientOption) (*RemoveStorageNoContent, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRemoveStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "RemoveStorage",
+		Method:             "DELETE",
+		PathPattern:        "/storage/{name}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &RemoveStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RemoveStorageNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RemoveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+UpdateStorage updates a storage connection
+*/
+func (a *Client) UpdateStorage(params *UpdateStorageParams, opts ...ClientOption) (*UpdateStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "UpdateStorage",
+		Method:             "PATCH",
+		PathPattern:        "/storage/{name}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &UpdateStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UpdateStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for UpdateStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

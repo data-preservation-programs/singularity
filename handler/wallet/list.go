@@ -32,6 +32,7 @@ func (DefaultHandler) ListHandler(
 	return wallets, nil
 }
 
+// @ID ListWallets
 // @Summary List all imported wallets
 // @Tags Wallet
 // @Produce json

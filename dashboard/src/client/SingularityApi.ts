@@ -7906,11 +7906,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description List all deals
      *
      * @tags Deal
-     * @name DealCreate
+     * @name ListDeals
      * @summary List all deals
      * @request POST:/deal
      */
-    dealCreate: (request: DealListDealRequest, params: RequestParams = {}) =>
+    listDeals: (request: DealListDealRequest, params: RequestParams = {}) =>
       this.request<ModelDeal[], ApiHTTPError>({
         path: `/deal`,
         method: "POST",
@@ -7925,11 +7925,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags File
-     * @name FileDetail
+     * @name GetFile
      * @summary Get details about a file
      * @request GET:/file/{id}
      */
-    fileDetail: (id: number, params: RequestParams = {}) =>
+    getFile: (id: number, params: RequestParams = {}) =>
       this.request<ModelFile, ApiHTTPError>({
         path: `/file/${id}`,
         method: "GET",
@@ -7942,11 +7942,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags File
-     * @name DealsDetail
+     * @name GetFileDeals
      * @summary Get all deals that have been made for a file
      * @request GET:/file/{id}/deals
      */
-    dealsDetail: (id: number, params: RequestParams = {}) =>
+    getFileDeals: (id: number, params: RequestParams = {}) =>
       this.request<ModelDeal[], ApiHTTPError>({
         path: `/file/${id}/deals`,
         method: "GET",
@@ -7959,11 +7959,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags File
-     * @name PrepareToPackCreate
+     * @name PrepareToPackFile
      * @summary prepare job for a given item
      * @request POST:/file/{id}/prepare_to_pack
      */
-    prepareToPackCreate: (id: number, params: RequestParams = {}) =>
+    prepareToPackFile: (id: number, params: RequestParams = {}) =>
       this.request<number, string>({
         path: `/file/${id}/prepare_to_pack`,
         method: "POST",
@@ -7977,11 +7977,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name PackCreate
+     * @name Pack
      * @summary Pack a pack job into car files
      * @request POST:/job/{id}/pack
      */
-    packCreate: (id: string, params: RequestParams = {}) =>
+    pack: (id: string, params: RequestParams = {}) =>
       this.request<ModelCar, string>({
         path: `/job/${id}/pack`,
         method: "POST",
@@ -8012,11 +8012,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name PreparationList
+     * @name ListPreparations
      * @summary List all preparations
      * @request GET:/preparation
      */
-    preparationList: (params: RequestParams = {}) =>
+    listPreparations: (params: RequestParams = {}) =>
       this.request<ModelPreparation[], ApiHTTPError>({
         path: `/preparation`,
         method: "GET",
@@ -8029,11 +8029,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name PreparationCreate
+     * @name CreatePreparation
      * @summary Create a new preparation
      * @request POST:/preparation
      */
-    preparationCreate: (request: DataprepCreateRequest, params: RequestParams = {}) =>
+    createPreparation: (request: DataprepCreateRequest, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation`,
         method: "POST",
@@ -8047,11 +8047,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name PreparationDetail
+     * @name GetPreparationStatus
      * @summary Get the status of a preparation
      * @request GET:/preparation/{id}
      */
-    preparationDetail: (id: string, params: RequestParams = {}) =>
+    getPreparationStatus: (id: string, params: RequestParams = {}) =>
       this.request<JobSourceStatus[], ApiHTTPError>({
         path: `/preparation/${id}`,
         method: "GET",
@@ -8063,11 +8063,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name OutputCreate
+     * @name AddOutputStorage
      * @summary Attach an output storage with a preparation
      * @request POST:/preparation/{id}/output/{name}
      */
-    outputCreate: (id: string, name: string, params: RequestParams = {}) =>
+    addOutputStorage: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/output/${name}`,
         method: "POST",
@@ -8080,11 +8080,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name OutputDelete
+     * @name RemoveOutputStorage
      * @summary Detach an output storage from a preparation
      * @request DELETE:/preparation/{id}/output/{name}
      */
-    outputDelete: (id: string, name: string, params: RequestParams = {}) =>
+    removeOutputStorage: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/output/${name}`,
         method: "DELETE",
@@ -8097,11 +8097,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Piece
-     * @name PieceDetail
+     * @name ListPieces
      * @summary List all prepared pieces for a preparation
      * @request GET:/preparation/{id}/piece
      */
-    pieceDetail: (id: string, params: RequestParams = {}) =>
+    listPieces: (id: string, params: RequestParams = {}) =>
       this.request<DataprepPieceList[], ApiHTTPError>({
         path: `/preparation/${id}/piece`,
         method: "GET",
@@ -8114,11 +8114,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Piece
-     * @name PieceCreate
+     * @name AddPiece
      * @summary Add a piece to a preparation
      * @request POST:/preparation/{id}/piece
      */
-    pieceCreate: (id: string, request: DataprepAddPieceRequest, params: RequestParams = {}) =>
+    addPiece: (id: string, request: DataprepAddPieceRequest, params: RequestParams = {}) =>
       this.request<ModelCar, ApiHTTPError>({
         path: `/preparation/${id}/piece`,
         method: "POST",
@@ -8132,11 +8132,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Deal Schedule
-     * @name SchedulesDetail
+     * @name ListPreparationSchedules
      * @summary List all schedules for a preparation
      * @request GET:/preparation/{id}/schedules
      */
-    schedulesDetail: (id: string, params: RequestParams = {}) =>
+    listPreparationSchedules: (id: string, params: RequestParams = {}) =>
       this.request<ModelSchedule[], ApiHTTPError>({
         path: `/preparation/${id}/schedules`,
         method: "GET",
@@ -8149,11 +8149,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name SourceCreate
+     * @name AddSourceStorage
      * @summary Attach a source storage with a preparation
      * @request POST:/preparation/{id}/source/{name}
      */
-    sourceCreate: (id: string, name: string, params: RequestParams = {}) =>
+    addSourceStorage: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}`,
         method: "POST",
@@ -8166,11 +8166,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Preparation
-     * @name SourceExploreDetail
+     * @name ExplorePreparation
      * @summary Explore a directory in a prepared source storage
      * @request GET:/preparation/{id}/source/{name}/explore/{path}
      */
-    sourceExploreDetail: (id: string, name: string, path: string, params: RequestParams = {}) =>
+    explorePreparation: (id: string, name: string, path: string, params: RequestParams = {}) =>
       this.request<DataprepExploreResult, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/explore/${path}`,
         method: "GET",
@@ -8183,11 +8183,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Tells Singularity that something is ready to be grabbed for data preparation
      *
      * @tags File
-     * @name SourceFileCreate
+     * @name PushFile
      * @summary Push a file to be queued
      * @request POST:/preparation/{id}/source/{name}/file
      */
-    sourceFileCreate: (id: string, name: string, file: FileInfo, params: RequestParams = {}) =>
+    pushFile: (id: string, name: string, file: FileInfo, params: RequestParams = {}) =>
       this.request<ModelFile, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/file`,
         method: "POST",
@@ -8201,11 +8201,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourceFinalizeCreate
+     * @name PrepareToPackSource
      * @summary prepare to pack a data source
      * @request POST:/preparation/{id}/source/{name}/finalize
      */
-    sourceFinalizeCreate: (id: string, name: string, params: RequestParams = {}) =>
+    prepareToPackSource: (id: string, name: string, params: RequestParams = {}) =>
       this.request<void, string>({
         path: `/preparation/${id}/source/${name}/finalize`,
         method: "POST",
@@ -8217,11 +8217,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourcePauseDaggenCreate
+     * @name PauseDagGen
      * @summary Pause an ongoing DAG generation job
      * @request POST:/preparation/{id}/source/{name}/pause-daggen
      */
-    sourcePauseDaggenCreate: (id: string, name: string, params: RequestParams = {}) =>
+    pauseDagGen: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-daggen`,
         method: "POST",
@@ -8234,11 +8234,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourcePausePackCreate
+     * @name PausePackAll
      * @summary Pause all packing job
      * @request POST:/preparation/{id}/source/{name}/pause-pack
      */
-    sourcePausePackCreate: (id: string, name: string, params: RequestParams = {}) =>
+    pausePackAll: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-pack`,
         method: "POST",
@@ -8251,13 +8251,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourcePausePackCreate2
+     * @name PausePack
      * @summary Pause a specific packing job
      * @request POST:/preparation/{id}/source/{name}/pause-pack/{job_id}
-     * @originalName sourcePausePackCreate
-     * @duplicate
      */
-    sourcePausePackCreate2: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
+    pausePack: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-pack/${jobId}`,
         method: "POST",
@@ -8270,11 +8268,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourcePauseScanCreate
+     * @name PauseScan
      * @summary Pause an ongoing scanning job
      * @request POST:/preparation/{id}/source/{name}/pause-scan
      */
-    sourcePauseScanCreate: (id: string, name: string, params: RequestParams = {}) =>
+    pauseScan: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-scan`,
         method: "POST",
@@ -8287,11 +8285,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourceStartDaggenCreate
+     * @name StartDagGen
      * @summary Start a new DAG generation job
      * @request POST:/preparation/{id}/source/{name}/start-daggen
      */
-    sourceStartDaggenCreate: (id: string, name: string, params: RequestParams = {}) =>
+    startDagGen: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-daggen`,
         method: "POST",
@@ -8304,11 +8302,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourceStartPackCreate
+     * @name StartPackAll
      * @summary Start or restart all packing job
      * @request POST:/preparation/{id}/source/{name}/start-pack
      */
-    sourceStartPackCreate: (id: string, name: string, params: RequestParams = {}) =>
+    startPackAll: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-pack`,
         method: "POST",
@@ -8321,13 +8319,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourceStartPackCreate2
+     * @name StartPack
      * @summary Start or restart a specific packing job
      * @request POST:/preparation/{id}/source/{name}/start-pack/{job_id}
-     * @originalName sourceStartPackCreate
-     * @duplicate
      */
-    sourceStartPackCreate2: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
+    startPack: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-pack/${jobId}`,
         method: "POST",
@@ -8340,11 +8336,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name SourceStartScanCreate
+     * @name StartScan
      * @summary Start a new scanning job
      * @request POST:/preparation/{id}/source/{name}/start-scan
      */
-    sourceStartScanCreate: (id: string, name: string, params: RequestParams = {}) =>
+    startScan: (id: string, name: string, params: RequestParams = {}) =>
       this.request<ModelJob, ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-scan`,
         method: "POST",
@@ -8357,12 +8353,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Wallet Association
-     * @name WalletCreate
+     * @name ListAttachedWallets
      * @summary List all wallets of a preparation.
      * @request POST:/preparation/{id}/wallet
      */
-    walletCreate: (id: string, params: RequestParams = {}) =>
-      this.request<ModelWallet, ApiHTTPError>({
+    listAttachedWallets: (id: string, params: RequestParams = {}) =>
+      this.request<ModelWallet[], ApiHTTPError>({
         path: `/preparation/${id}/wallet`,
         method: "POST",
         type: ContentType.Json,
@@ -8374,13 +8370,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Wallet Association
-     * @name WalletCreate2
+     * @name AttachWallet
      * @summary Attach a new wallet with a preparation
      * @request POST:/preparation/{id}/wallet/{wallet}
-     * @originalName walletCreate
-     * @duplicate
      */
-    walletCreate2: (id: string, wallet: string, params: RequestParams = {}) =>
+    attachWallet: (id: string, wallet: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/wallet/${wallet}`,
         method: "POST",
@@ -8393,11 +8387,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Wallet Association
-     * @name WalletDelete
+     * @name DetachWallet
      * @summary Detach a new wallet from a preparation
      * @request DELETE:/preparation/{id}/wallet/{wallet}
      */
-    walletDelete: (id: string, wallet: string, params: RequestParams = {}) =>
+    detachWallet: (id: string, wallet: string, params: RequestParams = {}) =>
       this.request<ModelPreparation, ApiHTTPError>({
         path: `/preparation/${id}/wallet/${wallet}`,
         method: "DELETE",
@@ -8411,11 +8405,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Create a new schedule
      *
      * @tags Deal Schedule
-     * @name ScheduleCreate
+     * @name CreateSchedule
      * @summary Create a new schedule
      * @request POST:/schedule
      */
-    scheduleCreate: (schedule: ScheduleCreateRequest, params: RequestParams = {}) =>
+    createSchedule: (schedule: ScheduleCreateRequest, params: RequestParams = {}) =>
       this.request<ModelSchedule, ApiHTTPError>({
         path: `/schedule`,
         method: "POST",
@@ -8429,11 +8423,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Deal Schedule
-     * @name PauseCreate
+     * @name PauseSchedule
      * @summary Pause a specific schedule
      * @request POST:/schedule/{id}/pause
      */
-    pauseCreate: (id: string, params: RequestParams = {}) =>
+    pauseSchedule: (id: string, params: RequestParams = {}) =>
       this.request<ModelSchedule, ApiHTTPError>({
         path: `/schedule/${id}/pause`,
         method: "POST",
@@ -8445,11 +8439,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Deal Schedule
-     * @name ResumeCreate
+     * @name ResumeSchedule
      * @summary Resume a specific schedule
      * @request POST:/schedule/{id}/resume
      */
-    resumeCreate: (id: string, params: RequestParams = {}) =>
+    resumeSchedule: (id: string, params: RequestParams = {}) =>
       this.request<ModelSchedule, ApiHTTPError>({
         path: `/schedule/${id}/resume`,
         method: "POST",
@@ -8462,11 +8456,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Deal Schedule
-     * @name SchedulesList
+     * @name ListSchedules
      * @summary List all deal making schedules
      * @request GET:/schedules
      */
-    schedulesList: (params: RequestParams = {}) =>
+    listSchedules: (params: RequestParams = {}) =>
       this.request<ModelSchedule[], ApiHTTPError>({
         path: `/schedules`,
         method: "GET",
@@ -8479,11 +8473,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Send a manual deal proposal
      *
      * @tags Deal
-     * @name SendDealCreate
+     * @name SendManual
      * @summary Send a manual deal proposal
      * @request POST:/send_deal
      */
-    sendDealCreate: (proposal: DealProposal, params: RequestParams = {}) =>
+    sendManual: (proposal: DealProposal, params: RequestParams = {}) =>
       this.request<ModelDeal, ApiHTTPError>({
         path: `/send_deal`,
         method: "POST",
@@ -8498,11 +8492,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name StorageList
+     * @name ListStorages
      * @summary List all storages
      * @request GET:/storage
      */
-    storageList: (params: RequestParams = {}) =>
+    listStorages: (params: RequestParams = {}) =>
       this.request<ModelStorage[], ApiHTTPError>({
         path: `/storage`,
         method: "GET",
@@ -8515,11 +8509,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage
+     * @name CreateAcdStorage
      * @summary Create Acd storage
      * @request POST:/storage/acd
      */
-    postStorage: (request: StorageCreateAcdStorageRequest, params: RequestParams = {}) =>
+    createAcdStorage: (request: StorageCreateAcdStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/acd`,
         method: "POST",
@@ -8533,11 +8527,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name AzureblobCreate
+     * @name CreateAzureblobStorage
      * @summary Create Azureblob storage
      * @request POST:/storage/azureblob
      */
-    azureblobCreate: (request: StorageCreateAzureblobStorageRequest, params: RequestParams = {}) =>
+    createAzureblobStorage: (request: StorageCreateAzureblobStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/azureblob`,
         method: "POST",
@@ -8551,13 +8545,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage2
+     * @name CreateB2Storage
      * @summary Create B2 storage
      * @request POST:/storage/b2
-     * @originalName postStorage
-     * @duplicate
      */
-    postStorage2: (request: StorageCreateB2StorageRequest, params: RequestParams = {}) =>
+    createB2Storage: (request: StorageCreateB2StorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/b2`,
         method: "POST",
@@ -8571,13 +8563,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage3
+     * @name CreateBoxStorage
      * @summary Create Box storage
      * @request POST:/storage/box
-     * @originalName postStorage
-     * @duplicate
      */
-    postStorage3: (request: StorageCreateBoxStorageRequest, params: RequestParams = {}) =>
+    createBoxStorage: (request: StorageCreateBoxStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/box`,
         method: "POST",
@@ -8591,11 +8581,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name DriveCreate
+     * @name CreateDriveStorage
      * @summary Create Drive storage
      * @request POST:/storage/drive
      */
-    driveCreate: (request: StorageCreateDriveStorageRequest, params: RequestParams = {}) =>
+    createDriveStorage: (request: StorageCreateDriveStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/drive`,
         method: "POST",
@@ -8609,11 +8599,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name DropboxCreate
+     * @name CreateDropboxStorage
      * @summary Create Dropbox storage
      * @request POST:/storage/dropbox
      */
-    dropboxCreate: (request: StorageCreateDropboxStorageRequest, params: RequestParams = {}) =>
+    createDropboxStorage: (request: StorageCreateDropboxStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/dropbox`,
         method: "POST",
@@ -8627,11 +8617,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name FichierCreate
+     * @name CreateFichierStorage
      * @summary Create Fichier storage
      * @request POST:/storage/fichier
      */
-    fichierCreate: (request: StorageCreateFichierStorageRequest, params: RequestParams = {}) =>
+    createFichierStorage: (request: StorageCreateFichierStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/fichier`,
         method: "POST",
@@ -8645,11 +8635,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name FilefabricCreate
+     * @name CreateFilefabricStorage
      * @summary Create Filefabric storage
      * @request POST:/storage/filefabric
      */
-    filefabricCreate: (request: StorageCreateFilefabricStorageRequest, params: RequestParams = {}) =>
+    createFilefabricStorage: (request: StorageCreateFilefabricStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/filefabric`,
         method: "POST",
@@ -8663,13 +8653,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage4
+     * @name CreateFtpStorage
      * @summary Create Ftp storage
      * @request POST:/storage/ftp
-     * @originalName postStorage
-     * @duplicate
      */
-    postStorage4: (request: StorageCreateFtpStorageRequest, params: RequestParams = {}) =>
+    createFtpStorage: (request: StorageCreateFtpStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/ftp`,
         method: "POST",
@@ -8683,13 +8671,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage5
+     * @name CreateGcsStorage
      * @summary Create Gcs storage
      * @request POST:/storage/gcs
-     * @originalName postStorage
-     * @duplicate
      */
-    postStorage5: (request: StorageCreateGcsStorageRequest, params: RequestParams = {}) =>
+    createGcsStorage: (request: StorageCreateGcsStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/gcs`,
         method: "POST",
@@ -8703,11 +8689,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name GphotosCreate
+     * @name CreateGphotosStorage
      * @summary Create Gphotos storage
      * @request POST:/storage/gphotos
      */
-    gphotosCreate: (request: StorageCreateGphotosStorageRequest, params: RequestParams = {}) =>
+    createGphotosStorage: (request: StorageCreateGphotosStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/gphotos`,
         method: "POST",
@@ -8721,11 +8707,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name HdfsCreate
+     * @name CreateHdfsStorage
      * @summary Create Hdfs storage
      * @request POST:/storage/hdfs
      */
-    hdfsCreate: (request: StorageCreateHdfsStorageRequest, params: RequestParams = {}) =>
+    createHdfsStorage: (request: StorageCreateHdfsStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/hdfs`,
         method: "POST",
@@ -8739,11 +8725,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name HidriveCreate
+     * @name CreateHidriveStorage
      * @summary Create Hidrive storage
      * @request POST:/storage/hidrive
      */
-    hidriveCreate: (request: StorageCreateHidriveStorageRequest, params: RequestParams = {}) =>
+    createHidriveStorage: (request: StorageCreateHidriveStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/hidrive`,
         method: "POST",
@@ -8757,11 +8743,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name HttpCreate
+     * @name CreateHttpStorage
      * @summary Create Http storage
      * @request POST:/storage/http
      */
-    httpCreate: (request: StorageCreateHttpStorageRequest, params: RequestParams = {}) =>
+    createHttpStorage: (request: StorageCreateHttpStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/http`,
         method: "POST",
@@ -8775,11 +8761,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name InternetarchiveCreate
+     * @name CreateInternetarchiveStorage
      * @summary Create Internetarchive storage
      * @request POST:/storage/internetarchive
      */
-    internetarchiveCreate: (request: StorageCreateInternetarchiveStorageRequest, params: RequestParams = {}) =>
+    createInternetarchiveStorage: (request: StorageCreateInternetarchiveStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/internetarchive`,
         method: "POST",
@@ -8793,11 +8779,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name JottacloudCreate
+     * @name CreateJottacloudStorage
      * @summary Create Jottacloud storage
      * @request POST:/storage/jottacloud
      */
-    jottacloudCreate: (request: StorageCreateJottacloudStorageRequest, params: RequestParams = {}) =>
+    createJottacloudStorage: (request: StorageCreateJottacloudStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/jottacloud`,
         method: "POST",
@@ -8811,11 +8797,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name KoofrDigistorageCreate
+     * @name CreateKoofrDigistorageStorage
      * @summary Create Koofr storage with digistorage - Digi Storage, https://storage.rcs-rds.ro/
      * @request POST:/storage/koofr/digistorage
      */
-    koofrDigistorageCreate: (request: StorageCreateKoofrDigistorageStorageRequest, params: RequestParams = {}) =>
+    createKoofrDigistorageStorage: (request: StorageCreateKoofrDigistorageStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/koofr/digistorage`,
         method: "POST",
@@ -8829,11 +8815,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name KoofrKoofrCreate
+     * @name CreateKoofrKoofrStorage
      * @summary Create Koofr storage with koofr - Koofr, https://app.koofr.net/
      * @request POST:/storage/koofr/koofr
      */
-    koofrKoofrCreate: (request: StorageCreateKoofrKoofrStorageRequest, params: RequestParams = {}) =>
+    createKoofrKoofrStorage: (request: StorageCreateKoofrKoofrStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/koofr/koofr`,
         method: "POST",
@@ -8847,11 +8833,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name KoofrOtherCreate
+     * @name CreateKoofrOtherStorage
      * @summary Create Koofr storage with other - Any other Koofr API compatible storage service
      * @request POST:/storage/koofr/other
      */
-    koofrOtherCreate: (request: StorageCreateKoofrOtherStorageRequest, params: RequestParams = {}) =>
+    createKoofrOtherStorage: (request: StorageCreateKoofrOtherStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/koofr/other`,
         method: "POST",
@@ -8865,11 +8851,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name LocalCreate
+     * @name CreateLocalStorage
      * @summary Create Local storage
      * @request POST:/storage/local
      */
-    localCreate: (request: StorageCreateLocalStorageRequest, params: RequestParams = {}) =>
+    createLocalStorage: (request: StorageCreateLocalStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/local`,
         method: "POST",
@@ -8883,11 +8869,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name MailruCreate
+     * @name CreateMailruStorage
      * @summary Create Mailru storage
      * @request POST:/storage/mailru
      */
-    mailruCreate: (request: StorageCreateMailruStorageRequest, params: RequestParams = {}) =>
+    createMailruStorage: (request: StorageCreateMailruStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/mailru`,
         method: "POST",
@@ -8901,11 +8887,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name MegaCreate
+     * @name CreateMegaStorage
      * @summary Create Mega storage
      * @request POST:/storage/mega
      */
-    megaCreate: (request: StorageCreateMegaStorageRequest, params: RequestParams = {}) =>
+    createMegaStorage: (request: StorageCreateMegaStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/mega`,
         method: "POST",
@@ -8919,11 +8905,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name NetstorageCreate
+     * @name CreateNetstorageStorage
      * @summary Create Netstorage storage
      * @request POST:/storage/netstorage
      */
-    netstorageCreate: (request: StorageCreateNetstorageStorageRequest, params: RequestParams = {}) =>
+    createNetstorageStorage: (request: StorageCreateNetstorageStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/netstorage`,
         method: "POST",
@@ -8937,11 +8923,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OnedriveCreate
+     * @name CreateOnedriveStorage
      * @summary Create Onedrive storage
      * @request POST:/storage/onedrive
      */
-    onedriveCreate: (request: StorageCreateOnedriveStorageRequest, params: RequestParams = {}) =>
+    createOnedriveStorage: (request: StorageCreateOnedriveStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/onedrive`,
         method: "POST",
@@ -8955,11 +8941,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OosEnvAuthCreate
+     * @name CreateOosEnvAuthStorage
      * @summary Create Oos storage with env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
      * @request POST:/storage/oos/env_auth
      */
-    oosEnvAuthCreate: (request: StorageCreateOosEnvAuthStorageRequest, params: RequestParams = {}) =>
+    createOosEnvAuthStorage: (request: StorageCreateOosEnvAuthStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/oos/env_auth`,
         method: "POST",
@@ -8973,11 +8959,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OosInstancePrincipalAuthCreate
+     * @name CreateOosInstancePrincipalAuthStorage
      * @summary Create Oos storage with instance_principal_auth - use instance principals to authorize an instance to make API calls.
      * @request POST:/storage/oos/instance_principal_auth
      */
-    oosInstancePrincipalAuthCreate: (
+    createOosInstancePrincipalAuthStorage: (
       request: StorageCreateOosInstancePrincipalAuthStorageRequest,
       params: RequestParams = {},
     ) =>
@@ -8994,11 +8980,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OosNoAuthCreate
+     * @name CreateOosNoAuthStorage
      * @summary Create Oos storage with no_auth - no credentials needed, this is typically for reading public buckets
      * @request POST:/storage/oos/no_auth
      */
-    oosNoAuthCreate: (request: StorageCreateOosNoAuthStorageRequest, params: RequestParams = {}) =>
+    createOosNoAuthStorage: (request: StorageCreateOosNoAuthStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/oos/no_auth`,
         method: "POST",
@@ -9012,11 +8998,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OosResourcePrincipalAuthCreate
+     * @name CreateOosResourcePrincipalAuthStorage
      * @summary Create Oos storage with resource_principal_auth - use resource principals to make API calls
      * @request POST:/storage/oos/resource_principal_auth
      */
-    oosResourcePrincipalAuthCreate: (
+    createOosResourcePrincipalAuthStorage: (
       request: StorageCreateOosResourcePrincipalAuthStorageRequest,
       params: RequestParams = {},
     ) =>
@@ -9033,11 +9019,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OosUserPrincipalAuthCreate
+     * @name CreateOosUserPrincipalAuthStorage
      * @summary Create Oos storage with user_principal_auth - use an OCI user and an API key for authentication.
      * @request POST:/storage/oos/user_principal_auth
      */
-    oosUserPrincipalAuthCreate: (
+    createOosUserPrincipalAuthStorage: (
       request: StorageCreateOosUserPrincipalAuthStorageRequest,
       params: RequestParams = {},
     ) =>
@@ -9054,11 +9040,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name OpendriveCreate
+     * @name CreateOpendriveStorage
      * @summary Create Opendrive storage
      * @request POST:/storage/opendrive
      */
-    opendriveCreate: (request: StorageCreateOpendriveStorageRequest, params: RequestParams = {}) =>
+    createOpendriveStorage: (request: StorageCreateOpendriveStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/opendrive`,
         method: "POST",
@@ -9072,11 +9058,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PcloudCreate
+     * @name CreatePcloudStorage
      * @summary Create Pcloud storage
      * @request POST:/storage/pcloud
      */
-    pcloudCreate: (request: StorageCreatePcloudStorageRequest, params: RequestParams = {}) =>
+    createPcloudStorage: (request: StorageCreatePcloudStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/pcloud`,
         method: "POST",
@@ -9090,11 +9076,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PremiumizemeCreate
+     * @name CreatePremiumizemeStorage
      * @summary Create Premiumizeme storage
      * @request POST:/storage/premiumizeme
      */
-    premiumizemeCreate: (request: StorageCreatePremiumizemeStorageRequest, params: RequestParams = {}) =>
+    createPremiumizemeStorage: (request: StorageCreatePremiumizemeStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/premiumizeme`,
         method: "POST",
@@ -9108,11 +9094,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PutioCreate
+     * @name CreatePutioStorage
      * @summary Create Putio storage
      * @request POST:/storage/putio
      */
-    putioCreate: (request: StorageCreatePutioStorageRequest, params: RequestParams = {}) =>
+    createPutioStorage: (request: StorageCreatePutioStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/putio`,
         method: "POST",
@@ -9126,11 +9112,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name QingstorCreate
+     * @name CreateQingstorStorage
      * @summary Create Qingstor storage
      * @request POST:/storage/qingstor
      */
-    qingstorCreate: (request: StorageCreateQingstorStorageRequest, params: RequestParams = {}) =>
+    createQingstorStorage: (request: StorageCreateQingstorStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/qingstor`,
         method: "POST",
@@ -9144,11 +9130,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3AlibabaCreate
+     * @name CreateS3AlibabaStorage
      * @summary Create S3 storage with Alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
      * @request POST:/storage/s3/alibaba
      */
-    s3AlibabaCreate: (request: StorageCreateS3AlibabaStorageRequest, params: RequestParams = {}) =>
+    createS3AlibabaStorage: (request: StorageCreateS3AlibabaStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/alibaba`,
         method: "POST",
@@ -9162,11 +9148,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3ArvancloudCreate
+     * @name CreateS3ArvanCloudStorage
      * @summary Create S3 storage with ArvanCloud - Arvan Cloud Object Storage (AOS)
      * @request POST:/storage/s3/arvancloud
      */
-    s3ArvancloudCreate: (request: StorageCreateS3ArvanCloudStorageRequest, params: RequestParams = {}) =>
+    createS3ArvanCloudStorage: (request: StorageCreateS3ArvanCloudStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/arvancloud`,
         method: "POST",
@@ -9180,11 +9166,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3AwsCreate
+     * @name CreateS3AwsStorage
      * @summary Create S3 storage with AWS - Amazon Web Services (AWS) S3
      * @request POST:/storage/s3/aws
      */
-    s3AwsCreate: (request: StorageCreateS3AWSStorageRequest, params: RequestParams = {}) =>
+    createS3AwsStorage: (request: StorageCreateS3AWSStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/aws`,
         method: "POST",
@@ -9198,11 +9184,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3CephCreate
+     * @name CreateS3CephStorage
      * @summary Create S3 storage with Ceph - Ceph Object Storage
      * @request POST:/storage/s3/ceph
      */
-    s3CephCreate: (request: StorageCreateS3CephStorageRequest, params: RequestParams = {}) =>
+    createS3CephStorage: (request: StorageCreateS3CephStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/ceph`,
         method: "POST",
@@ -9216,11 +9202,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3ChinamobileCreate
+     * @name CreateS3ChinaMobileStorage
      * @summary Create S3 storage with ChinaMobile - China Mobile Ecloud Elastic Object Storage (EOS)
      * @request POST:/storage/s3/chinamobile
      */
-    s3ChinamobileCreate: (request: StorageCreateS3ChinaMobileStorageRequest, params: RequestParams = {}) =>
+    createS3ChinaMobileStorage: (request: StorageCreateS3ChinaMobileStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/chinamobile`,
         method: "POST",
@@ -9234,11 +9220,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3CloudflareCreate
+     * @name CreateS3CloudflareStorage
      * @summary Create S3 storage with Cloudflare - Cloudflare R2 Storage
      * @request POST:/storage/s3/cloudflare
      */
-    s3CloudflareCreate: (request: StorageCreateS3CloudflareStorageRequest, params: RequestParams = {}) =>
+    createS3CloudflareStorage: (request: StorageCreateS3CloudflareStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/cloudflare`,
         method: "POST",
@@ -9252,11 +9238,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3DigitaloceanCreate
+     * @name CreateS3DigitalOceanStorage
      * @summary Create S3 storage with DigitalOcean - DigitalOcean Spaces
      * @request POST:/storage/s3/digitalocean
      */
-    s3DigitaloceanCreate: (request: StorageCreateS3DigitalOceanStorageRequest, params: RequestParams = {}) =>
+    createS3DigitalOceanStorage: (request: StorageCreateS3DigitalOceanStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/digitalocean`,
         method: "POST",
@@ -9270,11 +9256,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3DreamhostCreate
+     * @name CreateS3DreamhostStorage
      * @summary Create S3 storage with Dreamhost - Dreamhost DreamObjects
      * @request POST:/storage/s3/dreamhost
      */
-    s3DreamhostCreate: (request: StorageCreateS3DreamhostStorageRequest, params: RequestParams = {}) =>
+    createS3DreamhostStorage: (request: StorageCreateS3DreamhostStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/dreamhost`,
         method: "POST",
@@ -9288,11 +9274,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3HuaweiobsCreate
+     * @name CreateS3HuaweiObsStorage
      * @summary Create S3 storage with HuaweiOBS - Huawei Object Storage Service
      * @request POST:/storage/s3/huaweiobs
      */
-    s3HuaweiobsCreate: (request: StorageCreateS3HuaweiOBSStorageRequest, params: RequestParams = {}) =>
+    createS3HuaweiObsStorage: (request: StorageCreateS3HuaweiOBSStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/huaweiobs`,
         method: "POST",
@@ -9306,11 +9292,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3IbmcosCreate
+     * @name CreateS3IbmcosStorage
      * @summary Create S3 storage with IBMCOS - IBM COS S3
      * @request POST:/storage/s3/ibmcos
      */
-    s3IbmcosCreate: (request: StorageCreateS3IBMCOSStorageRequest, params: RequestParams = {}) =>
+    createS3IbmcosStorage: (request: StorageCreateS3IBMCOSStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/ibmcos`,
         method: "POST",
@@ -9324,11 +9310,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3IdriveCreate
+     * @name CreateS3IDriveStorage
      * @summary Create S3 storage with IDrive - IDrive e2
      * @request POST:/storage/s3/idrive
      */
-    s3IdriveCreate: (request: StorageCreateS3IDriveStorageRequest, params: RequestParams = {}) =>
+    createS3IDriveStorage: (request: StorageCreateS3IDriveStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/idrive`,
         method: "POST",
@@ -9342,11 +9328,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3IonosCreate
+     * @name CreateS3IonosStorage
      * @summary Create S3 storage with IONOS - IONOS Cloud
      * @request POST:/storage/s3/ionos
      */
-    s3IonosCreate: (request: StorageCreateS3IONOSStorageRequest, params: RequestParams = {}) =>
+    createS3IonosStorage: (request: StorageCreateS3IONOSStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/ionos`,
         method: "POST",
@@ -9360,11 +9346,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3LiaraCreate
+     * @name CreateS3LiaraStorage
      * @summary Create S3 storage with Liara - Liara Object Storage
      * @request POST:/storage/s3/liara
      */
-    s3LiaraCreate: (request: StorageCreateS3LiaraStorageRequest, params: RequestParams = {}) =>
+    createS3LiaraStorage: (request: StorageCreateS3LiaraStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/liara`,
         method: "POST",
@@ -9378,11 +9364,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3LyvecloudCreate
+     * @name CreateS3LyveCloudStorage
      * @summary Create S3 storage with LyveCloud - Seagate Lyve Cloud
      * @request POST:/storage/s3/lyvecloud
      */
-    s3LyvecloudCreate: (request: StorageCreateS3LyveCloudStorageRequest, params: RequestParams = {}) =>
+    createS3LyveCloudStorage: (request: StorageCreateS3LyveCloudStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/lyvecloud`,
         method: "POST",
@@ -9396,11 +9382,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3MinioCreate
+     * @name CreateS3MinioStorage
      * @summary Create S3 storage with Minio - Minio Object Storage
      * @request POST:/storage/s3/minio
      */
-    s3MinioCreate: (request: StorageCreateS3MinioStorageRequest, params: RequestParams = {}) =>
+    createS3MinioStorage: (request: StorageCreateS3MinioStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/minio`,
         method: "POST",
@@ -9414,11 +9400,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3NeteaseCreate
+     * @name CreateS3NeteaseStorage
      * @summary Create S3 storage with Netease - Netease Object Storage (NOS)
      * @request POST:/storage/s3/netease
      */
-    s3NeteaseCreate: (request: StorageCreateS3NeteaseStorageRequest, params: RequestParams = {}) =>
+    createS3NeteaseStorage: (request: StorageCreateS3NeteaseStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/netease`,
         method: "POST",
@@ -9432,11 +9418,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3OtherCreate
+     * @name CreateS3OtherStorage
      * @summary Create S3 storage with Other - Any other S3 compatible provider
      * @request POST:/storage/s3/other
      */
-    s3OtherCreate: (request: StorageCreateS3OtherStorageRequest, params: RequestParams = {}) =>
+    createS3OtherStorage: (request: StorageCreateS3OtherStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/other`,
         method: "POST",
@@ -9450,11 +9436,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3QiniuCreate
+     * @name CreateS3QiniuStorage
      * @summary Create S3 storage with Qiniu - Qiniu Object Storage (Kodo)
      * @request POST:/storage/s3/qiniu
      */
-    s3QiniuCreate: (request: StorageCreateS3QiniuStorageRequest, params: RequestParams = {}) =>
+    createS3QiniuStorage: (request: StorageCreateS3QiniuStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/qiniu`,
         method: "POST",
@@ -9468,11 +9454,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3RackcorpCreate
+     * @name CreateS3RackCorpStorage
      * @summary Create S3 storage with RackCorp - RackCorp Object Storage
      * @request POST:/storage/s3/rackcorp
      */
-    s3RackcorpCreate: (request: StorageCreateS3RackCorpStorageRequest, params: RequestParams = {}) =>
+    createS3RackCorpStorage: (request: StorageCreateS3RackCorpStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/rackcorp`,
         method: "POST",
@@ -9486,11 +9472,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3ScalewayCreate
+     * @name CreateS3ScalewayStorage
      * @summary Create S3 storage with Scaleway - Scaleway Object Storage
      * @request POST:/storage/s3/scaleway
      */
-    s3ScalewayCreate: (request: StorageCreateS3ScalewayStorageRequest, params: RequestParams = {}) =>
+    createS3ScalewayStorage: (request: StorageCreateS3ScalewayStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/scaleway`,
         method: "POST",
@@ -9504,11 +9490,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3SeaweedfsCreate
+     * @name CreateS3SeaweedFsStorage
      * @summary Create S3 storage with SeaweedFS - SeaweedFS S3
      * @request POST:/storage/s3/seaweedfs
      */
-    s3SeaweedfsCreate: (request: StorageCreateS3SeaweedFSStorageRequest, params: RequestParams = {}) =>
+    createS3SeaweedFsStorage: (request: StorageCreateS3SeaweedFSStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/seaweedfs`,
         method: "POST",
@@ -9522,11 +9508,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3StackpathCreate
+     * @name CreateS3StackPathStorage
      * @summary Create S3 storage with StackPath - StackPath Object Storage
      * @request POST:/storage/s3/stackpath
      */
-    s3StackpathCreate: (request: StorageCreateS3StackPathStorageRequest, params: RequestParams = {}) =>
+    createS3StackPathStorage: (request: StorageCreateS3StackPathStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/stackpath`,
         method: "POST",
@@ -9540,11 +9526,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3StorjCreate
+     * @name CreateS3StorjStorage
      * @summary Create S3 storage with Storj - Storj (S3 Compatible Gateway)
      * @request POST:/storage/s3/storj
      */
-    s3StorjCreate: (request: StorageCreateS3StorjStorageRequest, params: RequestParams = {}) =>
+    createS3StorjStorage: (request: StorageCreateS3StorjStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/storj`,
         method: "POST",
@@ -9558,11 +9544,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3TencentcosCreate
+     * @name CreateS3TencentCosStorage
      * @summary Create S3 storage with TencentCOS - Tencent Cloud Object Storage (COS)
      * @request POST:/storage/s3/tencentcos
      */
-    s3TencentcosCreate: (request: StorageCreateS3TencentCOSStorageRequest, params: RequestParams = {}) =>
+    createS3TencentCosStorage: (request: StorageCreateS3TencentCOSStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/tencentcos`,
         method: "POST",
@@ -9576,11 +9562,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name S3WasabiCreate
+     * @name CreateS3WasabiStorage
      * @summary Create S3 storage with Wasabi - Wasabi Object Storage
      * @request POST:/storage/s3/wasabi
      */
-    s3WasabiCreate: (request: StorageCreateS3WasabiStorageRequest, params: RequestParams = {}) =>
+    createS3WasabiStorage: (request: StorageCreateS3WasabiStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/s3/wasabi`,
         method: "POST",
@@ -9594,11 +9580,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name SeafileCreate
+     * @name CreateSeafileStorage
      * @summary Create Seafile storage
      * @request POST:/storage/seafile
      */
-    seafileCreate: (request: StorageCreateSeafileStorageRequest, params: RequestParams = {}) =>
+    createSeafileStorage: (request: StorageCreateSeafileStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/seafile`,
         method: "POST",
@@ -9612,11 +9598,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name SftpCreate
+     * @name CreateSftpStorage
      * @summary Create Sftp storage
      * @request POST:/storage/sftp
      */
-    sftpCreate: (request: StorageCreateSftpStorageRequest, params: RequestParams = {}) =>
+    createSftpStorage: (request: StorageCreateSftpStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/sftp`,
         method: "POST",
@@ -9630,11 +9616,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name SharefileCreate
+     * @name CreateSharefileStorage
      * @summary Create Sharefile storage
      * @request POST:/storage/sharefile
      */
-    sharefileCreate: (request: StorageCreateSharefileStorageRequest, params: RequestParams = {}) =>
+    createSharefileStorage: (request: StorageCreateSharefileStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/sharefile`,
         method: "POST",
@@ -9648,13 +9634,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage6
+     * @name CreateSiaStorage
      * @summary Create Sia storage
      * @request POST:/storage/sia
-     * @originalName postStorage
-     * @duplicate
      */
-    postStorage6: (request: StorageCreateSiaStorageRequest, params: RequestParams = {}) =>
+    createSiaStorage: (request: StorageCreateSiaStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/sia`,
         method: "POST",
@@ -9668,13 +9652,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name PostStorage7
+     * @name CreateSmbStorage
      * @summary Create Smb storage
      * @request POST:/storage/smb
-     * @originalName postStorage
-     * @duplicate
      */
-    postStorage7: (request: StorageCreateSmbStorageRequest, params: RequestParams = {}) =>
+    createSmbStorage: (request: StorageCreateSmbStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/smb`,
         method: "POST",
@@ -9688,11 +9670,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name StorjExistingCreate
+     * @name CreateStorjExistingStorage
      * @summary Create Storj storage with existing - Use an existing access grant.
      * @request POST:/storage/storj/existing
      */
-    storjExistingCreate: (request: StorageCreateStorjExistingStorageRequest, params: RequestParams = {}) =>
+    createStorjExistingStorage: (request: StorageCreateStorjExistingStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/storj/existing`,
         method: "POST",
@@ -9706,11 +9688,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name StorjNewCreate
+     * @name CreateStorjNewStorage
      * @summary Create Storj storage with new - Create a new access grant from satellite address, API key, and passphrase.
      * @request POST:/storage/storj/new
      */
-    storjNewCreate: (request: StorageCreateStorjNewStorageRequest, params: RequestParams = {}) =>
+    createStorjNewStorage: (request: StorageCreateStorjNewStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/storj/new`,
         method: "POST",
@@ -9724,11 +9706,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name SugarsyncCreate
+     * @name CreateSugarsyncStorage
      * @summary Create Sugarsync storage
      * @request POST:/storage/sugarsync
      */
-    sugarsyncCreate: (request: StorageCreateSugarsyncStorageRequest, params: RequestParams = {}) =>
+    createSugarsyncStorage: (request: StorageCreateSugarsyncStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/sugarsync`,
         method: "POST",
@@ -9742,11 +9724,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name SwiftCreate
+     * @name CreateSwiftStorage
      * @summary Create Swift storage
      * @request POST:/storage/swift
      */
-    swiftCreate: (request: StorageCreateSwiftStorageRequest, params: RequestParams = {}) =>
+    createSwiftStorage: (request: StorageCreateSwiftStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/swift`,
         method: "POST",
@@ -9760,11 +9742,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name UptoboxCreate
+     * @name CreateUptoboxStorage
      * @summary Create Uptobox storage
      * @request POST:/storage/uptobox
      */
-    uptoboxCreate: (request: StorageCreateUptoboxStorageRequest, params: RequestParams = {}) =>
+    createUptoboxStorage: (request: StorageCreateUptoboxStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/uptobox`,
         method: "POST",
@@ -9778,11 +9760,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name WebdavCreate
+     * @name CreateWebdavStorage
      * @summary Create Webdav storage
      * @request POST:/storage/webdav
      */
-    webdavCreate: (request: StorageCreateWebdavStorageRequest, params: RequestParams = {}) =>
+    createWebdavStorage: (request: StorageCreateWebdavStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/webdav`,
         method: "POST",
@@ -9796,11 +9778,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name YandexCreate
+     * @name CreateYandexStorage
      * @summary Create Yandex storage
      * @request POST:/storage/yandex
      */
-    yandexCreate: (request: StorageCreateYandexStorageRequest, params: RequestParams = {}) =>
+    createYandexStorage: (request: StorageCreateYandexStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/yandex`,
         method: "POST",
@@ -9814,11 +9796,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name ZohoCreate
+     * @name CreateZohoStorage
      * @summary Create Zoho storage
      * @request POST:/storage/zoho
      */
-    zohoCreate: (request: StorageCreateZohoStorageRequest, params: RequestParams = {}) =>
+    createZohoStorage: (request: StorageCreateZohoStorageRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/zoho`,
         method: "POST",
@@ -9832,11 +9814,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name StorageDelete
+     * @name RemoveStorage
      * @summary Remove a storage
      * @request DELETE:/storage/{name}
      */
-    storageDelete: (name: string, params: RequestParams = {}) =>
+    removeStorage: (name: string, params: RequestParams = {}) =>
       this.request<void, ApiHTTPError>({
         path: `/storage/${name}`,
         method: "DELETE",
@@ -9847,11 +9829,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name StoragePartialUpdate
+     * @name UpdateStorage
      * @summary Update a storage connection
      * @request PATCH:/storage/{name}
      */
-    storagePartialUpdate: (name: string, config: StorePieceReader, params: RequestParams = {}) =>
+    updateStorage: (name: string, config: StorePieceReader, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/${name}`,
         method: "PATCH",
@@ -9865,11 +9847,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name ExploreDetail
+     * @name ExploreStorage
      * @summary Explore directory entries in a storage system
      * @request GET:/storage/{name}/explore/{path}
      */
-    exploreDetail: (name: string, path: string, params: RequestParams = {}) =>
+    exploreStorage: (name: string, path: string, params: RequestParams = {}) =>
       this.request<StorageDirEntry[], ApiHTTPError>({
         path: `/storage/${name}/explore/${path}`,
         method: "GET",
@@ -9882,11 +9864,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name StorageCreate
+     * @name CreateStorage
      * @summary Create a new storage
      * @request POST:/storage/{storageType}
      */
-    storageCreate: (storageType: string, body: StorageCreateRequest, params: RequestParams = {}) =>
+    createStorage: (storageType: string, body: StorageCreateRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/${storageType}`,
         method: "POST",
@@ -9901,11 +9883,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Wallet
-     * @name WalletList
+     * @name ListWallets
      * @summary List all imported wallets
      * @request GET:/wallet
      */
-    walletList: (params: RequestParams = {}) =>
+    listWallets: (params: RequestParams = {}) =>
       this.request<ModelWallet[], ApiHTTPError>({
         path: `/wallet`,
         method: "GET",
@@ -9917,11 +9899,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Wallet
-     * @name WalletCreate
+     * @name ImportWallet
      * @summary Import a private key
      * @request POST:/wallet
      */
-    walletCreate: (request: WalletImportRequest, params: RequestParams = {}) =>
+    importWallet: (request: WalletImportRequest, params: RequestParams = {}) =>
       this.request<ModelWallet, ApiHTTPError>({
         path: `/wallet`,
         method: "POST",
@@ -9935,11 +9917,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Wallet
-     * @name WalletDelete
+     * @name RemoveWallet
      * @summary Remove a wallet
      * @request DELETE:/wallet/{address}
      */
-    walletDelete: (address: string, params: RequestParams = {}) =>
+    removeWallet: (address: string, params: RequestParams = {}) =>
       this.request<void, ApiHTTPError>({
         path: `/wallet/${address}`,
         method: "DELETE",

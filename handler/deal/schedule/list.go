@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// @ID ListSchedules
 // @Summary List all deal making schedules
 // @Tags Deal Schedule
 // @Produce json

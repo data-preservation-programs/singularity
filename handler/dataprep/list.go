@@ -29,6 +29,7 @@ func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB) ([]model.Pre
 	return preparations, errors.WithStack(err)
 }
 
+// @ID ListPreparations
 // @Summary List all preparations
 // @Tags Preparation
 // @Accept json
