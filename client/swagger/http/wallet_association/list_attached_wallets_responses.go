@@ -57,7 +57,7 @@ ListAttachedWalletsOK describes a response with status code 200, with default he
 OK
 */
 type ListAttachedWalletsOK struct {
-	Payload *models.ModelWallet
+	Payload []*models.ModelWallet
 }
 
 // IsSuccess returns true when this list attached wallets o k response has a 2xx status code
@@ -98,16 +98,14 @@ func (o *ListAttachedWalletsOK) String() string {
 	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsOK  %+v", 200, o.Payload)
 }
 
-func (o *ListAttachedWalletsOK) GetPayload() *models.ModelWallet {
+func (o *ListAttachedWalletsOK) GetPayload() []*models.ModelWallet {
 	return o.Payload
 }
 
 func (o *ListAttachedWalletsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ModelWallet)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

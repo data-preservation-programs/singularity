@@ -32,7 +32,7 @@ func (DefaultHandler) ListAttachedHandler(
 // @Produce json
 // @Accept json
 // @Param id path string true "Preparation ID or name"
-// @Success 200 {object} model.Wallet
+// @Success 200 {object} []model.Wallet
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/wallet [post]

@@ -8361,7 +8361,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Wallet'
+            items:
+              $ref: '#/definitions/model.Wallet'
+            type: array
         "400":
           description: Bad Request
           schema:

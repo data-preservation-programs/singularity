@@ -8358,7 +8358,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/preparation/{id}/wallet
      */
     listAttachedWallets: (id: string, params: RequestParams = {}) =>
-      this.request<ModelWallet, ApiHTTPError>({
+      this.request<ModelWallet[], ApiHTTPError>({
         path: `/preparation/${id}/wallet`,
         method: "POST",
         type: ContentType.Json,
