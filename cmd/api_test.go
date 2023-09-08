@@ -45,6 +45,7 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 			break
 		}
 	}
+	require.NotNil(t, resp)
 	require.Equal(t, http2.StatusOK, resp.StatusCode)
 	require.Contains(t, body, "robotstxt.org")
 	return func() {

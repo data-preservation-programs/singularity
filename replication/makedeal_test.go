@@ -100,7 +100,6 @@ func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 	})
 	go func() {
 		<-ctx.Done()
-		h.Close()
 	}()
 	return h
 }

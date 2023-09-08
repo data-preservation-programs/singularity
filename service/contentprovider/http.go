@@ -111,13 +111,13 @@ func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, e
 		}
 	}()
 	go func() {
+		defer close(done)
 		<-ctx.Done()
 		//nolint:contextcheck
 		err := e.Shutdown(context.Background())
 		if err != nil {
 			fail <- err
 		}
-		close(done)
 	}()
 	return []service.Done{done}, fail, nil
 }

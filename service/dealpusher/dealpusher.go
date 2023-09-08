@@ -8,6 +8,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
 
@@ -35,8 +36,9 @@ type DealPusher struct {
 	activeScheduleCancelFunc map[uint32]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
 	cronEntries              map[uint32]cron.EntryID       // Map storing cron entries for the DealPusher with schedule IDs as keys and EntryID as values.
 	cron                     *cron.Cron                    // Job scheduler for scheduling tasks at specified intervals.
-	mutex                    sync.Mutex                    // Mutex for providing mutual exclusion to protect shared resources.
+	mutex                    sync.RWMutex                  // Mutex for providing mutual exclusion to protect shared resources.
 	sendDealAttempts         uint                          // Number of attempts for sending a deal.
+	host                     host.Host                     // Libp2p host for making deals.
 }
 
 func (*DealPusher) Name() string {
@@ -57,13 +59,6 @@ func (c cronLogger) Info(msg string, keysAndValues ...any) {
 func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 	keysAndValues = append(keysAndValues, "err", err)
 	Logger.Errorw(msg, keysAndValues...)
-}
-
-func (d *DealPusher) hasSchedule(scheduleID uint32) bool {
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
-	_, ok := d.activeSchedule[scheduleID]
-	return ok
 }
 
 // runScheduleAndUpdateState is a method of the DealPusher type.
@@ -118,9 +113,7 @@ func (d *DealPusher) runScheduleAndUpdateState(ctx context.Context, schedule *mo
 	}
 }
 
-func (d *DealPusher) addSchedule(ctx context.Context, schedule model.Schedule) error {
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
+func (d *DealPusher) addScheduleUnsafe(ctx context.Context, schedule model.Schedule) error {
 	scheduleCtx, cancel := context.WithCancel(ctx)
 	if schedule.ScheduleCron == "" {
 		d.activeSchedule[schedule.ID] = &schedule
@@ -151,22 +144,21 @@ func (d *DealPusher) removeSchedule(schedule model.Schedule) {
 }
 
 func (d *DealPusher) removeScheduleUnsafe(schedule model.Schedule) {
-	if schedule.ScheduleCron == "" {
-		d.activeScheduleCancelFunc[schedule.ID]()
-		delete(d.activeSchedule, schedule.ID)
-		delete(d.activeScheduleCancelFunc, schedule.ID)
+	// The schedule could have been removed by either runOnce or when schedule completes by itself
+	_, ok := d.activeSchedule[schedule.ID]
+	if !ok {
 		return
 	}
+	if schedule.ScheduleCron != "" {
+		d.cron.Remove(d.cronEntries[schedule.ID])
+	}
 
-	d.cron.Remove(d.cronEntries[schedule.ID])
 	d.activeScheduleCancelFunc[schedule.ID]()
 	delete(d.activeSchedule, schedule.ID)
 	delete(d.activeScheduleCancelFunc, schedule.ID)
 }
 
-func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule) error {
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
+func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Schedule) error {
 	existing, ok := d.activeSchedule[schedule.ID]
 	if !ok {
 		return nil
@@ -186,7 +178,7 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 	}
 
 	if d.activeSchedule[schedule.ID].ScheduleCron != schedule.ScheduleCron {
-		Logger.Info("cron schedule has changed", "old", d.activeSchedule[schedule.ID].ScheduleCron, "new", schedule.ScheduleCron)
+		Logger.Infow("cron schedule has changed", "old", d.activeSchedule[schedule.ID].ScheduleCron, "new", schedule.ScheduleCron)
 		*d.activeSchedule[schedule.ID] = schedule
 		d.cron.Remove(d.cronEntries[schedule.ID])
 		d.activeScheduleCancelFunc[schedule.ID]()
@@ -392,6 +384,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 		cron: cron.New(cron.WithLogger(&cronLogger{}), cron.WithLocation(time.UTC),
 			cron.WithParser(cron.NewParser(cron.SecondOptional|cron.Minute|cron.Hour|cron.Dom|cron.Month|cron.Dow|cron.Descriptor))),
 		sendDealAttempts: numAttempts,
+		host:             h,
 	}, nil
 }
 
@@ -427,25 +420,25 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	for _, schedule := range schedules {
 		scheduleMap[schedule.ID] = schedule
 	}
-	// Cancel all jobs that are no longer active
 	d.mutex.Lock()
+	defer d.mutex.Unlock()
 	for id, active := range d.activeSchedule {
 		if _, ok := scheduleMap[id]; !ok {
 			Logger.Infow("removing inactive schedule", "schedule_id", id)
 			d.removeScheduleUnsafe(*active)
 		}
 	}
-	d.mutex.Unlock()
 
 	for _, schedule := range schedules {
-		if d.hasSchedule(schedule.ID) {
-			err = d.updateSchedule(ctx, schedule)
+		_, ok := d.activeSchedule[schedule.ID]
+		if ok {
+			err = d.updateScheduleUnsafe(ctx, schedule)
 			if err != nil {
 				Logger.Errorw("failed to update schedule", "error", err)
 			}
 		} else {
 			Logger.Infow("adding new schedule", "schedule_id", schedule.ID)
-			err = d.addSchedule(ctx, schedule)
+			err = d.addScheduleUnsafe(ctx, schedule)
 			if err != nil {
 				Logger.Errorw("failed to add schedule", "error", err)
 			}
@@ -532,7 +525,19 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 		}
 	}()
 
-	return []service.Done{runDone, cleanupDone, healthcheckDone}, fail, nil
+	hostClosed := make(chan struct{})
+	go func() {
+		defer close(hostClosed)
+		<-ctx.Done()
+		err := d.host.Close()
+		if err != nil {
+			Logger.Errorw("failed to close host", "error", err)
+		} else {
+			Logger.Info("host closed")
+		}
+	}()
+
+	return []service.Done{runDone, cleanupDone, healthcheckDone, hostClosed}, fail, nil
 }
 
 func (d *DealPusher) cleanup(ctx context.Context) error {

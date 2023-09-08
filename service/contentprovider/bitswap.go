@@ -6,10 +6,14 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
+	"github.com/data-preservation-programs/singularity/util"
 	nilrouting "github.com/ipfs/go-ipfs-routing/none"
 	bsnetwork "github.com/ipfs/go-libipfs/bitswap/network"
 	"github.com/ipfs/go-libipfs/bitswap/server"
+	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/multiformats/go-multiaddr"
 	"gorm.io/gorm"
 )
 
@@ -22,6 +26,21 @@ type BitswapServer struct {
 
 	// host is a libp2p host used to build and configure a new Bitswap instance.
 	host host.Host
+}
+
+func NewBitswapServer(dbNoContext *gorm.DB, private crypto.PrivKey, addrs ...multiaddr.Multiaddr) (*BitswapServer, error) {
+	h, err := util.InitHost([]libp2p.Option{libp2p.Identity(private)}, addrs...)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	for _, m := range h.Addrs() {
+		logger.Info("libp2p listening on " + m.String())
+	}
+	logger.Info("peerID: " + h.ID().String())
+	return &BitswapServer{
+		dbNoContext: dbNoContext,
+		host:        h,
+	}, nil
 }
 
 func (BitswapServer) Name() string {
@@ -46,10 +65,11 @@ func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail,
 	fail := make(chan error)
 
 	go func() {
+		defer close(done)
 		<-ctx.Done()
 		net.Stop()
 		bsserver.Close()
-		close(done)
+		s.host.Close()
 	}()
 	return []service.Done{done}, fail, nil
 }
