@@ -2,7 +2,9 @@ package deal
 
 import (
 	"context"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
@@ -112,9 +114,21 @@ func (DefaultHandler) SendManualHandler(
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid start delay: %s", request.StartDelay)
 	}
 
+	headers := make(map[string]string)
+	for _, header := range request.HTTPHeaders {
+		kv := strings.SplitN(header, "=", 2)
+		if len(kv) != 2 {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+		}
+		headers[kv[0]], err = url.QueryUnescape(kv[1])
+		if err != nil {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+		}
+	}
+
 	dealConfig := replication.DealConfig{
 		URLTemplate:    request.URLTemplate,
-		HTTPHeaders:    request.HTTPHeaders,
+		HTTPHeaders:    headers,
 		Provider:       request.ProviderID,
 		Verified:       request.Verified,
 		KeepUnsealed:   request.KeepUnsealed,

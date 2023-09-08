@@ -34,7 +34,7 @@ type ModelSchedule struct {
 	ErrorMessage string `json:"errorMessage,omitempty"`
 
 	// http headers
-	HTTPHeaders []string `json:"httpHeaders"`
+	HTTPHeaders ModelConfigMap `json:"httpHeaders,omitempty"`
 
 	// id
 	ID int64 `json:"id,omitempty"`
@@ -104,6 +104,10 @@ type ModelSchedule struct {
 func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateHTTPHeaders(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
@@ -111,6 +115,25 @@ func (m *ModelSchedule) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelSchedule) validateHTTPHeaders(formats strfmt.Registry) error {
+	if swag.IsZero(m.HTTPHeaders) { // not required
+		return nil
+	}
+
+	if m.HTTPHeaders != nil {
+		if err := m.HTTPHeaders.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("httpHeaders")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("httpHeaders")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -135,6 +158,10 @@ func (m *ModelSchedule) validateState(formats strfmt.Registry) error {
 func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateHTTPHeaders(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -142,6 +169,24 @@ func (m *ModelSchedule) ContextValidate(ctx context.Context, formats strfmt.Regi
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelSchedule) contextValidateHTTPHeaders(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.HTTPHeaders) { // not required
+		return nil
+	}
+
+	if err := m.HTTPHeaders.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("httpHeaders")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("httpHeaders")
+		}
+		return err
+	}
+
 	return nil
 }
 

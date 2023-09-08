@@ -203,22 +203,13 @@ var CreateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		cids := map[string]struct{}{}
+		allowedPieceCIDs := c.StringSlice("allowed-piece-cid")
 		for _, f := range c.StringSlice("allowed-piece-cid-file") {
 			cidsFromFile, err := readCIDsFromFile(f)
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			for _, cid := range cidsFromFile {
-				cids[cid] = struct{}{}
-			}
-		}
-		for _, cid := range c.StringSlice("allowed-piece-cid") {
-			cids[cid] = struct{}{}
-		}
-		var allowedPieceCIDs []string
-		for cid := range cids {
-			allowedPieceCIDs = append(allowedPieceCIDs, cid)
+			allowedPieceCIDs = append(allowedPieceCIDs, cidsFromFile...)
 		}
 		request := schedule.CreateRequest{
 			Preparation:          c.String("preparation"),

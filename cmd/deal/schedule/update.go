@@ -10,8 +10,10 @@ import (
 )
 
 var UpdateCmd = &cli.Command{
-	Name:  "update",
-	Usage: "Update an existing schedule",
+	Name:      "update",
+	ArgsUsage: "<schedule_id>",
+	Before:    cliutil.CheckNArgs,
+	Usage:     "Update an existing schedule",
 	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
   Standard CRON:
     ┌───────────── minute (0 - 59)
@@ -92,58 +94,46 @@ var UpdateCmd = &cli.Command{
 			Value:    true,
 		},
 		&cli.StringFlag{
-			Name:        "schedule-cron",
-			Category:    "Scheduling",
-			Aliases:     []string{"cron"},
-			Usage:       "Cron schedule to send out batch deals",
-			DefaultText: "disabled",
-			Value:       "",
+			Name:     "schedule-cron",
+			Category: "Scheduling",
+			Aliases:  []string{"cron"},
+			Usage:    "Cron schedule to send out batch deals",
 		},
 		&cli.StringFlag{
-			Name:        "start-delay",
-			Category:    "Deal Proposal",
-			Aliases:     []string{"s"},
-			Usage:       "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
-			Value:       "72h",
-			DefaultText: "72h[3 days]",
+			Name:     "start-delay",
+			Category: "Deal Proposal",
+			Aliases:  []string{"s"},
+			Usage:    "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
 		},
 		&cli.StringFlag{
-			Name:        "duration",
-			Category:    "Deal Proposal",
-			Aliases:     []string{"d"},
-			Usage:       "Duration in epoch or in duration format, i.e. 1500000, 2400h",
-			Value:       "12840h",
-			DefaultText: "12840h[535 days]",
+			Name:     "duration",
+			Category: "Deal Proposal",
+			Aliases:  []string{"d"},
+			Usage:    "Duration in epoch or in duration format, i.e. 1500000, 2400h",
 		},
 		&cli.IntFlag{
-			Name:        "schedule-deal-number",
-			Category:    "Scheduling",
-			Aliases:     []string{"number"},
-			Usage:       "Max deal number per triggered schedule, i.e. 30",
-			DefaultText: "Unlimited",
+			Name:     "schedule-deal-number",
+			Category: "Scheduling",
+			Aliases:  []string{"number"},
+			Usage:    "Max deal number per triggered schedule, i.e. 30",
 		},
 		&cli.IntFlag{
-			Name:        "total-deal-number",
-			Category:    "Restrictions",
-			Aliases:     []string{"total-number"},
-			Usage:       "Max total deal number for this request, i.e. 1000",
-			DefaultText: "Unlimited",
+			Name:     "total-deal-number",
+			Category: "Restrictions",
+			Aliases:  []string{"total-number"},
+			Usage:    "Max total deal number for this request, i.e. 1000",
 		},
 		&cli.StringFlag{
-			Name:        "schedule-deal-size",
-			Category:    "Scheduling",
-			Aliases:     []string{"size"},
-			Usage:       "Max deal sizes per triggered schedule, i.e. 500GiB",
-			DefaultText: "Unlimited",
-			Value:       "0",
+			Name:     "schedule-deal-size",
+			Category: "Scheduling",
+			Aliases:  []string{"size"},
+			Usage:    "Max deal sizes per triggered schedule, i.e. 500GiB",
 		},
 		&cli.StringFlag{
-			Name:        "total-deal-size",
-			Category:    "Restrictions",
-			Aliases:     []string{"total-size"},
-			Usage:       "Max total deal sizes for this request, i.e. 100TiB",
-			DefaultText: "Unlimited",
-			Value:       "0",
+			Name:     "total-deal-size",
+			Category: "Restrictions",
+			Aliases:  []string{"total-size"},
+			Usage:    "Max total deal sizes for this request, i.e. 100TiB",
 		},
 		&cli.StringFlag{
 			Name:     "notes",
@@ -153,26 +143,22 @@ var UpdateCmd = &cli.Command{
 			Value:    "",
 		},
 		&cli.StringFlag{
-			Name:        "max-pending-deal-size",
-			Category:    "Restrictions",
-			Aliases:     []string{"pending-size"},
-			Usage:       "Max pending deal sizes overall for this request, i.e. 1000",
-			DefaultText: "Unlimited",
-			Value:       "0",
+			Name:     "max-pending-deal-size",
+			Category: "Restrictions",
+			Aliases:  []string{"pending-size"},
+			Usage:    "Max pending deal sizes overall for this request, i.e. 1000",
 		},
 		&cli.IntFlag{
-			Name:        "max-pending-deal-number",
-			Category:    "Restrictions",
-			Aliases:     []string{"pending-number"},
-			Usage:       "Max pending deal number overall for this request, i.e. 100TiB",
-			DefaultText: "Unlimited",
+			Name:     "max-pending-deal-number",
+			Category: "Restrictions",
+			Aliases:  []string{"pending-number"},
+			Usage:    "Max pending deal number overall for this request, i.e. 100TiB",
 		},
 		&cli.StringSliceFlag{
-			Name:        "allowed-piece-cid",
-			Category:    "Restrictions",
-			Aliases:     []string{"piece-cid"},
-			Usage:       "List of allowed piece CIDs in this schedule. Append only.",
-			DefaultText: "Any",
+			Name:     "allowed-piece-cid",
+			Category: "Restrictions",
+			Aliases:  []string{"piece-cid"},
+			Usage:    "List of allowed piece CIDs in this schedule. Append only.",
 		},
 		&cli.StringSliceFlag{
 			Name:     "allowed-piece-cid-file",
@@ -187,22 +173,13 @@ var UpdateCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		cids := map[string]struct{}{}
+		allowedPieceCIDs := c.StringSlice("allowed-piece-cid")
 		for _, f := range c.StringSlice("allowed-piece-cid-file") {
 			cidsFromFile, err := readCIDsFromFile(f)
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			for _, cid := range cidsFromFile {
-				cids[cid] = struct{}{}
-			}
-		}
-		for _, cid := range c.StringSlice("allowed-piece-cid") {
-			cids[cid] = struct{}{}
-		}
-		var allowedPieceCIDs []string
-		for cid := range cids {
-			allowedPieceCIDs = append(allowedPieceCIDs, cid)
+			allowedPieceCIDs = append(allowedPieceCIDs, cidsFromFile...)
 		}
 		request := schedule.UpdateRequest{
 			HTTPHeaders:      c.StringSlice("http-header"),
@@ -260,7 +237,7 @@ var UpdateCmd = &cli.Command{
 		if c.IsSet("max-pending-deal-number") {
 			request.MaxPendingDealNumber = ptr.Of(c.Int("max-pending-deal-number"))
 		}
-		schedule, err := schedule.Default.UpdateHandler(c.Context, db, request)
+		schedule, err := schedule.Default.UpdateHandler(c.Context, db, c.Args().Get(0), request)
 		if err != nil {
 			return errors.WithStack(err)
 		}

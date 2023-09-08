@@ -1540,6 +1540,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/schedule/{scheduleId}": {
+            "patch": {
+                "description": "Update a schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "Update a schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "scheduleId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Schedule"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/schedules": {
             "get": {
                 "produces": [
@@ -5801,10 +5854,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "httpHeaders": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/model.ConfigMap"
                 },
                 "id": {
                     "type": "integer"
@@ -6002,6 +6052,105 @@ const docTemplate = `{
                 "provider": {
                     "description": "Provider",
                     "type": "string"
+                },
+                "scheduleCron": {
+                    "description": "Schedule cron patter",
+                    "type": "string"
+                },
+                "scheduleCronPerpetual": {
+                    "description": "Whether a cron schedule should run in definitely",
+                    "type": "boolean"
+                },
+                "scheduleDealNumber": {
+                    "description": "Number of deals per scheduled time",
+                    "type": "integer"
+                },
+                "scheduleDealSize": {
+                    "description": "Size of deals per schedule trigger in human readable format, i.e. 100 TiB",
+                    "type": "string"
+                },
+                "startDelay": {
+                    "description": "Deal start delay in epoch or in duration format, i.e. 1000, 72h",
+                    "type": "string",
+                    "default": "72h"
+                },
+                "totalDealNumber": {
+                    "description": "Total number of deals",
+                    "type": "integer"
+                },
+                "totalDealSize": {
+                    "description": "Total size of deals in human readable format, i.e. 100 TiB",
+                    "type": "string"
+                },
+                "urlTemplate": {
+                    "description": "URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car",
+                    "type": "string"
+                },
+                "verified": {
+                    "description": "Whether the deal should be verified",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "schedule.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "allowedPieceCids": {
+                    "description": "Allowed piece CIDs in this schedule",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "duration": {
+                    "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
+                    "type": "string",
+                    "default": "12840h"
+                },
+                "httpHeaders": {
+                    "description": "http headers to be passed with the request (i.e. key=value)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ipni": {
+                    "description": "Whether the deal should be IPNI",
+                    "type": "boolean",
+                    "default": true
+                },
+                "keepUnsealed": {
+                    "description": "Whether the deal should be kept unsealed",
+                    "type": "boolean",
+                    "default": true
+                },
+                "maxPendingDealNumber": {
+                    "description": "Max pending deal number",
+                    "type": "integer"
+                },
+                "maxPendingDealSize": {
+                    "description": "Max pending deal size in human readable format, i.e. 100 TiB",
+                    "type": "string"
+                },
+                "notes": {
+                    "description": "Notes",
+                    "type": "string"
+                },
+                "pricePerDeal": {
+                    "description": "Price in FIL per deal",
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGb": {
+                    "description": "Price in FIL  per GiB",
+                    "type": "number",
+                    "default": 0
+                },
+                "pricePerGbEpoch": {
+                    "description": "Price in FIL per GiB per epoch",
+                    "type": "number",
+                    "default": 0
                 },
                 "scheduleCron": {
                     "description": "Schedule cron patter",

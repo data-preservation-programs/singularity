@@ -103,22 +103,22 @@ func (d Deal) Key() string {
 }
 
 type Schedule struct {
-	ID                    uint32        `gorm:"primaryKey"            json:"id"`
-	CreatedAt             time.Time     `json:"createdAt"             table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt             time.Time     `json:"updatedAt"             table:"verbose;format:2006-01-02 15:04:05"`
-	URLTemplate           string        `json:"urlTemplate"           table:"verbose"`
-	HTTPHeaders           ConfigMap     `gorm:"type:JSON"             json:"httpHeaders"                         table:"verbose"`
+	ID                    uint32        `gorm:"primaryKey"                          json:"id"`
+	CreatedAt             time.Time     `json:"createdAt"                           table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt             time.Time     `json:"updatedAt"                           table:"verbose;format:2006-01-02 15:04:05"`
+	URLTemplate           string        `json:"urlTemplate"                         table:"verbose"`
+	HTTPHeaders           ConfigMap     `gorm:"type:JSON"                           json:"httpHeaders"                         table:"verbose"`
 	Provider              string        `json:"provider"`
-	PricePerGBEpoch       float64       `json:"pricePerGbEpoch"       table:"verbose"`
-	PricePerGB            float64       `json:"pricePerGb"            table:"verbose"`
-	PricePerDeal          float64       `json:"pricePerDeal"          table:"verbose"`
-	TotalDealNumber       int           `json:"totalDealNumber"       table:"verbose"`
+	PricePerGBEpoch       float64       `json:"pricePerGbEpoch"                     table:"verbose"`
+	PricePerGB            float64       `json:"pricePerGb"                          table:"verbose"`
+	PricePerDeal          float64       `json:"pricePerDeal"                        table:"verbose"`
+	TotalDealNumber       int           `json:"totalDealNumber"                     table:"verbose"`
 	TotalDealSize         int64         `json:"totalDealSize"`
 	Verified              bool          `json:"verified"`
-	KeepUnsealed          bool          `json:"keepUnsealed"          table:"verbose"`
-	AnnounceToIPNI        bool          `json:"announceToIpni"        table:"verbose"`
-	StartDelay            time.Duration `json:"startDelay"            swaggertype:"primitive,integer"`
-	Duration              time.Duration `json:"duration"              swaggertype:"primitive,integer"`
+	KeepUnsealed          bool          `json:"keepUnsealed"                        table:"verbose"`
+	AnnounceToIPNI        bool          `gorm:"column:announce_to_ipni"             json:"announceToIpni"                      table:"verbose"`
+	StartDelay            time.Duration `json:"startDelay"                          swaggertype:"primitive,integer"`
+	Duration              time.Duration `json:"duration"                            swaggertype:"primitive,integer"`
 	State                 ScheduleState `json:"state"`
 	ScheduleCron          string        `json:"scheduleCron"`
 	ScheduleCronPerpetual bool          `json:"scheduleCronPerpetual"`
@@ -127,8 +127,8 @@ type Schedule struct {
 	MaxPendingDealNumber  int           `json:"maxPendingDealNumber"`
 	MaxPendingDealSize    int64         `json:"maxPendingDealSize"`
 	Notes                 string        `json:"notes"`
-	ErrorMessage          string        `json:"errorMessage"          table:"verbose"`
-	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON"             json:"allowedPieceCids"                    table:"verbose"`
+	ErrorMessage          string        `json:"errorMessage"                        table:"verbose"`
+	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids" json:"allowedPieceCids"                    table:"verbose"`
 
 	// Associations
 	PreparationID uint32       `json:"preparationId"`

@@ -124,6 +124,7 @@ Network Support:
 					Subcommands: []*cli.Command{
 						schedule.CreateCmd,
 						schedule.ListCmd,
+						schedule.UpdateCmd,
 						schedule.PauseCmd,
 						schedule.ResumeCmd,
 					},

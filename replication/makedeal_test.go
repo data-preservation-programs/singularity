@@ -246,7 +246,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 			StartDelay:     time.Minute,
 			Duration:       time.Hour,
 			Verified:       true,
-			HTTPHeaders:    []string{"key=value"},
+			HTTPHeaders:    map[string]string{"key": "value"},
 			URLTemplate:    "http://localhost:8080/piece/{PIECE_CID}",
 			KeepUnsealed:   true,
 			AnnounceToIPNI: true,

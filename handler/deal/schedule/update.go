@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/dustin/go-humanize"
+	"github.com/ipfs/go-cid"
 	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
@@ -80,9 +81,13 @@ func (DefaultHandler) UpdateHandler(
 	updates := make(map[string]interface{})
 	if request.HTTPHeaders != nil {
 		headers := schedule.HTTPHeaders
+		if headers == nil {
+			headers = make(map[string]string)
+		}
 		for _, header := range request.HTTPHeaders {
 			if header == "" {
 				headers = make(map[string]string)
+				continue
 			}
 			kv := strings.SplitN(header, "=", 2)
 			if len(kv) != 2 {
@@ -122,7 +127,7 @@ func (DefaultHandler) UpdateHandler(
 	}
 
 	if request.IPNI != nil {
-		updates["ipni"] = *request.IPNI
+		updates["announce_to_ipni"] = *request.IPNI
 	}
 
 	if request.KeepUnsealed != nil {
@@ -186,7 +191,16 @@ func (DefaultHandler) UpdateHandler(
 	}
 
 	if len(request.AllowedPieceCIDs) > 0 {
-		updates["allowed_piece_cids"] = underscore.Unique(append(schedule.AllowedPieceCIDs, request.AllowedPieceCIDs...))
+		for _, pieceCID := range request.AllowedPieceCIDs {
+			parsed, err := cid.Parse(pieceCID)
+			if err != nil {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid allowed piece CID %s", pieceCID)
+			}
+			if parsed.Type() != cid.FilCommitmentUnsealed {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "allowed piece CID %s is not commp", pieceCID)
+			}
+		}
+		updates["allowed_piece_cids"] = model.StringSlice(underscore.Unique(append(schedule.AllowedPieceCIDs, request.AllowedPieceCIDs...)))
 	}
 
 	if request.TotalDealSize != nil {
