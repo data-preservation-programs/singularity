@@ -313,6 +313,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/schedule", s.toEchoHandler(schedule.Default.ListHandler))
 	e.POST("/api/schedule/:id/pause", s.toEchoHandler(schedule.Default.PauseHandler))
 	e.POST("/api/schedule/:id/resume", s.toEchoHandler(schedule.Default.ResumeHandler))
+	e.PATCH("/api/schedule/:id", s.toEchoHandler(schedule.Default.UpdateHandler))
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(deal.Default.ListHandler))

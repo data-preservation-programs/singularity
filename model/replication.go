@@ -107,7 +107,7 @@ type Schedule struct {
 	CreatedAt             time.Time     `json:"createdAt"             table:"verbose;format:2006-01-02 15:04:05"`
 	UpdatedAt             time.Time     `json:"updatedAt"             table:"verbose;format:2006-01-02 15:04:05"`
 	URLTemplate           string        `json:"urlTemplate"           table:"verbose"`
-	HTTPHeaders           StringSlice   `gorm:"type:JSON"             json:"httpHeaders"                         table:"verbose"`
+	HTTPHeaders           ConfigMap     `gorm:"type:JSON"             json:"httpHeaders"                         table:"verbose"`
 	Provider              string        `json:"provider"`
 	PricePerGBEpoch       float64       `json:"pricePerGbEpoch"       table:"verbose"`
 	PricePerGB            float64       `json:"pricePerGb"            table:"verbose"`

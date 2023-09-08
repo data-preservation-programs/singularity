@@ -1,23 +1,17 @@
 package schedule
 
 import (
-	"bufio"
-	"os"
-	"regexp"
-
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
-	"github.com/data-preservation-programs/singularity/util"
+	"github.com/gotidy/ptr"
 	"github.com/urfave/cli/v2"
 )
 
-var re = regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
-
-var CreateCmd = &cli.Command{
-	Name:  "create",
-	Usage: "Create a schedule to send out deals to a storage provider",
+var UpdateCmd = &cli.Command{
+	Name:  "update",
+	Usage: "Update an existing schedule",
 	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
   Standard CRON:
     ┌───────────── minute (0 - 59)
@@ -48,21 +42,11 @@ var CreateCmd = &cli.Command{
     @daily,  @midnight - Equivalent to 0 0 * * *
     @hourly            - Equivalent to 0 * * * *`,
 	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:     "preparation",
-			Usage:    "Preparation ID or name",
-			Required: true,
-		},
-		&cli.StringFlag{
-			Name:     "provider",
-			Usage:    "Storage Provider ID to send deals to",
-			Required: true,
-		},
 		&cli.StringSliceFlag{
 			Name:     "http-header",
 			Category: "Boost Only",
 			Aliases:  []string{"H"},
-			Usage:    "Http headers to be passed with the request (i.e. key=value)",
+			Usage:    "Http headers to be passed with the request (i.e. key=value). This will replace the existing header values. To remove a header, use --http-header \"key=\"\". To remove all headers, use --http-header \"\"",
 		},
 		&cli.StringFlag{
 			Name:     "url-template",
@@ -187,14 +171,14 @@ var CreateCmd = &cli.Command{
 			Name:        "allowed-piece-cid",
 			Category:    "Restrictions",
 			Aliases:     []string{"piece-cid"},
-			Usage:       "List of allowed piece CIDs in this schedule",
+			Usage:       "List of allowed piece CIDs in this schedule. Append only.",
 			DefaultText: "Any",
 		},
 		&cli.StringSliceFlag{
 			Name:     "allowed-piece-cid-file",
 			Category: "Restrictions",
 			Aliases:  []string{"piece-cid-file"},
-			Usage:    "List of files that contains a list of piece CIDs to allow",
+			Usage:    "List of files that contains a list of piece CIDs to allow. Append only.",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -220,31 +204,63 @@ var CreateCmd = &cli.Command{
 		for cid := range cids {
 			allowedPieceCIDs = append(allowedPieceCIDs, cid)
 		}
-		request := schedule.CreateRequest{
-			Preparation:          c.String("preparation"),
-			Provider:             c.String("provider"),
-			HTTPHeaders:          c.StringSlice("http-header"),
-			URLTemplate:          c.String("url-template"),
-			PricePerGBEpoch:      c.Float64("price-per-gb-epoch"),
-			PricePerGB:           c.Float64("price-per-gb"),
-			PricePerDeal:         c.Float64("price-per-deal"),
-			Verified:             c.Bool("verified"),
-			IPNI:                 c.Bool("ipni"),
-			KeepUnsealed:         c.Bool("keep-unsealed"),
-			ScheduleCron:         c.String("schedule-cron"),
-			StartDelay:           c.String("start-delay"),
-			Duration:             c.String("duration"),
-			ScheduleDealNumber:   c.Int("schedule-deal-number"),
-			TotalDealNumber:      c.Int("total-deal-number"),
-			ScheduleDealSize:     c.String("schedule-deal-size"),
-			TotalDealSize:        c.String("total-deal-size"),
-			Notes:                c.String("notes"),
-			MaxPendingDealSize:   c.String("max-pending-deal-size"),
-			MaxPendingDealNumber: c.Int("max-pending-deal-number"),
-			AllowedPieceCIDs:     allowedPieceCIDs,
+		request := schedule.UpdateRequest{
+			HTTPHeaders:      c.StringSlice("http-header"),
+			AllowedPieceCIDs: allowedPieceCIDs,
 		}
-		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		schedule, err := schedule.Default.CreateHandler(c.Context, db, lotusClient, request)
+
+		if c.IsSet("url-template") {
+			request.URLTemplate = ptr.Of(c.String("url-template"))
+		}
+		if c.IsSet("price-per-gb-epoch") {
+			request.PricePerGBEpoch = ptr.Of(c.Float64("price-per-gb-epoch"))
+		}
+		if c.IsSet("price-per-gb") {
+			request.PricePerGB = ptr.Of(c.Float64("price-per-gb"))
+		}
+		if c.IsSet("price-per-deal") {
+			request.PricePerDeal = ptr.Of(c.Float64("price-per-deal"))
+		}
+		if c.IsSet("verified") {
+			request.Verified = ptr.Of(c.Bool("verified"))
+		}
+		if c.IsSet("ipni") {
+			request.IPNI = ptr.Of(c.Bool("ipni"))
+		}
+		if c.IsSet("keep-unsealed") {
+			request.KeepUnsealed = ptr.Of(c.Bool("keep-unsealed"))
+		}
+		if c.IsSet("schedule-cron") {
+			request.ScheduleCron = ptr.Of(c.String("schedule-cron"))
+		}
+		if c.IsSet("start-delay") {
+			request.StartDelay = ptr.Of(c.String("start-delay"))
+		}
+		if c.IsSet("duration") {
+			request.Duration = ptr.Of(c.String("duration"))
+		}
+		if c.IsSet("schedule-deal-number") {
+			request.ScheduleDealNumber = ptr.Of(c.Int("schedule-deal-number"))
+		}
+		if c.IsSet("total-deal-number") {
+			request.TotalDealNumber = ptr.Of(c.Int("total-deal-number"))
+		}
+		if c.IsSet("schedule-deal-size") {
+			request.ScheduleDealSize = ptr.Of(c.String("schedule-deal-size"))
+		}
+		if c.IsSet("total-deal-size") {
+			request.TotalDealSize = ptr.Of(c.String("total-deal-size"))
+		}
+		if c.IsSet("notes") {
+			request.Notes = ptr.Of(c.String("notes"))
+		}
+		if c.IsSet("max-pending-deal-size") {
+			request.MaxPendingDealSize = ptr.Of(c.String("max-pending-deal-size"))
+		}
+		if c.IsSet("max-pending-deal-number") {
+			request.MaxPendingDealNumber = ptr.Of(c.Int("max-pending-deal-number"))
+		}
+		schedule, err := schedule.Default.UpdateHandler(c.Context, db, request)
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -252,26 +268,4 @@ var CreateCmd = &cli.Command{
 		cliutil.Print(c, schedule)
 		return nil
 	},
-}
-
-func readCIDsFromFile(f string) ([]string, error) {
-	var result []string
-	file, err := os.Open(f)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open file")
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		matches := re.FindAllString(line, -1)
-		result = append(result, matches...)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, errors.Wrap(err, "failed to read file")
-	}
-	return result, nil
 }
