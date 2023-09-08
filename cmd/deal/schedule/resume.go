@@ -1,6 +1,9 @@
 package schedule
 
 import (
+	"strconv"
+
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -10,18 +13,26 @@ import (
 var ResumeCmd = &cli.Command{
 	Name:      "resume",
 	Usage:     "Resume a specific schedule",
-	ArgsUsage: "SCHEDULE_ID",
+	Before:    cliutil.CheckNArgs,
+	ArgsUsage: "<schedule_id>",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		schedule, err := schedule.ResumeHandler(c.Context, db, c.Args().Get(0))
+
+		scheduleID, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "failed to parse schedule ID %s", c.Args().Get(0))
 		}
-		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
+
+		schedule, err := schedule.Default.ResumeHandler(c.Context, db, uint32(scheduleID))
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		cliutil.Print(c, schedule)
 		return nil
 	},
 }

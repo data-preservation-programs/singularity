@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
@@ -11,18 +12,19 @@ var RemoveCmd = &cli.Command{
 	Name:      "remove",
 	Usage:     "Remove a wallet",
 	ArgsUsage: "<address>",
+	Before:    cliutil.CheckNArgs,
 	Flags: []cli.Flag{
 		cliutil.ReallyDotItFlag,
 	},
 	Action: func(c *cli.Context) error {
 		if err := cliutil.HandleReallyDoIt(c); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		return wallet.RemoveHandler(c.Context, db, c.Args().Get(0))
+		return wallet.Default.RemoveHandler(c.Context, db, c.Args().Get(0))
 	},
 }

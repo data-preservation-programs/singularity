@@ -4,140 +4,66 @@ import (
 	"context"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestFindPackWork(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	thread := &Thread{
-		dbNoContext: db,
-		config: Config{
-			EnablePack: true,
-		},
-		logger: logger.With("test", true),
-		id:     uuid.New(),
-	}
-
-	ctx := context.Background()
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			WorkType:  model.Packing,
-			WorkingOn: "something",
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		thread := &Thread{
+			dbNoContext: db,
+			config: Config{
+				EnablePack: true,
+			},
+			logger: logger.With("test", true),
+			id:     uuid.New(),
 		}
-	}
-	_, err = healthcheck.Register(ctx, thread.dbNoContext, thread.id, getState, true)
-	require.NoError(t, err)
-	found, err := thread.findPackWork(ctx)
-	require.NoError(t, err)
-	require.Nil(t, found)
 
-	err = db.Create(&model.PackJob{
-		Source: &model.Source{
-			Dataset: &model.Dataset{},
-		},
-		PackingState: model.Ready,
-	}).Error
-	require.NoError(t, err)
+		_, err := healthcheck.Register(ctx, thread.dbNoContext, thread.id, model.DatasetWorker, true)
+		require.NoError(t, err)
+		found, err := thread.findJob(ctx, []model.JobType{model.Pack})
+		require.NoError(t, err)
+		require.Nil(t, found)
 
-	found, err = thread.findPackWork(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, found)
+		err = db.Create(&model.Preparation{
+			SourceStorages: []model.Storage{{
+				Name: "source",
+			}},
+			OutputStorages: []model.Storage{{
+				Name: "output",
+			}},
+		}).Error
+		require.NoError(t, err)
 
-	var existing model.PackJob
-	err = db.First(&existing, found.ID).Error
-	require.NoError(t, err)
-	require.Equal(t, model.Processing, existing.PackingState)
-	require.Equal(t, thread.id.String(), *existing.PackingWorkerID)
-}
+		err = db.Create(&model.Job{
+			AttachmentID: 1,
+			State:        model.Ready,
+			Type:         model.Pack,
+		}).Error
+		require.NoError(t, err)
+		err = db.Create(&model.FileRange{
+			JobID: ptr.Of(uint64(1)),
+			File: &model.File{
+				AttachmentID: 1,
+			},
+		}).Error
+		require.NoError(t, err)
 
-func TestFindDagWork(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	thread := &Thread{
-		dbNoContext: db,
-		config: Config{
-			EnableDag: true,
-		},
-		logger: logger.With("test", true),
-		id:     uuid.New(),
-	}
+		found, err = thread.findJob(ctx, []model.JobType{model.Pack})
+		require.NoError(t, err)
+		require.NotNil(t, found)
+		require.Len(t, found.FileRanges, 1)
+		require.NotNil(t, found.FileRanges[0].File)
 
-	ctx := context.Background()
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			WorkType:  model.Packing,
-			WorkingOn: "something",
-		}
-	}
-	_, err = healthcheck.Register(ctx, thread.dbNoContext, thread.id, getState, true)
-	require.NoError(t, err)
-	found, err := thread.findDagWork(ctx)
-	require.NoError(t, err)
-	require.Nil(t, found)
-
-	err = db.Create(&model.Source{
-		Dataset:     &model.Dataset{},
-		DagGenState: model.Ready,
-	}).Error
-	require.NoError(t, err)
-
-	found, err = thread.findDagWork(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, found)
-
-	var existing model.Source
-	err = db.First(&existing, found.ID).Error
-	require.NoError(t, err)
-	require.Equal(t, model.Processing, existing.DagGenState)
-	require.Equal(t, thread.id.String(), *existing.DagGenWorkerID)
-}
-
-func TestFindScanWork(t *testing.T) {
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-	thread := &Thread{
-		dbNoContext: db,
-		config: Config{
-			EnableScan: true,
-		},
-		logger: logger.With("test", true),
-		id:     uuid.New(),
-	}
-
-	ctx := context.Background()
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			WorkType:  model.Packing,
-			WorkingOn: "something",
-		}
-	}
-	_, err = healthcheck.Register(ctx, thread.dbNoContext, thread.id, getState, true)
-	require.NoError(t, err)
-	found, err := thread.findScanWork(ctx)
-	require.NoError(t, err)
-	require.Nil(t, found)
-
-	err = db.Create(&model.Source{
-		Dataset:       &model.Dataset{},
-		ScanningState: model.Ready,
-	}).Error
-	require.NoError(t, err)
-
-	found, err = thread.findScanWork(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, found)
-
-	var existing model.Source
-	err = db.First(&existing, found.ID).Error
-	require.NoError(t, err)
-	require.Equal(t, model.Processing, existing.ScanningState)
-	require.Equal(t, thread.id.String(), *existing.ScanningWorkerID)
+		var existing model.Job
+		err = db.First(&existing, found.ID).Error
+		require.NoError(t, err)
+		require.Equal(t, model.Processing, existing.State)
+		require.Equal(t, thread.id.String(), *existing.WorkerID)
+	})
 }

@@ -2,10 +2,14 @@ package tool
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/cockroachdb/errors"
+	"github.com/cockroachdb/errors/oserror"
+	"github.com/data-preservation-programs/singularity/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
@@ -15,7 +19,7 @@ import (
 	"github.com/ipfs/go-unixfs"
 	"github.com/ipfs/go-unixfs/io"
 	carblockstore "github.com/ipld/go-car/v2/blockstore"
-	"github.com/pkg/errors"
+	"github.com/urfave/cli/v2"
 )
 
 type multiBlockstore struct {
@@ -23,14 +27,14 @@ type multiBlockstore struct {
 }
 
 func (m multiBlockstore) DeleteBlock(ctx context.Context, c cid.Cid) error {
-	panic("implement me")
+	return util.ErrNotImplemented
 }
 
 func (m multiBlockstore) Has(ctx context.Context, c cid.Cid) (bool, error) {
 	for _, bs := range m.bss {
 		has, err := bs.Has(ctx, c)
 		if err != nil {
-			return false, err
+			return false, errors.WithStack(err)
 		}
 		if has {
 			return true, nil
@@ -46,7 +50,7 @@ func (m multiBlockstore) Get(ctx context.Context, c cid.Cid) (blocks.Block, erro
 			continue
 		}
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		if block != nil {
 			return block, nil
@@ -62,7 +66,7 @@ func (m multiBlockstore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 			continue
 		}
 		if err != nil {
-			return 0, err
+			return 0, errors.WithStack(err)
 		}
 		if size > 0 {
 			return size, nil
@@ -72,22 +76,21 @@ func (m multiBlockstore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 }
 
 func (m multiBlockstore) Put(ctx context.Context, block blocks.Block) error {
-	panic("implement me")
+	return util.ErrNotImplemented
 }
 
 func (m multiBlockstore) PutMany(ctx context.Context, blocks []blocks.Block) error {
-	panic("implement me")
+	return util.ErrNotImplemented
 }
 
 func (m multiBlockstore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
-	panic("implement me")
+	return nil, util.ErrNotImplemented
 }
 
 func (m multiBlockstore) HashOnRead(enabled bool) {
-	panic("implement me")
 }
 
-func ExtractCarHandler(ctx context.Context, inputDir string, output string, c cid.Cid) error {
+func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.Cid) error {
 	if c.Type() != cid.Raw && c.Type() != cid.DagProtobuf {
 		return errors.New("unsupported CID type")
 	}
@@ -130,7 +133,7 @@ func ExtractCarHandler(ctx context.Context, inputDir string, output string, c ci
 func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
 	stat, err := os.Stat(outPath)
 	// If the user supply /a/b.txt but the file does not exist, then we need to mkdir -p /a
-	if errors.Is(err, os.ErrNotExist) {
+	if errors.Is(err, oserror.ErrNotExist) {
 		err = os.MkdirAll(filepath.Dir(outPath), 0755)
 		if err != nil {
 			return "", errors.Wrapf(err, "failed to create output directory %s", filepath.Dir(outPath))
@@ -150,8 +153,8 @@ func getOutPathForFile(outPath string, c cid.Cid) (string, error) {
 	return outPath, nil
 }
 
-func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string, c cid.Cid, isRoot bool) error {
-	node, err := dagServ.Get(ctx, c)
+func writeToOutput(ctx *cli.Context, dagServ ipld.DAGService, outPath string, c cid.Cid, isRoot bool) error {
+	node, err := dagServ.Get(ctx.Context, c)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get node for CID %s", c)
 	}
@@ -164,6 +167,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 				return errors.Wrapf(err, "failed to get output path for CID %s", c)
 			}
 		}
+		_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
 		return os.WriteFile(outPath, node.RawData(), 0600)
 	case cid.DagProtobuf:
 		fsnode, err := unixfs.ExtractFSNode(node)
@@ -172,7 +176,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 		}
 		switch fsnode.Type() {
 		case unixfs.TFile:
-			reader, err := io.NewDagReader(ctx, node, dagServ)
+			reader, err := io.NewDagReader(ctx.Context, node, dagServ)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create dag reader for CID %s", c)
 			}
@@ -187,6 +191,7 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 				return errors.Wrapf(err, "failed to create output file %s", outPath)
 			}
 			defer f.Close()
+			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Writing to %s\n", outPath)))
 			_, err = reader.WriteTo(f)
 			if err != nil {
 				return errors.Wrapf(err, "failed to write to output file %s", outPath)
@@ -196,11 +201,12 @@ func writeToOutput(ctx context.Context, dagServ ipld.DAGService, outPath string,
 			if err != nil {
 				return errors.Wrapf(err, "failed to create directory from node for CID %s", c)
 			}
+			_, _ = ctx.App.Writer.Write([]byte(fmt.Sprintf("Create Dir %s\n", outPath)))
 			err = os.MkdirAll(outPath, 0755)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create output directory %s", outPath)
 			}
-			err = dirNode.ForEachLink(ctx, func(link *ipld.Link) error {
+			err = dirNode.ForEachLink(ctx.Context, func(link *ipld.Link) error {
 				return writeToOutput(ctx, dagServ, filepath.Join(outPath, link.Name), link.Cid, false)
 			})
 			if err != nil {

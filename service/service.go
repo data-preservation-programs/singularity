@@ -7,7 +7,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/pkg/errors"
+	"github.com/cockroachdb/errors"
 
 	"github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
@@ -63,7 +63,7 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 		if err != nil {
 			cancel()
 			logger.Errorw("failed to start service "+server.Name(), "error", err)
-			return err
+			return errors.Wrapf(err, "failed to start service %s", server.Name())
 		}
 		dones = append(dones, done...)
 		fails = append(fails, fail)
@@ -115,10 +115,10 @@ func StartServers(ctx context.Context, logger *log.ZapEventLogger, servers ...Se
 	case <-allDone:
 		logger.Info("all services stopped")
 		cancel()
-		return err
+		return errors.WithStack(err)
 	}
 
 	<-allDone
 	logger.Info("all services stopped")
-	return err
+	return errors.WithStack(err)
 }

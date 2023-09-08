@@ -6,6 +6,8 @@ run:
     - docs
     - dashboard/model2ts
     - handler/datasource/generate
+  skip-files:
+    - cmd/testutil.go
 
 linters:
   enable-all: true
@@ -57,10 +59,11 @@ linters:
     - depguard
     - nakedret
     - tagalign
+    - lll
+    - dupword
+    - interfacebloat
 
 linters-settings:
-  lll:
-    line-length: 180
   errcheck:
     exclude-functions:
       - (github.com/libp2p/go-libp2p/network.MuxedStream).SetDeadline

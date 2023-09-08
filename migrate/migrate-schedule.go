@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,20 +21,20 @@ import (
 
 var pieceCidRegex = regexp.MustCompile("baga[0-9a-z]+")
 
-func MigrateSchedule(cctx *cli.Context) error {
+func MigrateSchedule(c *cli.Context) error {
 	log.Println("Migrating dataset from old singularity database")
-	mongoConnectionString := cctx.String("mongo-connection-string")
-	sqlConnectionString := cctx.String("database-connection-string")
+	mongoConnectionString := c.String("mongo-connection-string")
+	sqlConnectionString := c.String("database-connection-string")
 	log.Printf("Using mongo connection string: %s\n", mongoConnectionString)
 	log.Printf("Using sql connection string: %s\n", sqlConnectionString)
-	db, closer, err := database.OpenFromCLI(cctx)
+	db, closer, err := database.OpenFromCLI(c)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer closer.Close()
-	ctx := cctx.Context
+	ctx := c.Context
 	db = db.WithContext(ctx)
-	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(cctx.String("mongo-connection-string")))
+	mg, err := mongo.Connect(ctx, options.Client().ApplyURI(c.String("mongo-connection-string")))
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to mongo")
 	}
@@ -78,10 +78,10 @@ func MigrateSchedule(cctx *cli.Context) error {
 			return errors.Wrapf(err, "failed to decode dataset %s", replication.DatasetID)
 		}
 
-		var dataset model.Dataset
-		err = db.Where("name = ?", scanning.Name).First(&dataset).Error
+		var preparation model.Preparation
+		err = preparation.FindByIDOrName(db, scanning.Name)
 		if err != nil {
-			return errors.Wrapf(err, "failed to find dataset %s", scanning.Name)
+			return errors.Wrapf(err, "failed to find preparation %s", scanning.Name)
 		}
 
 		var urlTemplate string
@@ -116,7 +116,6 @@ func MigrateSchedule(cctx *cli.Context) error {
 			schedule := model.Schedule{
 				CreatedAt:            replication.CreatedAt,
 				UpdatedAt:            replication.UpdatedAt,
-				DatasetID:            dataset.ID,
 				URLTemplate:          urlTemplate,
 				Provider:             provider,
 				PricePerGBEpoch:      replication.MaxPrice,
@@ -136,6 +135,7 @@ func MigrateSchedule(cctx *cli.Context) error {
 				Notes:                replication.Notes,
 				ErrorMessage:         replication.ErrorMessage,
 				AllowedPieceCIDs:     allowedCIDs,
+				PreparationID:        preparation.ID,
 			}
 			schedules = append(schedules, schedule)
 		}
@@ -146,6 +146,6 @@ func MigrateSchedule(cctx *cli.Context) error {
 		return errors.Wrap(err, "failed to create schedules")
 	}
 
-	cliutil.PrintToConsole(schedules, false, nil)
+	cliutil.Print(c, schedules)
 	return nil
 }

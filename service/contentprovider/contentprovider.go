@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/libp2p/go-libp2p"
@@ -66,7 +66,6 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 		s.servers = append(s.servers, &HTTPServer{
 			bind:        config.HTTP.Bind,
 			dbNoContext: db,
-			resolver:    &datasource.DefaultHandlerResolver{},
 		})
 	}
 
@@ -76,18 +75,18 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 			var err error
 			private, _, _, err = util.GenerateNewPeer()
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 		} else {
 			var err error
 			private, err = base64.StdEncoding.DecodeString(config.Bitswap.IdentityKey)
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 		}
 		identityKey, err := crypto.UnmarshalPrivateKey(private)
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		if len(config.Bitswap.ListenMultiAddrs) == 0 {
 			config.Bitswap.ListenMultiAddrs = []string{"/ip4/0.0.0.0/tcp/0"}
@@ -96,13 +95,13 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 		for _, addr := range config.Bitswap.ListenMultiAddrs {
 			ma, err := multiaddr.NewMultiaddr(addr)
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 			listenAddrs = append(listenAddrs, ma)
 		}
 		h, err := util.InitHost([]libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		for _, m := range h.Addrs() {
 			logger.Info("libp2p listening on " + m.String())

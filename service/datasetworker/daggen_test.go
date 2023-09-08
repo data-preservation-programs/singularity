@@ -2,68 +2,142 @@ package datasetworker
 
 import (
 	"context"
-	"os"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
+	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/boxo/util"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-log/v2"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestExportDag(t *testing.T) {
-	ctx := context.Background()
-	db, closer, err := database.OpenInMemory()
-	require.NoError(t, err)
-	defer closer.Close()
-
-	thread := &Thread{
-		dbNoContext: db,
-		logger:      logger.With("test", true),
-		id:          uuid.New(),
-	}
-
-	source := model.Source{
-		Dataset: &model.Dataset{},
-	}
-	err = db.Create(&source).Error
-	require.NoError(t, err)
-
-	rootData := daggen.NewDirectoryData()
-	err = rootData.AddFile(ctx, "test1.txt", cid.NewCidV1(cid.Raw, util.Hash([]byte("test1"))), 5)
-	require.NoError(t, err)
-	rootDataBytes, err := rootData.MarshalBinary(ctx)
-	require.NoError(t, err)
-	node, err := rootData.Node()
-	require.NoError(t, err)
-	rootDir := model.Directory{
-		SourceID: source.ID,
-		CID:      model.CID(node.Cid()),
-		Data:     rootDataBytes,
-	}
-	err = db.Create(&rootDir).Error
-	require.NoError(t, err)
-
-	err = thread.ExportDag(ctx, source)
-	require.NoError(t, err)
-
 	tmp := t.TempDir()
-	source.Dataset.OutputDirs = []string{tmp}
-	err = thread.ExportDag(ctx, source)
-	require.NoError(t, err)
-	entries, err := os.ReadDir(tmp)
-	require.NoError(t, err)
-	require.Len(t, entries, 0)
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		thread := &Thread{
+			id:          uuid.New(),
+			dbNoContext: db,
+			logger:      log.Logger("test").With("test", true),
+		}
+		job := model.Job{
+			Type:  model.DagGen,
+			State: model.Ready,
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{},
+				Storage: &model.Storage{
+					Type: "local",
+					Path: tmp,
+				},
+			},
+		}
+		err := thread.dbNoContext.Create(&job).Error
+		require.NoError(t, err)
 
-	err = db.Model(&model.Directory{}).Where("id = ?", rootDir.ID).Update("exported", false).Error
-	require.NoError(t, err)
-	err = thread.ExportDag(ctx, source)
-	require.NoError(t, err)
-	entries, err = os.ReadDir(tmp)
-	require.NoError(t, err)
-	require.Len(t, entries, 1)
-	require.Equal(t, "baga6ea4seaqfilevbbbguevziwwafurgltselpzbzpsu5lrlyqq7rbmcgeyqemy.car", entries[0].Name())
+		dir1 := daggen.NewDirectoryData()
+		dir1.AddBlocks(ctx, []blocks.Block{
+			blocks.NewBlock([]byte("hello")),
+			daggen.NewDummyNode(5, cid.NewCidV1(cid.Raw, util.Hash([]byte("world")))),
+		})
+		dir1Data, err := dir1.MarshalBinary(ctx)
+		require.NoError(t, err)
+		dir2 := daggen.NewDirectoryData()
+		dir2Data, err := dir2.MarshalBinary(ctx)
+		require.NoError(t, err)
+
+		dirs := []model.Directory{
+			{AttachmentID: 1, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
+			{AttachmentID: 1, Data: dir2Data, CID: model.CID(packutil.EmptyFileCid), ParentID: ptr.Of(uint64(1)), Name: "sub"},
+		}
+		err = thread.dbNoContext.Create(&dirs).Error
+		require.NoError(t, err)
+
+		err = thread.ExportDag(ctx, job)
+		require.NoError(t, err)
+
+		var carBlocks []model.CarBlock
+		var cars []model.Car
+		err = db.Find(&carBlocks).Error
+		require.NoError(t, err)
+		err = db.Find(&cars).Error
+		require.NoError(t, err)
+		dirs = []model.Directory{}
+		err = db.Find(&dirs).Error
+		require.NoError(t, err)
+		require.Len(t, carBlocks, 3)
+		require.Len(t, cars, 1)
+		for _, dir := range dirs {
+			require.True(t, dir.Exported)
+		}
+	})
+}
+
+func TestExportDag_WithOutputStorage(t *testing.T) {
+	tmp := t.TempDir()
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		thread := &Thread{
+			id:          uuid.New(),
+			dbNoContext: db,
+			logger:      log.Logger("test").With("test", true),
+		}
+		job := model.Job{
+			Type:  model.DagGen,
+			State: model.Ready,
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{
+					OutputStorages: []model.Storage{
+						{
+							Type: "local",
+							Path: tmp,
+						},
+					},
+				},
+				StorageID: 1,
+			},
+		}
+		err := thread.dbNoContext.Create(&job).Error
+		require.NoError(t, err)
+
+		dir1 := daggen.NewDirectoryData()
+		dir1.AddBlocks(ctx, []blocks.Block{
+			blocks.NewBlock([]byte("hello")),
+			daggen.NewDummyNode(5, cid.NewCidV1(cid.Raw, util.Hash([]byte("world")))),
+		})
+		dir1Data, err := dir1.MarshalBinary(ctx)
+		require.NoError(t, err)
+		dir2 := daggen.NewDirectoryData()
+		dir2Data, err := dir2.MarshalBinary(ctx)
+		require.NoError(t, err)
+
+		dirs := []model.Directory{
+			{AttachmentID: 1, Data: dir1Data, CID: model.CID(packutil.EmptyFileCid)},
+			{AttachmentID: 1, Data: dir2Data, CID: model.CID(packutil.EmptyFileCid), ParentID: ptr.Of(uint64(1)), Name: "sub"},
+		}
+		err = thread.dbNoContext.Create(&dirs).Error
+		require.NoError(t, err)
+
+		err = thread.ExportDag(ctx, job)
+		require.NoError(t, err)
+
+		var carBlocks []model.CarBlock
+		var cars []model.Car
+		err = db.Find(&carBlocks).Error
+		require.NoError(t, err)
+		err = db.Find(&cars).Error
+		require.NoError(t, err)
+		dirs = []model.Directory{}
+		err = db.Find(&dirs).Error
+		require.NoError(t, err)
+		require.Len(t, carBlocks, 3)
+		require.Len(t, cars, 1)
+		for _, dir := range dirs {
+			require.True(t, dir.Exported)
+		}
+	})
 }

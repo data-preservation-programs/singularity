@@ -11,19 +11,18 @@ import (
 	"time"
 
 	"github.com/bcicen/jstream"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
-	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
 	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -173,11 +172,11 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "failed to get deal state from lotus API")
+		return nil, nil, nil, errors.WithStack(err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return nil, nil, nil, errors.New("failed to get deal state: " + resp.Status)
+		return nil, nil, nil, errors.Newf("failed to get deal state: %s", resp.Status)
 	}
 	var jsonDecoder *jstream.Decoder
 	var closer io.Closer
@@ -186,7 +185,7 @@ func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress
 		decompressor, err := zstd.NewReader(countingReader)
 		if err != nil {
 			resp.Body.Close()
-			return nil, nil, nil, errors.Wrap(err, "failed to create zstd decompressor")
+			return nil, nil, nil, errors.WithStack(err)
 		}
 		safeDecompressor := &ThreadSafeReadCloser{
 			reader: decompressor,
@@ -210,7 +209,7 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 		Logger.Infof("getting deal state from %s", d.dealZstURL)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, d.dealZstURL, nil)
 		if err != nil {
-			return nil, nil, nil, errors.Wrap(err, "failed to create request to get deal state zst file")
+			return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state zst file %s", d.dealZstURL)
 		}
 		return DealStateStreamFromHTTPRequest(req, 1, true)
 	}
@@ -218,7 +217,7 @@ func (d *DealTracker) dealStateStream(ctx context.Context) (chan *jstream.MetaVa
 	Logger.Infof("getting deal state from %s", d.lotusURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, d.lotusURL, nil)
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "failed to create request to get deal state from lotus API")
+		return nil, nil, nil, errors.Wrapf(err, "failed to create request to get deal state from lotus API %s", d.lotusURL)
 	}
 	if d.lotusToken != "" {
 		req.Header.Set("Authorization", "Bearer "+d.lotusToken)
@@ -235,7 +234,7 @@ func (*DealTracker) Name() string {
 // Start starts the DealTracker and returns a list of service.Done channels, a service.Fail channel, and an error.
 //
 // The Start method takes a context.Context as input and performs the following steps:
-// 1. Defines a getState function that returns a healthcheck.State with WorkType set to model.DealTracking.
+// 1. Defines a getState function that returns a healthcheck.State with JobType set to model.DealTracking.
 // 2. Registers the worker using healthcheck.Register with the provided context, dbNoContext, workerID, getState function, and false for the force flag.
 //   - If an error occurs during registration, it returns nil for the service.Done channels, nil for the service.Fail channel, and the error wrapped with an appropriate message.
 //   - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels,
@@ -260,20 +259,15 @@ func (*DealTracker) Name() string {
 func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			WorkType: model.DealTracking,
-		}
-	}
 
 	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, getState, false)
+		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealTracker, false)
 		if err == nil && !alreadyRunning {
 			break
 		}
 		if err != nil {
 			cancel()
-			return nil, nil, errors.Wrap(err, "failed to register worker")
+			return nil, nil, errors.WithStack(err)
 		}
 		if alreadyRunning {
 			Logger.Warnw("another worker already running")
@@ -294,7 +288,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, getState)
+		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, model.DealTracker)
 		Logger.Info("health report stopped")
 	}()
 
@@ -305,7 +299,7 @@ func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, 
 		defer close(runDone)
 		for {
 			err := d.runOnce(ctx)
-			if err != nil {
+			if err != nil && ctx.Err() == nil {
 				Logger.Errorw("failed to run once", "error", err)
 			}
 			if d.once {
@@ -385,19 +379,11 @@ type UnknownDeal struct {
 //
 //	error: An error that represents the failure of the operation, or nil if the operation was successful.
 func (d *DealTracker) runOnce(ctx context.Context) error {
-	delay := time.Hour
-	var err error
-	if d.dealZstURL == "" {
-		lotusTime, err := util.GetLotusHeadTime(ctx, d.lotusURL, d.lotusToken)
-		if err != nil {
-			return errors.Wrap(err, "failed to get lotus head time")
-		}
-		delay = time.Since(lotusTime)
-	}
+	var lastEpoch int32
 
 	db := d.dbNoContext.WithContext(ctx)
 	var wallets []model.Wallet
-	err = db.Find(&wallets).Error
+	err := db.Find(&wallets).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to get wallets from database")
 	}
@@ -429,13 +415,13 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		Select("id", "deal_id", "state", "client_id", "provider", "piece_cid",
 			"start_epoch", "end_epoch").Rows()
 	if err != nil {
-		return errors.Wrap(err, "failed to get unknown deals from database")
+		return errors.WithStack(err)
 	}
 	for rows.Next() {
 		var deal model.Deal
 		err = rows.Scan(&deal.ID, &deal.DealID, &deal.State, &deal.ClientID, &deal.Provider, &deal.PieceCID, &deal.StartEpoch, &deal.EndEpoch)
 		if err != nil {
-			return errors.Wrap(err, "failed to scan row")
+			return errors.WithStack(err)
 		}
 		key := deal.Key()
 		unknownDeals[key] = append(unknownDeals[key], UnknownDeal{
@@ -457,6 +443,9 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		if deal.State.LastUpdatedEpoch > lastEpoch {
+			lastEpoch = deal.State.LastUpdatedEpoch
+		}
 		_, ok := walletIDs[deal.Proposal.Client]
 		if !ok {
 			return nil
@@ -477,7 +466,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 					}).Error
 			})
 			if err != nil {
-				return errors.Wrap(err, "failed to update deal")
+				return errors.WithStack(err)
 			}
 			updated++
 			return nil
@@ -495,7 +484,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				}).Error
 			})
 			if err != nil {
-				return errors.Wrap(err, "failed to update deal")
+				return errors.WithStack(err)
 			}
 			updated++
 			unknownDeals[dealKey] = unknownDeals[dealKey][1:]
@@ -507,7 +496,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		Logger.Infow("Deal external inserted from on-chain", "dealID", dealID, "state", newState)
 		root, err := cid.Parse(deal.Proposal.PieceCID.Root)
 		if err != nil {
-			return errors.Wrap(err, "failed to parse piece CID")
+			return errors.Wrapf(err, "failed to parse piece CID %s", deal.Proposal.PieceCID.Root)
 		}
 		err = database.DoRetry(ctx, func() error {
 			return db.Create(&model.Deal{
@@ -526,30 +515,30 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			}).Error
 		})
 		if err != nil {
-			return errors.Wrap(err, "failed to insert deal")
+			return errors.WithStack(err)
 		}
 		inserted++
 		return nil
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to track deal")
+		return errors.WithStack(err)
 	}
 
 	// Mark all expired active deals as expired
 	result := db.Model(&model.Deal{}).
-		Where("end_epoch < ? AND state = 'active'", epochutil.UnixToEpoch(time.Now().Add(-delay).Unix())).
+		Where("end_epoch < ? AND state = 'active'", lastEpoch).
 		Update("state", model.DealExpired)
 	if result.Error != nil {
-		return errors.Wrap(result.Error, "failed to update deals to expired")
+		return errors.WithStack(err)
 	}
 	Logger.Infof("marked %d deals as expired", result.RowsAffected)
 
 	// Mark all expired deal proposals
 	result = db.Model(&model.Deal{}).
-		Where("state in ('proposed', 'published') AND start_epoch < ?", epochutil.UnixToEpoch(time.Now().Add(-delay).Unix())).
+		Where("state in ('proposed', 'published') AND start_epoch < ?", lastEpoch).
 		Update("state", model.DealProposalExpired)
 	if result.Error != nil {
-		return errors.Wrap(result.Error, "failed to update deal proposals to expired")
+		return errors.WithStack(err)
 	}
 	Logger.Infof("marked %d deal as proposal_expired", result.RowsAffected)
 
@@ -559,7 +548,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64, deal Deal) error) error {
 	kvstream, counter, closer, err := d.dealStateStream(ctx)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer closer.Close()
 	countingCtx, cancel := context.WithCancel(ctx)
@@ -586,17 +575,17 @@ func (d *DealTracker) trackDeal(ctx context.Context, callback func(dealID uint64
 		var deal Deal
 		err = mapstructure.Decode(keyValuePair.Value, &deal)
 		if err != nil {
-			return errors.Wrap(err, "failed to decode deal")
+			return errors.Wrapf(err, "failed to decode deal %s", keyValuePair.Value)
 		}
 
 		dealID, err := strconv.ParseUint(keyValuePair.Key, 10, 64)
 		if err != nil {
-			return errors.Wrap(err, "failed to convert deal id to int")
+			return errors.Wrapf(err, "failed to convert deal id %s to int", keyValuePair.Key)
 		}
 
 		err = callback(dealID, deal)
 		if err != nil {
-			return errors.Wrap(err, "failed to callback")
+			return errors.WithStack(err)
 		}
 	}
 

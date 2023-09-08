@@ -46,4 +46,6 @@ yarn-error.log*
 
 /LanguageTool-*
 
+/cmd/testdata
+
 dist/

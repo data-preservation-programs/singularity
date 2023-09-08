@@ -1,1 +1,2 @@
 /dashboard/build/** linguist-generated=true
+/cmd/testdata/** linguist-generated=true

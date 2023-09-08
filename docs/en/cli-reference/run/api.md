@@ -9,7 +9,7 @@ USAGE:
    singularity run api [command options] [arguments...]
 
 OPTIONS:
-   --bind value  Bind address for the API server (default: "127.0.0.1:9090")
+   --bind value  Bind address for the API server (default: ":9090")
    --help, -h    show help
 ```
 {% endcode %}

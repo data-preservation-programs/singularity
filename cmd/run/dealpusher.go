@@ -1,8 +1,8 @@
 package run
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/dealpusher"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
@@ -23,23 +23,20 @@ var DealPusherCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		if err := model.AutoMigrate(db); err != nil {
-			return err
-		}
 
 		lotusAPI := c.String("lotus-api")
 		lotusToken := c.String("lotus-token")
 		err = epochutil.Initialize(c.Context, lotusAPI, lotusToken)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		dm, err := dealpusher.NewDealPusher(db, c.String("lotus-api"), c.String("lotus-token"), c.Uint("deal-attempts"))
 		if err != nil {
-			return cli.Exit(err.Error(), 1)
+			return errors.WithStack(err)
 		}
 		return service.StartServers(c.Context, dealpusher.Logger, dm)
 	},

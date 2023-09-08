@@ -25,9 +25,6 @@ type ModelWallet struct {
 
 	// PrivateKey is the private key of the wallet
 	PrivateKey string `json:"privateKey,omitempty"`
-
-	// RemotePeer is the remote peer ID of the wallet, for remote signing purpose
-	RemotePeer string `json:"remotePeer,omitempty"`
 }
 
 // Validate validates this model wallet

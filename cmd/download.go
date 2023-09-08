@@ -1,10 +1,13 @@
 package cmd
 
 import (
-	datasource2 "github.com/data-preservation-programs/singularity/datasource"
+	"strings"
+
+	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/ipfs/go-log"
-	"github.com/rclone/rclone/fs"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
@@ -13,46 +16,61 @@ var DownloadCmd = &cli.Command{
 	Name:      "download",
 	Usage:     "Download a CAR file from the metadata API",
 	Category:  "Utility",
-	ArgsUsage: "PIECE_CID",
+	Before:    cliutil.CheckNArgs,
+	ArgsUsage: "<piece_cid>",
 	Flags: func() []cli.Flag {
 		flags := []cli.Flag{
 			&cli.StringFlag{
 				Name:     "api",
 				Usage:    "URL of the metadata API",
 				Value:    "http://127.0.0.1:7777",
-				Category: "General Options",
+				Category: "General Config",
 			},
 			&cli.StringFlag{
 				Name:     "out-dir",
 				Usage:    "Directory to write CAR files to",
 				Value:    ".",
-				Aliases:  []string{"o"},
-				Category: "General Options",
+				Category: "General Config",
 			},
 			&cli.IntFlag{
 				Name:     "concurrency",
 				Usage:    "Number of concurrent downloads",
 				Value:    10,
-				Aliases:  []string{"j"},
-				Category: "General Options",
+				Category: "General Config",
+			},
+			&cli.BoolFlag{
+				Name:     "quiet",
+				Usage:    "Suppress all output",
+				Category: "General Config",
+				Value:    false,
 			},
 		}
 
-		for _, r := range fs.Registry {
-			if slices.Contains([]string{"crypt", "memory", "tardigrade"}, r.Prefix) {
-				continue
-			}
-			cmd := datasource2.OptionsToCLIFlags(r)
-			for _, flag := range cmd.Flags {
-				stringFlag, ok := flag.(*cli.StringFlag)
-				if !ok {
+		keys := make(map[string]struct{})
+		for _, backend := range storagesystem.Backends {
+			var providers []string
+			for _, providerOptions := range backend.ProviderOptions {
+				providers = append(providers, providerOptions.Provider)
+				for _, option := range providerOptions.Options {
+					flag := option.ToCLIFlag(backend.Prefix+"-", false, backend.Description)
+					if _, ok := keys[flag.Names()[0]]; ok {
+						continue
+					}
+					keys[flag.Names()[0]] = struct{}{}
 					flags = append(flags, flag)
-					continue
 				}
-				stringFlag.Required = false
-				stringFlag.Category = "Options for " + cmd.Name
-				stringFlag.Aliases = nil
-				flags = append(flags, stringFlag)
+			}
+			if len(providers) > 1 {
+				providerFlag := &cli.StringFlag{
+					Name:  backend.Prefix + "-provider",
+					Usage: strings.Join(providers, " | "),
+					EnvVars: []string{
+						strings.ToUpper(backend.Prefix) + "_PROVIDER",
+					},
+					Category: backend.Description,
+					Value:    providers[0],
+				}
+				flags = append(flags, providerFlag)
 			}
 		}
 		return flags
@@ -65,18 +83,18 @@ var DownloadCmd = &cli.Command{
 		config := map[string]string{}
 		for _, key := range c.LocalFlagNames() {
 			if c.IsSet(key) {
-				if slices.Contains([]string{"api", "out-dir", "concurrency", "o", "j"}, key) {
+				if slices.Contains([]string{"api", "out-dir", "concurrency", "quiet"}, key) {
 					continue
 				}
 				value := c.String(key)
 				config[key] = value
 			}
 		}
-		err := handler.DownloadHandler(c.Context, piece, api, config, outDir, concurrency)
+		err := handler.DownloadHandler(c, piece, api, config, outDir, concurrency)
 		if err == nil {
-			log.Logger("download").Info("Download complete")
+			log.Logger("Download").Info("Download complete")
 			return nil
 		}
-		return cli.Exit(err.Error(), 1)
+		return errors.WithStack(err)
 	},
 }

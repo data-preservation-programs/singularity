@@ -3,7 +3,7 @@ package contentprovider
 import (
 	"context"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/store"
 	nilrouting "github.com/ipfs/go-ipfs-routing/none"
@@ -35,11 +35,11 @@ func (BitswapServer) Name() string {
 func (s BitswapServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	nilRouter, err := nilrouting.ConstructNilRouting(ctx, nil, nil, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.WithStack(err)
 	}
 
 	net := bsnetwork.NewFromIpfsHost(s.host, nilRouter)
-	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext, HandlerResolver: datasource.DefaultHandlerResolver{}}
+	bs := &store.FileReferenceBlockStore{DBNoContext: s.dbNoContext}
 	bsserver := server.New(ctx, net, bs)
 	net.Start(bsserver)
 	done := make(chan struct{})

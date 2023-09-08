@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/filecoin-project/go-state-types/abi"
-	"github.com/pkg/errors"
 )
 
 var GenesisTimestamp = int32(1598306400)
@@ -44,7 +44,7 @@ func Initialize(ctx context.Context, lotusAPI string, lotusToken string) error {
 	var r result
 	err := client.CallFor(ctx, &r, "Filecoin.ChainGetGenesis")
 	if err != nil {
-		return errors.Wrap(err, "failed to decide genesis timestamp")
+		return errors.WithStack(err)
 	}
 
 	if len(r.Blocks) == 0 {

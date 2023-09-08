@@ -22,33 +22,34 @@ DESCRIPTION:
        For Calibration network:
          * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
          * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+         * Set LOTUS_TEST to 1
        For all other networks:
          * Set LOTUS_API to your network's Lotus API endpoint
          * Set MARKET_DEAL_URL to empty string
+         * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
        Switching between different networks with the same database instance is not recommended.
 
 COMMANDS:
    version, v  Print version information
    help, h     Shows a list of commands or help for one command
    Daemons:
-     run  Run different singularity components
-   Easy Commands:
-     ez-prep  Prepare a dataset from a local path
+     run  run different singularity components
    Operations:
-     admin       Admin commands
-     deal        Replication / Deal making management
-     dataset     Dataset management
-     datasource  Data source management
-     wallet      Wallet management
-   Tooling:
-     tool  Tools used for development and debugging
+     admin    Admin commands
+     deal     Replication / Deal making management
+     wallet   Wallet management
+     storage  Create and manage storage system connections
+     prep     Create and manage dataset preparations
    Utility:
-     download  Download a CAR file from the metadata API
+     ez-prep      Prepare a dataset from a local path
+     download     Download a CAR file from the metadata API
+     extract-car  Extract folders or files from a folder of CAR files to a local directory
 
 GLOBAL OPTIONS:
    --database-connection-string value  Connection string to the database (default: sqlite:./singularity.db) [$DATABASE_CONNECTION_STRING]
    --help, -h                          show help
    --json                              Enable JSON output (default: false)
+   --verbose                           Enable verbose output. This will print more columns for the result as well as full error trace (default: false)
 
    Lotus
 

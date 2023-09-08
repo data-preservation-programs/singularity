@@ -3,16 +3,17 @@ package datasetworker
 import (
 	"context"
 
-	"github.com/data-preservation-programs/singularity/handler/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/pack"
 )
 
 func (w *Thread) pack(
-	ctx context.Context, packJob model.PackJob,
+	ctx context.Context, job model.Job,
 ) error {
-	_, err := datasource.Pack(ctx, w.dbNoContext, packJob, w.datasourceHandlerResolver)
+	_, err := pack.Pack(ctx, w.dbNoContext, job)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

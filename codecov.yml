@@ -11,4 +11,6 @@ ignore:
   - "client/swagger/operations"
   - "dashboard/model2ts"
   - "docs/gen"
-  - "handler/datasource/generate"
+  - "handler/storage/gen"
+  - "handler/storage/types_gen.go"
+  - "cmd/testutil.go"

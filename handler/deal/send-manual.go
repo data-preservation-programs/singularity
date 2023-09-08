@@ -5,13 +5,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/dustin/go-humanize"
 
-	"github.com/data-preservation-programs/singularity/handler"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -42,63 +42,60 @@ func argToDuration(s string) (time.Duration, error) {
 	}
 	epochs, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	return time.Duration(epochs) * 30 * time.Second, nil
 }
 
-func SendManualHandler(
+// SendManualHandler creates a deal proposal manually based on the information provided in the Proposal.
+//
+// The function searches for the client's wallet using the provided address, validates various input fields such as the
+// pieceCID, rootCID, piece size, etc., and then uses the dealMaker to create a deal. The result is a model.Deal that
+// represents the proposal. Any issues during these operations result in an appropriate error response.
+//
+// Parameters:
+// - ctx:       The context for the operation which can be used for timeouts and cancellations.
+// - db:        The database connection for accessing and storing related data.
+// - dealMaker: An interface responsible for creating deals based on the given configuration.
+// - request:   The request object containing all the necessary information for creating a deal proposal.
+//
+// Returns:
+// - A pointer to a model.Deal object representing the created deal.
+// - An error indicating any issues that occurred during the process.
+func (DefaultHandler) SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	dealMaker replication.DealMaker,
 	request Proposal,
 ) (*model.Deal, error) {
-	return sendManualHandler(ctx, db.WithContext(ctx), dealMaker, request)
-}
-
-// @Summary Send a manual deal proposal
-// @Description Send a manual deal proposal
-// @Tags Deal
-// @Accept json
-// @Produce json
-// @Param proposal body Proposal true "Proposal"
-// @Success 200 {object} model.Deal
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /send_deal [post]
-func sendManualHandler(
-	ctx context.Context,
-	db *gorm.DB,
-	dealMaker replication.DealMaker,
-	request Proposal,
-) (*model.Deal, error) {
+	db = db.WithContext(ctx)
 	// Get the wallet object
 	wallet := model.Wallet{}
 	err := db.Where("id = ? OR address = ?", request.ClientAddress, request.ClientAddress).First(&wallet).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, handler.NewInvalidParameterErr("client address not found")
+		return nil, errors.Wrapf(handlererror.ErrNotFound, "client address %s not found", request.ClientAddress)
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	pieceCID, err := cid.Parse(request.PieceCID)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid piece CID")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid piece CID: %s", request.PieceCID)
 	}
 	if pieceCID.Type() != cid.FilCommitmentUnsealed {
-		return nil, handler.NewInvalidParameterErr("piece CID must be commp")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "piece CID %s must be commp", request.PieceCID)
 	}
 	pieceSize, err := humanize.ParseBytes(request.PieceSize)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid piece size")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid piece size: %s", request.PieceSize)
 	}
 	if (pieceSize & (pieceSize - 1)) != 0 {
-		return nil, handler.NewInvalidParameterErr("piece size must be a power of 2")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "piece size %d must be a power of 2", pieceSize)
 	}
 	rootCID, err := cid.Parse(request.RootCID)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid root CID")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid root CID: %s", request.RootCID)
 	}
 	car := model.Car{
 		PieceCID:  model.CID(pieceCID),
@@ -108,11 +105,11 @@ func sendManualHandler(
 	}
 	duration, err := argToDuration(request.Duration)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid duration")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid duration: %s", request.Duration)
 	}
 	startDelay, err := argToDuration(request.StartDelay)
 	if err != nil {
-		return nil, handler.NewInvalidParameterErr("invalid start delay")
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid start delay: %s", request.StartDelay)
 	}
 
 	dealConfig := replication.DealConfig{
@@ -128,7 +125,19 @@ func sendManualHandler(
 
 	dealModel, err := dealMaker.MakeDeal(ctx, wallet, car, dealConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return dealModel, nil
 }
+
+// @Summary Send a manual deal proposal
+// @Description Send a manual deal proposal
+// @Tags Deal
+// @Accept json
+// @Produce json
+// @Param proposal body Proposal true "Proposal"
+// @Success 200 {object} model.Deal
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /send_deal [post]
+func _() {}

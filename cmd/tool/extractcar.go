@@ -1,15 +1,16 @@
 package tool
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/handler/tool"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
 var ExtractCarCmd = &cli.Command{
-	Name:  "extract-car",
-	Usage: "Extract folders or files from a folder of CAR files to a local directory",
+	Name:     "extract-car",
+	Category: "Utility",
+	Usage:    "Extract folders or files from a folder of CAR files to a local directory",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "input-dir",
@@ -39,6 +40,6 @@ var ExtractCarCmd = &cli.Command{
 			return errors.Wrap(err, "failed to decode CID")
 		}
 
-		return tool.ExtractCarHandler(c.Context, inputDir, output, cidValue)
+		return tool.ExtractCarHandler(c, inputDir, output, cidValue)
 	},
 }

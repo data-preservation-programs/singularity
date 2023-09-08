@@ -5,20 +5,20 @@ import (
 	"io"
 	"sort"
 
-	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-varint"
 	"github.com/rclone/rclone/fs"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/ipfs/go-cid"
-	"github.com/pkg/errors"
 )
 
 var logger = log.Logger("piece_store")
 var ErrNoCarBlocks = errors.New("no Blocks provided")
-var ErrSourceMismatch = errors.New("file source does not match source")
+var ErrStorageMismatch = errors.New("file storage does not match provided storage")
 var ErrInvalidStartOffset = errors.New("first block must start at car Header")
 var ErrInvalidEndOffset = errors.New("last block must end at car end")
 var ErrIncontiguousBlocks = errors.New("Blocks must be contiguous")
@@ -29,19 +29,7 @@ var ErrInvalidWhence = errors.New("invalid whence")
 var ErrNegativeOffset = errors.New("negative offset")
 var ErrOffsetOutOfRange = errors.New("position past end of file")
 var ErrTruncated = errors.New("original file has been truncated")
-
-type FileHasChangedError struct {
-	Message string
-}
-
-func (e *FileHasChangedError) Error() string {
-	return e.Message
-}
-func (e *FileHasChangedError) Is(target error) bool {
-	var errFileHasChanged *FileHasChangedError
-	ok := errors.As(target, &errFileHasChanged)
-	return ok
-}
+var ErrFileHasChanged = errors.New("file has changed")
 
 // PieceReader is a struct that represents a reader for pieces of data.
 //
@@ -49,7 +37,7 @@ func (e *FileHasChangedError) Is(target error) bool {
 // ctx: The context in which the PieceReader operates. This can be used to cancel operations or set deadlines.
 // fileSize: The size of the file being read.
 // header: A byte slice representing the header of the file.
-// sourceHandler: A Handler from the datasource package that is used to handle the source of the data.
+// handlerMap: Handler map from storage ID to the actual RCloneHandler
 // carBlocks: A slice of CarBlocks. These represent the blocks of data in the CAR (Content Addressable Archive) format.
 // files: A map where the keys are file ID. This represents the files of data being read.
 // reader: An io.ReadCloser that is used to read the data and close the reader when done.
@@ -57,16 +45,16 @@ func (e *FileHasChangedError) Is(target error) bool {
 // pos: An int64 that represents the current position in the data being read.
 // blockIndex: An integer that represents the index of the current block being read.
 type PieceReader struct {
-	ctx           context.Context
-	fileSize      int64
-	header        []byte
-	sourceHandler datasource.Handler
-	carBlocks     []model.CarBlock
-	files         map[uint64]model.File
-	reader        io.ReadCloser
-	readerFor     uint64
-	pos           int64
-	blockIndex    int
+	ctx        context.Context
+	fileSize   int64
+	header     []byte
+	handlerMap map[uint32]storagesystem.Handler
+	carBlocks  []model.CarBlock
+	files      map[uint64]model.File
+	reader     io.ReadCloser
+	readerFor  uint64
+	pos        int64
+	blockIndex int
 }
 
 // Seek is a method on the PieceReader struct that changes the position of the reader.
@@ -119,26 +107,22 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 }
 
 // Clone is a method on the PieceReader struct that creates a new PieceReader with the same state as the original.
-// It takes a context as input, which is used for the new PieceReader.
 // The new PieceReader starts at the beginning of the data (position 0).
 //
-// Parameters:
-// ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
-//
 // Returns:
-// A new PieceReader that has the same state as the original, but with the provided context and starting at position 0.
-func (pr *PieceReader) Clone(ctx context.Context) *PieceReader {
+// A new PieceReader that has the same state as the original, but starting at position 0.
+func (pr *PieceReader) Clone() *PieceReader {
 	reader := &PieceReader{
-		ctx:           ctx,
-		fileSize:      pr.fileSize,
-		header:        pr.header,
-		sourceHandler: pr.sourceHandler,
-		carBlocks:     pr.carBlocks,
-		files:         pr.files,
-		reader:        pr.reader,
-		readerFor:     pr.readerFor,
-		pos:           pr.pos,
-		blockIndex:    pr.blockIndex,
+		ctx:        pr.ctx,
+		fileSize:   pr.fileSize,
+		header:     pr.header,
+		handlerMap: pr.handlerMap,
+		carBlocks:  pr.carBlocks,
+		files:      pr.files,
+		reader:     pr.reader,
+		readerFor:  pr.readerFor,
+		pos:        pr.pos,
+		blockIndex: pr.blockIndex,
 	}
 	//nolint:errcheck
 	reader.Seek(0, io.SeekStart)
@@ -163,19 +147,23 @@ func (pr *PieceReader) Clone(ctx context.Context) *PieceReader {
 func NewPieceReader(
 	ctx context.Context,
 	car model.Car,
-	source model.Source,
+	storages []model.Storage,
 	carBlocks []model.CarBlock,
 	files []model.File,
-	resolver datasource.HandlerResolver,
 ) (
 	*PieceReader,
 	error,
 ) {
 	filesMap := make(map[uint64]model.File)
+	storageIDs := make(map[uint32]struct{})
+	for _, storage := range storages {
+		storageIDs[storage.ID] = struct{}{}
+	}
 	for _, file := range files {
 		filesMap[file.ID] = file
-		if file.SourceID != source.ID {
-			return nil, ErrSourceMismatch
+		_, ok := storageIDs[file.Attachment.StorageID]
+		if !ok {
+			return nil, ErrStorageMismatch
 		}
 	}
 
@@ -184,19 +172,24 @@ func NewPieceReader(
 		return nil, ErrNoCarBlocks
 	}
 
-	if carBlocks[0].CarOffset != int64(len(car.Header)) {
-		return nil, ErrInvalidStartOffset
+	header, err := util.GenerateCarHeader(cid.Cid(car.RootCID))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to generate car header")
+	}
+
+	if carBlocks[0].CarOffset != int64(len(header)) {
+		return nil, errors.Wrapf(ErrInvalidStartOffset, "expected %d, got %d", len(header), carBlocks[0].CarOffset)
 	}
 
 	lastBlock := carBlocks[len(carBlocks)-1]
 	if lastBlock.CarOffset+int64(lastBlock.CarBlockLength) != car.FileSize {
-		return nil, ErrInvalidEndOffset
+		return nil, errors.Wrapf(ErrInvalidEndOffset, "expected %d, got %d", car.FileSize, lastBlock.CarOffset+int64(lastBlock.CarBlockLength))
 	}
 
 	for i := 0; i < len(carBlocks); i++ {
 		if i != len(carBlocks)-1 {
 			if carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength) != carBlocks[i+1].CarOffset {
-				return nil, ErrIncontiguousBlocks
+				return nil, errors.Wrapf(ErrIncontiguousBlocks, "previous offset %d, next offset %d", carBlocks[i].CarOffset+int64(carBlocks[i].CarBlockLength), carBlocks[i+1].CarOffset)
 			}
 		}
 		vint, read, err := varint.FromUvarint(carBlocks[i].Varint)
@@ -204,10 +197,10 @@ func NewPieceReader(
 			return nil, errors.Wrap(err, "failed to parse varint")
 		}
 		if read != len(carBlocks[i].Varint) {
-			return nil, ErrInvalidVarintLength
+			return nil, errors.Wrapf(ErrInvalidVarintLength, "expected %d, got %d", len(carBlocks[i].Varint), read)
 		}
 		if uint64(carBlocks[i].BlockLength()) != vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()) {
-			return nil, ErrVarintDoesNotMatchBlockLength
+			return nil, errors.Wrapf(ErrVarintDoesNotMatchBlockLength, "expected %d, got %d", carBlocks[i].BlockLength(), vint-uint64(cid.Cid(carBlocks[i].CID).ByteLen()))
 		}
 		if carBlocks[i].RawBlock == nil {
 			_, ok := filesMap[*carBlocks[i].FileID]
@@ -217,19 +210,23 @@ func NewPieceReader(
 		}
 	}
 
-	sourceHandler, err := resolver.Resolve(ctx, source)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to resolve source handler")
+	handlerMap := make(map[uint32]storagesystem.Handler)
+	for _, s := range storages {
+		handler, err := storagesystem.NewRCloneHandler(ctx, s)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		handlerMap[s.ID] = handler
 	}
 
 	return &PieceReader{
-		ctx:           ctx,
-		header:        car.Header,
-		fileSize:      car.FileSize,
-		sourceHandler: sourceHandler,
-		carBlocks:     carBlocks,
-		files:         filesMap,
-		blockIndex:    -1,
+		ctx:        ctx,
+		header:     header,
+		fileSize:   car.FileSize,
+		handlerMap: handlerMap,
+		carBlocks:  carBlocks,
+		files:      filesMap,
+		blockIndex: -1,
 	}, nil
 }
 
@@ -301,15 +298,15 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		file := pr.files[*carBlock.FileID]
 		fileOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
 		fileOffset += carBlock.FileOffset
-		logger.Infow("reading file", "sourceID", file.SourceID, "path", file.Path, "offset", fileOffset)
+		logger.Infow("reading file", "sourceStorageID", file.Attachment.StorageID, "path", file.Path, "offset", fileOffset)
 		var obj fs.Object
-		pr.reader, obj, err = pr.sourceHandler.Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
+		pr.reader, obj, err = pr.handlerMap[file.Attachment.StorageID].Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to read file")
 		}
-		isSameEntry, explanation := pack.IsSameEntry(pr.ctx, file, obj)
+		isSameEntry, explanation := storagesystem.IsSameEntry(pr.ctx, file, obj)
 		if !isSameEntry {
-			return 0, &FileHasChangedError{Message: "file has changed: " + explanation}
+			return 0, errors.Wrap(ErrFileHasChanged, explanation)
 		}
 
 		pr.readerFor = file.ID

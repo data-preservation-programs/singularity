@@ -8,7 +8,6 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -18,11 +17,8 @@ import (
 // swagger:model model.FileRange
 type ModelFileRange struct {
 
-	// cid
-	Cid ModelCID `json:"cid,omitempty"`
-
-	// file
-	File *ModelFile `json:"file,omitempty"`
+	// CID is the CID of the range.
+	Cid string `json:"cid,omitempty"`
 
 	// file Id
 	FileID int64 `json:"fileId,omitempty"`
@@ -30,81 +26,23 @@ type ModelFileRange struct {
 	// id
 	ID int64 `json:"id,omitempty"`
 
-	// length
+	// Associations
+	JobID int64 `json:"jobId,omitempty"`
+
+	// Length is the length of the range in bytes.
 	Length int64 `json:"length,omitempty"`
 
-	// offset
+	// Offset is the offset of the range inside the file.
 	Offset int64 `json:"offset,omitempty"`
-
-	// pack job Id
-	PackJobID int64 `json:"packJobId,omitempty"`
 }
 
 // Validate validates this model file range
 func (m *ModelFileRange) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateFile(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *ModelFileRange) validateFile(formats strfmt.Registry) error {
-	if swag.IsZero(m.File) { // not required
-		return nil
-	}
-
-	if m.File != nil {
-		if err := m.File.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("file")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("file")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ContextValidate validate this model file range based on the context it is used
+// ContextValidate validates this model file range based on context it is used
 func (m *ModelFileRange) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateFile(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ModelFileRange) contextValidateFile(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.File != nil {
-
-		if swag.IsZero(m.File) { // not required
-			return nil
-		}
-
-		if err := m.File.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("file")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("file")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 

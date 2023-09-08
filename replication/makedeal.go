@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/filecoin-project/go-address"
@@ -27,7 +28,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/pkg/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"golang.org/x/exp/slices"
 )
@@ -36,6 +36,8 @@ const (
 	StorageProposalV120 = "/fil/storage/mk/1.2.0"
 	StorageProposalV111 = "/fil/storage/mk/1.1.1"
 )
+
+var ErrNoSupportedProtocols = errors.New("no supported protocols")
 
 // nolint: tagliatelle
 type MinerInfo struct {
@@ -146,7 +148,7 @@ func (d DealMakerImpl) GetProviderInfo(ctx context.Context, provider string) (*M
 	minerInfo := new(MinerInfo)
 	err := d.lotusClient.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get miner info")
+		return nil, errors.Wrapf(err, "failed to get miner info, miner: %s", provider)
 	}
 
 	logger.Debug("got miner info", "miner", provider, "minerInfo", minerInfo)
@@ -154,16 +156,16 @@ func (d DealMakerImpl) GetProviderInfo(ctx context.Context, provider string) (*M
 	for i, addr := range minerInfo.MultiaddrsBase64Encoded {
 		decoded, err := base64.StdEncoding.DecodeString(addr)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to decode multiaddr")
+			return nil, errors.Wrapf(err, "failed to decode multiaddr %s", addr)
 		}
 		minerInfo.Multiaddrs[i], err = multiaddr.NewMultiaddrBytes(decoded)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to create multiaddr")
+			return nil, errors.Wrapf(err, "failed to parse multiaddr %s", addr)
 		}
 	}
 	minerInfo.PeerID, err = peer.Decode(minerInfo.PeerIDEncoded)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode peer id")
+		return nil, errors.Wrapf(err, "failed to decode peer id %s", minerInfo.PeerIDEncoded)
 	}
 
 	d.minerInfoCache.Set(provider, minerInfo, ttlcache.DefaultTTL)
@@ -201,12 +203,12 @@ func (d DealMakerImpl) GetProtocols(ctx context.Context, minerInfo peer.AddrInfo
 	logger.Debugw("getting protocols", "miner", minerInfo.ID)
 	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
 	if err := d.host.Connect(ctx, minerInfo); err != nil {
-		return nil, errors.Wrap(err, "failed to connect to miner")
+		return nil, errors.Wrapf(err, "failed to connect to miner %s - %v", minerInfo.ID, minerInfo.Addrs)
 	}
 
 	protocols, err := d.host.Peerstore().GetProtocols(minerInfo.ID)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get protocols")
+		return nil, errors.Wrapf(err, "failed to get protocols from peer %s", minerInfo.ID)
 	}
 
 	logger.Debugw("got protocols", "miner", minerInfo.ID, "protocols", protocols)
@@ -242,13 +244,13 @@ func (d DealMakerImpl) GetMinCollateral(ctx context.Context, pieceSize int64, ve
 	bound := new(DealProviderCollateralBound)
 	err := d.lotusClient.CallFor(ctx, bound, "Filecoin.StateDealProviderCollateralBounds", pieceSize, verified, nil)
 	if err != nil {
-		return big.Int{}, errors.Wrap(err, "failed to get deal provider collateral bounds")
+		return big.Int{}, errors.Wrapf(err, "failed to get deal provider collateral bounds with pieceSize %d and verified %s", pieceSize, verified)
 	}
 
 	logger.Debugw("got deal provider collateral bounds", "pieceSize", pieceSize, "verified", verified, "bound", bound)
 	value, err := big.FromString(bound.Min)
 	if err != nil {
-		return big.Int{}, errors.Wrap(err, "failed to parse min collateral")
+		return big.Int{}, errors.Wrapf(err, "failed to parse min collateral %s", bound.Min)
 	}
 	d.collateralCache.Set(fmt.Sprintf("%d-%t", pieceSize, verified), value, ttlcache.DefaultTTL)
 	return value, nil
@@ -309,7 +311,7 @@ func (d DealMakerImpl) MakeDeal120(
 		}
 		paramsBytes, err := json.Marshal(transferParams)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to serialize transfer params")
+			return nil, errors.Wrapf(err, "failed to serialize transfer params %v", transferParams)
 		}
 		transfer.Type = "http"
 		transfer.Params = paramsBytes
@@ -327,18 +329,18 @@ func (d DealMakerImpl) MakeDeal120(
 
 	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
 	if err := d.host.Connect(ctx, minerInfo); err != nil {
-		return nil, errors.Wrap(err, "failed to connect to miner")
+		return nil, errors.Wrapf(err, "failed to connect to miner %s - %s %v", dealConfig.Provider, minerInfo.ID, minerInfo.Addrs)
 	}
 
 	stream, err := d.host.NewStream(ctx, minerInfo.ID, StorageProposalV120)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open stream")
+		return nil, errors.Wrapf(err, "failed to open stream with %s using %s", dealConfig.Provider, StorageProposalV120)
 	}
 	defer stream.Close()
 	if deadline, ok := ctx.Deadline(); ok {
 		err := stream.SetDeadline(deadline)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to set stream deadline")
+			return nil, errors.WithStack(err)
 		}
 		//nolint:errcheck
 		defer stream.SetDeadline(time.Time{})
@@ -347,7 +349,7 @@ func (d DealMakerImpl) MakeDeal120(
 	logger.Debugw("sending deal params", "dealParams", dealParams)
 	err = cborutil.WriteCborRPC(stream, &dealParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to write deal params")
+		return nil, errors.Wrapf(err, "failed to write deal params %v", dealParams)
 	}
 
 	var resp boostly.DealResponse
@@ -403,18 +405,18 @@ func (d DealMakerImpl) MakeDeal111(
 
 	d.host.Peerstore().AddAddrs(minerInfo.ID, minerInfo.Addrs, peerstore.TempAddrTTL)
 	if err := d.host.Connect(ctx, minerInfo); err != nil {
-		return nil, errors.Wrap(err, "failed to connect to miner")
+		return nil, errors.Wrapf(err, "failed to connect to miner %s - %s %v", dealConfig.Provider, minerInfo.ID, minerInfo.Addrs)
 	}
 
 	stream, err := d.host.NewStream(ctx, minerInfo.ID, StorageProposalV111)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open stream")
+		return nil, errors.Wrapf(err, "failed to open stream with %s using %s", dealConfig.Provider, StorageProposalV111)
 	}
 	defer stream.Close()
 	if deadline, ok := ctx.Deadline(); ok {
 		err = stream.SetDeadline(deadline)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to set stream deadline")
+			return nil, errors.WithStack(err)
 		}
 		//nolint:errcheck
 		defer stream.SetDeadline(time.Time{})
@@ -424,7 +426,7 @@ func (d DealMakerImpl) MakeDeal111(
 	var resp network.SignedResponse
 	err = cborutil.WriteCborRPC(stream, &proposal)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to write deal params")
+		return nil, errors.Wrapf(err, "failed to write deal params %v", proposal)
 	}
 
 	err = cborutil.ReadCborRPC(stream, &resp)
@@ -522,17 +524,17 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	now := time.Now().UTC()
 	addr, err := address.NewFromString(walletObj.Address)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse wallet address")
+		return nil, errors.Wrapf(err, "failed to parse wallet address %s", walletObj.Address)
 	}
 
 	pvd, err := address.NewFromString(dealConfig.Provider)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse provider address")
+		return nil, errors.Wrapf(err, "failed to parse provider address %s", dealConfig.Provider)
 	}
 
 	label, err := market.NewLabelFromString(cid.Cid(car.RootCID).String())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse label")
+		return nil, errors.Wrapf(err, "failed to parse label %s", cid.Cid(car.RootCID).String())
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, d.requestTimeout)
@@ -540,7 +542,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	minerInfo, err := d.GetProviderInfo(ctx, dealConfig.Provider)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get provider info")
+		return nil, errors.WithStack(err)
 	}
 
 	d.host.Peerstore().AddAddrs(minerInfo.PeerID, minerInfo.Multiaddrs, peerstore.TempAddrTTL)
@@ -548,7 +550,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 
 	protocols, err := d.GetProtocols(ctx, addrInfo)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get supported protocol")
+		return nil, errors.WithStack(err)
 	}
 
 	startEpoch := epochutil.TimeToEpoch(now.Add(dealConfig.StartDelay))
@@ -559,7 +561,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	pieceSize := abi.PaddedPieceSize(car.PieceSize)
 	collateral, err := d.GetMinCollateral(ctx, car.PieceSize, verified)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get min collateral")
+		return nil, errors.WithStack(err)
 	}
 	proposal := market.DealProposal{
 		PieceCID:             pieceCID,
@@ -575,7 +577,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 	proposalBytes, err := cborutil.Dump(&proposal)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to serialize deal proposal")
+		return nil, errors.Wrapf(err, "failed to serialize deal proposal %s", proposal)
 	}
 
 	signature, err := wallet.WalletSign(walletObj.PrivateKey, proposalBytes)
@@ -589,7 +591,6 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	}
 
 	dealModel := &model.Deal{
-		DatasetID:  &car.DatasetID,
 		State:      model.DealProposed,
 		ClientID:   walletObj.ID,
 		Provider:   dealConfig.Provider,
@@ -605,7 +606,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		dealID := uuid.New()
 		resp, err := d.MakeDeal120(ctx, deal, dealID, dealConfig, car.FileSize, cid.Cid(car.RootCID), addrInfo)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to make deal")
+			return nil, errors.WithStack(err)
 		}
 		if resp.Accepted {
 			dealModel.ProposalID = dealID.String()
@@ -616,12 +617,12 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	} else if slices.Contains(protocols, StorageProposalV111) {
 		resp, err := d.MakeDeal111(ctx, deal, dealConfig, cid.Cid(car.RootCID), addrInfo)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to make deal")
+			return nil, errors.WithStack(err)
 		}
 
 		dealModel.ProposalID = resp.Response.Proposal.String()
 		return dealModel, nil
 	}
 
-	return nil, errors.New("no supported protocol found")
+	return nil, errors.Wrapf(ErrNoSupportedProtocols, "protocols: %v", protocols)
 }

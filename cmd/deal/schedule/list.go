@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -13,15 +14,15 @@ var ListCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		schedules, err := schedule.ListHandler(c.Context, db)
+		schedules, err := schedule.Default.ListHandler(c.Context, db)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(schedules, c.Bool("json"), nil)
+		cliutil.Print(c, schedules)
 		return nil
 	},
 }

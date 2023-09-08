@@ -13,7 +13,7 @@ var (
 			&cli.StringFlag{
 				Name:  "bind",
 				Usage: "Bind address for the API server",
-				Value: "127.0.0.1:9090",
+				Value: ":9090",
 			},
 		},
 		Action: api.Run,

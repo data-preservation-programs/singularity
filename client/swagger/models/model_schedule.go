@@ -27,9 +27,6 @@ type ModelSchedule struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
-	// dataset Id
-	DatasetID int64 `json:"datasetId,omitempty"`
-
 	// duration
 	Duration int64 `json:"duration,omitempty"`
 
@@ -54,6 +51,9 @@ type ModelSchedule struct {
 	// notes
 	Notes string `json:"notes,omitempty"`
 
+	// Associations
+	PreparationID int64 `json:"preparationId,omitempty"`
+
 	// price per deal
 	PricePerDeal float64 `json:"pricePerDeal,omitempty"`
 
@@ -68,6 +68,9 @@ type ModelSchedule struct {
 
 	// schedule cron
 	ScheduleCron string `json:"scheduleCron,omitempty"`
+
+	// schedule cron perpetual
+	ScheduleCronPerpetual bool `json:"scheduleCronPerpetual,omitempty"`
 
 	// schedule deal number
 	ScheduleDealNumber int64 `json:"scheduleDealNumber,omitempty"`
