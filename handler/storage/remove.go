@@ -63,6 +63,7 @@ func (DefaultHandler) RemoveHandler(
 	return errors.WithStack(err)
 }
 
+// @ID RemoveStorage
 // @Summary Remove a storage
 // @Tags Storage
 // @Param name path string true "Storage ID or name"

@@ -30,34 +30,34 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetFileIDOK, error)
+	GetFile(params *GetFileParams, opts ...ClientOption) (*GetFileOK, error)
 
-	GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOption) (*GetFileIDDealsOK, error)
+	GetFileDeals(params *GetFileDealsParams, opts ...ClientOption) (*GetFileDealsOK, error)
 
-	PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackOK, error)
+	PrepareToPackFile(params *PrepareToPackFileParams, opts ...ClientOption) (*PrepareToPackFileOK, error)
 
-	PostPreparationIDSourceNameFile(params *PostPreparationIDSourceNameFileParams, opts ...ClientOption) (*PostPreparationIDSourceNameFileOK, error)
+	PushFile(params *PushFileParams, opts ...ClientOption) (*PushFileOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-GetFileID gets details about a file
+GetFile gets details about a file
 */
-func (a *Client) GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetFileIDOK, error) {
+func (a *Client) GetFile(params *GetFileParams, opts ...ClientOption) (*GetFileOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetFileIDParams()
+		params = NewGetFileParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetFileID",
+		ID:                 "GetFile",
 		Method:             "GET",
 		PathPattern:        "/file/{id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetFileIDReader{formats: a.formats},
+		Reader:             &GetFileReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -69,33 +69,33 @@ func (a *Client) GetFileID(params *GetFileIDParams, opts ...ClientOption) (*GetF
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetFileIDOK)
+	success, ok := result.(*GetFileOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetFileID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-GetFileIDDeals gets all deals that have been made for a file
+GetFileDeals gets all deals that have been made for a file
 */
-func (a *Client) GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOption) (*GetFileIDDealsOK, error) {
+func (a *Client) GetFileDeals(params *GetFileDealsParams, opts ...ClientOption) (*GetFileDealsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewGetFileIDDealsParams()
+		params = NewGetFileDealsParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "GetFileIDDeals",
+		ID:                 "GetFileDeals",
 		Method:             "GET",
 		PathPattern:        "/file/{id}/deals",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &GetFileIDDealsReader{formats: a.formats},
+		Reader:             &GetFileDealsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -107,33 +107,33 @@ func (a *Client) GetFileIDDeals(params *GetFileIDDealsParams, opts ...ClientOpti
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*GetFileIDDealsOK)
+	success, ok := result.(*GetFileDealsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for GetFileIDDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for GetFileDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostFileIDPrepareToPack prepares job for a given item
+PrepareToPackFile prepares job for a given item
 */
-func (a *Client) PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, opts ...ClientOption) (*PostFileIDPrepareToPackOK, error) {
+func (a *Client) PrepareToPackFile(params *PrepareToPackFileParams, opts ...ClientOption) (*PrepareToPackFileOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostFileIDPrepareToPackParams()
+		params = NewPrepareToPackFileParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostFileIDPrepareToPack",
+		ID:                 "PrepareToPackFile",
 		Method:             "POST",
 		PathPattern:        "/file/{id}/prepare_to_pack",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostFileIDPrepareToPackReader{formats: a.formats},
+		Reader:             &PrepareToPackFileReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -145,35 +145,35 @@ func (a *Client) PostFileIDPrepareToPack(params *PostFileIDPrepareToPackParams, 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostFileIDPrepareToPackOK)
+	success, ok := result.(*PrepareToPackFileOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostFileIDPrepareToPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PrepareToPackFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNameFile pushes a file to be queued
+PushFile pushes a file to be queued
 
 Tells Singularity that something is ready to be grabbed for data preparation
 */
-func (a *Client) PostPreparationIDSourceNameFile(params *PostPreparationIDSourceNameFileParams, opts ...ClientOption) (*PostPreparationIDSourceNameFileOK, error) {
+func (a *Client) PushFile(params *PushFileParams, opts ...ClientOption) (*PushFileOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNameFileParams()
+		params = NewPushFileParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNameFile",
+		ID:                 "PushFile",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/file",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNameFileReader{formats: a.formats},
+		Reader:             &PushFileReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -185,13 +185,13 @@ func (a *Client) PostPreparationIDSourceNameFile(params *PostPreparationIDSource
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNameFileOK)
+	success, ok := result.(*PushFileOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PushFile: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

@@ -30,46 +30,46 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	PostJobIDPack(params *PostJobIDPackParams, opts ...ClientOption) (*PostJobIDPackOK, error)
+	Pack(params *PackParams, opts ...ClientOption) (*PackOK, error)
 
-	PostPreparationIDSourceNameFinalize(params *PostPreparationIDSourceNameFinalizeParams, opts ...ClientOption) (*PostPreparationIDSourceNameFinalizeCreated, error)
+	PauseDagGen(params *PauseDagGenParams, opts ...ClientOption) (*PauseDagGenOK, error)
 
-	PostPreparationIDSourceNamePauseDaggen(params *PostPreparationIDSourceNamePauseDaggenParams, opts ...ClientOption) (*PostPreparationIDSourceNamePauseDaggenOK, error)
+	PausePack(params *PausePackParams, opts ...ClientOption) (*PausePackOK, error)
 
-	PostPreparationIDSourceNamePausePack(params *PostPreparationIDSourceNamePausePackParams, opts ...ClientOption) (*PostPreparationIDSourceNamePausePackOK, error)
+	PausePackAll(params *PausePackAllParams, opts ...ClientOption) (*PausePackAllOK, error)
 
-	PostPreparationIDSourceNamePausePackJobID(params *PostPreparationIDSourceNamePausePackJobIDParams, opts ...ClientOption) (*PostPreparationIDSourceNamePausePackJobIDOK, error)
+	PauseScan(params *PauseScanParams, opts ...ClientOption) (*PauseScanOK, error)
 
-	PostPreparationIDSourceNamePauseScan(params *PostPreparationIDSourceNamePauseScanParams, opts ...ClientOption) (*PostPreparationIDSourceNamePauseScanOK, error)
+	PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceCreated, error)
 
-	PostPreparationIDSourceNameStartDaggen(params *PostPreparationIDSourceNameStartDaggenParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartDaggenOK, error)
+	StartDagGen(params *StartDagGenParams, opts ...ClientOption) (*StartDagGenOK, error)
 
-	PostPreparationIDSourceNameStartPack(params *PostPreparationIDSourceNameStartPackParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartPackOK, error)
+	StartPack(params *StartPackParams, opts ...ClientOption) (*StartPackOK, error)
 
-	PostPreparationIDSourceNameStartPackJobID(params *PostPreparationIDSourceNameStartPackJobIDParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartPackJobIDOK, error)
+	StartPackAll(params *StartPackAllParams, opts ...ClientOption) (*StartPackAllOK, error)
 
-	PostPreparationIDSourceNameStartScan(params *PostPreparationIDSourceNameStartScanParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartScanOK, error)
+	StartScan(params *StartScanParams, opts ...ClientOption) (*StartScanOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-PostJobIDPack packs a pack job into car files
+Pack packs a pack job into car files
 */
-func (a *Client) PostJobIDPack(params *PostJobIDPackParams, opts ...ClientOption) (*PostJobIDPackOK, error) {
+func (a *Client) Pack(params *PackParams, opts ...ClientOption) (*PackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostJobIDPackParams()
+		params = NewPackParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostJobIDPack",
+		ID:                 "Pack",
 		Method:             "POST",
 		PathPattern:        "/job/{id}/pack",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostJobIDPackReader{formats: a.formats},
+		Reader:             &PackReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -81,71 +81,33 @@ func (a *Client) PostJobIDPack(params *PostJobIDPackParams, opts ...ClientOption
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostJobIDPackOK)
+	success, ok := result.(*PackOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostJobIDPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for Pack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNameFinalize prepares to pack a data source
+PauseDagGen pauses an ongoing d a g generation job
 */
-func (a *Client) PostPreparationIDSourceNameFinalize(params *PostPreparationIDSourceNameFinalizeParams, opts ...ClientOption) (*PostPreparationIDSourceNameFinalizeCreated, error) {
+func (a *Client) PauseDagGen(params *PauseDagGenParams, opts ...ClientOption) (*PauseDagGenOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNameFinalizeParams()
+		params = NewPauseDagGenParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNameFinalize",
-		Method:             "POST",
-		PathPattern:        "/preparation/{id}/source/{name}/finalize",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostPreparationIDSourceNameFinalizeReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostPreparationIDSourceNameFinalizeCreated)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameFinalize: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostPreparationIDSourceNamePauseDaggen pauses an ongoing d a g generation job
-*/
-func (a *Client) PostPreparationIDSourceNamePauseDaggen(params *PostPreparationIDSourceNamePauseDaggenParams, opts ...ClientOption) (*PostPreparationIDSourceNamePauseDaggenOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostPreparationIDSourceNamePauseDaggenParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNamePauseDaggen",
+		ID:                 "PauseDagGen",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/pause-daggen",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNamePauseDaggenReader{formats: a.formats},
+		Reader:             &PauseDagGenReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -157,71 +119,33 @@ func (a *Client) PostPreparationIDSourceNamePauseDaggen(params *PostPreparationI
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNamePauseDaggenOK)
+	success, ok := result.(*PauseDagGenOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNamePauseDaggen: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PauseDagGen: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNamePausePack pauses all packing job
+PausePack pauses a specific packing job
 */
-func (a *Client) PostPreparationIDSourceNamePausePack(params *PostPreparationIDSourceNamePausePackParams, opts ...ClientOption) (*PostPreparationIDSourceNamePausePackOK, error) {
+func (a *Client) PausePack(params *PausePackParams, opts ...ClientOption) (*PausePackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNamePausePackParams()
+		params = NewPausePackParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNamePausePack",
-		Method:             "POST",
-		PathPattern:        "/preparation/{id}/source/{name}/pause-pack",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostPreparationIDSourceNamePausePackReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostPreparationIDSourceNamePausePackOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNamePausePack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostPreparationIDSourceNamePausePackJobID pauses a specific packing job
-*/
-func (a *Client) PostPreparationIDSourceNamePausePackJobID(params *PostPreparationIDSourceNamePausePackJobIDParams, opts ...ClientOption) (*PostPreparationIDSourceNamePausePackJobIDOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostPreparationIDSourceNamePausePackJobIDParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNamePausePackJobID",
+		ID:                 "PausePack",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/pause-pack/{job_id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNamePausePackJobIDReader{formats: a.formats},
+		Reader:             &PausePackReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -233,33 +157,71 @@ func (a *Client) PostPreparationIDSourceNamePausePackJobID(params *PostPreparati
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNamePausePackJobIDOK)
+	success, ok := result.(*PausePackOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNamePausePackJobID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PausePack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNamePauseScan pauses an ongoing scanning job
+PausePackAll pauses all packing job
 */
-func (a *Client) PostPreparationIDSourceNamePauseScan(params *PostPreparationIDSourceNamePauseScanParams, opts ...ClientOption) (*PostPreparationIDSourceNamePauseScanOK, error) {
+func (a *Client) PausePackAll(params *PausePackAllParams, opts ...ClientOption) (*PausePackAllOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNamePauseScanParams()
+		params = NewPausePackAllParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNamePauseScan",
+		ID:                 "PausePackAll",
+		Method:             "POST",
+		PathPattern:        "/preparation/{id}/source/{name}/pause-pack",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PausePackAllReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PausePackAllOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PausePackAll: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+PauseScan pauses an ongoing scanning job
+*/
+func (a *Client) PauseScan(params *PauseScanParams, opts ...ClientOption) (*PauseScanOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewPauseScanParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "PauseScan",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/pause-scan",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNamePauseScanReader{formats: a.formats},
+		Reader:             &PauseScanReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -271,33 +233,71 @@ func (a *Client) PostPreparationIDSourceNamePauseScan(params *PostPreparationIDS
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNamePauseScanOK)
+	success, ok := result.(*PauseScanOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNamePauseScan: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for PauseScan: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNameStartDaggen starts a new d a g generation job
+PrepareToPackSource prepares to pack a data source
 */
-func (a *Client) PostPreparationIDSourceNameStartDaggen(params *PostPreparationIDSourceNameStartDaggenParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartDaggenOK, error) {
+func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNameStartDaggenParams()
+		params = NewPrepareToPackSourceParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNameStartDaggen",
+		ID:                 "PrepareToPackSource",
+		Method:             "POST",
+		PathPattern:        "/preparation/{id}/source/{name}/finalize",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PrepareToPackSourceReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*PrepareToPackSourceCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PrepareToPackSource: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+StartDagGen starts a new d a g generation job
+*/
+func (a *Client) StartDagGen(params *StartDagGenParams, opts ...ClientOption) (*StartDagGenOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStartDagGenParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "StartDagGen",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/start-daggen",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNameStartDaggenReader{formats: a.formats},
+		Reader:             &StartDagGenReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -309,71 +309,33 @@ func (a *Client) PostPreparationIDSourceNameStartDaggen(params *PostPreparationI
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNameStartDaggenOK)
+	success, ok := result.(*StartDagGenOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameStartDaggen: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for StartDagGen: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNameStartPack starts or restart all packing job
+StartPack starts or restart a specific packing job
 */
-func (a *Client) PostPreparationIDSourceNameStartPack(params *PostPreparationIDSourceNameStartPackParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartPackOK, error) {
+func (a *Client) StartPack(params *StartPackParams, opts ...ClientOption) (*StartPackOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNameStartPackParams()
+		params = NewStartPackParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNameStartPack",
-		Method:             "POST",
-		PathPattern:        "/preparation/{id}/source/{name}/start-pack",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostPreparationIDSourceNameStartPackReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostPreparationIDSourceNameStartPackOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameStartPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostPreparationIDSourceNameStartPackJobID starts or restart a specific packing job
-*/
-func (a *Client) PostPreparationIDSourceNameStartPackJobID(params *PostPreparationIDSourceNameStartPackJobIDParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartPackJobIDOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostPreparationIDSourceNameStartPackJobIDParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNameStartPackJobID",
+		ID:                 "StartPack",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/start-pack/{job_id}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNameStartPackJobIDReader{formats: a.formats},
+		Reader:             &StartPackReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -385,33 +347,71 @@ func (a *Client) PostPreparationIDSourceNameStartPackJobID(params *PostPreparati
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNameStartPackJobIDOK)
+	success, ok := result.(*StartPackOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameStartPackJobID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for StartPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDSourceNameStartScan starts a new scanning job
+StartPackAll starts or restart all packing job
 */
-func (a *Client) PostPreparationIDSourceNameStartScan(params *PostPreparationIDSourceNameStartScanParams, opts ...ClientOption) (*PostPreparationIDSourceNameStartScanOK, error) {
+func (a *Client) StartPackAll(params *StartPackAllParams, opts ...ClientOption) (*StartPackAllOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDSourceNameStartScanParams()
+		params = NewStartPackAllParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDSourceNameStartScan",
+		ID:                 "StartPackAll",
+		Method:             "POST",
+		PathPattern:        "/preparation/{id}/source/{name}/start-pack",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &StartPackAllReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*StartPackAllOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for StartPackAll: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+StartScan starts a new scanning job
+*/
+func (a *Client) StartScan(params *StartScanParams, opts ...ClientOption) (*StartScanOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewStartScanParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "StartScan",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/source/{name}/start-scan",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDSourceNameStartScanReader{formats: a.formats},
+		Reader:             &StartScanReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -423,13 +423,13 @@ func (a *Client) PostPreparationIDSourceNameStartScan(params *PostPreparationIDS
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDSourceNameStartScanOK)
+	success, ok := result.(*StartScanOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDSourceNameStartScan: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for StartScan: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

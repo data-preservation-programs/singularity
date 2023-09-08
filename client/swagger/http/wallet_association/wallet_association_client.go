@@ -30,32 +30,70 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	DeletePreparationIDWalletWallet(params *DeletePreparationIDWalletWalletParams, opts ...ClientOption) (*DeletePreparationIDWalletWalletOK, error)
+	AttachWallet(params *AttachWalletParams, opts ...ClientOption) (*AttachWalletOK, error)
 
-	PostPreparationIDWallet(params *PostPreparationIDWalletParams, opts ...ClientOption) (*PostPreparationIDWalletOK, error)
+	DetachWallet(params *DetachWalletParams, opts ...ClientOption) (*DetachWalletOK, error)
 
-	PostPreparationIDWalletWallet(params *PostPreparationIDWalletWalletParams, opts ...ClientOption) (*PostPreparationIDWalletWalletOK, error)
+	ListAttachedWallets(params *ListAttachedWalletsParams, opts ...ClientOption) (*ListAttachedWalletsOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-DeletePreparationIDWalletWallet detaches a new wallet from a preparation
+AttachWallet attaches a new wallet with a preparation
 */
-func (a *Client) DeletePreparationIDWalletWallet(params *DeletePreparationIDWalletWalletParams, opts ...ClientOption) (*DeletePreparationIDWalletWalletOK, error) {
+func (a *Client) AttachWallet(params *AttachWalletParams, opts ...ClientOption) (*AttachWalletOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewDeletePreparationIDWalletWalletParams()
+		params = NewAttachWalletParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "DeletePreparationIDWalletWallet",
+		ID:                 "AttachWallet",
+		Method:             "POST",
+		PathPattern:        "/preparation/{id}/wallet/{wallet}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &AttachWalletReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*AttachWalletOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for AttachWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+DetachWallet detaches a new wallet from a preparation
+*/
+func (a *Client) DetachWallet(params *DetachWalletParams, opts ...ClientOption) (*DetachWalletOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDetachWalletParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "DetachWallet",
 		Method:             "DELETE",
 		PathPattern:        "/preparation/{id}/wallet/{wallet}",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &DeletePreparationIDWalletWalletReader{formats: a.formats},
+		Reader:             &DetachWalletReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -67,33 +105,33 @@ func (a *Client) DeletePreparationIDWalletWallet(params *DeletePreparationIDWall
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*DeletePreparationIDWalletWalletOK)
+	success, ok := result.(*DetachWalletOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for DeletePreparationIDWalletWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for DetachWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostPreparationIDWallet lists all wallets of a preparation
+ListAttachedWallets lists all wallets of a preparation
 */
-func (a *Client) PostPreparationIDWallet(params *PostPreparationIDWalletParams, opts ...ClientOption) (*PostPreparationIDWalletOK, error) {
+func (a *Client) ListAttachedWallets(params *ListAttachedWalletsParams, opts ...ClientOption) (*ListAttachedWalletsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostPreparationIDWalletParams()
+		params = NewListAttachedWalletsParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDWallet",
+		ID:                 "ListAttachedWallets",
 		Method:             "POST",
 		PathPattern:        "/preparation/{id}/wallet",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostPreparationIDWalletReader{formats: a.formats},
+		Reader:             &ListAttachedWalletsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -105,51 +143,13 @@ func (a *Client) PostPreparationIDWallet(params *PostPreparationIDWalletParams, 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostPreparationIDWalletOK)
+	success, ok := result.(*ListAttachedWalletsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-PostPreparationIDWalletWallet attaches a new wallet with a preparation
-*/
-func (a *Client) PostPreparationIDWalletWallet(params *PostPreparationIDWalletWalletParams, opts ...ClientOption) (*PostPreparationIDWalletWalletOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPostPreparationIDWalletWalletParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PostPreparationIDWalletWallet",
-		Method:             "POST",
-		PathPattern:        "/preparation/{id}/wallet/{wallet}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PostPreparationIDWalletWalletReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PostPreparationIDWalletWalletOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostPreparationIDWalletWallet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListAttachedWallets: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

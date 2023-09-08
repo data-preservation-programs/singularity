@@ -92,6 +92,7 @@ func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB, request List
 	return deals, nil
 }
 
+// @ID ListDeals
 // @Summary List all deals
 // @Description List all deals
 // @Tags Deal

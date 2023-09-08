@@ -57,6 +57,7 @@ func (DefaultHandler) DetachHandler(
 	return &preparation, nil
 }
 
+// @ID DetachWallet
 // @Summary Detach a new wallet from a preparation
 // @Tags Wallet Association
 // @Produce json

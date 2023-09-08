@@ -95,6 +95,7 @@ func (DefaultHandler) StartScanHandler(
 	return StartJobHandler(ctx, db, id, name, model.Scan)
 }
 
+// @ID StartScan
 // @Summary Start a new scanning job
 // @Tags Job
 // @Accept json
@@ -162,6 +163,7 @@ func (DefaultHandler) PauseScanHandler(
 	return PauseJobHandler(ctx, db, id, name, model.Scan)
 }
 
+// @ID PauseScan
 // @Summary Pause an ongoing scanning job
 // @Tags Job
 // @Accept json

@@ -34,6 +34,7 @@ func (DefaultHandler) PrepareToPackFileHandler(
 	return scan.PrepareToPackFileRanges(ctx, db, *file.Attachment, remainingParts)
 }
 
+// @ID PrepareToPackFile
 // @Summary prepare job for a given item
 // @Tags File
 // @Accept json

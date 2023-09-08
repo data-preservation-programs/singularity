@@ -40,6 +40,7 @@ func (DefaultHandler) RemoveHandler(
 	return nil
 }
 
+// @ID RemoveWallet
 // @Summary Remove a wallet
 // @Tags Wallet
 // @Param address path string true "Address"

@@ -43,6 +43,7 @@ type CreateStructType struct {
 }
 
 const s3Template = `
+// @ID {{.ClientFuncName}}
 // @Summary Create {{.Name}} storage with {{.Provider}} - {{.ProviderDescription}}
 // @Tags Storage
 // @Accept json
@@ -57,6 +58,7 @@ func {{.FuncName}}() {}
 `
 
 const otherTemplate = `
+// @ID {{.ClientFuncName}}
 // @Summary Create {{.Name}} storage
 // @Tags Storage
 // @Accept json
@@ -72,6 +74,7 @@ func {{.FuncName}}() {}
 
 type S3Func struct {
 	FuncName            string
+	ClientFuncName      string
 	Provider            string
 	ProviderLower       string
 	ProviderDescription string
@@ -80,10 +83,11 @@ type S3Func struct {
 	Type                string
 }
 type OtherFunc struct {
-	FuncName   string
-	Name       string
-	StructName string
-	Type       string
+	FuncName       string
+	ClientFuncName string
+	Name           string
+	StructName     string
+	Type           string
 }
 
 type Field struct {
@@ -177,8 +181,10 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
+				funcName := "Create" + upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "Storage"
 				fobj := S3Func{
-					FuncName:            "Create" + upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "Storage",
+					FuncName:            funcName,
+					ClientFuncName:      upperFirst(funcName),
 					Name:                upperFirst(backend.Prefix),
 					Provider:            providerOptions.Provider,
 					ProviderDescription: strings.Split(providerOptions.ProviderDescription, "\n")[0],
@@ -199,11 +205,13 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
+				funcName := "create" + upperFirst(backend.Prefix) + "Storage"
 				oobj := OtherFunc{
-					FuncName:   "create" + upperFirst(backend.Prefix) + "Storage",
-					Name:       upperFirst(backend.Prefix),
-					StructName: cobj.Name,
-					Type:       backend.Prefix,
+					FuncName:       funcName,
+					ClientFuncName: upperFirst(funcName),
+					Name:           upperFirst(backend.Prefix),
+					StructName:     cobj.Name,
+					Type:           backend.Prefix,
 				}
 				err = otherTemplate.Execute(f, oobj)
 				if err != nil {

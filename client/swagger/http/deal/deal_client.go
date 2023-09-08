@@ -30,32 +30,32 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
-	PostDeal(params *PostDealParams, opts ...ClientOption) (*PostDealOK, error)
+	ListDeals(params *ListDealsParams, opts ...ClientOption) (*ListDealsOK, error)
 
-	PostSendDeal(params *PostSendDealParams, opts ...ClientOption) (*PostSendDealOK, error)
+	SendManual(params *SendManualParams, opts ...ClientOption) (*SendManualOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
 
 /*
-PostDeal lists all deals
+ListDeals lists all deals
 
 List all deals
 */
-func (a *Client) PostDeal(params *PostDealParams, opts ...ClientOption) (*PostDealOK, error) {
+func (a *Client) ListDeals(params *ListDealsParams, opts ...ClientOption) (*ListDealsOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostDealParams()
+		params = NewListDealsParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostDeal",
+		ID:                 "ListDeals",
 		Method:             "POST",
 		PathPattern:        "/deal",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostDealReader{formats: a.formats},
+		Reader:             &ListDealsReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -67,35 +67,35 @@ func (a *Client) PostDeal(params *PostDealParams, opts ...ClientOption) (*PostDe
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostDealOK)
+	success, ok := result.(*ListDealsOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostDeal: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for ListDeals: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
 /*
-PostSendDeal sends a manual deal proposal
+SendManual sends a manual deal proposal
 
 Send a manual deal proposal
 */
-func (a *Client) PostSendDeal(params *PostSendDealParams, opts ...ClientOption) (*PostSendDealOK, error) {
+func (a *Client) SendManual(params *SendManualParams, opts ...ClientOption) (*SendManualOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewPostSendDealParams()
+		params = NewSendManualParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "PostSendDeal",
+		ID:                 "SendManual",
 		Method:             "POST",
 		PathPattern:        "/send_deal",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http"},
 		Params:             params,
-		Reader:             &PostSendDealReader{formats: a.formats},
+		Reader:             &SendManualReader{formats: a.formats},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
 	}
@@ -107,13 +107,13 @@ func (a *Client) PostSendDeal(params *PostSendDealParams, opts ...ClientOption) 
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PostSendDealOK)
+	success, ok := result.(*SendManualOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PostSendDeal: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for SendManual: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

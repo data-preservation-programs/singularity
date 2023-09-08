@@ -98,6 +98,7 @@ func (DefaultHandler) ListPiecesHandler(
 	return pieceLists, nil
 }
 
+// @ID ListPieces
 // @Summary List all prepared pieces for a preparation
 // @Tags Piece
 // @Accept json
@@ -109,6 +110,7 @@ func (DefaultHandler) ListPiecesHandler(
 // @Router /preparation/{id}/piece [get]
 func _() {}
 
+// @ID AddPiece
 // @Summary Add a piece to a preparation
 // @Tags Piece
 // @Accept json

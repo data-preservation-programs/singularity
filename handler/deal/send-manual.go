@@ -130,6 +130,7 @@ func (DefaultHandler) SendManualHandler(
 	return dealModel, nil
 }
 
+// @ID SendManual
 // @Summary Send a manual deal proposal
 // @Description Send a manual deal proposal
 // @Tags Deal

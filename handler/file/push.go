@@ -81,6 +81,7 @@ func (DefaultHandler) PushFileHandler(
 	return file, nil
 }
 
+// @ID PushFile
 // @Summary Push a file to be queued
 // @Description Tells Singularity that something is ready to be grabbed for data preparation
 // @Tags File
