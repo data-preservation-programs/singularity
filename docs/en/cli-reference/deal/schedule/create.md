@@ -46,7 +46,7 @@ OPTIONS:
 
    Boost Only
 
-   --http-header value, -H value [ --http-header value, -H value ]  Http headers to be passed with the request (i.e. key=value)
+   --http-header value, -H value [ --http-header value, -H value ]  HTTP headers to be passed with the request (i.e. key=value)
    --ipni                                                           Whether to announce the deal to IPNI (default: true)
    --url-template value, -u value                                   URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 

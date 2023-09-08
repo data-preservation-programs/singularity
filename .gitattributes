@@ -1,2 +1,4 @@
 /dashboard/build/** linguist-generated=true
-/cmd/testdata/** linguist-generated=true
+/dashboard/src/client/** linguist-generated=true
+/client/** linguist-generated=true
+/docs/swagger/** linguist-generated=true

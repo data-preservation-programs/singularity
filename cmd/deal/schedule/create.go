@@ -62,7 +62,7 @@ var CreateCmd = &cli.Command{
 			Name:     "http-header",
 			Category: "Boost Only",
 			Aliases:  []string{"H"},
-			Usage:    "Http headers to be passed with the request (i.e. key=value)",
+			Usage:    "HTTP headers to be passed with the request (i.e. key=value)",
 		},
 		&cli.StringFlag{
 			Name:     "url-template",

@@ -48,7 +48,7 @@ var UpdateCmd = &cli.Command{
 			Name:     "http-header",
 			Category: "Boost Only",
 			Aliases:  []string{"H"},
-			Usage:    "Http headers to be passed with the request (i.e. key=value). This will replace the existing header values. To remove a header, use --http-header \"key=\"\". To remove all headers, use --http-header \"\"",
+			Usage:    "HTTP headers to be passed with the request (i.e. key=value). This will replace the existing header values. To remove a header, use --http-header \"key=\"\". To remove all headers, use --http-header \"\"",
 		},
 		&cli.StringFlag{
 			Name:     "url-template",
