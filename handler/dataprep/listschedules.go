@@ -42,6 +42,7 @@ func (DefaultHandler) ListSchedulesHandler(
 	return schedules, errors.WithStack(err)
 }
 
+// @ID ListPreparationSchedules
 // @Summary List all schedules for a preparation
 // @Tags Deal Schedule
 // @Accept json

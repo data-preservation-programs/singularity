@@ -623,6 +623,7 @@ const docTemplate = `{
                     "Deal Schedule"
                 ],
                 "summary": "List all schedules for a preparation",
+                "operationId": "ListPreparationSchedules",
                 "parameters": [
                     {
                         "type": "string",

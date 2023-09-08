@@ -8132,11 +8132,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Deal Schedule
-     * @name SchedulesDetail
+     * @name ListPreparationSchedules
      * @summary List all schedules for a preparation
      * @request GET:/preparation/{id}/schedules
      */
-    schedulesDetail: (id: string, params: RequestParams = {}) =>
+    listPreparationSchedules: (id: string, params: RequestParams = {}) =>
       this.request<ModelSchedule[], ApiHTTPError>({
         path: `/preparation/${id}/schedules`,
         method: "GET",
