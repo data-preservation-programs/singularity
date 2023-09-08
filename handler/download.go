@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -9,24 +10,36 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
+	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/store"
 	"github.com/fxamacker/cbor/v2"
-	"github.com/pkg/errors"
-	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
+	"github.com/urfave/cli/v2"
 )
 
-func DownloadHandler(ctx context.Context,
+// DownloadHandler fetches the metadata for a specified piece from a remote API and downloads the associated content.
+// The content is then saved to a .car file in the specified directory.
+//
+// Parameters:
+// - ctx: The context for the operation.
+// - piece: The identifier of the content piece to be downloaded.
+// - api: The base URL of the API from which metadata is to be fetched.
+// - config: A map containing configuration settings for various storage types.
+// - outDir: The directory where the downloaded content should be saved.
+// - concurrency: The number of concurrent operations allowed during the download.
+//
+// Returns:
+// - An error, if any occurred during the download process.
+func DownloadHandler(ctx *cli.Context,
 	piece string,
 	api string,
 	config map[string]string,
 	outDir string,
 	concurrency int,
 ) error {
-	resolver := datasource.DefaultHandlerResolver{}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api+"/piece/metadata/"+piece, nil)
+	req, err := http.NewRequestWithContext(ctx.Context, http.MethodGet, api+"/piece/metadata/"+piece, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to create request")
 	}
@@ -46,32 +59,47 @@ func DownloadHandler(ctx context.Context,
 		return errors.Wrap(err, "failed to decode metadata")
 	}
 
-	t := pieceMetadata.Source.Type
-	reg, err := fs.Find(t)
-	if err != nil {
-		return errors.New("invalid source type")
-	}
-	pieceMetadata.Source.Metadata = map[string]string{}
-	for key, value := range config {
-		snake := strings.ReplaceAll(key, "-", "_")
-		splitted := strings.SplitN(snake, "_", 2)
-		if len(splitted) != 2 {
-			return errors.New("invalid config key: " + key)
+	for i, storage := range pieceMetadata.Storages {
+		cfg := make(map[string]string)
+		backend, ok := storagesystem.BackendMap[storage.Type]
+		if !ok {
+			return errors.Newf("storage type %s is not supported", storage.Type)
 		}
-		if splitted[0] != t {
-			return errors.New("invalid config key for this data source: " + key)
+
+		prefix := storage.Type + "-"
+		provider := storage.Config["provider"]
+		if provider == "" {
+			provider = config[prefix+"provider"]
 		}
-		name := splitted[1]
-		_, err := underscore.Find(reg.Options, func(option fs.Option) bool {
-			return option.Name == name
+		providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
+			return providerOption.Provider == provider
 		})
 		if err != nil {
-			return errors.New("config key cannot be found for the data source: " + key)
+			return errors.Newf("provider '%s' is not supported", provider)
 		}
-		pieceMetadata.Source.Metadata[name] = value
+
+		for _, option := range providerOptions.Options {
+			if option.Default != nil {
+				cfg[option.Name] = fmt.Sprintf("%v", option.Default)
+			}
+		}
+
+		for key, value := range storage.Config {
+			cfg[key] = value
+		}
+
+		for key, value := range config {
+			if strings.HasPrefix(key, prefix) {
+				trimmed := strings.TrimPrefix(key, prefix)
+				snake := strings.ReplaceAll(trimmed, "-", "_")
+				cfg[snake] = value
+			}
+		}
+
+		pieceMetadata.Storages[i].Config = cfg
 	}
 
-	pieceReader, err := store.NewPieceReader(ctx, pieceMetadata.Car, pieceMetadata.Source, pieceMetadata.CarBlocks, pieceMetadata.Files, resolver)
+	pieceReader, err := store.NewPieceReader(ctx.Context, pieceMetadata.Car, pieceMetadata.Storages, pieceMetadata.CarBlocks, pieceMetadata.Files)
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")
 	}
@@ -80,7 +108,18 @@ func DownloadHandler(ctx context.Context,
 	return download(ctx, pieceReader, filepath.Join(outDir, piece+".car"), concurrency)
 }
 
-func download(ctx context.Context, reader *store.PieceReader, outPath string, concurrency int) error {
+// download concurrently fetches content from a given PieceReader, saving it to the specified output path.
+// The content is divided into parts and downloaded concurrently based on the provided concurrency level.
+//
+// Parameters:
+// - cctx: The context for the operation, allowing for cancellation.
+// - reader: The PieceReader providing the content.
+// - outPath: The path where the downloaded content should be saved.
+// - concurrency: The number of concurrent download tasks.
+//
+// Returns:
+// - An error, if any occurred during the download process.
+func download(cctx *cli.Context, reader *store.PieceReader, outPath string, concurrency int) error {
 	size, err := reader.Seek(0, io.SeekEnd)
 	if err != nil {
 		return errors.New("failed to seek to end of piece")
@@ -92,13 +131,13 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 
 	file, err := os.Create(outPath)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	var wg sync.WaitGroup
 	partSize := size / int64(concurrency)
 
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(cctx.Context)
 	defer cancel()
 
 	errChan := make(chan error, 1)
@@ -117,7 +156,7 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 			}
 
 			// Clone the reader
-			clonedReader := reader.Clone(ctx)
+			clonedReader := reader.Clone()
 			defer clonedReader.Close()
 
 			// Seek to the start position
@@ -134,7 +173,13 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 			// Read the part into a buffer
 			reader := io.LimitReader(clonedReader, end-start)
 			buffer := make([]byte, 4096)
+			if !cctx.Bool("quiet") {
+				_, _ = cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Downloading part %d - %d\n", i, end, start)))
+			}
 			for {
+				if ctx.Err() != nil {
+					return
+				}
 				n, err := reader.Read(buffer)
 				if err != nil && !errors.Is(err, io.EOF) {
 					select {
@@ -144,7 +189,7 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 					cancel()
 					return
 				}
-				if n == 0 {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				if _, err := file.WriteAt(buffer[:n], start); err != nil {
@@ -157,6 +202,9 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 				}
 				start += int64(n)
 			}
+			if !cctx.Bool("quiet") {
+				_, _ = cctx.App.Writer.Write([]byte(fmt.Sprintf("[Thread %d] Completed\n", i)))
+			}
 		}(i)
 	}
 
@@ -168,9 +216,12 @@ func download(ctx context.Context, reader *store.PieceReader, outPath string, co
 
 	select {
 	case <-done:
+		if !cctx.Bool("quiet") {
+			_, _ = cctx.App.Writer.Write([]byte("Download Complete\n"))
+		}
 		return file.Close()
 	case err := <-errChan:
 		file.Close()
-		return err
+		return errors.WithStack(err)
 	}
 }

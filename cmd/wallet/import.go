@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
@@ -11,16 +12,17 @@ import (
 var ImportCmd = &cli.Command{
 	Name:      "import",
 	Usage:     "Import a wallet from exported private key",
-	ArgsUsage: "PRIVATE_KEY",
+	ArgsUsage: "<private_key>",
+	Before:    cliutil.CheckNArgs,
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		w, err := wallet.ImportHandler(
+		w, err := wallet.Default.ImportHandler(
 			c.Context,
 			db,
 			lotusClient,
@@ -28,10 +30,10 @@ var ImportCmd = &cli.Command{
 				PrivateKey: c.Args().Get(0),
 			})
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(w, c.Bool("json"), nil)
+		cliutil.Print(c, w)
 		return nil
 	},
 }

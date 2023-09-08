@@ -17,38 +17,38 @@ import (
 // swagger:model model.Car
 type ModelCar struct {
 
+	// attachment Id
+	AttachmentID int64 `json:"attachmentId,omitempty"`
+
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
-
-	// dataset Id
-	DatasetID int64 `json:"datasetId,omitempty"`
-
-	// file path
-	FilePath string `json:"filePath,omitempty"`
 
 	// file size
 	FileSize int64 `json:"fileSize,omitempty"`
 
-	// header
-	Header []int64 `json:"header"`
-
 	// id
 	ID int64 `json:"id,omitempty"`
 
-	// pack job Id
-	PackJobID int64 `json:"packJobId,omitempty"`
+	// job Id
+	JobID int64 `json:"jobId,omitempty"`
 
 	// piece cid
-	PieceCid ModelCID `json:"pieceCid,omitempty"`
+	PieceCid string `json:"pieceCid,omitempty"`
 
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`
 
-	// root cid
-	RootCid ModelCID `json:"rootCid,omitempty"`
+	// Association
+	PreparationID int64 `json:"preparationId,omitempty"`
 
-	// source Id
-	SourceID int64 `json:"sourceId,omitempty"`
+	// root cid
+	RootCid string `json:"rootCid,omitempty"`
+
+	// storage Id
+	StorageID int64 `json:"storageId,omitempty"`
+
+	// StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
+	StoragePath string `json:"storagePath,omitempty"`
 }
 
 // Validate validates this model car

@@ -24,9 +24,6 @@ type ModelDeal struct {
 	// created at
 	CreatedAt string `json:"createdAt,omitempty"`
 
-	// dataset Id
-	DatasetID int64 `json:"datasetId,omitempty"`
-
 	// deal Id
 	DealID int64 `json:"dealId,omitempty"`
 
@@ -43,7 +40,7 @@ type ModelDeal struct {
 	Label string `json:"label,omitempty"`
 
 	// piece cid
-	PieceCid ModelCID `json:"pieceCid,omitempty"`
+	PieceCid string `json:"pieceCid,omitempty"`
 
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`
@@ -57,7 +54,7 @@ type ModelDeal struct {
 	// provider
 	Provider string `json:"provider,omitempty"`
 
-	// schedule Id
+	// Associations
 	ScheduleID int64 `json:"scheduleId,omitempty"`
 
 	// sector start epoch

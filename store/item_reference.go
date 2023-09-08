@@ -4,11 +4,10 @@ import (
 	"context"
 	"io"
 
-	"github.com/data-preservation-programs/singularity/datasource"
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
-	"github.com/pkg/errors"
-
+	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/data-preservation-programs/singularity/util"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 
@@ -16,17 +15,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrNotImplemented = errors.New("not implemented")
-
 // FileReferenceBlockStore is a struct that represents a block store backed by file references.
-// It uses a GORM database for storage and a HandlerResolver to resolve data source handlers.
+// It uses a GORM database.
 //
 // Fields:
 // DBNoContext: The GORM database used for storage. This should be initialized and connected to a database before use.
-// HandlerResolver: The HandlerResolver used to resolve data source handlers. This should be initialized with the appropriate handlers before use.
 type FileReferenceBlockStore struct {
-	DBNoContext     *gorm.DB
-	HandlerResolver datasource.HandlerResolver
+	DBNoContext *gorm.DB
 }
 
 // Has is a method on the FileReferenceBlockStore struct that checks if a block with the specified CID exists in the store.
@@ -41,25 +36,26 @@ type FileReferenceBlockStore struct {
 func (i *FileReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var count int64
 	err := i.DBNoContext.WithContext(ctx).Model(&model.CarBlock{}).Select("cid").Where("cid = ?", model.CID(cid)).Count(&count).Error
-	return count > 0, err
+	return count > 0, errors.WithStack(err)
 }
 
 func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var carBlock model.CarBlock
-	err := i.DBNoContext.WithContext(ctx).Joins("File.Source").Where("car_blocks.cid = ?", model.CID(cid)).First(&carBlock).Error
+	err := i.DBNoContext.WithContext(ctx).Joins("File.Attachment.Storage").Where("car_blocks.cid = ?", model.CID(cid)).First(&carBlock).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, format.ErrNotFound{Cid: cid}
 	}
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if carBlock.RawBlock != nil {
 		return blocks.NewBlockWithCid(carBlock.RawBlock, cid)
 	}
 
-	handler, err := i.HandlerResolver.Resolve(ctx, *carBlock.File.Source)
+	// TODO: Performance can be improved by caching the handler
+	handler, err := storagesystem.NewRCloneHandler(ctx, *carBlock.File.Attachment.Storage)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	reader, obj, err := handler.Read(
 		ctx,
@@ -67,16 +63,16 @@ func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.
 		carBlock.FileOffset,
 		int64(carBlock.BlockLength()))
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	defer reader.Close()
-	same, explanation := pack.IsSameEntry(ctx, *carBlock.File, obj)
+	same, explanation := storagesystem.IsSameEntry(ctx, *carBlock.File, obj)
 	if !same {
-		return nil, &FileHasChangedError{Message: "file has changed: " + explanation}
+		return nil, errors.Wrap(ErrFileHasChanged, explanation)
 	}
 	readBytes, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return blocks.NewBlockWithCid(readBytes, cid)
 }
@@ -97,26 +93,26 @@ func (i *FileReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, format.ErrNotFound{Cid: c}
 		}
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	return int(carBlock.BlockLength()), nil
 }
 
 func (i *FileReferenceBlockStore) Put(ctx context.Context, block blocks.Block) error {
-	return ErrNotImplemented
+	return util.ErrNotImplemented
 }
 
 func (i *FileReferenceBlockStore) PutMany(ctx context.Context, i2 []blocks.Block) error {
-	return ErrNotImplemented
+	return util.ErrNotImplemented
 }
 
 func (i *FileReferenceBlockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
-	return nil, ErrNotImplemented
+	return nil, util.ErrNotImplemented
 }
 
 func (i *FileReferenceBlockStore) HashOnRead(enabled bool) {
 }
 
 func (i *FileReferenceBlockStore) DeleteBlock(ctx context.Context, cid cid.Cid) error {
-	return ErrNotImplemented
+	return util.ErrNotImplemented
 }

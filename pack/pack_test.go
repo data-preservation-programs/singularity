@@ -1,107 +1,173 @@
 package pack
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
-	"io"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/multiformats/go-varint"
-	"github.com/stretchr/testify/mock"
+	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
-func TestAssembleCar_LargeFiles(t *testing.T) {
-	ctx := context.Background()
-	data := make([]byte, 10*1<<20)
-	rand.Read(data)
-	handler := new(MockReadHandler)
-	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(io.NopCloser(bytes.NewReader(data)), nil, nil)
-	files := []model.FileRange{
+func TestAssembleCar(t *testing.T) {
+	tmp := t.TempDir()
+	out := t.TempDir()
+	err := os.WriteFile(filepath.Join(tmp, "test.txt"), testutil.GenerateRandomBytes(5), 0644)
+	require.NoError(t, err)
+	stat, err := os.Stat(filepath.Join(tmp, "test.txt"))
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(tmp, "large.txt"), testutil.GenerateRandomBytes(5_000_000), 0644)
+	require.NoError(t, err)
+	_, err = os.Stat(filepath.Join(tmp, "large.txt"))
+	require.NoError(t, err)
+	jobs := []struct {
+		name     string
+		job      model.Job
+		fileSize int64
+		one      bool
+	}{
 		{
-			ID:     0,
-			Offset: 0,
-			Length: 10 * 1 << 20,
-			File: &model.File{
-				Size: 10 * 1 << 20,
+			name:     "single file",
+			fileSize: 101,
+			job: model.Job{
+				Type:  model.Pack,
+				State: model.Processing,
+				Attachment: &model.SourceAttachment{
+					Preparation: &model.Preparation{
+						MaxSize:   2000000,
+						PieceSize: 1 << 21,
+					},
+					Storage: &model.Storage{
+						Type: "local",
+						Path: tmp,
+					},
+				},
+				FileRanges: []model.FileRange{
+					{
+						Offset: 0,
+						Length: 5,
+						File: &model.File{
+							Path:             "test.txt",
+							Size:             stat.Size(),
+							LastModifiedNano: stat.ModTime().UnixNano(),
+							AttachmentID:     1,
+							Directory: &model.Directory{
+								AttachmentID: 1,
+							},
+						},
+					},
+				},
 			},
 		},
 		{
-			ID:     1,
-			Offset: 0,
-			Length: 10 * 1 << 20,
-			File: &model.File{
-				Size: 10 * 1 << 20,
+			name:     "splitted file",
+			fileSize: 138,
+			job: model.Job{
+				Type:  model.Pack,
+				State: model.Processing,
+				Attachment: &model.SourceAttachment{
+					Preparation: &model.Preparation{
+						MaxSize:   2000000,
+						PieceSize: 1 << 21,
+					},
+					Storage: &model.Storage{
+						Type: "local",
+						Path: tmp,
+					},
+				},
+				FileRanges: []model.FileRange{
+					{
+						Offset: 0,
+						Length: 2,
+						File: &model.File{
+							Path:             "test.txt",
+							Size:             stat.Size(),
+							LastModifiedNano: stat.ModTime().UnixNano(),
+							AttachmentID:     1,
+							Directory: &model.Directory{
+								AttachmentID: 1,
+							},
+						},
+					},
+					{
+						Offset: 2,
+						Length: 3,
+						FileID: 1,
+						File: &model.File{
+							ID:               1,
+							Path:             "test.txt",
+							Size:             stat.Size(),
+							LastModifiedNano: stat.ModTime().UnixNano(),
+							AttachmentID:     1,
+							DirectoryID:      ptr.Of(uint64(1)),
+						},
+					},
+				},
+			},
+		},
+		{
+			name:     "single file non-inline with deletion",
+			fileSize: 101,
+			one:      true,
+			job: model.Job{
+				Type:  model.Pack,
+				State: model.Processing,
+				Attachment: &model.SourceAttachment{
+					Preparation: &model.Preparation{
+						MaxSize:   2000000,
+						PieceSize: 1 << 21,
+						OutputStorages: []model.Storage{
+							{
+								Name: "out",
+								Type: "local",
+								Path: out,
+							},
+						},
+						DeleteAfterExport: true,
+					},
+					Storage: &model.Storage{
+						Name: "tmp",
+						Type: "local",
+						Path: tmp,
+					},
+				},
+				FileRanges: []model.FileRange{
+					{
+						Offset: 0,
+						Length: 5,
+						File: &model.File{
+							Path:             "test.txt",
+							Size:             stat.Size(),
+							LastModifiedNano: stat.ModTime().UnixNano(),
+							AttachmentID:     1,
+							Directory: &model.Directory{
+								AttachmentID: 1,
+							},
+						},
+					},
+				},
 			},
 		},
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{}, files, "", 1<<30)
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	require.Equal(t, "", result.CarResults[0].CarFilePath)
-	require.EqualValues(t, 10486793, result.CarResults[0].CarFileSize)
-	require.EqualValues(t, 1<<30, result.CarResults[0].PieceSize)
-	require.Len(t, result.CarResults[0].Header, 59)
-	require.Len(t, result.CarResults[0].CarBlocks, 12)
-}
 
-func TestAssembleCar_NoEncryption(t *testing.T) {
-	ctx := context.Background()
-	handler := new(MockReadHandler)
-	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	files := []model.FileRange{
-		{
-			Offset: 1,
-			Length: 4,
-			File: &model.File{
-				Size: 5,
-			},
-		},
+	for _, job := range jobs {
+		t.Run(job.name, func(t *testing.T) {
+			testFunc := func(ctx context.Context, t *testing.T, db *gorm.DB) {
+				err := db.Create(&job.job).Error
+				require.NoError(t, err)
+				car, err := Pack(ctx, db, job.job)
+				require.NoError(t, err)
+				require.Equal(t, job.fileSize, car.FileSize)
+			}
+			if job.one {
+				testutil.One(t, testFunc)
+			} else {
+				testutil.All(t, testFunc)
+			}
+		})
 	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{}, files, "", 1<<20)
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	require.Equal(t, "", result.CarResults[0].CarFilePath)
-	require.EqualValues(t, 101, result.CarResults[0].CarFileSize)
-	require.Equal(t, "baga6ea4seaqddc4kqdxmnglxhmrfxkx2cd7hl6kounifgewgb2hdthmeddfe4hy", result.CarResults[0].PieceCID.String())
-	require.EqualValues(t, 1<<20, result.CarResults[0].PieceSize)
-	require.Len(t, result.CarResults[0].Header, 59)
-	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarResults[0].RootCID.String())
-	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.FileRangeCIDs[0].String())
-	require.Len(t, result.CarResults[0].CarBlocks, 1)
-	require.Equal(t, "bafkreibm6jg3ux5qumhcn2b3flc3tyu6dmlb4xa7u5bf44yegnrjhc4yeq", result.CarResults[0].CarBlocks[0].CID.String())
-	require.EqualValues(t, 59, result.CarResults[0].CarBlocks[0].CarOffset)
-	v, _, _ := varint.FromUvarint(result.CarResults[0].CarBlocks[0].Varint)
-	require.EqualValues(t, 41, v)
-	require.EqualValues(t, 1, result.CarResults[0].CarBlocks[0].FileOffset)
-}
-
-func TestAssembleCar_WithEncryption(t *testing.T) {
-	ctx := context.Background()
-	handler := new(MockReadHandler)
-	handler.On("Read", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
-		Return(io.NopCloser(bytes.NewReader([]byte("hello"))), nil, nil)
-	files := []model.FileRange{
-		{
-			Offset: 0,
-			Length: 5,
-			File: &model.File{
-				Size: 5,
-			},
-		},
-	}
-	result, err := AssembleCar(ctx, handler, model.Dataset{
-		EncryptionRecipients: []string{"age1th55qj77d32vhumd72de2m3y0nzsxyeahuddz770s8qadz3h6v8quedwf3"},
-	}, files, t.TempDir(), 1<<20)
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	require.NotEmpty(t, result.CarResults[0].CarFilePath)
-	require.EqualValues(t, 302, result.CarResults[0].CarFileSize)
-	require.EqualValues(t, 1<<20, result.CarResults[0].PieceSize)
-	require.Len(t, result.CarResults[0].Header, 59)
-	require.Len(t, result.CarResults[0].CarBlocks, 0)
 }

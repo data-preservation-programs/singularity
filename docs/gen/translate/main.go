@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/cockroachdb/errors"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rjNemo/underscore"
 	"github.com/sashabaranov/go-openai"
@@ -95,7 +96,7 @@ func main() {
 						Messages: messages,
 					})
 					if err != nil {
-						return err
+						return errors.WithStack(err)
 					}
 					return nil
 				}, retry.RetryIf(func(err error) bool {

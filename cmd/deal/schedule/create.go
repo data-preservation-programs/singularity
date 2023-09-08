@@ -5,20 +5,19 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 )
 
 var re = regexp.MustCompile(`\bbaga[a-z2-7]+\b`)
 
 var CreateCmd = &cli.Command{
-	Name:      "create",
-	Usage:     "Create a schedule to send out deals to a storage provider",
-	ArgsUsage: "DATASET_NAME PROVIDER_ID",
+	Name:  "create",
+	Usage: "Create a schedule to send out deals to a storage provider",
 	Description: `CRON pattern '--schedule-cron': The CRON pattern can either be a descriptor or a standard CRON pattern with optional second field
   Standard CRON:
     ┌───────────── minute (0 - 59)
@@ -49,6 +48,16 @@ var CreateCmd = &cli.Command{
     @daily,  @midnight - Equivalent to 0 0 * * *
     @hourly            - Equivalent to 0 * * * *`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "preparation",
+			Usage:    "Preparation ID or name",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "provider",
+			Usage:    "Storage Provider ID to send deals to",
+			Required: true,
+		},
 		&cli.StringSliceFlag{
 			Name:     "http-header",
 			Category: "Boost Only",
@@ -191,14 +200,14 @@ var CreateCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		cids := map[string]struct{}{}
 		for _, f := range c.StringSlice("allowed-piece-cid-file") {
 			cidsFromFile, err := readCIDsFromFile(f)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 			for _, cid := range cidsFromFile {
 				cids[cid] = struct{}{}
@@ -212,8 +221,8 @@ var CreateCmd = &cli.Command{
 			allowedPieceCIDs = append(allowedPieceCIDs, cid)
 		}
 		request := schedule.CreateRequest{
-			DatasetName:          c.Args().Get(0),
-			Provider:             c.Args().Get(1),
+			Preparation:          c.String("preparation"),
+			Provider:             c.String("provider"),
 			HTTPHeaders:          c.StringSlice("http-header"),
 			URLTemplate:          c.String("url-template"),
 			PricePerGBEpoch:      c.Float64("price-per-gb-epoch"),
@@ -235,12 +244,12 @@ var CreateCmd = &cli.Command{
 			AllowedPieceCIDs:     allowedPieceCIDs,
 		}
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
-		schedule, err := schedule.CreateHandler(c.Context, db, lotusClient, request)
+		schedule, err := schedule.Default.CreateHandler(c.Context, db, lotusClient, request)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
-		cliutil.PrintToConsole(schedule, c.Bool("json"), nil)
+		cliutil.Print(c, schedule)
 		return nil
 	},
 }

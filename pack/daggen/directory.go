@@ -6,20 +6,20 @@ import (
 	"context"
 	"io"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/pack"
+	"github.com/data-preservation-programs/singularity/pack/packutil"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	"github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	uio "github.com/ipfs/go-unixfs/io"
 	"github.com/ipld/go-car"
 	"github.com/ipld/go-car/util"
 	"github.com/klauspost/compress/zstd"
-	"github.com/pkg/errors"
 )
 
 var encoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
@@ -67,7 +67,7 @@ func (t DirectoryTree) Add(ctx context.Context, dir *model.Directory) error {
 	data := &DirectoryData{}
 	err := data.UnmarshalBinary(ctx, dir.Data)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal directory data")
+		return errors.WithStack(err)
 	}
 	if dir.ParentID != nil {
 		t.childrenCache[*dir.ParentID] = append(t.childrenCache[*dir.ParentID], dir.ID)
@@ -108,11 +108,11 @@ func (t DirectoryTree) Resolve(ctx context.Context, dirID uint64) (*format.Link,
 
 	node, err := detail.Data.Node()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get Node from directory")
+		return nil, errors.WithStack(err)
 	}
 	size, err := node.Size()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get size from Node")
+		return nil, errors.WithStack(err)
 	}
 	return &format.Link{
 		Name: detail.Dir.Name,
@@ -155,7 +155,7 @@ func (d *DirectoryData) Node() (format.Node, error) {
 	if d.nodeDirty {
 		node, err := d.dir.GetNode()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get Node from directory")
+			return nil, errors.WithStack(err)
 		}
 		d.node = node
 		d.nodeDirty = false
@@ -222,17 +222,17 @@ func (d *DirectoryData) AddFile(ctx context.Context, name string, c cid.Cid, len
 //	          adding the child to the directory fails, or putting blocks into the blockstore fails.
 //	          Otherwise, it returns nil.
 func (d *DirectoryData) AddFileFromLinks(ctx context.Context, name string, links []format.Link) (cid.Cid, error) {
-	blks, node, err := pack.AssembleFileFromLinks(links)
+	blks, node, err := packutil.AssembleFileFromLinks(links)
 	if err != nil {
-		return cid.Undef, errors.Wrap(err, "failed to assemble file from links")
+		return cid.Undef, errors.WithStack(err)
 	}
 	err = d.dir.AddChild(ctx, name, node)
 	if err != nil {
-		return cid.Undef, errors.Wrap(err, "failed to add child to directory")
+		return cid.Undef, errors.WithStack(err)
 	}
 	err = d.bstore.PutMany(ctx, blks)
 	if err != nil {
-		return cid.Undef, errors.Wrap(err, "failed to put blocks into blockstore")
+		return cid.Undef, errors.WithStack(err)
 	}
 	return node.Cid(), nil
 }
@@ -273,37 +273,31 @@ func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) erro
 //	         putting
 func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	buf := &bytes.Buffer{}
-	oldNode := d.node
 	newNode, err := d.Node()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to refresh node")
+		return nil, errors.WithStack(err)
 	}
-	_, err = pack.WriteCarHeader(buf, newNode.Cid())
+	_, err = packutil.WriteCarHeader(buf, newNode.Cid())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to write CAR header")
-	}
-	if oldNode != nil {
-		err = d.bstore.DeleteBlock(ctx, oldNode.Cid())
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to delete old Node from blockstore")
-		}
+		return nil, errors.WithStack(err)
 	}
 	err = d.bstore.Put(ctx, newNode)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to put new Node into blockstore")
+		return nil, errors.WithStack(err)
 	}
+
 	ch, err := d.bstore.AllKeysChan(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get all keys from blockstore")
+		return nil, errors.WithStack(err)
 	}
 	for k := range ch {
 		data, err := d.bstore.Get(ctx, k)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get data from blockstore")
+			return nil, errors.WithStack(err)
 		}
-		_, err = pack.WriteCarBlock(buf, data)
+		_, err = packutil.WriteCarBlock(buf, data)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to write CAR block")
+			return nil, errors.WithStack(err)
 		}
 	}
 	return encoder.EncodeAll(buf.Bytes(), make([]byte, 0, len(buf.Bytes()))), nil
@@ -331,19 +325,19 @@ func UnmarshalToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
 	}
 	decoded, err := decoder.DecodeAll(data, nil)
 	if err != nil {
-		return cid.Undef, nil, errors.Wrap(err, "failed to decode data")
+		return cid.Undef, nil, errors.WithStack(err)
 	}
 	reader := bufio.NewReader(bytes.NewReader(decoded))
 	ch, err := car.ReadHeader(reader)
 	if err != nil {
-		return cid.Undef, nil, errors.Wrap(err, "failed to read CAR header")
+		return cid.Undef, nil, errors.WithStack(err)
 	}
 	dirCID := ch.Roots[0]
 	var blks []blocks.Block
 	for {
 		c, data, err := util.ReadNode(reader)
 		if err != nil && !errors.Is(err, io.EOF) {
-			return cid.Undef, nil, errors.Wrap(err, "failed to read CAR block")
+			return cid.Undef, nil, errors.WithStack(err)
 		}
 		if errors.Is(err, io.EOF) {
 			break
@@ -391,19 +385,19 @@ func (d *DirectoryData) UnmarshalBinary(ctx context.Context, data []byte) error 
 
 	dirCID, blks, err := UnmarshalToBlocks(data)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshall data")
+		return errors.WithStack(err)
 	}
 	err = bs.PutMany(ctx, blks)
 	if err != nil {
-		return errors.Wrap(err, "failed to put blocks into blockstore")
+		return errors.WithStack(err)
 	}
 	dirNode, err := dagServ.Get(ctx, dirCID)
 	if err != nil {
-		return errors.Wrap(err, "failed to get root Node")
+		return errors.WithStack(err)
 	}
 	dir, err := uio.NewDirectoryFromNode(dagServ, dirNode)
 	if err != nil {
-		return errors.Wrap(err, "failed to create directory from Node")
+		return errors.WithStack(err)
 	}
 	dir.SetCidBuilder(merkledag.V1CidPrefix())
 	*d = DirectoryData{

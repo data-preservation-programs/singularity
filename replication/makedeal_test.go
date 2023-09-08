@@ -130,6 +130,9 @@ func TestDealMaker_MakeDeal(t *testing.T) {
 		PieceCID:  model.CID(c),
 		PieceSize: 1024,
 		FileSize:  1000,
+		Attachment: &model.SourceAttachment{
+			PreparationID: 1,
+		},
 	}
 	dealConfig := DealConfig{
 		Provider:        "f01000",

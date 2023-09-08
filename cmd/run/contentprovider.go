@@ -1,8 +1,8 @@
 package run
 
 import (
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/urfave/cli/v2"
 )
@@ -45,12 +45,9 @@ var ContentProviderCmd = &cli.Command{
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		if err := model.AutoMigrate(db); err != nil {
-			return err
-		}
 
 		config := contentprovider.Config{
 			HTTP: contentprovider.HTTPConfig{
@@ -66,7 +63,7 @@ var ContentProviderCmd = &cli.Command{
 
 		s, err := contentprovider.NewService(db, config)
 		if err != nil {
-			return cli.Exit(err.Error(), 1)
+			return errors.WithStack(err)
 		}
 		return s.Start(c.Context)
 	},

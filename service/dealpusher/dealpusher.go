@@ -8,15 +8,16 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -137,7 +138,7 @@ func (d *DealPusher) addSchedule(ctx context.Context, schedule model.Schedule) e
 		cancel()
 		delete(d.activeSchedule, schedule.ID)
 		delete(d.activeScheduleCancelFunc, schedule.ID)
-		return errors.Wrap(err, "failed to add cron job")
+		return errors.Wrapf(err, "failed to add cron job for schedule %d: %s", schedule.ID, schedule.ScheduleCron)
 	}
 	d.cronEntries[schedule.ID] = entryID
 	return nil
@@ -198,7 +199,7 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 			cancel()
 			delete(d.activeSchedule, schedule.ID)
 			delete(d.activeScheduleCancelFunc, schedule.ID)
-			return errors.Wrap(err, "failed to add cron job")
+			return errors.Wrapf(err, "failed to add cron job for schedule %d: %s", schedule.ID, schedule.ScheduleCron)
 		}
 		d.cronEntries[schedule.ID] = entryID
 	}
@@ -213,7 +214,7 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 // 1. Counts the number and size of pending and total active deals for the current schedule from the database.
 // 2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
 // 3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
-// 4. Chooses a wallet from the dataset’s associated wallets.
+// 4. Chooses a wallet from the preparation’s associated wallets.
 // 5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
 // 6. Saves the newly created deal to the database.
 // 7. Updates the counts of pending, total, and current deals based on the new deal.
@@ -232,9 +233,15 @@ func (d *DealPusher) updateSchedule(ctx context.Context, schedule model.Schedule
 //  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
 	db := d.dbNoContext.WithContext(ctx)
+	// Find all attachment IDs for this schedule
+	var attachments []model.SourceAttachment
+	err := db.Model(&model.SourceAttachment{}).Where("preparation_id = ?", schedule.PreparationID).Find(&attachments).Error
+	if err != nil {
+		return model.ScheduleError, errors.Wrap(err, "failed to find attachments")
+	}
 	for {
 		var pending sumResult
-		err := db.Model(&model.Deal{}).
+		err = db.Model(&model.Deal{}).
 			Where("schedule_id = ? AND state IN (?)", schedule.ID, []model.DealState{
 				model.DealProposed, model.DealPublished,
 			}).Select("COUNT(*) AS deal_number, SUM(piece_size) AS deal_size").Scan(&pending).Error
@@ -285,8 +292,8 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", nil
 			}
 
-			err = db.Where("dataset_id = ? AND piece_cid NOT IN (?)",
-				schedule.DatasetID,
+			err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
+				underscore.Map(attachments, func(a model.SourceAttachment) uint32 { return a.ID }),
 				db.Table("deals").Select("piece_cid").
 					Where("provider = ? AND state IN (?)",
 						schedule.Provider,
@@ -295,13 +302,17 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						})).First(&car).Error
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				Logger.Infow("no more pieces to send deal", "schedule_id", schedule.ID)
+				// we're out of deals to schedule, but if we're running a perpetual cron, we simply put things on hold till next cron
+				if schedule.ScheduleCron != "" && schedule.ScheduleCronPerpetual {
+					return "", nil
+				}
 				return model.ScheduleCompleted, nil
 			}
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to find car")
 			}
 
-			walletObj, err = d.walletChooser.Choose(ctx, schedule.Dataset.Wallets)
+			walletObj, err = d.walletChooser.Choose(ctx, schedule.Preparation.Wallets)
 			if err != nil {
 				return model.ScheduleError, errors.Wrap(err, "failed to choose wallet")
 			}
@@ -324,7 +335,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerGB:      schedule.PricePerGB,
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
 					})
-				return err
+				return errors.WithStack(err)
 			}, retry.Attempts(d.sendDealAttempts), retry.Delay(time.Second),
 				retry.DelayType(retry.FixedDelay), retry.Context(ctx))
 			if err != nil {
@@ -407,7 +418,7 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 	scheduleMap := map[uint32]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
-	err := db.Preload("Dataset.Wallets").Where("state = ?",
+	err := db.Preload("Preparation.Wallets").Where("state = ?",
 		model.ScheduleActive).Find(&schedules).Error
 	if err != nil {
 		Logger.Errorw("failed to get schedules", "error", err)
@@ -462,14 +473,8 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 //
 // This function is intended to be called once at the start of the service lifecycle.
 func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
-	getState := func() healthcheck.State {
-		return healthcheck.State{
-			WorkType: model.DealMaking,
-		}
-	}
-
 	for {
-		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, getState, false)
+		alreadyRunning, err := healthcheck.Register(ctx, d.dbNoContext, d.workerID, model.DealPusher, false)
 		if err == nil && !alreadyRunning {
 			break
 		}
@@ -490,7 +495,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 	healthcheckDone := make(chan struct{})
 	go func() {
 		defer close(healthcheckDone)
-		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, getState)
+		healthcheck.StartReportHealth(ctx, d.dbNoContext, d.workerID, model.DealPusher)
 		Logger.Info("healthcheck stopped")
 	}()
 

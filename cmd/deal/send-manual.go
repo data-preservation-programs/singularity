@@ -4,21 +4,21 @@ import (
 	"context"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/pkg/errors"
 
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/urfave/cli/v2"
 )
 
 var SendManualCmd = &cli.Command{
 	Name:      "send-manual",
 	Usage:     "Send a manual deal proposal to boost or legacy market",
-	ArgsUsage: "CLIENT_ADDRESS PROVIDER_ID PIECE_CID PIECE_SIZE",
+	ArgsUsage: "<client> <provider> <piece_cid> <piece_size>",
 	Description: `Send a manual deal proposal to boost or legacy market
   Example: singularity deal send-manual f01234 f05678 bagaxxxx 32GiB
 Notes:
@@ -26,6 +26,31 @@ Notes:
   * The deal proposal will not be saved in the database however will eventually be tracked if the deal tracker is running
   * There is a quick address verification using GLIF API which can be made faster by setting LOTUS_API and LOTUS_TOKEN to your own lotus node`,
 	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "client",
+			Category: "Deal Proposal",
+			Usage:    "Client address to send deal from",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "provider",
+			Category: "Deal Proposal",
+			Usage:    "Storage Provider ID to send deal to",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "piece-cid",
+			Category: "Deal Proposal",
+			Usage:    "Piece CID of the deal",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "piece-size",
+			Category: "Deal Proposal",
+			Usage:    "Piece Size of the deal",
+			Value:    "32GiB",
+			Required: true,
+		},
 		&cli.StringSliceFlag{
 			Name:     "http-header",
 			Category: "Boost Only",
@@ -114,7 +139,7 @@ Notes:
 		lotusToken := c.String("lotus-token")
 		err := epochutil.Initialize(c.Context, lotusAPI, lotusToken)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		proposal := deal.Proposal{
 			HTTPHeaders:     c.StringSlice("http-header"),
@@ -128,16 +153,16 @@ Notes:
 			KeepUnsealed:    c.Bool("keep-unsealed"),
 			StartDelay:      c.String("start-delay"),
 			Duration:        c.String("duration"),
-			ClientAddress:   c.Args().Get(0),
-			ProviderID:      c.Args().Get(1),
-			PieceCID:        c.Args().Get(2),
-			PieceSize:       c.Args().Get(3),
+			ClientAddress:   c.String("client"),
+			ProviderID:      c.String("provider"),
+			PieceCID:        c.String("piece-cid"),
+			PieceSize:       c.String("piece-size"),
 			FileSize:        c.Uint64("file-size"),
 		}
 		timeout := c.Duration("timeout")
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		defer closer.Close()
 		ctx, cancel := context.WithTimeout(c.Context, timeout)
@@ -152,13 +177,11 @@ Notes:
 			10*timeout,
 			timeout,
 		)
-		dealModel, err2 := deal.SendManualHandler(ctx, db, dealMaker, proposal)
-		if err2 != nil {
-			return err2
+		dealModel, err := deal.Default.SendManualHandler(ctx, db, dealMaker, proposal)
+		if err != nil {
+			return errors.WithStack(err)
 		}
-		cliutil.PrintToConsole(dealModel, c.Bool("json"), []string{
-			"CreatedAt", "UpdatedAt", "DealID", "DatasetID", "SectorStartEpoch",
-			"ID", "State", "ErrorMessage", "ScheduleID"})
+		cliutil.Print(c, dealModel)
 		return nil
 	},
 }

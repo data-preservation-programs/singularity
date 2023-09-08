@@ -9,11 +9,10 @@ var MigrateDatasetCmd = &cli.Command{
 	Name:  "migrate-dataset",
 	Usage: "Migrate dataset from old singularity mongodb",
 	Description: "Migrate datasets from singularity V1 to V2. Those steps include\n" +
-		"  1. Create a new dataset in V2.\n" +
-		"  2. Create a new datasource which is either an S3 path or local path.\n" +
-		"  3. Create all folder structures and files in the new dataset.\n" +
+		"  1. Create source storage and output storage and attach them to a dataprep in V2.\n" +
+		"  2. Create all folder structures and files in the new dataset.\n" +
 		"Caveats:\n" +
-		"  1. The created dataset won't be compatible with the new dataset worker.\n" +
+		"  1. The created preparation won't be compatible with the new dataset worker.\n" +
 		"     So do not attempt to resume a data preparation or push new files onto migrated dataset.\n" +
 		"     You can make deals or browse the dataset without issues.\n" +
 		"  2. The folder CID won't be generated or migrated due to the complexity",

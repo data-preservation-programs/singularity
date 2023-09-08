@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/pkg/errors"
 	"github.com/ybbus/jsonrpc/v3"
 	"gorm.io/gorm"
 )
@@ -55,7 +55,7 @@ func (w RandomWalletChooser) Choose(ctx context.Context, wallets []model.Wallet)
 
 	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(wallets))))
 	if err != nil {
-		return model.Wallet{}, err
+		return model.Wallet{}, errors.WithStack(err)
 	}
 	chosenWallet := wallets[randomPick.Int64()]
 	return chosenWallet, nil
@@ -87,7 +87,7 @@ func (w DatacapWalletChooser) getDatacap(ctx context.Context, wallet model.Walle
 	var result string
 	err := w.lotusClient.CallFor(ctx, &result, "Filecoin.StateMarketBalance", wallet.Address, nil)
 	if err != nil {
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	return strconv.ParseInt(result, 10, 64)
 }
@@ -103,7 +103,7 @@ func (w DatacapWalletChooser) getDatacapCached(ctx context.Context, wallet model
 		if file != nil {
 			return file.Value(), nil
 		}
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	w.cache.Set(wallet.Address, datacap, ttlcache.DefaultTTL)
 	return datacap, nil
@@ -118,7 +118,7 @@ func (w DatacapWalletChooser) getPendingDeals(ctx context.Context, wallet model.
 		Error
 	if err != nil {
 		logger.Errorf("failed to get pending deals for wallet %s: %s", wallet.Address, err)
-		return 0, err
+		return 0, errors.WithStack(err)
 	}
 	return totalPieceSize, nil
 }
@@ -174,7 +174,7 @@ func (w DatacapWalletChooser) Choose(ctx context.Context, wallets []model.Wallet
 
 	randomPick, err := rand.Int(rand.Reader, big.NewInt(int64(len(eligibleWallets))))
 	if err != nil {
-		return model.Wallet{}, err
+		return model.Wallet{}, errors.WithStack(err)
 	}
 	chosenWallet := eligibleWallets[randomPick.Int64()]
 	return chosenWallet, nil

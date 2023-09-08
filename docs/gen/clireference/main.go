@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd"
+	"github.com/mattn/go-shellwords"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
@@ -133,7 +136,7 @@ func getStdout(args []string) string {
 	args = append([]string{"singularity"}, args...)
 	args = append(args, "--help")
 	command := strings.Join(args, " ")
-	stdout, stderr, err := cmd.RunArgsInTest(context.TODO(), command)
+	stdout, stderr, err := runArgsInTest(context.TODO(), command)
 	if err != nil {
 		panic(err)
 	}
@@ -141,4 +144,24 @@ func getStdout(args []string) string {
 		panic(stderr)
 	}
 	return stdout
+}
+
+func runArgsInTest(ctx context.Context, args string) (string, string, error) {
+	// Create a clone of the app so that we can run from different tests concurrently
+	parser := shellwords.NewParser()
+	parser.ParseEnv = true // Enable environment variable parsing
+	parsedArgs, err := parser.Parse(args)
+	if err != nil {
+		return "", "", errors.WithStack(err)
+	}
+
+	outWriter := bytes.NewBuffer(nil)
+	errWriter := bytes.NewBuffer(nil)
+
+	// Overwrite the stdout and stderr
+	cmd.App.Writer = outWriter
+	cmd.App.ErrWriter = errWriter
+
+	err = cmd.App.RunContext(ctx, parsedArgs)
+	return outWriter.String(), errWriter.String(), err
 }

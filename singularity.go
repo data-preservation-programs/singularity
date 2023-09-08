@@ -13,7 +13,11 @@ import (
 
 //go:generate sh ./docgen.sh
 //go:generate go run github.com/swaggo/swag/cmd/swag@v1.8.12 init --parseDependency --parseInternal -g singularity.go -d .,./api,./handler -o ./docs/swagger
+//go:generate rm -rf ./docs/en/web-api-reference
 //go:generate go run docs/gen/webapireference/main.go
+//go:generate rm -rf ./client
+//go:generate go run github.com/go-swagger/go-swagger/cmd/swagger@v0.30.5 generate client -f ./docs/swagger/swagger.json -t . -c client/swagger/http -m client/swagger/models -a client/swagger/operations -q
+//go:generate npm run gen
 
 //go:embed version.json
 var versionJSON []byte
@@ -41,11 +45,10 @@ func main() {
 		log2.SetAllLoggers(log2.LevelInfo)
 	}
 	cmd.SetupHelpPager()
+	cmd.SetupErrorHandler()
 	err := cmd.SetVersionJSON(versionJSON)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = cmd.App.RunContext(context.TODO(), os.Args); err != nil {
-		log.Fatal(err)
-	}
+	_ = cmd.App.RunContext(context.TODO(), os.Args)
 }

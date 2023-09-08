@@ -13,7 +13,7 @@ export interface ApiHTTPError {
   err?: string;
 }
 
-export interface DatasetAddPieceRequest {
+export interface DataprepAddPieceRequest {
   /** Path to the CAR file, used to determine the size of the file and root CID */
   filePath?: string;
   /** CID of the piece */
@@ -24,4146 +24,66 @@ export interface DatasetAddPieceRequest {
   rootCid?: string;
 }
 
-export interface DatasetCreateRequest {
-  /** Public key of the encryption recipient */
-  encryptionRecipients?: string[];
-  /** EncryptionScript command to run for custom encryption */
-  encryptionScript?: string;
+export interface DataprepCreateRequest {
+  /**
+   * Whether to delete the source files after export
+   * @default false
+   */
+  deleteAfterExport?: boolean;
   /**
    * Maximum size of the CAR files to be created
    * @default "31.5GiB"
    */
   maxSize: string;
-  /** Name must be a unique identifier for a dataset */
+  /** Name of the preparation */
   name: string;
-  /** Output directory for CAR files. Do not set if using inline preparation */
-  outputDirs?: string[];
+  /** Name of Output storage systems to be used for the output */
+  outputStorages?: string[];
   /** Target piece size of the CAR files used for piece commitment calculation */
   pieceSize?: string;
+  /** Name of Source storage systems to be used for the source */
+  sourceStorages: string[];
 }
 
-export interface DatasetUpdateRequest {
-  /** Public key of the encryption recipient */
-  encryptionRecipients?: string[];
-  /** EncryptionScript command to run for custom encryption */
-  encryptionScript?: string;
-  /**
-   * Maximum size of the CAR files to be created
-   * @default "31.5GiB"
-   */
-  maxSize?: string;
-  /** Output directory for CAR files. Do not set if using inline preparation */
-  outputDirs?: string[];
-  /** Target piece size of the CAR files used for piece commitment calculation */
-  pieceSize?: string;
-}
-
-export interface DatasourceAcdRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /** Checkpoint for internal polling (debug). */
-  checkpoint?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Files >= this size will be downloaded via their tempLink.
-   * @default "9Gi"
-   */
-  templinkThreshold?: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-  /**
-   * Additional time per GiB to wait after a failed complete upload to see if it appears.
-   * @default "3m0s"
-   */
-  uploadWaitPerGb?: string;
-}
-
-export interface DatasourceAllConfig {
-  /** Auth server URL. */
-  acdAuthUrl?: string;
-  /** Checkpoint for internal polling (debug). */
-  acdCheckpoint?: string;
-  /** OAuth Client Id. */
-  acdClientId?: string;
-  /** OAuth Client Secret. */
-  acdClientSecret?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  acdEncoding?: string;
-  /**
-   * Files >= this size will be downloaded via their tempLink.
-   * @default "9Gi"
-   */
-  acdTemplinkThreshold?: string;
-  /** OAuth Access Token as a JSON blob. */
-  acdToken?: string;
-  /** Token server url. */
-  acdTokenUrl?: string;
-  /**
-   * Additional time per GiB to wait after a failed complete upload to see if it appears.
-   * @default "3m0s"
-   */
-  acdUploadWaitPerGb?: string;
-  /** Access tier of blob: hot, cool or archive. */
-  azureblobAccessTier?: string;
-  /** Azure Storage Account Name. */
-  azureblobAccount?: string;
-  /**
-   * Delete archive tier blobs before overwriting.
-   * @default "false"
-   */
-  azureblobArchiveTierDelete?: string;
-  /**
-   * Upload chunk size.
-   * @default "4Mi"
-   */
-  azureblobChunkSize?: string;
-  /** Password for the certificate file (optional). */
-  azureblobClientCertificatePassword?: string;
-  /** Path to a PEM or PKCS12 certificate file including the private key. */
-  azureblobClientCertificatePath?: string;
-  /** The ID of the client in use. */
-  azureblobClientId?: string;
-  /** One of the service principal's client secrets */
-  azureblobClientSecret?: string;
-  /**
-   * Send the certificate chain when using certificate auth.
-   * @default "false"
-   */
-  azureblobClientSendCertificateChain?: string;
-  /**
-   * Don't store MD5 checksum with object metadata.
-   * @default "false"
-   */
-  azureblobDisableChecksum?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
-   */
-  azureblobEncoding?: string;
-  /** Endpoint for the service. */
-  azureblobEndpoint?: string;
-  /**
-   * Read credentials from runtime (environment variables, CLI or MSI).
-   * @default "false"
-   */
-  azureblobEnvAuth?: string;
-  /** Storage Account Shared Key. */
-  azureblobKey?: string;
-  /**
-   * Size of blob list.
-   * @default "5000"
-   */
-  azureblobListChunk?: string;
-  /**
-   * How often internal memory buffer pools will be flushed.
-   * @default "1m0s"
-   */
-  azureblobMemoryPoolFlushTime?: string;
-  /**
-   * Whether to use mmap buffers in internal memory pool.
-   * @default "false"
-   */
-  azureblobMemoryPoolUseMmap?: string;
-  /** Object ID of the user-assigned MSI to use, if any. */
-  azureblobMsiClientId?: string;
-  /** Azure resource ID of the user-assigned MSI to use, if any. */
-  azureblobMsiMiResId?: string;
-  /** Object ID of the user-assigned MSI to use, if any. */
-  azureblobMsiObjectId?: string;
-  /**
-   * If set, don't attempt to check the container exists or create it.
-   * @default "false"
-   */
-  azureblobNoCheckContainer?: string;
-  /**
-   * If set, do not do HEAD before GET when getting objects.
-   * @default "false"
-   */
-  azureblobNoHeadObject?: string;
-  /** The user's password */
-  azureblobPassword?: string;
-  /** Public access level of a container: blob or container. */
-  azureblobPublicAccess?: string;
-  /** SAS URL for container level access only. */
-  azureblobSasUrl?: string;
-  /** Path to file containing credentials for use with a service principal. */
-  azureblobServicePrincipalFile?: string;
-  /** ID of the service principal's tenant. Also called its directory ID. */
-  azureblobTenant?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "16"
-   */
-  azureblobUploadConcurrency?: string;
-  /** Cutoff for switching to chunked upload (<= 256 MiB) (deprecated). */
-  azureblobUploadCutoff?: string;
-  /**
-   * Uses local storage emulator if provided as 'true'.
-   * @default "false"
-   */
-  azureblobUseEmulator?: string;
-  /**
-   * Use a managed service identity to authenticate (only works in Azure).
-   * @default "false"
-   */
-  azureblobUseMsi?: string;
-  /** User name (usually an email address) */
-  azureblobUsername?: string;
-  /** Account ID or Application Key ID. */
-  b2Account?: string;
-  /**
-   * Upload chunk size.
-   * @default "96Mi"
-   */
-  b2ChunkSize?: string;
-  /**
-   * Cutoff for switching to multipart copy.
-   * @default "4Gi"
-   */
-  b2CopyCutoff?: string;
-  /**
-   * Disable checksums for large (> upload cutoff) files.
-   * @default "false"
-   */
-  b2DisableChecksum?: string;
-  /**
-   * Time before the authorization token will expire in s or suffix ms|s|m|h|d.
-   * @default "1w"
-   */
-  b2DownloadAuthDuration?: string;
-  /** Custom endpoint for downloads. */
-  b2DownloadUrl?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  b2Encoding?: string;
-  /** Endpoint for the service. */
-  b2Endpoint?: string;
-  /**
-   * Permanently delete files on remote removal, otherwise hide files.
-   * @default "false"
-   */
-  b2HardDelete?: string;
-  /** Application Key. */
-  b2Key?: string;
-  /**
-   * How often internal memory buffer pools will be flushed.
-   * @default "1m0s"
-   */
-  b2MemoryPoolFlushTime?: string;
-  /**
-   * Whether to use mmap buffers in internal memory pool.
-   * @default "false"
-   */
-  b2MemoryPoolUseMmap?: string;
-  /** A flag string for X-Bz-Test-Mode header for debugging. */
-  b2TestMode?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  b2UploadCutoff?: string;
-  /**
-   * Show file versions as they were at the specified time.
-   * @default "off"
-   */
-  b2VersionAt?: string;
-  /**
-   * Include old versions in directory listings.
-   * @default "false"
-   */
-  b2Versions?: string;
-  /** Box App Primary Access Token */
-  boxAccessToken?: string;
-  /** Auth server URL. */
-  boxAuthUrl?: string;
-  /** Box App config.json location */
-  boxBoxConfigFile?: string;
-  /** @default "user" */
-  boxBoxSubType?: string;
-  /** OAuth Client Id. */
-  boxClientId?: string;
-  /** OAuth Client Secret. */
-  boxClientSecret?: string;
-  /**
-   * Max number of times to try committing a multipart file.
-   * @default "100"
-   */
-  boxCommitRetries?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
-   */
-  boxEncoding?: string;
-  /**
-   * Size of listing chunk 1-1000.
-   * @default "1000"
-   */
-  boxListChunk?: string;
-  /** Only show items owned by the login (email address) passed in. */
-  boxOwnedBy?: string;
-  /**
-   * Fill in for rclone to use a non root folder as its starting point.
-   * @default "0"
-   */
-  boxRootFolderId?: string;
-  /** OAuth Access Token as a JSON blob. */
-  boxToken?: string;
-  /** Token server url. */
-  boxTokenUrl?: string;
-  /**
-   * Cutoff for switching to multipart upload (>= 50 MiB).
-   * @default "50Mi"
-   */
-  boxUploadCutoff?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport?: boolean;
-  /**
-   * Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
-   * @default "false"
-   */
-  driveAcknowledgeAbuse?: string;
-  /**
-   * Allow the filetype to change when uploading Google docs.
-   * @default "false"
-   */
-  driveAllowImportNameChange?: string;
-  /**
-   * Deprecated: No longer needed.
-   * @default "false"
-   */
-  driveAlternateExport?: string;
-  /**
-   * Only consider files owned by the authenticated user.
-   * @default "false"
-   */
-  driveAuthOwnerOnly?: string;
-  /** Auth server URL. */
-  driveAuthUrl?: string;
-  /**
-   * Upload chunk size.
-   * @default "8Mi"
-   */
-  driveChunkSize?: string;
-  /** Google Application Client Id */
-  driveClientId?: string;
-  /** OAuth Client Secret. */
-  driveClientSecret?: string;
-  /**
-   * Server side copy contents of shortcuts instead of the shortcut.
-   * @default "false"
-   */
-  driveCopyShortcutContent?: string;
-  /**
-   * Disable drive using http2.
-   * @default "true"
-   */
-  driveDisableHttp2?: string;
-  /**
-   * The encoding for the backend.
-   * @default "InvalidUtf8"
-   */
-  driveEncoding?: string;
-  /**
-   * Comma separated list of preferred formats for downloading Google docs.
-   * @default "docx,xlsx,pptx,svg"
-   */
-  driveExportFormats?: string;
-  /** Deprecated: See export_formats. */
-  driveFormats?: string;
-  /** Impersonate this user when using a service account. */
-  driveImpersonate?: string;
-  /** Comma separated list of preferred formats for uploading Google docs. */
-  driveImportFormats?: string;
-  /**
-   * Keep new head revision of each file forever.
-   * @default "false"
-   */
-  driveKeepRevisionForever?: string;
-  /**
-   * Size of listing chunk 100-1000, 0 to disable.
-   * @default "1000"
-   */
-  driveListChunk?: string;
-  /**
-   * Number of API calls to allow without sleeping.
-   * @default "100"
-   */
-  drivePacerBurst?: string;
-  /**
-   * Minimum time to sleep between API calls.
-   * @default "100ms"
-   */
-  drivePacerMinSleep?: string;
-  /** Resource key for accessing a link-shared file. */
-  driveResourceKey?: string;
-  /** ID of the root folder. */
-  driveRootFolderId?: string;
-  /** Scope that rclone should use when requesting access from drive. */
-  driveScope?: string;
-  /**
-   * Allow server-side operations (e.g. copy) to work across different drive configs.
-   * @default "false"
-   */
-  driveServerSideAcrossConfigs?: string;
-  /** Service Account Credentials JSON blob. */
-  driveServiceAccountCredentials?: string;
-  /** Service Account Credentials JSON file path. */
-  driveServiceAccountFile?: string;
-  /**
-   * Only show files that are shared with me.
-   * @default "false"
-   */
-  driveSharedWithMe?: string;
-  /**
-   * Show sizes as storage quota usage, not actual size.
-   * @default "false"
-   */
-  driveSizeAsQuota?: string;
-  /**
-   * Skip MD5 checksum on Google photos and videos only.
-   * @default "false"
-   */
-  driveSkipChecksumGphotos?: string;
-  /**
-   * If set skip dangling shortcut files.
-   * @default "false"
-   */
-  driveSkipDanglingShortcuts?: string;
-  /**
-   * Skip google documents in all listings.
-   * @default "false"
-   */
-  driveSkipGdocs?: string;
-  /**
-   * If set skip shortcut files.
-   * @default "false"
-   */
-  driveSkipShortcuts?: string;
-  /**
-   * Only show files that are starred.
-   * @default "false"
-   */
-  driveStarredOnly?: string;
-  /**
-   * Make download limit errors be fatal.
-   * @default "false"
-   */
-  driveStopOnDownloadLimit?: string;
-  /**
-   * Make upload limit errors be fatal.
-   * @default "false"
-   */
-  driveStopOnUploadLimit?: string;
-  /** ID of the Shared Drive (Team Drive). */
-  driveTeamDrive?: string;
-  /** OAuth Access Token as a JSON blob. */
-  driveToken?: string;
-  /** Token server url. */
-  driveTokenUrl?: string;
-  /**
-   * Only show files that are in the trash.
-   * @default "false"
-   */
-  driveTrashedOnly?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "8Mi"
-   */
-  driveUploadCutoff?: string;
-  /**
-   * Use file created date instead of modified date.
-   * @default "false"
-   */
-  driveUseCreatedDate?: string;
-  /**
-   * Use date file was shared instead of modified date.
-   * @default "false"
-   */
-  driveUseSharedDate?: string;
-  /**
-   * Send files to the trash instead of deleting permanently.
-   * @default "true"
-   */
-  driveUseTrash?: string;
-  /**
-   * If Object's are greater, use drive v2 API to download.
-   * @default "off"
-   */
-  driveV2DownloadMinSize?: string;
-  /** Auth server URL. */
-  dropboxAuthUrl?: string;
-  /**
-   * Max time to wait for a batch to finish committing
-   * @default "10m0s"
-   */
-  dropboxBatchCommitTimeout?: string;
-  /**
-   * Upload file batching sync|async|off.
-   * @default "sync"
-   */
-  dropboxBatchMode?: string;
-  /**
-   * Max number of files in upload batch.
-   * @default "0"
-   */
-  dropboxBatchSize?: string;
-  /**
-   * Max time to allow an idle upload batch before uploading.
-   * @default "0s"
-   */
-  dropboxBatchTimeout?: string;
-  /**
-   * Upload chunk size (< 150Mi).
-   * @default "48Mi"
-   */
-  dropboxChunkSize?: string;
-  /** OAuth Client Id. */
-  dropboxClientId?: string;
-  /** OAuth Client Secret. */
-  dropboxClientSecret?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
-   */
-  dropboxEncoding?: string;
-  /** Impersonate this user when using a business account. */
-  dropboxImpersonate?: string;
-  /**
-   * Instructs rclone to work on individual shared files.
-   * @default "false"
-   */
-  dropboxSharedFiles?: string;
-  /**
-   * Instructs rclone to work on shared folders.
-   * @default "false"
-   */
-  dropboxSharedFolders?: string;
-  /** OAuth Access Token as a JSON blob. */
-  dropboxToken?: string;
-  /** Token server url. */
-  dropboxTokenUrl?: string;
-  /** Your API Key, get it from https://1fichier.com/console/params.pl. */
-  fichierApiKey?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
-   */
-  fichierEncoding?: string;
-  /** If you want to download a shared file that is password protected, add this parameter. */
-  fichierFilePassword?: string;
-  /** If you want to list the files in a shared folder that is password protected, add this parameter. */
-  fichierFolderPassword?: string;
-  /** If you want to download a shared folder, add this parameter. */
-  fichierSharedFolder?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  filefabricEncoding?: string;
-  /** Permanent Authentication Token. */
-  filefabricPermanentToken?: string;
-  /** ID of the root folder. */
-  filefabricRootFolderId?: string;
-  /** Session Token. */
-  filefabricToken?: string;
-  /** Token expiry time. */
-  filefabricTokenExpiry?: string;
-  /** URL of the Enterprise File Fabric to connect to. */
-  filefabricUrl?: string;
-  /** Version read from the file fabric. */
-  filefabricVersion?: string;
-  /**
-   * Allow asking for FTP password when needed.
-   * @default "false"
-   */
-  ftpAskPassword?: string;
-  /**
-   * Maximum time to wait for a response to close.
-   * @default "1m0s"
-   */
-  ftpCloseTimeout?: string;
-  /**
-   * Maximum number of FTP simultaneous connections, 0 for unlimited.
-   * @default "0"
-   */
-  ftpConcurrency?: string;
-  /**
-   * Disable using EPSV even if server advertises support.
-   * @default "false"
-   */
-  ftpDisableEpsv?: string;
-  /**
-   * Disable using MLSD even if server advertises support.
-   * @default "false"
-   */
-  ftpDisableMlsd?: string;
-  /**
-   * Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
-   * @default "false"
-   */
-  ftpDisableTls13?: string;
-  /**
-   * Disable using UTF-8 even if server advertises support.
-   * @default "false"
-   */
-  ftpDisableUtf8?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Del,Ctl,RightSpace,Dot"
-   */
-  ftpEncoding?: string;
-  /**
-   * Use Explicit FTPS (FTP over TLS).
-   * @default "false"
-   */
-  ftpExplicitTls?: string;
-  /**
-   * Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
-   * @default "false"
-   */
-  ftpForceListHidden?: string;
-  /** FTP host to connect to. */
-  ftpHost?: string;
-  /**
-   * Max time before closing idle connections.
-   * @default "1m0s"
-   */
-  ftpIdleTimeout?: string;
-  /**
-   * Do not verify the TLS certificate of the server.
-   * @default "false"
-   */
-  ftpNoCheckCertificate?: string;
-  /** FTP password. */
-  ftpPass?: string;
-  /**
-   * FTP port number.
-   * @default "21"
-   */
-  ftpPort?: string;
-  /**
-   * Maximum time to wait for data connection closing status.
-   * @default "1m0s"
-   */
-  ftpShutTimeout?: string;
-  /**
-   * Use Implicit FTPS (FTP over TLS).
-   * @default "false"
-   */
-  ftpTls?: string;
-  /**
-   * Size of TLS session cache for all control and data connections.
-   * @default "32"
-   */
-  ftpTlsCacheSize?: string;
-  /**
-   * FTP username.
-   * @default "$USER"
-   */
-  ftpUser?: string;
-  /**
-   * Use MDTM to set modification time (VsFtpd quirk)
-   * @default "false"
-   */
-  ftpWritingMdtm?: string;
-  /**
-   * Access public buckets and objects without credentials.
-   * @default "false"
-   */
-  gcsAnonymous?: string;
-  /** Auth server URL. */
-  gcsAuthUrl?: string;
-  /** Access Control List for new buckets. */
-  gcsBucketAcl?: string;
-  /**
-   * Access checks should use bucket-level IAM policies.
-   * @default "false"
-   */
-  gcsBucketPolicyOnly?: string;
-  /** OAuth Client Id. */
-  gcsClientId?: string;
-  /** OAuth Client Secret. */
-  gcsClientSecret?: string;
-  /**
-   * If set this will decompress gzip encoded objects.
-   * @default "false"
-   */
-  gcsDecompress?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,CrLf,InvalidUtf8,Dot"
-   */
-  gcsEncoding?: string;
-  /** Endpoint for the service. */
-  gcsEndpoint?: string;
-  /**
-   * Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
-   * @default "false"
-   */
-  gcsEnvAuth?: string;
-  /** Location for the newly created buckets. */
-  gcsLocation?: string;
-  /**
-   * If set, don't attempt to check the bucket exists or create it.
-   * @default "false"
-   */
-  gcsNoCheckBucket?: string;
-  /** Access Control List for new objects. */
-  gcsObjectAcl?: string;
-  /** Project number. */
-  gcsProjectNumber?: string;
-  /** Service Account Credentials JSON blob. */
-  gcsServiceAccountCredentials?: string;
-  /** Service Account Credentials JSON file path. */
-  gcsServiceAccountFile?: string;
-  /** The storage class to use when storing objects in Google Cloud Storage. */
-  gcsStorageClass?: string;
-  /** OAuth Access Token as a JSON blob. */
-  gcsToken?: string;
-  /** Token server url. */
-  gcsTokenUrl?: string;
-  /** Auth server URL. */
-  gphotosAuthUrl?: string;
-  /** OAuth Client Id. */
-  gphotosClientId?: string;
-  /** OAuth Client Secret. */
-  gphotosClientSecret?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,CrLf,InvalidUtf8,Dot"
-   */
-  gphotosEncoding?: string;
-  /**
-   * Also view and download archived media.
-   * @default "false"
-   */
-  gphotosIncludeArchived?: string;
-  /**
-   * Set to make the Google Photos backend read only.
-   * @default "false"
-   */
-  gphotosReadOnly?: string;
-  /**
-   * Set to read the size of media items.
-   * @default "false"
-   */
-  gphotosReadSize?: string;
-  /**
-   * Year limits the photos to be downloaded to those which are uploaded after the given year.
-   * @default "2000"
-   */
-  gphotosStartYear?: string;
-  /** OAuth Access Token as a JSON blob. */
-  gphotosToken?: string;
-  /** Token server url. */
-  gphotosTokenUrl?: string;
-  /** Kerberos data transfer protection: authentication|integrity|privacy. */
-  hdfsDataTransferProtection?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
-   */
-  hdfsEncoding?: string;
-  /** Hadoop name node and port. */
-  hdfsNamenode?: string;
-  /** Kerberos service principal name for the namenode. */
-  hdfsServicePrincipalName?: string;
-  /** Hadoop user name. */
-  hdfsUsername?: string;
-  /** Auth server URL. */
-  hidriveAuthUrl?: string;
-  /**
-   * Chunksize for chunked uploads.
-   * @default "48Mi"
-   */
-  hidriveChunkSize?: string;
-  /** OAuth Client Id. */
-  hidriveClientId?: string;
-  /** OAuth Client Secret. */
-  hidriveClientSecret?: string;
-  /**
-   * Do not fetch number of objects in directories unless it is absolutely necessary.
-   * @default "false"
-   */
-  hidriveDisableFetchingMemberCount?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Dot"
-   */
-  hidriveEncoding?: string;
-  /**
-   * Endpoint for the service.
-   * @default "https://api.hidrive.strato.com/2.1"
-   */
-  hidriveEndpoint?: string;
-  /**
-   * The root/parent folder for all paths.
-   * @default "/"
-   */
-  hidriveRootPrefix?: string;
-  /**
-   * Access permissions that rclone should use when requesting access from HiDrive.
-   * @default "rw"
-   */
-  hidriveScopeAccess?: string;
-  /**
-   * User-level that rclone should use when requesting access from HiDrive.
-   * @default "user"
-   */
-  hidriveScopeRole?: string;
-  /** OAuth Access Token as a JSON blob. */
-  hidriveToken?: string;
-  /** Token server url. */
-  hidriveTokenUrl?: string;
-  /**
-   * Concurrency for chunked uploads.
-   * @default "4"
-   */
-  hidriveUploadConcurrency?: string;
-  /**
-   * Cutoff/Threshold for chunked uploads.
-   * @default "96Mi"
-   */
-  hidriveUploadCutoff?: string;
-  /** Set HTTP headers for all transactions. */
-  httpHeaders?: string;
-  /**
-   * Don't use HEAD requests.
-   * @default "false"
-   */
-  httpNoHead?: string;
-  /**
-   * Set this if the site doesn't end directories with /.
-   * @default "false"
-   */
-  httpNoSlash?: string;
-  /** URL of HTTP host to connect to. */
-  httpUrl?: string;
-  /** IAS3 Access Key. */
-  internetarchiveAccessKeyId?: string;
-  /**
-   * Don't ask the server to test against MD5 checksum calculated by rclone.
-   * @default "true"
-   */
-  internetarchiveDisableChecksum?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
-   */
-  internetarchiveEncoding?: string;
-  /**
-   * IAS3 Endpoint.
-   * @default "https://s3.us.archive.org"
-   */
-  internetarchiveEndpoint?: string;
-  /**
-   * Host of InternetArchive Frontend.
-   * @default "https://archive.org"
-   */
-  internetarchiveFrontEndpoint?: string;
-  /** IAS3 Secret Key (password). */
-  internetarchiveSecretAccessKey?: string;
-  /**
-   * Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
-   * @default "0s"
-   */
-  internetarchiveWaitArchive?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
-   */
-  jottacloudEncoding?: string;
-  /**
-   * Delete files permanently rather than putting them into the trash.
-   * @default "false"
-   */
-  jottacloudHardDelete?: string;
-  /**
-   * Files bigger than this will be cached on disk to calculate the MD5 if required.
-   * @default "10Mi"
-   */
-  jottacloudMd5MemoryLimit?: string;
-  /**
-   * Avoid server side versioning by deleting files and recreating files instead of overwriting them.
-   * @default "false"
-   */
-  jottacloudNoVersions?: string;
-  /**
-   * Only show files that are in the trash.
-   * @default "false"
-   */
-  jottacloudTrashedOnly?: string;
-  /**
-   * Files bigger than this can be resumed if the upload fail's.
-   * @default "10Mi"
-   */
-  jottacloudUploadResumeLimit?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  koofrEncoding?: string;
-  /** The Koofr API endpoint to use. */
-  koofrEndpoint?: string;
-  /** Mount ID of the mount to use. */
-  koofrMountid?: string;
-  /** Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password). */
-  koofrPassword?: string;
-  /** Choose your storage provider. */
-  koofrProvider?: string;
-  /**
-   * Does the backend support setting modification time.
-   * @default "true"
-   */
-  koofrSetmtime?: string;
-  /** Your user name. */
-  koofrUser?: string;
-  /**
-   * Force the filesystem to report itself as case insensitive.
-   * @default "false"
-   */
-  localCaseInsensitive?: string;
-  /**
-   * Force the filesystem to report itself as case sensitive.
-   * @default "false"
-   */
-  localCaseSensitive?: string;
-  /**
-   * Follow symlinks and copy the pointed to item.
-   * @default "false"
-   */
-  localCopyLinks?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Dot"
-   */
-  localEncoding?: string;
-  /**
-   * Translate symlinks to/from regular files with a '.rclonelink' extension.
-   * @default "false"
-   */
-  localLinks?: string;
-  /**
-   * Don't check to see if the files change during upload.
-   * @default "false"
-   */
-  localNoCheckUpdated?: string;
-  /**
-   * Disable preallocation of disk space for transferred files.
-   * @default "false"
-   */
-  localNoPreallocate?: string;
-  /**
-   * Disable setting modtime.
-   * @default "false"
-   */
-  localNoSetModtime?: string;
-  /**
-   * Disable sparse files for multi-thread downloads.
-   * @default "false"
-   */
-  localNoSparse?: string;
-  /**
-   * Disable UNC (long path names) conversion on Windows.
-   * @default "false"
-   */
-  localNounc?: string;
-  /**
-   * Don't cross filesystem boundaries (unix/macOS only).
-   * @default "false"
-   */
-  localOneFileSystem?: string;
-  /**
-   * Don't warn about skipped symlinks.
-   * @default "false"
-   */
-  localSkipLinks?: string;
-  /**
-   * Apply unicode NFC normalization to paths and filenames.
-   * @default "false"
-   */
-  localUnicodeNormalization?: string;
-  /**
-   * Assume the Stat size of links is zero (and read them instead) (deprecated).
-   * @default "false"
-   */
-  localZeroSizeLinks?: string;
-  /**
-   * What should copy do if file checksum is mismatched or invalid.
-   * @default "true"
-   */
-  mailruCheckHash?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  mailruEncoding?: string;
-  /** Password. */
-  mailruPass?: string;
-  /** Comma separated list of internal maintenance flags. */
-  mailruQuirks?: string;
-  /**
-   * Skip full upload if there is another file with same data hash.
-   * @default "true"
-   */
-  mailruSpeedupEnable?: string;
-  /**
-   * Comma separated list of file name patterns eligible for speedup (put by hash).
-   * @default "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
-   */
-  mailruSpeedupFilePatterns?: string;
-  /**
-   * This option allows you to disable speedup (put by hash) for large files.
-   * @default "3Gi"
-   */
-  mailruSpeedupMaxDisk?: string;
-  /**
-   * Files larger than the size given below will always be hashed on disk.
-   * @default "32Mi"
-   */
-  mailruSpeedupMaxMemory?: string;
-  /** User name (usually email). */
-  mailruUser?: string;
-  /** HTTP user agent used internally by client. */
-  mailruUserAgent?: string;
-  /**
-   * Output more debug from Mega.
-   * @default "false"
-   */
-  megaDebug?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  megaEncoding?: string;
-  /**
-   * Delete files permanently rather than putting them into the trash.
-   * @default "false"
-   */
-  megaHardDelete?: string;
-  /** Password. */
-  megaPass?: string;
-  /**
-   * Use HTTPS for transfers.
-   * @default "false"
-   */
-  megaUseHttps?: string;
-  /** User name. */
-  megaUser?: string;
-  /** Set the NetStorage account name */
-  netstorageAccount?: string;
-  /** Domain+path of NetStorage host to connect to. */
-  netstorageHost?: string;
-  /**
-   * Select between HTTP or HTTPS protocol.
-   * @default "https"
-   */
-  netstorageProtocol?: string;
-  /** Set the NetStorage account secret/G2O key for authentication. */
-  netstorageSecret?: string;
-  /**
-   * Set scopes to be requested by rclone.
-   * @default "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
-   */
-  onedriveAccessScopes?: string;
-  /** Auth server URL. */
-  onedriveAuthUrl?: string;
-  /**
-   * Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
-   * @default "10Mi"
-   */
-  onedriveChunkSize?: string;
-  /** OAuth Client Id. */
-  onedriveClientId?: string;
-  /** OAuth Client Secret. */
-  onedriveClientSecret?: string;
-  /**
-   * Disable the request for Sites.Read.All permission.
-   * @default "false"
-   */
-  onedriveDisableSitePermission?: string;
-  /** The ID of the drive to use. */
-  onedriveDriveId?: string;
-  /** The type of the drive (personal | business | documentLibrary). */
-  onedriveDriveType?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
-   */
-  onedriveEncoding?: string;
-  /**
-   * Set to make OneNote files show up in directory listings.
-   * @default "false"
-   */
-  onedriveExposeOnenoteFiles?: string;
-  /**
-   * Specify the hash in use for the backend.
-   * @default "auto"
-   */
-  onedriveHashType?: string;
-  /** Set the password for links created by the link command. */
-  onedriveLinkPassword?: string;
-  /**
-   * Set the scope of the links created by the link command.
-   * @default "anonymous"
-   */
-  onedriveLinkScope?: string;
-  /**
-   * Set the type of the links created by the link command.
-   * @default "view"
-   */
-  onedriveLinkType?: string;
-  /**
-   * Size of listing chunk.
-   * @default "1000"
-   */
-  onedriveListChunk?: string;
-  /**
-   * Remove all versions on modifying operations.
-   * @default "false"
-   */
-  onedriveNoVersions?: string;
-  /**
-   * Choose national cloud region for OneDrive.
-   * @default "global"
-   */
-  onedriveRegion?: string;
-  /** ID of the root folder. */
-  onedriveRootFolderId?: string;
-  /**
-   * Allow server-side operations (e.g. copy) to work across different onedrive configs.
-   * @default "false"
-   */
-  onedriveServerSideAcrossConfigs?: string;
-  /** OAuth Access Token as a JSON blob. */
-  onedriveToken?: string;
-  /** Token server url. */
-  onedriveTokenUrl?: string;
-  /**
-   * Chunk size to use for uploading.
-   * @default "5Mi"
-   */
-  oosChunkSize?: string;
-  /** Object storage compartment OCID */
-  oosCompartment?: string;
-  /**
-   * Path to OCI config file
-   * @default "~/.oci/config"
-   */
-  oosConfigFile?: string;
-  /**
-   * Profile name inside the oci config file
-   * @default "Default"
-   */
-  oosConfigProfile?: string;
-  /**
-   * Cutoff for switching to multipart copy.
-   * @default "4.656Gi"
-   */
-  oosCopyCutoff?: string;
-  /**
-   * Timeout for copy.
-   * @default "1m0s"
-   */
-  oosCopyTimeout?: string;
-  /**
-   * Don't store MD5 checksum with object metadata.
-   * @default "false"
-   */
-  oosDisableChecksum?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  oosEncoding?: string;
-  /** Endpoint for Object storage API. */
-  oosEndpoint?: string;
-  /**
-   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
-   * @default "false"
-   */
-  oosLeavePartsOnError?: string;
-  /** Object storage namespace */
-  oosNamespace?: string;
-  /**
-   * If set, don't attempt to check the bucket exists or create it.
-   * @default "false"
-   */
-  oosNoCheckBucket?: string;
-  /**
-   * Choose your Auth Provider
-   * @default "env_auth"
-   */
-  oosProvider?: string;
-  /** Object storage Region */
-  oosRegion?: string;
-  /** If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm. */
-  oosSseCustomerAlgorithm?: string;
-  /** To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to */
-  oosSseCustomerKey?: string;
-  /** To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated */
-  oosSseCustomerKeyFile?: string;
-  /** If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption */
-  oosSseCustomerKeySha256?: string;
-  /** if using using your own master key in vault, this header specifies the */
-  oosSseKmsKeyId?: string;
-  /**
-   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
-   * @default "Standard"
-   */
-  oosStorageTier?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "10"
-   */
-  oosUploadConcurrency?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  oosUploadCutoff?: string;
-  /**
-   * Files will be uploaded in chunks this size.
-   * @default "10Mi"
-   */
-  opendriveChunkSize?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
-   */
-  opendriveEncoding?: string;
-  /** Password. */
-  opendrivePassword?: string;
-  /** Username. */
-  opendriveUsername?: string;
-  /** Auth server URL. */
-  pcloudAuthUrl?: string;
-  /** OAuth Client Id. */
-  pcloudClientId?: string;
-  /** OAuth Client Secret. */
-  pcloudClientSecret?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  pcloudEncoding?: string;
-  /**
-   * Hostname to connect to.
-   * @default "api.pcloud.com"
-   */
-  pcloudHostname?: string;
-  /** Your pcloud password. */
-  pcloudPassword?: string;
-  /**
-   * Fill in for rclone to use a non root folder as its starting point.
-   * @default "d0"
-   */
-  pcloudRootFolderId?: string;
-  /** OAuth Access Token as a JSON blob. */
-  pcloudToken?: string;
-  /** Token server url. */
-  pcloudTokenUrl?: string;
-  /** Your pcloud username. */
-  pcloudUsername?: string;
-  /** API Key. */
-  premiumizemeApiKey?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  premiumizemeEncoding?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  putioEncoding?: string;
-  /** QingStor Access Key ID. */
-  qingstorAccessKeyId?: string;
-  /**
-   * Chunk size to use for uploading.
-   * @default "4Mi"
-   */
-  qingstorChunkSize?: string;
-  /**
-   * Number of connection retries.
-   * @default "3"
-   */
-  qingstorConnectionRetries?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Ctl,InvalidUtf8"
-   */
-  qingstorEncoding?: string;
-  /** Enter an endpoint URL to connection QingStor API. */
-  qingstorEndpoint?: string;
-  /**
-   * Get QingStor credentials from runtime.
-   * @default "false"
-   */
-  qingstorEnvAuth?: string;
-  /** QingStor Secret Access Key (password). */
-  qingstorSecretAccessKey?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "1"
-   */
-  qingstorUploadConcurrency?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  qingstorUploadCutoff?: string;
-  /** Zone to connect to. */
-  qingstorZone?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval?: string;
-  /** AWS Access Key ID. */
-  s3AccessKeyId?: string;
-  /** Canned ACL used when creating buckets and storing or copying objects. */
-  s3Acl?: string;
-  /** Canned ACL used when creating buckets. */
-  s3BucketAcl?: string;
-  /**
-   * Chunk size to use for uploading.
-   * @default "5Mi"
-   */
-  s3ChunkSize?: string;
-  /**
-   * Cutoff for switching to multipart copy.
-   * @default "4.656Gi"
-   */
-  s3CopyCutoff?: string;
-  /**
-   * If set this will decompress gzip encoded objects.
-   * @default "false"
-   */
-  s3Decompress?: string;
-  /**
-   * Don't store MD5 checksum with object metadata.
-   * @default "false"
-   */
-  s3DisableChecksum?: string;
-  /**
-   * Disable usage of http2 for S3 backends.
-   * @default "false"
-   */
-  s3DisableHttp2?: string;
-  /** Custom endpoint for downloads. */
-  s3DownloadUrl?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  s3Encoding?: string;
-  /** Endpoint for S3 API. */
-  s3Endpoint?: string;
-  /**
-   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-   * @default "false"
-   */
-  s3EnvAuth?: string;
-  /**
-   * If true use path style access if false use virtual hosted style.
-   * @default "true"
-   */
-  s3ForcePathStyle?: string;
-  /**
-   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
-   * @default "false"
-   */
-  s3LeavePartsOnError?: string;
-  /**
-   * Size of listing chunk (response list for each ListObject S3 request).
-   * @default "1000"
-   */
-  s3ListChunk?: string;
-  /**
-   * Whether to url encode listings: true/false/unset
-   * @default "unset"
-   */
-  s3ListUrlEncode?: string;
-  /**
-   * Version of ListObjects to use: 1,2 or 0 for auto.
-   * @default "0"
-   */
-  s3ListVersion?: string;
-  /** Location constraint - must be set to match the Region. */
-  s3LocationConstraint?: string;
-  /**
-   * Maximum number of parts in a multipart upload.
-   * @default "10000"
-   */
-  s3MaxUploadParts?: string;
-  /**
-   * How often internal memory buffer pools will be flushed.
-   * @default "1m0s"
-   */
-  s3MemoryPoolFlushTime?: string;
-  /**
-   * Whether to use mmap buffers in internal memory pool.
-   * @default "false"
-   */
-  s3MemoryPoolUseMmap?: string;
-  /**
-   * Set this if the backend might gzip objects.
-   * @default "unset"
-   */
-  s3MightGzip?: string;
-  /**
-   * If set, don't attempt to check the bucket exists or create it.
-   * @default "false"
-   */
-  s3NoCheckBucket?: string;
-  /**
-   * If set, don't HEAD uploaded objects to check integrity.
-   * @default "false"
-   */
-  s3NoHead?: string;
-  /**
-   * If set, do not do HEAD before GET when getting objects.
-   * @default "false"
-   */
-  s3NoHeadObject?: string;
-  /**
-   * Suppress setting and reading of system metadata
-   * @default "false"
-   */
-  s3NoSystemMetadata?: string;
-  /** Profile to use in the shared credentials file. */
-  s3Profile?: string;
-  /** Choose your S3 provider. */
-  s3Provider?: string;
-  /** Region to connect to. */
-  s3Region?: string;
-  /**
-   * Enables requester pays option when interacting with S3 bucket.
-   * @default "false"
-   */
-  s3RequesterPays?: string;
-  /** AWS Secret Access Key (password). */
-  s3SecretAccessKey?: string;
-  /** The server-side encryption algorithm used when storing this object in S3. */
-  s3ServerSideEncryption?: string;
-  /** An AWS session token. */
-  s3SessionToken?: string;
-  /** Path to the shared credentials file. */
-  s3SharedCredentialsFile?: string;
-  /** If using SSE-C, the server-side encryption algorithm used when storing this object in S3. */
-  s3SseCustomerAlgorithm?: string;
-  /** To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data. */
-  s3SseCustomerKey?: string;
-  /** If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data. */
-  s3SseCustomerKeyBase64?: string;
-  /** If using SSE-C you may provide the secret encryption key MD5 checksum (optional). */
-  s3SseCustomerKeyMd5?: string;
-  /** If using KMS ID you must provide the ARN of Key. */
-  s3SseKmsKeyId?: string;
-  /** The storage class to use when storing new objects in S3. */
-  s3StorageClass?: string;
-  /** Endpoint for STS. */
-  s3StsEndpoint?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "4"
-   */
-  s3UploadConcurrency?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  s3UploadCutoff?: string;
-  /**
-   * If true use the AWS S3 accelerated endpoint.
-   * @default "false"
-   */
-  s3UseAccelerateEndpoint?: string;
-  /**
-   * Whether to use ETag in multipart uploads for verification
-   * @default "unset"
-   */
-  s3UseMultipartEtag?: string;
-  /**
-   * Whether to use a presigned request or PutObject for single part uploads
-   * @default "false"
-   */
-  s3UsePresignedRequest?: string;
-  /**
-   * If true use v2 authentication.
-   * @default "false"
-   */
-  s3V2Auth?: string;
-  /**
-   * Show file versions as they were at the specified time.
-   * @default "off"
-   */
-  s3VersionAt?: string;
-  /**
-   * Include old versions in directory listings.
-   * @default "false"
-   */
-  s3Versions?: string;
-  /** Starting state for scanning */
-  scanningState?: ModelWorkState;
-  /**
-   * Two-factor authentication ('true' if the account has 2FA enabled).
-   * @default "false"
-   */
-  seafile2fa?: string;
-  /** Authentication token. */
-  seafileAuthToken?: string;
-  /**
-   * Should rclone create a library if it doesn't exist.
-   * @default "false"
-   */
-  seafileCreateLibrary?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
-   */
-  seafileEncoding?: string;
-  /** Name of the library. */
-  seafileLibrary?: string;
-  /** Library password (for encrypted libraries only). */
-  seafileLibraryKey?: string;
-  /** Password. */
-  seafilePass?: string;
-  /** URL of seafile host to connect to. */
-  seafileUrl?: string;
-  /** User name (usually email address). */
-  seafileUser?: string;
-  /**
-   * Allow asking for SFTP password when needed.
-   * @default "false"
-   */
-  sftpAskPassword?: string;
-  /**
-   * Upload and download chunk size.
-   * @default "32Ki"
-   */
-  sftpChunkSize?: string;
-  /** Space separated list of ciphers to be used for session encryption, ordered by preference. */
-  sftpCiphers?: string;
-  /**
-   * The maximum number of outstanding requests for one file
-   * @default "64"
-   */
-  sftpConcurrency?: string;
-  /**
-   * If set don't use concurrent reads.
-   * @default "false"
-   */
-  sftpDisableConcurrentReads?: string;
-  /**
-   * If set don't use concurrent writes.
-   * @default "false"
-   */
-  sftpDisableConcurrentWrites?: string;
-  /**
-   * Disable the execution of SSH commands to determine if remote file hashing is available.
-   * @default "false"
-   */
-  sftpDisableHashcheck?: string;
-  /** SSH host to connect to. */
-  sftpHost?: string;
-  /**
-   * Max time before closing idle connections.
-   * @default "1m0s"
-   */
-  sftpIdleTimeout?: string;
-  /** Space separated list of key exchange algorithms, ordered by preference. */
-  sftpKeyExchange?: string;
-  /** Path to PEM-encoded private key file. */
-  sftpKeyFile?: string;
-  /** The passphrase to decrypt the PEM-encoded private key file. */
-  sftpKeyFilePass?: string;
-  /** Raw PEM-encoded private key. */
-  sftpKeyPem?: string;
-  /**
-   * When set forces the usage of the ssh-agent.
-   * @default "false"
-   */
-  sftpKeyUseAgent?: string;
-  /** Optional path to known_hosts file. */
-  sftpKnownHostsFile?: string;
-  /** Space separated list of MACs (message authentication code) algorithms, ordered by preference. */
-  sftpMacs?: string;
-  /** The command used to read md5 hashes. */
-  sftpMd5sumCommand?: string;
-  /** SSH password, leave blank to use ssh-agent. */
-  sftpPass?: string;
-  /** Override path used by SSH shell commands. */
-  sftpPathOverride?: string;
-  /**
-   * SSH port number.
-   * @default "22"
-   */
-  sftpPort?: string;
-  /** Optional path to public key file. */
-  sftpPubkeyFile?: string;
-  /** Specifies the path or command to run a sftp server on the remote host. */
-  sftpServerCommand?: string;
-  /** Environment variables to pass to sftp and commands */
-  sftpSetEnv?: string;
-  /**
-   * Set the modified time on the remote if set.
-   * @default "true"
-   */
-  sftpSetModtime?: string;
-  /** The command used to read sha1 hashes. */
-  sftpSha1sumCommand?: string;
-  /** The type of SSH shell on remote server, if any. */
-  sftpShellType?: string;
-  /**
-   * Set to skip any symlinks and any other non regular files.
-   * @default "false"
-   */
-  sftpSkipLinks?: string;
-  /**
-   * Specifies the SSH2 subsystem on the remote host.
-   * @default "sftp"
-   */
-  sftpSubsystem?: string;
-  /**
-   * If set use fstat instead of stat.
-   * @default "false"
-   */
-  sftpUseFstat?: string;
-  /**
-   * Enable the use of insecure ciphers and key exchange methods.
-   * @default "false"
-   */
-  sftpUseInsecureCipher?: string;
-  /**
-   * SSH username.
-   * @default "$USER"
-   */
-  sftpUser?: string;
-  /**
-   * Upload chunk size.
-   * @default "64Mi"
-   */
-  sharefileChunkSize?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
-   */
-  sharefileEncoding?: string;
-  /** Endpoint for API calls. */
-  sharefileEndpoint?: string;
-  /** ID of the root folder. */
-  sharefileRootFolderId?: string;
-  /**
-   * Cutoff for switching to multipart upload.
-   * @default "128Mi"
-   */
-  sharefileUploadCutoff?: string;
-  /** Sia Daemon API Password. */
-  siaApiPassword?: string;
-  /**
-   * Sia daemon API URL, like http://sia.daemon.host:9980.
-   * @default "http://127.0.0.1:9980"
-   */
-  siaApiUrl?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
-   */
-  siaEncoding?: string;
-  /**
-   * Siad User Agent
-   * @default "Sia-Agent"
-   */
-  siaUserAgent?: string;
-  /**
-   * Whether the server is configured to be case-insensitive.
-   * @default "true"
-   */
-  smbCaseInsensitive?: string;
-  /**
-   * Domain name for NTLM authentication.
-   * @default "WORKGROUP"
-   */
-  smbDomain?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
-   */
-  smbEncoding?: string;
-  /**
-   * Hide special shares (e.g. print$) which users aren't supposed to access.
-   * @default "true"
-   */
-  smbHideSpecialShare?: string;
-  /** SMB server hostname to connect to. */
-  smbHost?: string;
-  /**
-   * Max time before closing idle connections.
-   * @default "1m0s"
-   */
-  smbIdleTimeout?: string;
-  /** SMB password. */
-  smbPass?: string;
-  /**
-   * SMB port number.
-   * @default "445"
-   */
-  smbPort?: string;
-  /** Service principal name. */
-  smbSpn?: string;
-  /**
-   * SMB username.
-   * @default "$USER"
-   */
-  smbUser?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Access grant. */
-  storjAccessGrant?: string;
-  /** API key. */
-  storjApiKey?: string;
-  /** Encryption passphrase. */
-  storjPassphrase?: string;
-  /**
-   * Choose an authentication method.
-   * @default "existing"
-   */
-  storjProvider?: string;
-  /**
-   * Satellite address.
-   * @default "us1.storj.io"
-   */
-  storjSatelliteAddress?: string;
-  /** Sugarsync Access Key ID. */
-  sugarsyncAccessKeyId?: string;
-  /** Sugarsync App ID. */
-  sugarsyncAppId?: string;
-  /** Sugarsync authorization. */
-  sugarsyncAuthorization?: string;
-  /** Sugarsync authorization expiry. */
-  sugarsyncAuthorizationExpiry?: string;
-  /** Sugarsync deleted folder id. */
-  sugarsyncDeletedId?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Ctl,InvalidUtf8,Dot"
-   */
-  sugarsyncEncoding?: string;
-  /**
-   * Permanently delete files if true
-   * @default "false"
-   */
-  sugarsyncHardDelete?: string;
-  /** Sugarsync Private Access Key. */
-  sugarsyncPrivateAccessKey?: string;
-  /** Sugarsync refresh token. */
-  sugarsyncRefreshToken?: string;
-  /** Sugarsync root id. */
-  sugarsyncRootId?: string;
-  /** Sugarsync user. */
-  sugarsyncUser?: string;
-  /** Application Credential ID (OS_APPLICATION_CREDENTIAL_ID). */
-  swiftApplicationCredentialId?: string;
-  /** Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME). */
-  swiftApplicationCredentialName?: string;
-  /** Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET). */
-  swiftApplicationCredentialSecret?: string;
-  /** Authentication URL for server (OS_AUTH_URL). */
-  swiftAuth?: string;
-  /** Auth Token from alternate authentication - optional (OS_AUTH_TOKEN). */
-  swiftAuthToken?: string;
-  /**
-   * AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).
-   * @default "0"
-   */
-  swiftAuthVersion?: string;
-  /**
-   * Above this size files will be chunked into a _segments container.
-   * @default "5Gi"
-   */
-  swiftChunkSize?: string;
-  /** User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME) */
-  swiftDomain?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8"
-   */
-  swiftEncoding?: string;
-  /**
-   * Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
-   * @default "public"
-   */
-  swiftEndpointType?: string;
-  /**
-   * Get swift credentials from environment variables in standard OpenStack form.
-   * @default "false"
-   */
-  swiftEnvAuth?: string;
-  /** API key or password (OS_PASSWORD). */
-  swiftKey?: string;
-  /**
-   * If true avoid calling abort upload on a failure.
-   * @default "false"
-   */
-  swiftLeavePartsOnError?: string;
-  /**
-   * Don't chunk files during streaming upload.
-   * @default "false"
-   */
-  swiftNoChunk?: string;
-  /**
-   * Disable support for static and dynamic large objects
-   * @default "false"
-   */
-  swiftNoLargeObjects?: string;
-  /** Region name - optional (OS_REGION_NAME). */
-  swiftRegion?: string;
-  /** The storage policy to use when creating a new container. */
-  swiftStoragePolicy?: string;
-  /** Storage URL - optional (OS_STORAGE_URL). */
-  swiftStorageUrl?: string;
-  /** Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME). */
-  swiftTenant?: string;
-  /** Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME). */
-  swiftTenantDomain?: string;
-  /** Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID). */
-  swiftTenantId?: string;
-  /** User name to log in (OS_USERNAME). */
-  swiftUser?: string;
-  /** User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID). */
-  swiftUserId?: string;
-  /** Your access token. */
-  uptoboxAccessToken?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
-   */
-  uptoboxEncoding?: string;
-  /** Bearer token instead of user/pass (e.g. a Macaroon). */
-  webdavBearerToken?: string;
-  /** Command to run to get a bearer token. */
-  webdavBearerTokenCommand?: string;
-  /** The encoding for the backend. */
-  webdavEncoding?: string;
-  /** Set HTTP headers for all transactions. */
-  webdavHeaders?: string;
-  /** Password. */
-  webdavPass?: string;
-  /** URL of http host to connect to. */
-  webdavUrl?: string;
-  /** User name. */
-  webdavUser?: string;
-  /** Name of the WebDAV site/service/software you are using. */
-  webdavVendor?: string;
-  /** Auth server URL. */
-  yandexAuthUrl?: string;
-  /** OAuth Client Id. */
-  yandexClientId?: string;
-  /** OAuth Client Secret. */
-  yandexClientSecret?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  yandexEncoding?: string;
-  /**
-   * Delete files permanently rather than putting them into the trash.
-   * @default "false"
-   */
-  yandexHardDelete?: string;
-  /** OAuth Access Token as a JSON blob. */
-  yandexToken?: string;
-  /** Token server url. */
-  yandexTokenUrl?: string;
-  /** Auth server URL. */
-  zohoAuthUrl?: string;
-  /** OAuth Client Id. */
-  zohoClientId?: string;
-  /** OAuth Client Secret. */
-  zohoClientSecret?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Del,Ctl,InvalidUtf8"
-   */
-  zohoEncoding?: string;
-  /** Zoho region to connect to. */
-  zohoRegion?: string;
-  /** OAuth Access Token as a JSON blob. */
-  zohoToken?: string;
-  /** Token server url. */
-  zohoTokenUrl?: string;
-}
-
-export interface DatasourceAzureblobRequest {
-  /** Access tier of blob: hot, cool or archive. */
-  accessTier?: string;
-  /** Azure Storage Account Name. */
-  account?: string;
-  /**
-   * Delete archive tier blobs before overwriting.
-   * @default "false"
-   */
-  archiveTierDelete?: string;
-  /**
-   * Upload chunk size.
-   * @default "4Mi"
-   */
-  chunkSize?: string;
-  /** Password for the certificate file (optional). */
-  clientCertificatePassword?: string;
-  /** Path to a PEM or PKCS12 certificate file including the private key. */
-  clientCertificatePath?: string;
-  /** The ID of the client in use. */
-  clientId?: string;
-  /** One of the service principal's client secrets */
-  clientSecret?: string;
-  /**
-   * Send the certificate chain when using certificate auth.
-   * @default "false"
-   */
-  clientSendCertificateChain?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Don't store MD5 checksum with object metadata.
-   * @default "false"
-   */
-  disableChecksum?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
-   */
-  encoding?: string;
-  /** Endpoint for the service. */
-  endpoint?: string;
-  /**
-   * Read credentials from runtime (environment variables, CLI or MSI).
-   * @default "false"
-   */
-  envAuth?: string;
-  /** Storage Account Shared Key. */
-  key?: string;
-  /**
-   * Size of blob list.
-   * @default "5000"
-   */
-  listChunk?: string;
-  /**
-   * How often internal memory buffer pools will be flushed.
-   * @default "1m0s"
-   */
-  memoryPoolFlushTime?: string;
-  /**
-   * Whether to use mmap buffers in internal memory pool.
-   * @default "false"
-   */
-  memoryPoolUseMmap?: string;
-  /** Object ID of the user-assigned MSI to use, if any. */
-  msiClientId?: string;
-  /** Azure resource ID of the user-assigned MSI to use, if any. */
-  msiMiResId?: string;
-  /** Object ID of the user-assigned MSI to use, if any. */
-  msiObjectId?: string;
-  /**
-   * If set, don't attempt to check the container exists or create it.
-   * @default "false"
-   */
-  noCheckContainer?: string;
-  /**
-   * If set, do not do HEAD before GET when getting objects.
-   * @default "false"
-   */
-  noHeadObject?: string;
-  /** The user's password */
-  password?: string;
-  /** Public access level of a container: blob or container. */
-  publicAccess?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** SAS URL for container level access only. */
-  sasUrl?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** Path to file containing credentials for use with a service principal. */
-  servicePrincipalFile?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** ID of the service principal's tenant. Also called its directory ID. */
-  tenant?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "16"
-   */
-  uploadConcurrency?: string;
-  /** Cutoff for switching to chunked upload (<= 256 MiB) (deprecated). */
-  uploadCutoff?: string;
-  /**
-   * Uses local storage emulator if provided as 'true'.
-   * @default "false"
-   */
-  useEmulator?: string;
-  /**
-   * Use a managed service identity to authenticate (only works in Azure).
-   * @default "false"
-   */
-  useMsi?: string;
-  /** User name (usually an email address) */
-  username?: string;
-}
-
-export interface DatasourceB2Request {
-  /** Account ID or Application Key ID. */
-  account?: string;
-  /**
-   * Upload chunk size.
-   * @default "96Mi"
-   */
-  chunkSize?: string;
-  /**
-   * Cutoff for switching to multipart copy.
-   * @default "4Gi"
-   */
-  copyCutoff?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Disable checksums for large (> upload cutoff) files.
-   * @default "false"
-   */
-  disableChecksum?: string;
-  /**
-   * Time before the authorization token will expire in s or suffix ms|s|m|h|d.
-   * @default "1w"
-   */
-  downloadAuthDuration?: string;
-  /** Custom endpoint for downloads. */
-  downloadUrl?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Endpoint for the service. */
-  endpoint?: string;
-  /**
-   * Permanently delete files on remote removal, otherwise hide files.
-   * @default "false"
-   */
-  hardDelete?: string;
-  /** Application Key. */
-  key?: string;
-  /**
-   * How often internal memory buffer pools will be flushed.
-   * @default "1m0s"
-   */
-  memoryPoolFlushTime?: string;
-  /**
-   * Whether to use mmap buffers in internal memory pool.
-   * @default "false"
-   */
-  memoryPoolUseMmap?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** A flag string for X-Bz-Test-Mode header for debugging. */
-  testMode?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  uploadCutoff?: string;
-  /**
-   * Show file versions as they were at the specified time.
-   * @default "off"
-   */
-  versionAt?: string;
-  /**
-   * Include old versions in directory listings.
-   * @default "false"
-   */
-  versions?: string;
-}
-
-export interface DatasourceBoxRequest {
-  /** Box App Primary Access Token */
-  accessToken?: string;
-  /** Auth server URL. */
-  authUrl?: string;
-  /** Box App config.json location */
-  boxConfigFile?: string;
-  /** @default "user" */
-  boxSubType?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /**
-   * Max number of times to try committing a multipart file.
-   * @default "100"
-   */
-  commitRetries?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Size of listing chunk 1-1000.
-   * @default "1000"
-   */
-  listChunk?: string;
-  /** Only show items owned by the login (email address) passed in. */
-  ownedBy?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /**
-   * Fill in for rclone to use a non root folder as its starting point.
-   * @default "0"
-   */
-  rootFolderId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-  /**
-   * Cutoff for switching to multipart upload (>= 50 MiB).
-   * @default "50Mi"
-   */
-  uploadCutoff?: string;
-}
-
-export interface DatasourceCheckSourceRequest {
-  /** Path relative to the data source root */
+export interface DataprepDirEntry {
+  cid?: string;
+  fileVersions?: DataprepVersion[];
+  isDir?: boolean;
   path?: string;
 }
 
-export interface DatasourceChunksByState {
-  /** number of chunks in this state */
-  count?: number;
-  /** the state of the chunks */
-  state?: ModelWorkState;
-}
-
-export interface DatasourceDriveRequest {
-  /**
-   * Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
-   * @default "false"
-   */
-  acknowledgeAbuse?: string;
-  /**
-   * Allow the filetype to change when uploading Google docs.
-   * @default "false"
-   */
-  allowImportNameChange?: string;
-  /**
-   * Deprecated: No longer needed.
-   * @default "false"
-   */
-  alternateExport?: string;
-  /**
-   * Only consider files owned by the authenticated user.
-   * @default "false"
-   */
-  authOwnerOnly?: string;
-  /** Auth server URL. */
-  authUrl?: string;
-  /**
-   * Upload chunk size.
-   * @default "8Mi"
-   */
-  chunkSize?: string;
-  /** Google Application Client Id */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /**
-   * Server side copy contents of shortcuts instead of the shortcut.
-   * @default "false"
-   */
-  copyShortcutContent?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Disable drive using http2.
-   * @default "true"
-   */
-  disableHttp2?: string;
-  /**
-   * The encoding for the backend.
-   * @default "InvalidUtf8"
-   */
-  encoding?: string;
-  /**
-   * Comma separated list of preferred formats for downloading Google docs.
-   * @default "docx,xlsx,pptx,svg"
-   */
-  exportFormats?: string;
-  /** Deprecated: See export_formats. */
-  formats?: string;
-  /** Impersonate this user when using a service account. */
-  impersonate?: string;
-  /** Comma separated list of preferred formats for uploading Google docs. */
-  importFormats?: string;
-  /**
-   * Keep new head revision of each file forever.
-   * @default "false"
-   */
-  keepRevisionForever?: string;
-  /**
-   * Size of listing chunk 100-1000, 0 to disable.
-   * @default "1000"
-   */
-  listChunk?: string;
-  /**
-   * Number of API calls to allow without sleeping.
-   * @default "100"
-   */
-  pacerBurst?: string;
-  /**
-   * Minimum time to sleep between API calls.
-   * @default "100ms"
-   */
-  pacerMinSleep?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Resource key for accessing a link-shared file. */
-  resourceKey?: string;
-  /** ID of the root folder. */
-  rootFolderId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** Scope that rclone should use when requesting access from drive. */
-  scope?: string;
-  /**
-   * Allow server-side operations (e.g. copy) to work across different drive configs.
-   * @default "false"
-   */
-  serverSideAcrossConfigs?: string;
-  /** Service Account Credentials JSON blob. */
-  serviceAccountCredentials?: string;
-  /** Service Account Credentials JSON file path. */
-  serviceAccountFile?: string;
-  /**
-   * Only show files that are shared with me.
-   * @default "false"
-   */
-  sharedWithMe?: string;
-  /**
-   * Show sizes as storage quota usage, not actual size.
-   * @default "false"
-   */
-  sizeAsQuota?: string;
-  /**
-   * Skip MD5 checksum on Google photos and videos only.
-   * @default "false"
-   */
-  skipChecksumGphotos?: string;
-  /**
-   * If set skip dangling shortcut files.
-   * @default "false"
-   */
-  skipDanglingShortcuts?: string;
-  /**
-   * Skip google documents in all listings.
-   * @default "false"
-   */
-  skipGdocs?: string;
-  /**
-   * If set skip shortcut files.
-   * @default "false"
-   */
-  skipShortcuts?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Only show files that are starred.
-   * @default "false"
-   */
-  starredOnly?: string;
-  /**
-   * Make download limit errors be fatal.
-   * @default "false"
-   */
-  stopOnDownloadLimit?: string;
-  /**
-   * Make upload limit errors be fatal.
-   * @default "false"
-   */
-  stopOnUploadLimit?: string;
-  /** ID of the Shared Drive (Team Drive). */
-  teamDrive?: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-  /**
-   * Only show files that are in the trash.
-   * @default "false"
-   */
-  trashedOnly?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "8Mi"
-   */
-  uploadCutoff?: string;
-  /**
-   * Use file created date instead of modified date.
-   * @default "false"
-   */
-  useCreatedDate?: string;
-  /**
-   * Use date file was shared instead of modified date.
-   * @default "false"
-   */
-  useSharedDate?: string;
-  /**
-   * Send files to the trash instead of deleting permanently.
-   * @default "true"
-   */
-  useTrash?: string;
-  /**
-   * If Object's are greater, use drive v2 API to download.
-   * @default "off"
-   */
-  v2DownloadMinSize?: string;
-}
-
-export interface DatasourceDropboxRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /**
-   * Max time to wait for a batch to finish committing
-   * @default "10m0s"
-   */
-  batchCommitTimeout?: string;
-  /**
-   * Upload file batching sync|async|off.
-   * @default "sync"
-   */
-  batchMode?: string;
-  /**
-   * Max number of files in upload batch.
-   * @default "0"
-   */
-  batchSize?: string;
-  /**
-   * Max time to allow an idle upload batch before uploading.
-   * @default "0s"
-   */
-  batchTimeout?: string;
-  /**
-   * Upload chunk size (< 150Mi).
-   * @default "48Mi"
-   */
-  chunkSize?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Impersonate this user when using a business account. */
-  impersonate?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /**
-   * Instructs rclone to work on individual shared files.
-   * @default "false"
-   */
-  sharedFiles?: string;
-  /**
-   * Instructs rclone to work on shared folders.
-   * @default "false"
-   */
-  sharedFolders?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-}
-
-export interface DatasourceFichierRequest {
-  /** Your API Key, get it from https://1fichier.com/console/params.pl. */
-  apiKey?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** If you want to download a shared file that is password protected, add this parameter. */
-  filePassword?: string;
-  /** If you want to list the files in a shared folder that is password protected, add this parameter. */
-  folderPassword?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** If you want to download a shared folder, add this parameter. */
-  sharedFolder?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-}
-
-export interface DatasourceFilefabricRequest {
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Permanent Authentication Token. */
-  permanentToken?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** ID of the root folder. */
-  rootFolderId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Session Token. */
-  token?: string;
-  /** Token expiry time. */
-  tokenExpiry?: string;
-  /** URL of the Enterprise File Fabric to connect to. */
-  url?: string;
-  /** Version read from the file fabric. */
-  version?: string;
-}
-
-export interface DatasourceFtpRequest {
-  /**
-   * Allow asking for FTP password when needed.
-   * @default "false"
-   */
-  askPassword?: string;
-  /**
-   * Maximum time to wait for a response to close.
-   * @default "1m0s"
-   */
-  closeTimeout?: string;
-  /**
-   * Maximum number of FTP simultaneous connections, 0 for unlimited.
-   * @default "0"
-   */
-  concurrency?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Disable using EPSV even if server advertises support.
-   * @default "false"
-   */
-  disableEpsv?: string;
-  /**
-   * Disable using MLSD even if server advertises support.
-   * @default "false"
-   */
-  disableMlsd?: string;
-  /**
-   * Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
-   * @default "false"
-   */
-  disableTls13?: string;
-  /**
-   * Disable using UTF-8 even if server advertises support.
-   * @default "false"
-   */
-  disableUtf8?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Del,Ctl,RightSpace,Dot"
-   */
-  encoding?: string;
-  /**
-   * Use Explicit FTPS (FTP over TLS).
-   * @default "false"
-   */
-  explicitTls?: string;
-  /**
-   * Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
-   * @default "false"
-   */
-  forceListHidden?: string;
-  /** FTP host to connect to. */
-  host?: string;
-  /**
-   * Max time before closing idle connections.
-   * @default "1m0s"
-   */
-  idleTimeout?: string;
-  /**
-   * Do not verify the TLS certificate of the server.
-   * @default "false"
-   */
-  noCheckCertificate?: string;
-  /** FTP password. */
-  pass?: string;
-  /**
-   * FTP port number.
-   * @default "21"
-   */
-  port?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /**
-   * Maximum time to wait for data connection closing status.
-   * @default "1m0s"
-   */
-  shutTimeout?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Use Implicit FTPS (FTP over TLS).
-   * @default "false"
-   */
-  tls?: string;
-  /**
-   * Size of TLS session cache for all control and data connections.
-   * @default "32"
-   */
-  tlsCacheSize?: string;
-  /**
-   * FTP username.
-   * @default "$USER"
-   */
-  user?: string;
-  /**
-   * Use MDTM to set modification time (VsFtpd quirk)
-   * @default "false"
-   */
-  writingMdtm?: string;
-}
-
-export interface DatasourceGcsRequest {
-  /**
-   * Access public buckets and objects without credentials.
-   * @default "false"
-   */
-  anonymous?: string;
-  /** Auth server URL. */
-  authUrl?: string;
-  /** Access Control List for new buckets. */
-  bucketAcl?: string;
-  /**
-   * Access checks should use bucket-level IAM policies.
-   * @default "false"
-   */
-  bucketPolicyOnly?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /**
-   * If set this will decompress gzip encoded objects.
-   * @default "false"
-   */
-  decompress?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,CrLf,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Endpoint for the service. */
-  endpoint?: string;
-  /**
-   * Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
-   * @default "false"
-   */
-  envAuth?: string;
-  /** Location for the newly created buckets. */
-  location?: string;
-  /**
-   * If set, don't attempt to check the bucket exists or create it.
-   * @default "false"
-   */
-  noCheckBucket?: string;
-  /** Access Control List for new objects. */
-  objectAcl?: string;
-  /** Project number. */
-  projectNumber?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** Service Account Credentials JSON blob. */
-  serviceAccountCredentials?: string;
-  /** Service Account Credentials JSON file path. */
-  serviceAccountFile?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** The storage class to use when storing objects in Google Cloud Storage. */
-  storageClass?: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-}
-
-export interface DatasourceGphotosRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,CrLf,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Also view and download archived media.
-   * @default "false"
-   */
-  includeArchived?: string;
-  /**
-   * Set to make the Google Photos backend read only.
-   * @default "false"
-   */
-  readOnly?: string;
-  /**
-   * Set to read the size of media items.
-   * @default "false"
-   */
-  readSize?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Year limits the photos to be downloaded to those which are uploaded after the given year.
-   * @default "2000"
-   */
-  startYear?: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-}
-
-export interface DatasourceHdfsRequest {
-  /** Kerberos data transfer protection: authentication|integrity|privacy. */
-  dataTransferProtection?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Hadoop name node and port. */
-  namenode?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** Kerberos service principal name for the namenode. */
-  servicePrincipalName?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Hadoop user name. */
-  username?: string;
-}
-
-export interface DatasourceHidriveRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /**
-   * Chunksize for chunked uploads.
-   * @default "48Mi"
-   */
-  chunkSize?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Do not fetch number of objects in directories unless it is absolutely necessary.
-   * @default "false"
-   */
-  disableFetchingMemberCount?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Dot"
-   */
-  encoding?: string;
-  /**
-   * Endpoint for the service.
-   * @default "https://api.hidrive.strato.com/2.1"
-   */
-  endpoint?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /**
-   * The root/parent folder for all paths.
-   * @default "/"
-   */
-  rootPrefix?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /**
-   * Access permissions that rclone should use when requesting access from HiDrive.
-   * @default "rw"
-   */
-  scopeAccess?: string;
-  /**
-   * User-level that rclone should use when requesting access from HiDrive.
-   * @default "user"
-   */
-  scopeRole?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-  /**
-   * Concurrency for chunked uploads.
-   * @default "4"
-   */
-  uploadConcurrency?: string;
-  /**
-   * Cutoff/Threshold for chunked uploads.
-   * @default "96Mi"
-   */
-  uploadCutoff?: string;
-}
-
-export interface DatasourceHttpRequest {
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /** Set HTTP headers for all transactions. */
-  headers?: string;
-  /**
-   * Don't use HEAD requests.
-   * @default "false"
-   */
-  noHead?: string;
-  /**
-   * Set this if the site doesn't end directories with /.
-   * @default "false"
-   */
-  noSlash?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** URL of HTTP host to connect to. */
-  url?: string;
-}
-
-export interface DatasourceInternetarchiveRequest {
-  /** IAS3 Access Key. */
-  accessKeyId?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Don't ask the server to test against MD5 checksum calculated by rclone.
-   * @default "true"
-   */
-  disableChecksum?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * IAS3 Endpoint.
-   * @default "https://s3.us.archive.org"
-   */
-  endpoint?: string;
-  /**
-   * Host of InternetArchive Frontend.
-   * @default "https://archive.org"
-   */
-  frontEndpoint?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** IAS3 Secret Key (password). */
-  secretAccessKey?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
-   * @default "0s"
-   */
-  waitArchive?: string;
-}
-
-export interface DatasourceItemInfo {
-  /** Path to the new item, relative to the source */
+export interface DataprepExploreResult {
+  cid?: string;
   path?: string;
+  subEntries?: DataprepDirEntry[];
 }
 
-export interface DatasourceJottacloudRequest {
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Delete files permanently rather than putting them into the trash.
-   * @default "false"
-   */
-  hardDelete?: string;
-  /**
-   * Files bigger than this will be cached on disk to calculate the MD5 if required.
-   * @default "10Mi"
-   */
-  md5MemoryLimit?: string;
-  /**
-   * Avoid server side versioning by deleting files and recreating files instead of overwriting them.
-   * @default "false"
-   */
-  noVersions?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Only show files that are in the trash.
-   * @default "false"
-   */
-  trashedOnly?: string;
-  /**
-   * Files bigger than this can be resumed if the upload fail's.
-   * @default "10Mi"
-   */
-  uploadResumeLimit?: string;
+export interface DataprepPieceList {
+  attachmentId?: number;
+  pieces?: ModelCar[];
+  source?: ModelStorage;
+  storageId?: number;
 }
 
-export interface DatasourceKoofrRequest {
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** The Koofr API endpoint to use. */
-  endpoint?: string;
-  /** Mount ID of the mount to use. */
-  mountid?: string;
-  /** Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password). */
-  password?: string;
-  /** Choose your storage provider. */
-  provider?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /**
-   * Does the backend support setting modification time.
-   * @default "true"
-   */
-  setmtime?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Your user name. */
-  user?: string;
-}
-
-export interface DatasourceLocalRequest {
-  /**
-   * Force the filesystem to report itself as case insensitive.
-   * @default "false"
-   */
-  caseInsensitive?: string;
-  /**
-   * Force the filesystem to report itself as case sensitive.
-   * @default "false"
-   */
-  caseSensitive?: string;
-  /**
-   * Follow symlinks and copy the pointed to item.
-   * @default "false"
-   */
-  copyLinks?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Dot"
-   */
-  encoding?: string;
-  /**
-   * Translate symlinks to/from regular files with a '.rclonelink' extension.
-   * @default "false"
-   */
-  links?: string;
-  /**
-   * Don't check to see if the files change during upload.
-   * @default "false"
-   */
-  noCheckUpdated?: string;
-  /**
-   * Disable preallocation of disk space for transferred files.
-   * @default "false"
-   */
-  noPreallocate?: string;
-  /**
-   * Disable setting modtime.
-   * @default "false"
-   */
-  noSetModtime?: string;
-  /**
-   * Disable sparse files for multi-thread downloads.
-   * @default "false"
-   */
-  noSparse?: string;
-  /**
-   * Disable UNC (long path names) conversion on Windows.
-   * @default "false"
-   */
-  nounc?: string;
-  /**
-   * Don't cross filesystem boundaries (unix/macOS only).
-   * @default "false"
-   */
-  oneFileSystem?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /**
-   * Don't warn about skipped symlinks.
-   * @default "false"
-   */
-  skipLinks?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Apply unicode NFC normalization to paths and filenames.
-   * @default "false"
-   */
-  unicodeNormalization?: string;
-  /**
-   * Assume the Stat size of links is zero (and read them instead) (deprecated).
-   * @default "false"
-   */
-  zeroSizeLinks?: string;
-}
-
-export interface DatasourceMailruRequest {
-  /**
-   * What should copy do if file checksum is mismatched or invalid.
-   * @default "true"
-   */
-  checkHash?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Password. */
-  pass?: string;
-  /** Comma separated list of internal maintenance flags. */
-  quirks?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Skip full upload if there is another file with same data hash.
-   * @default "true"
-   */
-  speedupEnable?: string;
-  /**
-   * Comma separated list of file name patterns eligible for speedup (put by hash).
-   * @default "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
-   */
-  speedupFilePatterns?: string;
-  /**
-   * This option allows you to disable speedup (put by hash) for large files.
-   * @default "3Gi"
-   */
-  speedupMaxDisk?: string;
-  /**
-   * Files larger than the size given below will always be hashed on disk.
-   * @default "32Mi"
-   */
-  speedupMaxMemory?: string;
-  /** User name (usually email). */
-  user?: string;
-  /** HTTP user agent used internally by client. */
-  userAgent?: string;
-}
-
-export interface DatasourceMegaRequest {
-  /**
-   * Output more debug from Mega.
-   * @default "false"
-   */
-  debug?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Delete files permanently rather than putting them into the trash.
-   * @default "false"
-   */
-  hardDelete?: string;
-  /** Password. */
-  pass?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Use HTTPS for transfers.
-   * @default "false"
-   */
-  useHttps?: string;
-  /** User name. */
-  user?: string;
-}
-
-export interface DatasourceNetstorageRequest {
-  /** Set the NetStorage account name */
-  account?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /** Domain+path of NetStorage host to connect to. */
-  host?: string;
-  /**
-   * Select between HTTP or HTTPS protocol.
-   * @default "https"
-   */
-  protocol?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** Set the NetStorage account secret/G2O key for authentication. */
-  secret?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-}
-
-export interface DatasourceOnedriveRequest {
-  /**
-   * Set scopes to be requested by rclone.
-   * @default "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
-   */
-  accessScopes?: string;
-  /** Auth server URL. */
-  authUrl?: string;
-  /**
-   * Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
-   * @default "10Mi"
-   */
-  chunkSize?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Disable the request for Sites.Read.All permission.
-   * @default "false"
-   */
-  disableSitePermission?: string;
-  /** The ID of the drive to use. */
-  driveId?: string;
-  /** The type of the drive (personal | business | documentLibrary). */
-  driveType?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Set to make OneNote files show up in directory listings.
-   * @default "false"
-   */
-  exposeOnenoteFiles?: string;
-  /**
-   * Specify the hash in use for the backend.
-   * @default "auto"
-   */
-  hashType?: string;
-  /** Set the password for links created by the link command. */
-  linkPassword?: string;
-  /**
-   * Set the scope of the links created by the link command.
-   * @default "anonymous"
-   */
-  linkScope?: string;
-  /**
-   * Set the type of the links created by the link command.
-   * @default "view"
-   */
-  linkType?: string;
-  /**
-   * Size of listing chunk.
-   * @default "1000"
-   */
-  listChunk?: string;
-  /**
-   * Remove all versions on modifying operations.
-   * @default "false"
-   */
-  noVersions?: string;
-  /**
-   * Choose national cloud region for OneDrive.
-   * @default "global"
-   */
-  region?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** ID of the root folder. */
-  rootFolderId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /**
-   * Allow server-side operations (e.g. copy) to work across different onedrive configs.
-   * @default "false"
-   */
-  serverSideAcrossConfigs?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-}
-
-export interface DatasourceOosRequest {
-  /**
-   * Chunk size to use for uploading.
-   * @default "5Mi"
-   */
-  chunkSize?: string;
-  /** Object storage compartment OCID */
-  compartment?: string;
-  /**
-   * Path to OCI config file
-   * @default "~/.oci/config"
-   */
-  configFile?: string;
-  /**
-   * Profile name inside the oci config file
-   * @default "Default"
-   */
-  configProfile?: string;
-  /**
-   * Cutoff for switching to multipart copy.
-   * @default "4.656Gi"
-   */
-  copyCutoff?: string;
-  /**
-   * Timeout for copy.
-   * @default "1m0s"
-   */
-  copyTimeout?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Don't store MD5 checksum with object metadata.
-   * @default "false"
-   */
-  disableChecksum?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Endpoint for Object storage API. */
-  endpoint?: string;
-  /**
-   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
-   * @default "false"
-   */
-  leavePartsOnError?: string;
-  /** Object storage namespace */
-  namespace?: string;
-  /**
-   * If set, don't attempt to check the bucket exists or create it.
-   * @default "false"
-   */
-  noCheckBucket?: string;
-  /**
-   * Choose your Auth Provider
-   * @default "env_auth"
-   */
-  provider?: string;
-  /** Object storage Region */
-  region?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm. */
-  sseCustomerAlgorithm?: string;
-  /** To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to */
-  sseCustomerKey?: string;
-  /** To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated */
-  sseCustomerKeyFile?: string;
-  /** If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption */
-  sseCustomerKeySha256?: string;
-  /** if using using your own master key in vault, this header specifies the */
-  sseKmsKeyId?: string;
-  /**
-   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
-   * @default "Standard"
-   */
-  storageTier?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "10"
-   */
-  uploadConcurrency?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  uploadCutoff?: string;
-}
-
-export interface DatasourceOpendriveRequest {
-  /**
-   * Files will be uploaded in chunks this size.
-   * @default "10Mi"
-   */
-  chunkSize?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Password. */
-  password?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Username. */
-  username?: string;
-}
-
-export interface DatasourcePcloudRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Hostname to connect to.
-   * @default "api.pcloud.com"
-   */
-  hostname?: string;
-  /** Your pcloud password. */
-  password?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /**
-   * Fill in for rclone to use a non root folder as its starting point.
-   * @default "d0"
-   */
-  rootFolderId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-  /** Your pcloud username. */
-  username?: string;
-}
-
-export interface DatasourcePremiumizemeRequest {
-  /** API Key. */
-  apiKey?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-}
-
-export interface DatasourcePutioRequest {
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-}
-
-export interface DatasourceQingstorRequest {
-  /** QingStor Access Key ID. */
-  accessKeyId?: string;
-  /**
-   * Chunk size to use for uploading.
-   * @default "4Mi"
-   */
-  chunkSize?: string;
-  /**
-   * Number of connection retries.
-   * @default "3"
-   */
-  connectionRetries?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Ctl,InvalidUtf8"
-   */
-  encoding?: string;
-  /** Enter an endpoint URL to connection QingStor API. */
-  endpoint?: string;
-  /**
-   * Get QingStor credentials from runtime.
-   * @default "false"
-   */
-  envAuth?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** QingStor Secret Access Key (password). */
-  secretAccessKey?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "1"
-   */
-  uploadConcurrency?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  uploadCutoff?: string;
-  /** Zone to connect to. */
-  zone?: string;
-}
-
-export interface DatasourceS3Request {
-  /** AWS Access Key ID. */
-  accessKeyId?: string;
-  /** Canned ACL used when creating buckets and storing or copying objects. */
-  acl?: string;
-  /** Canned ACL used when creating buckets. */
-  bucketAcl?: string;
-  /**
-   * Chunk size to use for uploading.
-   * @default "5Mi"
-   */
-  chunkSize?: string;
-  /**
-   * Cutoff for switching to multipart copy.
-   * @default "4.656Gi"
-   */
-  copyCutoff?: string;
-  /**
-   * If set this will decompress gzip encoded objects.
-   * @default "false"
-   */
-  decompress?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Don't store MD5 checksum with object metadata.
-   * @default "false"
-   */
-  disableChecksum?: string;
-  /**
-   * Disable usage of http2 for S3 backends.
-   * @default "false"
-   */
-  disableHttp2?: string;
-  /** Custom endpoint for downloads. */
-  downloadUrl?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Endpoint for S3 API. */
-  endpoint?: string;
-  /**
-   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
-   * @default "false"
-   */
-  envAuth?: string;
-  /**
-   * If true use path style access if false use virtual hosted style.
-   * @default "true"
-   */
-  forcePathStyle?: string;
-  /**
-   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
-   * @default "false"
-   */
-  leavePartsOnError?: string;
-  /**
-   * Size of listing chunk (response list for each ListObject S3 request).
-   * @default "1000"
-   */
-  listChunk?: string;
-  /**
-   * Whether to url encode listings: true/false/unset
-   * @default "unset"
-   */
-  listUrlEncode?: string;
-  /**
-   * Version of ListObjects to use: 1,2 or 0 for auto.
-   * @default "0"
-   */
-  listVersion?: string;
-  /** Location constraint - must be set to match the Region. */
-  locationConstraint?: string;
-  /**
-   * Maximum number of parts in a multipart upload.
-   * @default "10000"
-   */
-  maxUploadParts?: string;
-  /**
-   * How often internal memory buffer pools will be flushed.
-   * @default "1m0s"
-   */
-  memoryPoolFlushTime?: string;
-  /**
-   * Whether to use mmap buffers in internal memory pool.
-   * @default "false"
-   */
-  memoryPoolUseMmap?: string;
-  /**
-   * Set this if the backend might gzip objects.
-   * @default "unset"
-   */
-  mightGzip?: string;
-  /**
-   * If set, don't attempt to check the bucket exists or create it.
-   * @default "false"
-   */
-  noCheckBucket?: string;
-  /**
-   * If set, don't HEAD uploaded objects to check integrity.
-   * @default "false"
-   */
-  noHead?: string;
-  /**
-   * If set, do not do HEAD before GET when getting objects.
-   * @default "false"
-   */
-  noHeadObject?: string;
-  /**
-   * Suppress setting and reading of system metadata
-   * @default "false"
-   */
-  noSystemMetadata?: string;
-  /** Profile to use in the shared credentials file. */
-  profile?: string;
-  /** Choose your S3 provider. */
-  provider?: string;
-  /** Region to connect to. */
-  region?: string;
-  /**
-   * Enables requester pays option when interacting with S3 bucket.
-   * @default "false"
-   */
-  requesterPays?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** AWS Secret Access Key (password). */
-  secretAccessKey?: string;
-  /** The server-side encryption algorithm used when storing this object in S3. */
-  serverSideEncryption?: string;
-  /** An AWS session token. */
-  sessionToken?: string;
-  /** Path to the shared credentials file. */
-  sharedCredentialsFile?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** If using SSE-C, the server-side encryption algorithm used when storing this object in S3. */
-  sseCustomerAlgorithm?: string;
-  /** To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data. */
-  sseCustomerKey?: string;
-  /** If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data. */
-  sseCustomerKeyBase64?: string;
-  /** If using SSE-C you may provide the secret encryption key MD5 checksum (optional). */
-  sseCustomerKeyMd5?: string;
-  /** If using KMS ID you must provide the ARN of Key. */
-  sseKmsKeyId?: string;
-  /** The storage class to use when storing new objects in S3. */
-  storageClass?: string;
-  /** Endpoint for STS. */
-  stsEndpoint?: string;
-  /**
-   * Concurrency for multipart uploads.
-   * @default "4"
-   */
-  uploadConcurrency?: string;
-  /**
-   * Cutoff for switching to chunked upload.
-   * @default "200Mi"
-   */
-  uploadCutoff?: string;
-  /**
-   * If true use the AWS S3 accelerated endpoint.
-   * @default "false"
-   */
-  useAccelerateEndpoint?: string;
-  /**
-   * Whether to use ETag in multipart uploads for verification
-   * @default "unset"
-   */
-  useMultipartEtag?: string;
-  /**
-   * Whether to use a presigned request or PutObject for single part uploads
-   * @default "false"
-   */
-  usePresignedRequest?: string;
-  /**
-   * If true use v2 authentication.
-   * @default "false"
-   */
-  v2Auth?: string;
-  /**
-   * Show file versions as they were at the specified time.
-   * @default "off"
-   */
-  versionAt?: string;
-  /**
-   * Include old versions in directory listings.
-   * @default "false"
-   */
-  versions?: string;
-}
-
-export interface DatasourceSeafileRequest {
-  /**
-   * Two-factor authentication ('true' if the account has 2FA enabled).
-   * @default "false"
-   */
-  "2fa"?: string;
-  /** Authentication token. */
-  authToken?: string;
-  /**
-   * Should rclone create a library if it doesn't exist.
-   * @default "false"
-   */
-  createLibrary?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
-   */
-  encoding?: string;
-  /** Name of the library. */
-  library?: string;
-  /** Library password (for encrypted libraries only). */
-  libraryKey?: string;
-  /** Password. */
-  pass?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** URL of seafile host to connect to. */
-  url?: string;
-  /** User name (usually email address). */
-  user?: string;
-}
-
-export interface DatasourceSftpRequest {
-  /**
-   * Allow asking for SFTP password when needed.
-   * @default "false"
-   */
-  askPassword?: string;
-  /**
-   * Upload and download chunk size.
-   * @default "32Ki"
-   */
-  chunkSize?: string;
-  /** Space separated list of ciphers to be used for session encryption, ordered by preference. */
-  ciphers?: string;
-  /**
-   * The maximum number of outstanding requests for one file
-   * @default "64"
-   */
-  concurrency?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * If set don't use concurrent reads.
-   * @default "false"
-   */
-  disableConcurrentReads?: string;
-  /**
-   * If set don't use concurrent writes.
-   * @default "false"
-   */
-  disableConcurrentWrites?: string;
-  /**
-   * Disable the execution of SSH commands to determine if remote file hashing is available.
-   * @default "false"
-   */
-  disableHashcheck?: string;
-  /** SSH host to connect to. */
-  host?: string;
-  /**
-   * Max time before closing idle connections.
-   * @default "1m0s"
-   */
-  idleTimeout?: string;
-  /** Space separated list of key exchange algorithms, ordered by preference. */
-  keyExchange?: string;
-  /** Path to PEM-encoded private key file. */
-  keyFile?: string;
-  /** The passphrase to decrypt the PEM-encoded private key file. */
-  keyFilePass?: string;
-  /** Raw PEM-encoded private key. */
-  keyPem?: string;
-  /**
-   * When set forces the usage of the ssh-agent.
-   * @default "false"
-   */
-  keyUseAgent?: string;
-  /** Optional path to known_hosts file. */
-  knownHostsFile?: string;
-  /** Space separated list of MACs (message authentication code) algorithms, ordered by preference. */
-  macs?: string;
-  /** The command used to read md5 hashes. */
-  md5sumCommand?: string;
-  /** SSH password, leave blank to use ssh-agent. */
-  pass?: string;
-  /** Override path used by SSH shell commands. */
-  pathOverride?: string;
-  /**
-   * SSH port number.
-   * @default "22"
-   */
-  port?: string;
-  /** Optional path to public key file. */
-  pubkeyFile?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** Specifies the path or command to run a sftp server on the remote host. */
-  serverCommand?: string;
-  /** Environment variables to pass to sftp and commands */
-  setEnv?: string;
-  /**
-   * Set the modified time on the remote if set.
-   * @default "true"
-   */
-  setModtime?: string;
-  /** The command used to read sha1 hashes. */
-  sha1sumCommand?: string;
-  /** The type of SSH shell on remote server, if any. */
-  shellType?: string;
-  /**
-   * Set to skip any symlinks and any other non regular files.
-   * @default "false"
-   */
-  skipLinks?: string;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Specifies the SSH2 subsystem on the remote host.
-   * @default "sftp"
-   */
-  subsystem?: string;
-  /**
-   * If set use fstat instead of stat.
-   * @default "false"
-   */
-  useFstat?: string;
-  /**
-   * Enable the use of insecure ciphers and key exchange methods.
-   * @default "false"
-   */
-  useInsecureCipher?: string;
-  /**
-   * SSH username.
-   * @default "$USER"
-   */
-  user?: string;
-}
-
-export interface DatasourceSharefileRequest {
-  /**
-   * Upload chunk size.
-   * @default "64Mi"
-   */
-  chunkSize?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Endpoint for API calls. */
-  endpoint?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** ID of the root folder. */
-  rootFolderId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Cutoff for switching to multipart upload.
-   * @default "128Mi"
-   */
-  uploadCutoff?: string;
-}
-
-export interface DatasourceSiaRequest {
-  /** Sia Daemon API Password. */
-  apiPassword?: string;
-  /**
-   * Sia daemon API URL, like http://sia.daemon.host:9980.
-   * @default "http://127.0.0.1:9980"
-   */
-  apiUrl?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /**
-   * Siad User Agent
-   * @default "Sia-Agent"
-   */
-  userAgent?: string;
-}
-
-export interface DatasourceSmbRequest {
-  /**
-   * Whether the server is configured to be case-insensitive.
-   * @default "true"
-   */
-  caseInsensitive?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * Domain name for NTLM authentication.
-   * @default "WORKGROUP"
-   */
-  domain?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Hide special shares (e.g. print$) which users aren't supposed to access.
-   * @default "true"
-   */
-  hideSpecialShare?: string;
-  /** SMB server hostname to connect to. */
-  host?: string;
-  /**
-   * Max time before closing idle connections.
-   * @default "1m0s"
-   */
-  idleTimeout?: string;
-  /** SMB password. */
-  pass?: string;
-  /**
-   * SMB port number.
-   * @default "445"
-   */
-  port?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Service principal name. */
-  spn?: string;
-  /**
-   * SMB username.
-   * @default "$USER"
-   */
-  user?: string;
-}
-
-export interface DatasourceStorjRequest {
-  /** Access grant. */
-  accessGrant?: string;
-  /** API key. */
-  apiKey?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /** Encryption passphrase. */
-  passphrase?: string;
-  /**
-   * Choose an authentication method.
-   * @default "existing"
-   */
-  provider?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /**
-   * Satellite address.
-   * @default "us1.storj.io"
-   */
-  satelliteAddress?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-}
-
-export interface DatasourceSugarsyncRequest {
-  /** Sugarsync Access Key ID. */
-  accessKeyId?: string;
-  /** Sugarsync App ID. */
-  appId?: string;
-  /** Sugarsync authorization. */
-  authorization?: string;
-  /** Sugarsync authorization expiry. */
-  authorizationExpiry?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /** Sugarsync deleted folder id. */
-  deletedId?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Permanently delete files if true
-   * @default "false"
-   */
-  hardDelete?: string;
-  /** Sugarsync Private Access Key. */
-  privateAccessKey?: string;
-  /** Sugarsync refresh token. */
-  refreshToken?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Sugarsync root id. */
-  rootId?: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** Sugarsync user. */
-  user?: string;
-}
-
-export interface DatasourceSwiftRequest {
-  /** Application Credential ID (OS_APPLICATION_CREDENTIAL_ID). */
-  applicationCredentialId?: string;
-  /** Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME). */
-  applicationCredentialName?: string;
-  /** Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET). */
-  applicationCredentialSecret?: string;
-  /** Authentication URL for server (OS_AUTH_URL). */
-  auth?: string;
-  /** Auth Token from alternate authentication - optional (OS_AUTH_TOKEN). */
-  authToken?: string;
-  /**
-   * AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).
-   * @default "0"
-   */
-  authVersion?: string;
-  /**
-   * Above this size files will be chunked into a _segments container.
-   * @default "5Gi"
-   */
-  chunkSize?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /** User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME) */
-  domain?: string;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,InvalidUtf8"
-   */
-  encoding?: string;
-  /**
-   * Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
-   * @default "public"
-   */
-  endpointType?: string;
-  /**
-   * Get swift credentials from environment variables in standard OpenStack form.
-   * @default "false"
-   */
-  envAuth?: string;
-  /** API key or password (OS_PASSWORD). */
-  key?: string;
-  /**
-   * If true avoid calling abort upload on a failure.
-   * @default "false"
-   */
-  leavePartsOnError?: string;
-  /**
-   * Don't chunk files during streaming upload.
-   * @default "false"
-   */
-  noChunk?: string;
-  /**
-   * Disable support for static and dynamic large objects
-   * @default "false"
-   */
-  noLargeObjects?: string;
-  /** Region name - optional (OS_REGION_NAME). */
-  region?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** The storage policy to use when creating a new container. */
-  storagePolicy?: string;
-  /** Storage URL - optional (OS_STORAGE_URL). */
-  storageUrl?: string;
-  /** Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME). */
-  tenant?: string;
-  /** Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME). */
-  tenantDomain?: string;
-  /** Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID). */
-  tenantId?: string;
-  /** User name to log in (OS_USERNAME). */
-  user?: string;
-  /** User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID). */
-  userId?: string;
-}
-
-export interface DatasourceUptoboxRequest {
-  /** Your access token. */
-  accessToken?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-}
-
-export interface DatasourceWebdavRequest {
-  /** Bearer token instead of user/pass (e.g. a Macaroon). */
-  bearerToken?: string;
-  /** Command to run to get a bearer token. */
-  bearerTokenCommand?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /** The encoding for the backend. */
-  encoding?: string;
-  /** Set HTTP headers for all transactions. */
-  headers?: string;
-  /** Password. */
-  pass?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** URL of http host to connect to. */
-  url?: string;
-  /** User name. */
-  user?: string;
-  /** Name of the WebDAV site/service/software you are using. */
-  vendor?: string;
-}
-
-export interface DatasourceYandexRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Slash,Del,Ctl,InvalidUtf8,Dot"
-   */
-  encoding?: string;
-  /**
-   * Delete files permanently rather than putting them into the trash.
-   * @default "false"
-   */
-  hardDelete?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
-}
-
-export interface DatasourceZohoRequest {
-  /** Auth server URL. */
-  authUrl?: string;
-  /** OAuth Client Id. */
-  clientId?: string;
-  /** OAuth Client Secret. */
-  clientSecret?: string;
-  /** Delete the source after exporting to CAR files */
-  deleteAfterExport: boolean;
-  /**
-   * The encoding for the backend.
-   * @default "Del,Ctl,InvalidUtf8"
-   */
-  encoding?: string;
-  /** Zoho region to connect to. */
-  region?: string;
-  /** Automatically rescan the source directory when this interval has passed from last successful scan */
-  rescanInterval: string;
-  /** Starting state for scanning */
-  scanningState: ModelWorkState;
-  /** The path of the source to scan items */
-  sourcePath: string;
-  /** OAuth Access Token as a JSON blob. */
-  token?: string;
-  /** Token server url. */
-  tokenUrl?: string;
+export interface DataprepVersion {
+  cid?: string;
+  hash?: string;
+  id?: number;
+  lastModified?: string;
+  size?: number;
 }
 
 export interface DealListDealRequest {
-  /** dataset name filter */
-  datasets?: string[];
+  /** preparation ID or name filter */
+  preparations?: string[];
   /** provider filter */
   providers?: string[];
   /** schedule id filter */
   schedules?: number[];
+  /** source ID or name filter */
+  sources?: string[];
   /** state filter */
-  states?: string[];
+  states?: ModelDealState[];
 }
 
 export interface DealProposal {
@@ -4228,77 +148,50 @@ export interface DealProposal {
   verified?: boolean;
 }
 
-export interface GithubComDataPreservationProgramsSingularityHandlerDatasourceEntry {
-  isDir?: boolean;
-  lastModified?: string;
-  path?: string;
-  size?: number;
-}
-
-export interface InspectDirDetail {
-  current?: ModelDirectory;
-  dirs?: ModelDirectory[];
-  items?: ModelItem[];
-}
-
-export interface InspectGetPathRequest {
+export interface FileInfo {
+  /** Path to the new file, relative to the source */
   path?: string;
 }
 
-export type ModelCID = object;
+export interface JobSourceStatus {
+  attachmentId?: number;
+  jobs?: ModelJob[];
+  source?: ModelStorage;
+  storageId?: number;
+}
 
 export interface ModelCar {
-  chunkId?: number;
+  attachmentId?: number;
   createdAt?: string;
-  datasetId?: number;
-  filePath?: string;
   fileSize?: number;
-  header?: number[];
   id?: number;
-  pieceCid?: ModelCID;
+  jobId?: number;
+  pieceCid?: string;
   pieceSize?: number;
-  rootCid?: ModelCID;
-  sourceId?: number;
+  /** Association */
+  preparationId?: number;
+  rootCid?: string;
+  storageId?: number;
+  /** StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path. */
+  storagePath?: string;
 }
 
-export interface ModelChunk {
-  cars?: ModelCar[];
-  createdAt?: string;
-  errorMessage?: string;
-  id?: number;
-  itemParts?: ModelItemPart[];
-  packingState?: ModelWorkState;
-  packingWorkerId?: string;
-  sourceId?: number;
-}
-
-export interface ModelDataset {
-  createdAt?: string;
-  encryptionRecipients?: string[];
-  encryptionScript?: string;
-  id?: number;
-  maxSize?: number;
-  metadata?: ModelMetadata;
-  name?: string;
-  outputDirs?: string[];
-  pieceSize?: number;
-  updatedAt?: string;
-}
+export type ModelConfigMap = Record<string, string>;
 
 export interface ModelDeal {
   clientId?: string;
   createdAt?: string;
-  datasetId?: number;
   dealId?: number;
   endEpoch?: number;
   errorMessage?: string;
   id?: number;
   label?: string;
-  pieceCid?: ModelCID;
+  pieceCid?: string;
   pieceSize?: number;
   price?: string;
   proposalId?: string;
   provider?: string;
+  /** Associations */
   scheduleId?: number;
   sectorStartEpoch?: number;
   startEpoch?: number;
@@ -4318,46 +211,77 @@ export enum ModelDealState {
   DealErrored = "error",
 }
 
-export interface ModelDirectory {
-  cid?: ModelCID;
-  exported?: boolean;
-  id?: number;
-  name?: string;
-  parentId?: number;
-  sourceId?: number;
-  updatedAt?: string;
-}
-
-export interface ModelItem {
-  cid?: ModelCID;
-  createdAt?: string;
+export interface ModelFile {
+  /** Associations */
+  attachmentId?: number;
+  /** CID is the CID of the file. */
+  cid?: string;
   directoryId?: number;
+  fileRanges?: ModelFileRange[];
+  /** Hash is the hash of the file. */
   hash?: string;
   id?: number;
-  itemParts?: ModelItemPart[];
-  lastModified?: number;
+  lastModifiedNano?: number;
+  /** Path is the relative path to the file inside the storage. */
   path?: string;
+  /** Size is the size of the file in bytes. */
   size?: number;
-  sourceId?: number;
 }
 
-export interface ModelItemPart {
-  chunkId?: number;
-  cid?: ModelCID;
+export interface ModelFileRange {
+  /** CID is the CID of the range. */
+  cid?: string;
+  fileId?: number;
   id?: number;
-  item?: ModelItem;
-  itemId?: number;
+  /** Associations */
+  jobId?: number;
+  /** Length is the length of the range in bytes. */
   length?: number;
+  /** Offset is the offset of the range inside the file. */
   offset?: number;
 }
 
-export type ModelMetadata = Record<string, string>;
+export interface ModelJob {
+  attachmentId?: number;
+  errorMessage?: string;
+  errorStackTrace?: string;
+  id?: number;
+  state?: ModelJobState;
+  type?: ModelJobType;
+  /** Associations */
+  workerId?: string;
+}
+
+export enum ModelJobState {
+  Created = "created",
+  Ready = "ready",
+  Paused = "paused",
+  Processing = "processing",
+  Complete = "complete",
+  Error = "error",
+}
+
+export enum ModelJobType {
+  Scan = "scan",
+  Pack = "pack",
+  DagGen = "daggen",
+}
+
+export interface ModelPreparation {
+  createdAt?: string;
+  /** DeleteAfterExport is a flag that indicates whether the source files should be deleted after export. */
+  deleteAfterExport?: boolean;
+  id?: number;
+  maxSize?: number;
+  name?: string;
+  pieceSize?: number;
+  updatedAt?: string;
+}
 
 export interface ModelSchedule {
   allowedPieceCids?: string[];
   announceToIpni?: boolean;
   createdAt?: string;
-  datasetId?: number;
   duration?: number;
   errorMessage?: string;
   httpHeaders?: string[];
@@ -4366,11 +290,14 @@ export interface ModelSchedule {
   maxPendingDealNumber?: number;
   maxPendingDealSize?: number;
   notes?: string;
+  /** Associations */
+  preparationId?: number;
   pricePerDeal?: number;
   pricePerGb?: number;
   pricePerGbEpoch?: number;
   provider?: string;
   scheduleCron?: string;
+  scheduleCronPerpetual?: boolean;
   scheduleDealNumber?: number;
   scheduleDealSize?: number;
   startDelay?: number;
@@ -4389,29 +316,16 @@ export enum ModelScheduleState {
   ScheduleCompleted = "completed",
 }
 
-export interface ModelSource {
+export interface ModelStorage {
+  /** Config is a map of key-value pairs that can be used to store RClone options. */
+  config?: ModelConfigMap;
   createdAt?: string;
-  dagGenErrorMessage?: string;
-  dagGenState?: ModelWorkState;
-  dagGenWorkerId?: string;
-  datasetId?: number;
-  deleteAfterExport?: boolean;
-  errorMessage?: string;
   id?: number;
-  lastScannedPath?: string;
-  lastScannedTimestamp?: number;
-  metadata?: ModelMetadata;
+  name?: string;
+  /** Path is the path to the storage root. */
   path?: string;
-  scanIntervalSeconds?: number;
-  scanningState?: ModelWorkState;
-  scanningWorkerId?: string;
-  type?: ModelSourceType;
+  type?: string;
   updatedAt?: string;
-}
-
-export enum ModelSourceType {
-  Local = "local",
-  Upload = "upload",
 }
 
 export interface ModelWallet {
@@ -4421,29 +335,11 @@ export interface ModelWallet {
   id?: string;
   /** PrivateKey is the private key of the wallet */
   privateKey?: string;
-  /** RemotePeer is the remote peer ID of the wallet, for remote signing purpose */
-  remotePeer?: string;
-}
-
-export interface ModelWalletAssignment {
-  datasetId?: number;
-  id?: number;
-  walletId?: string;
-}
-
-export enum ModelWorkState {
-  Created = "",
-  Ready = "ready",
-  Processing = "processing",
-  Complete = "complete",
-  Error = "error",
 }
 
 export interface ScheduleCreateRequest {
   /** Allowed piece CIDs in this schedule */
   allowedPieceCids?: string[];
-  /** Dataset name */
-  datasetName?: string;
   /**
    * Duration in epoch or in duration format, i.e. 1500000, 2400h
    * @default "12840h"
@@ -4467,6 +363,8 @@ export interface ScheduleCreateRequest {
   maxPendingDealSize?: string;
   /** Notes */
   notes?: string;
+  /** Preparation ID or name */
+  preparation?: string;
   /**
    * Price in FIL per deal
    * @default 0
@@ -4486,6 +384,8 @@ export interface ScheduleCreateRequest {
   provider?: string;
   /** Schedule cron patter */
   scheduleCron?: string;
+  /** Whether a cron schedule should run in definitely */
+  scheduleCronPerpetual?: boolean;
   /** Number of deals per scheduled time */
   scheduleDealNumber?: number;
   /** Size of deals per schedule trigger in human readable format, i.e. 100 TiB */
@@ -4508,14 +408,7272 @@ export interface ScheduleCreateRequest {
   verified?: boolean;
 }
 
-export type StorePieceReader = object;
-
-export interface WalletAddRemoteRequest {
-  /** Address is the Filecoin full address of the wallet */
-  address?: string;
-  /** RemotePeer is the remote peer ID of the wallet, for remote signing purpose */
-  remotePeer?: string;
+export interface StorageAcdConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /** Checkpoint for internal polling (debug). */
+  checkpoint?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Files >= this size will be downloaded via their tempLink.
+   * @default "9Gi"
+   */
+  templinkThreshold?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /**
+   * Additional time per GiB to wait after a failed complete upload to see if it appears.
+   * @default "3m0s"
+   */
+  uploadWaitPerGb?: string;
 }
+
+export interface StorageAzureblobConfig {
+  /** Access tier of blob: hot, cool or archive. */
+  accessTier?: string;
+  /** Azure Storage Account Name. */
+  account?: string;
+  /**
+   * Delete archive tier blobs before overwriting.
+   * @default false
+   */
+  archiveTierDelete?: boolean;
+  /**
+   * Upload chunk size.
+   * @default "4Mi"
+   */
+  chunkSize?: string;
+  /** Password for the certificate file (optional). */
+  clientCertificatePassword?: string;
+  /** Path to a PEM or PKCS12 certificate file including the private key. */
+  clientCertificatePath?: string;
+  /** The ID of the client in use. */
+  clientId?: string;
+  /** One of the service principal's client secrets */
+  clientSecret?: string;
+  /**
+   * Send the certificate chain when using certificate auth.
+   * @default false
+   */
+  clientSendCertificateChain?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,RightPeriod,InvalidUtf8"
+   */
+  encoding?: string;
+  /** Endpoint for the service. */
+  endpoint?: string;
+  /**
+   * Read credentials from runtime (environment variables, CLI or MSI).
+   * @default false
+   */
+  envAuth?: boolean;
+  /** Storage Account Shared Key. */
+  key?: string;
+  /**
+   * Size of blob list.
+   * @default 5000
+   */
+  listChunk?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /** Object ID of the user-assigned MSI to use, if any. */
+  msiClientId?: string;
+  /** Azure resource ID of the user-assigned MSI to use, if any. */
+  msiMiResId?: string;
+  /** Object ID of the user-assigned MSI to use, if any. */
+  msiObjectId?: string;
+  /**
+   * If set, don't attempt to check the container exists or create it.
+   * @default false
+   */
+  noCheckContainer?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /** The user's password */
+  password?: string;
+  /**
+   * Public access level of a container: blob or container.
+   * @example ""
+   */
+  publicAccess?: string;
+  /** SAS URL for container level access only. */
+  sasUrl?: string;
+  /** Path to file containing credentials for use with a service principal. */
+  servicePrincipalFile?: string;
+  /** ID of the service principal's tenant. Also called its directory ID. */
+  tenant?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 16
+   */
+  uploadConcurrency?: number;
+  /** Cutoff for switching to chunked upload (<= 256 MiB) (deprecated). */
+  uploadCutoff?: string;
+  /**
+   * Uses local storage emulator if provided as 'true'.
+   * @default false
+   */
+  useEmulator?: boolean;
+  /**
+   * Use a managed service identity to authenticate (only works in Azure).
+   * @default false
+   */
+  useMsi?: boolean;
+  /** User name (usually an email address) */
+  username?: string;
+}
+
+export interface StorageB2Config {
+  /** Account ID or Application Key ID. */
+  account?: string;
+  /**
+   * Upload chunk size.
+   * @default "96Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Disable checksums for large (> upload cutoff) files.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Time before the authorization token will expire in s or suffix ms|s|m|h|d.
+   * @default "1w"
+   */
+  downloadAuthDuration?: string;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for the service. */
+  endpoint?: string;
+  /**
+   * Permanently delete files on remote removal, otherwise hide files.
+   * @default false
+   */
+  hardDelete?: boolean;
+  /** Application Key. */
+  key?: string;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /** A flag string for X-Bz-Test-Mode header for debugging. */
+  testMode?: string;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageBoxConfig {
+  /** Box App Primary Access Token */
+  accessToken?: string;
+  /** Auth server URL. */
+  authUrl?: string;
+  /** Box App config.json location */
+  boxConfigFile?: string;
+  /**
+   * @default "user"
+   * @example "user"
+   */
+  boxSubType?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * Max number of times to try committing a multipart file.
+   * @default 100
+   */
+  commitRetries?: number;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Size of listing chunk 1-1000.
+   * @default 1000
+   */
+  listChunk?: number;
+  /** Only show items owned by the login (email address) passed in. */
+  ownedBy?: string;
+  /**
+   * Fill in for rclone to use a non root folder as its starting point.
+   * @default "0"
+   */
+  rootFolderId?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /**
+   * Cutoff for switching to multipart upload (>= 50 MiB).
+   * @default "50Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageCreateAcdStorageRequest {
+  config?: StorageAcdConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateAzureblobStorageRequest {
+  config?: StorageAzureblobConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateB2StorageRequest {
+  config?: StorageB2Config;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateBoxStorageRequest {
+  config?: StorageBoxConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateDriveStorageRequest {
+  config?: StorageDriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateDropboxStorageRequest {
+  config?: StorageDropboxConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateFichierStorageRequest {
+  config?: StorageFichierConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateFilefabricStorageRequest {
+  config?: StorageFilefabricConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateFtpStorageRequest {
+  config?: StorageFtpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateGcsStorageRequest {
+  config?: StorageGcsConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateGphotosStorageRequest {
+  config?: StorageGphotosConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateHdfsStorageRequest {
+  config?: StorageHdfsConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateHidriveStorageRequest {
+  config?: StorageHidriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateHttpStorageRequest {
+  config?: StorageHttpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateInternetarchiveStorageRequest {
+  config?: StorageInternetarchiveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateJottacloudStorageRequest {
+  config?: StorageJottacloudConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateKoofrDigistorageStorageRequest {
+  config?: StorageKoofrDigistorageConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateKoofrKoofrStorageRequest {
+  config?: StorageKoofrKoofrConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateKoofrOtherStorageRequest {
+  config?: StorageKoofrOtherConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateLocalStorageRequest {
+  config?: StorageLocalConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateMailruStorageRequest {
+  config?: StorageMailruConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateMegaStorageRequest {
+  config?: StorageMegaConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateNetstorageStorageRequest {
+  config?: StorageNetstorageConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOnedriveStorageRequest {
+  config?: StorageOnedriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOosEnvAuthStorageRequest {
+  config?: StorageOosEnvAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOosInstancePrincipalAuthStorageRequest {
+  config?: StorageOosInstancePrincipalAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOosNoAuthStorageRequest {
+  config?: StorageOosNoAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOosResourcePrincipalAuthStorageRequest {
+  config?: StorageOosResourcePrincipalAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOosUserPrincipalAuthStorageRequest {
+  config?: StorageOosUserPrincipalAuthConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateOpendriveStorageRequest {
+  config?: StorageOpendriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreatePcloudStorageRequest {
+  config?: StoragePcloudConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreatePremiumizemeStorageRequest {
+  config?: StoragePremiumizemeConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreatePutioStorageRequest {
+  config?: StoragePutioConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateQingstorStorageRequest {
+  config?: StorageQingstorConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateRequest {
+  config?: Record<string, string>;
+  name: string;
+  path: string;
+  provider?: string;
+}
+
+export interface StorageCreateS3AWSStorageRequest {
+  config?: StorageS3AWSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3AlibabaStorageRequest {
+  config?: StorageS3AlibabaConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3ArvanCloudStorageRequest {
+  config?: StorageS3ArvanCloudConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3CephStorageRequest {
+  config?: StorageS3CephConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3ChinaMobileStorageRequest {
+  config?: StorageS3ChinaMobileConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3CloudflareStorageRequest {
+  config?: StorageS3CloudflareConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3DigitalOceanStorageRequest {
+  config?: StorageS3DigitalOceanConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3DreamhostStorageRequest {
+  config?: StorageS3DreamhostConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3HuaweiOBSStorageRequest {
+  config?: StorageS3HuaweiOBSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3IBMCOSStorageRequest {
+  config?: StorageS3IBMCOSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3IDriveStorageRequest {
+  config?: StorageS3IDriveConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3IONOSStorageRequest {
+  config?: StorageS3IONOSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3LiaraStorageRequest {
+  config?: StorageS3LiaraConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3LyveCloudStorageRequest {
+  config?: StorageS3LyveCloudConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3MinioStorageRequest {
+  config?: StorageS3MinioConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3NeteaseStorageRequest {
+  config?: StorageS3NeteaseConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3OtherStorageRequest {
+  config?: StorageS3OtherConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3QiniuStorageRequest {
+  config?: StorageS3QiniuConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3RackCorpStorageRequest {
+  config?: StorageS3RackCorpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3ScalewayStorageRequest {
+  config?: StorageS3ScalewayConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3SeaweedFSStorageRequest {
+  config?: StorageS3SeaweedFSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3StackPathStorageRequest {
+  config?: StorageS3StackPathConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3StorjStorageRequest {
+  config?: StorageS3StorjConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3TencentCOSStorageRequest {
+  config?: StorageS3TencentCOSConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateS3WasabiStorageRequest {
+  config?: StorageS3WasabiConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSeafileStorageRequest {
+  config?: StorageSeafileConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSftpStorageRequest {
+  config?: StorageSftpConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSharefileStorageRequest {
+  config?: StorageSharefileConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSiaStorageRequest {
+  config?: StorageSiaConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSmbStorageRequest {
+  config?: StorageSmbConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateStorjExistingStorageRequest {
+  config?: StorageStorjExistingConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateStorjNewStorageRequest {
+  config?: StorageStorjNewConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSugarsyncStorageRequest {
+  config?: StorageSugarsyncConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateSwiftStorageRequest {
+  config?: StorageSwiftConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateUptoboxStorageRequest {
+  config?: StorageUptoboxConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateWebdavStorageRequest {
+  config?: StorageWebdavConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateYandexStorageRequest {
+  config?: StorageYandexConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageCreateZohoStorageRequest {
+  config?: StorageZohoConfig;
+  /**
+   * Name of the storage, must be unique
+   * @example "my-storage"
+   */
+  name?: string;
+  /** Path of the storage */
+  path?: string;
+}
+
+export interface StorageDirEntry {
+  dirId?: string;
+  hash?: string;
+  isDir?: boolean;
+  lastModified?: string;
+  numItems?: number;
+  path?: string;
+  size?: number;
+}
+
+export interface StorageDriveConfig {
+  /**
+   * Set to allow files which return cannotDownloadAbusiveFile to be downloaded.
+   * @default false
+   */
+  acknowledgeAbuse?: boolean;
+  /**
+   * Allow the filetype to change when uploading Google docs.
+   * @default false
+   */
+  allowImportNameChange?: boolean;
+  /**
+   * Deprecated: No longer needed.
+   * @default false
+   */
+  alternateExport?: boolean;
+  /**
+   * Only consider files owned by the authenticated user.
+   * @default false
+   */
+  authOwnerOnly?: boolean;
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Upload chunk size.
+   * @default "8Mi"
+   */
+  chunkSize?: string;
+  /** Google Application Client Id */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * Server side copy contents of shortcuts instead of the shortcut.
+   * @default false
+   */
+  copyShortcutContent?: boolean;
+  /**
+   * Disable drive using http2.
+   * @default true
+   */
+  disableHttp2?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "InvalidUtf8"
+   */
+  encoding?: string;
+  /**
+   * Comma separated list of preferred formats for downloading Google docs.
+   * @default "docx,xlsx,pptx,svg"
+   */
+  exportFormats?: string;
+  /** Deprecated: See export_formats. */
+  formats?: string;
+  /** Impersonate this user when using a service account. */
+  impersonate?: string;
+  /** Comma separated list of preferred formats for uploading Google docs. */
+  importFormats?: string;
+  /**
+   * Keep new head revision of each file forever.
+   * @default false
+   */
+  keepRevisionForever?: boolean;
+  /**
+   * Size of listing chunk 100-1000, 0 to disable.
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Number of API calls to allow without sleeping.
+   * @default 100
+   */
+  pacerBurst?: number;
+  /**
+   * Minimum time to sleep between API calls.
+   * @default "100ms"
+   */
+  pacerMinSleep?: string;
+  /** Resource key for accessing a link-shared file. */
+  resourceKey?: string;
+  /** ID of the root folder. */
+  rootFolderId?: string;
+  /**
+   * Scope that rclone should use when requesting access from drive.
+   * @example "drive"
+   */
+  scope?: string;
+  /**
+   * Allow server-side operations (e.g. copy) to work across different drive configs.
+   * @default false
+   */
+  serverSideAcrossConfigs?: boolean;
+  /** Service Account Credentials JSON blob. */
+  serviceAccountCredentials?: string;
+  /** Service Account Credentials JSON file path. */
+  serviceAccountFile?: string;
+  /**
+   * Only show files that are shared with me.
+   * @default false
+   */
+  sharedWithMe?: boolean;
+  /**
+   * Show sizes as storage quota usage, not actual size.
+   * @default false
+   */
+  sizeAsQuota?: boolean;
+  /**
+   * Skip MD5 checksum on Google photos and videos only.
+   * @default false
+   */
+  skipChecksumGphotos?: boolean;
+  /**
+   * If set skip dangling shortcut files.
+   * @default false
+   */
+  skipDanglingShortcuts?: boolean;
+  /**
+   * Skip google documents in all listings.
+   * @default false
+   */
+  skipGdocs?: boolean;
+  /**
+   * If set skip shortcut files.
+   * @default false
+   */
+  skipShortcuts?: boolean;
+  /**
+   * Only show files that are starred.
+   * @default false
+   */
+  starredOnly?: boolean;
+  /**
+   * Make download limit errors be fatal.
+   * @default false
+   */
+  stopOnDownloadLimit?: boolean;
+  /**
+   * Make upload limit errors be fatal.
+   * @default false
+   */
+  stopOnUploadLimit?: boolean;
+  /** ID of the Shared Drive (Team Drive). */
+  teamDrive?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /**
+   * Only show files that are in the trash.
+   * @default false
+   */
+  trashedOnly?: boolean;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "8Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Use file created date instead of modified date.
+   * @default false
+   */
+  useCreatedDate?: boolean;
+  /**
+   * Use date file was shared instead of modified date.
+   * @default false
+   */
+  useSharedDate?: boolean;
+  /**
+   * Send files to the trash instead of deleting permanently.
+   * @default true
+   */
+  useTrash?: boolean;
+  /**
+   * If Object's are greater, use drive v2 API to download.
+   * @default "off"
+   */
+  v2DownloadMinSize?: string;
+}
+
+export interface StorageDropboxConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Max time to wait for a batch to finish committing
+   * @default "10m0s"
+   */
+  batchCommitTimeout?: string;
+  /**
+   * Upload file batching sync|async|off.
+   * @default "sync"
+   */
+  batchMode?: string;
+  /**
+   * Max number of files in upload batch.
+   * @default 0
+   */
+  batchSize?: number;
+  /**
+   * Max time to allow an idle upload batch before uploading.
+   * @default "0s"
+   */
+  batchTimeout?: string;
+  /**
+   * Upload chunk size (< 150Mi).
+   * @default "48Mi"
+   */
+  chunkSize?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Impersonate this user when using a business account. */
+  impersonate?: string;
+  /**
+   * Instructs rclone to work on individual shared files.
+   * @default false
+   */
+  sharedFiles?: boolean;
+  /**
+   * Instructs rclone to work on shared folders.
+   * @default false
+   */
+  sharedFolders?: boolean;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export interface StorageFichierConfig {
+  /** Your API Key, get it from https://1fichier.com/console/params.pl. */
+  apiKey?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** If you want to download a shared file that is password protected, add this parameter. */
+  filePassword?: string;
+  /** If you want to list the files in a shared folder that is password protected, add this parameter. */
+  folderPassword?: string;
+  /** If you want to download a shared folder, add this parameter. */
+  sharedFolder?: string;
+}
+
+export interface StorageFilefabricConfig {
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Permanent Authentication Token. */
+  permanentToken?: string;
+  /** ID of the root folder. */
+  rootFolderId?: string;
+  /** Session Token. */
+  token?: string;
+  /** Token expiry time. */
+  tokenExpiry?: string;
+  /**
+   * URL of the Enterprise File Fabric to connect to.
+   * @example "https://storagemadeeasy.com"
+   */
+  url?: string;
+  /** Version read from the file fabric. */
+  version?: string;
+}
+
+export interface StorageFtpConfig {
+  /**
+   * Allow asking for FTP password when needed.
+   * @default false
+   */
+  askPassword?: boolean;
+  /**
+   * Maximum time to wait for a response to close.
+   * @default "1m0s"
+   */
+  closeTimeout?: string;
+  /**
+   * Maximum number of FTP simultaneous connections, 0 for unlimited.
+   * @default 0
+   */
+  concurrency?: number;
+  /**
+   * Disable using EPSV even if server advertises support.
+   * @default false
+   */
+  disableEpsv?: boolean;
+  /**
+   * Disable using MLSD even if server advertises support.
+   * @default false
+   */
+  disableMlsd?: boolean;
+  /**
+   * Disable TLS 1.3 (workaround for FTP servers with buggy TLS)
+   * @default false
+   */
+  disableTls13?: boolean;
+  /**
+   * Disable using UTF-8 even if server advertises support.
+   * @default false
+   */
+  disableUtf8?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Del,Ctl,RightSpace,Dot"
+   * @example "Asterisk,Ctl,Dot,Slash"
+   */
+  encoding?: string;
+  /**
+   * Use Explicit FTPS (FTP over TLS).
+   * @default false
+   */
+  explicitTls?: boolean;
+  /**
+   * Use LIST -a to force listing of hidden files and folders. This will disable the use of MLSD.
+   * @default false
+   */
+  forceListHidden?: boolean;
+  /** FTP host to connect to. */
+  host?: string;
+  /**
+   * Max time before closing idle connections.
+   * @default "1m0s"
+   */
+  idleTimeout?: string;
+  /**
+   * Do not verify the TLS certificate of the server.
+   * @default false
+   */
+  noCheckCertificate?: boolean;
+  /** FTP password. */
+  pass?: string;
+  /**
+   * FTP port number.
+   * @default 21
+   */
+  port?: number;
+  /**
+   * Maximum time to wait for data connection closing status.
+   * @default "1m0s"
+   */
+  shutTimeout?: string;
+  /**
+   * Use Implicit FTPS (FTP over TLS).
+   * @default false
+   */
+  tls?: boolean;
+  /**
+   * Size of TLS session cache for all control and data connections.
+   * @default 32
+   */
+  tlsCacheSize?: number;
+  /**
+   * FTP username.
+   * @default "$USER"
+   */
+  user?: string;
+  /**
+   * Use MDTM to set modification time (VsFtpd quirk)
+   * @default false
+   */
+  writingMdtm?: boolean;
+}
+
+export interface StorageGcsConfig {
+  /**
+   * Access public buckets and objects without credentials.
+   * @default false
+   */
+  anonymous?: boolean;
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Access Control List for new buckets.
+   * @example "authenticatedRead"
+   */
+  bucketAcl?: string;
+  /**
+   * Access checks should use bucket-level IAM policies.
+   * @default false
+   */
+  bucketPolicyOnly?: boolean;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,CrLf,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for the service. */
+  endpoint?: string;
+  /**
+   * Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * Location for the newly created buckets.
+   * @example ""
+   */
+  location?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * Access Control List for new objects.
+   * @example "authenticatedRead"
+   */
+  objectAcl?: string;
+  /** Project number. */
+  projectNumber?: string;
+  /** Service Account Credentials JSON blob. */
+  serviceAccountCredentials?: string;
+  /** Service Account Credentials JSON file path. */
+  serviceAccountFile?: string;
+  /**
+   * The storage class to use when storing objects in Google Cloud Storage.
+   * @example ""
+   */
+  storageClass?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export interface StorageGphotosConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,CrLf,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Also view and download archived media.
+   * @default false
+   */
+  includeArchived?: boolean;
+  /**
+   * Set to make the Google Photos backend read only.
+   * @default false
+   */
+  readOnly?: boolean;
+  /**
+   * Set to read the size of media items.
+   * @default false
+   */
+  readSize?: boolean;
+  /**
+   * Year limits the photos to be downloaded to those which are uploaded after the given year.
+   * @default 2000
+   */
+  startYear?: number;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export interface StorageHdfsConfig {
+  /**
+   * Kerberos data transfer protection: authentication|integrity|privacy.
+   * @example "privacy"
+   */
+  dataTransferProtection?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Colon,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Hadoop name node and port. */
+  namenode?: string;
+  /** Kerberos service principal name for the namenode. */
+  servicePrincipalName?: string;
+  /**
+   * Hadoop user name.
+   * @example "root"
+   */
+  username?: string;
+}
+
+export interface StorageHidriveConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Chunksize for chunked uploads.
+   * @default "48Mi"
+   */
+  chunkSize?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * Do not fetch number of objects in directories unless it is absolutely necessary.
+   * @default false
+   */
+  disableFetchingMemberCount?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for the service.
+   * @default "https://api.hidrive.strato.com/2.1"
+   */
+  endpoint?: string;
+  /**
+   * The root/parent folder for all paths.
+   * @default "/"
+   * @example "/"
+   */
+  rootPrefix?: string;
+  /**
+   * Access permissions that rclone should use when requesting access from HiDrive.
+   * @default "rw"
+   * @example "rw"
+   */
+  scopeAccess?: string;
+  /**
+   * User-level that rclone should use when requesting access from HiDrive.
+   * @default "user"
+   * @example "user"
+   */
+  scopeRole?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /**
+   * Concurrency for chunked uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff/Threshold for chunked uploads.
+   * @default "96Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageHttpConfig {
+  /** Set HTTP headers for all transactions. */
+  headers?: string;
+  /**
+   * Don't use HEAD requests.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * Set this if the site doesn't end directories with /.
+   * @default false
+   */
+  noSlash?: boolean;
+  /** URL of HTTP host to connect to. */
+  url?: string;
+}
+
+export interface StorageInternetarchiveConfig {
+  /** IAS3 Access Key. */
+  accessKeyId?: string;
+  /**
+   * Don't ask the server to test against MD5 checksum calculated by rclone.
+   * @default true
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * IAS3 Endpoint.
+   * @default "https://s3.us.archive.org"
+   */
+  endpoint?: string;
+  /**
+   * Host of InternetArchive Frontend.
+   * @default "https://archive.org"
+   */
+  frontEndpoint?: string;
+  /** IAS3 Secret Key (password). */
+  secretAccessKey?: string;
+  /**
+   * Timeout for waiting the server's processing tasks (specifically archive and book_op) to finish.
+   * @default "0s"
+   */
+  waitArchive?: string;
+}
+
+export interface StorageJottacloudConfig {
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Delete files permanently rather than putting them into the trash.
+   * @default false
+   */
+  hardDelete?: boolean;
+  /**
+   * Files bigger than this will be cached on disk to calculate the MD5 if required.
+   * @default "10Mi"
+   */
+  md5MemoryLimit?: string;
+  /**
+   * Avoid server side versioning by deleting files and recreating files instead of overwriting them.
+   * @default false
+   */
+  noVersions?: boolean;
+  /**
+   * Only show files that are in the trash.
+   * @default false
+   */
+  trashedOnly?: boolean;
+  /**
+   * Files bigger than this can be resumed if the upload fail's.
+   * @default "10Mi"
+   */
+  uploadResumeLimit?: string;
+}
+
+export interface StorageKoofrDigistorageConfig {
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Mount ID of the mount to use. */
+  mountid?: string;
+  /** Your password for rclone (generate one at https://storage.rcs-rds.ro/app/admin/preferences/password). */
+  password?: string;
+  /**
+   * Does the backend support setting modification time.
+   * @default true
+   */
+  setmtime?: boolean;
+  /** Your user name. */
+  user?: string;
+}
+
+export interface StorageKoofrKoofrConfig {
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Mount ID of the mount to use. */
+  mountid?: string;
+  /** Your password for rclone (generate one at https://app.koofr.net/app/admin/preferences/password). */
+  password?: string;
+  /**
+   * Does the backend support setting modification time.
+   * @default true
+   */
+  setmtime?: boolean;
+  /** Your user name. */
+  user?: string;
+}
+
+export interface StorageKoofrOtherConfig {
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** The Koofr API endpoint to use. */
+  endpoint?: string;
+  /** Mount ID of the mount to use. */
+  mountid?: string;
+  /** Your password for rclone (generate one at your service's settings page). */
+  password?: string;
+  /**
+   * Does the backend support setting modification time.
+   * @default true
+   */
+  setmtime?: boolean;
+  /** Your user name. */
+  user?: string;
+}
+
+export interface StorageLocalConfig {
+  /**
+   * Force the filesystem to report itself as case insensitive.
+   * @default false
+   */
+  caseInsensitive?: boolean;
+  /**
+   * Force the filesystem to report itself as case sensitive.
+   * @default false
+   */
+  caseSensitive?: boolean;
+  /**
+   * Follow symlinks and copy the pointed to item.
+   * @default false
+   */
+  copyLinks?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Dot"
+   */
+  encoding?: string;
+  /**
+   * Translate symlinks to/from regular files with a '.rclonelink' extension.
+   * @default false
+   */
+  links?: boolean;
+  /**
+   * Don't check to see if the files change during upload.
+   * @default false
+   */
+  noCheckUpdated?: boolean;
+  /**
+   * Disable preallocation of disk space for transferred files.
+   * @default false
+   */
+  noPreallocate?: boolean;
+  /**
+   * Disable setting modtime.
+   * @default false
+   */
+  noSetModtime?: boolean;
+  /**
+   * Disable sparse files for multi-thread downloads.
+   * @default false
+   */
+  noSparse?: boolean;
+  /**
+   * Disable UNC (long path names) conversion on Windows.
+   * @default false
+   * @example true
+   */
+  nounc?: boolean;
+  /**
+   * Don't cross filesystem boundaries (unix/macOS only).
+   * @default false
+   */
+  oneFileSystem?: boolean;
+  /**
+   * Don't warn about skipped symlinks.
+   * @default false
+   */
+  skipLinks?: boolean;
+  /**
+   * Apply unicode NFC normalization to paths and filenames.
+   * @default false
+   */
+  unicodeNormalization?: boolean;
+  /**
+   * Assume the Stat size of links is zero (and read them instead) (deprecated).
+   * @default false
+   */
+  zeroSizeLinks?: boolean;
+}
+
+export interface StorageMailruConfig {
+  /**
+   * What should copy do if file checksum is mismatched or invalid.
+   * @default true
+   * @example true
+   */
+  checkHash?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Password. */
+  pass?: string;
+  /** Comma separated list of internal maintenance flags. */
+  quirks?: string;
+  /**
+   * Skip full upload if there is another file with same data hash.
+   * @default true
+   * @example true
+   */
+  speedupEnable?: boolean;
+  /**
+   * Comma separated list of file name patterns eligible for speedup (put by hash).
+   * @default "*.mkv,*.avi,*.mp4,*.mp3,*.zip,*.gz,*.rar,*.pdf"
+   * @example ""
+   */
+  speedupFilePatterns?: string;
+  /**
+   * This option allows you to disable speedup (put by hash) for large files.
+   * @default "3Gi"
+   * @example "0"
+   */
+  speedupMaxDisk?: string;
+  /**
+   * Files larger than the size given below will always be hashed on disk.
+   * @default "32Mi"
+   * @example "0"
+   */
+  speedupMaxMemory?: string;
+  /** User name (usually email). */
+  user?: string;
+  /** HTTP user agent used internally by client. */
+  userAgent?: string;
+}
+
+export interface StorageMegaConfig {
+  /**
+   * Output more debug from Mega.
+   * @default false
+   */
+  debug?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Delete files permanently rather than putting them into the trash.
+   * @default false
+   */
+  hardDelete?: boolean;
+  /** Password. */
+  pass?: string;
+  /**
+   * Use HTTPS for transfers.
+   * @default false
+   */
+  useHttps?: boolean;
+  /** User name. */
+  user?: string;
+}
+
+export interface StorageNetstorageConfig {
+  /** Set the NetStorage account name */
+  account?: string;
+  /** Domain+path of NetStorage host to connect to. */
+  host?: string;
+  /**
+   * Select between HTTP or HTTPS protocol.
+   * @default "https"
+   * @example "http"
+   */
+  protocol?: string;
+  /** Set the NetStorage account secret/G2O key for authentication. */
+  secret?: string;
+}
+
+export interface StorageOnedriveConfig {
+  /**
+   * Set scopes to be requested by rclone.
+   * @default "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+   * @example "Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All offline_access"
+   */
+  accessScopes?: string;
+  /** Auth server URL. */
+  authUrl?: string;
+  /**
+   * Chunk size to upload files with - must be multiple of 320k (327,680 bytes).
+   * @default "10Mi"
+   */
+  chunkSize?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * Disable the request for Sites.Read.All permission.
+   * @default false
+   */
+  disableSitePermission?: boolean;
+  /** The ID of the drive to use. */
+  driveId?: string;
+  /** The type of the drive (personal | business | documentLibrary). */
+  driveType?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Set to make OneNote files show up in directory listings.
+   * @default false
+   */
+  exposeOnenoteFiles?: boolean;
+  /**
+   * Specify the hash in use for the backend.
+   * @default "auto"
+   * @example "auto"
+   */
+  hashType?: string;
+  /** Set the password for links created by the link command. */
+  linkPassword?: string;
+  /**
+   * Set the scope of the links created by the link command.
+   * @default "anonymous"
+   * @example "anonymous"
+   */
+  linkScope?: string;
+  /**
+   * Set the type of the links created by the link command.
+   * @default "view"
+   * @example "view"
+   */
+  linkType?: string;
+  /**
+   * Size of listing chunk.
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Remove all versions on modifying operations.
+   * @default false
+   */
+  noVersions?: boolean;
+  /**
+   * Choose national cloud region for OneDrive.
+   * @default "global"
+   * @example "global"
+   */
+  region?: string;
+  /** ID of the root folder. */
+  rootFolderId?: string;
+  /**
+   * Allow server-side operations (e.g. copy) to work across different onedrive configs.
+   * @default false
+   */
+  serverSideAcrossConfigs?: boolean;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export interface StorageOosEnvAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosInstancePrincipalAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosNoAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosResourcePrincipalAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOosUserPrincipalAuthConfig {
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /** Object storage compartment OCID */
+  compartment?: string;
+  /**
+   * Path to OCI config file
+   * @default "~/.oci/config"
+   * @example "~/.oci/config"
+   */
+  configFile?: string;
+  /**
+   * Profile name inside the oci config file
+   * @default "Default"
+   * @example "Default"
+   */
+  configProfile?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * Timeout for copy.
+   * @default "1m0s"
+   */
+  copyTimeout?: string;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for Object storage API. */
+  endpoint?: string;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /** Object storage namespace */
+  namespace?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /** Object storage Region */
+  region?: string;
+  /**
+   * If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C, the optional header that specifies the base64-encoded 256-bit encryption key to use to
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * To use SSE-C, a file containing the base64-encoded string of the AES-256 encryption key associated
+   * @example ""
+   */
+  sseCustomerKeyFile?: string;
+  /**
+   * If using SSE-C, The optional header that specifies the base64-encoded SHA256 hash of the encryption
+   * @example ""
+   */
+  sseCustomerKeySha256?: string;
+  /**
+   * if using using your own master key in vault, this header specifies the
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in storage. https://docs.oracle.com/en-us/iaas/Content/Object/Concepts/understandingstoragetiers.htm
+   * @default "Standard"
+   * @example "Standard"
+   */
+  storageTier?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 10
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageOpendriveConfig {
+  /**
+   * Files will be uploaded in chunks this size.
+   * @default "10Mi"
+   */
+  chunkSize?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Password. */
+  password?: string;
+  /** Username. */
+  username?: string;
+}
+
+export interface StoragePcloudConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Hostname to connect to.
+   * @default "api.pcloud.com"
+   * @example "api.pcloud.com"
+   */
+  hostname?: string;
+  /** Your pcloud password. */
+  password?: string;
+  /**
+   * Fill in for rclone to use a non root folder as its starting point.
+   * @default "d0"
+   */
+  rootFolderId?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+  /** Your pcloud username. */
+  username?: string;
+}
+
+export interface StoragePremiumizemeConfig {
+  /** API Key. */
+  apiKey?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+}
+
+export interface StoragePutioConfig {
+  /**
+   * The encoding for the backend.
+   * @default "Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+}
+
+export interface StorageQingstorConfig {
+  /** QingStor Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "4Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Number of connection retries.
+   * @default 3
+   */
+  connectionRetries?: number;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Ctl,InvalidUtf8"
+   */
+  encoding?: string;
+  /** Enter an endpoint URL to connection QingStor API. */
+  endpoint?: string;
+  /**
+   * Get QingStor credentials from runtime.
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /** QingStor Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 1
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Zone to connect to.
+   * @example "pek3a"
+   */
+  zone?: string;
+}
+
+export interface StorageS3AWSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * If true avoid calling abort upload on a failure, leaving all successfully uploaded parts on S3 for manual recovery.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must be set to match the Region.
+   * @example ""
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "us-east-1"
+   */
+  region?: string;
+  /**
+   * Enables requester pays option when interacting with S3 bucket.
+   * @default false
+   */
+  requesterPays?: boolean;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * If using KMS ID you must provide the ARN of Key.
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * The storage class to use when storing new objects in S3.
+   * @example ""
+   */
+  storageClass?: string;
+  /** Endpoint for STS. */
+  stsEndpoint?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * If true use the AWS S3 accelerated endpoint.
+   * @default false
+   */
+  useAccelerateEndpoint?: boolean;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3AlibabaConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for OSS API.
+   * @example "oss-accelerate.aliyuncs.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in OSS.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3ArvanCloudConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Arvan Cloud Object Storage (AOS) API.
+   * @example "s3.ir-thr-at1.arvanstorage.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must match endpoint.
+   * @example "ir-thr-at1"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in ArvanCloud.
+   * @example "STANDARD"
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3CephConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * If using KMS ID you must provide the ARN of Key.
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3ChinaMobileConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for China Mobile Ecloud Elastic Object Storage (EOS) API.
+   * @example "eos-wuxi-1.cmecloud.cn"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must match endpoint.
+   * @example "wuxi1"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * The storage class to use when storing new objects in ChinaMobile.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3CloudflareConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "auto"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3DigitalOceanConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "syd1.digitaloceanspaces.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3DreamhostConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "objects-us-east-1.dream.io"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3HuaweiOBSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for OBS API.
+   * @example "obs.af-south-1.myhuaweicloud.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to. - the location where your bucket will be created and your data stored. Need bo be same with your endpoint.
+   * @example "af-south-1"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3IBMCOSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets and storing or copying objects.
+   * @example "private"
+   */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for IBM COS S3 API.
+   * @example "s3.us.cloud-object-storage.appdomain.cloud"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must match endpoint when using IBM Cloud Public.
+   * @example "us-standard"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3IDriveConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3IONOSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for IONOS S3 Object Storage.
+   * @example "s3-eu-central-1.ionoscloud.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region where your bucket will be created and your data stored.
+   * @example "de"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3LiaraConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Liara Object Storage API.
+   * @example "storage.iran.liara.space"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in Liara
+   * @example "STANDARD"
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3LyveCloudConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "s3.us-east-1.lyvecloud.seagate.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3MinioConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /**
+   * The server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  serverSideEncryption?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * If using SSE-C, the server-side encryption algorithm used when storing this object in S3.
+   * @example ""
+   */
+  sseCustomerAlgorithm?: string;
+  /**
+   * To use SSE-C you may provide the secret encryption key used to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKey?: string;
+  /**
+   * If using SSE-C you must provide the secret encryption key encoded in base64 format to encrypt/decrypt your data.
+   * @example ""
+   */
+  sseCustomerKeyBase64?: string;
+  /**
+   * If using SSE-C you may provide the secret encryption key MD5 checksum (optional).
+   * @example ""
+   */
+  sseCustomerKeyMd5?: string;
+  /**
+   * If using KMS ID you must provide the ARN of Key.
+   * @example ""
+   */
+  sseKmsKeyId?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3NeteaseConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3OtherConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for S3 API. */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3QiniuConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Qiniu Object Storage.
+   * @example "s3-cn-east-1.qiniucs.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - must be set to match the Region.
+   * @example "cn-east-1"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "cn-east-1"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in Qiniu.
+   * @example "STANDARD"
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3RackCorpConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for RackCorp Object Storage.
+   * @example "s3.rackcorp.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Location constraint - the location where your bucket will be located and your data stored.
+   * @example "global"
+   */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * region - the location where your bucket will be created and your data stored.
+   * @example "global"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3ScalewayConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Scaleway Object Storage.
+   * @example "s3.nl-ams.scw.cloud"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example "nl-ams"
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in S3.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3SeaweedFSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "localhost:8333"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3StackPathConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for StackPath Object Storage.
+   * @example "s3.us-east-2.stackpathstorage.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3StorjConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Storj Gateway.
+   * @example "gateway.storjshare.io"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3TencentCOSConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /**
+   * Canned ACL used when creating buckets and storing or copying objects.
+   * @example "default"
+   */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for Tencent COS API.
+   * @example "cos.ap-beijing.myqcloud.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * The storage class to use when storing new objects in Tencent COS.
+   * @example ""
+   */
+  storageClass?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageS3WasabiConfig {
+  /** AWS Access Key ID. */
+  accessKeyId?: string;
+  /** Canned ACL used when creating buckets and storing or copying objects. */
+  acl?: string;
+  /**
+   * Canned ACL used when creating buckets.
+   * @example "private"
+   */
+  bucketAcl?: string;
+  /**
+   * Chunk size to use for uploading.
+   * @default "5Mi"
+   */
+  chunkSize?: string;
+  /**
+   * Cutoff for switching to multipart copy.
+   * @default "4.656Gi"
+   */
+  copyCutoff?: string;
+  /**
+   * If set this will decompress gzip encoded objects.
+   * @default false
+   */
+  decompress?: boolean;
+  /**
+   * Don't store MD5 checksum with object metadata.
+   * @default false
+   */
+  disableChecksum?: boolean;
+  /**
+   * Disable usage of http2 for S3 backends.
+   * @default false
+   */
+  disableHttp2?: boolean;
+  /** Custom endpoint for downloads. */
+  downloadUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Endpoint for S3 API.
+   * @example "s3.wasabisys.com"
+   */
+  endpoint?: string;
+  /**
+   * Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /**
+   * If true use path style access if false use virtual hosted style.
+   * @default true
+   */
+  forcePathStyle?: boolean;
+  /**
+   * Size of listing chunk (response list for each ListObject S3 request).
+   * @default 1000
+   */
+  listChunk?: number;
+  /**
+   * Whether to url encode listings: true/false/unset
+   * @default "unset"
+   */
+  listUrlEncode?: string;
+  /**
+   * Version of ListObjects to use: 1,2 or 0 for auto.
+   * @default 0
+   */
+  listVersion?: number;
+  /** Location constraint - must be set to match the Region. */
+  locationConstraint?: string;
+  /**
+   * Maximum number of parts in a multipart upload.
+   * @default 10000
+   */
+  maxUploadParts?: number;
+  /**
+   * How often internal memory buffer pools will be flushed.
+   * @default "1m0s"
+   */
+  memoryPoolFlushTime?: string;
+  /**
+   * Whether to use mmap buffers in internal memory pool.
+   * @default false
+   */
+  memoryPoolUseMmap?: boolean;
+  /**
+   * Set this if the backend might gzip objects.
+   * @default "unset"
+   */
+  mightGzip?: string;
+  /**
+   * If set, don't attempt to check the bucket exists or create it.
+   * @default false
+   */
+  noCheckBucket?: boolean;
+  /**
+   * If set, don't HEAD uploaded objects to check integrity.
+   * @default false
+   */
+  noHead?: boolean;
+  /**
+   * If set, do not do HEAD before GET when getting objects.
+   * @default false
+   */
+  noHeadObject?: boolean;
+  /**
+   * Suppress setting and reading of system metadata
+   * @default false
+   */
+  noSystemMetadata?: boolean;
+  /** Profile to use in the shared credentials file. */
+  profile?: string;
+  /**
+   * Region to connect to.
+   * @example ""
+   */
+  region?: string;
+  /** AWS Secret Access Key (password). */
+  secretAccessKey?: string;
+  /** An AWS session token. */
+  sessionToken?: string;
+  /** Path to the shared credentials file. */
+  sharedCredentialsFile?: string;
+  /**
+   * Concurrency for multipart uploads.
+   * @default 4
+   */
+  uploadConcurrency?: number;
+  /**
+   * Cutoff for switching to chunked upload.
+   * @default "200Mi"
+   */
+  uploadCutoff?: string;
+  /**
+   * Whether to use ETag in multipart uploads for verification
+   * @default "unset"
+   */
+  useMultipartEtag?: string;
+  /**
+   * Whether to use a presigned request or PutObject for single part uploads
+   * @default false
+   */
+  usePresignedRequest?: boolean;
+  /**
+   * If true use v2 authentication.
+   * @default false
+   */
+  v2Auth?: boolean;
+  /**
+   * Show file versions as they were at the specified time.
+   * @default "off"
+   */
+  versionAt?: string;
+  /**
+   * Include old versions in directory listings.
+   * @default false
+   */
+  versions?: boolean;
+}
+
+export interface StorageSeafileConfig {
+  /**
+   * Two-factor authentication ('true' if the account has 2FA enabled).
+   * @default false
+   */
+  "2fa"?: boolean;
+  /** Authentication token. */
+  authToken?: string;
+  /**
+   * Should rclone create a library if it doesn't exist.
+   * @default false
+   */
+  createLibrary?: boolean;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"
+   */
+  encoding?: string;
+  /** Name of the library. */
+  library?: string;
+  /** Library password (for encrypted libraries only). */
+  libraryKey?: string;
+  /** Password. */
+  pass?: string;
+  /**
+   * URL of seafile host to connect to.
+   * @example "https://cloud.seafile.com/"
+   */
+  url?: string;
+  /** User name (usually email address). */
+  user?: string;
+}
+
+export interface StorageSftpConfig {
+  /**
+   * Allow asking for SFTP password when needed.
+   * @default false
+   */
+  askPassword?: boolean;
+  /**
+   * Upload and download chunk size.
+   * @default "32Ki"
+   */
+  chunkSize?: string;
+  /** Space separated list of ciphers to be used for session encryption, ordered by preference. */
+  ciphers?: string;
+  /**
+   * The maximum number of outstanding requests for one file
+   * @default 64
+   */
+  concurrency?: number;
+  /**
+   * If set don't use concurrent reads.
+   * @default false
+   */
+  disableConcurrentReads?: boolean;
+  /**
+   * If set don't use concurrent writes.
+   * @default false
+   */
+  disableConcurrentWrites?: boolean;
+  /**
+   * Disable the execution of SSH commands to determine if remote file hashing is available.
+   * @default false
+   */
+  disableHashcheck?: boolean;
+  /** SSH host to connect to. */
+  host?: string;
+  /**
+   * Max time before closing idle connections.
+   * @default "1m0s"
+   */
+  idleTimeout?: string;
+  /** Space separated list of key exchange algorithms, ordered by preference. */
+  keyExchange?: string;
+  /** Path to PEM-encoded private key file. */
+  keyFile?: string;
+  /** The passphrase to decrypt the PEM-encoded private key file. */
+  keyFilePass?: string;
+  /** Raw PEM-encoded private key. */
+  keyPem?: string;
+  /**
+   * When set forces the usage of the ssh-agent.
+   * @default false
+   */
+  keyUseAgent?: boolean;
+  /**
+   * Optional path to known_hosts file.
+   * @example "~/.ssh/known_hosts"
+   */
+  knownHostsFile?: string;
+  /** Space separated list of MACs (message authentication code) algorithms, ordered by preference. */
+  macs?: string;
+  /** The command used to read md5 hashes. */
+  md5sumCommand?: string;
+  /** SSH password, leave blank to use ssh-agent. */
+  pass?: string;
+  /** Override path used by SSH shell commands. */
+  pathOverride?: string;
+  /**
+   * SSH port number.
+   * @default 22
+   */
+  port?: number;
+  /** Optional path to public key file. */
+  pubkeyFile?: string;
+  /** Specifies the path or command to run a sftp server on the remote host. */
+  serverCommand?: string;
+  /** Environment variables to pass to sftp and commands */
+  setEnv?: string;
+  /**
+   * Set the modified time on the remote if set.
+   * @default true
+   */
+  setModtime?: boolean;
+  /** The command used to read sha1 hashes. */
+  sha1sumCommand?: string;
+  /**
+   * The type of SSH shell on remote server, if any.
+   * @example "none"
+   */
+  shellType?: string;
+  /**
+   * Set to skip any symlinks and any other non regular files.
+   * @default false
+   */
+  skipLinks?: boolean;
+  /**
+   * Specifies the SSH2 subsystem on the remote host.
+   * @default "sftp"
+   */
+  subsystem?: string;
+  /**
+   * If set use fstat instead of stat.
+   * @default false
+   */
+  useFstat?: boolean;
+  /**
+   * Enable the use of insecure ciphers and key exchange methods.
+   * @default false
+   * @example false
+   */
+  useInsecureCipher?: boolean;
+  /**
+   * SSH username.
+   * @default "$USER"
+   */
+  user?: string;
+}
+
+export interface StorageSharefileConfig {
+  /**
+   * Upload chunk size.
+   * @default "64Mi"
+   */
+  chunkSize?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /** Endpoint for API calls. */
+  endpoint?: string;
+  /**
+   * ID of the root folder.
+   * @example ""
+   */
+  rootFolderId?: string;
+  /**
+   * Cutoff for switching to multipart upload.
+   * @default "128Mi"
+   */
+  uploadCutoff?: string;
+}
+
+export interface StorageSiaConfig {
+  /** Sia Daemon API Password. */
+  apiPassword?: string;
+  /**
+   * Sia daemon API URL, like http://sia.daemon.host:9980.
+   * @default "http://127.0.0.1:9980"
+   */
+  apiUrl?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Siad User Agent
+   * @default "Sia-Agent"
+   */
+  userAgent?: string;
+}
+
+export interface StorageSmbConfig {
+  /**
+   * Whether the server is configured to be case-insensitive.
+   * @default true
+   */
+  caseInsensitive?: boolean;
+  /**
+   * Domain name for NTLM authentication.
+   * @default "WORKGROUP"
+   */
+  domain?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Hide special shares (e.g. print$) which users aren't supposed to access.
+   * @default true
+   */
+  hideSpecialShare?: boolean;
+  /** SMB server hostname to connect to. */
+  host?: string;
+  /**
+   * Max time before closing idle connections.
+   * @default "1m0s"
+   */
+  idleTimeout?: string;
+  /** SMB password. */
+  pass?: string;
+  /**
+   * SMB port number.
+   * @default 445
+   */
+  port?: number;
+  /** Service principal name. */
+  spn?: string;
+  /**
+   * SMB username.
+   * @default "$USER"
+   */
+  user?: string;
+}
+
+export interface StorageStorjExistingConfig {
+  /** Access grant. */
+  accessGrant?: string;
+}
+
+export interface StorageStorjNewConfig {
+  /** API key. */
+  apiKey?: string;
+  /** Encryption passphrase. */
+  passphrase?: string;
+  /**
+   * Satellite address.
+   * @default "us1.storj.io"
+   * @example "us1.storj.io"
+   */
+  satelliteAddress?: string;
+}
+
+export interface StorageSugarsyncConfig {
+  /** Sugarsync Access Key ID. */
+  accessKeyId?: string;
+  /** Sugarsync App ID. */
+  appId?: string;
+  /** Sugarsync authorization. */
+  authorization?: string;
+  /** Sugarsync authorization expiry. */
+  authorizationExpiry?: string;
+  /** Sugarsync deleted folder id. */
+  deletedId?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Permanently delete files if true
+   * @default false
+   */
+  hardDelete?: boolean;
+  /** Sugarsync Private Access Key. */
+  privateAccessKey?: string;
+  /** Sugarsync refresh token. */
+  refreshToken?: string;
+  /** Sugarsync root id. */
+  rootId?: string;
+  /** Sugarsync user. */
+  user?: string;
+}
+
+export interface StorageSwiftConfig {
+  /** Application Credential ID (OS_APPLICATION_CREDENTIAL_ID). */
+  applicationCredentialId?: string;
+  /** Application Credential Name (OS_APPLICATION_CREDENTIAL_NAME). */
+  applicationCredentialName?: string;
+  /** Application Credential Secret (OS_APPLICATION_CREDENTIAL_SECRET). */
+  applicationCredentialSecret?: string;
+  /**
+   * Authentication URL for server (OS_AUTH_URL).
+   * @example "https://auth.api.rackspacecloud.com/v1.0"
+   */
+  auth?: string;
+  /** Auth Token from alternate authentication - optional (OS_AUTH_TOKEN). */
+  authToken?: string;
+  /**
+   * AuthVersion - optional - set to (1,2,3) if your auth URL has no version (ST_AUTH_VERSION).
+   * @default 0
+   */
+  authVersion?: number;
+  /**
+   * Above this size files will be chunked into a _segments container.
+   * @default "5Gi"
+   */
+  chunkSize?: string;
+  /** User domain - optional (v3 auth) (OS_USER_DOMAIN_NAME) */
+  domain?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,InvalidUtf8"
+   */
+  encoding?: string;
+  /**
+   * Endpoint type to choose from the service catalogue (OS_ENDPOINT_TYPE).
+   * @default "public"
+   * @example "public"
+   */
+  endpointType?: string;
+  /**
+   * Get swift credentials from environment variables in standard OpenStack form.
+   * @default false
+   * @example false
+   */
+  envAuth?: boolean;
+  /** API key or password (OS_PASSWORD). */
+  key?: string;
+  /**
+   * If true avoid calling abort upload on a failure.
+   * @default false
+   */
+  leavePartsOnError?: boolean;
+  /**
+   * Don't chunk files during streaming upload.
+   * @default false
+   */
+  noChunk?: boolean;
+  /**
+   * Disable support for static and dynamic large objects
+   * @default false
+   */
+  noLargeObjects?: boolean;
+  /** Region name - optional (OS_REGION_NAME). */
+  region?: string;
+  /**
+   * The storage policy to use when creating a new container.
+   * @example ""
+   */
+  storagePolicy?: string;
+  /** Storage URL - optional (OS_STORAGE_URL). */
+  storageUrl?: string;
+  /** Tenant name - optional for v1 auth, this or tenant_id required otherwise (OS_TENANT_NAME or OS_PROJECT_NAME). */
+  tenant?: string;
+  /** Tenant domain - optional (v3 auth) (OS_PROJECT_DOMAIN_NAME). */
+  tenantDomain?: string;
+  /** Tenant ID - optional for v1 auth, this or tenant required otherwise (OS_TENANT_ID). */
+  tenantId?: string;
+  /** User name to log in (OS_USERNAME). */
+  user?: string;
+  /** User ID to log in - optional - most swift systems use user and leave this blank (v3 auth) (OS_USER_ID). */
+  userId?: string;
+}
+
+export interface StorageUptoboxConfig {
+  /** Your access token. */
+  accessToken?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+}
+
+export interface StorageWebdavConfig {
+  /** Bearer token instead of user/pass (e.g. a Macaroon). */
+  bearerToken?: string;
+  /** Command to run to get a bearer token. */
+  bearerTokenCommand?: string;
+  /** The encoding for the backend. */
+  encoding?: string;
+  /** Set HTTP headers for all transactions. */
+  headers?: string;
+  /** Password. */
+  pass?: string;
+  /** URL of http host to connect to. */
+  url?: string;
+  /** User name. */
+  user?: string;
+  /**
+   * Name of the WebDAV site/service/software you are using.
+   * @example "nextcloud"
+   */
+  vendor?: string;
+}
+
+export interface StorageYandexConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Slash,Del,Ctl,InvalidUtf8,Dot"
+   */
+  encoding?: string;
+  /**
+   * Delete files permanently rather than putting them into the trash.
+   * @default false
+   */
+  hardDelete?: boolean;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export interface StorageZohoConfig {
+  /** Auth server URL. */
+  authUrl?: string;
+  /** OAuth Client Id. */
+  clientId?: string;
+  /** OAuth Client Secret. */
+  clientSecret?: string;
+  /**
+   * The encoding for the backend.
+   * @default "Del,Ctl,InvalidUtf8"
+   */
+  encoding?: string;
+  /**
+   * Zoho region to connect to.
+   * @example "com"
+   */
+  region?: string;
+  /** OAuth Access Token as a JSON blob. */
+  token?: string;
+  /** Token server url. */
+  tokenUrl?: string;
+}
+
+export type StorePieceReader = object;
 
 export interface WalletImportRequest {
   /** This is the exported private key from lotus wallet export */
@@ -4743,206 +7901,6 @@ export class HttpClient<SecurityDataType = unknown> {
  * This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
-  admin = {
-    /**
-     * No description
-     *
-     * @tags Admin
-     * @name InitCreate
-     * @summary Initialize the database
-     * @request POST:/admin/init
-     */
-    initCreate: (params: RequestParams = {}) =>
-      this.request<void, ApiHTTPError>({
-        path: `/admin/init`,
-        method: "POST",
-        ...params,
-      }),
-
-    /**
-     * @description This will drop all tables and recreate them.
-     *
-     * @tags Admin
-     * @name ResetCreate
-     * @summary Reset the database
-     * @request POST:/admin/reset
-     */
-    resetCreate: (params: RequestParams = {}) =>
-      this.request<void, ApiHTTPError>({
-        path: `/admin/reset`,
-        method: "POST",
-        ...params,
-      }),
-  };
-  chunk = {
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name ChunkDetail
-     * @summary Get detail of a specific chunk
-     * @request GET:/chunk/{id}
-     */
-    chunkDetail: (id: string, params: RequestParams = {}) =>
-      this.request<ModelChunk, ApiHTTPError>({
-        path: `/chunk/${id}`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  dataset = {
-    /**
-     * No description
-     *
-     * @tags Dataset
-     * @name DatasetList
-     * @summary List all datasets
-     * @request GET:/dataset
-     */
-    datasetList: (params: RequestParams = {}) =>
-      this.request<ModelDataset[], ApiHTTPError>({
-        path: `/dataset`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description The dataset is a top level object to distinguish different dataset.
-     *
-     * @tags Dataset
-     * @name DatasetCreate
-     * @summary Create a new dataset
-     * @request POST:/dataset
-     */
-    datasetCreate: (request: DatasetCreateRequest, params: RequestParams = {}) =>
-      this.request<ModelDataset, ApiHTTPError>({
-        path: `/dataset`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Important! If the dataset is large, this command will take some time to remove all relevant data.
-     *
-     * @tags Dataset
-     * @name DatasetDelete
-     * @summary Remove a specific dataset. This will not remove the CAR files.
-     * @request DELETE:/dataset/{datasetName}
-     */
-    datasetDelete: (datasetName: string, params: RequestParams = {}) =>
-      this.request<void, ApiHTTPError>({
-        path: `/dataset/${datasetName}`,
-        method: "DELETE",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Dataset
-     * @name DatasetPartialUpdate
-     * @summary Update a dataset
-     * @request PATCH:/dataset/{datasetName}
-     */
-    datasetPartialUpdate: (datasetName: string, request: DatasetUpdateRequest, params: RequestParams = {}) =>
-      this.request<ModelDataset, ApiHTTPError>({
-        path: `/dataset/${datasetName}`,
-        method: "PATCH",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Dataset
-     * @name PieceDetail
-     * @summary List all pieces for the dataset that are available for deal making
-     * @request GET:/dataset/{datasetName}/piece
-     */
-    pieceDetail: (datasetName: string, params: RequestParams = {}) =>
-      this.request<ModelCar[], ApiHTTPError>({
-        path: `/dataset/${datasetName}/piece`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Dataset
-     * @name PieceCreate
-     * @summary Manually register a piece (CAR file) with the dataset for deal making purpose
-     * @request POST:/dataset/{datasetName}/piece
-     */
-    pieceCreate: (datasetName: string, request: DatasetAddPieceRequest, params: RequestParams = {}) =>
-      this.request<ModelCar, ApiHTTPError>({
-        path: `/dataset/${datasetName}/piece`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Wallet
-     * @name WalletDetail
-     * @summary List all wallets of a dataset.
-     * @request GET:/dataset/{datasetName}/wallet
-     */
-    walletDetail: (datasetName: string, params: RequestParams = {}) =>
-      this.request<ModelWallet[], ApiHTTPError>({
-        path: `/dataset/${datasetName}/wallet`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Wallet Association
-     * @name WalletCreate
-     * @summary Associate a new wallet with a dataset
-     * @request POST:/dataset/{datasetName}/wallet/{wallet}
-     */
-    walletCreate: (datasetName: string, wallet: string, params: RequestParams = {}) =>
-      this.request<ModelWalletAssignment, ApiHTTPError>({
-        path: `/dataset/${datasetName}/wallet/${wallet}`,
-        method: "POST",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Wallet
-     * @name WalletDelete
-     * @summary Remove an associated wallet from a dataset
-     * @request DELETE:/dataset/{datasetName}/wallet/{wallet}
-     */
-    walletDelete: (datasetName: string, wallet: string, params: RequestParams = {}) =>
-      this.request<void, ApiHTTPError>({
-        path: `/dataset/${datasetName}/wallet/${wallet}`,
-        method: "DELETE",
-        ...params,
-      }),
-  };
   deal = {
     /**
      * @description List all deals
@@ -4962,19 +7920,71 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  item = {
+  file = {
     /**
      * No description
      *
-     * @tags Data Source
-     * @name ItemDetail
-     * @summary Get details about an item
-     * @request GET:/item/{id}
+     * @tags File
+     * @name FileDetail
+     * @summary Get details about a file
+     * @request GET:/file/{id}
      */
-    itemDetail: (id: string, params: RequestParams = {}) =>
-      this.request<ModelItem, ApiHTTPError>({
-        path: `/item/${id}`,
+    fileDetail: (id: number, params: RequestParams = {}) =>
+      this.request<ModelFile, ApiHTTPError>({
+        path: `/file/${id}`,
         method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags File
+     * @name DealsDetail
+     * @summary Get all deals that have been made for a file
+     * @request GET:/file/{id}/deals
+     */
+    dealsDetail: (id: number, params: RequestParams = {}) =>
+      this.request<ModelDeal[], ApiHTTPError>({
+        path: `/file/${id}/deals`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags File
+     * @name PrepareToPackCreate
+     * @summary prepare job for a given item
+     * @request POST:/file/{id}/prepare_to_pack
+     */
+    prepareToPackCreate: (id: number, params: RequestParams = {}) =>
+      this.request<number, string>({
+        path: `/file/${id}/prepare_to_pack`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  job = {
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name PackCreate
+     * @summary Pack a pack job into car files
+     * @request POST:/job/{id}/pack
+     */
+    packCreate: (id: string, params: RequestParams = {}) =>
+      this.request<ModelCar, string>({
+        path: `/job/${id}/pack`,
+        method: "POST",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -4984,7 +7994,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * @description Get metadata for a piece for how it may be reassembled from the data source
      *
-     * @tags Metadata
+     * @tags Piece
      * @name MetadataDetail
      * @summary Get metadata for a piece
      * @request GET:/piece/{id}/metadata
@@ -4993,6 +8003,405 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<StorePieceReader, string>({
         path: `/piece/${id}/metadata`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
+  preparation = {
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name PreparationList
+     * @summary List all preparations
+     * @request GET:/preparation
+     */
+    preparationList: (params: RequestParams = {}) =>
+      this.request<ModelPreparation[], ApiHTTPError>({
+        path: `/preparation`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name PreparationCreate
+     * @summary Create a new preparation
+     * @request POST:/preparation
+     */
+    preparationCreate: (request: DataprepCreateRequest, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name PreparationDetail
+     * @summary Get the status of a preparation
+     * @request GET:/preparation/{id}
+     */
+    preparationDetail: (id: string, params: RequestParams = {}) =>
+      this.request<JobSourceStatus[], ApiHTTPError>({
+        path: `/preparation/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name OutputCreate
+     * @summary Attach an output storage with a preparation
+     * @request POST:/preparation/{id}/output/{name}
+     */
+    outputCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${id}/output/${name}`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name OutputDelete
+     * @summary Detach an output storage from a preparation
+     * @request DELETE:/preparation/{id}/output/{name}
+     */
+    outputDelete: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${id}/output/${name}`,
+        method: "DELETE",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Piece
+     * @name PieceDetail
+     * @summary List all prepared pieces for a preparation
+     * @request GET:/preparation/{id}/piece
+     */
+    pieceDetail: (id: string, params: RequestParams = {}) =>
+      this.request<DataprepPieceList[], ApiHTTPError>({
+        path: `/preparation/${id}/piece`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Piece
+     * @name PieceCreate
+     * @summary Add a piece to a preparation
+     * @request POST:/preparation/{id}/piece
+     */
+    pieceCreate: (id: string, request: DataprepAddPieceRequest, params: RequestParams = {}) =>
+      this.request<ModelCar, ApiHTTPError>({
+        path: `/preparation/${id}/piece`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Deal Schedule
+     * @name SchedulesDetail
+     * @summary List all schedules for a preparation
+     * @request GET:/preparation/{id}/schedules
+     */
+    schedulesDetail: (id: string, params: RequestParams = {}) =>
+      this.request<ModelSchedule[], ApiHTTPError>({
+        path: `/preparation/${id}/schedules`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name SourceCreate
+     * @summary Attach a source storage with a preparation
+     * @request POST:/preparation/{id}/source/{name}
+     */
+    sourceCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name SourceExploreDetail
+     * @summary Explore a directory in a prepared source storage
+     * @request GET:/preparation/{id}/source/{name}/explore/{path}
+     */
+    sourceExploreDetail: (id: string, name: string, path: string, params: RequestParams = {}) =>
+      this.request<DataprepExploreResult, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/explore/${path}`,
+        method: "GET",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tells Singularity that something is ready to be grabbed for data preparation
+     *
+     * @tags File
+     * @name SourceFileCreate
+     * @summary Push a file to be queued
+     * @request POST:/preparation/{id}/source/{name}/file
+     */
+    sourceFileCreate: (id: string, name: string, file: FileInfo, params: RequestParams = {}) =>
+      this.request<ModelFile, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/file`,
+        method: "POST",
+        body: file,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourceFinalizeCreate
+     * @summary prepare to pack a data source
+     * @request POST:/preparation/{id}/source/{name}/finalize
+     */
+    sourceFinalizeCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<void, string>({
+        path: `/preparation/${id}/source/${name}/finalize`,
+        method: "POST",
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourcePauseDaggenCreate
+     * @summary Pause an ongoing DAG generation job
+     * @request POST:/preparation/{id}/source/{name}/pause-daggen
+     */
+    sourcePauseDaggenCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/pause-daggen`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourcePausePackCreate
+     * @summary Pause all packing job
+     * @request POST:/preparation/{id}/source/{name}/pause-pack
+     */
+    sourcePausePackCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/pause-pack`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourcePausePackCreate2
+     * @summary Pause a specific packing job
+     * @request POST:/preparation/{id}/source/{name}/pause-pack/{job_id}
+     * @originalName sourcePausePackCreate
+     * @duplicate
+     */
+    sourcePausePackCreate2: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/pause-pack/${jobId}`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourcePauseScanCreate
+     * @summary Pause an ongoing scanning job
+     * @request POST:/preparation/{id}/source/{name}/pause-scan
+     */
+    sourcePauseScanCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/pause-scan`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourceStartDaggenCreate
+     * @summary Start a new DAG generation job
+     * @request POST:/preparation/{id}/source/{name}/start-daggen
+     */
+    sourceStartDaggenCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/start-daggen`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourceStartPackCreate
+     * @summary Start or restart all packing job
+     * @request POST:/preparation/{id}/source/{name}/start-pack
+     */
+    sourceStartPackCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/start-pack`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourceStartPackCreate2
+     * @summary Start or restart a specific packing job
+     * @request POST:/preparation/{id}/source/{name}/start-pack/{job_id}
+     * @originalName sourceStartPackCreate
+     * @duplicate
+     */
+    sourceStartPackCreate2: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/start-pack/${jobId}`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Job
+     * @name SourceStartScanCreate
+     * @summary Start a new scanning job
+     * @request POST:/preparation/{id}/source/{name}/start-scan
+     */
+    sourceStartScanCreate: (id: string, name: string, params: RequestParams = {}) =>
+      this.request<ModelJob, ApiHTTPError>({
+        path: `/preparation/${id}/source/${name}/start-scan`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Wallet Association
+     * @name WalletCreate
+     * @summary List all wallets of a preparation.
+     * @request POST:/preparation/{id}/wallet
+     */
+    walletCreate: (id: string, params: RequestParams = {}) =>
+      this.request<ModelWallet, ApiHTTPError>({
+        path: `/preparation/${id}/wallet`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Wallet Association
+     * @name WalletCreate2
+     * @summary Attach a new wallet with a preparation
+     * @request POST:/preparation/{id}/wallet/{wallet}
+     * @originalName walletCreate
+     * @duplicate
+     */
+    walletCreate2: (id: string, wallet: string, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${id}/wallet/${wallet}`,
+        method: "POST",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Wallet Association
+     * @name WalletDelete
+     * @summary Detach a new wallet from a preparation
+     * @request DELETE:/preparation/{id}/wallet/{wallet}
+     */
+    walletDelete: (id: string, wallet: string, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${id}/wallet/${wallet}`,
+        method: "DELETE",
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -5084,26 +8493,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  source = {
+  storage = {
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SourceList
-     * @summary List all sources for a dataset
-     * @request GET:/source
+     * @tags Storage
+     * @name StorageList
+     * @summary List all storages
+     * @request GET:/storage
      */
-    sourceList: (
-      query?: {
-        /** Dataset name */
-        dataset?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<ModelSource[], ApiHTTPError>({
-        path: `/source`,
+    storageList: (params: RequestParams = {}) =>
+      this.request<ModelStorage[], ApiHTTPError>({
+        path: `/storage`,
         method: "GET",
-        query: query,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -5111,14 +8514,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name AcdDatasetCreate
-     * @summary Add acd source for a dataset
-     * @request POST:/source/acd/dataset/{datasetName}
+     * @tags Storage
+     * @name PostStorage
+     * @summary Create Acd storage
+     * @request POST:/storage/acd
      */
-    acdDatasetCreate: (datasetName: string, request: DatasourceAcdRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/acd/dataset/${datasetName}`,
+    postStorage: (request: StorageCreateAcdStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/acd`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5129,14 +8532,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name AzureblobDatasetCreate
-     * @summary Add azureblob source for a dataset
-     * @request POST:/source/azureblob/dataset/{datasetName}
+     * @tags Storage
+     * @name AzureblobCreate
+     * @summary Create Azureblob storage
+     * @request POST:/storage/azureblob
      */
-    azureblobDatasetCreate: (datasetName: string, request: DatasourceAzureblobRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/azureblob/dataset/${datasetName}`,
+    azureblobCreate: (request: StorageCreateAzureblobStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/azureblob`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5147,14 +8550,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name B2DatasetCreate
-     * @summary Add b2 source for a dataset
-     * @request POST:/source/b2/dataset/{datasetName}
+     * @tags Storage
+     * @name PostStorage2
+     * @summary Create B2 storage
+     * @request POST:/storage/b2
+     * @originalName postStorage
+     * @duplicate
      */
-    b2DatasetCreate: (datasetName: string, request: DatasourceB2Request, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/b2/dataset/${datasetName}`,
+    postStorage2: (request: StorageCreateB2StorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/b2`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5165,14 +8570,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name BoxDatasetCreate
-     * @summary Add box source for a dataset
-     * @request POST:/source/box/dataset/{datasetName}
+     * @tags Storage
+     * @name PostStorage3
+     * @summary Create Box storage
+     * @request POST:/storage/box
+     * @originalName postStorage
+     * @duplicate
      */
-    boxDatasetCreate: (datasetName: string, request: DatasourceBoxRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/box/dataset/${datasetName}`,
+    postStorage3: (request: StorageCreateBoxStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/box`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5183,14 +8590,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name DriveDatasetCreate
-     * @summary Add drive source for a dataset
-     * @request POST:/source/drive/dataset/{datasetName}
+     * @tags Storage
+     * @name DriveCreate
+     * @summary Create Drive storage
+     * @request POST:/storage/drive
      */
-    driveDatasetCreate: (datasetName: string, request: DatasourceDriveRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/drive/dataset/${datasetName}`,
+    driveCreate: (request: StorageCreateDriveStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/drive`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5201,14 +8608,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name DropboxDatasetCreate
-     * @summary Add dropbox source for a dataset
-     * @request POST:/source/dropbox/dataset/{datasetName}
+     * @tags Storage
+     * @name DropboxCreate
+     * @summary Create Dropbox storage
+     * @request POST:/storage/dropbox
      */
-    dropboxDatasetCreate: (datasetName: string, request: DatasourceDropboxRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/dropbox/dataset/${datasetName}`,
+    dropboxCreate: (request: StorageCreateDropboxStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/dropbox`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5219,14 +8626,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name FichierDatasetCreate
-     * @summary Add fichier source for a dataset
-     * @request POST:/source/fichier/dataset/{datasetName}
+     * @tags Storage
+     * @name FichierCreate
+     * @summary Create Fichier storage
+     * @request POST:/storage/fichier
      */
-    fichierDatasetCreate: (datasetName: string, request: DatasourceFichierRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/fichier/dataset/${datasetName}`,
+    fichierCreate: (request: StorageCreateFichierStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/fichier`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5237,14 +8644,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name FilefabricDatasetCreate
-     * @summary Add filefabric source for a dataset
-     * @request POST:/source/filefabric/dataset/{datasetName}
+     * @tags Storage
+     * @name FilefabricCreate
+     * @summary Create Filefabric storage
+     * @request POST:/storage/filefabric
      */
-    filefabricDatasetCreate: (datasetName: string, request: DatasourceFilefabricRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/filefabric/dataset/${datasetName}`,
+    filefabricCreate: (request: StorageCreateFilefabricStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/filefabric`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5255,14 +8662,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name FtpDatasetCreate
-     * @summary Add ftp source for a dataset
-     * @request POST:/source/ftp/dataset/{datasetName}
+     * @tags Storage
+     * @name PostStorage4
+     * @summary Create Ftp storage
+     * @request POST:/storage/ftp
+     * @originalName postStorage
+     * @duplicate
      */
-    ftpDatasetCreate: (datasetName: string, request: DatasourceFtpRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/ftp/dataset/${datasetName}`,
+    postStorage4: (request: StorageCreateFtpStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/ftp`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5273,14 +8682,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name GcsDatasetCreate
-     * @summary Add gcs source for a dataset
-     * @request POST:/source/gcs/dataset/{datasetName}
+     * @tags Storage
+     * @name PostStorage5
+     * @summary Create Gcs storage
+     * @request POST:/storage/gcs
+     * @originalName postStorage
+     * @duplicate
      */
-    gcsDatasetCreate: (datasetName: string, request: DatasourceGcsRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/gcs/dataset/${datasetName}`,
+    postStorage5: (request: StorageCreateGcsStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/gcs`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5291,14 +8702,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name GphotosDatasetCreate
-     * @summary Add gphotos source for a dataset
-     * @request POST:/source/gphotos/dataset/{datasetName}
+     * @tags Storage
+     * @name GphotosCreate
+     * @summary Create Gphotos storage
+     * @request POST:/storage/gphotos
      */
-    gphotosDatasetCreate: (datasetName: string, request: DatasourceGphotosRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/gphotos/dataset/${datasetName}`,
+    gphotosCreate: (request: StorageCreateGphotosStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/gphotos`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5309,14 +8720,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name HdfsDatasetCreate
-     * @summary Add hdfs source for a dataset
-     * @request POST:/source/hdfs/dataset/{datasetName}
+     * @tags Storage
+     * @name HdfsCreate
+     * @summary Create Hdfs storage
+     * @request POST:/storage/hdfs
      */
-    hdfsDatasetCreate: (datasetName: string, request: DatasourceHdfsRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/hdfs/dataset/${datasetName}`,
+    hdfsCreate: (request: StorageCreateHdfsStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/hdfs`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5327,14 +8738,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name HidriveDatasetCreate
-     * @summary Add hidrive source for a dataset
-     * @request POST:/source/hidrive/dataset/{datasetName}
+     * @tags Storage
+     * @name HidriveCreate
+     * @summary Create Hidrive storage
+     * @request POST:/storage/hidrive
      */
-    hidriveDatasetCreate: (datasetName: string, request: DatasourceHidriveRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/hidrive/dataset/${datasetName}`,
+    hidriveCreate: (request: StorageCreateHidriveStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/hidrive`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5345,14 +8756,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name HttpDatasetCreate
-     * @summary Add http source for a dataset
-     * @request POST:/source/http/dataset/{datasetName}
+     * @tags Storage
+     * @name HttpCreate
+     * @summary Create Http storage
+     * @request POST:/storage/http
      */
-    httpDatasetCreate: (datasetName: string, request: DatasourceHttpRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/http/dataset/${datasetName}`,
+    httpCreate: (request: StorageCreateHttpStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/http`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5363,18 +8774,215 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name InternetarchiveDatasetCreate
-     * @summary Add internetarchive source for a dataset
-     * @request POST:/source/internetarchive/dataset/{datasetName}
+     * @tags Storage
+     * @name InternetarchiveCreate
+     * @summary Create Internetarchive storage
+     * @request POST:/storage/internetarchive
      */
-    internetarchiveDatasetCreate: (
-      datasetName: string,
-      request: DatasourceInternetarchiveRequest,
+    internetarchiveCreate: (request: StorageCreateInternetarchiveStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/internetarchive`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name JottacloudCreate
+     * @summary Create Jottacloud storage
+     * @request POST:/storage/jottacloud
+     */
+    jottacloudCreate: (request: StorageCreateJottacloudStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/jottacloud`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name KoofrDigistorageCreate
+     * @summary Create Koofr storage with digistorage - Digi Storage, https://storage.rcs-rds.ro/
+     * @request POST:/storage/koofr/digistorage
+     */
+    koofrDigistorageCreate: (request: StorageCreateKoofrDigistorageStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/koofr/digistorage`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name KoofrKoofrCreate
+     * @summary Create Koofr storage with koofr - Koofr, https://app.koofr.net/
+     * @request POST:/storage/koofr/koofr
+     */
+    koofrKoofrCreate: (request: StorageCreateKoofrKoofrStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/koofr/koofr`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name KoofrOtherCreate
+     * @summary Create Koofr storage with other - Any other Koofr API compatible storage service
+     * @request POST:/storage/koofr/other
+     */
+    koofrOtherCreate: (request: StorageCreateKoofrOtherStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/koofr/other`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name LocalCreate
+     * @summary Create Local storage
+     * @request POST:/storage/local
+     */
+    localCreate: (request: StorageCreateLocalStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/local`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name MailruCreate
+     * @summary Create Mailru storage
+     * @request POST:/storage/mailru
+     */
+    mailruCreate: (request: StorageCreateMailruStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/mailru`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name MegaCreate
+     * @summary Create Mega storage
+     * @request POST:/storage/mega
+     */
+    megaCreate: (request: StorageCreateMegaStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/mega`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name NetstorageCreate
+     * @summary Create Netstorage storage
+     * @request POST:/storage/netstorage
+     */
+    netstorageCreate: (request: StorageCreateNetstorageStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/netstorage`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name OnedriveCreate
+     * @summary Create Onedrive storage
+     * @request POST:/storage/onedrive
+     */
+    onedriveCreate: (request: StorageCreateOnedriveStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/onedrive`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name OosEnvAuthCreate
+     * @summary Create Oos storage with env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
+     * @request POST:/storage/oos/env_auth
+     */
+    oosEnvAuthCreate: (request: StorageCreateOosEnvAuthStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/oos/env_auth`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name OosInstancePrincipalAuthCreate
+     * @summary Create Oos storage with instance_principal_auth - use instance principals to authorize an instance to make API calls.
+     * @request POST:/storage/oos/instance_principal_auth
+     */
+    oosInstancePrincipalAuthCreate: (
+      request: StorageCreateOosInstancePrincipalAuthStorageRequest,
       params: RequestParams = {},
     ) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/internetarchive/dataset/${datasetName}`,
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/oos/instance_principal_auth`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5385,14 +8993,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name JottacloudDatasetCreate
-     * @summary Add jottacloud source for a dataset
-     * @request POST:/source/jottacloud/dataset/{datasetName}
+     * @tags Storage
+     * @name OosNoAuthCreate
+     * @summary Create Oos storage with no_auth - no credentials needed, this is typically for reading public buckets
+     * @request POST:/storage/oos/no_auth
      */
-    jottacloudDatasetCreate: (datasetName: string, request: DatasourceJottacloudRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/jottacloud/dataset/${datasetName}`,
+    oosNoAuthCreate: (request: StorageCreateOosNoAuthStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/oos/no_auth`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5403,180 +9011,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name KoofrDatasetCreate
-     * @summary Add koofr source for a dataset
-     * @request POST:/source/koofr/dataset/{datasetName}
+     * @tags Storage
+     * @name OosResourcePrincipalAuthCreate
+     * @summary Create Oos storage with resource_principal_auth - use resource principals to make API calls
+     * @request POST:/storage/oos/resource_principal_auth
      */
-    koofrDatasetCreate: (datasetName: string, request: DatasourceKoofrRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/koofr/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name LocalDatasetCreate
-     * @summary Add local source for a dataset
-     * @request POST:/source/local/dataset/{datasetName}
-     */
-    localDatasetCreate: (datasetName: string, request: DatasourceLocalRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/local/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name MailruDatasetCreate
-     * @summary Add mailru source for a dataset
-     * @request POST:/source/mailru/dataset/{datasetName}
-     */
-    mailruDatasetCreate: (datasetName: string, request: DatasourceMailruRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/mailru/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name MegaDatasetCreate
-     * @summary Add mega source for a dataset
-     * @request POST:/source/mega/dataset/{datasetName}
-     */
-    megaDatasetCreate: (datasetName: string, request: DatasourceMegaRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/mega/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name NetstorageDatasetCreate
-     * @summary Add netstorage source for a dataset
-     * @request POST:/source/netstorage/dataset/{datasetName}
-     */
-    netstorageDatasetCreate: (datasetName: string, request: DatasourceNetstorageRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/netstorage/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name OnedriveDatasetCreate
-     * @summary Add onedrive source for a dataset
-     * @request POST:/source/onedrive/dataset/{datasetName}
-     */
-    onedriveDatasetCreate: (datasetName: string, request: DatasourceOnedriveRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/onedrive/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name OosDatasetCreate
-     * @summary Add oos source for a dataset
-     * @request POST:/source/oos/dataset/{datasetName}
-     */
-    oosDatasetCreate: (datasetName: string, request: DatasourceOosRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/oos/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name OpendriveDatasetCreate
-     * @summary Add opendrive source for a dataset
-     * @request POST:/source/opendrive/dataset/{datasetName}
-     */
-    opendriveDatasetCreate: (datasetName: string, request: DatasourceOpendriveRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/opendrive/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name PcloudDatasetCreate
-     * @summary Add pcloud source for a dataset
-     * @request POST:/source/pcloud/dataset/{datasetName}
-     */
-    pcloudDatasetCreate: (datasetName: string, request: DatasourcePcloudRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/pcloud/dataset/${datasetName}`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name PremiumizemeDatasetCreate
-     * @summary Add premiumizeme source for a dataset
-     * @request POST:/source/premiumizeme/dataset/{datasetName}
-     */
-    premiumizemeDatasetCreate: (
-      datasetName: string,
-      request: DatasourcePremiumizemeRequest,
+    oosResourcePrincipalAuthCreate: (
+      request: StorageCreateOosResourcePrincipalAuthStorageRequest,
       params: RequestParams = {},
     ) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/premiumizeme/dataset/${datasetName}`,
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/oos/resource_principal_auth`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5587,14 +9032,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name PutioDatasetCreate
-     * @summary Add putio source for a dataset
-     * @request POST:/source/putio/dataset/{datasetName}
+     * @tags Storage
+     * @name OosUserPrincipalAuthCreate
+     * @summary Create Oos storage with user_principal_auth - use an OCI user and an API key for authentication.
+     * @request POST:/storage/oos/user_principal_auth
      */
-    putioDatasetCreate: (datasetName: string, request: DatasourcePutioRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/putio/dataset/${datasetName}`,
+    oosUserPrincipalAuthCreate: (
+      request: StorageCreateOosUserPrincipalAuthStorageRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/oos/user_principal_auth`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5605,14 +9053,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name QingstorDatasetCreate
-     * @summary Add qingstor source for a dataset
-     * @request POST:/source/qingstor/dataset/{datasetName}
+     * @tags Storage
+     * @name OpendriveCreate
+     * @summary Create Opendrive storage
+     * @request POST:/storage/opendrive
      */
-    qingstorDatasetCreate: (datasetName: string, request: DatasourceQingstorRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/qingstor/dataset/${datasetName}`,
+    opendriveCreate: (request: StorageCreateOpendriveStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/opendrive`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5623,14 +9071,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name S3DatasetCreate
-     * @summary Add s3 source for a dataset
-     * @request POST:/source/s3/dataset/{datasetName}
+     * @tags Storage
+     * @name PcloudCreate
+     * @summary Create Pcloud storage
+     * @request POST:/storage/pcloud
      */
-    s3DatasetCreate: (datasetName: string, request: DatasourceS3Request, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/s3/dataset/${datasetName}`,
+    pcloudCreate: (request: StorageCreatePcloudStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/pcloud`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5641,14 +9089,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SeafileDatasetCreate
-     * @summary Add seafile source for a dataset
-     * @request POST:/source/seafile/dataset/{datasetName}
+     * @tags Storage
+     * @name PremiumizemeCreate
+     * @summary Create Premiumizeme storage
+     * @request POST:/storage/premiumizeme
      */
-    seafileDatasetCreate: (datasetName: string, request: DatasourceSeafileRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/seafile/dataset/${datasetName}`,
+    premiumizemeCreate: (request: StorageCreatePremiumizemeStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/premiumizeme`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5659,14 +9107,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SftpDatasetCreate
-     * @summary Add sftp source for a dataset
-     * @request POST:/source/sftp/dataset/{datasetName}
+     * @tags Storage
+     * @name PutioCreate
+     * @summary Create Putio storage
+     * @request POST:/storage/putio
      */
-    sftpDatasetCreate: (datasetName: string, request: DatasourceSftpRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/sftp/dataset/${datasetName}`,
+    putioCreate: (request: StorageCreatePutioStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/putio`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5677,14 +9125,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SharefileDatasetCreate
-     * @summary Add sharefile source for a dataset
-     * @request POST:/source/sharefile/dataset/{datasetName}
+     * @tags Storage
+     * @name QingstorCreate
+     * @summary Create Qingstor storage
+     * @request POST:/storage/qingstor
      */
-    sharefileDatasetCreate: (datasetName: string, request: DatasourceSharefileRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/sharefile/dataset/${datasetName}`,
+    qingstorCreate: (request: StorageCreateQingstorStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/qingstor`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5695,14 +9143,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SiaDatasetCreate
-     * @summary Add sia source for a dataset
-     * @request POST:/source/sia/dataset/{datasetName}
+     * @tags Storage
+     * @name S3AlibabaCreate
+     * @summary Create S3 storage with Alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
+     * @request POST:/storage/s3/alibaba
      */
-    siaDatasetCreate: (datasetName: string, request: DatasourceSiaRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/sia/dataset/${datasetName}`,
+    s3AlibabaCreate: (request: StorageCreateS3AlibabaStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/alibaba`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5713,14 +9161,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SmbDatasetCreate
-     * @summary Add smb source for a dataset
-     * @request POST:/source/smb/dataset/{datasetName}
+     * @tags Storage
+     * @name S3ArvancloudCreate
+     * @summary Create S3 storage with ArvanCloud - Arvan Cloud Object Storage (AOS)
+     * @request POST:/storage/s3/arvancloud
      */
-    smbDatasetCreate: (datasetName: string, request: DatasourceSmbRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/smb/dataset/${datasetName}`,
+    s3ArvancloudCreate: (request: StorageCreateS3ArvanCloudStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/arvancloud`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5731,14 +9179,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name StorjDatasetCreate
-     * @summary Add storj source for a dataset
-     * @request POST:/source/storj/dataset/{datasetName}
+     * @tags Storage
+     * @name S3AwsCreate
+     * @summary Create S3 storage with AWS - Amazon Web Services (AWS) S3
+     * @request POST:/storage/s3/aws
      */
-    storjDatasetCreate: (datasetName: string, request: DatasourceStorjRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/storj/dataset/${datasetName}`,
+    s3AwsCreate: (request: StorageCreateS3AWSStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/aws`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5749,14 +9197,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SugarsyncDatasetCreate
-     * @summary Add sugarsync source for a dataset
-     * @request POST:/source/sugarsync/dataset/{datasetName}
+     * @tags Storage
+     * @name S3CephCreate
+     * @summary Create S3 storage with Ceph - Ceph Object Storage
+     * @request POST:/storage/s3/ceph
      */
-    sugarsyncDatasetCreate: (datasetName: string, request: DatasourceSugarsyncRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/sugarsync/dataset/${datasetName}`,
+    s3CephCreate: (request: StorageCreateS3CephStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/ceph`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5767,14 +9215,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SwiftDatasetCreate
-     * @summary Add swift source for a dataset
-     * @request POST:/source/swift/dataset/{datasetName}
+     * @tags Storage
+     * @name S3ChinamobileCreate
+     * @summary Create S3 storage with ChinaMobile - China Mobile Ecloud Elastic Object Storage (EOS)
+     * @request POST:/storage/s3/chinamobile
      */
-    swiftDatasetCreate: (datasetName: string, request: DatasourceSwiftRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/swift/dataset/${datasetName}`,
+    s3ChinamobileCreate: (request: StorageCreateS3ChinaMobileStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/chinamobile`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5785,14 +9233,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name UptoboxDatasetCreate
-     * @summary Add uptobox source for a dataset
-     * @request POST:/source/uptobox/dataset/{datasetName}
+     * @tags Storage
+     * @name S3CloudflareCreate
+     * @summary Create S3 storage with Cloudflare - Cloudflare R2 Storage
+     * @request POST:/storage/s3/cloudflare
      */
-    uptoboxDatasetCreate: (datasetName: string, request: DatasourceUptoboxRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/uptobox/dataset/${datasetName}`,
+    s3CloudflareCreate: (request: StorageCreateS3CloudflareStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/cloudflare`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5803,14 +9251,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name WebdavDatasetCreate
-     * @summary Add webdav source for a dataset
-     * @request POST:/source/webdav/dataset/{datasetName}
+     * @tags Storage
+     * @name S3DigitaloceanCreate
+     * @summary Create S3 storage with DigitalOcean - DigitalOcean Spaces
+     * @request POST:/storage/s3/digitalocean
      */
-    webdavDatasetCreate: (datasetName: string, request: DatasourceWebdavRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/webdav/dataset/${datasetName}`,
+    s3DigitaloceanCreate: (request: StorageCreateS3DigitalOceanStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/digitalocean`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5821,14 +9269,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name YandexDatasetCreate
-     * @summary Add yandex source for a dataset
-     * @request POST:/source/yandex/dataset/{datasetName}
+     * @tags Storage
+     * @name S3DreamhostCreate
+     * @summary Create S3 storage with Dreamhost - Dreamhost DreamObjects
+     * @request POST:/storage/s3/dreamhost
      */
-    yandexDatasetCreate: (datasetName: string, request: DatasourceYandexRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/yandex/dataset/${datasetName}`,
+    s3DreamhostCreate: (request: StorageCreateS3DreamhostStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/dreamhost`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5839,14 +9287,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name ZohoDatasetCreate
-     * @summary Add zoho source for a dataset
-     * @request POST:/source/zoho/dataset/{datasetName}
+     * @tags Storage
+     * @name S3HuaweiobsCreate
+     * @summary Create S3 storage with HuaweiOBS - Huawei Object Storage Service
+     * @request POST:/storage/s3/huaweiobs
      */
-    zohoDatasetCreate: (datasetName: string, request: DatasourceZohoRequest, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/zoho/dataset/${datasetName}`,
+    s3HuaweiobsCreate: (request: StorageCreateS3HuaweiOBSStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/huaweiobs`,
         method: "POST",
         body: request,
         type: ContentType.Json,
@@ -5857,14 +9305,540 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SourceDelete
-     * @summary Remove a source
-     * @request DELETE:/source/{id}
+     * @tags Storage
+     * @name S3IbmcosCreate
+     * @summary Create S3 storage with IBMCOS - IBM COS S3
+     * @request POST:/storage/s3/ibmcos
      */
-    sourceDelete: (id: string, params: RequestParams = {}) =>
+    s3IbmcosCreate: (request: StorageCreateS3IBMCOSStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/ibmcos`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3IdriveCreate
+     * @summary Create S3 storage with IDrive - IDrive e2
+     * @request POST:/storage/s3/idrive
+     */
+    s3IdriveCreate: (request: StorageCreateS3IDriveStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/idrive`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3IonosCreate
+     * @summary Create S3 storage with IONOS - IONOS Cloud
+     * @request POST:/storage/s3/ionos
+     */
+    s3IonosCreate: (request: StorageCreateS3IONOSStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/ionos`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3LiaraCreate
+     * @summary Create S3 storage with Liara - Liara Object Storage
+     * @request POST:/storage/s3/liara
+     */
+    s3LiaraCreate: (request: StorageCreateS3LiaraStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/liara`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3LyvecloudCreate
+     * @summary Create S3 storage with LyveCloud - Seagate Lyve Cloud
+     * @request POST:/storage/s3/lyvecloud
+     */
+    s3LyvecloudCreate: (request: StorageCreateS3LyveCloudStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/lyvecloud`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3MinioCreate
+     * @summary Create S3 storage with Minio - Minio Object Storage
+     * @request POST:/storage/s3/minio
+     */
+    s3MinioCreate: (request: StorageCreateS3MinioStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/minio`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3NeteaseCreate
+     * @summary Create S3 storage with Netease - Netease Object Storage (NOS)
+     * @request POST:/storage/s3/netease
+     */
+    s3NeteaseCreate: (request: StorageCreateS3NeteaseStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/netease`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3OtherCreate
+     * @summary Create S3 storage with Other - Any other S3 compatible provider
+     * @request POST:/storage/s3/other
+     */
+    s3OtherCreate: (request: StorageCreateS3OtherStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/other`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3QiniuCreate
+     * @summary Create S3 storage with Qiniu - Qiniu Object Storage (Kodo)
+     * @request POST:/storage/s3/qiniu
+     */
+    s3QiniuCreate: (request: StorageCreateS3QiniuStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/qiniu`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3RackcorpCreate
+     * @summary Create S3 storage with RackCorp - RackCorp Object Storage
+     * @request POST:/storage/s3/rackcorp
+     */
+    s3RackcorpCreate: (request: StorageCreateS3RackCorpStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/rackcorp`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3ScalewayCreate
+     * @summary Create S3 storage with Scaleway - Scaleway Object Storage
+     * @request POST:/storage/s3/scaleway
+     */
+    s3ScalewayCreate: (request: StorageCreateS3ScalewayStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/scaleway`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3SeaweedfsCreate
+     * @summary Create S3 storage with SeaweedFS - SeaweedFS S3
+     * @request POST:/storage/s3/seaweedfs
+     */
+    s3SeaweedfsCreate: (request: StorageCreateS3SeaweedFSStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/seaweedfs`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3StackpathCreate
+     * @summary Create S3 storage with StackPath - StackPath Object Storage
+     * @request POST:/storage/s3/stackpath
+     */
+    s3StackpathCreate: (request: StorageCreateS3StackPathStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/stackpath`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3StorjCreate
+     * @summary Create S3 storage with Storj - Storj (S3 Compatible Gateway)
+     * @request POST:/storage/s3/storj
+     */
+    s3StorjCreate: (request: StorageCreateS3StorjStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/storj`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3TencentcosCreate
+     * @summary Create S3 storage with TencentCOS - Tencent Cloud Object Storage (COS)
+     * @request POST:/storage/s3/tencentcos
+     */
+    s3TencentcosCreate: (request: StorageCreateS3TencentCOSStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/tencentcos`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name S3WasabiCreate
+     * @summary Create S3 storage with Wasabi - Wasabi Object Storage
+     * @request POST:/storage/s3/wasabi
+     */
+    s3WasabiCreate: (request: StorageCreateS3WasabiStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/s3/wasabi`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name SeafileCreate
+     * @summary Create Seafile storage
+     * @request POST:/storage/seafile
+     */
+    seafileCreate: (request: StorageCreateSeafileStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/seafile`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name SftpCreate
+     * @summary Create Sftp storage
+     * @request POST:/storage/sftp
+     */
+    sftpCreate: (request: StorageCreateSftpStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/sftp`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name SharefileCreate
+     * @summary Create Sharefile storage
+     * @request POST:/storage/sharefile
+     */
+    sharefileCreate: (request: StorageCreateSharefileStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/sharefile`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name PostStorage6
+     * @summary Create Sia storage
+     * @request POST:/storage/sia
+     * @originalName postStorage
+     * @duplicate
+     */
+    postStorage6: (request: StorageCreateSiaStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/sia`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name PostStorage7
+     * @summary Create Smb storage
+     * @request POST:/storage/smb
+     * @originalName postStorage
+     * @duplicate
+     */
+    postStorage7: (request: StorageCreateSmbStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/smb`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name StorjExistingCreate
+     * @summary Create Storj storage with existing - Use an existing access grant.
+     * @request POST:/storage/storj/existing
+     */
+    storjExistingCreate: (request: StorageCreateStorjExistingStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/storj/existing`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name StorjNewCreate
+     * @summary Create Storj storage with new - Create a new access grant from satellite address, API key, and passphrase.
+     * @request POST:/storage/storj/new
+     */
+    storjNewCreate: (request: StorageCreateStorjNewStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/storj/new`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name SugarsyncCreate
+     * @summary Create Sugarsync storage
+     * @request POST:/storage/sugarsync
+     */
+    sugarsyncCreate: (request: StorageCreateSugarsyncStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/sugarsync`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name SwiftCreate
+     * @summary Create Swift storage
+     * @request POST:/storage/swift
+     */
+    swiftCreate: (request: StorageCreateSwiftStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/swift`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name UptoboxCreate
+     * @summary Create Uptobox storage
+     * @request POST:/storage/uptobox
+     */
+    uptoboxCreate: (request: StorageCreateUptoboxStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/uptobox`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name WebdavCreate
+     * @summary Create Webdav storage
+     * @request POST:/storage/webdav
+     */
+    webdavCreate: (request: StorageCreateWebdavStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/webdav`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name YandexCreate
+     * @summary Create Yandex storage
+     * @request POST:/storage/yandex
+     */
+    yandexCreate: (request: StorageCreateYandexStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/yandex`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name ZohoCreate
+     * @summary Create Zoho storage
+     * @request POST:/storage/zoho
+     */
+    zohoCreate: (request: StorageCreateZohoStorageRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/zoho`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Storage
+     * @name StorageDelete
+     * @summary Remove a storage
+     * @request DELETE:/storage/{name}
+     */
+    storageDelete: (name: string, params: RequestParams = {}) =>
       this.request<void, ApiHTTPError>({
-        path: `/source/${id}`,
+        path: `/storage/${name}`,
         method: "DELETE",
         ...params,
       }),
@@ -5872,14 +9846,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name SourcePartialUpdate
-     * @summary Update the config options of a source
-     * @request PATCH:/source/{id}
+     * @tags Storage
+     * @name StoragePartialUpdate
+     * @summary Update a storage connection
+     * @request PATCH:/storage/{name}
      */
-    sourcePartialUpdate: (id: string, config: DatasourceAllConfig, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/${id}`,
+    storagePartialUpdate: (name: string, config: StorePieceReader, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/${name}`,
         method: "PATCH",
         body: config,
         type: ContentType.Json,
@@ -5890,32 +9864,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name CheckCreate
-     * @summary Check the connection of the data source by listing a path
-     * @request POST:/source/{id}/check
+     * @tags Storage
+     * @name ExploreDetail
+     * @summary Explore directory entries in a storage system
+     * @request GET:/storage/{name}/explore/{path}
      */
-    checkCreate: (id: string, request: DatasourceCheckSourceRequest, params: RequestParams = {}) =>
-      this.request<GithubComDataPreservationProgramsSingularityHandlerDatasourceEntry[], ApiHTTPError>({
-        path: `/source/${id}/check`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name ChunksDetail
-     * @summary Get all dag details of a data source
-     * @request GET:/source/{id}/chunks
-     */
-    chunksDetail: (id: string, params: RequestParams = {}) =>
-      this.request<ModelCar[], ApiHTTPError>({
-        path: `/source/${id}/chunks`,
+    exploreDetail: (name: string, path: string, params: RequestParams = {}) =>
+      this.request<StorageDirEntry[], ApiHTTPError>({
+        path: `/storage/${name}/explore/${path}`,
         method: "GET",
         type: ContentType.Json,
         format: "json",
@@ -5925,100 +9881,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags Data Source
-     * @name DaggenCreate
-     * @summary Mark a source as ready for DAG generation
-     * @request POST:/source/{id}/daggen
+     * @tags Storage
+     * @name StorageCreate
+     * @summary Create a new storage
+     * @request POST:/storage/{storageType}
      */
-    daggenCreate: (id: string, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/${id}/daggen`,
+    storageCreate: (storageType: string, body: StorageCreateRequest, params: RequestParams = {}) =>
+      this.request<ModelStorage, ApiHTTPError>({
+        path: `/storage/${storageType}`,
         method: "POST",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name ItemsDetail
-     * @summary Get all item details of a data source
-     * @request GET:/source/{id}/items
-     */
-    itemsDetail: (id: string, params: RequestParams = {}) =>
-      this.request<ModelItem[], ApiHTTPError>({
-        path: `/source/${id}/items`,
-        method: "GET",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name PathDetail
-     * @summary Get all item details inside a data source path
-     * @request GET:/source/{id}/path
-     */
-    pathDetail: (id: string, request: InspectGetPathRequest, params: RequestParams = {}) =>
-      this.request<InspectDirDetail, ApiHTTPError>({
-        path: `/source/${id}/path`,
-        method: "GET",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Tells Singularity that something is ready to be grabbed for data preparation
-     *
-     * @tags Data Source
-     * @name PushCreate
-     * @summary Push an item to be queued
-     * @request POST:/source/{id}/push
-     */
-    pushCreate: (id: string, item: DatasourceItemInfo, params: RequestParams = {}) =>
-      this.request<ModelItem, string>({
-        path: `/source/${id}/push`,
-        method: "POST",
-        body: item,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name RescanCreate
-     * @summary Trigger a rescan of a data source
-     * @request POST:/source/{id}/rescan
-     */
-    rescanCreate: (id: string, params: RequestParams = {}) =>
-      this.request<ModelSource, ApiHTTPError>({
-        path: `/source/${id}/rescan`,
-        method: "POST",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Data Source
-     * @name SummaryDetail
-     * @summary Get the data preparation summary of a data source
-     * @request GET:/source/{id}/summary
-     */
-    summaryDetail: (id: string, params: RequestParams = {}) =>
-      this.request<DatasourceChunksByState, ApiHTTPError>({
-        path: `/source/${id}/summary`,
-        method: "GET",
+        body: body,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -6052,24 +9924,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     walletCreate: (request: WalletImportRequest, params: RequestParams = {}) =>
       this.request<ModelWallet, ApiHTTPError>({
         path: `/wallet`,
-        method: "POST",
-        body: request,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Wallet
-     * @name RemoteCreate
-     * @summary Add a remote wallet
-     * @request POST:/wallet/remote
-     */
-    remoteCreate: (request: WalletAddRemoteRequest, params: RequestParams = {}) =>
-      this.request<ModelWallet, ApiHTTPError>({
-        path: `/wallet/remote`,
         method: "POST",
         body: request,
         type: ContentType.Json,

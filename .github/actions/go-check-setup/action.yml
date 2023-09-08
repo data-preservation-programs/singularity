@@ -3,6 +3,13 @@ description: Setup Cache
 runs:
   using: "composite"
   steps:
+    - name: Setup nodejs
+      uses: actions/setup-node@v3
+      with:
+          node-version: '18'
+          cache: 'npm'
+    - shell: bash
+      run: npm ci
     - name: Setup Golang caches
       uses: actions/cache@v3
       with:

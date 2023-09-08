@@ -10,11 +10,10 @@ USAGE:
 
 DESCRIPTION:
    Migrate datasets from singularity V1 to V2. Those steps include
-     1. Create a new dataset in V2.
-     2. Create a new datasource which is either an S3 path or local path.
-     3. Create all folder structures and files in the new dataset.
+     1. Create source storage and output storage and attach them to a dataprep in V2.
+     2. Create all folder structures and files in the new dataset.
    Caveats:
-     1. The created dataset won't be compatible with the new dataset worker.
+     1. The created preparation won't be compatible with the new dataset worker.
         So do not attempt to resume a data preparation or push new files onto migrated dataset.
         You can make deals or browse the dataset without issues.
      2. The folder CID won't be generated or migrated due to the complexity

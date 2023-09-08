@@ -2,28 +2,26 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/admin"
-	"github.com/data-preservation-programs/singularity/cmd/dataset"
-	"github.com/data-preservation-programs/singularity/cmd/datasource"
-	"github.com/data-preservation-programs/singularity/cmd/datasource/inspect"
+	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/cmd/dataprep"
 	"github.com/data-preservation-programs/singularity/cmd/deal"
 	"github.com/data-preservation-programs/singularity/cmd/deal/schedule"
-	"github.com/data-preservation-programs/singularity/cmd/deal/spadepolicy"
 	"github.com/data-preservation-programs/singularity/cmd/ez"
 	"github.com/data-preservation-programs/singularity/cmd/run"
+	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/cmd/tool"
 	"github.com/data-preservation-programs/singularity/cmd/wallet"
 	"github.com/filecoin-project/go-address"
 	"github.com/ipfs/go-log/v2"
-	"github.com/mattn/go-shellwords"
-	"github.com/pkg/errors"
 	"github.com/rclone/rclone/lib/terminal"
 	"github.com/urfave/cli/v2"
 )
@@ -46,9 +44,11 @@ Network Support:
     For Calibration network:
       * Set LOTUS_API to https://api.calibration.node.glif.io/rpc/v1
       * Set MARKET_DEAL_URL to https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+      * Set LOTUS_TEST to 1
     For all other networks:
       * Set LOTUS_API to your network's Lotus API endpoint
       * Set MARKET_DEAL_URL to empty string
+      * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
     Switching between different networks with the same database instance is not recommended.`,
 	EnableBashCompletion: true,
 	Flags: []cli.Flag{
@@ -62,6 +62,11 @@ Network Support:
 		&cli.BoolFlag{
 			Name:  "json",
 			Usage: "Enable JSON output",
+			Value: false,
+		},
+		&cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "Enable verbose output. This will print more columns for the result as well as full error trace",
 			Value: false,
 		},
 		&cli.StringFlag{
@@ -94,6 +99,7 @@ Network Support:
 	},
 	Commands: []*cli.Command{
 		ez.PrepCmd,
+		VersionCmd,
 		{
 			Name:     "admin",
 			Usage:    "Admin commands",
@@ -105,8 +111,8 @@ Network Support:
 				admin.MigrateScheduleCmd,
 			},
 		},
-		VersionCmd,
 		DownloadCmd,
+		tool.ExtractCarCmd,
 		{
 			Name:     "deal",
 			Usage:    "Replication / Deal making management",
@@ -122,15 +128,6 @@ Network Support:
 						schedule.ResumeCmd,
 					},
 				},
-				{
-					Name:  "spade-policy",
-					Usage: "Manage SPADE policies",
-					Subcommands: []*cli.Command{
-						spadepolicy.CreateCmd,
-						spadepolicy.ListCmd,
-						spadepolicy.RemoveCmd,
-					},
-				},
 				deal.SendManualCmd,
 				deal.ListCmd,
 			},
@@ -138,7 +135,7 @@ Network Support:
 		{
 			Name:     "run",
 			Category: "Daemons",
-			Usage:    "Run different singularity components",
+			Usage:    "run different singularity components",
 			Subcommands: []*cli.Command{
 				run.APICmd,
 				run.DatasetWorkerCmd,
@@ -148,66 +145,50 @@ Network Support:
 			},
 		},
 		{
-			Name:     "dataset",
-			Category: "Operations",
-			Usage:    "Dataset management",
-			Subcommands: []*cli.Command{
-				dataset.CreateCmd,
-				dataset.ListDatasetCmd,
-				dataset.UpdateCmd,
-				dataset.RemoveDatasetCmd,
-				dataset.AddWalletCmd,
-				dataset.ListWalletCmd,
-				dataset.RemoveWalletCmd,
-				dataset.AddPieceCmd,
-				dataset.ListPiecesCmd,
-			},
-		},
-		{
-			Name:     "datasource",
-			Category: "Operations",
-			Usage:    "Data source management",
-			Subcommands: []*cli.Command{
-				datasource.AddCmd,
-				datasource.ListCmd,
-				datasource.StatusCmd,
-				datasource.RemoveCmd,
-				datasource.CheckCmd,
-				datasource.UpdateCmd,
-				datasource.RescanCmd,
-				datasource.DagGenCmd,
-				datasource.RepackCmd,
-				{
-					Name:  "inspect",
-					Usage: "Get preparation status of a data source",
-					Subcommands: []*cli.Command{
-						inspect.PackJobsCmd,
-						inspect.FilesCmd,
-						inspect.DagsCmd,
-						inspect.PackJobDetailCmd,
-						inspect.FileDetailCmd,
-						inspect.PathCmd,
-					},
-				},
-			},
-		},
-		{
 			Name:     "wallet",
 			Category: "Operations",
 			Usage:    "Wallet management",
 			Subcommands: []*cli.Command{
 				wallet.ImportCmd,
 				wallet.ListCmd,
-				wallet.AddRemoteCmd,
 				wallet.RemoveCmd,
 			},
 		},
 		{
-			Name:     "tool",
-			Category: "Tooling",
-			Usage:    "Tools used for development and debugging",
+			Name:     "storage",
+			Category: "Operations",
+			Usage:    "Create and manage storage system connections",
 			Subcommands: []*cli.Command{
-				tool.ExtractCarCmd,
+				storage.CreateCmd,
+				storage.ExploreCmd,
+				storage.ListCmd,
+				storage.RemoveCmd,
+				storage.UpdateCmd,
+			},
+		},
+		{
+			Name:     "prep",
+			Category: "Operations",
+			Usage:    "Create and manage dataset preparations",
+			Subcommands: []*cli.Command{
+				dataprep.CreateCmd,
+				dataprep.ListCmd,
+				dataprep.StatusCmd,
+				dataprep.AttachSourceCmd,
+				dataprep.AttachOutputCmd,
+				dataprep.DetachOutputCmd,
+				dataprep.StartScanCmd,
+				dataprep.PauseScanCmd,
+				dataprep.StartPackCmd,
+				dataprep.PausePackCmd,
+				dataprep.StartDagGenCmd,
+				dataprep.PauseDagGenCmd,
+				dataprep.ListPiecesCmd,
+				dataprep.AddPieceCmd,
+				dataprep.ExploreCmd,
+				dataprep.AttachWalletCmd,
+				dataprep.ListWalletsCmd,
+				dataprep.DetachWalletCmd,
 			},
 		},
 	},
@@ -230,7 +211,38 @@ func SetVersionJSON(versionJSON []byte) error {
 	return nil
 }
 
+func SetupErrorHandler() {
+	App.ExitErrHandler = func(c *cli.Context, err error) {
+		if err == nil {
+			return
+		}
+		if c.Bool("verbose") {
+			report := fmt.Sprintf("%+v\n\n", err)
+			_, _ = App.ErrWriter.Write([]byte(report))
+		}
+		concise := cliutil.Failure(err.Error()) + "\n"
+		_, _ = App.ErrWriter.Write([]byte(concise))
+	}
+}
+
+const subCommandHelpTemplate = `NAME:
+   {{template "helpNameTemplate" .}}
+
+USAGE:
+   {{if .UsageText}}{{wrap .UsageText 3}}{{else}}{{.HelpName}} {{if .VisibleFlags}}command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{end}}{{if .Description}}
+
+DESCRIPTION:
+   {{template "descriptionTemplate" .}}{{end}}{{if .VisibleCommands}}
+
+COMMANDS:{{template "visibleCommandCategoryTemplate" .}}{{end}}{{if .VisibleFlagCategories}}
+
+OPTIONS:{{template "visibleFlagCategoryTemplate" .}}{{else if .VisibleFlags}}
+
+OPTIONS:{{template "visibleFlagTemplate" .}}{{end}}
+`
+
 func SetupHelpPager() {
+	cli.SubcommandHelpTemplate = subCommandHelpTemplate
 	//nolint:errcheck
 	cli.HelpPrinter = func(w io.Writer, templ string, data any) {
 		var helpText bytes.Buffer
@@ -271,72 +283,4 @@ func SetupHelpPager() {
 		pagerIn.Close()
 		cmd.Wait()
 	}
-}
-
-func RunArgsInTestNoCapture(ctx context.Context, args string) error {
-	App.ExitErrHandler = func(c *cli.Context, err error) {
-	}
-	parser := shellwords.NewParser()
-	parser.ParseEnv = true // Enable environment variable parsing
-	parsedArgs, err := parser.Parse(args)
-	if err != nil {
-		return err
-	}
-	return App.RunContext(ctx, parsedArgs)
-}
-
-func RunArgsInTest(ctx context.Context, args string) (string, string, error) {
-	App.ExitErrHandler = func(c *cli.Context, err error) {
-	}
-	parser := shellwords.NewParser()
-	parser.ParseEnv = true // Enable environment variable parsing
-	parsedArgs, err := parser.Parse(args)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Create pipes
-	rOut, wOut, _ := os.Pipe()
-	rErr, wErr, _ := os.Pipe()
-
-	// Save current stdout and stderr
-	oldOut := os.Stdout
-	oldErr := os.Stderr
-	oldAppWriterOut := App.Writer
-	oldAppWriterErr := App.ErrWriter
-	defer func() {
-		os.Stdout = oldOut
-		os.Stderr = oldErr
-		App.Writer = oldAppWriterOut
-		App.ErrWriter = oldAppWriterErr
-	}()
-
-	// Overwrite the stdout and stderr
-	os.Stdout = wOut
-	os.Stderr = wErr
-	App.Writer = wOut
-	App.ErrWriter = wErr
-
-	outC := make(chan string) // Buffered to prevent goroutine leak
-	errC := make(chan string)
-	go func() {
-		out, _ := io.ReadAll(rOut)
-		outC <- string(out)
-	}()
-	go func() {
-		out, _ := io.ReadAll(rErr)
-		errC <- string(out)
-	}()
-
-	err = App.RunContext(ctx, parsedArgs)
-
-	// Close the pipes
-	wOut.Close()
-	wErr.Close()
-
-	// Wait for the output from the goroutines
-	outputOut := <-outC
-	outputErr := <-errC
-
-	return outputOut, outputErr, err
 }

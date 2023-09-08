@@ -1,9 +1,9 @@
-# Run different singularity components
+# run different singularity components
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity run - Run different singularity components
+   singularity run - run different singularity components
 
 USAGE:
    singularity run command [command options] [arguments...]

@@ -4,28 +4,29 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
+	"github.com/cockroachdb/errors"
 	"github.com/google/uuid"
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 var Tables = []any{
-	&Global{},
 	&Worker{},
-	&Dataset{},
-	&Source{},
-	&PackJob{},
+	&Global{},
+	&Preparation{},
+	&Storage{},
+	&OutputAttachment{},
+	&SourceAttachment{},
+	&Job{},
 	&File{},
+	&FileRange{},
 	&Directory{},
 	&Car{},
 	&CarBlock{},
 	&Deal{},
 	&Schedule{},
 	&Wallet{},
-	&WalletAssignment{},
-	&FileRange{},
 }
 
 var logger = logging.Logger("model")
@@ -35,11 +36,6 @@ func AutoMigrate(db *gorm.DB) error {
 	err := db.AutoMigrate(Tables...)
 	if err != nil {
 		return errors.Wrap(err, "failed to auto migrate")
-	}
-
-	err = CreateIndexes(db)
-	if err != nil {
-		return errors.Wrap(err, "failed to create indexes")
 	}
 
 	logger.Debug("Creating instance id")
@@ -77,7 +73,7 @@ func DropAll(db *gorm.DB) error {
 	for _, table := range Tables {
 		err := db.Migrator().DropTable(table)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to drop table")
 		}
 	}
 	return nil
