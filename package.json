@@ -20,8 +20,5 @@
     "test": "npm run --prefix dashboard test",
     "eject": "npm run --prefix dashboard eject",
     "gen": "swagger-typescript-api --axios -p ./docs/swagger/swagger.json -o ./dashboard/src/client -n SingularityApi.ts"
-  },
-  "dependencies": {
-    "react-code-blocks": "^0.1.4"
   }
 }

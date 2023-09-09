@@ -50,4 +50,4 @@ yarn-error.log*
 
 dist/
 
-/test.db
+/test.db*
