@@ -49,3 +49,5 @@ yarn-error.log*
 /cmd/testdata
 
 dist/
+
+/test.db

@@ -5887,8 +5887,20 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "outputStorages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Storage"
+                    }
+                },
                 "pieceSize": {
                     "type": "integer"
+                },
+                "sourceStorages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Storage"
+                    }
                 },
                 "updatedAt": {
                     "type": "string"
