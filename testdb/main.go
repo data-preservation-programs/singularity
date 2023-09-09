@@ -23,6 +23,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//nolint:gosec
 var r = rand.New(rand.NewSource(0))
 
 func main() {
@@ -59,6 +60,7 @@ func run() error {
 }
 
 func createPreparation(ctx context.Context, db *gorm.DB) error {
+	db = db.WithContext(ctx)
 	// Setup source storage
 	source := model.Storage{
 		Name:   gofakeit.Noun(),
@@ -155,6 +157,10 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			}},
 		})
 	}
+	err = db.Create(&files).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
 	// Setup a folder with a single large file
 	large := model.Directory{
@@ -196,7 +202,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 		return errors.WithStack(err)
 	}
 
-	// Setup a file wtih multiple versions
+	// Setup a file with multiple versions
 	for i := 0; i < 10; i++ {
 		size := r.Int63n(1 << 20)
 		rCID := randomCID()
@@ -227,8 +233,14 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 	// Setup CAR for each job
 	var jobs []model.Job
 	err = db.Where("type = ?", model.Pack).Find(&jobs).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	for _, job := range jobs {
-		pieceCID := randomPieceCID()
+		pieceCID, err := randomPieceCID()
+		if err != nil {
+			return errors.WithStack(err)
+		}
 		err = db.Create(&model.Car{
 			PieceCID:      pieceCID,
 			PieceSize:     1 << 35,
@@ -247,7 +259,10 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 
 	// Some Car files without association with the preparation
 	for i := 0; i < 5; i++ {
-		pieceCID := randomPieceCID()
+		pieceCID, err := randomPieceCID()
+		if err != nil {
+			return errors.WithStack(err)
+		}
 		err = db.Create(&model.Car{
 			PieceCID:      pieceCID,
 			PieceSize:     1 << 35,
@@ -367,11 +382,17 @@ func randomCID() model.CID {
 	return model.CID(value)
 }
 
-func randomPieceCID() model.CID {
+func randomPieceCID() (model.CID, error) {
 	calc := &commp.Calc{}
-	bytes.NewBuffer([]byte(randomLetterString(1000))).WriteTo(calc)
-	c, _, _ := pack.GetCommp(calc, 1<<30)
-	return model.CID(c)
+	_, err := bytes.NewBufferString(randomLetterString(1000)).WriteTo(calc)
+	if err != nil {
+		return model.CID{}, errors.WithStack(err)
+	}
+	c, _, err := pack.GetCommp(calc, 1<<30)
+	if err != nil {
+		return model.CID{}, errors.WithStack(err)
+	}
+	return model.CID(c), nil
 }
 
 func randomLastModifiedNano() int64 {
