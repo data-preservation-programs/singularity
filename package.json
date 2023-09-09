@@ -19,6 +19,6 @@
     "build": "rm -rf ./dashboard/build && npm run --prefix dashboard build",
     "test": "npm run --prefix dashboard test",
     "eject": "npm run --prefix dashboard eject",
-    "gen": "swagger-typescript-api -p ./docs/swagger/swagger.json -o ./dashboard/src/client -n SingularityApi.ts"
+    "gen": "swagger-typescript-api --axios -p ./docs/swagger/swagger.json -o ./dashboard/src/client -n SingularityApi.ts"
   }
 }

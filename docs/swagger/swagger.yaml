@@ -413,8 +413,16 @@ definitions:
         type: integer
       name:
         type: string
+      outputStorages:
+        items:
+          $ref: '#/definitions/model.Storage'
+        type: array
       pieceSize:
         type: integer
+      sourceStorages:
+        items:
+          $ref: '#/definitions/model.Storage'
+        type: array
       updatedAt:
         type: string
     type: object
