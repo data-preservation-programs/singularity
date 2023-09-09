@@ -4,26 +4,29 @@ import (
 	"context"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
-	"gorm.io/gorm"
 )
 
-// ListHandler fetches and returns a list of all Preparation records from the database.
-// It also preloads the associated source and output storages for each Preparation.
+// ListHandler fetches a list of all the preparations from the database.
+//
+// This handler retrieves all preparations stored in the database along with their associated
+// source and output storages. The result includes all fields and relationships of the preparation models.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
+// - ctx: The context for managing timeouts and cancellation.
+// - request: A handler request. This particular handler does not use the payload, so the request struct is empty.
+// - dep: Contains the handler's dependencies, such as the gorm.DB instance.
 //
 // Returns:
-// - A slice containing all Preparation records from the database.
-// - An error, if any occurred during the database query operation.
-//
-// Note:
-// The function uses the Preload() method of gorm to automatically load the related source
-// and output storage records for each returned Preparation, simplifying subsequent operations
-// on these records.
-func (DefaultHandler) ListHandler(ctx context.Context, db *gorm.DB) ([]model.Preparation, error) {
+//   - A slice of model.Preparation, each representing a preparation stored in the database
+//     along with its associated source and output storages.
+//   - An error if any issues occur during the operation, especially database-related errors.
+func (DefaultHandler) ListHandler(ctx context.Context,
+	request handler.Request[struct{}],
+	dep handler.Dependency,
+) ([]model.Preparation, error) {
+	db := dep.DB.WithContext(ctx)
 	var preparations []model.Preparation
 	err := db.WithContext(ctx).Preload("SourceStorages").Preload("OutputStorages").Find(&preparations).Error
 	return preparations, errors.WithStack(err)

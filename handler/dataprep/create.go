@@ -5,6 +5,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util"
@@ -112,29 +113,28 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 	}, nil
 }
 
-// CreatePreparationHandler handles the creation of a new Preparation entity based on the provided
-// CreateRequest parameters. Initially, it validates the request parameters and, if valid,
-// creates a new Preparation record in the database.
+// CreatePreparationHandler handles the creation of a new Preparation record based on the provided request.
+//
+// The function first validates the given request payload. If the validation is successful,
+// it will create a new Preparation record in the database. Additionally, for each source
+// attachment associated with the created Preparation, it will create a new Directory record.
+// All database operations are executed with retries to handle potential transient errors.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - request: The CreateRequest structure containing the parameters for the creation request.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - request: A handler request that wraps the CreateRequest payload.
+//   - dep: Contains the handler's dependencies, such as the gorm.DB instance.
 //
 // Returns:
-// - A pointer to the newly created Preparation model.
-// - An error, if any occurred during the validation or creation process.
-//
-// Note:
-// This function relies on the ValidateCreateRequest function to ensure that the provided
-// parameters meet the required criteria before creating a Preparation record.
+//   - The created model.Preparation instance if the operation is successful.
+//   - An error if any issues occur during the operation, such as validation or database errors.
 func (DefaultHandler) CreatePreparationHandler(
 	ctx context.Context,
-	db *gorm.DB,
-	request CreateRequest,
+	request handler.Request[CreateRequest],
+	dep handler.Dependency,
 ) (*model.Preparation, error) {
-	db = db.WithContext(ctx)
-	preparation, err := ValidateCreateRequest(ctx, db, request)
+	db := dep.DB.WithContext(ctx)
+	preparation, err := ValidateCreateRequest(ctx, db, request.Payload)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

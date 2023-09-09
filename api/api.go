@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"strconv"
 	"time"
 
+	handler2 "github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -121,138 +121,39 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	}, nil
 }
 
-// toEchoHandler is a utility method to convert a generic handler function into an echo.HandlerFunc.
-// It uses reflection to introspect the signature and parameter types of the passed handler function,
-// and wraps it into a function suitable for Echo's routing.
-//
-// Supported input parameters for the handler functions are:
-// - context.Context: Will be passed the request context.
-// - *gorm.DB: Will be passed the Server's database instance with the request's context.
-// - jsonrpc.RPCClient: Will be passed the Server's Lotus client.
-// - replication.DealMaker: Will be passed the Server's deal maker.
-// - Any other supported path parameters (string, int, uint) or a request body.
-//
-// The handler function should return either a single error or a result and an error.
-// The output will be interpreted and converted into appropriate HTTP responses.
-//
-// Parameters:
-// - handlerFunc: A function to be converted, it should have a supported signature.
-//
-// Returns:
-// - An echo.HandlerFunc suitable for use with Echo's router.
-//
-// Notes:
-// This method assumes a specific ordering and kind of parameters in the handler functions.
-// It is designed to simplify the process of defining Echo handlers but has limitations
-// in terms of the variety of supported handler function signatures.
-func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
+func toEchoHandler[Req any, Resp any](
+	s Server,
+	handler func(ctx context.Context, request handler2.Request[Req], dep handler2.Dependency) (Resp, error)) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		handlerFuncValue := reflect.ValueOf(handlerFunc)
-		handlerFuncType := handlerFuncValue.Type()
-
-		// Check the number of input parameters
-		if handlerFuncType.NumIn() == 0 ||
-			handlerFuncType.In(1).String() != "*gorm.DB" ||
-			handlerFuncType.In(0).String() != "context.Context" {
-			logger.Error("Invalid handler function signature.")
-			return echo.NewHTTPError(http.StatusInternalServerError, "Invalid handler function signature.")
+		paramValues := c.ParamValues()
+		var params []string
+		for _, param := range paramValues {
+			unescaped, err := url.PathUnescape(param)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to decode path parameter: %s", err)})
+			}
+			params = append(params, unescaped)
 		}
-
-		// Prepare input parameters
-		var inputParams []reflect.Value
-
-		var j int
-		// Get path parameters
-		for i := 0; i < handlerFuncType.NumIn(); i++ {
-			paramType := handlerFuncType.In(i)
-			if paramType.String() == "context.Context" {
-				inputParams = append(inputParams, reflect.ValueOf(c.Request().Context()))
-				continue
-			}
-			if paramType.String() == "*gorm.DB" {
-				inputParams = append(inputParams, reflect.ValueOf(s.db.WithContext(c.Request().Context())))
-				continue
-			}
-			if paramType.String() == "jsonrpc.RPCClient" {
-				inputParams = append(inputParams, reflect.ValueOf(s.lotusClient))
-				continue
-			}
-			if paramType.String() == "replication.DealMaker" {
-				inputParams = append(inputParams, reflect.ValueOf(s.dealMaker))
-				continue
-			}
-			if paramType.Kind() == reflect.String || isIntKind(paramType.Kind()) || isUIntKind(paramType.Kind()) {
-				if j >= len(c.ParamValues()) {
-					logger.Error("Invalid handler function signature.")
-					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
-				}
-				paramValue := c.ParamValues()[j]
-				switch {
-				case paramType.Kind() == reflect.String:
-					decoded, err := url.QueryUnescape(paramValue)
-					if err != nil {
-						return c.JSON(http.StatusInternalServerError, HTTPError{Err: "failed to decode path parameter"})
-					}
-					inputParams = append(inputParams, reflect.ValueOf(decoded))
-				case isIntKind(paramType.Kind()):
-					decoded, err := strconv.ParseInt(paramValue, 10, paramType.Bits())
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
-					}
-					val := reflect.New(paramType).Elem()
-					val.SetInt(decoded)
-					inputParams = append(inputParams, val)
-				case isUIntKind(paramType.Kind()):
-					decoded, err := strconv.ParseUint(paramValue, 10, paramType.Bits())
-					if err != nil {
-						return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
-					}
-					val := reflect.New(paramType).Elem()
-					val.SetUint(decoded)
-					inputParams = append(inputParams, val)
-				default:
-				}
-				j += 1
-				continue
-			}
-			bodyParam := reflect.New(paramType).Elem()
-			if bodyParam.Kind() == reflect.Map {
-				bodyParam.Set(reflect.MakeMap(bodyParam.Type()))
-			}
-			if err := c.Bind(bodyParam.Addr().Interface()); err != nil {
-				return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to bind request body: %s", err)})
-			}
-			inputParams = append(inputParams, bodyParam)
-			break
+		var body Req
+		err := c.Bind(&body)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, HTTPError{Err: fmt.Sprintf("failed to bind request body: %s", err)})
 		}
-
-		// Call the handler function
-		results := handlerFuncValue.Call(inputParams)
-
-		if len(results) == 1 {
-			// Handle the returned error
-			if results[0].Interface() != nil {
-				err, ok := results[1].Interface().(error)
-				if !ok {
-					return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
-				}
-				return httpResponseFromError(c, err)
-			}
-			return c.NoContent(http.StatusNoContent)
-		}
-
-		// Handle the returned error
-		if results[1].Interface() != nil {
-			err, ok := results[1].Interface().(error)
-			if !ok {
-				return c.JSON(http.StatusInternalServerError, HTTPError{Err: "invalid handler function signature"})
-			}
+		response, err := handler(c.Request().Context(), handler2.Request[Req]{
+			Params:  params,
+			Payload: body,
+		}, handler2.Dependency{
+			LotusClient: s.lotusClient,
+			DealMaker:   s.dealMaker,
+			DB:          s.db,
+		})
+		if err != nil {
 			return httpResponseFromError(c, err)
 		}
-
-		// Handle the returned data
-		data := results[0].Interface()
-		return c.JSON(http.StatusOK, data)
+		if response == nil {
+			return c.NoContent(http.StatusNoContent)
+		}
+		return c.JSON(http.StatusOK, response)
 	}
 }
 
@@ -265,7 +166,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.PATCH("/api/storage/:name", s.toEchoHandler(storage.Default.UpdateStorageHandler))
 
 	// Preparation
-	e.POST("/api/preparation", s.toEchoHandler(dataprep.Default.CreatePreparationHandler))
+	e.POST("/api/preparation", toEchoHandler(s, dataprep.Default.CreatePreparationHandler))
 	e.GET("/api/preparation", s.toEchoHandler(dataprep.Default.ListHandler))
 	e.GET("/api/preparation/:id", s.toEchoHandler(job.Default.GetStatusHandler))
 	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(dataprep.Default.ListSchedulesHandler))

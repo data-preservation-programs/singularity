@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/rjNemo/underscore"
@@ -33,36 +34,39 @@ type Version struct {
 	LastModified time.Time `json:"lastModified" table:"format:2006-01-02 15:04:05"`
 }
 
-// ExploreHandler fetches directory entries (files and sub-directories) associated with a specific preparation
-// in a given storage system and directory path. The function retrieves information from a local database
-// rather than directly exploring the remote storage, making use of the stored relationships between files,
-// directories, and storage systems.
+type ExploreRequest struct {
+	Path string `json:"path"`
+}
+
+// ExploreHandler manages the exploration of directory structures associated with a source attached to a preparation.
 //
-// This function starts by fetching the desired Storage record based on the provided name. It then fetches the
-// associated SourceAttachment record which connects a preparation to a storage. Using the RootDirectoryID method
-// of the source, it retrieves the root directory's ID and navigates to the desired directory by iterating
-// through the path segments. Once at the desired directory, it fetches the contained directories and files,
-// constructing a result list from the gathered data.
+// Given a preparation ID and source name, and a path within the source's directory structure,
+// this handler fetches the directory's content. The result includes directory entries, such as subdirectories
+// and files, along with their respective CIDs (Content Identifiers) and other metadata.
+//
+// If the specified source is not found to be attached to the preparation, or if a directory does not exist
+// at the provided path, the handler returns a not-found error. All database operations are handled with care
+// to produce descriptive errors in case of any issues.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name of the preparation associated with the storage.
-// - name: The ID or name of the desired Storage record.
-// - path: The directory path in the storage system to explore.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - request: A handler request containing the ExploreRequest payload.
+//     The Params field should include the preparation ID followed by the source name.
+//   - dep: Contains the handler's dependencies, such as the gorm.DB instance.
 //
 // Returns:
-// - ExploreResult struct representing the entries in the explored directory.
-// - An error, if any occurred during the operation.
+//   - An ExploreResult which represents the contents of the directory at the specified path.
+//     This includes subdirectories, files, their CIDs, and other metadata.
+//   - An error if any issues occur during the operation, such as database errors or not-found situations.
 func (DefaultHandler) ExploreHandler(
 	ctx context.Context,
-	db *gorm.DB,
-	id string,
-	name string,
-	path string,
+	request handler.Request[ExploreRequest],
+	dep handler.Dependency,
 ) (*ExploreResult, error) {
-	db = db.WithContext(ctx)
-
+	db := dep.DB.WithContext(ctx)
+	id := request.Params[0]
+	name := request.Params[1]
+	path := request.Payload.Path
 	var source model.SourceAttachment
 	err := source.FindByPreparationAndSource(db, id, name)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -156,8 +160,9 @@ func (DefaultHandler) ExploreHandler(
 // @Param id path string true "Preparation ID or name"
 // @Param name path string true "Source storage ID or name"
 // @Param path path string true "Directory path"
+// @Param request body ExploreRequest true "Explore Request"
 // @Success 200 {object} ExploreResult
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /preparation/{id}/source/{name}/explore/{path} [get]
+// @Router /preparation/{id}/source/{name}/explore [post]
 func _() {}

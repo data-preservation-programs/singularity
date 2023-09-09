@@ -3,6 +3,7 @@ package dataprep
 import (
 	"context"
 
+	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
 	"gorm.io/gorm"
 )
@@ -10,8 +11,8 @@ import (
 type Handler interface {
 	CreatePreparationHandler(
 		ctx context.Context,
-		db *gorm.DB,
-		request CreateRequest,
+		request handler.Request[CreateRequest],
+		dep handler.Dependency,
 	) (*model.Preparation, error)
 
 	ExploreHandler(
