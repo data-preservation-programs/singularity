@@ -18,6 +18,7 @@ import (
 //go:generate rm -rf ./client
 //go:generate go run github.com/go-swagger/go-swagger/cmd/swagger@v0.30.5 generate client -f ./docs/swagger/swagger.json -t . -c client/swagger/http -m client/swagger/models -a client/swagger/operations -q
 //go:generate npm run gen
+//go:generate npm run build
 
 //go:embed version.json
 var versionJSON []byte
