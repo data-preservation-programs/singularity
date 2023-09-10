@@ -55,7 +55,7 @@ func TestSchedulePauseHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockSchedule)
+		mockHandler := new(schedule.MockSchedule)
 		defer swapScheduleHandler(mockHandler)()
 		mockHandler.On("PauseHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
 		_, _, err := runner.Run(ctx, "singularity deal schedule pause 1")
@@ -70,7 +70,7 @@ func TestScheduleResumeHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockSchedule)
+		mockHandler := new(schedule.MockSchedule)
 		defer swapScheduleHandler(mockHandler)()
 		mockHandler.On("ResumeHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testSchedule, nil)
 		_, _, err := runner.Run(ctx, "singularity deal schedule resume 1")
@@ -85,7 +85,7 @@ func TestScheduleListHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockSchedule)
+		mockHandler := new(schedule.MockSchedule)
 		defer swapScheduleHandler(mockHandler)()
 		mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Schedule{testSchedule}, nil)
 		_, _, err := runner.Run(ctx, "singularity deal schedule list")
@@ -100,7 +100,7 @@ func TestScheduleCreateHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockSchedule)
+		mockHandler := new(schedule.MockSchedule)
 		defer swapScheduleHandler(mockHandler)()
 		tmp := t.TempDir()
 		err := os.WriteFile(filepath.Join(tmp, "cid.txt"), []byte(testutil.TestCid.String()), 0644)
@@ -122,7 +122,7 @@ func TestScheduleUpdateHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockSchedule)
+		mockHandler := new(schedule.MockSchedule)
 		defer swapScheduleHandler(mockHandler)()
 		tmp := t.TempDir()
 		err := os.WriteFile(filepath.Join(tmp, "cid.txt"), []byte(testutil.TestCid.String()), 0644)

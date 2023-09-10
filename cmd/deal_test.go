@@ -26,7 +26,7 @@ func TestSendDealHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDeal)
+		mockHandler := new(deal.MockDeal)
 		defer swapDealHandler(mockHandler)()
 		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
 			ID:               1,
@@ -57,7 +57,7 @@ func TestListDealHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDeal)
+		mockHandler := new(deal.MockDeal)
 		defer swapDealHandler(mockHandler)()
 		mockHandler.On("ListHandler", mock.Anything, mock.Anything, mock.Anything).Return([]model.Deal{
 			{

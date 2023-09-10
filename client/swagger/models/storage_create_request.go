@@ -8,10 +8,8 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // StorageCreateRequest storage create request
@@ -23,12 +21,10 @@ type StorageCreateRequest struct {
 	Config map[string]string `json:"config,omitempty"`
 
 	// name
-	// Required: true
-	Name *string `json:"name"`
+	Name string `json:"name,omitempty"`
 
 	// path
-	// Required: true
-	Path *string `json:"path"`
+	Path string `json:"path,omitempty"`
 
 	// provider
 	Provider string `json:"provider,omitempty"`
@@ -36,37 +32,6 @@ type StorageCreateRequest struct {
 
 // Validate validates this storage create request
 func (m *StorageCreateRequest) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateName(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePath(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *StorageCreateRequest) validateName(formats strfmt.Registry) error {
-
-	if err := validate.Required("name", "body", m.Name); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *StorageCreateRequest) validatePath(formats strfmt.Registry) error {
-
-	if err := validate.Required("path", "body", m.Path); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -42,7 +42,7 @@ func (o *ListSchedulesReader) ReadResponse(response runtime.ClientResponse, cons
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[GET /schedules] ListSchedules", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /schedule] ListSchedules", response, response.Code())
 	}
 }
 
@@ -91,11 +91,11 @@ func (o *ListSchedulesOK) Code() int {
 }
 
 func (o *ListSchedulesOK) Error() string {
-	return fmt.Sprintf("[GET /schedules][%d] listSchedulesOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /schedule][%d] listSchedulesOK  %+v", 200, o.Payload)
 }
 
 func (o *ListSchedulesOK) String() string {
-	return fmt.Sprintf("[GET /schedules][%d] listSchedulesOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /schedule][%d] listSchedulesOK  %+v", 200, o.Payload)
 }
 
 func (o *ListSchedulesOK) GetPayload() []*models.ModelSchedule {
@@ -157,11 +157,11 @@ func (o *ListSchedulesBadRequest) Code() int {
 }
 
 func (o *ListSchedulesBadRequest) Error() string {
-	return fmt.Sprintf("[GET /schedules][%d] listSchedulesBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[GET /schedule][%d] listSchedulesBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *ListSchedulesBadRequest) String() string {
-	return fmt.Sprintf("[GET /schedules][%d] listSchedulesBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[GET /schedule][%d] listSchedulesBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *ListSchedulesBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +225,11 @@ func (o *ListSchedulesInternalServerError) Code() int {
 }
 
 func (o *ListSchedulesInternalServerError) Error() string {
-	return fmt.Sprintf("[GET /schedules][%d] listSchedulesInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[GET /schedule][%d] listSchedulesInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *ListSchedulesInternalServerError) String() string {
-	return fmt.Sprintf("[GET /schedules][%d] listSchedulesInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[GET /schedule][%d] listSchedulesInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *ListSchedulesInternalServerError) GetPayload() *models.APIHTTPError {
