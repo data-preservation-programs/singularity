@@ -15,6 +15,12 @@ type Handler interface {
 		lotusClient jsonrpc.RPCClient,
 		request CreateRequest,
 	) (*model.Schedule, error)
+	UpdateHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		scheduleID string,
+		request UpdateRequest,
+	) (*model.Schedule, error)
 	ListHandler(
 		ctx context.Context,
 		db *gorm.DB,

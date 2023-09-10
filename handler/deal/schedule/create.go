@@ -2,10 +2,13 @@ package schedule
 
 import (
 	"context"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
+	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
 
 	"github.com/cockroachdb/errors"
@@ -168,29 +171,42 @@ func (DefaultHandler) CreateHandler(
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "provider %s cannot be resolved", request.Provider))
 	}
 
+	headers := make(map[string]string)
+	for _, header := range request.HTTPHeaders {
+		kv := strings.SplitN(header, "=", 2)
+		if len(kv) != 2 {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+		}
+		headers[kv[0]], err = url.QueryUnescape(kv[1])
+		if err != nil {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+		}
+	}
+
 	schedule := model.Schedule{
-		PreparationID:        preparation.ID,
-		URLTemplate:          request.URLTemplate,
-		HTTPHeaders:          request.HTTPHeaders,
-		Provider:             request.Provider,
-		TotalDealNumber:      request.TotalDealNumber,
-		TotalDealSize:        int64(totalDealSize),
-		Verified:             request.Verified,
-		KeepUnsealed:         request.KeepUnsealed,
-		AnnounceToIPNI:       request.IPNI,
-		StartDelay:           startDelay,
-		Duration:             duration,
-		State:                model.ScheduleActive,
-		ScheduleDealNumber:   request.ScheduleDealNumber,
-		ScheduleDealSize:     int64(scheduleDealSize),
-		MaxPendingDealNumber: request.MaxPendingDealNumber,
-		MaxPendingDealSize:   int64(pendingDealSize),
-		Notes:                request.Notes,
-		AllowedPieceCIDs:     request.AllowedPieceCIDs,
-		ScheduleCron:         scheduleCron,
-		PricePerGBEpoch:      request.PricePerGBEpoch,
-		PricePerGB:           request.PricePerGB,
-		PricePerDeal:         request.PricePerDeal,
+		PreparationID:         preparation.ID,
+		URLTemplate:           request.URLTemplate,
+		HTTPHeaders:           headers,
+		Provider:              request.Provider,
+		TotalDealNumber:       request.TotalDealNumber,
+		TotalDealSize:         int64(totalDealSize),
+		Verified:              request.Verified,
+		KeepUnsealed:          request.KeepUnsealed,
+		AnnounceToIPNI:        request.IPNI,
+		StartDelay:            startDelay,
+		Duration:              duration,
+		State:                 model.ScheduleActive,
+		ScheduleDealNumber:    request.ScheduleDealNumber,
+		ScheduleDealSize:      int64(scheduleDealSize),
+		MaxPendingDealNumber:  request.MaxPendingDealNumber,
+		MaxPendingDealSize:    int64(pendingDealSize),
+		Notes:                 request.Notes,
+		AllowedPieceCIDs:      underscore.Unique(request.AllowedPieceCIDs),
+		ScheduleCron:          scheduleCron,
+		PricePerGBEpoch:       request.PricePerGBEpoch,
+		PricePerGB:            request.PricePerGB,
+		PricePerDeal:          request.PricePerDeal,
+		ScheduleCronPerpetual: request.ScheduleCronPerpetual,
 	}
 
 	if err := database.DoRetry(ctx, func() error {

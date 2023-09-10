@@ -213,7 +213,7 @@ func TestSendManualHandler(t *testing.T) {
 			StartDelay:      24 * time.Hour,
 			Duration:        2400 * time.Hour,
 			Verified:        proposal.Verified,
-			HTTPHeaders:     proposal.HTTPHeaders,
+			HTTPHeaders:     map[string]string{"a": "b"},
 			URLTemplate:     proposal.URLTemplate,
 			KeepUnsealed:    proposal.KeepUnsealed,
 			AnnounceToIPNI:  proposal.IPNI,

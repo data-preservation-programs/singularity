@@ -7,7 +7,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
-	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/multiformats/go-multiaddr"
 
@@ -99,18 +98,12 @@ func NewService(db *gorm.DB, config Config) (*Service, error) {
 			}
 			listenAddrs = append(listenAddrs, ma)
 		}
-		h, err := util.InitHost([]libp2p.Option{libp2p.Identity(identityKey)}, listenAddrs...)
+
+		bitswapServer, err := NewBitswapServer(db, identityKey, listenAddrs...)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		for _, m := range h.Addrs() {
-			logger.Info("libp2p listening on " + m.String())
-		}
-		logger.Info("peerID: " + h.ID().String())
-		s.servers = append(s.servers, &BitswapServer{
-			host:        h,
-			dbNoContext: db,
-		})
+		s.servers = append(s.servers, bitswapServer)
 	}
 	return s, nil
 }

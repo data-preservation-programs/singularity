@@ -162,6 +162,7 @@ var _ deal.Handler = &MockDeal{}
 var _ wallet.Handler = &MockWallet{}
 var _ file.Handler = &MockFile{}
 var _ job.Handler = &MockJob{}
+var _ schedule.Handler = &MockSchedule{}
 
 type MockAdmin struct {
 	mock.Mock
@@ -228,6 +229,11 @@ func (m *MockDataPrep) AddSourceStorageHandler(ctx context.Context, db *gorm.DB,
 
 type MockSchedule struct {
 	mock.Mock
+}
+
+func (m *MockSchedule) UpdateHandler(ctx context.Context, db *gorm.DB, scheduleID string, request schedule.UpdateRequest) (*model.Schedule, error) {
+	args := m.Called(ctx, db, scheduleID, request)
+	return args.Get(0).(*model.Schedule), args.Error(1)
 }
 
 func (m *MockSchedule) CreateHandler(ctx context.Context, db *gorm.DB, lotusClient jsonrpc.RPCClient, request schedule.CreateRequest) (*model.Schedule, error) {

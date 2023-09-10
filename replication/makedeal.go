@@ -300,14 +300,7 @@ func (d DealMakerImpl) MakeDeal120(
 	if isOnline {
 		transferParams := &boostly.HttpRequest{URL: url}
 		if len(dealConfig.HTTPHeaders) > 0 {
-			transferParams.Headers = make(map[string]string)
-			for _, header := range dealConfig.HTTPHeaders {
-				sp := strings.Split(header, "=")
-				if len(sp) != 2 {
-					return nil, errors.Errorf("invalid http header %s", header)
-				}
-				transferParams.Headers[sp[0]] = sp[1]
-			}
+			transferParams.Headers = dealConfig.HTTPHeaders
 		}
 		paramsBytes, err := json.Marshal(transferParams)
 		if err != nil {
@@ -457,7 +450,7 @@ type DealConfig struct {
 	StartDelay      time.Duration
 	Duration        time.Duration
 	Verified        bool
-	HTTPHeaders     []string
+	HTTPHeaders     map[string]string
 	URLTemplate     string
 	KeepUnsealed    bool
 	AnnounceToIPNI  bool

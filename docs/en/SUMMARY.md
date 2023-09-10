@@ -60,6 +60,7 @@
   * [Schedule](cli-reference/deal/schedule/README.md)
     * [Create](cli-reference/deal/schedule/create.md)
     * [List](cli-reference/deal/schedule/list.md)
+    * [Update](cli-reference/deal/schedule/update.md)
     * [Pause](cli-reference/deal/schedule/pause.md)
     * [Resume](cli-reference/deal/schedule/resume.md)
   * [Send Manual](cli-reference/deal/send-manual.md)

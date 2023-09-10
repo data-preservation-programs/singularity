@@ -22,7 +22,7 @@ import (
 )
 
 // Using 27018 intentionally to avoid deleting default singularity V1 database
-var localMongoDB = "mongodb://localhost:27017"
+var localMongoDB = "mongodb://localhost:27018"
 
 func TestMigrateDataset(t *testing.T) {
 	err := setupMongoDBDataset()
