@@ -1,15 +1,10 @@
 {
   "files": {
-    "main.css": "/singularity/overview/readme/static/css/main.aaef168d.css",
-    "main.js": "/singularity/overview/readme/static/js/main.841fe8ff.js",
-    "static/js/787.9b855ff2.chunk.js": "/singularity/overview/readme/static/js/787.9b855ff2.chunk.js",
-    "index.html": "/singularity/overview/readme/index.html",
-    "main.aaef168d.css.map": "/singularity/overview/readme/static/css/main.aaef168d.css.map",
-    "main.841fe8ff.js.map": "/singularity/overview/readme/static/js/main.841fe8ff.js.map",
-    "787.9b855ff2.chunk.js.map": "/singularity/overview/readme/static/js/787.9b855ff2.chunk.js.map"
+    "main.js": "/static/js/main.581b3ff7.js",
+    "index.html": "/index.html",
+    "main.581b3ff7.js.map": "/static/js/main.581b3ff7.js.map"
   },
   "entrypoints": [
-    "static/css/main.aaef168d.css",
-    "static/js/main.841fe8ff.js"
+    "static/js/main.581b3ff7.js"
   ]
 }

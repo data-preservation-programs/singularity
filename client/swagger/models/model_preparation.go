@@ -7,7 +7,9 @@ package models
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -32,8 +34,14 @@ type ModelPreparation struct {
 	// name
 	Name string `json:"name,omitempty"`
 
+	// output storages
+	OutputStorages []*ModelStorage `json:"outputStorages"`
+
 	// piece size
 	PieceSize int64 `json:"pieceSize,omitempty"`
+
+	// source storages
+	SourceStorages []*ModelStorage `json:"sourceStorages"`
 
 	// updated at
 	UpdatedAt string `json:"updatedAt,omitempty"`
@@ -41,11 +49,139 @@ type ModelPreparation struct {
 
 // Validate validates this model preparation
 func (m *ModelPreparation) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateOutputStorages(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSourceStorages(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this model preparation based on context it is used
+func (m *ModelPreparation) validateOutputStorages(formats strfmt.Registry) error {
+	if swag.IsZero(m.OutputStorages) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.OutputStorages); i++ {
+		if swag.IsZero(m.OutputStorages[i]) { // not required
+			continue
+		}
+
+		if m.OutputStorages[i] != nil {
+			if err := m.OutputStorages[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("outputStorages" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("outputStorages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ModelPreparation) validateSourceStorages(formats strfmt.Registry) error {
+	if swag.IsZero(m.SourceStorages) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SourceStorages); i++ {
+		if swag.IsZero(m.SourceStorages[i]) { // not required
+			continue
+		}
+
+		if m.SourceStorages[i] != nil {
+			if err := m.SourceStorages[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this model preparation based on the context it is used
 func (m *ModelPreparation) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateOutputStorages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSourceStorages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ModelPreparation) contextValidateOutputStorages(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.OutputStorages); i++ {
+
+		if m.OutputStorages[i] != nil {
+
+			if swag.IsZero(m.OutputStorages[i]) { // not required
+				return nil
+			}
+
+			if err := m.OutputStorages[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("outputStorages" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("outputStorages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ModelPreparation) contextValidateSourceStorages(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.SourceStorages); i++ {
+
+		if m.SourceStorages[i] != nil {
+
+			if swag.IsZero(m.SourceStorages[i]) { // not required
+				return nil
+			}
+
+			if err := m.SourceStorages[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("sourceStorages" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 

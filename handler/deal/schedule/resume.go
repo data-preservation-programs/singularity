@@ -54,6 +54,7 @@ func (DefaultHandler) ResumeHandler(
 	return &schedule, nil
 }
 
+// @ID ResumeSchedule
 // @Summary Resume a specific schedule
 // @Tags Deal Schedule
 // @Produce json

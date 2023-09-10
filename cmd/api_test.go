@@ -72,7 +72,7 @@ func TestMotionIntegration(t *testing.T) {
 		defer done()
 		defer cancel()
 		// Push a file
-		pushResp, err := client.File.PostPreparationIDSourceNameFile(&file.PostPreparationIDSourceNameFileParams{
+		pushResp, err := client.File.PushFile(&file.PushFileParams{
 			File: &models.FileInfo{
 				Path: "test.txt",
 			},
@@ -84,7 +84,7 @@ func TestMotionIntegration(t *testing.T) {
 		require.True(t, pushResp.IsSuccess())
 		require.NotZero(t, pushResp.Payload.ID)
 		// Prepare a file
-		prepareResp, err := client.File.PostFileIDPrepareToPack(&file.PostFileIDPrepareToPackParams{
+		prepareResp, err := client.File.PrepareToPackFile(&file.PrepareToPackFileParams{
 			ID:      pushResp.Payload.ID,
 			Context: ctx,
 		})
@@ -92,7 +92,7 @@ func TestMotionIntegration(t *testing.T) {
 		require.True(t, prepareResp.IsSuccess())
 		require.NotZero(t, prepareResp.Payload)
 		// Get this file
-		getFileResp, err := client.File.GetFileID(&file.GetFileIDParams{
+		getFileResp, err := client.File.GetFile(&file.GetFileParams{
 			ID:      pushResp.Payload.ID,
 			Context: ctx,
 		})
@@ -101,7 +101,7 @@ func TestMotionIntegration(t *testing.T) {
 		require.NotNil(t, getFileResp.Payload)
 		require.Len(t, getFileResp.Payload.FileRanges, 1)
 		// Get all jobs
-		jobs, err := client.Preparation.GetPreparationID(&preparation.GetPreparationIDParams{
+		jobs, err := client.Preparation.GetPreparationStatus(&preparation.GetPreparationStatusParams{
 			ID:      "prep",
 			Context: ctx,
 		})
@@ -110,7 +110,7 @@ func TestMotionIntegration(t *testing.T) {
 		require.Len(t, jobs.Payload, 1)
 		require.Len(t, jobs.Payload[0].Jobs, 1)
 		// Pack that job
-		car, err := client.Job.PostJobIDPack(&job.PostJobIDPackParams{
+		car, err := client.Job.Pack(&job.PackParams{
 			ID:      fmt.Sprint(jobs.Payload[0].Jobs[0].ID),
 			Context: ctx,
 		})
@@ -133,7 +133,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 		BasePath: http.DefaultBasePath,
 	})
 	// Create source storage
-	response, err := client.Storage.PostStorageLocal(&storage.PostStorageLocalParams{
+	response, err := client.Storage.CreateLocalStorage(&storage.CreateLocalStorageParams{
 		Request: &models.StorageCreateLocalStorageRequest{
 			Name: "source",
 			Path: source,
@@ -144,7 +144,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 	require.True(t, response.IsSuccess())
 	require.NotZero(t, response.Payload.ID)
 	// Create output storage
-	response, err = client.Storage.PostStorageLocal(&storage.PostStorageLocalParams{
+	response, err = client.Storage.CreateLocalStorage(&storage.CreateLocalStorageParams{
 		Request: &models.StorageCreateLocalStorageRequest{
 			Name: "output",
 			Path: output,
@@ -155,7 +155,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 	require.True(t, response.IsSuccess())
 	require.NotZero(t, response.Payload.ID)
 	// Create preparation
-	createPrepResp, err := client.Preparation.PostPreparation(&preparation.PostPreparationParams{
+	createPrepResp, err := client.Preparation.CreatePreparation(&preparation.CreatePreparationParams{
 		Request: &models.DataprepCreateRequest{
 			MaxSize:        ptr.Of("3MB"),
 			Name:           ptr.Of("prep"),
@@ -187,7 +187,7 @@ func TestBasicDataPrep(t *testing.T) {
 		defer done()
 		defer cancel()
 		// Start Scanning
-		startScanResp, err := client.Job.PostPreparationIDSourceNameStartScan(&job.PostPreparationIDSourceNameStartScanParams{
+		startScanResp, err := client.Job.StartScan(&job.StartScanParams{
 			ID:      "prep",
 			Name:    "source",
 			Context: ctx,
@@ -199,7 +199,7 @@ func TestBasicDataPrep(t *testing.T) {
 		_, _, err = NewRunner().Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 		// List pieces
-		listPiecesResp, err := client.Piece.GetPreparationIDPiece(&piece.GetPreparationIDPieceParams{
+		listPiecesResp, err := client.Piece.ListPieces(&piece.ListPiecesParams{
 			ID:      "prep",
 			Context: ctx,
 		})
@@ -209,7 +209,7 @@ func TestBasicDataPrep(t *testing.T) {
 		require.Len(t, listPiecesResp.Payload[0].Pieces, 1)
 		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid)
 		// Start daggen
-		startDagGenResp, err := client.Job.PostPreparationIDSourceNameStartDaggen(&job.PostPreparationIDSourceNameStartDaggenParams{
+		startDagGenResp, err := client.Job.StartDagGen(&job.StartDagGenParams{
 			ID:      "prep",
 			Name:    "source",
 			Context: ctx,
@@ -221,7 +221,7 @@ func TestBasicDataPrep(t *testing.T) {
 		_, _, err = NewRunner().Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true")
 		require.NoError(t, err)
 		// List pieces
-		listPiecesResp, err = client.Piece.GetPreparationIDPiece(&piece.GetPreparationIDPieceParams{
+		listPiecesResp, err = client.Piece.ListPieces(&piece.ListPiecesParams{
 			ID:      "prep",
 			Context: ctx,
 		})

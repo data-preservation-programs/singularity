@@ -70,6 +70,7 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id stri
 	return allStatuses, nil
 }
 
+// @ID GetPreparationStatus
 // @Summary Get the status of a preparation
 // @Tags Preparation
 // @Param id path string true "Preparation ID or name"

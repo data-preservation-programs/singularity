@@ -34,9 +34,9 @@ type Preparation struct {
 	PieceSize         int64     `json:"pieceSize"`
 
 	// Associations
-	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true" table:"expand"`
-	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" swaggerignore:"true" table:"expand;header:Source Storages:"`
-	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" swaggerignore:"true" table:"expand;header:Output Storages:"`
+	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`
+	SourceStorages []Storage `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"sourceStorages,omitempty" table:"expand;header:Source Storages:"`
+	OutputStorages []Storage `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"outputStorages,omitempty" table:"expand;header:Output Storages:"`
 }
 
 func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
@@ -61,8 +61,8 @@ type Storage struct {
 	CreatedAt time.Time `json:"createdAt"  table:"verbose;format:2006-01-02 15:04:05"`
 	UpdatedAt time.Time `json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
 	Type      string    `json:"type"`
-	Path      string    `json:"path"`                       // Path is the path to the storage root.
-	Config    ConfigMap `gorm:"type:JSON"  table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
+	Path      string    `json:"path"`                                                                  // Path is the path to the storage root.
+	Config    ConfigMap `gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
 
 	// Associations
 	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" swaggerignore:"true" table:"expand;header:As Source: "`

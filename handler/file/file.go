@@ -36,6 +36,7 @@ func (DefaultHandler) GetFileHandler(
 	return &file, errors.WithStack(err)
 }
 
+// @ID GetFile
 // @Summary Get details about a file
 // @Tags File
 // @Accept json

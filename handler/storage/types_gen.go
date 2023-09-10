@@ -21,6 +21,7 @@ type CreateAcdStorageRequest struct {
 	Config AcdConfig
 }
 
+// @ID CreateAcdStorage
 // @Summary Create Acd storage
 // @Tags Storage
 // @Accept json
@@ -73,6 +74,7 @@ type CreateAzureblobStorageRequest struct {
 	Config AzureblobConfig
 }
 
+// @ID CreateAzureblobStorage
 // @Summary Create Azureblob storage
 // @Tags Storage
 // @Accept json
@@ -109,6 +111,7 @@ type CreateB2StorageRequest struct {
 	Config B2Config
 }
 
+// @ID CreateB2Storage
 // @Summary Create B2 storage
 // @Tags Storage
 // @Accept json
@@ -143,6 +146,7 @@ type CreateBoxStorageRequest struct {
 	Config BoxConfig
 }
 
+// @ID CreateBoxStorage
 // @Summary Create Box storage
 // @Tags Storage
 // @Accept json
@@ -206,6 +210,7 @@ type CreateDriveStorageRequest struct {
 	Config DriveConfig
 }
 
+// @ID CreateDriveStorage
 // @Summary Create Drive storage
 // @Tags Storage
 // @Accept json
@@ -240,6 +245,7 @@ type CreateDropboxStorageRequest struct {
 	Config DropboxConfig
 }
 
+// @ID CreateDropboxStorage
 // @Summary Create Dropbox storage
 // @Tags Storage
 // @Accept json
@@ -265,6 +271,7 @@ type CreateFichierStorageRequest struct {
 	Config FichierConfig
 }
 
+// @ID CreateFichierStorage
 // @Summary Create Fichier storage
 // @Tags Storage
 // @Accept json
@@ -292,6 +299,7 @@ type CreateFilefabricStorageRequest struct {
 	Config FilefabricConfig
 }
 
+// @ID CreateFilefabricStorage
 // @Summary Create Filefabric storage
 // @Tags Storage
 // @Accept json
@@ -332,6 +340,7 @@ type CreateFtpStorageRequest struct {
 	Config FtpConfig
 }
 
+// @ID CreateFtpStorage
 // @Summary Create Ftp storage
 // @Tags Storage
 // @Accept json
@@ -371,6 +380,7 @@ type CreateGcsStorageRequest struct {
 	Config GcsConfig
 }
 
+// @ID CreateGcsStorage
 // @Summary Create Gcs storage
 // @Tags Storage
 // @Accept json
@@ -401,6 +411,7 @@ type CreateGphotosStorageRequest struct {
 	Config GphotosConfig
 }
 
+// @ID CreateGphotosStorage
 // @Summary Create Gphotos storage
 // @Tags Storage
 // @Accept json
@@ -426,6 +437,7 @@ type CreateHdfsStorageRequest struct {
 	Config HdfsConfig
 }
 
+// @ID CreateHdfsStorage
 // @Summary Create Hdfs storage
 // @Tags Storage
 // @Accept json
@@ -460,6 +472,7 @@ type CreateHidriveStorageRequest struct {
 	Config HidriveConfig
 }
 
+// @ID CreateHidriveStorage
 // @Summary Create Hidrive storage
 // @Tags Storage
 // @Accept json
@@ -484,6 +497,7 @@ type CreateHttpStorageRequest struct {
 	Config HttpConfig
 }
 
+// @ID CreateHttpStorage
 // @Summary Create Http storage
 // @Tags Storage
 // @Accept json
@@ -511,6 +525,7 @@ type CreateInternetarchiveStorageRequest struct {
 	Config InternetarchiveConfig
 }
 
+// @ID CreateInternetarchiveStorage
 // @Summary Create Internetarchive storage
 // @Tags Storage
 // @Accept json
@@ -537,6 +552,7 @@ type CreateJottacloudStorageRequest struct {
 	Config JottacloudConfig
 }
 
+// @ID CreateJottacloudStorage
 // @Summary Create Jottacloud storage
 // @Tags Storage
 // @Accept json
@@ -562,6 +578,7 @@ type CreateKoofrDigistorageStorageRequest struct {
 	Config KoofrDigistorageConfig
 }
 
+// @ID CreateKoofrDigistorageStorage
 // @Summary Create Koofr storage with digistorage - Digi Storage, https://storage.rcs-rds.ro/
 // @Tags Storage
 // @Accept json
@@ -587,6 +604,7 @@ type CreateKoofrKoofrStorageRequest struct {
 	Config KoofrKoofrConfig
 }
 
+// @ID CreateKoofrKoofrStorage
 // @Summary Create Koofr storage with koofr - Koofr, https://app.koofr.net/
 // @Tags Storage
 // @Accept json
@@ -613,6 +631,7 @@ type CreateKoofrOtherStorageRequest struct {
 	Config KoofrOtherConfig
 }
 
+// @ID CreateKoofrOtherStorage
 // @Summary Create Koofr storage with other - Any other Koofr API compatible storage service
 // @Tags Storage
 // @Accept json
@@ -647,6 +666,7 @@ type CreateLocalStorageRequest struct {
 	Config LocalConfig
 }
 
+// @ID CreateLocalStorage
 // @Summary Create Local storage
 // @Tags Storage
 // @Accept json
@@ -677,6 +697,7 @@ type CreateMailruStorageRequest struct {
 	Config MailruConfig
 }
 
+// @ID CreateMailruStorage
 // @Summary Create Mailru storage
 // @Tags Storage
 // @Accept json
@@ -703,6 +724,7 @@ type CreateMegaStorageRequest struct {
 	Config MegaConfig
 }
 
+// @ID CreateMegaStorage
 // @Summary Create Mega storage
 // @Tags Storage
 // @Accept json
@@ -727,6 +749,7 @@ type CreateNetstorageStorageRequest struct {
 	Config NetstorageConfig
 }
 
+// @ID CreateNetstorageStorage
 // @Summary Create Netstorage storage
 // @Tags Storage
 // @Accept json
@@ -768,6 +791,7 @@ type CreateOnedriveStorageRequest struct {
 	Config OnedriveConfig
 }
 
+// @ID CreateOnedriveStorage
 // @Summary Create Onedrive storage
 // @Tags Storage
 // @Accept json
@@ -792,6 +816,7 @@ type CreateOpendriveStorageRequest struct {
 	Config OpendriveConfig
 }
 
+// @ID CreateOpendriveStorage
 // @Summary Create Opendrive storage
 // @Tags Storage
 // @Accept json
@@ -831,6 +856,7 @@ type CreateOosEnv_authStorageRequest struct {
 	Config OosEnv_authConfig
 }
 
+// @ID CreateOosEnv_authStorage
 // @Summary Create Oos storage with env_auth - automatically pickup the credentials from runtime(env), first one to provide auth wins
 // @Tags Storage
 // @Accept json
@@ -870,6 +896,7 @@ type CreateOosInstance_principal_authStorageRequest struct {
 	Config OosInstance_principal_authConfig
 }
 
+// @ID CreateOosInstance_principal_authStorage
 // @Summary Create Oos storage with instance_principal_auth - use instance principals to authorize an instance to make API calls.
 // @Tags Storage
 // @Accept json
@@ -908,6 +935,7 @@ type CreateOosNo_authStorageRequest struct {
 	Config OosNo_authConfig
 }
 
+// @ID CreateOosNo_authStorage
 // @Summary Create Oos storage with no_auth - no credentials needed, this is typically for reading public buckets
 // @Tags Storage
 // @Accept json
@@ -947,6 +975,7 @@ type CreateOosResource_principal_authStorageRequest struct {
 	Config OosResource_principal_authConfig
 }
 
+// @ID CreateOosResource_principal_authStorage
 // @Summary Create Oos storage with resource_principal_auth - use resource principals to make API calls
 // @Tags Storage
 // @Accept json
@@ -988,6 +1017,7 @@ type CreateOosUser_principal_authStorageRequest struct {
 	Config OosUser_principal_authConfig
 }
 
+// @ID CreateOosUser_principal_authStorage
 // @Summary Create Oos storage with user_principal_auth - use an OCI user and an API key for authentication.
 // @Tags Storage
 // @Accept json
@@ -1018,6 +1048,7 @@ type CreatePcloudStorageRequest struct {
 	Config PcloudConfig
 }
 
+// @ID CreatePcloudStorage
 // @Summary Create Pcloud storage
 // @Tags Storage
 // @Accept json
@@ -1040,6 +1071,7 @@ type CreatePremiumizemeStorageRequest struct {
 	Config PremiumizemeConfig
 }
 
+// @ID CreatePremiumizemeStorage
 // @Summary Create Premiumizeme storage
 // @Tags Storage
 // @Accept json
@@ -1061,6 +1093,7 @@ type CreatePutioStorageRequest struct {
 	Config PutioConfig
 }
 
+// @ID CreatePutioStorage
 // @Summary Create Putio storage
 // @Tags Storage
 // @Accept json
@@ -1091,6 +1124,7 @@ type CreateQingstorStorageRequest struct {
 	Config QingstorConfig
 }
 
+// @ID CreateQingstorStorage
 // @Summary Create Qingstor storage
 // @Tags Storage
 // @Accept json
@@ -1159,6 +1193,7 @@ type CreateS3AWSStorageRequest struct {
 	Config S3AWSConfig
 }
 
+// @ID CreateS3AWSStorage
 // @Summary Create S3 storage with AWS - Amazon Web Services (AWS) S3
 // @Tags Storage
 // @Accept json
@@ -1215,6 +1250,7 @@ type CreateS3AlibabaStorageRequest struct {
 	Config S3AlibabaConfig
 }
 
+// @ID CreateS3AlibabaStorage
 // @Summary Create S3 storage with Alibaba - Alibaba Cloud Object Storage System (OSS) formerly Aliyun
 // @Tags Storage
 // @Accept json
@@ -1272,6 +1308,7 @@ type CreateS3ArvanCloudStorageRequest struct {
 	Config S3ArvanCloudConfig
 }
 
+// @ID CreateS3ArvanCloudStorage
 // @Summary Create S3 storage with ArvanCloud - Arvan Cloud Object Storage (AOS)
 // @Tags Storage
 // @Accept json
@@ -1335,6 +1372,7 @@ type CreateS3CephStorageRequest struct {
 	Config S3CephConfig
 }
 
+// @ID CreateS3CephStorage
 // @Summary Create S3 storage with Ceph - Ceph Object Storage
 // @Tags Storage
 // @Accept json
@@ -1397,6 +1435,7 @@ type CreateS3ChinaMobileStorageRequest struct {
 	Config S3ChinaMobileConfig
 }
 
+// @ID CreateS3ChinaMobileStorage
 // @Summary Create S3 storage with ChinaMobile - China Mobile Ecloud Elastic Object Storage (EOS)
 // @Tags Storage
 // @Accept json
@@ -1452,6 +1491,7 @@ type CreateS3CloudflareStorageRequest struct {
 	Config S3CloudflareConfig
 }
 
+// @ID CreateS3CloudflareStorage
 // @Summary Create S3 storage with Cloudflare - Cloudflare R2 Storage
 // @Tags Storage
 // @Accept json
@@ -1509,6 +1549,7 @@ type CreateS3DigitalOceanStorageRequest struct {
 	Config S3DigitalOceanConfig
 }
 
+// @ID CreateS3DigitalOceanStorage
 // @Summary Create S3 storage with DigitalOcean - DigitalOcean Spaces
 // @Tags Storage
 // @Accept json
@@ -1566,6 +1607,7 @@ type CreateS3DreamhostStorageRequest struct {
 	Config S3DreamhostConfig
 }
 
+// @ID CreateS3DreamhostStorage
 // @Summary Create S3 storage with Dreamhost - Dreamhost DreamObjects
 // @Tags Storage
 // @Accept json
@@ -1622,6 +1664,7 @@ type CreateS3HuaweiOBSStorageRequest struct {
 	Config S3HuaweiOBSConfig
 }
 
+// @ID CreateS3HuaweiOBSStorage
 // @Summary Create S3 storage with HuaweiOBS - Huawei Object Storage Service
 // @Tags Storage
 // @Accept json
@@ -1679,6 +1722,7 @@ type CreateS3IBMCOSStorageRequest struct {
 	Config S3IBMCOSConfig
 }
 
+// @ID CreateS3IBMCOSStorage
 // @Summary Create S3 storage with IBMCOS - IBM COS S3
 // @Tags Storage
 // @Accept json
@@ -1733,6 +1777,7 @@ type CreateS3IDriveStorageRequest struct {
 	Config S3IDriveConfig
 }
 
+// @ID CreateS3IDriveStorage
 // @Summary Create S3 storage with IDrive - IDrive e2
 // @Tags Storage
 // @Accept json
@@ -1789,6 +1834,7 @@ type CreateS3IONOSStorageRequest struct {
 	Config S3IONOSConfig
 }
 
+// @ID CreateS3IONOSStorage
 // @Summary Create S3 storage with IONOS - IONOS Cloud
 // @Tags Storage
 // @Accept json
@@ -1845,6 +1891,7 @@ type CreateS3LiaraStorageRequest struct {
 	Config S3LiaraConfig
 }
 
+// @ID CreateS3LiaraStorage
 // @Summary Create S3 storage with Liara - Liara Object Storage
 // @Tags Storage
 // @Accept json
@@ -1902,6 +1949,7 @@ type CreateS3LyveCloudStorageRequest struct {
 	Config S3LyveCloudConfig
 }
 
+// @ID CreateS3LyveCloudStorage
 // @Summary Create S3 storage with LyveCloud - Seagate Lyve Cloud
 // @Tags Storage
 // @Accept json
@@ -1965,6 +2013,7 @@ type CreateS3MinioStorageRequest struct {
 	Config S3MinioConfig
 }
 
+// @ID CreateS3MinioStorage
 // @Summary Create S3 storage with Minio - Minio Object Storage
 // @Tags Storage
 // @Accept json
@@ -2022,6 +2071,7 @@ type CreateS3NeteaseStorageRequest struct {
 	Config S3NeteaseConfig
 }
 
+// @ID CreateS3NeteaseStorage
 // @Summary Create S3 storage with Netease - Netease Object Storage (NOS)
 // @Tags Storage
 // @Accept json
@@ -2079,6 +2129,7 @@ type CreateS3OtherStorageRequest struct {
 	Config S3OtherConfig
 }
 
+// @ID CreateS3OtherStorage
 // @Summary Create S3 storage with Other - Any other S3 compatible provider
 // @Tags Storage
 // @Accept json
@@ -2137,6 +2188,7 @@ type CreateS3QiniuStorageRequest struct {
 	Config S3QiniuConfig
 }
 
+// @ID CreateS3QiniuStorage
 // @Summary Create S3 storage with Qiniu - Qiniu Object Storage (Kodo)
 // @Tags Storage
 // @Accept json
@@ -2194,6 +2246,7 @@ type CreateS3RackCorpStorageRequest struct {
 	Config S3RackCorpConfig
 }
 
+// @ID CreateS3RackCorpStorage
 // @Summary Create S3 storage with RackCorp - RackCorp Object Storage
 // @Tags Storage
 // @Accept json
@@ -2251,6 +2304,7 @@ type CreateS3ScalewayStorageRequest struct {
 	Config S3ScalewayConfig
 }
 
+// @ID CreateS3ScalewayStorage
 // @Summary Create S3 storage with Scaleway - Scaleway Object Storage
 // @Tags Storage
 // @Accept json
@@ -2308,6 +2362,7 @@ type CreateS3SeaweedFSStorageRequest struct {
 	Config S3SeaweedFSConfig
 }
 
+// @ID CreateS3SeaweedFSStorage
 // @Summary Create S3 storage with SeaweedFS - SeaweedFS S3
 // @Tags Storage
 // @Accept json
@@ -2364,6 +2419,7 @@ type CreateS3StackPathStorageRequest struct {
 	Config S3StackPathConfig
 }
 
+// @ID CreateS3StackPathStorage
 // @Summary Create S3 storage with StackPath - StackPath Object Storage
 // @Tags Storage
 // @Accept json
@@ -2418,6 +2474,7 @@ type CreateS3StorjStorageRequest struct {
 	Config S3StorjConfig
 }
 
+// @ID CreateS3StorjStorage
 // @Summary Create S3 storage with Storj - Storj (S3 Compatible Gateway)
 // @Tags Storage
 // @Accept json
@@ -2474,6 +2531,7 @@ type CreateS3TencentCOSStorageRequest struct {
 	Config S3TencentCOSConfig
 }
 
+// @ID CreateS3TencentCOSStorage
 // @Summary Create S3 storage with TencentCOS - Tencent Cloud Object Storage (COS)
 // @Tags Storage
 // @Accept json
@@ -2531,6 +2589,7 @@ type CreateS3WasabiStorageRequest struct {
 	Config S3WasabiConfig
 }
 
+// @ID CreateS3WasabiStorage
 // @Summary Create S3 storage with Wasabi - Wasabi Object Storage
 // @Tags Storage
 // @Accept json
@@ -2560,6 +2619,7 @@ type CreateSeafileStorageRequest struct {
 	Config SeafileConfig
 }
 
+// @ID CreateSeafileStorage
 // @Summary Create Seafile storage
 // @Tags Storage
 // @Accept json
@@ -2611,6 +2671,7 @@ type CreateSftpStorageRequest struct {
 	Config SftpConfig
 }
 
+// @ID CreateSftpStorage
 // @Summary Create Sftp storage
 // @Tags Storage
 // @Accept json
@@ -2636,6 +2697,7 @@ type CreateSharefileStorageRequest struct {
 	Config SharefileConfig
 }
 
+// @ID CreateSharefileStorage
 // @Summary Create Sharefile storage
 // @Tags Storage
 // @Accept json
@@ -2660,6 +2722,7 @@ type CreateSiaStorageRequest struct {
 	Config SiaConfig
 }
 
+// @ID CreateSiaStorage
 // @Summary Create Sia storage
 // @Tags Storage
 // @Accept json
@@ -2690,6 +2753,7 @@ type CreateSmbStorageRequest struct {
 	Config SmbConfig
 }
 
+// @ID CreateSmbStorage
 // @Summary Create Smb storage
 // @Tags Storage
 // @Accept json
@@ -2711,6 +2775,7 @@ type CreateStorjExistingStorageRequest struct {
 	Config StorjExistingConfig
 }
 
+// @ID CreateStorjExistingStorage
 // @Summary Create Storj storage with existing - Use an existing access grant.
 // @Tags Storage
 // @Accept json
@@ -2734,6 +2799,7 @@ type CreateStorjNewStorageRequest struct {
 	Config StorjNewConfig
 }
 
+// @ID CreateStorjNewStorage
 // @Summary Create Storj storage with new - Create a new access grant from satellite address, API key, and passphrase.
 // @Tags Storage
 // @Accept json
@@ -2765,6 +2831,7 @@ type CreateSugarsyncStorageRequest struct {
 	Config SugarsyncConfig
 }
 
+// @ID CreateSugarsyncStorage
 // @Summary Create Sugarsync storage
 // @Tags Storage
 // @Accept json
@@ -2808,6 +2875,7 @@ type CreateSwiftStorageRequest struct {
 	Config SwiftConfig
 }
 
+// @ID CreateSwiftStorage
 // @Summary Create Swift storage
 // @Tags Storage
 // @Accept json
@@ -2830,6 +2898,7 @@ type CreateUptoboxStorageRequest struct {
 	Config UptoboxConfig
 }
 
+// @ID CreateUptoboxStorage
 // @Summary Create Uptobox storage
 // @Tags Storage
 // @Accept json
@@ -2858,6 +2927,7 @@ type CreateWebdavStorageRequest struct {
 	Config WebdavConfig
 }
 
+// @ID CreateWebdavStorage
 // @Summary Create Webdav storage
 // @Tags Storage
 // @Accept json
@@ -2885,6 +2955,7 @@ type CreateYandexStorageRequest struct {
 	Config YandexConfig
 }
 
+// @ID CreateYandexStorage
 // @Summary Create Yandex storage
 // @Tags Storage
 // @Accept json
@@ -2912,6 +2983,7 @@ type CreateZohoStorageRequest struct {
 	Config ZohoConfig
 }
 
+// @ID CreateZohoStorage
 // @Summary Create Zoho storage
 // @Tags Storage
 // @Accept json

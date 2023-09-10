@@ -217,6 +217,7 @@ func (DefaultHandler) CreateHandler(
 	return &schedule, nil
 }
 
+// @ID CreateSchedule
 // @Summary Create a new schedule
 // @Description Create a new schedule
 // @Tags Deal Schedule
