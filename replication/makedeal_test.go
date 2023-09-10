@@ -100,7 +100,6 @@ func setupBasicHost(t *testing.T, ctx context.Context, port string) host.Host {
 	})
 	go func() {
 		<-ctx.Done()
-		h.Close()
 	}()
 	return h
 }
@@ -246,7 +245,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 			StartDelay:     time.Minute,
 			Duration:       time.Hour,
 			Verified:       true,
-			HTTPHeaders:    []string{"key=value"},
+			HTTPHeaders:    map[string]string{"key": "value"},
 			URLTemplate:    "http://localhost:8080/piece/{PIECE_CID}",
 			KeepUnsealed:   true,
 			AnnounceToIPNI: true,

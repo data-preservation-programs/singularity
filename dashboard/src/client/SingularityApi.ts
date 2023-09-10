@@ -286,7 +286,7 @@ export interface ModelSchedule {
   createdAt?: string;
   duration?: number;
   errorMessage?: string;
-  httpHeaders?: string[];
+  httpHeaders?: ModelConfigMap;
   id?: number;
   keepUnsealed?: boolean;
   maxPendingDealNumber?: number;
@@ -384,6 +384,73 @@ export interface ScheduleCreateRequest {
   pricePerGbEpoch?: number;
   /** Provider */
   provider?: string;
+  /** Schedule cron patter */
+  scheduleCron?: string;
+  /** Whether a cron schedule should run in definitely */
+  scheduleCronPerpetual?: boolean;
+  /** Number of deals per scheduled time */
+  scheduleDealNumber?: number;
+  /** Size of deals per schedule trigger in human readable format, i.e. 100 TiB */
+  scheduleDealSize?: string;
+  /**
+   * Deal start delay in epoch or in duration format, i.e. 1000, 72h
+   * @default "72h"
+   */
+  startDelay?: string;
+  /** Total number of deals */
+  totalDealNumber?: number;
+  /** Total size of deals in human readable format, i.e. 100 TiB */
+  totalDealSize?: string;
+  /** URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car */
+  urlTemplate?: string;
+  /**
+   * Whether the deal should be verified
+   * @default true
+   */
+  verified?: boolean;
+}
+
+export interface ScheduleUpdateRequest {
+  /** Allowed piece CIDs in this schedule */
+  allowedPieceCids?: string[];
+  /**
+   * Duration in epoch or in duration format, i.e. 1500000, 2400h
+   * @default "12840h"
+   */
+  duration?: string;
+  /** http headers to be passed with the request (i.e. key=value) */
+  httpHeaders?: string[];
+  /**
+   * Whether the deal should be IPNI
+   * @default true
+   */
+  ipni?: boolean;
+  /**
+   * Whether the deal should be kept unsealed
+   * @default true
+   */
+  keepUnsealed?: boolean;
+  /** Max pending deal number */
+  maxPendingDealNumber?: number;
+  /** Max pending deal size in human readable format, i.e. 100 TiB */
+  maxPendingDealSize?: string;
+  /** Notes */
+  notes?: string;
+  /**
+   * Price in FIL per deal
+   * @default 0
+   */
+  pricePerDeal?: number;
+  /**
+   * Price in FIL  per GiB
+   * @default 0
+   */
+  pricePerGb?: number;
+  /**
+   * Price in FIL per GiB per epoch
+   * @default 0
+   */
+  pricePerGbEpoch?: number;
   /** Schedule cron patter */
   scheduleCron?: string;
   /** Whether a cron schedule should run in definitely */
@@ -8370,6 +8437,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<ModelSchedule, ApiHTTPError>({
         path: `/schedule/${id}/resume`,
         method: "POST",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a schedule
+     *
+     * @tags Deal Schedule
+     * @name SchedulePartialUpdate
+     * @summary Update a schedule
+     * @request PATCH:/schedule/{scheduleId}
+     */
+    schedulePartialUpdate: (scheduleId: string, body: ScheduleUpdateRequest, params: RequestParams = {}) =>
+      this.request<ModelSchedule, ApiHTTPError>({
+        path: `/schedule/${scheduleId}`,
+        method: "PATCH",
+        body: body,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

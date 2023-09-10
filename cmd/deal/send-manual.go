@@ -171,6 +171,7 @@ Notes:
 		if err != nil {
 			return errors.Wrap(err, "failed to init host")
 		}
+		defer h.Close()
 		dealMaker := replication.NewDealMaker(
 			util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token")),
 			h,

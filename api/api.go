@@ -24,6 +24,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/ybbus/jsonrpc/v3"
 
 	"github.com/cockroachdb/errors"
@@ -44,6 +45,7 @@ type Server struct {
 	lotusClient jsonrpc.RPCClient
 	dealMaker   replication.DealMaker
 	closer      io.Closer
+	host        host.Host
 }
 
 func (s Server) Name() string {
@@ -109,6 +111,7 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 
 	return Server{
 		db:          db,
+		host:        h,
 		listener:    params.Listener,
 		lotusClient: util.NewLotusClient(params.LotusAPI, params.LotusToken),
 		dealMaker: replication.NewDealMaker(
@@ -313,6 +316,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/schedule", s.toEchoHandler(schedule.Default.ListHandler))
 	e.POST("/api/schedule/:id/pause", s.toEchoHandler(schedule.Default.PauseHandler))
 	e.POST("/api/schedule/:id/resume", s.toEchoHandler(schedule.Default.ResumeHandler))
+	e.PATCH("/api/schedule/:id", s.toEchoHandler(schedule.Default.UpdateHandler))
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(deal.Default.ListHandler))
@@ -386,6 +390,7 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 		}
 	}()
 	go func() {
+		defer close(done)
 		<-ctx.Done()
 		ctx2, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
@@ -398,9 +403,14 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 		if err != nil {
 			logger.Errorw("failed to close database connection", "err", err)
 		}
-		close(done)
 	}()
-	return []service.Done{done}, fail, nil
+	hostDone := make(chan struct{})
+	go func() {
+		close(hostDone)
+		<-ctx.Done()
+		s.host.Close()
+	}()
+	return []service.Done{done, hostDone}, fail, nil
 }
 
 func isIntKind(kind reflect.Kind) bool {
