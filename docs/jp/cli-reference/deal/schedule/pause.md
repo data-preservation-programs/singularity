@@ -6,9 +6,9 @@ NAME:
    singularity deal schedule pause - 特定のスケジュールを一時停止する
 
 使用法:
-   singularity deal schedule pause [コマンドオプション] SCHEDULE_ID
+   singularity deal schedule pause [コマンドオプション] <schedule_id>
 
 オプション:
-   --help, -h  ヘルプを表示する
+   --help, -h  ヘルプの表示
 ```
 {% endcode %}

@@ -1,14 +1,15 @@
-# 지갑 제거
+# 월렛 삭제
 
 {% code fullWidth="true" %}
 ```
 이름:
-   singularity wallet remove - 지갑 제거
+   singularity wallet remove - 월렛 삭제
 
 사용법:
-   singularity wallet remove [명령 옵션] <주소>
+   singularity wallet remove [옵션] <주소>
 
 옵션:
-   --help, -h  도움말 보기
+   --really-do-it  정말로 삭제합니다 (기본값: false)
+   --help, -h      도움말 표시
 ```
 {% endcode %}

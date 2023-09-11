@@ -1,21 +1,20 @@
-# レプリケーション / 取引管理
+# レプリケーション / 契約管理
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal - レプリケーション / 取引管理
+   singularity deal - レプリケーション / 契約管理
 
-使用法:
+USAGE:
    singularity deal command [command options] [arguments...]
 
-コマンド:
-   schedule      取引をスケジュールする
-   spade-policy  SPADEポリシーを管理する
-   send-manual   手動取引プロポーザルをブーストまたはレガシーマーケットに送信する
-   list          すべての取引をリストする
-   help, h       コマンドの一覧を表示するか、コマンドのヘルプを表示する
+COMMANDS:
+   schedule     ディールをスケジュールする
+   send-manual  マニュアルのディール提案を送信して、ブーストやレガシー市場に貢献する
+   list         全てのディールを一覧表示する
+   help, h      コマンドの一覧を表示するか、特定のコマンドのヘルプを表示する
 
-オプション:
+OPTIONS:
    --help, -h  ヘルプを表示する
 ```
 {% endcode %}

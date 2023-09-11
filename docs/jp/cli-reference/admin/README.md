@@ -6,13 +6,14 @@
    singularity admin - 管理者コマンド
 
 使用法:
-   singularity admin コマンド [コマンドオプション] [引数...]
+   singularity admin command [command options] [arguments...]
 
 コマンド:
-   init     データベースを初期化する
-   reset    データベースをリセットする
-   migrate  古いSingularity MongoDBからデータを移行する
-   help, h  コマンドの一覧表示または特定のコマンドのヘルプを表示する
+   init              データベースを初期化します
+   reset             データベースをリセットします
+   migrate-dataset   古い singularity mongodb からデータセットを移行します
+   migrate-schedule  古い singularity mongodb からスケジュールを移行します
+   help, h           コマンドの一覧または特定のコマンドのヘルプを表示します
 
 オプション:
    --help, -h  ヘルプを表示する

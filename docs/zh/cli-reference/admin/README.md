@@ -2,19 +2,20 @@
 
 {% code fullWidth="true" %}
 ```
-名称：
+名称:
    singularity admin - 管理员命令
 
-用法：
-   singularity admin 命令 [命令选项] [参数...]
+用法:
+   singularity admin command [命令选项] [参数...]
 
-命令：
-   init     初始化数据库
-   reset    重置数据库
-   migrate  从旧的 singularity mongodb 迁移数据
-   help, h  显示命令列表或某个命令的帮助信息
+命令:
+   init              初始化数据库
+   reset             重置数据库
+   migrate-dataset   从旧的singularity mongodb迁移数据集
+   migrate-schedule  从旧的singularity mongodb迁移计划
+   help, h           显示命令列表或一个命令的帮助
 
-选项：
+选项:
    --help, -h  显示帮助信息
 ```
 {% endcode %}

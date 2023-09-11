@@ -5,17 +5,18 @@
 NAME:
    singularity deal schedule - ディールのスケジュール
 
-使用方法:
-   singularity deal schedule コマンド [コマンドオプション] [引数...]
+使用法:
+   singularity deal schedule command [command options] [arguments...]
 
 コマンド:
-   create   ストレージプロバイダーにディールを送信するためのスケジュールを作成します
-   list     ディールのスケジュールを一覧表示します
+   create   ストレージプロバイダにディールを送信するためのスケジュールを作成します
+   list     全てのディール作成スケジュールをリストします
+   update   既存のスケジュールを更新します
    pause    特定のスケジュールを一時停止します
    resume   特定のスケジュールを再開します
-   help, h  コマンドのリストを表示するか、特定のコマンドのヘルプを表示します
+   help, h  コマンドのリストを表示または特定のコマンドのヘルプを表示します
 
 オプション:
-   --help, -h  ヘルプを表示します
+   --help, -h  ヘルプを表示
 ```
 {% endcode %}

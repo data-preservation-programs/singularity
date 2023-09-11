@@ -9,7 +9,7 @@ USAGE:
    singularity run api [コマンドオプション] [引数...]
 
 OPTIONS:
-   --bind value  APIサーバーのバインドアドレス（デフォルト: "127.0.0.1:9090"）
+   --bind value  APIサーバーのバインドアドレス（デフォルト：":9090"）
    --help, -h    ヘルプを表示
 ```
 {% endcode %}

@@ -1,23 +1,22 @@
-# 異なる Singularity コンポーネントを実行する
+# 異なるSingularityのコンポーネントを実行する
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity run - 異なる Singularity コンポーネントを実行する
+   singularity run - 異なるSingularityのコンポーネントを実行する
 
 USAGE:
-   singularity run コマンド [コマンドオプション] [引数...]
+   singularity run command [command options] [arguments...]
 
 COMMANDS:
-   api               Singularity API を実行する
-   dataset-worker    データセットのスキャンと準備タスクを処理するためのデータセット準備ワーカーを起動します
-   content-provider  検索リクエストを提供するコンテンツプロバイダーを起動します
-   deal-tracker      関連するウォレットの取引を追跡するディールトラッカーを起動します
-   dealmaker         取引の作成と追跡を処理するディール作成/追跡ワーカーを起動します
-   spade-api         ストレージプロバイダーのディール提案のための Spade 互換の API を起動します
-   help, h           コマンドのリストを表示するか、特定のコマンドのヘルプを表示します
+   api               SingularityのAPIを実行する
+   dataset-worker    データセットの準備のためのワーカーを開始し、データセットのスキャンと準備のタスクを処理する
+   content-provider  リクエストの提供を行うコンテンツプロバイダーを開始する
+   deal-tracker      関連するウォレットの取引を追跡するディールトラッカーを開始する
+   deal-pusher       取引スケジュールを監視し、ディールをストレージプロバイダーにプッシュするディールプッシャーを開始する
+   help, h           コマンドのリストの表示または特定のコマンドのヘルプを表示する
 
 OPTIONS:
-   --help, -h  ヘルプを表示する
+   --help, -h  ヘルプの表示
 ```
 {% endcode %}

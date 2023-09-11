@@ -1,15 +1,23 @@
-# 部署到生产环境
+# 在生产环境中部署 Singularity
 
-默认情况下，Singularity 使用 `sqlite3` 作为数据库后端，因为它不需要任何设置。但如果要用于生产环境，或者与多个工作进程一起使用，或者在负载均衡器后面提供检索服务，则需要使用真正的数据库后端，使用 `$DATABASE_CONNECTION_STRING`
+Singularity默认使用`sqlite3`作为它的数据库后端，因为它易于设置。但是，当切换到生产环境时，特别是如果您计划使用多个工作节点或者打算在负载平衡器后面提供检索服务，建议切换到更强大的数据库后端。您可以通过设置`$DATABASE_CONNECTION_STRING`环境变量来配置后端。
 
-* Postgres 示例：`postgres://user:pass@example.com:5432/dbname`
-* MySQL 示例：`mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true`
+## 支持的数据库后端
 
-您还可以使用下面的 Docker Compose 模板作为起点。它会启动一个 Postgres 数据库服务并运行所有相关的 Singularity 服务。
+- **PostgreSQL**：  
+  连接字符串示例：  
+  `postgres://user:pass@example.com:5432/dbname`
+
+- **MySQL**：  
+  连接字符串示例：  
+  `mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true`
+
+## 使用 Docker Compose 进行部署
+
+如果您想快速部署带有PostgreSQL后端的Singularity，请考虑使用提供的Docker Compose模板：
 
 ```bash
 wget https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docker-compose.yml
-docker compose up
+docker-compose up
 ```
-
-这将设置一个 Postgres 数据库，并启动 Singularity API 和一个单独的数据集工作进程。
+执行上述命令将设置一个PostgreSQL数据库，并启动必要的Singularity服务，包括API和数据集工作节点。

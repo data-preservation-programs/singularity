@@ -1,22 +1,45 @@
-# 소스에서 설치하기
+# 소스로부터 Singularity 설치하기
 
-Singularity를 설치하려면 [Go 1.19 이상](https://golang.org/dl/)이 설치되어 있어야 합니다.
+Singularity를 설치하기 전에 시스템에 [Go 1.20 이상](https://golang.org/dl/)을 설치했는지 확인해주세요.
 
-```sh
-wget -c https://golang.org/dl/go1.19.7.linux-amd64.tar.gz -O - \
-    | sudo tar -xz -C /usr/local
-echo 'export PATH=$PATH:/usr/local/go/bin:$(/usr/local/go/bin/go env GOPATH)/bin' \
-    >> ~/.bashrc && source ~/.bashrc
-```
+## Go 설정하기
 
-그런 다음 아래 명령어로 Singularity를 설치할 수 있습니다.
+Go를 설치하고 실행하는 방법은 다음과 같습니다:
 
-```sh
+1. **Go 바이너리 다운로드 및 압축 해제**:
+    ```bash
+    wget -c https://golang.org/dl/go1.20.7.linux-amd64.tar.gz -O - \
+        | sudo tar -xz -C /usr/local
+    ```
+
+2. **PATH 업데이트**:
+   Go의 바이너리와 작업 디렉토리를 `PATH`에 추가하세요:
+    ```bash
+    echo 'export PATH=$PATH:/usr/local/go/bin:$(/usr/local/go/bin/go env GOPATH)/bin' \
+        >> ~/.bashrc && source ~/.bashrc
+    ```
+
+## 최신 릴리즈 Singularity 설치하기
+
+최신 안정 버전의 Singularity를 설치하기 위해 다음을 실행하세요:
+```bash
 go install github.com/data-preservation-programs/singularity@latest
 ```
 
-만약 C 컴파일러를 사용할 수 없다면 [CGO](https://zchee.github.io/golang-wiki/cgo/)를 지원하지 않는 방식으로 빌드할 수도 있습니다. 걱정하지 마세요. CGO는 제품용 워크로드에서는 사용되지 않아도 되는 약간 더 빠른 SQLite 백엔드에 필요합니다.
+## 미출시 기능 사용해보기
 
-```bash
-CGO_ENABLED=0 go install github.com/data-preservation-programs/singularity@latest
-```
+만약 Singularity의 최신 미출시 기능을 탐색하고 싶다면 다음과 같이 진행하세요:
+
+1. **Singularity 저장소를 클론하기**:
+    ```bash
+    git clone https://github.com/data-preservation-programs/singularity.git
+    ```
+2. **Singularity 디렉토리로 이동하기**:
+    ```bash
+    cd singularity
+    ```
+3. **빌드 및 설치**:
+    ```bash
+    go build -o singularity .
+    cp singularity $GOPATH/bin
+    ```

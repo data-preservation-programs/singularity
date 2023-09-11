@@ -1,14 +1,15 @@
-# 移除钱包
+# 删除钱包
 
 {% code fullWidth="true" %}
 ```
-名称：
-   singularity wallet remove - 移除钱包
+NAME:
+   singularity wallet remove - 删除钱包
 
-用法：
-   singularity wallet remove [命令选项] <地址>
+USAGE:
+   singularity wallet remove [command options] <address>
 
-选项：
-   --help, -h  显示帮助
+OPTIONS:
+   --really-do-it  真的要删除 (默认: false)
+   --help, -h      显示帮助
 ```
 {% endcode %}
