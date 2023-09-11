@@ -1,35 +1,35 @@
 # 目录
 
-## 概述 <a href="#概述" id="概述"></a>
+## 概述 <a href="#overview" id="overview"></a>
 
 * [什么是Singularity](README.md)
 * [V1还是V2](overview/v1-or-v2.md)
 
-## 安装 <a href="#安装" id="安装"></a>
+## 安装 <a href="#installation" id="installation"></a>
 
 * [下载二进制文件](installation/download-binaries.md)
 * [通过Docker安装](installation/install-from-docker.md)
 * [从源代码构建](installation/install-from-source.md)
 * [部署至生产环境](installation/deploy-to-production.md)
 
-## 数据准备 <a href="#数据准备" id="数据准备"></a>
+## 数据准备 <a href="#data-preparation" id="data-preparation"></a>
 
 * [入门指南](data-preparation/get-started.md)
 
-## 内容分发 <a href="#内容分发" id="内容分发"></a>
+## 内容分发 <a href="#content-distribution" id="content-distribution"></a>
 
 * [分发CAR文件](content-distribution/distribute-car-files.md)
 
-## 交易处理 <a href="#交易处理" id="交易处理"></a>
+## 交易处理 <a href="#deal-making" id="deal-making"></a>
 
 * [创建交易计划](deal-making/create-a-deal-schedule.md)
 
-## 主题 <a href="#主题" id="主题"></a>
+## 主题 <a href="#topics" id="topics"></a>
 
 * [内嵌准备](topics/inline-preparation.md)
 * [基准测试](topics/benchmark.md)
 
-## 💻 CLI参考 <a href="#CLI参考" id="CLI参考"></a>
+## 💻 CLI参考 <a href="#cli-reference" id="cli-reference"></a>
 <!-- cli begin -->
 
 * [菜单](cli-reference/README.md)
@@ -241,7 +241,7 @@
 
 <!-- cli end -->
 
-## 🌐 Web API参考 <a href="#Web-API参考" id="Web-API参考"></a>
+## 🌐 Web API参考 <a href="#web-api-reference" id="web-api-reference"></a>
 <!-- webapi begin -->
 
 * [交易计划](web-api-reference/deal-schedule.md)
@@ -257,6 +257,6 @@
 
 <!-- webapi end -->
 
-## ❓ 常见问题 <a href="#常见问题" id="常见问题"></a>
+## ❓ 常见问题 <a href="#faq" id="faq"></a>
 
 * [数据库被锁定](faq/database-is-locked.md)
