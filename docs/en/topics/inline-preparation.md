@@ -7,14 +7,18 @@ The traditional method for data preparation involves converting the original dat
 Inline preparation solves this problem by mapping the blocks of CAR files back to the original data source so that there is no need to store the exported CAR files.
 
 <div align="center">
-<img width="500" alt="Traditional data prep diagram" src="https://github.com/data-preservation-programs/singularity/assets/12418265/4292faf1-9f01-4b7c-b79f-67b0bc1e2acc">
-<img width="500" alt="Inline data prep diagram" src="https://github.com/data-preservation-programs/singularity/assets/12418265/f5cfc209-5e38-4bb9-8cd9-f1aeffaf284d">
-</div>
 
+<img src="https://github.com/data-preservation-programs/singularity/assets/12418265/4292faf1-9f01-4b7c-b79f-67b0bc1e2acc" alt="Traditional data prep diagram" width="500">
+
+ 
+
+<img src="https://github.com/data-preservation-programs/singularity/assets/12418265/f5cfc209-5e38-4bb9-8cd9-f1aeffaf284d" alt="Inline data prep diagram" width="500">
+
+</div>
 
 ## How CAR retrieval works
 
-With inline preparation, the CAR files can be served via HTTP using the metadata database and the original data source because it knows how to map byte ranges of the CAR file back to the original data source.&#x20;
+With inline preparation, the CAR files can be served via HTTP using the metadata database and the original data source because it knows how to map byte ranges of the CAR file back to the original data source.
 
 To serve CAR files via HTTP, simply start the content provider
 
@@ -35,6 +39,7 @@ singularity run api
 ```
 
 Then, to use the Singularity download utility (on the Storage Provider)
+
 ```sh
 singularity download <piece_cid>
 ```
@@ -54,7 +59,3 @@ Later, when CAR files are dynamically regenerated from the original data source,
 ## Enable Inline Preparation
 
 Inline preparation is automatically enabled for datasets that don't require encryption. Upon dataset creation, when an output directory is designated, CAR files are exported to that location. CAR retrieval requests prioritize these directories. If the CAR files are removed by the user, the system reverts to fetching from the original data source.
-
-## Related resources
-
-[download.md](../cli-reference/download.md "mention")
