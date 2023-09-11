@@ -7,6 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
@@ -137,7 +138,7 @@ func (w *Thread) cleanup(ctx context.Context) error {
 //
 //	error : An error is returned if the StartServers function encounters an issue while starting the threads. Otherwise, it returns nil.
 func (w Worker) Run(ctx context.Context) error {
-	threads := make([]service.Server, w.config.Concurrency)
+	threads := []service.Server{&w}
 	for i := 0; i < w.config.Concurrency; i++ {
 		id := uuid.New()
 		thread := &Thread{
@@ -146,9 +147,28 @@ func (w Worker) Run(ctx context.Context) error {
 			logger:      logger.With("workerID", id.String()),
 			config:      w.config,
 		}
-		threads[i] = thread
+		threads = append(threads, thread)
 	}
 	return service.StartServers(ctx, logger, threads...)
+}
+
+func (w Worker) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+	err := metrics.Init(ctx, w.dbNoContext)
+	if err != nil {
+		return nil, nil, errors.WithStack(err)
+	}
+	metricsFlushed := make(chan struct{})
+	go func() {
+		defer close(metricsFlushed)
+		metrics.Default.Start(ctx)
+		//nolint:contextcheck
+		metrics.Default.Flush()
+	}()
+	return []service.Done{metricsFlushed}, nil, nil
+}
+
+func (w Worker) Name() string {
+	return "Preparation Worker Main"
 }
 
 func (w *Thread) handleWorkComplete(ctx context.Context, jobID uint64) error {

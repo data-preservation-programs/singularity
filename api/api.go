@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
@@ -331,6 +332,10 @@ func (s Server) setupRoutes(e *echo.Echo) {
 var logger = logging.Logger("api")
 
 func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+	err := metrics.Init(ctx, s.db)
+	if err != nil {
+		return nil, nil, errors.WithStack(err)
+	}
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
@@ -406,11 +411,18 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 	}()
 	hostDone := make(chan struct{})
 	go func() {
-		close(hostDone)
+		defer close(hostDone)
 		<-ctx.Done()
 		s.host.Close()
 	}()
-	return []service.Done{done, hostDone}, fail, nil
+	metricsFlushed := make(chan struct{})
+	go func() {
+		defer close(metricsFlushed)
+		metrics.Default.Start(ctx)
+		//nolint:contextcheck
+		metrics.Default.Flush()
+	}()
+	return []service.Done{done, hostDone, metricsFlushed}, fail, nil
 }
 
 func isIntKind(kind reflect.Kind) bool {

@@ -227,6 +227,8 @@ definitions:
         type: integer
       jobId:
         type: integer
+      numOfFiles:
+        type: integer
       pieceCid:
         type: string
       pieceSize:

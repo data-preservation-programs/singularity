@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
@@ -213,6 +214,7 @@ func Pack(
 		}
 	}
 
+	car.NumOfFiles = int64(len(updatedFiles))
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(
 			func(db *gorm.DB) error {
@@ -325,5 +327,26 @@ func Pack(
 		}
 	}
 
+	sourceType := job.Attachment.Storage.Type
+	if job.Attachment.Storage.Config != nil {
+		provider, ok := job.Attachment.Storage.Config["provider"]
+		if ok {
+			sourceType = sourceType + "-" + provider
+		}
+	}
+	outputType := "inline"
+	if storageWriter != nil {
+		outputType = storageWriter.Name()
+	}
+
+	packJobEvent := metrics.PackJobEvent{
+		SourceType: sourceType,
+		OutputType: outputType,
+		PieceSize:  car.PieceSize,
+		PieceCID:   car.PieceCID.String(),
+		CarSize:    car.FileSize,
+		NumOfFiles: car.NumOfFiles,
+	}
+	metrics.Default.QueuePushJobEvent(packJobEvent)
 	return car, nil
 }

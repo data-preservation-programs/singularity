@@ -166,6 +166,7 @@ export interface ModelCar {
   fileSize?: number;
   id?: number;
   jobId?: number;
+  numOfFiles?: number;
   pieceCid?: string;
   pieceSize?: number;
   /** Association */
