@@ -1,15 +1,23 @@
-# 프로덕션에 배포하기
+# 운영 환경으로의 Singularity 배포하기
 
-기본적으로, Singularity는 설정이 필요하지 않기 때문에 `sqlite3`을 데이터베이스 백엔드로 사용합니다. 하지만 실제 프로덕션 환경에서는 또는 여러 작업자 또는 로드 밸런서 뒤에서 검색을 제공하기 위해 실제 데이터베이스 백엔드를 사용하고자 할 것입니다. 이를 위해서 `$DATABASE_CONNECTION_STRING`을 사용할 수 있습니다.
+Singularity는 설정이 간편한 `sqlite3`를 기본 데이터베이스 백엔드로 사용합니다. 그러나 복수의 워커를 사용하거나 로드 밸런서 뒤에서 검색을 서비스하려는 경우와 같이 운영 환경으로 전환할 때는 더 견고한 데이터베이스 백엔드로 전환하는 것이 권장됩니다. 데이터베이스 백엔드를 구성하기 위해 `$DATABASE_CONNECTION_STRING` 환경 변수를 설정할 수 있습니다.
 
-* Postgres 예시: `postgres://user:pass@example.com:5432/dbname`
-* MySQL 예시: `mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true`
+## 지원하는 데이터베이스 백엔드
 
-아래의 Docker Compose 템플릿을 사용하여 시작점으로 사용할 수도 있습니다. 이 템플릿은 포스트그레스 데이터베이스 서비스를 시작하고 모든 관련 Singularity 서비스를 실행합니다.
+- **PostgreSQL**:  
+  연결 문자열 예시:  
+  `postgres://user:pass@example.com:5432/dbname`
+
+- **MySQL**:  
+  연결 문자열 예시:  
+  `mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true`
+
+## 배포를 위해 Docker Compose 사용하기
+
+만약 PostgreSQL 백엔드와 함께 Singularity를 빠르게 배포하고자 한다면, 제공되는 Docker Compose 템플릿을 사용해보세요:
 
 ```bash
 wget https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docker-compose.yml
-docker compose up
+docker-compose up
 ```
-
-이를 통해 포스트그레스 데이터베이스를 설정하고, Singularity API와 단일 데이터셋 작업자를 시작할 수 있습니다.
+위 명령을 실행하면, PostgreSQL 데이터베이스를 설정하고 필요한 Singularity 서비스, API, 그리고 데이터셋 워커를 시작합니다.

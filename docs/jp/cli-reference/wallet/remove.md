@@ -1,14 +1,15 @@
-# ウォレットを削除する
+# ウォレットの削除
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity wallet remove - ウォレットを削除する
+   singularity wallet remove - ウォレットの削除
 
-使用法:
-   singularity wallet remove [コマンドオプション] <アドレス>
+USAGE:
+   singularity wallet remove [command options] <address>
 
-オプション:
-   --help, -h  ヘルプを表示する
+OPTIONS:
+   --really-do-it  実際に削除する (デフォルト: false)
+   --help, -h      ヘルプを表示
 ```
 {% endcode %}

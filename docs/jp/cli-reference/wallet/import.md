@@ -1,14 +1,14 @@
-# エクスポートされたプライベートキーからウォレットをインポートする
+# エクスポートされた秘密鍵からウォレットをインポートする
 
 {% code fullWidth="true" %}
 ```
-名前：
-   singularity wallet import - エクスポートされたプライベートキーからウォレットをインポートする
+名前:
+   singularity wallet import - エクスポートされた秘密鍵からウォレットをインポートする
 
-使用法：
-   singularity wallet import [コマンドオプション] PRIVATE_KEY
+使用法:
+   singularity wallet import [コマンドオプション] <private_key>
 
-オプション：
-   --help, -h  ヘルプの表示
+オプション:
+   --help, -h  ヘルプを表示する
 ```
 {% endcode %}

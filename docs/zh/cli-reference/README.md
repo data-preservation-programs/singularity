@@ -1,59 +1,61 @@
-# CLI 参考指南
+# CLI参考
 
 {% code fullWidth="true" %}
 ```
-命令：
-   singularity - 用于将 PB 级别的数据批量上传至 Filecoin 网络的大规模客户端工具
+名称：
+   singularity - 一个用于将PB级数据上载到Filecoin网络的大规模客户端工具
 
-用法：
+使用：
    singularity [全局选项] 命令 [命令选项] [参数...]
 
 描述：
    数据库后端支持：
-     Singularity 支持多种数据库后端：sqlite3、postgres、mysql5.7+
-     使用 '--database-connection-string' 或 $DATABASE_CONNECTION_STRING 来指定数据库连接字符串。
-       例如，对于 postgres  - postgres://user:pass@example.com:5432/dbname
-       例如，对于 mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true
-       例如，对于 sqlite3   - sqlite:/绝对路径/to/database.db
-                   或者    - sqlite:相对路径/to/database.db
+     Singularity支持多个数据库后端：sqlite3，postgres，mysql5.7+
+     使用'--database-connection-string'或$DATABASE_CONNECTION_STRING来指定数据库连接字符串。
+       示例-表示postgres  - postgres://user:pass@example.com:5432/dbname
+       示例-表示mysql     - mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true
+       示例-表示sqlite3   - sqlite:/absolute/path/to/database.db
+                   或       - sqlite:relative/path/to/database.db
 
    网络支持：
-     Singularity 的默认设置是针对 Mainnet 的。您可以设置以下环境变量来使用其他网络：
-       对于 Calibration 网络：
-         * 将 LOTUS_API 设置为 https://api.calibration.node.glif.io/rpc/v1
-         * 将 MARKET_DEAL_URL 设置为 https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+     SIngularity的默认设置适用于Mainnet。您可以使用以下环境变量设置其他网络：
+       对于Calibration网络：
+         * 设置LOTUS_API为https://api.calibration.node.glif.io/rpc/v1
+         * 设置MARKET_DEAL_URL为https://marketdeals-calibration.s3.amazonaws.com/StateMarketDeals.json.zst
+         * 设置LOTUS_TEST为1
        对于其他所有网络：
-         * 将 LOTUS_API 设置为您网络的 Lotus API 终点
-         * 将 MARKET_DEAL_URL 设置为空字符串
-       不建议在同一个数据库实例中切换不同的网络。
+         * 设置LOTUS_API为您网络的Lotus API端点
+         * 设置MARKET_DEAL_URL为空字符串
+         * 设置LOTUS_TEST为0或1，根据网络地址是否以'f'或't'开头来决定
+       不建议在同一数据库实例之间切换不同网络。
 
 命令：
    version, v  打印版本信息
-   help, h     显示命令列表或某个命令的帮助信息
-   守护进程：
-     run  运行不同的 singularity 组件
-   简易命令：
-     ez-prep  从本地路径准备数据集
-   操作：
-     admin       管理命令
-     deal        复制/交易管理
-     dataset     数据集管理
-     datasource  数据源管理
-     wallet      钱包管理
-   工具：
-     tool  开发和调试工具
-   实用工具：
-     download  从元数据 API 下载 CAR 文件
+   help, h     显示命令列表或一个命令的帮助
+   守护进程(daemons)：
+     run  运行不同的singularity组件
+   操作(operations)：
+     admin    管理命令
+     deal     复制/成交管理
+     wallet   钱包管理
+     storage  创建和管理存储系统连接
+     prep     创建和管理数据集准备工作
+   实用工具(utility)：
+     ez-prep      从本地路径准备数据集
+     download     从元数据API下载CAR文件
+     extract-car  从CAR文件文件夹中提取文件夹或文件到本地目录
 
 全局选项：
-   --database-connection-string value  数据库连接字符串 (默认值：sqlite:./singularity.db) [$DATABASE_CONNECTION_STRING]
+   --database-connection-string value  数据库连接字符串（默认值：sqlite:./singularity.db）[$DATABASE_CONNECTION_STRING]
    --help, -h                          显示帮助信息
-   --json                              启用 JSON 输出 (默认值：false)
+   --json                              启用JSON输出（默认值：false）
+   --verbose                           启用详细输出。这将打印更多结果的列以及完整的错误跟踪（默认值：false）
 
    Lotus
 
-   --lotus-api value    Lotus RPC API 终点 (默认值：https://api.node.glif.io/rpc/v1) [$LOTUS_API]
-   --lotus-token value  Lotus RPC API 令牌 [$LOTUS_TOKEN]
+   --lotus-api value    Lotus RPC API端点（默认值："https://api.node.glif.io/rpc/v1"）[$LOTUS_API]
+   --lotus-test         当前环境是否使用Testnet（默认值：false）[$LOTUS_TEST]
+   --lotus-token value  Lotus RPC API令牌[$LOTUS_TOKEN]
 
 ```
 {% endcode %}

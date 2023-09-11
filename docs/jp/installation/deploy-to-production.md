@@ -1,15 +1,24 @@
-# 本番環境にデプロイする
+# 本番環境へのSingularityの展開
 
-デフォルトでは、Singularityは`sqlite3`をデータベースバックエンドとして使用しています。これはセットアップが不要であるためです。本番環境では、または複数のワーカーで使用する場合や、ロードバランサーの背後でのデータ取得を提供する場合は、`$DATABASE_CONNECTION_STRING`を使用して実際のデータベースバックエンドを使用することをお勧めします。
+Singularityでは、セットアップの容易さから、デフォルトのデータベースバックエンドとして`sqlite3`を使用しています。ただし、特に複数のワーカーを使用する予定や、負荷分散のために取得を提供する場合など、本番環境への移行時には、より堅牢なデータベースバックエンドに切り替えることをお勧めします。バックエンドは、`$DATABASE_CONNECTION_STRING`環境変数を設定することで構成できます。
 
-* Postgresの例: `postgres://user:pass@example.com:5432/dbname`
-* Mysqlの例: `mysql://user:pass@tcp(localhost:3306)/dbname?charset=ascii&parseTime=true`
+## サポートされているデータベースバックエンド
 
-以下のDocker Composeテンプレートも、スタート地点として使用することができます。これは、Postgresデータベースサービスを起動し、関連するすべてのSingularityサービスを実行します。
+- **PostgreSQL**:  
+  接続文字列の例:  
+  `postgres://user:pass@example.com:5432/dbname`
+
+- **MySQL**:  
+  接続文字列の例:  
+  `mysql://user:pass@tcp(localhost:3306)/dbname?parseTime=true`
+
+## デプロイにDocker Composeを使用する
+
+SingularityをPostgreSQLバックエンドとともに素早く展開したい場合は、提供されているDocker Composeテンプレートを使用することを検討してください。
 
 ```bash
 wget https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docker-compose.yml
-docker compose up
+docker-compose up
 ```
 
-これにより、Postgresデータベースがセットアップされ、Singularity APIと単一のデータセットワーカーが起動します。
+上記のコマンドを実行すると、PostgreSQLデータベースがセットアップされ、必要なSingularityサービス（APIおよびデータセットワーカー）が起動されます。
