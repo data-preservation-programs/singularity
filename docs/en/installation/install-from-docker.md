@@ -1,19 +1,27 @@
-# Install from docker
+# Installing Singularity via Docker
 
-To pull a pre-built docker image, use below command
+Utilizing Docker, you can effortlessly pull and run a pre-configured Singularity image.
+
+## Pulling the Docker Image
+
+To acquire the pre-built Docker image, execute the following command:
 
 ```bash
 docker pull ghcr.io/data-preservation-programs/singularity:main
 ```
 
-By default, it will be using `sqlite3` as the backend. You will need to mount a local path to the home path inside the container, i.e.
+## Running Singularity from the Docker Image
+### Using Default SQLite3 Backend
+
+By default, Singularity uses `sqlite3` as its database backend. To run it, you should mount a local path to the home directory within the container:
 
 ```bash
 docker run -v $HOME:/root ghcr.io/datapreservationprogram/singularity -h
 ```
 
-If you are using other database such as Postgres as the database backend, you will need to set the  `DATABASE_CONNECTION_STRING` environment variable, i.e.
+### Using an Alternate Database Backend (e.g., Postgres)
 
+If you opt for another database backend like Postgres, set the `DATABASE_CONNECTION_STRING` environment variable during container execution:
 ```bash
-docker run -e DATABASE_CONNECTION_STRING ghcr.io/datapreservationprogram/singularity -h
+docker run -e DATABASE_CONNECTION_STRING=your_connection_string_here ghcr.io/datapreservationprogram/singularity -h
 ```

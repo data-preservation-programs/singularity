@@ -1,59 +1,51 @@
-# What is Singularity
+# Singularity: An Overview
 
-Singularity is an end to end tool to accelerate dataset onboarding to Filecoin storage providers. It contains all you need to efficiently onboard PiB scale of data.
+Singularity offers an end-to-end solution designed to simplify the process of onboarding datasets to Filecoin storage providers. With capabilities spanning PiB-scale data, Singularity houses everything necessary for efficient onboarding.
 
-Singularity is modular and includes a few different to work with other data preparation or deal making tools and service.
+What makes Singularity unique is its modularity. This ensures compatibility with various data preparation and deal-making tools and services.
 
-Users of Singularity has onboarded over 140 PiB of data to Filecoin storage providers and is current the top data preparation tool used by Filecoin clients.
+To date, Singularity users have successfully onboarded more than 140 PiB of data to Filecoin storage providers, establishing it as the leading data preparation tool within the Filecoin community.
 
 ## Data Preparation
 
-Singularity ships with a data preparation module, which prepares the data either on local file system or remote storage service. Preparation tasks are distributed across data preparation workers achieving horizontal scalability.
+Equipped with a dedicated data preparation module, Singularity processes data from either a local file system or a remote storage service. By distributing tasks across multiple data preparation workers, Singularity achieves impressive horizontal scalability.
 
-### Integration with 40+ storage types
+### Compatibility with 40+ Storage Solutions
 
-Singularity is the first tool that allows connection to 40+ different types of remote storage services, from consumer products such as Dropbox, Google Drive to enterprise cloud storage solutions such as AWS S3, Azure blob storage, FTP, HDFS, etc. This allows seamless integration with any existing storage solution the users have today.
+Singularity stands out as the premier tool that connects with over 40 diverse remote storage services. This includes popular consumer products like Dropbox and Google Drive as well as enterprise-grade solutions such as AWS S3, Azure Blob Storage, FTP, HDFS, and more. This compatibility ensures a seamless integration with users' existing storage setups.
 
-### Inline Preparation
+### Revolutionary Inline Preparation
 
-Singularity is the first tool that supports inline preparation, which eliminates need for extra disk spaces to store CAR files. Instead, Singularity maintains a metadata database that maps the CAR files to the original data source, so storage providers may import the content from original data source directly.
+Singularity introduces the concept of inline preparation, eliminating the need for additional disk space for storing CAR files. Instead, a metadata database is maintained, linking CAR files to their original data source. This allows storage providers to directly import content from these original sources.
 
-### Maintain Dataset hierarchy
+### Preserving Dataset Integrity
 
-Singularity maintains the folder structures and file versions of a dataset so that the users can explore the dataset folder by folder and retrieve files using paths.
-
-### Encryption
-
-Singularity supports a built-in encryption solution, which encrypts the files with provided recipients (public keys), or even a hardware PIV tokens such as YubiKeys. You may also supply a custom encryption script, which allows you to integrate with any external encryption solution \[Need testing].
+Users will appreciate Singularity's ability to maintain dataset hierarchies. Folder structures and file versions remain untouched, facilitating easy dataset navigation and file retrieval via paths.
 
 ## Content Distribution
 
-Singularity itself can be used as a lightweight storage provider without involving any storage provider operations, i.e., sealing and proving. Users can download CAR files or original files from Singularity service using multiple protocols (Graphsync, HTTP and Bitswap)
+Beyond preparation, Singularity doubles as a nimble storage provider, eliminating traditional storage provider operations like sealing and proving. Users can effortlessly download either CAR files or original files from Singularity using a range of protocols, including Graphsync, HTTP, and Bitswap.
 
-### CAR distribution
+### Efficient CAR Distribution
 
-Storage providers can download CAR files from Singularity server as Singularity streams the CAR file from original data source on the fly with minimal overhead if inline preparation is used. This download process can also be part of Boost market deals and supports multi-threading.
+With inline preparation in play, storage providers can swiftly download CAR files from Singularity. It optimally streams the CAR file directly from the original data source. This streamlined process can also integrate with Boost market deals and is multi-threading compatible.
 
-### Content Retrieval
+### Convenient Content Retrieval
 
-Singularity can serve Graphsync/HTTP/Bitswap retrieval for all files that have already been prepared, so it can be used as a substitution of a storage provider without storage proofs.
+For all prepared files, Singularity offers Graphsync/HTTP/Bitswap retrievals. This feature positions Singularity as an alternative to a traditional storage provider, bypassing the need for storage proofs.
 
 ## Deal Making
 
-Singularity currently needs you to bring your own list of storage providers who are willing to accept your deals. There are two modes for deal making, a push mode where Singularity clients define how to send out deals, whether it is a one-off batch, or a scheduled cron. And a pull mode where Storage providers can ask for deal proposals themselves as long as it satisfies the policies set by Singularity clients.
+For the current version, Singularity requires users to provide their own list of storage providers ready to accept deals. Users have the choice of two deal-making modes:
 
 ### Push Mode
 
-Singularity clients can set up a schedule with storage providers to send out a set number of deals for each interval time. They can also configure the maximum deals or deal size for each schedule as well as how many in-flight deals are allowed. Singularity handles deal renewal when deal is slashed, expires, or it disappears on-chain for any reason.
+In this mode, Singularity clients dictate the deal dispatch method, be it one-time batch processes or scheduled tasks. They can preset the number of deals per time interval, specify maximum deals or deal sizes, and define the number of permissible in-flight deals. Singularity also manages deal renewals in instances of deal slashes, expirations, or any on-chain disappearances.
 
 ### Pull Mode
 
-Singularity allows storage providers to query for list of PieceCIDs that they can propose deals to themselves as long as those storage providers are allow-listed in the deal making self-service policy. This way, storage providers have ultimate flexibility to control the deal flow within their sealing pipelines.
+This mode empowers storage providers. They can independently request deal proposals, as long as they align with the policies defined by Singularity clients and the storage providers are on the approved list.
 
 ### Wallet Management
 
-Singularity allows clients to import Filecoin wallet using private keys and associate multiple wallets with a dataset. It regularly checks datacap of each wallet to load balance between different wallets.
-
-Singularity also supports remote signer, so the client can keep their wallet private key to their own.
-
-###
+Singularity also offers a robust wallet management feature. Clients can import their Filecoin wallets using private keys and link multiple wallets to a single dataset. Periodic datacap checks on each wallet ensure optimal load balancing between wallets.

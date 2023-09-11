@@ -1,14 +1,31 @@
-# Distribute CAR files
+# Distributing CAR Files with Singularity
 
-Now it's time to distribute CAR files to storage providers so they can import on their side. Start by running the content provider service and download any Pieces for the dataset we have prepared:
+To ensure your data is easily accessible by storage providers, you need to distribute the CAR (Content Addressable Archive) files effectively.
+
+## 1. Start the Content Provider Service
+
+Begin by launching the content provider service. This service facilitates the download of pieces from the dataset you've prepared.
 
 ```sh
 singularity run content-provider
-wget 127.0.0.1:8088/piece/bagaxxxx
 ```
 
-If you have previously specified an output directory for exporting the CAR (which disables inline preparation), the CAR file will be served directly from those CAR files. Otherwise, if you have been using inline preparation or have accidentally deleted those CAR files, it will be served from the original data source directly
+## 2. Methods for CAR File Download
 
-## Next step
+There are multiple ways for storage providers to download the CAR files:
 
-[deal-making-prerequisite.md](../deal-making/deal-making-prerequisite.md "mention")
+### Direct HTTP Download
+
+Providers can utilize the HTTP API exposed by the content provider service to directly download the CAR file:
+
+```shell
+wget http://127.0.0.1:7777/piece/bagaxxxxxxxxxxx
+```
+If you've specified an output directory during preparation, the CAR files will be sourced directly from there. However, if you used inline preparation or accidentally deleted the CAR files, the service will retrieve the content from the original data source and serve it.
+
+### Singularity Download Utility
+For providers seeking an alternative download method, especially when dealing with remote data sources like S3 or FTP, Singularity offers a dedicated download utility:
+```shell
+singularity download bagaxxxxxxxxxxx
+```
+This utility communicates with the content provider service to fetch metadata about the piece. Once obtained, it uses this metadata to reconstruct the piece directly from the original data source.

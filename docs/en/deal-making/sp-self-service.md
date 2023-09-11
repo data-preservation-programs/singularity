@@ -1,3 +1,0 @@
-# SP Self Service
-
-WIP
