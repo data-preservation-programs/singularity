@@ -1,36 +1,35 @@
 # Table of contents
 
-## Overview <a href="#overview" id="overview"></a>
+## Overview
 
 * [What is Singularity](README.md)
 * [V1 or V2](overview/v1-or-v2.md)
 
-## Installation <a href="#installation" id="installation"></a>
+## Installation
 
 * [Download binaries](installation/download-binaries.md)
 * [Install via docker](installation/install-from-docker.md)
 * [Built from source](installation/install-from-source.md)
 * [Deploy to production](installation/deploy-to-production.md)
 
-## Data Preparation <a href="#data-preparation" id="data-preparation"></a>
+## Data Preparation
 
-* [Create a dataset](data-preparation/get-started.md)
+* [Get Started](data-preparation/get-started.md)
 
-## Content Distribution <a href="#content-distribution" id="content-distribution"></a>
+## Content Distribution
 
 * [Distribute CAR files](content-distribution/distribute-car-files.md)
 
-## Deal Making <a href="#deal-making" id="deal-making"></a>
+## Deal Making
 
 * [Create a deal schedule](deal-making/create-a-deal-schedule.md)
 
-## Topics <a href="#topics" id="topics"></a>
+## Topics
 
 * [Inline Preparation](topics/inline-preparation.md)
 * [Benchmark](topics/benchmark.md)
 
-## 💻 CLI Reference <a href="#cli-reference" id="cli-reference"></a>
-<!-- cli begin -->
+## 💻 CLI Reference
 
 * [Menu](cli-reference/README.md)
 * [Ez Prep](cli-reference/ez-prep.md)
@@ -90,11 +89,11 @@
     * [Onedrive](cli-reference/storage/create/onedrive.md)
     * [Opendrive](cli-reference/storage/create/opendrive.md)
     * [Oos](cli-reference/storage/create/oos/README.md)
-      * [Env_auth](cli-reference/storage/create/oos/env_auth.md)
-      * [Instance_principal_auth](cli-reference/storage/create/oos/instance_principal_auth.md)
-      * [No_auth](cli-reference/storage/create/oos/no_auth.md)
-      * [Resource_principal_auth](cli-reference/storage/create/oos/resource_principal_auth.md)
-      * [User_principal_auth](cli-reference/storage/create/oos/user_principal_auth.md)
+      * [Env\_auth](cli-reference/storage/create/oos/env\_auth.md)
+      * [Instance\_principal\_auth](cli-reference/storage/create/oos/instance\_principal\_auth.md)
+      * [No\_auth](cli-reference/storage/create/oos/no\_auth.md)
+      * [Resource\_principal\_auth](cli-reference/storage/create/oos/resource\_principal\_auth.md)
+      * [User\_principal\_auth](cli-reference/storage/create/oos/user\_principal\_auth.md)
     * [Pcloud](cli-reference/storage/create/pcloud.md)
     * [Premiumizeme](cli-reference/storage/create/premiumizeme.md)
     * [Putio](cli-reference/storage/create/putio.md)
@@ -170,11 +169,11 @@
     * [Onedrive](cli-reference/storage/update/onedrive.md)
     * [Opendrive](cli-reference/storage/update/opendrive.md)
     * [Oos](cli-reference/storage/update/oos/README.md)
-      * [Env_auth](cli-reference/storage/update/oos/env_auth.md)
-      * [Instance_principal_auth](cli-reference/storage/update/oos/instance_principal_auth.md)
-      * [No_auth](cli-reference/storage/update/oos/no_auth.md)
-      * [Resource_principal_auth](cli-reference/storage/update/oos/resource_principal_auth.md)
-      * [User_principal_auth](cli-reference/storage/update/oos/user_principal_auth.md)
+      * [Env\_auth](cli-reference/storage/update/oos/env\_auth.md)
+      * [Instance\_principal\_auth](cli-reference/storage/update/oos/instance\_principal\_auth.md)
+      * [No\_auth](cli-reference/storage/update/oos/no\_auth.md)
+      * [Resource\_principal\_auth](cli-reference/storage/update/oos/resource\_principal\_auth.md)
+      * [User\_principal\_auth](cli-reference/storage/update/oos/user\_principal\_auth.md)
     * [Pcloud](cli-reference/storage/update/pcloud.md)
     * [Premiumizeme](cli-reference/storage/update/premiumizeme.md)
     * [Putio](cli-reference/storage/update/putio.md)
@@ -239,10 +238,7 @@
   * [List Wallets](cli-reference/prep/list-wallets.md)
   * [Detach Wallet](cli-reference/prep/detach-wallet.md)
 
-<!-- cli end -->
-
-## 🌐 Web API Reference <a href="#web-api-reference" id="web-api-reference"></a>
-<!-- webapi begin -->
+## 🌐 Web API Reference
 
 * [Deal Schedule](web-api-reference/deal-schedule.md)
 * [Deal](web-api-reference/deal.md)
@@ -255,8 +251,6 @@
 * [Wallet](web-api-reference/wallet.md)
 * [Specification](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 
-<!-- webapi end -->
-
-## ❓ FAQ <a href="#faq" id="faq"></a>
+## ❓ FAQ
 
 * [Database is locked](faq/database-is-locked.md)
