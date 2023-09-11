@@ -1,40 +1,41 @@
 # 目录
 
-## 概述
+## 概述 <a href="#概述" id="概述"></a>
 
 * [什么是Singularity](README.md)
 * [V1还是V2](overview/v1-or-v2.md)
 
-## 安装
+## 安装 <a href="#安装" id="安装"></a>
 
 * [下载二进制文件](installation/download-binaries.md)
 * [通过Docker安装](installation/install-from-docker.md)
 * [从源代码构建](installation/install-from-source.md)
-* [部署到生产环境](installation/deploy-to-production.md)
+* [部署至生产环境](installation/deploy-to-production.md)
 
-## 数据准备
+## 数据准备 <a href="#数据准备" id="数据准备"></a>
 
-* [开始使用](data-preparation/get-started.md)
+* [入门指南](data-preparation/get-started.md)
 
-## 内容分发
+## 内容分发 <a href="#内容分发" id="内容分发"></a>
 
 * [分发CAR文件](content-distribution/distribute-car-files.md)
 
-## 交易处理
+## 交易处理 <a href="#交易处理" id="交易处理"></a>
 
 * [创建交易计划](deal-making/create-a-deal-schedule.md)
 
-## 主题
+## 主题 <a href="#主题" id="主题"></a>
 
-* [内联准备](topics/inline-preparation.md)
+* [内嵌准备](topics/inline-preparation.md)
 * [基准测试](topics/benchmark.md)
 
-## 💻 CLI参考
+## 💻 CLI参考 <a href="#CLI参考" id="CLI参考"></a>
+<!-- cli begin -->
 
 * [菜单](cli-reference/README.md)
 * [Ez Prep](cli-reference/ez-prep.md)
 * [版本](cli-reference/version.md)
-* [管理](cli-reference/admin/README.md)
+* [管理员](cli-reference/admin/README.md)
   * [初始化](cli-reference/admin/init.md)
   * [重置](cli-reference/admin/reset.md)
   * [迁移数据集](cli-reference/admin/migrate-dataset.md)
@@ -54,12 +55,12 @@
   * [API](cli-reference/run/api.md)
   * [数据集工作者](cli-reference/run/dataset-worker.md)
   * [内容提供者](cli-reference/run/content-provider.md)
-  * [交易追踪器](cli-reference/run/deal-tracker.md)
-  * [交易推送器](cli-reference/run/deal-pusher.md)
+  * [交易追踪](cli-reference/run/deal-tracker.md)
+  * [交易推送](cli-reference/run/deal-pusher.md)
 * [钱包](cli-reference/wallet/README.md)
   * [导入](cli-reference/wallet/import.md)
   * [列表](cli-reference/wallet/list.md)
-  * [移除](cli-reference/wallet/remove.md)
+  * [删除](cli-reference/wallet/remove.md)
 * [存储](cli-reference/storage/README.md)
   * [创建](cli-reference/storage/create/README.md)
     * [Acd](cli-reference/storage/create/acd.md)
@@ -81,7 +82,7 @@
     * [Koofr / Digi Storage](cli-reference/storage/create/koofr/README.md)
       * [Digistorage](cli-reference/storage/create/koofr/digistorage.md)
       * [Koofr / Digi Storage](cli-reference/storage/create/koofr/koofr.md)
-      * [Other](cli-reference/storage/create/koofr/other.md)
+      * [其他](cli-reference/storage/create/koofr/other.md)
     * [本地](cli-reference/storage/create/local.md)
     * [Mailru](cli-reference/storage/create/mailru.md)
     * [Mega](cli-reference/storage/create/mega.md)
@@ -89,16 +90,16 @@
     * [Onedrive](cli-reference/storage/create/onedrive.md)
     * [Opendrive](cli-reference/storage/create/opendrive.md)
     * [Oos](cli-reference/storage/create/oos/README.md)
-      * [Env\_auth](cli-reference/storage/create/oos/env\_auth.md)
-      * [Instance\_principal\_auth](cli-reference/storage/create/oos/instance\_principal\_auth.md)
-      * [No\_auth](cli-reference/storage/create/oos/no\_auth.md)
-      * [Resource\_principal\_auth](cli-reference/storage/create/oos/resource\_principal\_auth.md)
-      * [User\_principal\_auth](cli-reference/storage/create/oos/user\_principal\_auth.md)
+      * [Env_auth](cli-reference/storage/create/oos/env_auth.md)
+      * [Instance_principal_auth](cli-reference/storage/create/oos/instance_principal_auth.md)
+      * [No_auth](cli-reference/storage/create/oos/no_auth.md)
+      * [Resource_principal_auth](cli-reference/storage/create/oos/resource_principal_auth.md)
+      * [User_principal_auth](cli-reference/storage/create/oos/user_principal_auth.md)
     * [Pcloud](cli-reference/storage/create/pcloud.md)
     * [Premiumizeme](cli-reference/storage/create/premiumizeme.md)
     * [Putio](cli-reference/storage/create/putio.md)
     * [Qingstor](cli-reference/storage/create/qingstor.md)
-    * [AWS S3和兼容](cli-reference/storage/create/s3/README.md)
+    * [AWS S3 and compliant](cli-reference/storage/create/s3/README.md)
       * [Aws](cli-reference/storage/create/s3/aws.md)
       * [Alibaba](cli-reference/storage/create/s3/alibaba.md)
       * [Arvancloud](cli-reference/storage/create/s3/arvancloud.md)
@@ -130,7 +131,7 @@
     * [Sia](cli-reference/storage/create/sia.md)
     * [Smb](cli-reference/storage/create/smb.md)
     * [Storj](cli-reference/storage/create/storj/README.md)
-      * [现有](cli-reference/storage/create/storj/existing.md)
+      * [已存在](cli-reference/storage/create/storj/existing.md)
       * [新建](cli-reference/storage/create/storj/new.md)
     * [Sugarsync](cli-reference/storage/create/sugarsync.md)
     * [Swift](cli-reference/storage/create/swift.md)
@@ -140,7 +141,7 @@
     * [Zoho](cli-reference/storage/create/zoho.md)
   * [浏览](cli-reference/storage/explore.md)
   * [列表](cli-reference/storage/list.md)
-  * [移除](cli-reference/storage/remove.md)
+  * [删除](cli-reference/storage/remove.md)
   * [更新](cli-reference/storage/update/README.md)
     * [Acd](cli-reference/storage/update/acd.md)
     * [Azureblob](cli-reference/storage/update/azureblob.md)
@@ -161,7 +162,7 @@
     * [Koofr / Digi Storage](cli-reference/storage/update/koofr/README.md)
       * [Digistorage](cli-reference/storage/update/koofr/digistorage.md)
       * [Koofr / Digi Storage](cli-reference/storage/update/koofr/koofr.md)
-      * [Other](cli-reference/storage/update/koofr/other.md)
+      * [其他](cli-reference/storage/update/koofr/other.md)
     * [本地](cli-reference/storage/update/local.md)
     * [Mailru](cli-reference/storage/update/mailru.md)
     * [Mega](cli-reference/storage/update/mega.md)
@@ -169,16 +170,16 @@
     * [Onedrive](cli-reference/storage/update/onedrive.md)
     * [Opendrive](cli-reference/storage/update/opendrive.md)
     * [Oos](cli-reference/storage/update/oos/README.md)
-      * [Env\_auth](cli-reference/storage/update/oos/env\_auth.md)
-      * [Instance\_principal\_auth](cli-reference/storage/update/oos/instance\_principal\_auth.md)
-      * [No\_auth](cli-reference/storage/update/oos/no\_auth.md)
-      * [Resource\_principal\_auth](cli-reference/storage/update/oos/resource\_principal\_auth.md)
-      * [User\_principal\_auth](cli-reference/storage/update/oos/user\_principal\_auth.md)
+      * [Env_auth](cli-reference/storage/update/oos/env_auth.md)
+      * [Instance_principal_auth](cli-reference/storage/update/oos/instance_principal_auth.md)
+      * [No_auth](cli-reference/storage/update/oos/no_auth.md)
+      * [Resource_principal_auth](cli-reference/storage/update/oos/resource_principal_auth.md)
+      * [User_principal_auth](cli-reference/storage/update/oos/user_principal_auth.md)
     * [Pcloud](cli-reference/storage/update/pcloud.md)
     * [Premiumizeme](cli-reference/storage/update/premiumizeme.md)
     * [Putio](cli-reference/storage/update/putio.md)
     * [Qingstor](cli-reference/storage/update/qingstor.md)
-    * [AWS S3和兼容](cli-reference/storage/update/s3/README.md)
+    * [AWS S3 and compliant](cli-reference/storage/update/s3/README.md)
       * [Aws](cli-reference/storage/update/s3/aws.md)
       * [Alibaba](cli-reference/storage/update/s3/alibaba.md)
       * [Arvancloud](cli-reference/storage/update/s3/arvancloud.md)
@@ -210,7 +211,7 @@
     * [Sia](cli-reference/storage/update/sia.md)
     * [Smb](cli-reference/storage/update/smb.md)
     * [Storj](cli-reference/storage/update/storj/README.md)
-      * [现有](cli-reference/storage/update/storj/existing.md)
+      * [已存在](cli-reference/storage/update/storj/existing.md)
       * [新建](cli-reference/storage/update/storj/new.md)
     * [Sugarsync](cli-reference/storage/update/sugarsync.md)
     * [Swift](cli-reference/storage/update/swift.md)
@@ -218,7 +219,7 @@
     * [Webdav](cli-reference/storage/update/webdav.md)
     * [Yandex](cli-reference/storage/update/yandex.md)
     * [Zoho](cli-reference/storage/update/zoho.md)
-* [Prep](cli-reference/prep/README.md)
+* [预处理](cli-reference/prep/README.md)
   * [创建](cli-reference/prep/create.md)
   * [列表](cli-reference/prep/list.md)
   * [状态](cli-reference/prep/status.md)
@@ -229,8 +230,8 @@
   * [暂停扫描](cli-reference/prep/pause-scan.md)
   * [开始打包](cli-reference/prep/start-pack.md)
   * [暂停打包](cli-reference/prep/pause-pack.md)
-  * [开始Daggen](cli-reference/prep/start-daggen.md)
-  * [暂停Daggen](cli-reference/prep/pause-daggen.md)
+  * [开始生成DAG](cli-reference/prep/start-daggen.md)
+  * [暂停生成DAG](cli-reference/prep/pause-daggen.md)
   * [列表碎片](cli-reference/prep/list-pieces.md)
   * [添加碎片](cli-reference/prep/add-piece.md)
   * [浏览](cli-reference/prep/explore.md)
@@ -238,19 +239,24 @@
   * [钱包列表](cli-reference/prep/list-wallets.md)
   * [分离钱包](cli-reference/prep/detach-wallet.md)
 
-## 🌐 Web API参考
+<!-- cli end -->
+
+## 🌐 Web API参考 <a href="#Web-API参考" id="Web-API参考"></a>
+<!-- webapi begin -->
 
 * [交易计划](web-api-reference/deal-schedule.md)
 * [交易](web-api-reference/deal.md)
 * [文件](web-api-reference/file.md)
 * [作业](web-api-reference/job.md)
-* [片段](web-api-reference/piece.md)
-* [准备](web-api-reference/preparation.md)
+* [碎片](web-api-reference/piece.md)
+* [预处理](web-api-reference/preparation.md)
 * [存储](web-api-reference/storage.md)
 * [钱包关联](web-api-reference/wallet-association.md)
 * [钱包](web-api-reference/wallet.md)
 * [规范](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 
-## ❓ 常见问题
+<!-- webapi end -->
+
+## ❓ 常见问题 <a href="#常见问题" id="常见问题"></a>
 
 * [数据库被锁定](faq/database-is-locked.md)

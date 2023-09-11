@@ -1,35 +1,36 @@
 # 目次
 
-## 概要
+## 概要 <a href="#overview" id="overview"></a>
 
 * [Singularityとは](README.md)
 * [V1またはV2](overview/v1-or-v2.md)
 
-## インストール
+## インストール <a href="#installation" id="installation"></a>
 
 * [バイナリのダウンロード](installation/download-binaries.md)
-* [Dockerを使用したインストール](installation/install-from-docker.md)
-* [ソースコードからのビルド](installation/install-from-source.md)
+* [Dockerでのインストール](installation/install-from-docker.md)
+* [ソースからのビルド](installation/install-from-source.md)
 * [本番環境への展開](installation/deploy-to-production.md)
 
-## データの準備
+## データの準備 <a href="#data-preparation" id="data-preparation"></a>
 
 * [はじめに](data-preparation/get-started.md)
 
-## コンテンツの配布
+## コンテンツの配信 <a href="#content-distribution" id="content-distribution"></a>
 
 * [CARファイルの配布](content-distribution/distribute-car-files.md)
 
-## 取引の作成
+## 取引の実施 <a href="#deal-making" id="deal-making"></a>
 
 * [取引スケジュールの作成](deal-making/create-a-deal-schedule.md)
 
-## トピックス
+## トピック <a href="#topics" id="topics"></a>
 
-* [インラインの準備](topics/inline-preparation.md)
+* [インライン準備](topics/inline-preparation.md)
 * [ベンチマーク](topics/benchmark.md)
 
-## 💻 CLIリファレンス
+## 💻 CLIリファレンス <a href="#cli-reference" id="cli-reference"></a>
+<!-- cli begin -->
 
 * [メニュー](cli-reference/README.md)
 * [Ez Prep](cli-reference/ez-prep.md)
@@ -40,7 +41,7 @@
   * [データセットの移行](cli-reference/admin/migrate-dataset.md)
   * [スケジュールの移行](cli-reference/admin/migrate-schedule.md)
 * [ダウンロード](cli-reference/download.md)
-* [Carの展開](cli-reference/extract-car.md)
+* [Carの抽出](cli-reference/extract-car.md)
 * [取引](cli-reference/deal/README.md)
   * [スケジュール](cli-reference/deal/schedule/README.md)
     * [作成](cli-reference/deal/schedule/create.md)
@@ -49,7 +50,7 @@
     * [一時停止](cli-reference/deal/schedule/pause.md)
     * [再開](cli-reference/deal/schedule/resume.md)
   * [手動送信](cli-reference/deal/send-manual.md)
-  * [一覧表示](cli-reference/deal/list.md)
+  * [一覧](cli-reference/deal/list.md)
 * [実行](cli-reference/run/README.md)
   * [API](cli-reference/run/api.md)
   * [データセットワーカー](cli-reference/run/dataset-worker.md)
@@ -58,7 +59,7 @@
   * [取引プッシャー](cli-reference/run/deal-pusher.md)
 * [ウォレット](cli-reference/wallet/README.md)
   * [インポート](cli-reference/wallet/import.md)
-  * [一覧表示](cli-reference/wallet/list.md)
+  * [一覧](cli-reference/wallet/list.md)
   * [削除](cli-reference/wallet/remove.md)
 * [ストレージ](cli-reference/storage/README.md)
   * [作成](cli-reference/storage/create/README.md)
@@ -89,16 +90,16 @@
     * [Onedrive](cli-reference/storage/create/onedrive.md)
     * [Opendrive](cli-reference/storage/create/opendrive.md)
     * [Oos](cli-reference/storage/create/oos/README.md)
-      * [Env\_auth](cli-reference/storage/create/oos/env\_auth.md)
-      * [Instance\_principal\_auth](cli-reference/storage/create/oos/instance\_principal\_auth.md)
-      * [No\_auth](cli-reference/storage/create/oos/no\_auth.md)
-      * [Resource\_principal\_auth](cli-reference/storage/create/oos/resource\_principal\_auth.md)
-      * [User\_principal\_auth](cli-reference/storage/create/oos/user\_principal\_auth.md)
+      * [Env_auth](cli-reference/storage/create/oos/env_auth.md)
+      * [Instance_principal_auth](cli-reference/storage/create/oos/instance_principal_auth.md)
+      * [No_auth](cli-reference/storage/create/oos/no_auth.md)
+      * [Resource_principal_auth](cli-reference/storage/create/oos/resource_principal_auth.md)
+      * [User_principal_auth](cli-reference/storage/create/oos/user_principal_auth.md)
     * [Pcloud](cli-reference/storage/create/pcloud.md)
     * [Premiumizeme](cli-reference/storage/create/premiumizeme.md)
     * [Putio](cli-reference/storage/create/putio.md)
     * [Qingstor](cli-reference/storage/create/qingstor.md)
-    * [AWS S3互換](cli-reference/storage/create/s3/README.md)
+    * [AWS S3 and compliant](cli-reference/storage/create/s3/README.md)
       * [Aws](cli-reference/storage/create/s3/aws.md)
       * [Alibaba](cli-reference/storage/create/s3/alibaba.md)
       * [Arvancloud](cli-reference/storage/create/s3/arvancloud.md)
@@ -138,8 +139,8 @@
     * [Webdav](cli-reference/storage/create/webdav.md)
     * [Yandex](cli-reference/storage/create/yandex.md)
     * [Zoho](cli-reference/storage/create/zoho.md)
-  * [閲覧](cli-reference/storage/explore.md)
-  * [一覧表示](cli-reference/storage/list.md)
+  * [探索](cli-reference/storage/explore.md)
+  * [一覧](cli-reference/storage/list.md)
   * [削除](cli-reference/storage/remove.md)
   * [更新](cli-reference/storage/update/README.md)
     * [Acd](cli-reference/storage/update/acd.md)
@@ -169,16 +170,16 @@
     * [Onedrive](cli-reference/storage/update/onedrive.md)
     * [Opendrive](cli-reference/storage/update/opendrive.md)
     * [Oos](cli-reference/storage/update/oos/README.md)
-      * [Env\_auth](cli-reference/storage/update/oos/env\_auth.md)
-      * [Instance\_principal\_auth](cli-reference/storage/update/oos/instance\_principal\_auth.md)
-      * [No\_auth](cli-reference/storage/update/oos/no\_auth.md)
-      * [Resource\_principal\_auth](cli-reference/storage/update/oos/resource\_principal\_auth.md)
-      * [User\_principal\_auth](cli-reference/storage/update/oos/user\_principal\_auth.md)
+      * [Env_auth](cli-reference/storage/update/oos/env_auth.md)
+      * [Instance_principal_auth](cli-reference/storage/update/oos/instance_principal_auth.md)
+      * [No_auth](cli-reference/storage/update/oos/no_auth.md)
+      * [Resource_principal_auth](cli-reference/storage/update/oos/resource_principal_auth.md)
+      * [User_principal_auth](cli-reference/storage/update/oos/user_principal_auth.md)
     * [Pcloud](cli-reference/storage/update/pcloud.md)
     * [Premiumizeme](cli-reference/storage/update/premiumizeme.md)
     * [Putio](cli-reference/storage/update/putio.md)
     * [Qingstor](cli-reference/storage/update/qingstor.md)
-    * [AWS S3互換](cli-reference/storage/update/s3/README.md)
+    * [AWS S3 and compliant](cli-reference/storage/update/s3/README.md)
       * [Aws](cli-reference/storage/update/s3/aws.md)
       * [Alibaba](cli-reference/storage/update/s3/alibaba.md)
       * [Arvancloud](cli-reference/storage/update/s3/arvancloud.md)
@@ -220,25 +221,28 @@
     * [Zoho](cli-reference/storage/update/zoho.md)
 * [Prep](cli-reference/prep/README.md)
   * [作成](cli-reference/prep/create.md)
-  * [一覧表示](cli-reference/prep/list.md)
+  * [一覧](cli-reference/prep/list.md)
   * [ステータス](cli-reference/prep/status.md)
-  * [ソースのアタッチ](cli-reference/prep/attach-source.md)
-  * [出力のアタッチ](cli-reference/prep/attach-output.md)
-  * [出力のデタッチ](cli-reference/prep/detach-output.md)
+  * [ソースの接続](cli-reference/prep/attach-source.md)
+  * [出力の接続](cli-reference/prep/attach-output.md)
+  * [出力の切断](cli-reference/prep/detach-output.md)
   * [スキャンの開始](cli-reference/prep/start-scan.md)
   * [スキャンの一時停止](cli-reference/prep/pause-scan.md)
   * [パックの開始](cli-reference/prep/start-pack.md)
   * [パックの一時停止](cli-reference/prep/pause-pack.md)
   * [Daggenの開始](cli-reference/prep/start-daggen.md)
   * [Daggenの一時停止](cli-reference/prep/pause-daggen.md)
-  * [ピースの一覧表示](cli-reference/prep/list-pieces.md)
+  * [ピースの一覧](cli-reference/prep/list-pieces.md)
   * [ピースの追加](cli-reference/prep/add-piece.md)
-  * [閲覧](cli-reference/prep/explore.md)
-  * [ウォレットのアタッチ](cli-reference/prep/attach-wallet.md)
-  * [ウォレットの一覧表示](cli-reference/prep/list-wallets.md)
-  * [ウォレットのデタッチ](cli-reference/prep/detach-wallet.md)
+  * [探索](cli-reference/prep/explore.md)
+  * [ウォレットの接続](cli-reference/prep/attach-wallet.md)
+  * [ウォレットの一覧](cli-reference/prep/list-wallets.md)
+  * [ウォレットの切断](cli-reference/prep/detach-wallet.md)
 
-## 🌐 Web APIリファレンス
+<!-- cli end -->
+
+## 🌐 Web APIリファレンス <a href="#web-api-reference" id="web-api-reference"></a>
+<!-- webapi begin -->
 
 * [取引スケジュール](web-api-reference/deal-schedule.md)
 * [取引](web-api-reference/deal.md)
@@ -247,10 +251,12 @@
 * [ピース](web-api-reference/piece.md)
 * [準備](web-api-reference/preparation.md)
 * [ストレージ](web-api-reference/storage.md)
-* [ウォレットの関連付け](web-api-reference/wallet-association.md)
+* [ウォレット関連](web-api-reference/wallet-association.md)
 * [ウォレット](web-api-reference/wallet.md)
 * [仕様](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 
-## ❓ FAQ
+<!-- webapi end -->
+
+## ❓ FAQ <a href="#faq" id="faq"></a>
 
 * [データベースがロックされています](faq/database-is-locked.md)
