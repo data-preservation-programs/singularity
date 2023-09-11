@@ -16,6 +16,9 @@ import (
 	job2 "github.com/data-preservation-programs/singularity/client/swagger/http/job"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/piece"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/preparation"
+	storage2 "github.com/data-preservation-programs/singularity/client/swagger/http/storage"
+	wallet2 "github.com/data-preservation-programs/singularity/client/swagger/http/wallet"
+	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet_association"
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
@@ -130,11 +133,43 @@ func setupMockJob() job.Handler {
 	return m
 }
 
+func setupMockStorage() storage.Handler {
+	m := new(storage.MockStorage)
+	m.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.Storage{}, nil)
+	m.On("ExploreHandler", mock.Anything, mock.Anything, "name", "path").
+		Return([]storage.DirEntry{{}}, nil)
+	m.On("ListStoragesHandler", mock.Anything, mock.Anything).
+		Return([]model.Storage{{}}, nil)
+	m.On("RemoveHandler", mock.Anything, mock.Anything, "name").
+		Return(nil)
+	m.On("UpdateStorageHandler", mock.Anything, mock.Anything, "name", mock.Anything).
+		Return(&model.Storage{}, nil)
+	return m
+}
+
+func setupMockWallet() wallet.Handler {
+	m := new(wallet.MockWallet)
+	m.On("AttachHandler", mock.Anything, mock.Anything, "id", "wallet").
+		Return(&model.Preparation{}, nil)
+	m.On("DetachHandler", mock.Anything, mock.Anything, "id", "wallet").
+		Return(&model.Preparation{}, nil)
+	m.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		Return(&model.Wallet{}, nil)
+	m.On("ListHandler", mock.Anything, mock.Anything).
+		Return([]model.Wallet{{}}, nil)
+	m.On("ListAttachedHandler", mock.Anything, mock.Anything, "id").
+		Return([]model.Wallet{{}}, nil)
+	m.On("RemoveHandler", mock.Anything, mock.Anything, "wallet").
+		Return(nil)
+	return m
+}
+
 func TestAllAPIs(t *testing.T) {
 	mockDataPrep := setupMockDataPrep()
 	mockDeal := setupMockDeal()
-	mockStorage := new(storage.MockStorage)
-	mockWallet := new(wallet.MockWallet)
+	mockStorage := setupMockStorage()
+	mockWallet := setupMockWallet()
 	mockFile := setupMockFile()
 	mockJob := setupMockJob()
 	mockSchedule := setupMockSchedule()
@@ -186,6 +221,133 @@ func TestAllAPIs(t *testing.T) {
 		client := http.NewHTTPClientWithConfig(nil, &http.TransportConfig{
 			Host:     apiBind,
 			BasePath: http.DefaultBasePath,
+		})
+
+		t.Run("wallet_association", func(t *testing.T) {
+			t.Run("AttachWallet", func(t *testing.T) {
+				resp, err := client.WalletAssociation.AttachWallet(&wallet_association.AttachWalletParams{
+					ID:      "id",
+					Wallet:  "wallet",
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("DetachWallet", func(t *testing.T) {
+				resp, err := client.WalletAssociation.DetachWallet(&wallet_association.DetachWalletParams{
+					ID:      "id",
+					Wallet:  "wallet",
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("ListAttachedHandler", func(t *testing.T) {
+				resp, err := client.WalletAssociation.ListAttachedWallets(&wallet_association.ListAttachedWalletsParams{
+					ID:      "id",
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.Len(t, resp.Payload, 1)
+			})
+		})
+
+		t.Run("wallet", func(t *testing.T) {
+			t.Run("ImportWallet", func(t *testing.T) {
+				resp, err := client.Wallet.ImportWallet(&wallet2.ImportWalletParams{
+					Request: &models.WalletImportRequest{},
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("ListWallets", func(t *testing.T) {
+				resp, err := client.Wallet.ListWallets(&wallet2.ListWalletsParams{
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.Len(t, resp.Payload, 1)
+			})
+			t.Run("RemoveWallet", func(t *testing.T) {
+				resp, err := client.Wallet.RemoveWallet(&wallet2.RemoveWalletParams{
+					Context: ctx,
+					Address: "wallet",
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+			})
+		})
+
+		t.Run("storage", func(t *testing.T) {
+			t.Run("CreateStorage", func(t *testing.T) {
+				resp, err := client.Storage.CreateStorage(&storage2.CreateStorageParams{
+					Body:        &models.StorageCreateRequest{},
+					StorageType: "type",
+					Context:     ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("CreateLocalStorage", func(t *testing.T) {
+				resp, err := client.Storage.CreateLocalStorage(&storage2.CreateLocalStorageParams{
+					Request: &models.StorageCreateLocalStorageRequest{},
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("CreateS3AWSStorage", func(t *testing.T) {
+				resp, err := client.Storage.CreateS3AWSStorage(&storage2.CreateS3AWSStorageParams{
+					Request: &models.StorageCreateS3AWSStorageRequest{},
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
+			t.Run("ExploreStorage", func(t *testing.T) {
+				resp, err := client.Storage.ExploreStorage(&storage2.ExploreStorageParams{
+					Name:    "name",
+					Path:    "path",
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.Len(t, resp.Payload, 1)
+			})
+			t.Run("ListStorages", func(t *testing.T) {
+				resp, err := client.Storage.ListStorages(&storage2.ListStoragesParams{
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.Len(t, resp.Payload, 1)
+			})
+			t.Run("RemoveStorage", func(t *testing.T) {
+				resp, err := client.Storage.RemoveStorage(&storage2.RemoveStorageParams{
+					Context: ctx,
+					Name:    "name",
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+			})
+			t.Run("UpdateStorage", func(t *testing.T) {
+				resp, err := client.Storage.UpdateStorage(&storage2.UpdateStorageParams{
+					Context: ctx,
+					Name:    "name",
+					Config:  map[string]string{},
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
 		})
 
 		t.Run("job", func(t *testing.T) {

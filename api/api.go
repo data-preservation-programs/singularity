@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
@@ -276,6 +277,15 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 func (s Server) setupRoutes(e *echo.Echo) {
 	// Storage
 	e.POST("/api/storage/:type", s.toEchoHandler(s.storageHandler.CreateStorageHandler))
+	e.POST("/api/storage/:type/:provider", s.toEchoHandler(func(
+		ctx context.Context,
+		db *gorm.DB,
+		storageType string,
+		provider string,
+		request storage.CreateRequest) (*model.Storage, error) {
+		request.Provider = provider
+		return s.storageHandler.CreateStorageHandler(ctx, db, storageType, request)
+	}))
 	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(s.storageHandler.ExploreHandler))
 	e.GET("/api/storage", s.toEchoHandler(s.storageHandler.ListStoragesHandler))
 	e.DELETE("/api/storage/:name", s.toEchoHandler(s.storageHandler.RemoveHandler))

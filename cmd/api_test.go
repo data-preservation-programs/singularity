@@ -111,7 +111,7 @@ func TestMotionIntegration(t *testing.T) {
 		require.Len(t, jobs.Payload[0].Jobs, 1)
 		// Pack that job
 		car, err := client.Job.Pack(&job.PackParams{
-			ID:      fmt.Sprint(jobs.Payload[0].Jobs[0].ID),
+			ID:      jobs.Payload[0].Jobs[0].ID,
 			Context: ctx,
 		})
 		require.NoError(t, err)
@@ -158,7 +158,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 	createPrepResp, err := client.Preparation.CreatePreparation(&preparation.CreatePreparationParams{
 		Request: &models.DataprepCreateRequest{
 			MaxSize:        ptr.Of("3MB"),
-			Name:           ptr.Of("prep"),
+			Name:           "prep",
 			OutputStorages: []string{"output"},
 			SourceStorages: []string{"source"},
 		},

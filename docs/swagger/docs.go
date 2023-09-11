@@ -1203,7 +1203,7 @@ const docTemplate = `{
             }
         },
         "/preparation/{id}/wallet": {
-            "post": {
+            "get": {
                 "consumes": [
                     "application/json"
                 ],
@@ -5022,7 +5022,10 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 ],

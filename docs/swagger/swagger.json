@@ -1196,7 +1196,7 @@
             }
         },
         "/preparation/{id}/wallet": {
-            "post": {
+            "get": {
                 "consumes": [
                     "application/json"
                 ],
@@ -5015,7 +5015,10 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 ],

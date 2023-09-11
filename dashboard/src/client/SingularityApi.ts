@@ -8309,12 +8309,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Wallet Association
      * @name ListAttachedWallets
      * @summary List all wallets of a preparation.
-     * @request POST:/preparation/{id}/wallet
+     * @request GET:/preparation/{id}/wallet
      */
     listAttachedWallets: (id: string, params: RequestParams = {}) =>
       this.request<ModelWallet[], ApiHTTPError>({
         path: `/preparation/${id}/wallet`,
-        method: "POST",
+        method: "GET",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -9804,7 +9804,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update a storage connection
      * @request PATCH:/storage/{name}
      */
-    updateStorage: (name: string, config: StorePieceReader, params: RequestParams = {}) =>
+    updateStorage: (name: string, config: ModelConfigMap, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/${name}`,
         method: "PATCH",

@@ -16,8 +16,8 @@ import (
 
 type CreateRequest struct {
 	Provider string            `json:"provider"`
-	Name     string            `json:"name"    `
-	Path     string            `json:"path"     `
+	Name     string            `json:"name"`
+	Path     string            `json:"path"`
 	Config   map[string]string `json:"config"`
 }
 

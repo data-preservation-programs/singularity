@@ -13,12 +13,12 @@ import (
 )
 
 type CreateRequest struct {
-	Name              string   `json:"name"           `                          // Name of the preparation
-	SourceStorages    []string `json:"sourceStorages" `                          // Name of Source storage systems to be used for the source
-	OutputStorages    []string `json:"outputStorages" `                          // Name of Output storage systems to be used for the output
-	MaxSizeStr        string   `default:"31.5GiB"  json:"maxSize"           `    // Maximum size of the CAR files to be created
-	PieceSizeStr      string   `default:""            json:"pieceSize"         ` // Target piece size of the CAR files used for piece commitment calculation
-	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport" ` // Whether to delete the source files after export
+	Name              string   `json:"name"`                                    // Name of the preparation
+	SourceStorages    []string `json:"sourceStorages"`                          // Name of Source storage systems to be used for the source
+	OutputStorages    []string `json:"outputStorages"`                          // Name of Output storage systems to be used for the output
+	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"`           // Maximum size of the CAR files to be created
+	PieceSizeStr      string   `default:""            json:"pieceSize"`         // Target piece size of the CAR files used for piece commitment calculation
+	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport"` // Whether to delete the source files after export
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.

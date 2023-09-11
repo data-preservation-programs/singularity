@@ -8356,7 +8356,7 @@ paths:
       tags:
       - Job
   /preparation/{id}/wallet:
-    post:
+    get:
       consumes:
       - application/json
       operationId: ListAttachedWallets
@@ -8690,6 +8690,8 @@ paths:
         name: config
         required: true
         schema:
+          additionalProperties:
+            type: string
           type: object
       produces:
       - application/json

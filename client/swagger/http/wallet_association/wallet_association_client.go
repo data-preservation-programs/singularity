@@ -125,7 +125,7 @@ func (a *Client) ListAttachedWallets(params *ListAttachedWalletsParams, opts ...
 	}
 	op := &runtime.ClientOperation{
 		ID:                 "ListAttachedWallets",
-		Method:             "POST",
+		Method:             "GET",
 		PathPattern:        "/preparation/{id}/wallet",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
