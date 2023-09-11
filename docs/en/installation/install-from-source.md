@@ -1,22 +1,45 @@
-# Install from source
+# Installing Singularity from Source
 
-To install singularity, you need a working installation of [Go 1.19 or higher](https://golang.org/dl/)
+Before you proceed with installing Singularity, make sure you have [Go 1.20 or higher](https://golang.org/dl/) installed on your system.
 
-```sh
-wget -c https://golang.org/dl/go1.19.7.linux-amd64.tar.gz -O - \
-    | sudo tar -xz -C /usr/local
-echo 'export PATH=$PATH:/usr/local/go/bin:$(/usr/local/go/bin/go env GOPATH)/bin' \
-    >> ~/.bashrc && source ~/.bashrc
-```
+## Setting Up Go
 
-Then you can install singularity with
+To get Go up and running, follow these steps:
 
-```sh
+1. **Download and Extract Go Binaries**:
+    ```bash
+    wget -c https://golang.org/dl/go1.20.7.linux-amd64.tar.gz -O - \
+        | sudo tar -xz -C /usr/local
+    ```
+
+2. **Update PATH**:
+   Add Go's binary and workspace directories to your `PATH`:
+    ```bash
+    echo 'export PATH=$PATH:/usr/local/go/bin:$(/usr/local/go/bin/go env GOPATH)/bin' \
+        >> ~/.bashrc && source ~/.bashrc
+    ```
+
+## Installing the Latest Release of Singularity
+
+For the latest stable release of Singularity:
+```bash
 go install github.com/data-preservation-programs/singularity@latest
 ```
 
-If you can't get a C compiler working, you can also build without [CGO](https://zchee.github.io/golang-wiki/cgo/) support. Don't worry, the CGO dependency is only for a slightly faster SQLite backend which should not be used for Production workload.
+## Trying Out Unreleased Features
 
-```bash
-CGO_ENABLED=0 go install github.com/data-preservation-programs/singularity@latest
-```
+If you're keen on exploring the latest, yet-to-be-released features of Singularity:
+
+1. **Clone the Singularity Repository**:
+    ```bash
+    git clone https://github.com/data-preservation-programs/singularity.git
+    ```
+2. **Navigate to the Singularity Directory**:
+    ```bash
+    cd singularity
+    ```
+3. **Build and Install**:
+    ```bash
+    go build -o singularity .
+    cp singularity $GOPATH/bin
+    ```
