@@ -5,33 +5,46 @@
 NAME:
    singularity download - メタデータAPIからCARファイルをダウンロードする
 
-USAGE:
-   singularity download [command options] PIECE_CID
+使用法:
+    singularity download [コマンドオプション] <piece_cid>
 
-CATEGORY:
-   ユーティリティ
+カテゴリ:
+    ユーティリティ
 
-OPTIONS:
-   オプション一般
+オプション:
+    1Fichier
 
-   --api value                    メタデータAPIのURL (デフォルト: "http://127.0.0.1:7777")
-   --concurrency value, -j value  並行ダウンロード数 (デフォルト: 10)
-   --out-dir value, -o value      CARファイルを書き込むディレクトリ (デフォルト: ".")
+    --fichier-api-key value           APIキー、https://1fichier.com/console/params.plから取得します。 [$FICHIER_API_KEY]
+    --fichier-encoding value          バックエンドのエンコーディング。 (デフォルト: "Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot") [$FICHIER_ENCODING]
+    --fichier-file-password value     パスワードで保護された共有ファイルをダウンロードする場合、このパラメータを追加します。 [$FICHIER_FILE_PASSWORD]
+    --fichier-folder-password value   パスワードで保護された共有フォルダ内のファイルをリストする場合、このパラメータを追加します。 [$FICHIER_FOLDER_PASSWORD]
+    --fichier-shared-folder value     共有フォルダをダウンロードする場合、このパラメータを追加します。 [$FICHIER_SHARED_FOLDER]
 
-   acdのオプション
+    Akamai NetStorage
 
-   --acd-auth-url value            認証サーバーのURL [$ACD_AUTH_URL]
-   --acd-client-id value           OAuthクライアントID [$ACD_CLIENT_ID]
-   --acd-client-secret value       OAuthクライアントシークレット [$ACD_CLIENT_SECRET]
-   --acd-encoding value            バックエンドのエンコーディング (デフォルト: "Slash,InvalidUtf8,Dot") [$ACD_ENCODING]
-   --acd-templink-threshold value  このサイズ以上のファイルはtempLinkを使用してダウンロードされます (デフォルト: "9Gi") [$ACD_TEMPLINK_THRESHOLD]
-   --acd-token value               OAuthアクセストークンのJSON blob [$ACD_TOKEN]
-   --acd-token-url value           トークンサーバーのURL [$ACD_TOKEN_URL]
-   --acd-upload-wait-per-gb value  完了したアップロードの後に失敗した場合に、GiBごとに追加の待ち時間を設定します (デフォルト: "3m0s") [$ACD_UPLOAD_WAIT_PER_GB]
+    --netstorage-account value   NetStorageアカウント名を設定します。 [$NETSTORAGE_ACCOUNT]
+    --netstorage-host value      接続するNetStorageホストのドメイン+パスを設定します。 [$NETSTORAGE_HOST]
+    --netstorage-protocol value  HTTPまたはHTTPSプロトコルを選択します。 (デフォルト: "https") [$NETSTORAGE_PROTOCOL]
+    --netstorage-secret value    認証のためのNetStorageアカウントのsecret/G2Oキーを設定します。 [$NETSTORAGE_SECRET]
 
-   azureblobのオプション
+    Amazon Drive
 
-   --azureblob-access-tier value                    ブロブのアクセスレベル: hot、cool、またはarchive [$AZUREBLOB_ACCESS_TIER]
-   --azu..以下略..
-```
-{% endcode %}
+    --acd-auth-url value    AuthサーバーのURL。 [$ACD_AUTH_URL]
+    --acd-checkpoint value  内部ポーリングのチェックポイント（デバッグ用）。 [$ACD_CHECKPOINT]
+    --acd-client-id value   OAuthクライアントID。 [$ACD_CLIENT_ID]
+    --acd-client-secret value  OAuthクライアントシークレット [$ACD_CLIENT_SECRET]
+    --acd-encoding value  バックエンドのエンコーディング。 (デフォルト: "Slash,InvalidUtf8,Dot") [$ACD_ENCODING]
+    --acd-templink-threshold value  このサイズ以上のファイルはtempLinkを使用してダウンロードされます。 (デフォルト: "9Gi") [$ACD_TEMPLINK_THRESHOLD]
+    --acd-token value  OAuthアクセストークン（JSON形式） [$ACD_TOKEN]
+    --acd-token-url value  TokenサーバーのURL。[$ACD_TOKEN_URL]
+    --acd-upload-wait-per-gb value  失敗した完全なアップロードの後に待機するための1GiBごとの追加時間を設定します。 (デフォルト: "3m0s") [$ACD_UPLOAD_WAIT_PER_GB]
+
+    Amazon S3に準拠したストレージプロバイダ（AWS、Alibaba、Ceph、China Mobile、Cloudflare、ArvanCloud、DigitalOcean、Dreamhost、Huawei OBS、IBM COS、IDrive e2、IONOS Cloud、Liara、Lyve Cloud、Minio、Netease、RackCorp、Scaleway、SeaweedFS、StackPath、Storj、Tencent COS、Qiniu、Wasabiを含む）
+
+    --s3-access-key-id value  AWS Access Key ID。 [$S3_ACCESS_KEY_ID]
+    --s3-acl value  バケットとオブジェクトの作成時に使用するCanned ACL。 [$S3_ACL]
+    --s3-bucket-acl value  バケットの作成時に使用するCanned ACL。 [$S3_BUCKET_ACL]
+    --s3-chunk-size value  アップロードに使用するチャンクサイズ。 (デフォルト: "5Mi") [$S3_CHUNK_SIZE]
+    --s3-copy-cutoff value  マルチパートコピーに切り替えるためのカットオフ。 (デフォルト: "4.656Gi") [$S3_COPY_CUTOFF]
+    --s3-decompress  設定した場合、gzipエンコードされたオブジェクトを展開します。 (デフォルト: false) [$S3_DECOMPRESS]
+    --s3-disable-checksum  オブジェクトメタデータにMD5チェックサムを格納しな

@@ -1,9 +1,9 @@
-# 모든 거래 예약 일정 나열하기
+# 모든 거래 일정 나열하기
 
 {% code fullWidth="true" %}
 ```
 이름:
-   singularity deal schedule list - 모든 거래 예약 일정 나열하기
+   singularity deal schedule list - 모든 거래 일정 나열하기
 
 사용법:
    singularity deal schedule list [command options] [arguments...]

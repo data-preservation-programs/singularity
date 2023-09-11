@@ -2,13 +2,14 @@
 
 {% code fullWidth="true" %}
 ```
-NAME:
-   singularity admin reset - データベースをリセット
+名前：
+   singularity admin reset - データベースのリセット
 
-USAGE:
+使用法：
    singularity admin reset [コマンドオプション] [引数...]
 
-OPTIONS:
-   --help, -h  ヘルプを表示
+オプション：
+   --really-do-it  本当に実行する（デフォルト：false）
+   --help, -h      ヘルプを表示する
 ```
 {% endcode %}

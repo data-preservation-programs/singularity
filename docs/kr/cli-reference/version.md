@@ -1,4 +1,4 @@
-# 버전 정보 출력하기
+# 버전 정보 출력
 
 {% code fullWidth="true" %}
 ```
@@ -6,9 +6,9 @@
    singularity version - 버전 정보 출력
 
 사용법:
-   singularity version [명령 옵션] [인수...]
+   singularity version [command options] [arguments...]
 
 옵션:
-   --help, -h  도움말 보기
+   --help, -h  도움말 표시
 ```
 {% endcode %}

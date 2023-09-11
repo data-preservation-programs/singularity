@@ -3,12 +3,12 @@
 {% code fullWidth="true" %}
 ```
 名称：
-   singularity 钱包导入 - 从导出的私钥导入钱包
+   singularity wallet import - 从导出的私钥导入钱包
 
-使用方法：
-   singularity 钱包导入 [命令选项] 私钥
+用法：
+   singularity wallet import [命令选项] <私钥>
 
 选项：
-   --help, -h  显示帮助信息
+   --help, -h  显示帮助
 ```
 {% endcode %}

@@ -1,14 +1,14 @@
-# バージョン情報の表示
+# バージョン情報を表示する
 
 {% code fullWidth="true" %}
 ```
-名前:
-   singularity version - バージョン情報の表示
+NAME:
+   singularity version - バージョン情報を表示する
 
 使用法:
    singularity version [コマンドオプション] [引数...]
 
 オプション:
-   --help, -h  ヘルプの表示
+   --help, -h  ヘルプを表示
 ```
 {% endcode %}

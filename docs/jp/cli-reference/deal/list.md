@@ -1,18 +1,19 @@
-# すべてのディールを一覧表示する
+# すべてのディールをリストする
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity deal list - すべてのディールを一覧表示する
+   singularity deal list - すべてのディールをリストする
 
-使用方法:
-   singularity deal list [コマンドオプション] [引数...]
+使用法:
+   singularity deal list [command options] [arguments...]
 
-オプション:
-   --dataset value [ --dataset value ]    データセット名でディールをフィルタリングする
-   --schedule value [ --schedule value ]  スケジュールでディールをフィルタリングする
-   --provider value [ --provider value ]  プロバイダでディールをフィルタリングする
-   --state value [ --state value ]        ステートでディールをフィルタリングする: 提案中、公開中、アクティブ、期限切れ、提案期限切れ、減額
-   --help, -h                             ヘルプを表示する
+OPTIONS:
+   --preparation value [ --preparation value ]  ディールを準備IDまたは名称でフィルタリングする
+   --source value [ --source value ]            ディールをソースストレージIDまたは名称でフィルタリングする
+   --schedule value [ --schedule value ]        ディールをスケジュールでフィルタリングする
+   --provider value [ --provider value ]        ディールをプロバイダでフィルタリングする
+   --state value [ --state value ]              ディールを状態でフィルタリングする: 提案済み、公開済み、アクティブ、期限切れ、提案の期限切れ、削除済み
+   --help, -h                                   ヘルプを表示する
 ```
 {% endcode %}
