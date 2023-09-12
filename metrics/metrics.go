@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -32,6 +33,9 @@ func Init(ctx context.Context, db *gorm.DB) error {
 	}
 	Instance = global.Value
 
+	if os.Getenv("SINGULARITY_METRICS") == "0" {
+		Enabled = false
+	}
 	return nil
 }
 
