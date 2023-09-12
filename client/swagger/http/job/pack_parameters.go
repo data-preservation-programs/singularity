@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewPackParams creates a new PackParams object,
@@ -65,7 +66,7 @@ type PackParams struct {
 
 	   Pack job ID
 	*/
-	ID string
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,13 +122,13 @@ func (o *PackParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithID adds the id to the pack params
-func (o *PackParams) WithID(id string) *PackParams {
+func (o *PackParams) WithID(id int64) *PackParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the pack params
-func (o *PackParams) SetID(id string) {
+func (o *PackParams) SetID(id int64) {
 	o.ID = id
 }
 
@@ -140,7 +141,7 @@ func (o *PackParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.ID); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 

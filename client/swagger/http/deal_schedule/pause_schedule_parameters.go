@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewPauseScheduleParams creates a new PauseScheduleParams object,
@@ -65,7 +66,7 @@ type PauseScheduleParams struct {
 
 	   Schedule ID
 	*/
-	ID string
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,13 +122,13 @@ func (o *PauseScheduleParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithID adds the id to the pause schedule params
-func (o *PauseScheduleParams) WithID(id string) *PauseScheduleParams {
+func (o *PauseScheduleParams) WithID(id int64) *PauseScheduleParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the pause schedule params
-func (o *PauseScheduleParams) SetID(id string) {
+func (o *PauseScheduleParams) SetID(id int64) {
 	o.ID = id
 }
 
@@ -140,7 +141,7 @@ func (o *PauseScheduleParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.ID); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 

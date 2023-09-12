@@ -57,7 +57,7 @@ StartPackOK describes a response with status code 200, with default header value
 OK
 */
 type StartPackOK struct {
-	Payload *models.ModelJob
+	Payload []*models.ModelJob
 }
 
 // IsSuccess returns true when this start pack o k response has a 2xx status code
@@ -98,16 +98,14 @@ func (o *StartPackOK) String() string {
 	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/start-pack/{job_id}][%d] startPackOK  %+v", 200, o.Payload)
 }
 
-func (o *StartPackOK) GetPayload() *models.ModelJob {
+func (o *StartPackOK) GetPayload() []*models.ModelJob {
 	return o.Payload
 }
 
 func (o *StartPackOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ModelJob)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

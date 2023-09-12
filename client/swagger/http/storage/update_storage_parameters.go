@@ -65,7 +65,7 @@ type UpdateStorageParams struct {
 
 	   Configuration
 	*/
-	Config interface{}
+	Config map[string]string
 
 	/* Name.
 
@@ -127,13 +127,13 @@ func (o *UpdateStorageParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithConfig adds the config to the update storage params
-func (o *UpdateStorageParams) WithConfig(config interface{}) *UpdateStorageParams {
+func (o *UpdateStorageParams) WithConfig(config map[string]string) *UpdateStorageParams {
 	o.SetConfig(config)
 	return o
 }
 
 // SetConfig adds the config to the update storage params
-func (o *UpdateStorageParams) SetConfig(config interface{}) {
+func (o *UpdateStorageParams) SetConfig(config map[string]string) {
 	o.Config = config
 }
 

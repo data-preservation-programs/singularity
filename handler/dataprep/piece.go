@@ -18,10 +18,10 @@ import (
 )
 
 type AddPieceRequest struct {
-	PieceCID  string `json:"pieceCid"`  // CID of the piece
-	PieceSize string `json:"pieceSize"` // Size of the piece
-	FilePath  string `json:"filePath"`  // Path to the CAR file, used to determine the size of the file and root CID
-	RootCID   string `json:"rootCid"`   // Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
+	PieceCID  string `binding:"required" json:"pieceCid"`      // CID of the piece
+	PieceSize string `binding:"required" json:"pieceSize"`     // Size of the piece
+	FilePath  string `json:"filePath"    swaggerignore:"true"` // Path to the CAR file, used to determine the size of the file and root CID
+	RootCID   string `json:"rootCid"`                          // Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
 }
 
 type PieceList struct {

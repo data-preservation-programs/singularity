@@ -90,7 +90,7 @@ func (DefaultHandler) UpdateStorageHandler(
 // @Summary Update a storage connection
 // @Tags Storage
 // @Param name path string true "Storage ID or name"
-// @Param config body object true "Configuration"
+// @Param config body map[string]string true "Configuration"
 // @Accept json
 // @Produce json
 // @Success 200 {object} model.Storage

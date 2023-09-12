@@ -3,7 +3,6 @@ package schedule
 import (
 	"context"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/cockroachdb/errors"
@@ -50,7 +49,7 @@ type UpdateRequest struct {
 // Parameters:
 // - ctx: The context for managing timeouts and cancellation.
 // - db: The gorm.DB instance for database operations.
-// - scheduleID: The ID of the schedule to be updated.
+// - id: The ID of the schedule to be updated.
 // - request: The UpdateRequest containing the desired changes.
 //
 // Returns:
@@ -59,17 +58,13 @@ type UpdateRequest struct {
 func (DefaultHandler) UpdateHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	scheduleID string,
+	id uint32,
 	request UpdateRequest,
 ) (*model.Schedule, error) {
 	db = db.WithContext(ctx)
-	id, err := strconv.ParseUint(scheduleID, 10, 32)
-	if err != nil {
-		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrapf(err, "invalid schedule id: %s", scheduleID))
-	}
 
 	var schedule model.Schedule
-	err = db.First(&schedule, id).Error
+	err := db.First(&schedule, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "schedule %d not found", id)
 	}
@@ -244,15 +239,16 @@ func (DefaultHandler) UpdateHandler(
 	return &schedule, nil
 }
 
+// @ID UpdateSchedule
 // @Summary Update a schedule
 // @Description Update a schedule
 // @Tags Deal Schedule
 // @Accept json
 // @Produce json
-// @Param scheduleId path string true "Schedule ID"
+// @Param id path int true "Schedule ID"
 // @Param body body UpdateRequest true "Update request"
 // @Success 200 {object} model.Schedule
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /schedule/{scheduleId} [patch]
+// @Router /schedule/{id} [patch]
 func _() {}
