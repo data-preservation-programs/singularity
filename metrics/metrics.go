@@ -13,6 +13,7 @@ import (
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/ipfs/go-log/v2"
+	"github.com/klauspost/compress/zstd"
 	"gorm.io/gorm"
 )
 
@@ -64,12 +65,17 @@ func (c *Collector) QueueDealEvent(event DealProposalEvent) {
 	c.dealEvents = append(c.dealEvents, event)
 }
 
-func (c *Collector) Flush() {
+var zstdEncoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
+
+func (c *Collector) Flush() error {
+	if !Enabled {
+		return nil
+	}
 	for {
 		c.mu.Lock()
 		if len(c.packJobEvents) == 0 && len(c.dealEvents) == 0 {
 			c.mu.Unlock()
-			return
+			return nil
 		}
 		var packJobs []PackJobEvent
 		var dealEvents []DealProposalEvent
@@ -92,7 +98,7 @@ func (c *Collector) Flush() {
 			PackJobEvents: packJobs,
 			DealEvents:    dealEvents,
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Hour*15)
 		defer cancel()
 
 		body := bytes.NewBuffer(nil)
@@ -103,29 +109,28 @@ func (c *Collector) Flush() {
 			continue
 		}
 
+		compressed := zstdEncoder.EncodeAll(body.Bytes(), make([]byte, 0, body.Len()))
+
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost,
 			"https://singularity-metrics.dataprogram.io/api",
-			bytes.NewBufferString(base64.StdEncoding.EncodeToString(body.Bytes())))
+			bytes.NewBufferString(base64.StdEncoding.EncodeToString(compressed)))
 		if err != nil {
-			logger.Error("failed to create request", err)
-			continue
+			return errors.WithStack(err)
 		}
 
+		request.Header.Set("Content-Type", "text/plain")
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
-			logger.Error("failed to send metrics", err)
-			continue
+			return errors.WithStack(err)
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			responseBody, err := io.ReadAll(resp.Body)
 			if err != nil {
-				logger.Error("failed to read response body", err)
-				continue
+				return errors.WithStack(err)
 			}
-			logger.Errorf("failed to send metrics %d: %s", resp.StatusCode, string(responseBody))
-			continue
+			return errors.Errorf("failed to send metrics: %s", responseBody)
 		}
 	}
 }
@@ -135,7 +140,7 @@ func (c *Collector) Start(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(time.Second * 15):
+		case <-time.After(time.Hour):
 		}
 		//nolint:contextcheck
 		c.Flush()

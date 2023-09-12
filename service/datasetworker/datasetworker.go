@@ -138,7 +138,22 @@ func (w *Thread) cleanup(ctx context.Context) error {
 //
 //	error : An error is returned if the StartServers function encounters an issue while starting the threads. Otherwise, it returns nil.
 func (w Worker) Run(ctx context.Context) error {
-	threads := []service.Server{&w}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	err := metrics.Init(ctx, w.dbNoContext)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	metricsFlushed := make(chan struct{})
+	go func() {
+		defer close(metricsFlushed)
+		metrics.Default.Start(ctx)
+		//nolint:contextcheck
+		metrics.Default.Flush()
+	}()
+
+	var threads []service.Server
 	for i := 0; i < w.config.Concurrency; i++ {
 		id := uuid.New()
 		thread := &Thread{
@@ -149,22 +164,10 @@ func (w Worker) Run(ctx context.Context) error {
 		}
 		threads = append(threads, thread)
 	}
-	return service.StartServers(ctx, logger, threads...)
-}
-
-func (w Worker) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
-	err := metrics.Init(ctx, w.dbNoContext)
-	if err != nil {
-		return nil, nil, errors.WithStack(err)
-	}
-	metricsFlushed := make(chan struct{})
-	go func() {
-		defer close(metricsFlushed)
-		metrics.Default.Start(ctx)
-		//nolint:contextcheck
-		metrics.Default.Flush()
-	}()
-	return []service.Done{metricsFlushed}, nil, nil
+	err = service.StartServers(ctx, logger, threads...)
+	cancel()
+	<-metricsFlushed
+	return errors.WithStack(err)
 }
 
 func (w Worker) Name() string {

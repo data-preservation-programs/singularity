@@ -335,8 +335,8 @@ func Pack(
 		}
 	}
 	outputType := "inline"
-	if storageWriter != nil {
-		outputType = storageWriter.Name()
+	if len(job.Attachment.Preparation.OutputStorages) > 0 {
+		outputType = job.Attachment.Preparation.OutputStorages[0].Type
 	}
 
 	packJobEvent := metrics.PackJobEvent{
