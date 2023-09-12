@@ -16,6 +16,7 @@ import (
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var Enabled = true
@@ -27,7 +28,10 @@ func Init(ctx context.Context, db *gorm.DB) error {
 		return nil
 	}
 	var global model.Global
-	err := db.WithContext(ctx).Where("key = ?", "instance_id").First(&global).Error
+	where := clause.Where{Exprs: []clause.Expression{
+		clause.Eq{Column: clause.Column{Name: "key"}, Value: "instance_id"},
+	}}
+	err := db.WithContext(ctx).Clauses(where).First(&global).Error
 	if err != nil {
 		return errors.Wrapf(err, "failed to get instance id, is the database empty?")
 	}
