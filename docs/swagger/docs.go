@@ -211,7 +211,7 @@ const docTemplate = `{
                 "operationId": "Pack",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Pack job ID",
                         "name": "id",
                         "in": "path",
@@ -858,8 +858,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -889,57 +889,6 @@ const docTemplate = `{
                 ],
                 "summary": "Pause an ongoing DAG generation job",
                 "operationId": "PauseDagGen",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Preparation ID or name",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Storage ID or name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Job"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/preparation/{id}/source/{name}/pause-pack": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Job"
-                ],
-                "summary": "Pause all packing job",
-                "operationId": "PausePackAll",
                 "parameters": [
                     {
                         "type": "string",
@@ -1018,7 +967,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Job"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Job"
+                            }
                         }
                     },
                     "400": {
@@ -1138,57 +1090,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/preparation/{id}/source/{name}/start-pack": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Job"
-                ],
-                "summary": "Start or restart all packing job",
-                "operationId": "StartPackAll",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Preparation ID or name",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Storage ID or name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Job"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
         "/preparation/{id}/source/{name}/start-pack/{job_id}": {
             "post": {
                 "consumes": [
@@ -1229,7 +1130,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Job"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Job"
+                            }
                         }
                     },
                     "400": {
@@ -1299,7 +1203,7 @@ const docTemplate = `{
             }
         },
         "/preparation/{id}/wallet": {
-            "post": {
+            "get": {
                 "consumes": [
                     "application/json"
                 ],
@@ -1446,6 +1350,39 @@ const docTemplate = `{
             }
         },
         "/schedule": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "List all deal making schedules",
+                "operationId": "ListSchedules",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Schedule"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new schedule",
                 "consumes": [
@@ -1492,6 +1429,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/schedule/{id}": {
+            "patch": {
+                "description": "Update a schedule",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "Update a schedule",
+                "operationId": "UpdateSchedule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schedule.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Schedule"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/schedule/{id}/pause": {
             "post": {
                 "produces": [
@@ -1504,7 +1495,7 @@ const docTemplate = `{
                 "operationId": "PauseSchedule",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Schedule ID",
                         "name": "id",
                         "in": "path",
@@ -1545,7 +1536,7 @@ const docTemplate = `{
                 "operationId": "ResumeSchedule",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Schedule ID",
                         "name": "id",
                         "in": "path",
@@ -1557,94 +1548,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Schedule"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/schedule/{scheduleId}": {
-            "patch": {
-                "description": "Update a schedule",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deal Schedule"
-                ],
-                "summary": "Update a schedule",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Schedule ID",
-                        "name": "scheduleId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update request",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/schedule.UpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Schedule"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HTTPError"
-                        }
-                    }
-                }
-            }
-        },
-        "/schedules": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Deal Schedule"
-                ],
-                "summary": "List all deal making schedules",
-                "operationId": "ListSchedules",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Schedule"
-                            }
                         }
                     },
                     "400": {
@@ -5119,7 +5022,10 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 ],
@@ -5378,11 +5284,11 @@ const docTemplate = `{
         },
         "dataprep.AddPieceRequest": {
             "type": "object",
+            "required": [
+                "pieceCid",
+                "pieceSize"
+            ],
             "properties": {
-                "filePath": {
-                    "description": "Path to the CAR file, used to determine the size of the file and root CID",
-                    "type": "string"
-                },
                 "pieceCid": {
                     "description": "CID of the piece",
                     "type": "string"
@@ -5399,11 +5305,6 @@ const docTemplate = `{
         },
         "dataprep.CreateRequest": {
             "type": "object",
-            "required": [
-                "maxSize",
-                "name",
-                "sourceStorages"
-            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Whether to delete the source files after export",
@@ -7242,10 +7143,6 @@ const docTemplate = `{
         },
         "storage.CreateRequest": {
             "type": "object",
-            "required": [
-                "name",
-                "path"
-            ],
             "properties": {
                 "config": {
                     "type": "object",

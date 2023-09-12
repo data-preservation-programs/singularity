@@ -24,7 +24,7 @@ func TestAdminInit(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockAdmin)
+		mockHandler := new(admin.MockAdmin)
 		defer swapAdminHandler(mockHandler)()
 		mockHandler.On("InitHandler", mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity admin init")
@@ -36,7 +36,7 @@ func TestAdminReset(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockAdmin)
+		mockHandler := new(admin.MockAdmin)
 		defer swapAdminHandler(mockHandler)()
 		mockHandler.On("ResetHandler", mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity admin reset --really-do-it")
@@ -48,7 +48,7 @@ func TestAdminReset_NoReallyDoIt(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockAdmin)
+		mockHandler := new(admin.MockAdmin)
 		defer swapAdminHandler(mockHandler)()
 		mockHandler.On("ResetHandler", mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity admin reset")

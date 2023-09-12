@@ -25,7 +25,7 @@ func TestWalletImport(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("ImportHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Wallet{
 			ID:         "id",
@@ -43,7 +43,7 @@ func TestWalletList(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Wallet{{
 			ID:         "id1",
@@ -65,7 +65,7 @@ func TestWalletRemove(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity wallet remove --really-do-it xxx")
@@ -77,7 +77,7 @@ func TestWalletRemove_NoReallyDoIt(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity wallet remove xxx")

@@ -41,7 +41,7 @@ func TestUpdateHandler_DatasetNotFound(t *testing.T) {
 			Preparation: &model.Preparation{},
 		}).Error
 		require.NoError(t, err)
-		_, err = Default.UpdateHandler(ctx, db, "100", updateRequest)
+		_, err = Default.UpdateHandler(ctx, db, 100, updateRequest)
 		require.ErrorIs(t, err, handlererror.ErrNotFound)
 	})
 }
@@ -54,7 +54,7 @@ func TestUpdateHandler_InvalidStartDelay(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.StartDelay = ptr.Of("1year")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid start delay")
 	})
@@ -68,7 +68,7 @@ func TestUpdateHandler_InvalidDuration(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.Duration = ptr.Of("1year")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid duration")
 	})
@@ -82,7 +82,7 @@ func TestUpdateHandler_ChangeFromNonCronToCron(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.ScheduleCron = ptr.Of("@daily")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "Cannot switch ")
 	})
@@ -97,7 +97,7 @@ func TestUpdateHandler_ChangeFromCronToNonCron(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.ScheduleCron = ptr.Of("")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "Cannot switch ")
 	})
@@ -112,7 +112,7 @@ func TestUpdateHandler_InvalidScheduleInterval(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.ScheduleCron = ptr.Of("1year")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid schedule cron")
 	})
@@ -127,7 +127,7 @@ func TestUpdateHandler_InvalidScheduleDealSize(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.ScheduleDealSize = ptr.Of("One PB")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid schedule deal size")
 	})
@@ -142,7 +142,7 @@ func TestUpdateHandler_InvalidTotalDealSize(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.TotalDealSize = ptr.Of("One PB")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid total deal size")
 	})
@@ -157,7 +157,7 @@ func TestUpdateHandler_InvalidPendingDealSize(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.MaxPendingDealSize = ptr.Of("One PB")
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid max pending deal size")
 	})
@@ -172,7 +172,7 @@ func TestUpdateHandler_InvalidAllowedPieceCID_NotCID(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.AllowedPieceCIDs = []string{"not a cid"}
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "invalid allowed piece CID")
 	})
@@ -187,7 +187,7 @@ func TestUpdateHandler_InvalidAllowedPieceCID_NotCommp(t *testing.T) {
 		require.NoError(t, err)
 		badRequest := updateRequest
 		badRequest.AllowedPieceCIDs = []string{"bafybeiejlvvmfokp5c6q2eqgbfjeaokz3nqho5c7yy3ov527vsatgsqfma"}
-		_, err = Default.UpdateHandler(ctx, db, "1", badRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, badRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 		require.ErrorContains(t, err, "not commp")
 	})
@@ -199,7 +199,7 @@ func TestUpdateHandler_Success(t *testing.T) {
 			Preparation: &model.Preparation{},
 		}).Error
 		require.NoError(t, err)
-		schedule, err := Default.UpdateHandler(ctx, db, "1", updateRequest)
+		schedule, err := Default.UpdateHandler(ctx, db, 1, updateRequest)
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
 	})
@@ -214,7 +214,7 @@ func TestUpdateHandler_OverrideHeader(t *testing.T) {
 		require.NoError(t, err)
 		updateRequest := updateRequest
 		updateRequest.HTTPHeaders = []string{"a=c"}
-		schedule, err := Default.UpdateHandler(ctx, db, "1", updateRequest)
+		schedule, err := Default.UpdateHandler(ctx, db, 1, updateRequest)
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
 		require.Equal(t, "c", schedule.HTTPHeaders["a"])
@@ -230,7 +230,7 @@ func TestUpdateHandler_ClearAllHeaders(t *testing.T) {
 		require.NoError(t, err)
 		updateRequest := updateRequest
 		updateRequest.HTTPHeaders = []string{""}
-		schedule, err := Default.UpdateHandler(ctx, db, "1", updateRequest)
+		schedule, err := Default.UpdateHandler(ctx, db, 1, updateRequest)
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
 		require.Len(t, schedule.HTTPHeaders, 0)
@@ -246,7 +246,7 @@ func TestUpdateHandler_ClearSingleHeader(t *testing.T) {
 		require.NoError(t, err)
 		updateRequest := updateRequest
 		updateRequest.HTTPHeaders = []string{"c="}
-		schedule, err := Default.UpdateHandler(ctx, db, "1", updateRequest)
+		schedule, err := Default.UpdateHandler(ctx, db, 1, updateRequest)
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
 		require.Len(t, schedule.HTTPHeaders, 1)
@@ -261,7 +261,7 @@ func TestUpdateHandler_InvalidHeader(t *testing.T) {
 		require.NoError(t, err)
 		updateRequest := updateRequest
 		updateRequest.HTTPHeaders = []string{"abcd"}
-		_, err = Default.UpdateHandler(ctx, db, "1", updateRequest)
+		_, err = Default.UpdateHandler(ctx, db, 1, updateRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 	})
 }

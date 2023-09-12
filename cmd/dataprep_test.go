@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
+	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
@@ -64,7 +65,7 @@ func TestDataPrepCreateHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -80,7 +81,7 @@ func TestDataPrepCreateHandler_WithStorage(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -95,7 +96,7 @@ func TestDataPrepListHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("ListHandler", mock.Anything, mock.Anything).Return([]model.Preparation{testPreparation}, nil)
@@ -111,7 +112,7 @@ func TestDataPrepAttachSourceHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("AddSourceStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -127,7 +128,7 @@ func TestDataPrepAttachOutputHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("AddOutputStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -142,7 +143,7 @@ func TestDataPrepDetachOutputHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("RemoveOutputStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -158,7 +159,7 @@ func TestDataPreparationAttachWalletHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 
 		mockHandler.On("AttachHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -174,7 +175,7 @@ func TestDataPreparationDetachWalletHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 
 		mockHandler.On("DetachHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
@@ -190,7 +191,7 @@ func TestDataPreparationListAttachedWalletHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockWallet)
+		mockHandler := new(wallet.MockWallet)
 		defer swapWalletHandler(mockHandler)()
 
 		mockHandler.On("ListAttachedHandler", mock.Anything, mock.Anything, mock.Anything).Return(testPreparation.Wallets, nil)
@@ -206,7 +207,7 @@ func TestDataPreparationExploreHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&dataprep.ExploreResult{SubEntries: []dataprep.DirEntry{
@@ -261,7 +262,7 @@ func TestDataPreparationAddPieceHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("AddPieceHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Car{
@@ -287,7 +288,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockDataPrep)
+		mockHandler := new(dataprep.MockDataPrep)
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("ListPiecesHandler", mock.Anything, mock.Anything, mock.Anything).Return([]dataprep.PieceList{

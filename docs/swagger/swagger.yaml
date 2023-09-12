@@ -7,10 +7,6 @@ definitions:
     type: object
   dataprep.AddPieceRequest:
     properties:
-      filePath:
-        description: Path to the CAR file, used to determine the size of the file
-          and root CID
-        type: string
       pieceCid:
         description: CID of the piece
         type: string
@@ -21,6 +17,9 @@ definitions:
         description: Root CID of the CAR file, if not provided, will be determined
           by the CAR file header. Used to populate the label field of storage deal
         type: string
+    required:
+    - pieceCid
+    - pieceSize
     type: object
   dataprep.CreateRequest:
     properties:
@@ -49,10 +48,6 @@ definitions:
         items:
           type: string
         type: array
-    required:
-    - maxSize
-    - name
-    - sourceStorages
     type: object
   dataprep.DirEntry:
     properties:
@@ -1380,9 +1375,6 @@ definitions:
         type: string
       provider:
         type: string
-    required:
-    - name
-    - path
     type: object
   storage.CreateS3AWSStorageRequest:
     properties:
@@ -7703,7 +7695,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -8134,8 +8126,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "204":
+          description: No Content
         "400":
           description: Bad Request
           schema:
@@ -8181,40 +8173,6 @@ paths:
       summary: Pause an ongoing DAG generation job
       tags:
       - Job
-  /preparation/{id}/source/{name}/pause-pack:
-    post:
-      consumes:
-      - application/json
-      operationId: PausePackAll
-      parameters:
-      - description: Preparation ID or name
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Storage ID or name
-        in: path
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Job'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: Pause all packing job
-      tags:
-      - Job
   /preparation/{id}/source/{name}/pause-pack/{job_id}:
     post:
       consumes:
@@ -8242,7 +8200,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Job'
+            items:
+              $ref: '#/definitions/model.Job'
+            type: array
         "400":
           description: Bad Request
           schema:
@@ -8322,40 +8282,6 @@ paths:
       summary: Start a new DAG generation job
       tags:
       - Job
-  /preparation/{id}/source/{name}/start-pack:
-    post:
-      consumes:
-      - application/json
-      operationId: StartPackAll
-      parameters:
-      - description: Preparation ID or name
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Storage ID or name
-        in: path
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Job'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: Start or restart all packing job
-      tags:
-      - Job
   /preparation/{id}/source/{name}/start-pack/{job_id}:
     post:
       consumes:
@@ -8383,7 +8309,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Job'
+            items:
+              $ref: '#/definitions/model.Job'
+            type: array
         "400":
           description: Bad Request
           schema:
@@ -8430,7 +8358,7 @@ paths:
       tags:
       - Job
   /preparation/{id}/wallet:
-    post:
+    get:
       consumes:
       - application/json
       operationId: ListAttachedWallets
@@ -8528,6 +8456,28 @@ paths:
       tags:
       - Wallet Association
   /schedule:
+    get:
+      operationId: ListSchedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Schedule'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: List all deal making schedules
+      tags:
+      - Deal Schedule
     post:
       consumes:
       - application/json
@@ -8558,6 +8508,42 @@ paths:
       summary: Create a new schedule
       tags:
       - Deal Schedule
+  /schedule/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update a schedule
+      operationId: UpdateSchedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/schedule.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Schedule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Update a schedule
+      tags:
+      - Deal Schedule
   /schedule/{id}/pause:
     post:
       operationId: PauseSchedule
@@ -8566,7 +8552,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -8593,7 +8579,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -8610,64 +8596,6 @@ paths:
           schema:
             $ref: '#/definitions/api.HTTPError'
       summary: Resume a specific schedule
-      tags:
-      - Deal Schedule
-  /schedule/{scheduleId}:
-    patch:
-      consumes:
-      - application/json
-      description: Update a schedule
-      parameters:
-      - description: Schedule ID
-        in: path
-        name: scheduleId
-        required: true
-        type: string
-      - description: Update request
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/schedule.UpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Schedule'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: Update a schedule
-      tags:
-      - Deal Schedule
-  /schedules:
-    get:
-      operationId: ListSchedules
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Schedule'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HTTPError'
-      summary: List all deal making schedules
       tags:
       - Deal Schedule
   /send_deal:
@@ -8764,6 +8692,8 @@ paths:
         name: config
         required: true
         schema:
+          additionalProperties:
+            type: string
           type: object
       produces:
       - application/json

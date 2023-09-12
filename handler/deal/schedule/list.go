@@ -15,7 +15,7 @@ import (
 // @Success 200 {array} model.Schedule
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /schedules [get]
+// @Router /schedule [get]
 func _() {}
 
 // ListHandler retrieves all the schedules from the database.
