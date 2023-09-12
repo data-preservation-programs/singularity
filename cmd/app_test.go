@@ -4,11 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 )
+
+func init() {
+	analytics.Enabled = false
+}
 
 func TestHelpPage(t *testing.T) {
 	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

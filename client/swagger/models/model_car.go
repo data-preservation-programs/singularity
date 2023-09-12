@@ -32,6 +32,9 @@ type ModelCar struct {
 	// job Id
 	JobID int64 `json:"jobId,omitempty"`
 
+	// num of files
+	NumOfFiles int64 `json:"numOfFiles,omitempty"`
+
 	// piece cid
 	PieceCid string `json:"pieceCid,omitempty"`
 

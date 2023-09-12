@@ -5585,6 +5585,9 @@ const docTemplate = `{
                 "jobId": {
                     "type": "integer"
                 },
+                "numOfFiles": {
+                    "type": "integer"
+                },
                 "pieceCid": {
                     "type": "string"
                 },

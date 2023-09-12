@@ -78,7 +78,7 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 	var sources []model.Storage
 	for _, name := range request.SourceStorages {
 		var source model.Storage
-		err = db.Where("name = ?", name).First(&source).Error
+		err = source.FindByIDOrName(db, name)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.Wrapf(handlererror.ErrNotFound, "source storage %s does not exist", name)
 		}
@@ -91,7 +91,7 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 	var outputs []model.Storage
 	for _, name := range request.OutputStorages {
 		var output model.Storage
-		err = db.Where("name = ?", name).First(&output).Error
+		err = output.FindByIDOrName(db, name)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.Wrapf(handlererror.ErrNotFound, "output storage %s does not exist", name)
 		}

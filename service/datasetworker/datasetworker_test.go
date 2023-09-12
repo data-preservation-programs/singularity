@@ -4,11 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
+
+func init() {
+	analytics.Enabled = false
+}
 
 func TestDatasetWorker_ExitOnComplete(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

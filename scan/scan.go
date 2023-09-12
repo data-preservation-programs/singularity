@@ -94,7 +94,7 @@ func createPackJob(
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	logger.Info("created pack job %d with %d file ranges", job.ID, len(remaining.FileRanges()))
+	logger.Infof("created pack job %d with %d file ranges", job.ID, len(remaining.FileRanges()))
 	remaining.Reset()
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/replication"
@@ -21,6 +22,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
+
+func init() {
+	analytics.Enabled = false
+}
 
 type MockDealMaker struct {
 	mock.Mock
