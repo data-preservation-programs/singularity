@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/avast/retry-go"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rjNemo/underscore"
@@ -486,16 +486,16 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 		}
 	}
 
-	err := metrics.Init(ctx, d.dbNoContext)
+	err := analytics.Init(ctx, d.dbNoContext)
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
-	metricsFlushed := make(chan struct{})
+	eventsFlushed := make(chan struct{})
 	go func() {
-		defer close(metricsFlushed)
-		metrics.Default.Start(ctx)
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		metrics.Default.Flush()
+		analytics.Default.Flush()
 	}()
 
 	healthcheckDone := make(chan struct{})
@@ -550,7 +550,7 @@ func (d *DealPusher) Start(ctx context.Context) ([]service.Done, service.Fail, e
 		}
 	}()
 
-	return []service.Done{runDone, cleanupDone, healthcheckDone, hostClosed, metricsFlushed}, fail, nil
+	return []service.Done{runDone, cleanupDone, healthcheckDone, hostClosed, eventsFlushed}, fail, nil
 }
 
 func (d *DealPusher) cleanup(ctx context.Context) error {

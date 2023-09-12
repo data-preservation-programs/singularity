@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/data-preservation-programs/singularity/metrics"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/stretchr/testify/require"
@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	metrics.Enabled = false
+	analytics.Enabled = false
 }
 
 func TestDatasetWorker_ExitOnComplete(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/metrics"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack"
 	"github.com/data-preservation-programs/singularity/replication"
@@ -24,7 +24,7 @@ import (
 )
 
 func init() {
-	metrics.Enabled = false
+	analytics.Enabled = false
 }
 
 type MockDealMaker struct {

@@ -1,4 +1,4 @@
-package metrics
+package analytics
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ import (
 
 var Enabled = true
 
-var logger = log.Logger("metrics")
+var logger = log.Logger("analytics")
 
 func Init(ctx context.Context, db *gorm.DB) error {
 	if Instance != "" {
@@ -37,7 +37,7 @@ func Init(ctx context.Context, db *gorm.DB) error {
 	}
 	Instance = global.Value
 
-	if os.Getenv("SINGULARITY_METRICS") == "0" {
+	if os.Getenv("SINGULARITY_ANALYTICS") == "0" {
 		Enabled = false
 	}
 	return nil
@@ -113,7 +113,7 @@ func (c *Collector) Flush() error {
 		encoder := cbor.NewEncoder(body)
 		err := encoder.Encode(events)
 		if err != nil {
-			logger.Error("failed to encode metrics", err)
+			logger.Error("failed to encode events", err)
 			continue
 		}
 
@@ -138,7 +138,7 @@ func (c *Collector) Flush() error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			return errors.Errorf("failed to send metrics: %s", responseBody)
+			return errors.Errorf("failed to send events: %s", responseBody)
 		}
 	}
 }

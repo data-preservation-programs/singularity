@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/pack/daggen"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
 	"github.com/data-preservation-programs/singularity/storagesystem"
@@ -339,7 +339,7 @@ func Pack(
 		outputType = job.Attachment.Preparation.OutputStorages[0].Type
 	}
 
-	packJobEvent := metrics.PackJobEvent{
+	packJobEvent := analytics.PackJobEvent{
 		SourceType: sourceType,
 		OutputType: outputType,
 		PieceSize:  car.PieceSize,
@@ -347,6 +347,6 @@ func Pack(
 		CarSize:    car.FileSize,
 		NumOfFiles: car.NumOfFiles,
 	}
-	metrics.Default.QueuePushJobEvent(packJobEvent)
+	analytics.Default.QueuePushJobEvent(packJobEvent)
 	return car, nil
 }

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
-	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
@@ -140,17 +140,17 @@ func (w *Thread) cleanup(ctx context.Context) error {
 func (w Worker) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	err := metrics.Init(ctx, w.dbNoContext)
+	err := analytics.Init(ctx, w.dbNoContext)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	metricsFlushed := make(chan struct{})
+	eventsFlushed := make(chan struct{})
 	go func() {
-		defer close(metricsFlushed)
-		metrics.Default.Start(ctx)
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		metrics.Default.Flush()
+		analytics.Default.Flush()
 	}()
 
 	threads := make([]service.Server, w.config.Concurrency)
@@ -166,7 +166,7 @@ func (w Worker) Run(ctx context.Context) error {
 	}
 	err = service.StartServers(ctx, logger, threads...)
 	cancel()
-	<-metricsFlushed
+	<-eventsFlushed
 	return errors.WithStack(err)
 }
 

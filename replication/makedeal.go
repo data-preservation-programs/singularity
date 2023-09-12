@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/metrics"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/filecoin-project/go-address"
@@ -624,7 +624,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 }
 
 func queueDealEvent(deal model.Deal) {
-	dealEvent := metrics.DealProposalEvent{
+	dealEvent := analytics.DealProposalEvent{
 		PieceCID:   deal.PieceCID.String(),
 		DataCID:    deal.Label,
 		PieceSize:  deal.PieceSize,
@@ -634,5 +634,5 @@ func queueDealEvent(deal model.Deal) {
 		StartEpoch: deal.StartEpoch,
 		EndEpoch:   deal.EndEpoch - deal.StartEpoch,
 	}
-	metrics.Default.QueueDealEvent(dealEvent)
+	analytics.Default.QueueDealEvent(dealEvent)
 }

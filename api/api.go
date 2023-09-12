@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -20,7 +21,6 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
-	"github.com/data-preservation-programs/singularity/metrics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
@@ -354,7 +354,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 var logger = logging.Logger("api")
 
 func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
-	err := metrics.Init(ctx, s.db)
+	err := analytics.Init(ctx, s.db)
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -437,14 +437,14 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 		<-ctx.Done()
 		s.host.Close()
 	}()
-	metricsFlushed := make(chan struct{})
+	eventsFlushed := make(chan struct{})
 	go func() {
-		defer close(metricsFlushed)
-		metrics.Default.Start(ctx)
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
 		//nolint:contextcheck
-		metrics.Default.Flush()
+		analytics.Default.Flush()
 	}()
-	return []service.Done{done, hostDone, metricsFlushed}, fail, nil
+	return []service.Done{done, hostDone, eventsFlushed}, fail, nil
 }
 
 func isIntKind(kind reflect.Kind) bool {
