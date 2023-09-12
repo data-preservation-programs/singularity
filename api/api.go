@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -353,6 +354,10 @@ func (s Server) setupRoutes(e *echo.Echo) {
 var logger = logging.Logger("api")
 
 func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
+	err := analytics.Init(ctx, s.db)
+	if err != nil {
+		return nil, nil, errors.WithStack(err)
+	}
 	e := echo.New()
 	e.Debug = true
 	e.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
@@ -428,11 +433,18 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 	}()
 	hostDone := make(chan struct{})
 	go func() {
-		close(hostDone)
+		defer close(hostDone)
 		<-ctx.Done()
 		s.host.Close()
 	}()
-	return []service.Done{done, hostDone}, fail, nil
+	eventsFlushed := make(chan struct{})
+	go func() {
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
+		//nolint:contextcheck
+		analytics.Default.Flush()
+	}()
+	return []service.Done{done, hostDone, eventsFlushed}, fail, nil
 }
 
 func isIntKind(kind reflect.Kind) bool {

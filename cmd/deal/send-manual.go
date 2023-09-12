@@ -165,6 +165,7 @@ Notes:
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
+
 		ctx, cancel := context.WithTimeout(c.Context, timeout)
 		defer cancel()
 		h, err := util.InitHost(nil)

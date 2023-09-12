@@ -48,7 +48,6 @@ var DatasetWorkerCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-
 		worker := datasetworker.NewWorker(
 			db,
 			datasetworker.Config{

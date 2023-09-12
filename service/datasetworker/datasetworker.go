@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service"
@@ -137,6 +138,21 @@ func (w *Thread) cleanup(ctx context.Context) error {
 //
 //	error : An error is returned if the StartServers function encounters an issue while starting the threads. Otherwise, it returns nil.
 func (w Worker) Run(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	err := analytics.Init(ctx, w.dbNoContext)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	eventsFlushed := make(chan struct{})
+	go func() {
+		defer close(eventsFlushed)
+		analytics.Default.Start(ctx)
+		//nolint:contextcheck
+		analytics.Default.Flush()
+	}()
+
 	threads := make([]service.Server, w.config.Concurrency)
 	for i := 0; i < w.config.Concurrency; i++ {
 		id := uuid.New()
@@ -148,7 +164,14 @@ func (w Worker) Run(ctx context.Context) error {
 		}
 		threads[i] = thread
 	}
-	return service.StartServers(ctx, logger, threads...)
+	err = service.StartServers(ctx, logger, threads...)
+	cancel()
+	<-eventsFlushed
+	return errors.WithStack(err)
+}
+
+func (w Worker) Name() string {
+	return "Preparation Worker Main"
 }
 
 func (w *Thread) handleWorkComplete(ctx context.Context, jobID uint64) error {

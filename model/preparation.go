@@ -235,6 +235,7 @@ type Car struct {
 	StorageID   *uint32   `json:"storageId"                                         table:"verbose"`
 	Storage     *Storage  `gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty"                   swaggerignore:"true" table:"expand"`
 	StoragePath string    `json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
+	NumOfFiles  int64     `json:"numOfFiles"                                        table:"verbose"`
 
 	// Association
 	PreparationID uint32            `json:"preparationId"                                        table:"-"`

@@ -26,7 +26,6 @@ var DealPusherCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-
 		lotusAPI := c.String("lotus-api")
 		lotusToken := c.String("lotus-token")
 		err = epochutil.Initialize(c.Context, lotusAPI, lotusToken)

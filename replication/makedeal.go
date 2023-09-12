@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/filecoin-project/go-address"
@@ -603,6 +604,7 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		}
 		if resp.Accepted {
 			dealModel.ProposalID = dealID.String()
+			queueDealEvent(*dealModel)
 			return dealModel, nil
 		}
 
@@ -614,8 +616,23 @@ func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 		}
 
 		dealModel.ProposalID = resp.Response.Proposal.String()
+		queueDealEvent(*dealModel)
 		return dealModel, nil
 	}
 
 	return nil, errors.Wrapf(ErrNoSupportedProtocols, "protocols: %v", protocols)
+}
+
+func queueDealEvent(deal model.Deal) {
+	dealEvent := analytics.DealProposalEvent{
+		PieceCID:   deal.PieceCID.String(),
+		DataCID:    deal.Label,
+		PieceSize:  deal.PieceSize,
+		Provider:   deal.Provider,
+		Client:     deal.ClientID,
+		Verified:   deal.Verified,
+		StartEpoch: deal.StartEpoch,
+		EndEpoch:   deal.EndEpoch - deal.StartEpoch,
+	}
+	analytics.Default.QueueDealEvent(dealEvent)
 }
