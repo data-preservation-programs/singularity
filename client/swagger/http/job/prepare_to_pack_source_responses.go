@@ -21,8 +21,8 @@ type PrepareToPackSourceReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *PrepareToPackSourceReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-	case 201:
-		result := NewPrepareToPackSourceCreated()
+	case 204:
+		result := NewPrepareToPackSourceNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
@@ -44,58 +44,58 @@ func (o *PrepareToPackSourceReader) ReadResponse(response runtime.ClientResponse
 	}
 }
 
-// NewPrepareToPackSourceCreated creates a PrepareToPackSourceCreated with default headers values
-func NewPrepareToPackSourceCreated() *PrepareToPackSourceCreated {
-	return &PrepareToPackSourceCreated{}
+// NewPrepareToPackSourceNoContent creates a PrepareToPackSourceNoContent with default headers values
+func NewPrepareToPackSourceNoContent() *PrepareToPackSourceNoContent {
+	return &PrepareToPackSourceNoContent{}
 }
 
 /*
-PrepareToPackSourceCreated describes a response with status code 201, with default header values.
+PrepareToPackSourceNoContent describes a response with status code 204, with default header values.
 
-Created
+No Content
 */
-type PrepareToPackSourceCreated struct {
+type PrepareToPackSourceNoContent struct {
 }
 
-// IsSuccess returns true when this prepare to pack source created response has a 2xx status code
-func (o *PrepareToPackSourceCreated) IsSuccess() bool {
+// IsSuccess returns true when this prepare to pack source no content response has a 2xx status code
+func (o *PrepareToPackSourceNoContent) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this prepare to pack source created response has a 3xx status code
-func (o *PrepareToPackSourceCreated) IsRedirect() bool {
+// IsRedirect returns true when this prepare to pack source no content response has a 3xx status code
+func (o *PrepareToPackSourceNoContent) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this prepare to pack source created response has a 4xx status code
-func (o *PrepareToPackSourceCreated) IsClientError() bool {
+// IsClientError returns true when this prepare to pack source no content response has a 4xx status code
+func (o *PrepareToPackSourceNoContent) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this prepare to pack source created response has a 5xx status code
-func (o *PrepareToPackSourceCreated) IsServerError() bool {
+// IsServerError returns true when this prepare to pack source no content response has a 5xx status code
+func (o *PrepareToPackSourceNoContent) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this prepare to pack source created response a status code equal to that given
-func (o *PrepareToPackSourceCreated) IsCode(code int) bool {
-	return code == 201
+// IsCode returns true when this prepare to pack source no content response a status code equal to that given
+func (o *PrepareToPackSourceNoContent) IsCode(code int) bool {
+	return code == 204
 }
 
-// Code gets the status code for the prepare to pack source created response
-func (o *PrepareToPackSourceCreated) Code() int {
-	return 201
+// Code gets the status code for the prepare to pack source no content response
+func (o *PrepareToPackSourceNoContent) Code() int {
+	return 204
 }
 
-func (o *PrepareToPackSourceCreated) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceCreated ", 201)
+func (o *PrepareToPackSourceNoContent) Error() string {
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceNoContent ", 204)
 }
 
-func (o *PrepareToPackSourceCreated) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceCreated ", 201)
+func (o *PrepareToPackSourceNoContent) String() string {
+	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/finalize][%d] prepareToPackSourceNoContent ", 204)
 }
 
-func (o *PrepareToPackSourceCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+func (o *PrepareToPackSourceNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	return nil
 }

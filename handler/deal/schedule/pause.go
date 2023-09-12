@@ -60,7 +60,7 @@ func (DefaultHandler) PauseHandler(
 // @Summary Pause a specific schedule
 // @Tags Deal Schedule
 // @Produce json
-// @Param id path string true "Schedule ID"
+// @Param id path int true "Schedule ID"
 // @Success 200 {object} model.Schedule
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError

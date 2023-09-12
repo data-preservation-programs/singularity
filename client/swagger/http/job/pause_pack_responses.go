@@ -57,7 +57,7 @@ PausePackOK describes a response with status code 200, with default header value
 OK
 */
 type PausePackOK struct {
-	Payload *models.ModelJob
+	Payload []*models.ModelJob
 }
 
 // IsSuccess returns true when this pause pack o k response has a 2xx status code
@@ -98,16 +98,14 @@ func (o *PausePackOK) String() string {
 	return fmt.Sprintf("[POST /preparation/{id}/source/{name}/pause-pack/{job_id}][%d] pausePackOK  %+v", 200, o.Payload)
 }
 
-func (o *PausePackOK) GetPayload() *models.ModelJob {
+func (o *PausePackOK) GetPayload() []*models.ModelJob {
 	return o.Payload
 }
 
 func (o *PausePackOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ModelJob)
-
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
 		return err
 	}
 

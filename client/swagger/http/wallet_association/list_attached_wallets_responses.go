@@ -42,7 +42,7 @@ func (o *ListAttachedWalletsReader) ReadResponse(response runtime.ClientResponse
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("[POST /preparation/{id}/wallet] ListAttachedWallets", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /preparation/{id}/wallet] ListAttachedWallets", response, response.Code())
 	}
 }
 
@@ -91,11 +91,11 @@ func (o *ListAttachedWalletsOK) Code() int {
 }
 
 func (o *ListAttachedWalletsOK) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/wallet][%d] listAttachedWalletsOK  %+v", 200, o.Payload)
 }
 
 func (o *ListAttachedWalletsOK) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/wallet][%d] listAttachedWalletsOK  %+v", 200, o.Payload)
 }
 
 func (o *ListAttachedWalletsOK) GetPayload() []*models.ModelWallet {
@@ -157,11 +157,11 @@ func (o *ListAttachedWalletsBadRequest) Code() int {
 }
 
 func (o *ListAttachedWalletsBadRequest) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/wallet][%d] listAttachedWalletsBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *ListAttachedWalletsBadRequest) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsBadRequest  %+v", 400, o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/wallet][%d] listAttachedWalletsBadRequest  %+v", 400, o.Payload)
 }
 
 func (o *ListAttachedWalletsBadRequest) GetPayload() *models.APIHTTPError {
@@ -225,11 +225,11 @@ func (o *ListAttachedWalletsInternalServerError) Code() int {
 }
 
 func (o *ListAttachedWalletsInternalServerError) Error() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/wallet][%d] listAttachedWalletsInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *ListAttachedWalletsInternalServerError) String() string {
-	return fmt.Sprintf("[POST /preparation/{id}/wallet][%d] listAttachedWalletsInternalServerError  %+v", 500, o.Payload)
+	return fmt.Sprintf("[GET /preparation/{id}/wallet][%d] listAttachedWalletsInternalServerError  %+v", 500, o.Payload)
 }
 
 func (o *ListAttachedWalletsInternalServerError) GetPayload() *models.APIHTTPError {

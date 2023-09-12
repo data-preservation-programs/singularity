@@ -104,23 +104,10 @@ func (DefaultHandler) StartPackHandler(
 // @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Param job_id path int true "Pack Job ID"
-// @Success 200 {object} model.Job
+// @Success 200 {array} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/start-pack/{job_id} [post]
-func _() {}
-
-// @ID StartPackAll
-// @Summary Start or restart all packing job
-// @Tags Job
-// @Accept json
-// @Produce json
-// @Param id path string true "Preparation ID or name"
-// @Param name path string true "Storage ID or name"
-// @Success 200 {object} model.Job
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /preparation/{id}/source/{name}/start-pack [post]
 func _() {}
 
 // @ID PausePack
@@ -131,23 +118,10 @@ func _() {}
 // @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
 // @Param job_id path int true "Pack Job ID"
-// @Success 200 {object} model.Job
+// @Success 200 {array} model.Job
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
 // @Router /preparation/{id}/source/{name}/pause-pack/{job_id} [post]
-func _() {}
-
-// @ID PausePackAll
-// @Summary Pause all packing job
-// @Tags Job
-// @Accept json
-// @Produce json
-// @Param id path string true "Preparation ID or name"
-// @Param name path string true "Storage ID or name"
-// @Success 200 {object} model.Job
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /preparation/{id}/source/{name}/pause-pack [post]
 func _() {}
 
 // PausePackHandler attempts to pause pack jobs for a given source storage.
@@ -242,7 +216,7 @@ func (DefaultHandler) PausePackHandler(
 func (DefaultHandler) PackHandler(
 	ctx context.Context,
 	db *gorm.DB,
-	jobID int64) (*model.Car, error) {
+	jobID uint64) (*model.Car, error) {
 	db = db.WithContext(ctx)
 	var packJob model.Job
 	err := db.
@@ -281,7 +255,7 @@ func (DefaultHandler) PackHandler(
 // @Tags Job
 // @Accept json
 // @Produce json
-// @Param id path string true "Pack job ID"
+// @Param id path int true "Pack job ID"
 // @Success 200 {object} model.Car
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
@@ -314,7 +288,7 @@ func (DefaultHandler) PrepareToPackSourceHandler(
 // @Produce json
 // @Param id path string true "Preparation ID or name"
 // @Param name path string true "Storage ID or name"
-// @Success 201
+// @Success 204
 // @Failure 400 {string} string "Bad Request"
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /preparation/{id}/source/{name}/finalize [post]

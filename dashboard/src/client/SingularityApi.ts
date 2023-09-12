@@ -14,12 +14,10 @@ export interface ApiHTTPError {
 }
 
 export interface DataprepAddPieceRequest {
-  /** Path to the CAR file, used to determine the size of the file and root CID */
-  filePath?: string;
   /** CID of the piece */
-  pieceCid?: string;
+  pieceCid: string;
   /** Size of the piece */
-  pieceSize?: string;
+  pieceSize: string;
   /** Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal */
   rootCid?: string;
 }
@@ -34,15 +32,15 @@ export interface DataprepCreateRequest {
    * Maximum size of the CAR files to be created
    * @default "31.5GiB"
    */
-  maxSize: string;
+  maxSize?: string;
   /** Name of the preparation */
-  name: string;
+  name?: string;
   /** Name of Output storage systems to be used for the output */
   outputStorages?: string[];
   /** Target piece size of the CAR files used for piece commitment calculation */
   pieceSize?: string;
   /** Name of Source storage systems to be used for the source */
-  sourceStorages: string[];
+  sourceStorages?: string[];
 }
 
 export interface DataprepDirEntry {
@@ -1112,8 +1110,8 @@ export interface StorageCreateQingstorStorageRequest {
 
 export interface StorageCreateRequest {
   config?: Record<string, string>;
-  name: string;
-  path: string;
+  name?: string;
+  path?: string;
   provider?: string;
 }
 
@@ -7971,7 +7969,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Pack a pack job into car files
      * @request POST:/job/{id}/pack
      */
-    pack: (id: string, params: RequestParams = {}) =>
+    pack: (id: number, params: RequestParams = {}) =>
       this.request<ModelCar, string>({
         path: `/job/${id}/pack`,
         method: "POST",
@@ -8224,29 +8222,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name PausePackAll
-     * @summary Pause all packing job
-     * @request POST:/preparation/{id}/source/{name}/pause-pack
-     */
-    pausePackAll: (id: string, name: string, params: RequestParams = {}) =>
-      this.request<ModelJob, ApiHTTPError>({
-        path: `/preparation/${id}/source/${name}/pause-pack`,
-        method: "POST",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Job
      * @name PausePack
      * @summary Pause a specific packing job
      * @request POST:/preparation/{id}/source/{name}/pause-pack/{job_id}
      */
     pausePack: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
-      this.request<ModelJob, ApiHTTPError>({
+      this.request<ModelJob[], ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/pause-pack/${jobId}`,
         method: "POST",
         type: ContentType.Json,
@@ -8292,29 +8273,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Job
-     * @name StartPackAll
-     * @summary Start or restart all packing job
-     * @request POST:/preparation/{id}/source/{name}/start-pack
-     */
-    startPackAll: (id: string, name: string, params: RequestParams = {}) =>
-      this.request<ModelJob, ApiHTTPError>({
-        path: `/preparation/${id}/source/${name}/start-pack`,
-        method: "POST",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Job
      * @name StartPack
      * @summary Start or restart a specific packing job
      * @request POST:/preparation/{id}/source/{name}/start-pack/{job_id}
      */
     startPack: (id: string, name: string, jobId: number, params: RequestParams = {}) =>
-      this.request<ModelJob, ApiHTTPError>({
+      this.request<ModelJob[], ApiHTTPError>({
         path: `/preparation/${id}/source/${name}/start-pack/${jobId}`,
         method: "POST",
         type: ContentType.Json,
@@ -8345,12 +8309,12 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Wallet Association
      * @name ListAttachedWallets
      * @summary List all wallets of a preparation.
-     * @request POST:/preparation/{id}/wallet
+     * @request GET:/preparation/{id}/wallet
      */
     listAttachedWallets: (id: string, params: RequestParams = {}) =>
       this.request<ModelWallet[], ApiHTTPError>({
         path: `/preparation/${id}/wallet`,
-        method: "POST",
+        method: "GET",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -8392,6 +8356,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   schedule = {
     /**
+     * No description
+     *
+     * @tags Deal Schedule
+     * @name ListSchedules
+     * @summary List all deal making schedules
+     * @request GET:/schedule
+     */
+    listSchedules: (params: RequestParams = {}) =>
+      this.request<ModelSchedule[], ApiHTTPError>({
+        path: `/schedule`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new schedule
      *
      * @tags Deal Schedule
@@ -8410,6 +8390,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Update a schedule
+     *
+     * @tags Deal Schedule
+     * @name UpdateSchedule
+     * @summary Update a schedule
+     * @request PATCH:/schedule/{id}
+     */
+    updateSchedule: (id: number, body: ScheduleUpdateRequest, params: RequestParams = {}) =>
+      this.request<ModelSchedule, ApiHTTPError>({
+        path: `/schedule/${id}`,
+        method: "PATCH",
+        body: body,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags Deal Schedule
@@ -8417,7 +8415,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Pause a specific schedule
      * @request POST:/schedule/{id}/pause
      */
-    pauseSchedule: (id: string, params: RequestParams = {}) =>
+    pauseSchedule: (id: number, params: RequestParams = {}) =>
       this.request<ModelSchedule, ApiHTTPError>({
         path: `/schedule/${id}/pause`,
         method: "POST",
@@ -8433,45 +8431,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Resume a specific schedule
      * @request POST:/schedule/{id}/resume
      */
-    resumeSchedule: (id: string, params: RequestParams = {}) =>
+    resumeSchedule: (id: number, params: RequestParams = {}) =>
       this.request<ModelSchedule, ApiHTTPError>({
         path: `/schedule/${id}/resume`,
         method: "POST",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update a schedule
-     *
-     * @tags Deal Schedule
-     * @name SchedulePartialUpdate
-     * @summary Update a schedule
-     * @request PATCH:/schedule/{scheduleId}
-     */
-    schedulePartialUpdate: (scheduleId: string, body: ScheduleUpdateRequest, params: RequestParams = {}) =>
-      this.request<ModelSchedule, ApiHTTPError>({
-        path: `/schedule/${scheduleId}`,
-        method: "PATCH",
-        body: body,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  schedules = {
-    /**
-     * No description
-     *
-     * @tags Deal Schedule
-     * @name ListSchedules
-     * @summary List all deal making schedules
-     * @request GET:/schedules
-     */
-    listSchedules: (params: RequestParams = {}) =>
-      this.request<ModelSchedule[], ApiHTTPError>({
-        path: `/schedules`,
-        method: "GET",
         format: "json",
         ...params,
       }),
@@ -9841,7 +9804,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update a storage connection
      * @request PATCH:/storage/{name}
      */
-    updateStorage: (name: string, config: StorePieceReader, params: RequestParams = {}) =>
+    updateStorage: (name: string, config: ModelConfigMap, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
         path: `/storage/${name}`,
         method: "PATCH",

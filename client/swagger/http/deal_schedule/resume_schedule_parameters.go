@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewResumeScheduleParams creates a new ResumeScheduleParams object,
@@ -65,7 +66,7 @@ type ResumeScheduleParams struct {
 
 	   Schedule ID
 	*/
-	ID string
+	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
@@ -121,13 +122,13 @@ func (o *ResumeScheduleParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithID adds the id to the resume schedule params
-func (o *ResumeScheduleParams) WithID(id string) *ResumeScheduleParams {
+func (o *ResumeScheduleParams) WithID(id int64) *ResumeScheduleParams {
 	o.SetID(id)
 	return o
 }
 
 // SetID adds the id to the resume schedule params
-func (o *ResumeScheduleParams) SetID(id string) {
+func (o *ResumeScheduleParams) SetID(id int64) {
 	o.ID = id
 }
 
@@ -140,7 +141,7 @@ func (o *ResumeScheduleParams) WriteToRequest(r runtime.ClientRequest, reg strfm
 	var res []error
 
 	// path param id
-	if err := r.SetPathParam("id", o.ID); err != nil {
+	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
 		return err
 	}
 

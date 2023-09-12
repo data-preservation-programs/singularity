@@ -35,7 +35,7 @@ func TestDataPrepStartDagGenHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("StartDagGenHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testDagGenJob, nil)
@@ -51,7 +51,7 @@ func TestDataPrepPauseDagGenHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("PauseDagGenHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testDagGenJob, nil)
@@ -75,7 +75,7 @@ func TestDataPrepStartScanHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("StartScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanJob, nil)
@@ -91,7 +91,7 @@ func TestDataPrepPauseScanHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("PauseScanHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testScanJob, nil)
@@ -115,7 +115,7 @@ func TestDataPrepStartPackHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("StartPackHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]model.Job{testPackJob}, nil)
@@ -136,7 +136,7 @@ func TestDataPrepPausePackHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("PausePackHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]model.Job{testPackJob}, nil)
@@ -157,7 +157,7 @@ func TestDataPreparationGetStatusHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockJob)
+		mockHandler := new(job.MockJob)
 		defer swapJobHandler(mockHandler)()
 
 		mockHandler.On("GetStatusHandler", mock.Anything, mock.Anything, mock.Anything).Return([]job.SourceStatus{

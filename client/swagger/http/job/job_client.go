@@ -36,17 +36,13 @@ type ClientService interface {
 
 	PausePack(params *PausePackParams, opts ...ClientOption) (*PausePackOK, error)
 
-	PausePackAll(params *PausePackAllParams, opts ...ClientOption) (*PausePackAllOK, error)
-
 	PauseScan(params *PauseScanParams, opts ...ClientOption) (*PauseScanOK, error)
 
-	PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceCreated, error)
+	PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceNoContent, error)
 
 	StartDagGen(params *StartDagGenParams, opts ...ClientOption) (*StartDagGenOK, error)
 
 	StartPack(params *StartPackParams, opts ...ClientOption) (*StartPackOK, error)
-
-	StartPackAll(params *StartPackAllParams, opts ...ClientOption) (*StartPackAllOK, error)
 
 	StartScan(params *StartScanParams, opts ...ClientOption) (*StartScanOK, error)
 
@@ -168,44 +164,6 @@ func (a *Client) PausePack(params *PausePackParams, opts ...ClientOption) (*Paus
 }
 
 /*
-PausePackAll pauses all packing job
-*/
-func (a *Client) PausePackAll(params *PausePackAllParams, opts ...ClientOption) (*PausePackAllOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewPausePackAllParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "PausePackAll",
-		Method:             "POST",
-		PathPattern:        "/preparation/{id}/source/{name}/pause-pack",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &PausePackAllReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*PausePackAllOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for PausePackAll: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
 PauseScan pauses an ongoing scanning job
 */
 func (a *Client) PauseScan(params *PauseScanParams, opts ...ClientOption) (*PauseScanOK, error) {
@@ -246,7 +204,7 @@ func (a *Client) PauseScan(params *PauseScanParams, opts ...ClientOption) (*Paus
 /*
 PrepareToPackSource prepares to pack a data source
 */
-func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceCreated, error) {
+func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...ClientOption) (*PrepareToPackSourceNoContent, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewPrepareToPackSourceParams()
@@ -271,7 +229,7 @@ func (a *Client) PrepareToPackSource(params *PrepareToPackSourceParams, opts ...
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*PrepareToPackSourceCreated)
+	success, ok := result.(*PrepareToPackSourceNoContent)
 	if ok {
 		return success, nil
 	}
@@ -354,44 +312,6 @@ func (a *Client) StartPack(params *StartPackParams, opts ...ClientOption) (*Star
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for StartPack: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
-StartPackAll starts or restart all packing job
-*/
-func (a *Client) StartPackAll(params *StartPackAllParams, opts ...ClientOption) (*StartPackAllOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewStartPackAllParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "StartPackAll",
-		Method:             "POST",
-		PathPattern:        "/preparation/{id}/source/{name}/start-pack",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &StartPackAllReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*StartPackAllOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for StartPackAll: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

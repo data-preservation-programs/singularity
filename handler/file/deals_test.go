@@ -48,7 +48,7 @@ func TestGetFileDealsHandler(t *testing.T) {
 		}
 		err = db.Create(&deal).Error
 		require.NoError(t, err)
-		deals, err := Default.GetFileDealsHandler(ctx, db, "1")
+		deals, err := Default.GetFileDealsHandler(ctx, db, 1)
 		require.NoError(t, err)
 		require.Len(t, deals, 1)
 	})

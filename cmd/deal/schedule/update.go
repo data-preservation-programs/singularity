@@ -1,6 +1,8 @@
 package schedule
 
 import (
+	"strconv"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -237,7 +239,13 @@ var UpdateCmd = &cli.Command{
 		if c.IsSet("max-pending-deal-number") {
 			request.MaxPendingDealNumber = ptr.Of(c.Int("max-pending-deal-number"))
 		}
-		schedule, err := schedule.Default.UpdateHandler(c.Context, db, c.Args().Get(0), request)
+
+		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)
+		if err != nil {
+			return errors.Newf("invalid schedule id %s", c.Args().Get(0))
+		}
+
+		schedule, err := schedule.Default.UpdateHandler(c.Context, db, uint32(id), request)
 		if err != nil {
 			return errors.WithStack(err)
 		}

@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/job"
 	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/handler/wallet"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
@@ -40,12 +41,19 @@ import (
 )
 
 type Server struct {
-	db          *gorm.DB
-	listener    net.Listener
-	lotusClient jsonrpc.RPCClient
-	dealMaker   replication.DealMaker
-	closer      io.Closer
-	host        host.Host
+	db              *gorm.DB
+	listener        net.Listener
+	lotusClient     jsonrpc.RPCClient
+	dealMaker       replication.DealMaker
+	closer          io.Closer
+	host            host.Host
+	storageHandler  storage.Handler
+	dataprepHandler dataprep.Handler
+	dealHandler     deal.Handler
+	walletHandler   wallet.Handler
+	fileHandler     file.Handler
+	jobHandler      job.Handler
+	scheduleHandler schedule.Handler
 }
 
 func (s Server) Name() string {
@@ -120,7 +128,14 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
-		closer: closer,
+		closer:          closer,
+		storageHandler:  &storage.DefaultHandler{},
+		dataprepHandler: &dataprep.DefaultHandler{},
+		dealHandler:     &deal.DefaultHandler{},
+		walletHandler:   &wallet.DefaultHandler{},
+		fileHandler:     &file.DefaultHandler{},
+		jobHandler:      &job.DefaultHandler{},
+		scheduleHandler: &schedule.DefaultHandler{},
 	}, nil
 }
 
@@ -261,71 +276,78 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 
 func (s Server) setupRoutes(e *echo.Echo) {
 	// Storage
-	e.POST("/api/storage/:type", s.toEchoHandler(storage.Default.CreateStorageHandler))
-	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(storage.Default.ExploreHandler))
-	e.GET("/api/storage", s.toEchoHandler(storage.Default.ListStoragesHandler))
-	e.DELETE("/api/storage/:name", s.toEchoHandler(storage.Default.RemoveHandler))
-	e.PATCH("/api/storage/:name", s.toEchoHandler(storage.Default.UpdateStorageHandler))
+	e.POST("/api/storage/:type", s.toEchoHandler(s.storageHandler.CreateStorageHandler))
+	e.POST("/api/storage/:type/:provider", s.toEchoHandler(func(
+		ctx context.Context,
+		db *gorm.DB,
+		storageType string,
+		provider string,
+		request storage.CreateRequest) (*model.Storage, error) {
+		request.Provider = provider
+		return s.storageHandler.CreateStorageHandler(ctx, db, storageType, request)
+	}))
+	e.GET("/api/storage/:name/explore/:path", s.toEchoHandler(s.storageHandler.ExploreHandler))
+	e.GET("/api/storage", s.toEchoHandler(s.storageHandler.ListStoragesHandler))
+	e.DELETE("/api/storage/:name", s.toEchoHandler(s.storageHandler.RemoveHandler))
+	e.PATCH("/api/storage/:name", s.toEchoHandler(s.storageHandler.UpdateStorageHandler))
 
 	// Preparation
-	e.POST("/api/preparation", s.toEchoHandler(dataprep.Default.CreatePreparationHandler))
-	e.GET("/api/preparation", s.toEchoHandler(dataprep.Default.ListHandler))
-	e.GET("/api/preparation/:id", s.toEchoHandler(job.Default.GetStatusHandler))
-	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(dataprep.Default.ListSchedulesHandler))
+	e.POST("/api/preparation", s.toEchoHandler(s.dataprepHandler.CreatePreparationHandler))
+	e.GET("/api/preparation", s.toEchoHandler(s.dataprepHandler.ListHandler))
+	e.GET("/api/preparation/:id", s.toEchoHandler(s.jobHandler.GetStatusHandler))
+	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(s.dataprepHandler.ListSchedulesHandler))
 
 	// Job management
-	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(job.Default.StartDagGenHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-daggen", s.toEchoHandler(job.Default.PauseDagGenHandler))
-	e.POST("/api/preparation/:id/source/:name/start-scan", s.toEchoHandler(job.Default.StartScanHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-scan", s.toEchoHandler(job.Default.PauseScanHandler))
-	e.POST("/api/preparation/:id/source/:name/start-pack", s.toEchoHandler(job.Default.StartPackHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-pack", s.toEchoHandler(job.Default.PausePackHandler))
-	e.POST("/api/preparation/:id/source/:name/start-pack/:job_id", s.toEchoHandler(job.Default.StartPackHandler))
-	e.POST("/api/preparation/:id/source/:name/pause-pack/:job_id", s.toEchoHandler(job.Default.PausePackHandler))
-	e.POST("/api/preparation/:id/source/:name/finalize", s.toEchoHandler(job.Default.PrepareToPackSourceHandler))
-	e.POST("/api/job/:id/pack", s.toEchoHandler(job.Default.PackHandler))
+	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(s.jobHandler.StartDagGenHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-daggen", s.toEchoHandler(s.jobHandler.PauseDagGenHandler))
+	e.POST("/api/preparation/:id/source/:name/start-scan", s.toEchoHandler(s.jobHandler.StartScanHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-scan", s.toEchoHandler(s.jobHandler.PauseScanHandler))
+	e.POST("/api/preparation/:id/source/:name/start-pack/:job_id", s.toEchoHandler(s.jobHandler.StartPackHandler))
+	e.POST("/api/preparation/:id/source/:name/pause-pack/:job_id", s.toEchoHandler(s.jobHandler.PausePackHandler))
+	e.POST("/api/preparation/:id/source/:name/finalize", s.toEchoHandler(s.jobHandler.PrepareToPackSourceHandler))
+	e.POST("/api/job/:id/pack", s.toEchoHandler(s.jobHandler.PackHandler))
 
 	// storage attachment
-	e.POST("/api/preparation/:id/output/:name", s.toEchoHandler(dataprep.Default.AddOutputStorageHandler))
-	e.POST("/api/preparation/:id/source/:name", s.toEchoHandler(dataprep.Default.AddSourceStorageHandler))
-	e.DELETE("/api/preparation/:id/output/:name", s.toEchoHandler(dataprep.Default.RemoveOutputStorageHandler))
+	e.POST("/api/preparation/:id/output/:name", s.toEchoHandler(s.dataprepHandler.AddOutputStorageHandler))
+	e.POST("/api/preparation/:id/source/:name", s.toEchoHandler(s.dataprepHandler.AddSourceStorageHandler))
+	e.DELETE("/api/preparation/:id/output/:name", s.toEchoHandler(s.dataprepHandler.RemoveOutputStorageHandler))
 
 	// Explore
-	e.GET("/api/preparation/:id/source/:name/explore/:path", s.toEchoHandler(dataprep.Default.ExploreHandler))
+	e.GET("/api/preparation/:id/source/:name/explore/:path", s.toEchoHandler(s.dataprepHandler.ExploreHandler))
 
 	// Piece
-	e.GET("/api/preparation/:id/piece", s.toEchoHandler(dataprep.Default.ListPiecesHandler))
-	e.POST("/api/preparation/:id/piece", s.toEchoHandler(dataprep.Default.AddPieceHandler))
+	e.GET("/api/preparation/:id/piece", s.toEchoHandler(s.dataprepHandler.ListPiecesHandler))
+	e.POST("/api/preparation/:id/piece", s.toEchoHandler(s.dataprepHandler.AddPieceHandler))
 
 	// Wallet
-	e.POST("/api/wallet", s.toEchoHandler(wallet.Default.ImportHandler))
-	e.GET("/api/wallet", s.toEchoHandler(wallet.Default.ListHandler))
-	e.DELETE("/api/wallet/:address", s.toEchoHandler(wallet.Default.RemoveHandler))
+	e.POST("/api/wallet", s.toEchoHandler(s.walletHandler.ImportHandler))
+	e.GET("/api/wallet", s.toEchoHandler(s.walletHandler.ListHandler))
+	e.DELETE("/api/wallet/:address", s.toEchoHandler(s.walletHandler.RemoveHandler))
 
 	// Wallet Association
-	e.POST("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(wallet.Default.AttachHandler))
-	e.GET("/api/preparation/:id/wallet", s.toEchoHandler(wallet.Default.ListAttachedHandler))
-	e.DELETE("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(wallet.Default.DetachHandler))
+	e.POST("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(s.walletHandler.AttachHandler))
+	e.GET("/api/preparation/:id/wallet", s.toEchoHandler(s.walletHandler.ListAttachedHandler))
+	e.DELETE("/api/preparation/:id/wallet/:wallet", s.toEchoHandler(s.walletHandler.DetachHandler))
 
 	// Piece metadata
 	e.GET("/api/piece/:id/metadata", s.getMetadataHandler)
 
 	// Deal Schedule
-	e.POST("/api/send_deal", s.toEchoHandler(deal.Default.SendManualHandler))
-	e.POST("/api/schedule", s.toEchoHandler(schedule.Default.CreateHandler))
-	e.GET("/api/schedule", s.toEchoHandler(schedule.Default.ListHandler))
-	e.POST("/api/schedule/:id/pause", s.toEchoHandler(schedule.Default.PauseHandler))
-	e.POST("/api/schedule/:id/resume", s.toEchoHandler(schedule.Default.ResumeHandler))
-	e.PATCH("/api/schedule/:id", s.toEchoHandler(schedule.Default.UpdateHandler))
+	e.POST("/api/send_deal", s.toEchoHandler(s.dealHandler.SendManualHandler))
+	e.POST("/api/schedule", s.toEchoHandler(s.scheduleHandler.CreateHandler))
+	e.GET("/api/schedule", s.toEchoHandler(s.scheduleHandler.ListHandler))
+	e.POST("/api/schedule/:id/pause", s.toEchoHandler(s.scheduleHandler.PauseHandler))
+	e.POST("/api/schedule/:id/resume", s.toEchoHandler(s.scheduleHandler.ResumeHandler))
+	e.PATCH("/api/schedule/:id", s.toEchoHandler(s.scheduleHandler.UpdateHandler))
 
 	// Deal
-	e.POST("/api/deal", s.toEchoHandler(deal.Default.ListHandler))
+	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))
 
 	// File
-	e.GET("/api/file/:id/deals", s.toEchoHandler(file.Default.GetFileDealsHandler))
-	e.GET("/api/file/:id", s.toEchoHandler(file.Default.GetFileHandler))
-	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(file.Default.PrepareToPackFileHandler))
-	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(file.Default.PushFileHandler))
+	e.GET("/api/file/:id/deals", s.toEchoHandler(s.fileHandler.GetFileDealsHandler))
+	e.GET("/api/file/:id", s.toEchoHandler(s.fileHandler.GetFileHandler))
+	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(s.fileHandler.PrepareToPackFileHandler))
+	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(s.fileHandler.PushFileHandler))
 }
 
 var logger = logging.Logger("api")

@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DataprepAddPieceRequest dataprep add piece request
@@ -17,14 +19,13 @@ import (
 // swagger:model dataprep.AddPieceRequest
 type DataprepAddPieceRequest struct {
 
-	// Path to the CAR file, used to determine the size of the file and root CID
-	FilePath string `json:"filePath,omitempty"`
-
 	// CID of the piece
-	PieceCid string `json:"pieceCid,omitempty"`
+	// Required: true
+	PieceCid *string `json:"pieceCid"`
 
 	// Size of the piece
-	PieceSize string `json:"pieceSize,omitempty"`
+	// Required: true
+	PieceSize *string `json:"pieceSize"`
 
 	// Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
 	RootCid string `json:"rootCid,omitempty"`
@@ -32,6 +33,37 @@ type DataprepAddPieceRequest struct {
 
 // Validate validates this dataprep add piece request
 func (m *DataprepAddPieceRequest) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePieceCid(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePieceSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DataprepAddPieceRequest) validatePieceCid(formats strfmt.Registry) error {
+
+	if err := validate.Required("pieceCid", "body", m.PieceCid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DataprepAddPieceRequest) validatePieceSize(formats strfmt.Registry) error {
+
+	if err := validate.Required("pieceSize", "body", m.PieceSize); err != nil {
+		return err
+	}
+
 	return nil
 }
 

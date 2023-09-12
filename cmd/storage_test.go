@@ -25,7 +25,7 @@ func TestStorageExploreHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("ExploreHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return([]storage.DirEntry{
 			{
@@ -59,7 +59,7 @@ func TestStorageCreateHandler_S3Provider(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
 			ID:        1,
@@ -88,7 +88,7 @@ func TestStorageCreateHandler_Local(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("CreateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
 			ID:        1,
@@ -116,7 +116,7 @@ func TestStorageListHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("ListStoragesHandler", mock.Anything, mock.Anything).Return([]model.Storage{{
 			ID:        1,
@@ -164,7 +164,7 @@ func TestStorageRemoveHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
 		defer runner.Save(t)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		_, _, err := runner.Run(ctx, "singularity storage remove name")
@@ -183,7 +183,7 @@ func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 			Path:   "bucket",
 		}).Error
 		require.NoError(t, err)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("UpdateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
 			ID:        1,
@@ -213,7 +213,7 @@ func TestStorageUpdateHandler_Local(t *testing.T) {
 			Path: "/tmp",
 		}).Error
 		require.NoError(t, err)
-		mockHandler := new(MockStorage)
+		mockHandler := new(storage.MockStorage)
 		defer swapStorageHandler(mockHandler)()
 		mockHandler.On("UpdateStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
 			ID:        1,
