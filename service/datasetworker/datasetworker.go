@@ -153,7 +153,7 @@ func (w Worker) Run(ctx context.Context) error {
 		metrics.Default.Flush()
 	}()
 
-	var threads []service.Server
+	threads := make([]service.Server, w.config.Concurrency)
 	for i := 0; i < w.config.Concurrency; i++ {
 		id := uuid.New()
 		thread := &Thread{
@@ -162,7 +162,7 @@ func (w Worker) Run(ctx context.Context) error {
 			logger:      logger.With("workerID", id.String()),
 			config:      w.config,
 		}
-		threads = append(threads, thread)
+		threads[i] = thread
 	}
 	err = service.StartServers(ctx, logger, threads...)
 	cancel()
