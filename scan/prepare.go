@@ -15,7 +15,7 @@ import (
 func NextAvailablePackJob(
 	ctx context.Context,
 	db *gorm.DB,
-	attachmentID uint32,
+	attachmentID model.SourceAttachmentID,
 ) (*model.Job, error) {
 	var packJob model.Job
 	err := database.DoRetry(ctx, func() error {
@@ -65,9 +65,9 @@ func PrepareToPackFileRanges(
 func UpdatePackJob(
 	ctx context.Context,
 	db *gorm.DB,
-	packJobID uint64,
+	packJobID model.JobID,
 	state model.JobState,
-	fileRangeIDs []uint64,
+	fileRangeIDs []model.FileRangeID,
 ) error {
 	return database.DoRetry(ctx, func() error {
 		return db.Transaction(
@@ -111,7 +111,7 @@ func PrepareSource(ctx context.Context, db *gorm.DB, attachment model.SourceAtta
 func markPackJobsReady(
 	ctx context.Context,
 	db *gorm.DB,
-	attachmentID uint32,
+	attachmentID model.SourceAttachmentID,
 ) error {
 	return database.DoRetry(ctx, func() error {
 		return db.Model(&model.Job{}).Where("attachment_id = ? AND state = ?", attachmentID, model.Created).Update("state", model.Ready).Error

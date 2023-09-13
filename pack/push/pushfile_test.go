@@ -47,7 +47,7 @@ func TestMaxSizeToSplitSize(t *testing.T) {
 
 func TestPushFile(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		cache := map[string]uint64{"": 1, ".": 1}
+		cache := map[string]model.DirectoryID{"": 1, ".": 1}
 		attachment := model.SourceAttachment{
 			Preparation: &model.Preparation{
 				MaxSize: 16,
@@ -89,7 +89,7 @@ func TestPushFile(t *testing.T) {
 
 func TestEnsureParentDirectories(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
-		cache := map[string]uint64{}
+		cache := map[string]model.DirectoryID{}
 		attachment := model.SourceAttachment{
 			Preparation: &model.Preparation{},
 			Storage:     &model.Storage{},
@@ -145,7 +145,7 @@ func TestCreatePackJob(t *testing.T) {
 		}
 		err = db.Create(&fileRanges).Error
 		require.NoError(t, err)
-		job, err := CreatePackJob(ctx, db, attachment.ID, []uint64{1})
+		job, err := CreatePackJob(ctx, db, attachment.ID, []model.FileRangeID{1})
 		require.NoError(t, err)
 		require.Equal(t, attachment.ID, job.AttachmentID)
 	})

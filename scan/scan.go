@@ -17,7 +17,7 @@ var logger = log.Logger("scan")
 
 func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) error {
 	db = db.WithContext(ctx)
-	directoryCache := make(map[string]uint64)
+	directoryCache := make(map[string]model.DirectoryID)
 	var remaining = push.NewFileRangeSet()
 	var remainingFileRanges []model.FileRange
 	err := db.Joins("File").
@@ -87,7 +87,7 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 func createPackJob(
 	ctx context.Context,
 	db *gorm.DB,
-	attachmentID uint32,
+	attachmentID model.SourceAttachmentID,
 	remaining *push.FileRangeSet,
 ) error {
 	job, err := push.CreatePackJob(ctx, db, attachmentID, remaining.FileRangeIDs())
@@ -102,7 +102,7 @@ func createPackJob(
 func addFileRangesAndCreatePackJob(
 	ctx context.Context,
 	db *gorm.DB,
-	attachmentID uint32,
+	attachmentID model.SourceAttachmentID,
 	remaining *push.FileRangeSet,
 	maxSize int64,
 	fileRanges ...model.FileRange) error {

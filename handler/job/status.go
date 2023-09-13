@@ -11,11 +11,11 @@ import (
 )
 
 type SourceStatus struct {
-	AttachmentID    *uint32         `json:"attachmentId"`
-	SourceStorageID *uint32         `json:"storageId"`
-	SourceStorage   *model.Storage  `json:"source"       table:"expand;header:Source Storage"`
-	OutputStorages  []model.Storage `json:"output"       table:"expand;header:Output Storages"`
-	Jobs            []model.Job     `json:"jobs"         table:"expand"`
+	AttachmentID    *model.SourceAttachmentID `json:"attachmentId"`
+	SourceStorageID *model.StorageID          `json:"storageId"`
+	SourceStorage   *model.Storage            `json:"source"       table:"expand;header:Source Storage"`
+	OutputStorages  []model.Storage           `json:"output"       table:"expand;header:Output Storages"`
+	Jobs            []model.Job               `json:"jobs"         table:"expand"`
 }
 
 // GetStatusHandler fetches and returns the current status of a specific Preparation.

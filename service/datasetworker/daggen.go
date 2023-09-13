@@ -24,10 +24,10 @@ import (
 type DagGenerator struct {
 	ctx          context.Context
 	db           *gorm.DB
-	attachmentID uint32
+	attachmentID model.SourceAttachmentID
 	rows         *sql.Rows
 	root         cid.Cid
-	dirCIDs      map[uint64]model.CID
+	dirCIDs      map[model.DirectoryID]model.CID
 	buffer       io.Reader
 	done         bool
 	carBlocks    []model.CarBlock
@@ -114,13 +114,13 @@ func (d *DagGenerator) Close() error {
 	return nil
 }
 
-func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID uint32, root cid.Cid) *DagGenerator {
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid) *DagGenerator {
 	return &DagGenerator{
 		ctx:          ctx,
 		db:           db,
 		attachmentID: attachmentID,
 		root:         root,
-		dirCIDs:      make(map[uint64]model.CID),
+		dirCIDs:      make(map[model.DirectoryID]model.CID),
 	}
 }
 

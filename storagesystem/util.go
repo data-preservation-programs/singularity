@@ -80,13 +80,13 @@ var ErrStorageNotAvailable = errors.New("storage not available")
 var freeSpaceWarningThreshold = 0.05
 var freeSpaceErrorThreshold = 0.01
 
-func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*uint32, Writer, error) {
+func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*model.StorageID, Writer, error) {
 	if len(storages) == 0 {
 		return nil, nil, nil
 	}
 
 	var handlersWithWeight []struct {
-		id      uint32
+		id      model.StorageID
 		handler Writer
 		weight  float64
 	}
@@ -108,7 +108,7 @@ func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*uint
 				continue
 			}
 			handlersWithWeight = append(handlersWithWeight, struct {
-				id      uint32
+				id      model.StorageID
 				handler Writer
 				weight  float64
 			}{
@@ -126,7 +126,7 @@ func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*uint
 		}
 
 		handlersWithWeight = append(handlersWithWeight, struct {
-			id      uint32
+			id      model.StorageID
 			handler Writer
 			weight  float64
 		}{

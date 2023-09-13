@@ -25,10 +25,10 @@ type AddPieceRequest struct {
 }
 
 type PieceList struct {
-	AttachmentID    *uint32        `json:"attachmentId"`
-	SourceStorageID *uint32        `json:"storageId"`
-	SourceStorage   *model.Storage `json:"source"       table:"expand"`
-	Pieces          []model.Car    `json:"pieces"       table:"expand"`
+	AttachmentID    *model.SourceAttachmentID `json:"attachmentId"`
+	SourceStorageID *model.StorageID          `json:"storageId"`
+	SourceStorage   *model.Storage            `json:"source"       table:"expand"`
+	Pieces          []model.Car               `json:"pieces"       table:"expand"`
 }
 
 // ListPiecesHandler retrieves the list of pieces associated with a particular preparation and its source attachments.

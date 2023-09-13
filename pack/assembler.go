@@ -26,7 +26,7 @@ var ErrFileModified = errors.New("file has been modified")
 type Assembler struct {
 	rootCID cid.Cid
 	// objects represents a map of object IDs to their corresponding fs.Object representations.
-	objects map[uint64]fs.Object
+	objects map[model.FileID]fs.Object
 	// ctx provides the context for the assembler's operations.
 	ctx context.Context
 	// reader is the storage system reader used to read file data.
@@ -73,7 +73,7 @@ func NewAssembler(ctx context.Context, reader storagesystem.Reader,
 		reader:     reader,
 		fileRanges: fileRanges,
 		buf:        make([]byte, packutil.ChunkSize),
-		objects:    make(map[uint64]fs.Object),
+		objects:    make(map[model.FileID]fs.Object),
 	}
 }
 

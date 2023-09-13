@@ -174,7 +174,7 @@ func (w Worker) Name() string {
 	return "Preparation Worker Main"
 }
 
-func (w *Thread) handleWorkComplete(ctx context.Context, jobID uint64) error {
+func (w *Thread) handleWorkComplete(ctx context.Context, jobID model.JobID) error {
 	return database.DoRetry(ctx, func() error {
 		return w.dbNoContext.WithContext(ctx).Model(&model.Job{}).Where("id = ?", jobID).Updates(map[string]any{
 			"worker_id":         nil,
@@ -185,7 +185,7 @@ func (w *Thread) handleWorkComplete(ctx context.Context, jobID uint64) error {
 	})
 }
 
-func (w *Thread) handleWorkError(ctx context.Context, jobID uint64, err error) error {
+func (w *Thread) handleWorkError(ctx context.Context, jobID model.JobID, err error) error {
 	updates := make(map[string]any)
 	updates["worker_id"] = nil
 	// Reset the state to ready if the context was canceled
