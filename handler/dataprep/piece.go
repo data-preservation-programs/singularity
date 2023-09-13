@@ -21,7 +21,8 @@ type AddPieceRequest struct {
 	PieceCID  string `binding:"required" json:"pieceCid"`      // CID of the piece
 	PieceSize string `binding:"required" json:"pieceSize"`     // Size of the piece
 	FilePath  string `json:"filePath"    swaggerignore:"true"` // Path to the CAR file, used to determine the size of the file and root CID
-	RootCID   string `json:"rootCid"`                          // Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
+	RootCID   string `json:"rootCid"`                          // Root CID of the CAR file, used to populate the label field of storage deal
+	FileSize  int64  `json:"fileSize"`                         // File size of the CAR file, this is required for boost online deal
 }
 
 type PieceList struct {
@@ -172,6 +173,7 @@ func (DefaultHandler) AddPieceHandler(
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece size must be a power of 2")
 	}
 	rootCID := packutil.EmptyFileCid
+	fileSize := request.FileSize
 	if request.RootCID != "" {
 		rootCID, err = cid.Parse(request.RootCID)
 		if err != nil {
@@ -193,12 +195,21 @@ func (DefaultHandler) AddPieceHandler(
 		rootCID = header.Roots[0]
 	}
 
+	if fileSize == 0 && request.FilePath != "" {
+		stat, err := os.Stat(request.FilePath)
+		if err != nil {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "failed to stat file %s", request.FilePath)
+		}
+		fileSize = stat.Size()
+	}
+
 	mCar := model.Car{
 		PieceCID:      model.CID(pieceCID),
 		PieceSize:     pieceSize,
 		RootCID:       model.CID(rootCID),
 		StoragePath:   request.FilePath,
 		PreparationID: preparation.ID,
+		FileSize:      fileSize,
 	}
 
 	err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })

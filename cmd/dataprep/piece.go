@@ -56,6 +56,10 @@ var AddPieceCmd = &cli.Command{
 			Name:  "root-cid",
 			Usage: "Root CID of the CAR file",
 		},
+		&cli.Int64Flag{
+			Name:  "file-size",
+			Usage: "Size of the CAR file, this is required for boost online deal. If not set, it will be determined from the file path if provided.",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -69,6 +73,7 @@ var AddPieceCmd = &cli.Command{
 			PieceSize: c.String("piece-size"),
 			FilePath:  c.String("file-path"),
 			RootCID:   c.String("root-cid"),
+			FileSize:  c.Int64("file-size"),
 		})
 		if err != nil {
 			return errors.WithStack(err)
