@@ -1,10 +1,16 @@
 {
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.",
         "title": "Singularity API",
         "contact": {
-            "name": "Xinan Xu",
+            "name": "Singularity Team",
             "url": "https://github.com/data-preservation-programs/singularity/issues"
         },
         "license": {
