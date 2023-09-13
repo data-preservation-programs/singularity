@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -35,6 +36,12 @@ type ModelStorage struct {
 	// Path is the path to the storage root.
 	Path string `json:"path,omitempty"`
 
+	// preparations as output
+	PreparationsAsOutput []*ModelPreparation `json:"preparationsAsOutput"`
+
+	// Associations
+	PreparationsAsSource []*ModelPreparation `json:"preparationsAsSource"`
+
 	// type
 	Type string `json:"type,omitempty"`
 
@@ -47,6 +54,14 @@ func (m *ModelStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePreparationsAsOutput(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePreparationsAsSource(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -64,11 +79,71 @@ func (m *ModelStorage) validateConfig(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *ModelStorage) validatePreparationsAsOutput(formats strfmt.Registry) error {
+	if swag.IsZero(m.PreparationsAsOutput) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PreparationsAsOutput); i++ {
+		if swag.IsZero(m.PreparationsAsOutput[i]) { // not required
+			continue
+		}
+
+		if m.PreparationsAsOutput[i] != nil {
+			if err := m.PreparationsAsOutput[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ModelStorage) validatePreparationsAsSource(formats strfmt.Registry) error {
+	if swag.IsZero(m.PreparationsAsSource) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.PreparationsAsSource); i++ {
+		if swag.IsZero(m.PreparationsAsSource[i]) { // not required
+			continue
+		}
+
+		if m.PreparationsAsSource[i] != nil {
+			if err := m.PreparationsAsSource[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 // ContextValidate validate this model storage based on the context it is used
 func (m *ModelStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.contextValidateConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePreparationsAsOutput(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePreparationsAsSource(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -79,6 +154,56 @@ func (m *ModelStorage) ContextValidate(ctx context.Context, formats strfmt.Regis
 }
 
 func (m *ModelStorage) contextValidateConfig(ctx context.Context, formats strfmt.Registry) error {
+
+	return nil
+}
+
+func (m *ModelStorage) contextValidatePreparationsAsOutput(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PreparationsAsOutput); i++ {
+
+		if m.PreparationsAsOutput[i] != nil {
+
+			if swag.IsZero(m.PreparationsAsOutput[i]) { // not required
+				return nil
+			}
+
+			if err := m.PreparationsAsOutput[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("preparationsAsOutput" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *ModelStorage) contextValidatePreparationsAsSource(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.PreparationsAsSource); i++ {
+
+		if m.PreparationsAsSource[i] != nil {
+
+			if swag.IsZero(m.PreparationsAsSource[i]) { // not required
+				return nil
+			}
+
+			if err := m.PreparationsAsSource[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("preparationsAsSource" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
 
 	return nil
 }

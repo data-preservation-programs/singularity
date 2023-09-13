@@ -511,6 +511,15 @@ definitions:
       path:
         description: Path is the path to the storage root.
         type: string
+      preparationsAsOutput:
+        items:
+          $ref: '#/definitions/model.Preparation'
+        type: array
+      preparationsAsSource:
+        description: Associations
+        items:
+          $ref: '#/definitions/model.Preparation'
+        type: array
       type:
         type: string
       updatedAt:
