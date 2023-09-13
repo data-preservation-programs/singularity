@@ -7979,6 +7979,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags File
+     * @name RetrieveFile
+     * @summary Get content of a file
+     * @request GET:/file/{id}/retrieve
+     */
+    retrieveFile: (id: number, params: RequestParams = {}) =>
+      this.request<File, ApiHTTPError>({
+        path: `/file/${id}/retrieve`,
+        method: "GET",
+        type: ContentType.Json,
+        ...params,
+      }),
   };
   job = {
     /**

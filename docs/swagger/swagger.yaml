@@ -7722,6 +7722,47 @@ paths:
       summary: prepare job for a given item
       tags:
       - File
+  /file/{id}/retrieve:
+    get:
+      consumes:
+      - application/json
+      operationId: RetrieveFile
+      parameters:
+      - description: File ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: HTTP Range Header
+        in: header
+        name: Range
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "206":
+          description: Partial Content
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Get content of a file
+      tags:
+      - File
   /job/{id}/pack:
     post:
       consumes:

@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
 	"fmt"
+	"io"
 	http2 "net/http"
 	"os"
 	"path/filepath"
@@ -68,7 +71,10 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 func TestMotionIntegration(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithCancel(ctx)
-		client, done := setupPreparation(t, ctx, true)
+		var testData = make([]byte, 1000)
+		_, err := rand.Read(testData)
+		require.NoError(t, err)
+		client, done := setupPreparation(t, ctx, "test.txt", bytes.NewReader(testData), true)
 		defer done()
 		defer cancel()
 		// Push a file
@@ -100,6 +106,39 @@ func TestMotionIntegration(t *testing.T) {
 		require.True(t, getFileResp.IsSuccess())
 		require.NotNil(t, getFileResp.Payload)
 		require.Len(t, getFileResp.Payload.FileRanges, 1)
+
+		// retrieve the file
+		buf := new(bytes.Buffer)
+		fullFileResp, partialFileResponse, err := client.File.RetrieveFile(&file.RetrieveFileParams{
+			ID:      pushResp.Payload.ID,
+			Context: ctx,
+		}, buf)
+		require.NoError(t, err)
+		require.NotNil(t, fullFileResp)
+		require.True(t, fullFileResp.IsSuccess())
+		require.Nil(t, partialFileResponse)
+		receivedData, err := io.ReadAll(buf)
+		require.NoError(t, err)
+		// verify we retrieved the correct data
+		require.Equal(t, testData, receivedData)
+
+		// retrieve the file with a range request
+		buf = new(bytes.Buffer)
+		httpRange := "bytes=100-199"
+		fullFileResp, partialFileResponse, err = client.File.RetrieveFile(&file.RetrieveFileParams{
+			ID:      pushResp.Payload.ID,
+			Range:   &httpRange,
+			Context: ctx,
+		}, buf)
+		require.NoError(t, err)
+		require.NotNil(t, partialFileResponse)
+		require.True(t, partialFileResponse.IsSuccess())
+		require.Nil(t, fullFileResp)
+		receivedData, err = io.ReadAll(buf)
+		require.NoError(t, err)
+		// verify we retrieved the correct data range (HTTP ranges are inclusive)
+		require.Equal(t, testData[100:200], receivedData)
+
 		// Get all jobs
 		jobs, err := client.Preparation.GetPreparationStatus(&preparation.GetPreparationStatusParams{
 			ID:      "prep",
@@ -117,14 +156,28 @@ func TestMotionIntegration(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, car.IsSuccess())
 		require.NotZero(t, car.Payload.ID)
-		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", car.Payload.PieceCid)
 	})
 }
 
-func setupPreparation(t *testing.T, ctx context.Context, disableDagInline bool) (*http.SingularityAPI, func()) {
+func setupPreparation(t *testing.T, ctx context.Context, testFileName string, testData io.Reader, disableDagInline bool) (*http.SingularityAPI, func()) {
 	t.Helper()
 	source := t.TempDir()
-	err := os.WriteFile(filepath.Join(source, "test.txt"), []byte("hello world"), 0644)
+	// write a test file
+	f, err := os.Create(filepath.Join(source, testFileName))
+	require.NoError(t, err)
+	buffer := make([]byte, 1000)
+	for {
+		read, err := testData.Read(buffer)
+		if read > 0 {
+			writeBuf := buffer[:read]
+			f.Write(writeBuf)
+		}
+		if err != nil {
+			require.EqualError(t, err, io.EOF.Error())
+			break
+		}
+	}
+	err = f.Close()
 	require.NoError(t, err)
 	output := t.TempDir()
 	done := runAPI(t, ctx)
@@ -188,7 +241,7 @@ func setupPreparation(t *testing.T, ctx context.Context, disableDagInline bool) 
 func TestBasicDataPrep(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithCancel(ctx)
-		client, done := setupPreparation(t, ctx, false)
+		client, done := setupPreparation(t, ctx, "test.txt", bytes.NewReader([]byte("hello world")), false)
 		defer done()
 		defer cancel()
 		// Start Scanning
