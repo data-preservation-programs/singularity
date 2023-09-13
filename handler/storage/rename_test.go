@@ -30,4 +30,15 @@ func TestRenameStorageHandler(t *testing.T) {
 			require.Equal(t, "new", new.Name)
 		})
 	})
+
+	t.Run("invalid name", func(t *testing.T) {
+		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+			err := db.Create(&model.Storage{
+				Name: "old",
+			}).Error
+			require.NoError(t, err)
+			_, err = Default.RenameStorageHandler(ctx, db, "old", RenameRequest{"111"})
+			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		})
+	})
 }

@@ -2,3 +2,5 @@
 /dashboard/src/client/** linguist-generated=true
 /client/** linguist-generated=true
 /docs/swagger/** linguist-generated=true
+/docs/en/cli-reference linguist-generated=true
+/docs/en/web-api-reference linguist-generated=true
