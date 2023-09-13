@@ -25,6 +25,9 @@ type JobSourceStatus struct {
 	// jobs
 	Jobs []*ModelJob `json:"jobs"`
 
+	// output
+	Output []*ModelStorage `json:"output"`
+
 	// source
 	Source *ModelStorage `json:"source,omitempty"`
 
@@ -37,6 +40,10 @@ func (m *JobSourceStatus) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateJobs(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOutput(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -76,6 +83,32 @@ func (m *JobSourceStatus) validateJobs(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *JobSourceStatus) validateOutput(formats strfmt.Registry) error {
+	if swag.IsZero(m.Output) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Output); i++ {
+		if swag.IsZero(m.Output[i]) { // not required
+			continue
+		}
+
+		if m.Output[i] != nil {
+			if err := m.Output[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("output" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("output" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
 func (m *JobSourceStatus) validateSource(formats strfmt.Registry) error {
 	if swag.IsZero(m.Source) { // not required
 		return nil
@@ -100,6 +133,10 @@ func (m *JobSourceStatus) ContextValidate(ctx context.Context, formats strfmt.Re
 	var res []error
 
 	if err := m.contextValidateJobs(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateOutput(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -128,6 +165,31 @@ func (m *JobSourceStatus) contextValidateJobs(ctx context.Context, formats strfm
 					return ve.ValidateName("jobs" + "." + strconv.Itoa(i))
 				} else if ce, ok := err.(*errors.CompositeError); ok {
 					return ce.ValidateName("jobs" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *JobSourceStatus) contextValidateOutput(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Output); i++ {
+
+		if m.Output[i] != nil {
+
+			if swag.IsZero(m.Output[i]) { // not required
+				return nil
+			}
+
+			if err := m.Output[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("output" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("output" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
