@@ -20,6 +20,9 @@ func TestGetStatusHandler(t *testing.T) {
 					SourceStorages: []model.Storage{{
 						Name: "source",
 					}},
+					OutputStorages: []model.Storage{{
+						Name: "output",
+					}},
 				}).Error
 				require.NoError(t, err)
 
@@ -34,6 +37,7 @@ func TestGetStatusHandler(t *testing.T) {
 				require.NoError(t, err)
 				require.Len(t, status, 1)
 				require.Len(t, status[0].Jobs, 1)
+				require.Len(t, status[0].OutputStorages, 1)
 				require.Equal(t, model.Ready, status[0].Jobs[0].State)
 			})
 		})

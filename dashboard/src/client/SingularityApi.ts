@@ -154,6 +154,7 @@ export interface FileInfo {
 export interface JobSourceStatus {
   attachmentId?: number;
   jobs?: ModelJob[];
+  output?: ModelStorage[];
   source?: ModelStorage;
   storageId?: number;
 }
