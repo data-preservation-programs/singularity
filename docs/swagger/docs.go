@@ -6,12 +6,18 @@ import "github.com/swaggo/swag"
 
 const docTemplate = `{
     "schemes": {{ marshal .Schemes }},
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Xinan Xu",
+            "name": "Singularity Team",
             "url": "https://github.com/data-preservation-programs/singularity/issues"
         },
         "license": {

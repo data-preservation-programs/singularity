@@ -7888,7 +7888,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @license MIT + Apache 2.0 (https://github.com/data-preservation-programs/singularity/blob/main/LICENSE)
  * @baseUrl //localhost:9090/api
  * @externalDocs https://swagger.io/resources/open-api/
- * @contact Xinan Xu (https://github.com/data-preservation-programs/singularity/issues)
+ * @contact Singularity Team (https://github.com/data-preservation-programs/singularity/issues)
  *
  * This is the API for Singularity, a tool for large-scale clients with PB-scale data onboarding to Filecoin network.
  */
