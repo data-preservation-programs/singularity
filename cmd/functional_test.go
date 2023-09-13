@@ -20,9 +20,11 @@ import (
 // The bind address needs to be different for different test package so that they don't conflict.
 const contentProviderBind = "127.0.0.1:7778"
 
-// TestDeleteAfterExportWithMultipleOutput tests two scenarios:
+// TestDeleteAfterExportWithMultipleOutput tests four scenarios:
 // 1. The preparation is created with --delete-after-export, which will delete the source storage after export
 // 2. The preparation is created with multiple output folder so expect CAR files split into multiple folders.
+// 3. The preparation disables inline preparation
+// 4. The preparation disables dag
 func TestDeleteAfterExportWithMultipleOutput(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		source := t.TempDir()
@@ -39,7 +41,7 @@ func TestDeleteAfterExportWithMultipleOutput(t *testing.T) {
 		defer runner.Save(t, source, output1, output2)
 
 		// Create prep with both source and output
-		_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --delete-after-export --max-size 3MB --name prep --local-source %s --local-output %s --local-output %s",
+		_, _, err := runner.Run(ctx, fmt.Sprintf("singularity prep create --no-inline --no-dag --delete-after-export --max-size 3MB --name prep --local-source %s --local-output %s --local-output %s",
 			testutil.EscapePath(source), testutil.EscapePath(output1), testutil.EscapePath(output2)))
 		require.NoError(t, err)
 
@@ -67,6 +69,25 @@ func TestDeleteAfterExportWithMultipleOutput(t *testing.T) {
 		entries, err = os.ReadDir(source)
 		require.NoError(t, err)
 		require.Empty(t, entries)
+
+		// Check if any carblocks are saved in the database
+		var carBlocksCount int64
+		err = db.Model(&model.CarBlock{}).Count(&carBlocksCount).Error
+		require.NoError(t, err)
+		require.Equal(t, int64(0), carBlocksCount)
+
+		// Check if any CID or data has been set for directories
+		var dirs []model.Directory
+		err = db.Find(&dirs).Error
+		require.NoError(t, err)
+		for _, dir := range dirs {
+			require.Empty(t, dir.CID.String())
+			require.Empty(t, dir.Data)
+		}
+
+		// Explore should still work even the directory does not have CID
+		_, _, err = runner.Run(ctx, "singularity prep explore 1 1")
+		require.NoError(t, err)
 	})
 }
 
