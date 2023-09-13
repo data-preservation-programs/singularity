@@ -12,9 +12,23 @@ import (
 )
 
 type RenameRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name string `binding:"required" json:"name"`
 }
 
+// RenamePreparationHandler updates the name of a preparation entry in the database.
+// This handler finds a preparation entry by its ID or name and then updates its name with the new name
+// provided in the request payload. The new name cannot be entirely numeric or empty.
+//
+// Parameters:
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for making database queries.
+//   - name: The current name or ID of the preparation entry to be renamed.
+//   - request: A RenameRequest object containing the new name for the preparation entry.
+//
+// Returns:
+//   - A pointer to the updated model.Preparation entry, reflecting the new name.
+//   - An error if any issues occur during the operation, especially if the provided new name is invalid,
+//     or if there are database-related errors.
 func (DefaultHandler) RenamePreparationHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -56,5 +70,5 @@ func (DefaultHandler) RenamePreparationHandler(
 // @Success 200 {object} model.Preparation
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Router /Preparation/{name}/rename [patch]
+// @Router /preparation/{name}/rename [patch]
 func _() {}

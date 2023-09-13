@@ -12,7 +12,7 @@ import (
 )
 
 type RenameRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name string `binding:"required" json:"name"`
 }
 
 // RenameStorageHandler updates the name of a storage entry in the database.

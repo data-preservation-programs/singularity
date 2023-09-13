@@ -16,7 +16,7 @@ import (
 
 type CreateRequest struct {
 	Provider string            `json:"provider"`
-	Name     string            `json:"name" binding:"required"`
+	Name     string            `binding:"required" json:"name"`
 	Path     string            `json:"path"`
 	Config   map[string]string `json:"config"`
 }

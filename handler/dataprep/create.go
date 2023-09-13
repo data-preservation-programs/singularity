@@ -13,7 +13,7 @@ import (
 )
 
 type CreateRequest struct {
-	Name              string   `json:"name" binding:"required"`                 // Name of the preparation
+	Name              string   `binding:"required"    json:"name"`              // Name of the preparation
 	SourceStorages    []string `json:"sourceStorages"`                          // Name of Source storage systems to be used for the source
 	OutputStorages    []string `json:"outputStorages"`                          // Name of Output storage systems to be used for the output
 	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"`           // Maximum size of the CAR files to be created

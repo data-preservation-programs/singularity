@@ -291,12 +291,14 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/storage", s.toEchoHandler(s.storageHandler.ListStoragesHandler))
 	e.DELETE("/api/storage/:name", s.toEchoHandler(s.storageHandler.RemoveHandler))
 	e.PATCH("/api/storage/:name", s.toEchoHandler(s.storageHandler.UpdateStorageHandler))
+	e.PATCH("/api/storage/:name/rename", s.toEchoHandler(s.storageHandler.RenameStorageHandler))
 
 	// Preparation
 	e.POST("/api/preparation", s.toEchoHandler(s.dataprepHandler.CreatePreparationHandler))
 	e.GET("/api/preparation", s.toEchoHandler(s.dataprepHandler.ListHandler))
 	e.GET("/api/preparation/:id", s.toEchoHandler(s.jobHandler.GetStatusHandler))
 	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(s.dataprepHandler.ListSchedulesHandler))
+	e.PATCH("/api/preparation/:name/rename", s.toEchoHandler(s.dataprepHandler.RenamePreparationHandler))
 
 	// Job management
 	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(s.jobHandler.StartDagGenHandler))

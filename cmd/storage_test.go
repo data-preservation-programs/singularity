@@ -21,6 +21,28 @@ func swapStorageHandler(mockHandler storage.Handler) func() {
 	}
 }
 
+func TestStorageRenameHandler(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(storage.MockStorage)
+		defer swapStorageHandler(mockHandler)()
+		mockHandler.On("RenameStorageHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Storage{
+			ID:        1,
+			Name:      "name",
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			Type:      "local",
+			Path:      "path",
+		}, nil)
+		_, _, err := runner.Run(ctx, "singularity storage rename name new_name")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose storage rename name new_name")
+		require.NoError(t, err)
+	})
+}
+
 func TestStorageExploreHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()

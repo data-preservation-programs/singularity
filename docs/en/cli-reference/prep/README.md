@@ -12,6 +12,7 @@ COMMANDS:
    create         Create a new preparation
    list           List all preparations
    status         Get the preparation job status of a preparation
+   rename         Rename a preparation
    attach-source  Attach a source storage to a preparation
    attach-output  Attach a output storage to a preparation
    detach-output  Detach a output storage to a preparation

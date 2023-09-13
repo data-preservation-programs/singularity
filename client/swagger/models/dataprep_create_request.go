@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // DataprepCreateRequest dataprep create request
@@ -24,7 +26,8 @@ type DataprepCreateRequest struct {
 	MaxSize *string `json:"maxSize,omitempty"`
 
 	// Name of the preparation
-	Name string `json:"name,omitempty"`
+	// Required: true
+	Name *string `json:"name"`
 
 	// Name of Output storage systems to be used for the output
 	OutputStorages []string `json:"outputStorages"`
@@ -38,6 +41,24 @@ type DataprepCreateRequest struct {
 
 // Validate validates this dataprep create request
 func (m *DataprepCreateRequest) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DataprepCreateRequest) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("name", "body", m.Name); err != nil {
+		return err
+	}
+
 	return nil
 }
 

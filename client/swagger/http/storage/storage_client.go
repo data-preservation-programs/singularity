@@ -158,8 +158,6 @@ type ClientService interface {
 
 	CreateSmbStorage(params *CreateSmbStorageParams, opts ...ClientOption) (*CreateSmbStorageOK, error)
 
-	CreateStorage(params *CreateStorageParams, opts ...ClientOption) (*CreateStorageOK, error)
-
 	CreateStorjExistingStorage(params *CreateStorjExistingStorageParams, opts ...ClientOption) (*CreateStorjExistingStorageOK, error)
 
 	CreateStorjNewStorage(params *CreateStorjNewStorageParams, opts ...ClientOption) (*CreateStorjNewStorageOK, error)
@@ -181,6 +179,8 @@ type ClientService interface {
 	ListStorages(params *ListStoragesParams, opts ...ClientOption) (*ListStoragesOK, error)
 
 	RemoveStorage(params *RemoveStorageParams, opts ...ClientOption) (*RemoveStorageNoContent, error)
+
+	RenameStorage(params *RenameStorageParams, opts ...ClientOption) (*RenameStorageOK, error)
 
 	UpdateStorage(params *UpdateStorageParams, opts ...ClientOption) (*UpdateStorageOK, error)
 
@@ -2620,44 +2620,6 @@ func (a *Client) CreateSmbStorage(params *CreateSmbStorageParams, opts ...Client
 }
 
 /*
-CreateStorage creates a new storage
-*/
-func (a *Client) CreateStorage(params *CreateStorageParams, opts ...ClientOption) (*CreateStorageOK, error) {
-	// TODO: Validate the params before sending
-	if params == nil {
-		params = NewCreateStorageParams()
-	}
-	op := &runtime.ClientOperation{
-		ID:                 "CreateStorage",
-		Method:             "POST",
-		PathPattern:        "/storage/{storageType}",
-		ProducesMediaTypes: []string{"application/json"},
-		ConsumesMediaTypes: []string{"application/json"},
-		Schemes:            []string{"http"},
-		Params:             params,
-		Reader:             &CreateStorageReader{formats: a.formats},
-		Context:            params.Context,
-		Client:             params.HTTPClient,
-	}
-	for _, opt := range opts {
-		opt(op)
-	}
-
-	result, err := a.transport.Submit(op)
-	if err != nil {
-		return nil, err
-	}
-	success, ok := result.(*CreateStorageOK)
-	if ok {
-		return success, nil
-	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for CreateStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
-	panic(msg)
-}
-
-/*
 CreateStorjExistingStorage creates storj storage with existing use an existing access grant
 */
 func (a *Client) CreateStorjExistingStorage(params *CreateStorjExistingStorageParams, opts ...ClientOption) (*CreateStorjExistingStorageOK, error) {
@@ -3072,6 +3034,44 @@ func (a *Client) RemoveStorage(params *RemoveStorageParams, opts ...ClientOption
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for RemoveStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+RenameStorage renames a storage connection
+*/
+func (a *Client) RenameStorage(params *RenameStorageParams, opts ...ClientOption) (*RenameStorageOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewRenameStorageParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "RenameStorage",
+		Method:             "PATCH",
+		PathPattern:        "/storage/{name}/rename",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &RenameStorageReader{formats: a.formats},
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*RenameStorageOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for RenameStorage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

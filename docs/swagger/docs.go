@@ -1355,6 +1355,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/preparation/{name}/rename": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Rename a preparation",
+                "operationId": "RenamePreparation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preparation ID or name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New preparation name",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataprep.RenameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Preparation"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/schedule": {
             "get": {
                 "produces": [
@@ -5111,8 +5164,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/storage/{storageType}": {
-            "post": {
+        "/storage/{name}/rename": {
+            "patch": {
                 "consumes": [
                     "application/json"
                 ],
@@ -5122,23 +5175,23 @@ const docTemplate = `{
                 "tags": [
                     "Storage"
                 ],
-                "summary": "Create a new storage",
-                "operationId": "CreateStorage",
+                "summary": "Rename a storage connection",
+                "operationId": "RenameStorage",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Storage type",
-                        "name": "storageType",
+                        "description": "Storage ID or name",
+                        "name": "name",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Storage configuration",
-                        "name": "body",
+                        "description": "New storage name",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateRequest"
+                            "$ref": "#/definitions/storage.RenameRequest"
                         }
                     }
                 ],
@@ -5311,6 +5364,9 @@ const docTemplate = `{
         },
         "dataprep.CreateRequest": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "deleteAfterExport": {
                     "description": "Whether to delete the source files after export",
@@ -5400,6 +5456,17 @@ const docTemplate = `{
                 },
                 "storageId": {
                     "type": "integer"
+                }
+            }
+        },
+        "dataprep.RenameRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -7162,26 +7229,6 @@ const docTemplate = `{
                 },
                 "path": {
                     "description": "Path of the storage",
-                    "type": "string"
-                }
-            }
-        },
-        "storage.CreateRequest": {
-            "type": "object",
-            "properties": {
-                "config": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "provider": {
                     "type": "string"
                 }
             }
@@ -9656,6 +9703,17 @@ const docTemplate = `{
                     "description": "Zone to connect to.",
                     "type": "string",
                     "example": "pek3a"
+                }
+            }
+        },
+        "storage.RenameRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         },

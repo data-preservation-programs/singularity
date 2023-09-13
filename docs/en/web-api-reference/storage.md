@@ -304,7 +304,7 @@
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
-{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/{storageType}" method="post" %}
+{% swagger src="https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml" path="/storage/{name}/rename" method="patch" %}
 [https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 {% endswagger %}
 
