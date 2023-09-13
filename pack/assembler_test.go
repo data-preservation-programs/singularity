@@ -91,6 +91,17 @@ func TestAssembler(t *testing.T) {
 		require.Equal(t, 38802198, len(content))
 		validateCarContent(t, content)
 		validateAssembler(t, assembler)
+		require.Greater(t, len(assembler.carBlocks), 0)
+	})
+	t.Run("noinline", func(t *testing.T) {
+		assembler := NewAssembler(context.Background(), reader, allFileRanges, true)
+		defer assembler.Close()
+		content, err := io.ReadAll(assembler)
+		require.NoError(t, err)
+		require.Equal(t, 38802198, len(content))
+		validateCarContent(t, content)
+		validateAssembler(t, assembler)
+		require.Len(t, assembler.carBlocks, 0)
 	})
 }
 

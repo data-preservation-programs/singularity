@@ -156,6 +156,10 @@ var ErrDagDisabled = errors.New("dag generation is disabled for this preparation
 // Returns:
 // - error: Standard error interface, returns nil if no error occurred during execution.
 func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
+	if job.Attachment.Preparation.NoDag {
+		return errors.WithStack(ErrDagDisabled)
+	}
+
 	rootCID, err := job.Attachment.RootDirectoryCID(ctx, w.dbNoContext)
 	if err != nil {
 		return errors.WithStack(err)
@@ -171,10 +175,6 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	storageID, storageWriter, err := storagesystem.GetRandomOutputWriter(ctx, job.Attachment.Preparation.OutputStorages)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	if job.Attachment.Preparation.NoDag {
-		return errors.WithStack(ErrDagDisabled)
 	}
 
 	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID, job.Attachment.Preparation.NoInline)

@@ -69,10 +69,10 @@ func TestDataPrepCreateHandler(t *testing.T) {
 		defer swapDataPrepHandler(mockHandler)()
 
 		mockHandler.On("CreatePreparationHandler", mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
-		_, _, err := runner.Run(ctx, "singularity prep create --source source --output output")
+		_, _, err := runner.Run(ctx, "singularity prep create --source source --output output --no-inline --no-dag")
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, "singularity --verbose prep create --source source --output output")
+		_, _, err = runner.Run(ctx, "singularity --verbose prep create --source source --output output --no-inline --no-dag")
 		require.NoError(t, err)
 	})
 

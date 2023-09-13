@@ -18,6 +18,33 @@ import (
 	"gorm.io/gorm"
 )
 
+func TestExportDag_DagNotEnabled(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		thread := &Thread{
+			id:          uuid.New(),
+			dbNoContext: db,
+			logger:      log.Logger("test").With("test", true),
+		}
+		job := model.Job{
+			Type:  model.DagGen,
+			State: model.Ready,
+			Attachment: &model.SourceAttachment{
+				Preparation: &model.Preparation{
+					NoDag: true,
+				},
+				Storage: &model.Storage{
+					Type: "local",
+				},
+			},
+		}
+		err := thread.dbNoContext.Create(&job).Error
+		require.NoError(t, err)
+
+		err = thread.ExportDag(ctx, job)
+		require.ErrorIs(t, err, ErrDagDisabled)
+	})
+}
+
 func TestExportDag(t *testing.T) {
 	tmp := t.TempDir()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
@@ -78,7 +105,7 @@ func TestExportDag(t *testing.T) {
 	})
 }
 
-func TestExportDag_WithOutputStorage(t *testing.T) {
+func TestExportDag_WithOutputStorage_NoInline(t *testing.T) {
 	tmp := t.TempDir()
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		thread := &Thread{
@@ -97,6 +124,7 @@ func TestExportDag_WithOutputStorage(t *testing.T) {
 							Path: tmp,
 						},
 					},
+					NoInline: true,
 				},
 				StorageID: 1,
 			},
@@ -134,7 +162,8 @@ func TestExportDag_WithOutputStorage(t *testing.T) {
 		dirs = []model.Directory{}
 		err = db.Find(&dirs).Error
 		require.NoError(t, err)
-		require.Len(t, carBlocks, 3)
+		// no inline
+		require.Len(t, carBlocks, 0)
 		require.Len(t, cars, 1)
 		for _, dir := range dirs {
 			require.True(t, dir.Exported)

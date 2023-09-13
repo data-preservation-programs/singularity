@@ -66,6 +66,21 @@ func TestCreatePreparationHandler_DeleteAfterExportWithoutOutput(t *testing.T) {
 	})
 }
 
+func TestCreatePreparationHandler_NoInlineWithoutOutput(t *testing.T) {
+	tmp1 := t.TempDir()
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		_, err := storage.Default.CreateStorageHandler(ctx, db, "local", storage.CreateRequest{Name: "source", Path: tmp1})
+		require.NoError(t, err)
+		_, err = Default.CreatePreparationHandler(ctx, db, CreateRequest{
+			Name:           "name",
+			MaxSizeStr:     "2GB",
+			SourceStorages: []string{"source"},
+			NoInline:       true,
+		})
+		require.ErrorContains(t, err, "inline preparation cannot be disabled without output storages")
+	})
+}
+
 func TestCreatePreparationHandler_NameAllDigits(t *testing.T) {
 	tmp1 := t.TempDir()
 	tmp2 := t.TempDir()
