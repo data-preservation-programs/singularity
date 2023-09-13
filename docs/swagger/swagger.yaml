@@ -1,4 +1,6 @@
 basePath: /api
+consumes:
+- application/json
 definitions:
   api.HTTPError:
     properties:
@@ -7570,7 +7572,7 @@ externalDocs:
 host: localhost:9090
 info:
   contact:
-    name: Xinan Xu
+    name: Singularity Team
     url: https://github.com/data-preservation-programs/singularity/issues
   description: This is the API for Singularity, a tool for large-scale clients with
     PB-scale data onboarding to Filecoin network.
@@ -11037,4 +11039,6 @@ paths:
       summary: Remove a wallet
       tags:
       - Wallet
+produces:
+- application/json
 swagger: "2.0"
