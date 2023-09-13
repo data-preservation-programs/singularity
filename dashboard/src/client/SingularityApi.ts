@@ -325,6 +325,9 @@ export interface ModelStorage {
   name?: string;
   /** Path is the path to the storage root. */
   path?: string;
+  preparationsAsOutput?: ModelPreparation[];
+  /** Associations */
+  preparationsAsSource?: ModelPreparation[];
   type?: string;
   updatedAt?: string;
 }

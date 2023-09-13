@@ -213,7 +213,7 @@ func createPreparation(ctx context.Context, db *gorm.DB) error {
 			Size:             r.Int63n(1 << 20),
 			LastModifiedNano: randomLastModifiedNano(),
 			AttachmentID:     sourceAttachment.ID,
-			DirectoryID:      ptr.Of(lots.ID),
+			DirectoryID:      ptr.Of(root.ID),
 			FileRanges: []model.FileRange{{
 				Offset: 0,
 				Length: size,

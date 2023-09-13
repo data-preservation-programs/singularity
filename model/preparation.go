@@ -65,8 +65,8 @@ type Storage struct {
 	Config    ConfigMap `gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
 
 	// Associations
-	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" swaggerignore:"true" table:"expand;header:As Source: "`
-	PreparationsAsOutput []Preparation `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" swaggerignore:"true" table:"expand;header:As Output: "`
+	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" table:"expand;header:As Source: "`
+	PreparationsAsOutput []Preparation `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" table:"expand;header:As Output: "`
 	// For Cbor marshalling
 	_ struct{} `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
 }
