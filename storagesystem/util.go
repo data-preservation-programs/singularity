@@ -3,6 +3,7 @@ package storagesystem
 import (
 	"context"
 	"fmt"
+	"io"
 	"math/rand"
 
 	"github.com/cockroachdb/errors"
@@ -187,4 +188,71 @@ func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*mode
 	}
 
 	return nil, nil, errors.New("this line should never be reached")
+}
+
+// Open offers a file handler like interface (io.ReadSeekCloser) to an RClone path
+func Open(h Handler, ctx context.Context, path string) (io.ReadSeekCloser, fs.DirEntry, error) {
+	obj, err := h.Check(ctx, path)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
+	}
+
+	seeker := &rcloneSeeker{
+		path:    path,
+		size:    obj.Size(),
+		handler: h,
+	}
+	return seeker, obj, nil
+}
+
+type rcloneSeeker struct {
+	path    string
+	size    int64
+	handler Handler
+	offset  int64
+	file    io.ReadCloser
+}
+
+func (r *rcloneSeeker) Read(p []byte) (n int, err error) {
+	if r.file == nil {
+		var err error
+		r.file, _, err = r.handler.Read(context.Background(), r.path, r.offset, r.size-r.offset)
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+	}
+	return r.file.Read(p)
+}
+
+func (r *rcloneSeeker) Seek(offset int64, whence int) (int64, error) {
+	if r.file != nil {
+		err := r.file.Close()
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
+	}
+	switch whence {
+	case io.SeekStart:
+		r.offset = offset
+	case io.SeekCurrent:
+		r.offset += offset
+	case io.SeekEnd:
+		r.offset = r.size + offset
+	default:
+		return 0, errors.New("Unknown seek mode")
+	}
+	if r.offset > r.size {
+		return 0, errors.New("Seeking past end of file")
+	}
+	if r.offset < 0 {
+		return 0, errors.New("Seeking before start of file")
+	}
+	return r.offset, nil
+}
+
+func (r *rcloneSeeker) Close() error {
+	if r.file != nil {
+		return r.file.Close()
+	}
+	return nil
 }
