@@ -68,7 +68,7 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 func TestMotionIntegration(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithCancel(ctx)
-		client, done := setupPreparation(t, ctx)
+		client, done := setupPreparation(t, ctx, true)
 		defer done()
 		defer cancel()
 		// Push a file
@@ -121,7 +121,7 @@ func TestMotionIntegration(t *testing.T) {
 	})
 }
 
-func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, func()) {
+func setupPreparation(t *testing.T, ctx context.Context, disableDagInline bool) (*http.SingularityAPI, func()) {
 	t.Helper()
 	source := t.TempDir()
 	err := os.WriteFile(filepath.Join(source, "test.txt"), []byte("hello world"), 0644)
@@ -155,7 +155,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 	require.True(t, response.IsSuccess())
 	require.NotZero(t, response.Payload.ID)
 	// Create preparation
-	createPrepResp, err := client.Preparation.CreatePreparation(&preparation.CreatePreparationParams{
+	createRequest := &preparation.CreatePreparationParams{
 		Request: &models.DataprepCreateRequest{
 			MaxSize:        ptr.Of("3MB"),
 			Name:           "prep",
@@ -163,7 +163,12 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 			SourceStorages: []string{"source"},
 		},
 		Context: ctx,
-	})
+	}
+	if disableDagInline {
+		createRequest.Request.NoDag = ptr.Bool(true)
+		createRequest.Request.NoInline = ptr.Bool(true)
+	}
+	createPrepResp, err := client.Preparation.CreatePreparation(createRequest)
 	require.NoError(t, err)
 	require.True(t, createPrepResp.IsSuccess())
 	require.NotZero(t, createPrepResp.Payload.ID)
@@ -183,7 +188,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 func TestBasicDataPrep(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		ctx, cancel := context.WithCancel(ctx)
-		client, done := setupPreparation(t, ctx)
+		client, done := setupPreparation(t, ctx, false)
 		defer done()
 		defer cancel()
 		// Start Scanning
