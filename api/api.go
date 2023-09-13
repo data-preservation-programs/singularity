@@ -350,6 +350,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/file/:id/deals", s.toEchoHandler(s.fileHandler.GetFileDealsHandler))
 	e.GET("/api/file/:id", s.toEchoHandler(s.fileHandler.GetFileHandler))
 	e.POST("/api/file/:id/prepare_to_pack", s.toEchoHandler(s.fileHandler.PrepareToPackFileHandler))
+	e.GET("/api/file/:id/retrieve", s.retrieveFile)
 	e.POST("/api/preparation/:id/source/:name/file", s.toEchoHandler(s.fileHandler.PushFileHandler))
 }
 
