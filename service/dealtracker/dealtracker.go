@@ -344,7 +344,7 @@ type KnownDeal struct {
 	State model.DealState
 }
 type UnknownDeal struct {
-	ID         uint64
+	ID         model.DealID
 	ClientID   string
 	Provider   string
 	PieceCID   model.CID

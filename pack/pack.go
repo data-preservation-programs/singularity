@@ -148,9 +148,9 @@ func Pack(
 	}
 
 	// Update all FileRange and file CID that are not split
-	splitFileIDs := make(map[uint64]model.File)
+	splitFileIDs := make(map[model.FileID]model.File)
 	var updatedFiles []model.File
-	splitFileBlks := make(map[uint64][]blocks.Block)
+	splitFileBlks := make(map[model.FileID][]blocks.Block)
 	for _, fileRange := range job.FileRanges {
 		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.FileRange{}).Where("id = ?", fileRange.ID).
@@ -244,7 +244,7 @@ func Pack(
 		return db.Transaction(func(db *gorm.DB) error {
 			var err error
 			tree := daggen.NewDirectoryTree()
-			var rootDirID uint64
+			var rootDirID model.DirectoryID
 			for _, file := range updatedFiles {
 				dirID := file.DirectoryID
 				for {

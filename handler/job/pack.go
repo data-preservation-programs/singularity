@@ -54,7 +54,7 @@ func (DefaultHandler) StartPackHandler(
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			var jobIDs []uint64
+			var jobIDs []model.JobID
 			for i, job := range jobs {
 				jobIDs = append(jobIDs, job.ID)
 				jobs[i].State = model.Ready
@@ -161,7 +161,7 @@ func (DefaultHandler) PausePackHandler(
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			var jobIDs []uint64
+			var jobIDs []model.JobID
 			for i, job := range jobs {
 				jobIDs = append(jobIDs, job.ID)
 				jobs[i].State = model.Paused

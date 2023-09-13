@@ -26,11 +26,11 @@ type ExploreResult struct {
 }
 
 type Version struct {
-	ID           uint64    `json:"id"`
-	CID          string    `json:"cid"`
-	Hash         string    `json:"hash"`
-	Size         int64     `json:"size"`
-	LastModified time.Time `json:"lastModified" table:"format:2006-01-02 15:04:05"`
+	ID           model.FileID `json:"id"`
+	CID          string       `json:"cid"`
+	Hash         string       `json:"hash"`
+	Size         int64        `json:"size"`
+	LastModified time.Time    `json:"lastModified" table:"format:2006-01-02 15:04:05"`
 }
 
 // ExploreHandler fetches directory entries (files and sub-directories) associated with a specific preparation

@@ -31,27 +31,27 @@ type DirectoryDetail struct {
 }
 
 type DirectoryTree struct {
-	cache         map[uint64]*DirectoryDetail
-	childrenCache map[uint64][]uint64 // This is known children for this pack only
+	cache         map[model.DirectoryID]*DirectoryDetail
+	childrenCache map[model.DirectoryID][]model.DirectoryID // This is known children for this pack only
 }
 
 func NewDirectoryTree() DirectoryTree {
 	return DirectoryTree{
-		cache:         make(map[uint64]*DirectoryDetail),
-		childrenCache: make(map[uint64][]uint64),
+		cache:         make(map[model.DirectoryID]*DirectoryDetail),
+		childrenCache: make(map[model.DirectoryID][]model.DirectoryID),
 	}
 }
 
-func (t DirectoryTree) Cache() map[uint64]*DirectoryDetail {
+func (t DirectoryTree) Cache() map[model.DirectoryID]*DirectoryDetail {
 	return t.cache
 }
 
-func (t DirectoryTree) Has(dirID uint64) bool {
+func (t DirectoryTree) Has(dirID model.DirectoryID) bool {
 	_, ok := t.cache[dirID]
 	return ok
 }
 
-func (t DirectoryTree) Get(dirID uint64) *DirectoryDetail {
+func (t DirectoryTree) Get(dirID model.DirectoryID) *DirectoryDetail {
 	return t.cache[dirID]
 }
 
@@ -89,7 +89,7 @@ func (t DirectoryTree) Add(ctx context.Context, dir *model.Directory) error {
 // Returns:
 //   - *format.Link: A link that points to the root of the IPLD structure for the directory.
 //   - error: The error encountered during the operation, if any.
-func (t DirectoryTree) Resolve(ctx context.Context, dirID uint64) (*format.Link, error) {
+func (t DirectoryTree) Resolve(ctx context.Context, dirID model.DirectoryID) (*format.Link, error) {
 	detail, ok := t.cache[dirID]
 	if !ok {
 		return nil, errors.Errorf("no directory detail for dir %d", dirID)
