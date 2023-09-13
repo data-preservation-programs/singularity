@@ -207,6 +207,10 @@ definitions:
         items:
           $ref: '#/definitions/model.Job'
         type: array
+      output:
+        items:
+          $ref: '#/definitions/model.Storage'
+        type: array
       source:
         $ref: '#/definitions/model.Storage'
       storageId:

@@ -5565,6 +5565,12 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Job"
                     }
                 },
+                "output": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Storage"
+                    }
+                },
                 "source": {
                     "$ref": "#/definitions/model.Storage"
                 },

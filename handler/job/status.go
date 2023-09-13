@@ -11,10 +11,11 @@ import (
 )
 
 type SourceStatus struct {
-	AttachmentID    *uint32        `json:"attachmentId"`
-	SourceStorageID *uint32        `json:"storageId"`
-	SourceStorage   *model.Storage `json:"source"       table:"expand"`
-	Jobs            []model.Job    `json:"jobs"         table:"expand"`
+	AttachmentID    *uint32         `json:"attachmentId"`
+	SourceStorageID *uint32         `json:"storageId"`
+	SourceStorage   *model.Storage  `json:"source"       table:"expand;header:Source Storage"`
+	OutputStorages  []model.Storage `json:"output"       table:"expand;header:Output Storages"`
+	Jobs            []model.Job     `json:"jobs"         table:"expand"`
 }
 
 // GetStatusHandler fetches and returns the current status of a specific Preparation.
@@ -37,7 +38,7 @@ type SourceStatus struct {
 func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id string) ([]SourceStatus, error) {
 	db = db.WithContext(ctx)
 	var preparation model.Preparation
-	err := preparation.FindByIDOrName(db, id)
+	err := preparation.FindByIDOrName(db, id, "OutputStorages")
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.Wrapf(handlererror.ErrNotFound, "preparation %d cannot be found", id)
 	}
@@ -63,6 +64,7 @@ func (DefaultHandler) GetStatusHandler(ctx context.Context, db *gorm.DB, id stri
 			SourceStorageID: ptr.Of(sourceAttachment.StorageID),
 			SourceStorage:   sourceAttachment.Storage,
 			Jobs:            jobs,
+			OutputStorages:  preparation.OutputStorages,
 		}
 		allStatuses = append(allStatuses, status)
 	}
