@@ -48,11 +48,11 @@ type PieceReader struct {
 	ctx        context.Context
 	fileSize   int64
 	header     []byte
-	handlerMap map[uint32]storagesystem.Handler
+	handlerMap map[model.StorageID]storagesystem.Handler
 	carBlocks  []model.CarBlock
-	files      map[uint64]model.File
+	files      map[model.FileID]model.File
 	reader     io.ReadCloser
-	readerFor  uint64
+	readerFor  model.FileID
 	pos        int64
 	blockIndex int
 }
@@ -154,8 +154,8 @@ func NewPieceReader(
 	*PieceReader,
 	error,
 ) {
-	filesMap := make(map[uint64]model.File)
-	storageIDs := make(map[uint32]struct{})
+	filesMap := make(map[model.FileID]model.File)
+	storageIDs := make(map[model.StorageID]struct{})
 	for _, storage := range storages {
 		storageIDs[storage.ID] = struct{}{}
 	}
@@ -210,7 +210,7 @@ func NewPieceReader(
 		}
 	}
 
-	handlerMap := make(map[uint32]storagesystem.Handler)
+	handlerMap := make(map[model.StorageID]storagesystem.Handler)
 	for _, s := range storages {
 		handler, err := storagesystem.NewRCloneHandler(ctx, s)
 		if err != nil {

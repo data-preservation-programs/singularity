@@ -51,7 +51,7 @@ func PushFile(
 	db *gorm.DB,
 	obj fs.ObjectInfo,
 	attachment model.SourceAttachment,
-	directoryCache map[string]uint64) (*model.File, []model.FileRange, error) {
+	directoryCache map[string]model.DirectoryID) (*model.File, []model.FileRange, error) {
 	logger.Debugw("pushing file", "file", obj.Remote(), "preparation", attachment.PreparationID, "storage", attachment.StorageID)
 	db = db.WithContext(ctx)
 	splitSize := MaxSizeToSplitSize(attachment.Preparation.MaxSize)
@@ -138,8 +138,8 @@ func PushFile(
 func EnsureParentDirectories(
 	ctx context.Context,
 	db *gorm.DB,
-	file *model.File, rootDirID uint64,
-	directoryCache map[string]uint64) error {
+	file *model.File, rootDirID model.DirectoryID,
+	directoryCache map[string]model.DirectoryID) error {
 	if file.DirectoryID != nil {
 		return nil
 	}
@@ -178,8 +178,8 @@ func EnsureParentDirectories(
 func CreatePackJob(
 	ctx context.Context,
 	db *gorm.DB,
-	attachmentID uint32,
-	fileRangeIDs []uint64,
+	attachmentID model.SourceAttachmentID,
+	fileRangeIDs []model.FileRangeID,
 ) (*model.Job, error) {
 	db = db.WithContext(ctx)
 	job := model.Job{

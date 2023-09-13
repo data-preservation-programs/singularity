@@ -78,7 +78,7 @@ func migrateDataset(ctx context.Context, mg *mongo.Client, db *gorm.DB, scanning
 		return errors.Wrap(err, "failed to query mongo for generation requests")
 	}
 
-	directoryCache := map[string]uint64{}
+	directoryCache := map[string]model.DirectoryID{}
 	directoryCache[""] = rootDir.ID
 	directoryCache["."] = rootDir.ID
 	var lastFile model.File

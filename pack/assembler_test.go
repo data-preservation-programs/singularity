@@ -52,12 +52,12 @@ func TestAssembler(t *testing.T) {
 		stat, err := os.Stat(filepath.Join(tmp, filename))
 		require.NoError(t, err)
 		allFileRanges = append(allFileRanges, model.FileRange{
-			ID:     uint64(size),
+			ID:     model.FileRangeID(size),
 			Offset: 0,
 			Length: int64(size),
-			FileID: uint64(size),
+			FileID: model.FileID(size),
 			File: &model.File{
-				ID:               uint64(size),
+				ID:               model.FileID(size),
 				Path:             filename,
 				Size:             int64(size),
 				LastModifiedNano: stat.ModTime().UnixNano(),
@@ -66,7 +66,7 @@ func TestAssembler(t *testing.T) {
 
 	for size, expected := range sizes {
 		fileRange, err := underscore.Find(allFileRanges, func(fileRange model.FileRange) bool {
-			return fileRange.ID == uint64(size)
+			return fileRange.ID == model.FileRangeID(size)
 		})
 		require.NoError(t, err)
 		t.Run(fmt.Sprintf("single size=%d", size), func(t *testing.T) {

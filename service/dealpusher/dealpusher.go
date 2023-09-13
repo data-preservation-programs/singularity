@@ -29,17 +29,17 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext              *gorm.DB                      // Pointer to a gorm.DB object representing a database connection.
-	walletChooser            replication.WalletChooser     // Object responsible for choosing a wallet for replication.
-	dealMaker                replication.DealMaker         // Object responsible for making a deal in replication.
-	workerID                 uuid.UUID                     // UUID identifying the associated worker.
-	activeSchedule           map[uint32]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.
-	activeScheduleCancelFunc map[uint32]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
-	cronEntries              map[uint32]cron.EntryID       // Map storing cron entries for the DealPusher with schedule IDs as keys and EntryID as values.
-	cron                     *cron.Cron                    // Job scheduler for scheduling tasks at specified intervals.
-	mutex                    sync.RWMutex                  // Mutex for providing mutual exclusion to protect shared resources.
-	sendDealAttempts         uint                          // Number of attempts for sending a deal.
-	host                     host.Host                     // Libp2p host for making deals.
+	dbNoContext              *gorm.DB                                // Pointer to a gorm.DB object representing a database connection.
+	walletChooser            replication.WalletChooser               // Object responsible for choosing a wallet for replication.
+	dealMaker                replication.DealMaker                   // Object responsible for making a deal in replication.
+	workerID                 uuid.UUID                               // UUID identifying the associated worker.
+	activeSchedule           map[model.ScheduleID]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.
+	activeScheduleCancelFunc map[model.ScheduleID]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
+	cronEntries              map[model.ScheduleID]cron.EntryID       // Map storing cron entries for the DealPusher with schedule IDs as keys and EntryID as values.
+	cron                     *cron.Cron                              // Job scheduler for scheduling tasks at specified intervals.
+	mutex                    sync.RWMutex                            // Mutex for providing mutual exclusion to protect shared resources.
+	sendDealAttempts         uint                                    // Number of attempts for sending a deal.
+	host                     host.Host                               // Libp2p host for making deals.
 }
 
 func (*DealPusher) Name() string {
@@ -286,7 +286,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			}
 
 			err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
-				underscore.Map(attachments, func(a model.SourceAttachment) uint32 { return a.ID }),
+				underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
 				db.Table("deals").Select("piece_cid").
 					Where("provider = ? AND state IN (?)",
 						schedule.Provider,
@@ -376,9 +376,9 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	}
 	return &DealPusher{
 		dbNoContext:              db,
-		activeScheduleCancelFunc: make(map[uint32]context.CancelFunc),
-		activeSchedule:           make(map[uint32]*model.Schedule),
-		cronEntries:              make(map[uint32]cron.EntryID),
+		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
+		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
+		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
 		walletChooser:            &replication.RandomWalletChooser{},
 		dealMaker:                dealMaker,
 		workerID:                 uuid.New(),
@@ -409,7 +409,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 // Note: Errors encountered during this process are logged but do not stop the function's execution.
 func (d *DealPusher) runOnce(ctx context.Context) {
 	var schedules []model.Schedule
-	scheduleMap := map[uint32]model.Schedule{}
+	scheduleMap := map[model.ScheduleID]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
 	err := db.Preload("Preparation.Wallets").Where("state = ?",
