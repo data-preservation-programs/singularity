@@ -32,6 +32,8 @@ type Preparation struct {
 	DeleteAfterExport bool      `json:"deleteAfterExport"` // DeleteAfterExport is a flag that indicates whether the source files should be deleted after export.
 	MaxSize           int64     `json:"maxSize"`
 	PieceSize         int64     `json:"pieceSize"`
+	NoInline          bool      `json:"noInline"`
+	NoDag             bool      `json:"noDag"`
 
 	// Associations
 	Wallets        []Wallet  `gorm:"many2many:wallet_assignments"                             json:"wallets,omitempty"        swaggerignore:"true"                   table:"expand"`

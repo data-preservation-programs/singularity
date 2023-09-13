@@ -70,7 +70,7 @@ func TestAssembler(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Run(fmt.Sprintf("single size=%d", size), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange})
+			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange}, false)
 			defer assembler.Close()
 			content, err := io.ReadAll(assembler)
 			require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestAssembler(t *testing.T) {
 		return allFileRanges[i].ID < allFileRanges[j].ID
 	})
 	t.Run("all", func(t *testing.T) {
-		assembler := NewAssembler(context.Background(), reader, allFileRanges)
+		assembler := NewAssembler(context.Background(), reader, allFileRanges, false)
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)

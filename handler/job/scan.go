@@ -60,6 +60,10 @@ func StartJobHandler(
 		return nil, errors.WithStack(err)
 	}
 
+	if jobType == model.DagGen && sourceAttachment.Preparation.NoDag {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "dag generation is disabled for preparation '%s'", id)
+	}
+
 	var job model.Job
 	err = database.DoRetry(ctx, func() error {
 		return db.Transaction(func(db *gorm.DB) error {

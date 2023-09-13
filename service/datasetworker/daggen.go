@@ -32,6 +32,7 @@ type DagGenerator struct {
 	done         bool
 	carBlocks    []model.CarBlock
 	offset       int64
+	noInline     bool
 }
 
 func (d *DagGenerator) Read(p []byte) (int, error) {
@@ -94,13 +95,15 @@ func (d *DagGenerator) Read(p []byte) (int, error) {
 		vint := varint.ToUvarint(uint64(carBlockSize))
 		carBlockSize += len(vint)
 		readers = append(readers, bytes.NewReader(vint), bytes.NewReader(blk.Cid().Bytes()), bytes.NewReader(blk.RawData()))
-		d.carBlocks = append(d.carBlocks, model.CarBlock{
-			CID:            model.CID(blk.Cid()),
-			CarOffset:      d.offset,
-			CarBlockLength: int32(carBlockSize),
-			Varint:         vint,
-			RawBlock:       blk.RawData(),
-		})
+		if !d.noInline {
+			d.carBlocks = append(d.carBlocks, model.CarBlock{
+				CID:            model.CID(blk.Cid()),
+				CarOffset:      d.offset,
+				CarBlockLength: int32(carBlockSize),
+				Varint:         vint,
+				RawBlock:       blk.RawData(),
+			})
+		}
 		d.offset += int64(carBlockSize)
 	}
 	d.buffer = io.MultiReader(readers...)
@@ -114,17 +117,20 @@ func (d *DagGenerator) Close() error {
 	return nil
 }
 
-func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID uint32, root cid.Cid) *DagGenerator {
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID uint32, root cid.Cid, noInline bool) *DagGenerator {
 	return &DagGenerator{
 		ctx:          ctx,
 		db:           db,
 		attachmentID: attachmentID,
 		root:         root,
 		dirCIDs:      make(map[uint64]model.CID),
+		noInline:     noInline,
 	}
 }
 
 var ErrDagNotReady = errors.New("dag is not ready to be generated")
+
+var ErrDagDisabled = errors.New("dag generation is disabled for this preparation")
 
 // ExportDag exports a Directed Acyclic Graph (DAG) for a given source.
 // The function takes a source, iterates through the related directories
@@ -167,7 +173,11 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		return errors.WithStack(err)
 	}
 
-	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID)
+	if job.Attachment.Preparation.NoDag {
+		return errors.WithStack(ErrDagDisabled)
+	}
+
+	dagGenerator := NewDagGenerator(ctx, db, job.Attachment.ID, rootCID, job.Attachment.Preparation.NoInline)
 	defer dagGenerator.Close()
 
 	var filename string
@@ -184,7 +194,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 		}
 		fileSize = obj.Size()
 
-		if len(dagGenerator.carBlocks) == 0 {
+		if dagGenerator.offset <= 59 {
 			logger.Info("Nothing to export to dag. Skipping.")
 			return nil
 		}
@@ -206,7 +216,7 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 			return errors.WithStack(err)
 		}
 
-		if len(dagGenerator.carBlocks) == 0 {
+		if dagGenerator.offset <= 59 {
 			logger.Info("Nothing to export to dag. Skipping.")
 			return nil
 		}
@@ -234,12 +244,14 @@ func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			for i := range dagGenerator.carBlocks {
-				dagGenerator.carBlocks[i].CarID = car.ID
-			}
-			err = db.CreateInBatches(dagGenerator.carBlocks, util.BatchSize).Error
-			if err != nil {
-				return errors.WithStack(err)
+			if len(dagGenerator.carBlocks) > 0 {
+				for i := range dagGenerator.carBlocks {
+					dagGenerator.carBlocks[i].CarID = car.ID
+				}
+				err = db.CreateInBatches(dagGenerator.carBlocks, util.BatchSize).Error
+				if err != nil {
+					return errors.WithStack(err)
+				}
 			}
 			for dirID, dirCID := range dagGenerator.dirCIDs {
 				result := db.Model(&model.Directory{}).Where("id = ? AND cid = ?", dirID, dirCID).Update("exported", true)

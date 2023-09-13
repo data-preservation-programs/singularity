@@ -98,7 +98,7 @@ func Pack(
 		return nil, errors.Wrapf(err, "failed to get storage handler for %s", job.Attachment.Storage.Name)
 	}
 
-	assembler := NewAssembler(ctx, storageReader, job.FileRanges)
+	assembler := NewAssembler(ctx, storageReader, job.FileRanges, job.Attachment.Preparation.NoInline)
 	defer assembler.Close()
 	var filename string
 	calc := &commp.Calc{}
@@ -222,12 +222,14 @@ func Pack(
 				if err != nil {
 					return errors.WithStack(err)
 				}
-				for j := range assembler.carBlocks {
-					assembler.carBlocks[j].CarID = car.ID
-				}
-				err = db.CreateInBatches(assembler.carBlocks, util.BatchSize).Error
-				if err != nil {
-					return errors.WithStack(err)
+				if !job.Attachment.Preparation.NoInline {
+					for j := range assembler.carBlocks {
+						assembler.carBlocks[j].CarID = car.ID
+					}
+					err = db.CreateInBatches(assembler.carBlocks, util.BatchSize).Error
+					if err != nil {
+						return errors.WithStack(err)
+					}
 				}
 				return nil
 			},
@@ -237,81 +239,83 @@ func Pack(
 		return nil, errors.WithStack(err)
 	}
 
-	err = database.DoRetry(ctx, func() error {
-		if len(updatedFiles) == 0 {
-			return nil
-		}
-		return db.Transaction(func(db *gorm.DB) error {
-			var err error
-			tree := daggen.NewDirectoryTree()
-			var rootDirID uint64
-			for _, file := range updatedFiles {
-				dirID := file.DirectoryID
-				for {
-					// Add the directory to tree if it is not there
-					if !tree.Has(*dirID) {
-						var dir model.Directory
-						err = db.Where("id = ?", dirID).First(&dir).Error
-						if err != nil {
-							return errors.Wrap(err, "failed to get directory")
-						}
-						err = tree.Add(ctx, &dir)
-						if err != nil {
-							return errors.Wrap(err, "failed to add directory to tree")
-						}
-					}
-
-					dirDetail := tree.Get(*dirID)
-
-					// Update the directory for first iteration
-					if dirID == file.DirectoryID {
-						err = dirDetail.Data.AddFile(ctx, file.FileName(), cid.Cid(file.CID), uint64(file.Size))
-						if err != nil {
-							return errors.Wrap(err, "failed to add file to directory")
-						}
-						if blks, ok := splitFileBlks[file.ID]; ok {
-							err = dirDetail.Data.AddBlocks(ctx, blks)
+	if !job.Attachment.Preparation.NoDag {
+		err = database.DoRetry(ctx, func() error {
+			if len(updatedFiles) == 0 {
+				return nil
+			}
+			return db.Transaction(func(db *gorm.DB) error {
+				var err error
+				tree := daggen.NewDirectoryTree()
+				var rootDirID uint64
+				for _, file := range updatedFiles {
+					dirID := file.DirectoryID
+					for {
+						// Add the directory to tree if it is not there
+						if !tree.Has(*dirID) {
+							var dir model.Directory
+							err = db.Where("id = ?", dirID).First(&dir).Error
 							if err != nil {
-								return errors.Wrap(err, "failed to add blocks to directory")
+								return errors.Wrap(err, "failed to get directory")
+							}
+							err = tree.Add(ctx, &dir)
+							if err != nil {
+								return errors.Wrap(err, "failed to add directory to tree")
 							}
 						}
-					}
 
-					// Next iteration
-					dirID = dirDetail.Dir.ParentID
-					if dirID == nil {
-						rootDirID = dirDetail.Dir.ID
-						break
+						dirDetail := tree.Get(*dirID)
+
+						// Update the directory for first iteration
+						if dirID == file.DirectoryID {
+							err = dirDetail.Data.AddFile(ctx, file.FileName(), cid.Cid(file.CID), uint64(file.Size))
+							if err != nil {
+								return errors.Wrap(err, "failed to add file to directory")
+							}
+							if blks, ok := splitFileBlks[file.ID]; ok {
+								err = dirDetail.Data.AddBlocks(ctx, blks)
+								if err != nil {
+									return errors.Wrap(err, "failed to add blocks to directory")
+								}
+							}
+						}
+
+						// Next iteration
+						dirID = dirDetail.Dir.ParentID
+						if dirID == nil {
+							rootDirID = dirDetail.Dir.ID
+							break
+						}
 					}
 				}
-			}
-			// Recursively update all directory internal structure
-			_, err = tree.Resolve(ctx, rootDirID)
-			if err != nil {
-				return errors.Wrap(err, "failed to resolve directory tree")
-			}
+				// Recursively update all directory internal structure
+				_, err = tree.Resolve(ctx, rootDirID)
+				if err != nil {
+					return errors.Wrap(err, "failed to resolve directory tree")
+				}
 
-			// Update all directories in the database
-			for dirID, dirDetail := range tree.Cache() {
-				bytes, err := dirDetail.Data.MarshalBinary(ctx)
-				if err != nil {
-					return errors.Wrap(err, "failed to marshall directory data")
+				// Update all directories in the database
+				for dirID, dirDetail := range tree.Cache() {
+					bytes, err := dirDetail.Data.MarshalBinary(ctx)
+					if err != nil {
+						return errors.Wrap(err, "failed to marshall directory data")
+					}
+					node, _ := dirDetail.Data.Node()
+					err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]any{
+						"cid":      model.CID(node.Cid()),
+						"data":     bytes,
+						"exported": false,
+					}).Error
+					if err != nil {
+						return errors.Wrap(err, "failed to update directory")
+					}
 				}
-				node, _ := dirDetail.Data.Node()
-				err = db.Model(&model.Directory{}).Where("id = ?", dirID).Updates(map[string]any{
-					"cid":      model.CID(node.Cid()),
-					"data":     bytes,
-					"exported": false,
-				}).Error
-				if err != nil {
-					return errors.Wrap(err, "failed to update directory")
-				}
-			}
-			return nil
+				return nil
+			})
 		})
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to update directory CIDs")
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to update directory CIDs")
+		}
 	}
 
 	logger.With("jobsID", job.ID).Info("finished packing")

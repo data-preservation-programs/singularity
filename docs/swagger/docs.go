@@ -5326,6 +5326,16 @@ const docTemplate = `{
                     "description": "Name of the preparation",
                     "type": "string"
                 },
+                "noDag": {
+                    "description": "Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "noInline": {
+                    "description": "Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "outputStorages": {
                     "description": "Name of Output storage systems to be used for the output",
                     "type": "array",
@@ -5855,6 +5865,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "noDag": {
+                    "type": "boolean"
+                },
+                "noInline": {
+                    "type": "boolean"
                 },
                 "outputStorages": {
                     "type": "array",

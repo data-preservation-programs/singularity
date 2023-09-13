@@ -26,6 +26,12 @@ type DataprepCreateRequest struct {
 	// Name of the preparation
 	Name string `json:"name,omitempty"`
 
+	// Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
+	NoDag *bool `json:"noDag,omitempty"`
+
+	// Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
+	NoInline *bool `json:"noInline,omitempty"`
+
 	// Name of Output storage systems to be used for the output
 	OutputStorages []string `json:"outputStorages"`
 
