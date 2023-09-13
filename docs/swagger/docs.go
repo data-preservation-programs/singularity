@@ -5993,6 +5993,19 @@ const docTemplate = `{
                     "description": "Path is the path to the storage root.",
                     "type": "string"
                 },
+                "preparationsAsOutput": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Preparation"
+                    }
+                },
+                "preparationsAsSource": {
+                    "description": "Associations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Preparation"
+                    }
+                },
                 "type": {
                     "type": "string"
                 },
