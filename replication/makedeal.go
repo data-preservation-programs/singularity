@@ -257,6 +257,8 @@ func (d DealMakerImpl) GetMinCollateral(ctx context.Context, pieceSize int64, ve
 	return value, nil
 }
 
+var ErrFileSizeNotSpecifiedForOnlineDeal = errors.New("file size must be specified for online deal")
+
 // MakeDeal120 attempts to make a storage deal with a Filecoin miner, following
 // the version 1.2.0 deal making protocol. It constructs and sends the deal proposal
 // and associated data transfer instructions to the miner, and waits for a response.
@@ -299,6 +301,9 @@ func (d DealMakerImpl) MakeDeal120(
 	url := strings.Replace(dealConfig.URLTemplate, "{PIECE_CID}", deal.Proposal.PieceCID.String(), 1)
 	isOnline := url != ""
 	if isOnline {
+		if fileSize == 0 {
+			return nil, ErrFileSizeNotSpecifiedForOnlineDeal
+		}
 		transferParams := &boostly.HttpRequest{URL: url}
 		if len(dealConfig.HTTPHeaders) > 0 {
 			transferParams.Headers = dealConfig.HTTPHeaders

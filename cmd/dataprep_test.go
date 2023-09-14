@@ -276,10 +276,10 @@ func TestDataPreparationAddPieceHandler(t *testing.T) {
 			StoragePath:   "test1.car",
 			PreparationID: 1,
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity prep add-piece --piece-cid xxx --piece-size 100 1")
+		_, _, err := runner.Run(ctx, "singularity prep add-piece --piece-cid xxx --piece-size 100 --file-size 100 1")
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, "singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 1")
+		_, _, err = runner.Run(ctx, "singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 --file-size 100 1")
 		require.NoError(t, err)
 	})
 }
