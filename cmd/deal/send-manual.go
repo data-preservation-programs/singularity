@@ -16,11 +16,10 @@ import (
 )
 
 var SendManualCmd = &cli.Command{
-	Name:      "send-manual",
-	Usage:     "Send a manual deal proposal to boost or legacy market",
-	ArgsUsage: "<client> <provider> <piece_cid> <piece_size>",
+	Name:  "send-manual",
+	Usage: "Send a manual deal proposal to boost or legacy market",
 	Description: `Send a manual deal proposal to boost or legacy market
-  Example: singularity deal send-manual f01234 f05678 bagaxxxx 32GiB
+  Example: singularity deal send-manual --client f01234 --provider f05678 --piece-cid bagaxxxx --piece-size 32GiB
 Notes:
   * The client address must have been imported to the wallet using 'singularity wallet import'
   * The deal proposal will not be saved in the database however will eventually be tracked if the deal tracker is running
