@@ -16,6 +16,8 @@ OPTIONS:
    --help, -h                         show help
    --max-size value                   The maximum size of a single CAR file (default: "31.5GiB")
    --name value                       The name for the preparation (default: Auto generated)
+   --no-dag                           Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID. (default: false)
+   --no-inline                        Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage. (default: false)
    --output value [ --output value ]  The id or name of the output storage to be used for the preparation
    --piece-size value                 The target piece size of the CAR files used for piece commitment calculation (default: Determined by --max-size)
    --source value [ --source value ]  The id or name of the source storage to be used for the preparation
