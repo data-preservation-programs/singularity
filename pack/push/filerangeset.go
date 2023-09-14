@@ -51,8 +51,8 @@ func (r *FileRangeSet) Reset() {
 	r.carSize = int64(carHeaderSize)
 }
 
-func (r *FileRangeSet) FileRangeIDs() []uint64 {
-	return underscore.Map(r.fileRanges, func(fileRange model.FileRange) uint64 {
+func (r *FileRangeSet) FileRangeIDs() []model.FileRangeID {
+	return underscore.Map(r.fileRanges, func(fileRange model.FileRange) model.FileRangeID {
 		return fileRange.ID
 	})
 }

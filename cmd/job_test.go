@@ -162,8 +162,8 @@ func TestDataPreparationGetStatusHandler(t *testing.T) {
 
 		mockHandler.On("GetStatusHandler", mock.Anything, mock.Anything, mock.Anything).Return([]job.SourceStatus{
 			{
-				AttachmentID:    ptr.Of(uint32(1)),
-				SourceStorageID: ptr.Of(uint32(1)),
+				AttachmentID:    ptr.Of(model.SourceAttachmentID(1)),
+				SourceStorageID: ptr.Of(model.StorageID(1)),
 				SourceStorage: &model.Storage{
 					ID:        1,
 					Name:      "source",

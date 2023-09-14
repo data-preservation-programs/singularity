@@ -14,7 +14,7 @@ import (
 
 // StorageUptoboxConfig storage uptobox config
 //
-// swagger:model storage.UptoboxConfig
+// swagger:model storage.uptoboxConfig
 type StorageUptoboxConfig struct {
 
 	// Your access token.

@@ -69,11 +69,13 @@ func StoragePricePerEpochToPricePerDeal(price string, dealSize int64, durationEp
 	return pricePerEpoch / 1e18 / (float64(dealSize) / float64(1<<35)) * float64(durationEpoch)
 }
 
+type DealID uint64
+
 // Deal is the deal model for all deals made by deal pusher or tracked by the tracker.
 // The index on PieceCID is used to track replication of the same piece CID.
 // The index on State and ClientID is used to calculate number and size of pending deals.
 type Deal struct {
-	ID               uint64    `gorm:"primaryKey"                      json:"id"                                  table:"verbose"`
+	ID               DealID    `gorm:"primaryKey"                      json:"id"                                  table:"verbose"`
 	CreatedAt        time.Time `json:"createdAt"                       table:"verbose;format:2006-01-02 15:04:05"`
 	UpdatedAt        time.Time `json:"updatedAt"                       table:"verbose;format:2006-01-02 15:04:05"`
 	DealID           *uint64   `gorm:"unique"                          json:"dealId"`
@@ -91,10 +93,10 @@ type Deal struct {
 	ErrorMessage     string    `json:"errorMessage"                    table:"verbose"`
 
 	// Associations
-	ScheduleID *uint32   `json:"scheduleId"                                         table:"verbose"`
-	Schedule   *Schedule `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
-	ClientID   string    `gorm:"index:idx_pending"                                  json:"clientId"`
-	Wallet     *Wallet   `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
+	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`
+	Schedule   *Schedule   `gorm:"foreignKey:ScheduleID;constraint:OnDelete:SET NULL" json:"schedule,omitempty" swaggerignore:"true" table:"expand"`
+	ClientID   string      `gorm:"index:idx_pending"                                  json:"clientId"`
+	Wallet     *Wallet     `gorm:"foreignKey:ClientID;constraint:OnDelete:SET NULL"   json:"wallet,omitempty"   swaggerignore:"true" table:"expand"`
 }
 
 // Key returns a mostly unique key to match deal from locally proposed deals and deals from the chain.
@@ -102,8 +104,10 @@ func (d Deal) Key() string {
 	return fmt.Sprintf("%s-%s-%s-%d-%d", d.ClientID, d.Provider, d.PieceCID.String(), d.StartEpoch, d.EndEpoch)
 }
 
+type ScheduleID uint32
+
 type Schedule struct {
-	ID                    uint32        `gorm:"primaryKey"                          json:"id"`
+	ID                    ScheduleID    `gorm:"primaryKey"                          json:"id"`
 	CreatedAt             time.Time     `json:"createdAt"                           table:"verbose;format:2006-01-02 15:04:05"`
 	UpdatedAt             time.Time     `json:"updatedAt"                           table:"verbose;format:2006-01-02 15:04:05"`
 	URLTemplate           string        `json:"urlTemplate"                         table:"verbose"`
@@ -131,8 +135,8 @@ type Schedule struct {
 	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids" json:"allowedPieceCids"                    table:"verbose"`
 
 	// Associations
-	PreparationID uint32       `json:"preparationId"`
-	Preparation   *Preparation `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
+	PreparationID PreparationID `json:"preparationId"`
+	Preparation   *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"expand"`
 }
 
 type Wallet struct {

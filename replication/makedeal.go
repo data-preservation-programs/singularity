@@ -40,7 +40,7 @@ const (
 
 var ErrNoSupportedProtocols = errors.New("no supported protocols")
 
-// nolint: tagliatelle
+//nolint:tagliatelle
 type MinerInfo struct {
 	PeerIDEncoded           string `json:"PeerID"`
 	PeerID                  peer.ID
@@ -178,10 +178,10 @@ func (d DealMakerImpl) GetProviderInfo(ctx context.Context, provider string) (*M
 // This function checks a cache for the miner's supported protocols. If the
 // protocols for the given miner are found in the cache and are not expired,
 // it returns the cached protocols. Otherwise, it performs the following steps:
-// 1. Adds the miner's multiaddresses to the peerstore with a temporary TTL (Time To Live).
-// 2. Attempts to establish a network connection with the miner using the host's Connect method.
-// 3. Queries the host's peerstore for the supported protocols of the miner.
-// 4. Stores the newly fetched protocols in the cache with a default TTL.
+//  1. Adds the miner's multiaddresses to the peerstore with a temporary TTL (Time To Live).
+//  2. Attempts to establish a network connection with the miner using the host's Connect method.
+//  3. Queries the host's peerstore for the supported protocols of the miner.
+//  4. Stores the newly fetched protocols in the cache with a default TTL.
 //
 // Parameters:
 //   - ctx context.Context: The context to use when connecting to the miner, allowing
@@ -440,17 +440,17 @@ func (d DealMakerImpl) MakeDeal111(
 // DealConfig represents the configuration parameters for a storage deal in a Filecoin-like network.
 //
 // Fields:
-// - Provider: The Filecoin address of the storage provider (miner) with whom the deal is being made.
-// - StartDelay: The duration before the deal is expected to start. It gives the miner time to prepare for the deal.
-// - Duration: The duration for which the deal will be in effect, i.e., the time period the data is stored.
-// - Verified: A flag indicating whether the deal is for verified storage.
-// - HTTPHeaders: Custom HTTP headers to be used when fetching data from a URL.
-// - URLTemplate: A URL template string which can be used to fetch data for storage.
-// - KeepUnsealed: A flag indicating whether the miner should keep the data unsealed (quick retrieval) or not.
-// - AnnounceToIPNI: A flag indicating whether the deal should be announced to the InterPlanetary Name Identifier (IPNI).
-// - PricePerDeal: The upfront cost of the deal, independent of the amount of data being stored, in FIL (or a smaller unit like attoFIL).
-// - PricePerGB: The upfront cost per GB of data being stored, in FIL (or a smaller unit like attoFIL).
-// - PricePerGBEpoch: The cost per GB per epoch (e.g., per block or per minute), in FIL (or a smaller unit like attoFIL).
+//   - Provider: The Filecoin address of the storage provider (miner) with whom the deal is being made.
+//   - StartDelay: The duration before the deal is expected to start. It gives the miner time to prepare for the deal.
+//   - Duration: The duration for which the deal will be in effect, i.e., the time period the data is stored.
+//   - Verified: A flag indicating whether the deal is for verified storage.
+//   - HTTPHeaders: Custom HTTP headers to be used when fetching data from a URL.
+//   - URLTemplate: A URL template string which can be used to fetch data for storage.
+//   - KeepUnsealed: A flag indicating whether the miner should keep the data unsealed (quick retrieval) or not.
+//   - AnnounceToIPNI: A flag indicating whether the deal should be announced to the InterPlanetary Name Identifier (IPNI).
+//   - PricePerDeal: The upfront cost of the deal, independent of the amount of data being stored, in FIL (or a smaller unit like attoFIL).
+//   - PricePerGB: The upfront cost per GB of data being stored, in FIL (or a smaller unit like attoFIL).
+//   - PricePerGBEpoch: The cost per GB per epoch (e.g., per block or per minute), in FIL (or a smaller unit like attoFIL).
 type DealConfig struct {
 	Provider        string
 	StartDelay      time.Duration
@@ -477,11 +477,11 @@ type DealConfig struct {
 // The method returns the maximum of these three calculated prices.
 //
 // Parameters:
-// - pieceSize int64: The size of the piece to be stored, in bytes.
-// - duration time.Duration: The duration for which the piece will be stored.
+//   - pieceSize int64: The size of the piece to be stored, in bytes.
+//   - duration time.Duration: The duration for which the piece will be stored.
 //
 // Returns:
-// - big.Int: The calculated price for the deal in attoFIL (1e-18 FIL).
+//   - big.Int: The calculated price for the deal in attoFIL (1e-18 FIL).
 func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 	gb := float64(pieceSize) / 1e9
 	epoch := duration.Minutes() * 2
@@ -499,10 +499,10 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 // and then sends the proposal to the provider.
 //
 // Parameters:
-// - ctx context.Context: The context to use for timeouts and cancellation.
-// - walletObj model.Wallet: The client's wallet, containing the client's addresses and private key.
-// - car model.Car: The car file that contains the data to be stored.
-// - dealConfig DealConfig: The configuration for the deal, including price and duration.
+//   - ctx context.Context: The context to use for timeouts and cancellation.
+//   - walletObj model.Wallet: The client's wallet, containing the client's addresses and private key.
+//   - car model.Car: The car file that contains the data to be stored.
+//   - dealConfig DealConfig: The configuration for the deal, including price and duration.
 //
 // Returns:
 //   - *model.Deal: The resulting deal object, if the deal was successful. Contains various details
@@ -510,13 +510,20 @@ func (d DealConfig) GetPrice(pieceSize int64, duration time.Duration) big.Int {
 //   - error: An error if the deal could not be completed, or nil if the deal was successful.
 //
 // Possible Errors:
-// - Failed to parse wallet or provider addresses.
-// - Failed to get provider info or supported protocol.
-// - Failed to connect to the provider.
-// - Failed to serialize the deal proposal.
-// - Failed to sign the deal proposal.
-// - Deal proposal rejected by the provider.
-// - No supported protocol found between client and provider.
+//
+//   - Failed to parse wallet or provider addresses.
+//
+//   - Failed to get provider info or supported protocol.
+//
+//   - Failed to connect to the provider.
+//
+//   - Failed to serialize the deal proposal.
+//
+//   - Failed to sign the deal proposal.
+//
+//   - Deal proposal rejected by the provider.
+//
+//   - No supported protocol found between client and provider.
 func (d DealMakerImpl) MakeDeal(ctx context.Context, walletObj model.Wallet,
 	car model.Car, dealConfig DealConfig) (*model.Deal, error) {
 	logger.Infow("making deal", "client", walletObj.ID, "pieceCID", car.PieceCID.String(), "provider", dealConfig.Provider)

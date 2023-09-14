@@ -15,7 +15,7 @@ import (
 
 // StorageCreateB2StorageRequest storage create b2 storage request
 //
-// swagger:model storage.CreateB2StorageRequest
+// swagger:model storage.createB2StorageRequest
 type StorageCreateB2StorageRequest struct {
 
 	// config

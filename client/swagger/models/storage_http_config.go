@@ -12,9 +12,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// StorageHTTPConfig storage Http config
+// StorageHTTPConfig storage http config
 //
-// swagger:model storage.HttpConfig
+// swagger:model storage.httpConfig
 type StorageHTTPConfig struct {
 
 	// Set HTTP headers for all transactions.
@@ -30,12 +30,12 @@ type StorageHTTPConfig struct {
 	URL string `json:"url,omitempty"`
 }
 
-// Validate validates this storage Http config
+// Validate validates this storage http config
 func (m *StorageHTTPConfig) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this storage Http config based on context it is used
+// ContextValidate validates this storage http config based on context it is used
 func (m *StorageHTTPConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }

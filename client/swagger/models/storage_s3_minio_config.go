@@ -14,7 +14,7 @@ import (
 
 // StorageS3MinioConfig storage s3 minio config
 //
-// swagger:model storage.S3MinioConfig
+// swagger:model storage.s3MinioConfig
 type StorageS3MinioConfig struct {
 
 	// AWS Access Key ID.

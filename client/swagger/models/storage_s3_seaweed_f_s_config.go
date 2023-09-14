@@ -14,7 +14,7 @@ import (
 
 // StorageS3SeaweedFSConfig storage s3 seaweed f s config
 //
-// swagger:model storage.S3SeaweedFSConfig
+// swagger:model storage.s3SeaweedFSConfig
 type StorageS3SeaweedFSConfig struct {
 
 	// AWS Access Key ID.

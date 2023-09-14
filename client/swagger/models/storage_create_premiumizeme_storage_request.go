@@ -15,7 +15,7 @@ import (
 
 // StorageCreatePremiumizemeStorageRequest storage create premiumizeme storage request
 //
-// swagger:model storage.CreatePremiumizemeStorageRequest
+// swagger:model storage.createPremiumizemeStorageRequest
 type StorageCreatePremiumizemeStorageRequest struct {
 
 	// config

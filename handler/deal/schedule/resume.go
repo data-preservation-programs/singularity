@@ -19,13 +19,13 @@ var resumableStates = []model.ScheduleState{
 // ResumeHandler attempts to resume a previously paused schedule based on the provided scheduleID.
 //
 // Parameters:
-// - ctx: The context for the operation, allowing for cancellation and timeouts.
-// - db: The database connection used for operations.
-// - scheduleID: The ID of the schedule to be resumed.
+//   - ctx: The context for the operation, allowing for cancellation and timeouts.
+//   - db: The database connection used for operations.
+//   - scheduleID: The ID of the schedule to be resumed.
 //
 // Returns:
-// - A pointer to the updated Schedule if successful.
-// - An error if any issues occur, e.g., if the schedule is not found or not in a paused state.
+//   - A pointer to the updated Schedule if successful.
+//   - An error if any issues occur, e.g., if the schedule is not found or not in a paused state.
 func (DefaultHandler) ResumeHandler(
 	ctx context.Context,
 	db *gorm.DB,

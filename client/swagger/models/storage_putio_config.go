@@ -14,7 +14,7 @@ import (
 
 // StoragePutioConfig storage putio config
 //
-// swagger:model storage.PutioConfig
+// swagger:model storage.putioConfig
 type StoragePutioConfig struct {
 
 	// The encoding for the backend.

@@ -14,7 +14,7 @@ import (
 
 // StorageBoxConfig storage box config
 //
-// swagger:model storage.BoxConfig
+// swagger:model storage.boxConfig
 type StorageBoxConfig struct {
 
 	// Box App Primary Access Token

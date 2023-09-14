@@ -14,7 +14,7 @@ import (
 
 // StorageOpendriveConfig storage opendrive config
 //
-// swagger:model storage.OpendriveConfig
+// swagger:model storage.opendriveConfig
 type StorageOpendriveConfig struct {
 
 	// Files will be uploaded in chunks this size.

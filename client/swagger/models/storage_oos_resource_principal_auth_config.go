@@ -14,7 +14,7 @@ import (
 
 // StorageOosResourcePrincipalAuthConfig storage oos resource principal auth config
 //
-// swagger:model storage.OosResource_principal_authConfig
+// swagger:model storage.oosResource_principal_authConfig
 type StorageOosResourcePrincipalAuthConfig struct {
 
 	// Chunk size to use for uploading.

@@ -31,27 +31,27 @@ type DirectoryDetail struct {
 }
 
 type DirectoryTree struct {
-	cache         map[uint64]*DirectoryDetail
-	childrenCache map[uint64][]uint64 // This is known children for this pack only
+	cache         map[model.DirectoryID]*DirectoryDetail
+	childrenCache map[model.DirectoryID][]model.DirectoryID // This is known children for this pack only
 }
 
 func NewDirectoryTree() DirectoryTree {
 	return DirectoryTree{
-		cache:         make(map[uint64]*DirectoryDetail),
-		childrenCache: make(map[uint64][]uint64),
+		cache:         make(map[model.DirectoryID]*DirectoryDetail),
+		childrenCache: make(map[model.DirectoryID][]model.DirectoryID),
 	}
 }
 
-func (t DirectoryTree) Cache() map[uint64]*DirectoryDetail {
+func (t DirectoryTree) Cache() map[model.DirectoryID]*DirectoryDetail {
 	return t.cache
 }
 
-func (t DirectoryTree) Has(dirID uint64) bool {
+func (t DirectoryTree) Has(dirID model.DirectoryID) bool {
 	_, ok := t.cache[dirID]
 	return ok
 }
 
-func (t DirectoryTree) Get(dirID uint64) *DirectoryDetail {
+func (t DirectoryTree) Get(dirID model.DirectoryID) *DirectoryDetail {
 	return t.cache[dirID]
 }
 
@@ -89,7 +89,7 @@ func (t DirectoryTree) Add(ctx context.Context, dir *model.Directory) error {
 // Returns:
 //   - *format.Link: A link that points to the root of the IPLD structure for the directory.
 //   - error: The error encountered during the operation, if any.
-func (t DirectoryTree) Resolve(ctx context.Context, dirID uint64) (*format.Link, error) {
+func (t DirectoryTree) Resolve(ctx context.Context, dirID model.DirectoryID) (*format.Link, error) {
 	detail, ok := t.cache[dirID]
 	if !ok {
 		return nil, errors.Errorf("no directory detail for dir %d", dirID)
@@ -127,11 +127,11 @@ func (t DirectoryTree) Resolve(ctx context.Context, dirID uint64) (*format.Link,
 //
 // Fields:
 //
-//	dir       : The current representation of the directory, implementing the uio.Directory interface.
-//	bstore    : The blockstore used to store and retrieve blocks of data associated with the directory.
-//	node      : The cached format.Node representation of the current directory.
-//	nodeDirty : A flag indicating whether the cached node representation is potentially outdated
-//	            and needs to be refreshed from the internal directory representation.
+//   - dir: The current representation of the directory, implementing the uio.Directory interface.
+//   - bstore: The blockstore used to store and retrieve blocks of data associated with the directory.
+//   - node: The cached format.Node representation of the current directory.
+//   - nodeDirty : A flag indicating whether the cached node representation is potentially outdated
+//     and needs to be refreshed from the internal directory representation.
 type DirectoryData struct {
 	dir       uio.Directory
 	bstore    blockstore.Blockstore
@@ -142,15 +142,15 @@ type DirectoryData struct {
 // Node retrieves the format.Node representation of the current DirectoryData.
 // If the node representation is marked as dirty (meaning it is potentially outdated),
 // this method:
-// 1. Calls GetNode on the internal directory to refresh the node representation.
-// 2. Updates the internal node field with this new node.
-// 3. Resets the dirty flag to false, indicating that the node is now up to date.
+//  1. Calls GetNode on the internal directory to refresh the node representation.
+//  2. Updates the internal node field with this new node.
+//  3. Resets the dirty flag to false, indicating that the node is now up to date.
 //
 // Returns:
 //
-//	format.Node : The current node representation of the directory, or nil if an error occurs.
-//	error       : An error is returned if getting the Node from the internal directory fails.
-//	              Otherwise, it returns nil.
+//   - format.Node : The current node representation of the directory, or nil if an error occurs.
+//   - error       : An error is returned if getting the Node from the internal directory fails.
+//     Otherwise, it returns nil.
 func (d *DirectoryData) Node() (format.Node, error) {
 	if d.nodeDirty {
 		node, err := d.dir.GetNode()
@@ -165,14 +165,14 @@ func (d *DirectoryData) Node() (format.Node, error) {
 
 // NewDirectoryData creates and initializes a new DirectoryData instance.
 // This function:
-// 1. Creates a new in-memory map datastore.
-// 2. Initializes a new blockstore with the created datastore.
-// 3. Initializes a new DAG service with the blockstore.
-// 4. Creates a new directory with the DAG service and sets its CID (Content Identifier) builder.
+//  1. Creates a new in-memory map datastore.
+//  2. Initializes a new blockstore with the created datastore.
+//  3. Initializes a new DAG service with the blockstore.
+//  4. Creates a new directory with the DAG service and sets its CID (Content Identifier) builder.
 //
 // Returns:
 //
-//	DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
+//   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
 func NewDirectoryData() DirectoryData {
 	ds := datastore.NewMapDatastore()
 	bs := blockstore.NewBlockstore(ds, blockstore.WriteThrough())
@@ -192,10 +192,10 @@ func NewDirectoryData() DirectoryData {
 //
 // Parameters:
 //
-//	ctx    : Context used to control cancellations or timeouts.
-//	name   : Name of the file to be added to the directory.
-//	c      : Content Identifier (CID) of the file to be added.
-//	length : The length of the file in bytes.
+//   - ctx    : Context used to control cancellations or timeouts.
+//   - name   : Name of the file to be added to the directory.
+//   - c      : Content Identifier (CID) of the file to be added.
+//   - length : The length of the file in bytes.
 //
 // Returns:
 //
@@ -211,16 +211,16 @@ func (d *DirectoryData) AddFile(ctx context.Context, name string, c cid.Cid, len
 //
 // Parameters:
 //
-//	ctx   : Context used to control cancellations or timeouts.
-//	name  : Name of the file to be added to the directory.
-//	links : Slice of format.Link that define the file to be assembled and added.
+//   - ctx   : Context used to control cancellations or timeouts.
+//   - name  : Name of the file to be added to the directory.
+//   - links : Slice of format.Link that define the file to be assembled and added.
 //
 // Returns:
 //
-//	cid.Cid : Content Identifier (CID) of the added file if successful.
-//	error   : An error is returned if assembling the file from links fails,
-//	          adding the child to the directory fails, or putting blocks into the blockstore fails.
-//	          Otherwise, it returns nil.
+//   - cid.Cid : Content Identifier (CID) of the added file if successful.
+//   - error   : An error is returned if assembling the file from links fails,
+//     adding the child to the directory fails, or putting blocks into the blockstore fails.
+//     Otherwise, it returns nil.
 func (d *DirectoryData) AddFileFromLinks(ctx context.Context, name string, links []format.Link) (cid.Cid, error) {
 	blks, node, err := packutil.AssembleFileFromLinks(links)
 	if err != nil {
@@ -264,13 +264,13 @@ func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) erro
 //
 // Parameters:
 //
-//	ctx : Context used to control cancellations or timeouts.
+//   - ctx : Context used to control cancellations or timeouts.
 //
 // Returns:
 //
-//	[]byte : Binary representation of the DirectoryData, or nil if an error occurs.
-//	error  : An error is returned if refreshing the Node, writing the CAR header, deleting the old Node,
-//	         putting
+//   - []byte : Binary representation of the DirectoryData, or nil if an error occurs.
+//   - error  : An error is returned if refreshing the Node, writing the CAR header, deleting the old Node,
+//     putting
 func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	newNode, err := d.Node()
@@ -305,20 +305,20 @@ func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 
 // UnmarshalToBlocks deserializes binary data into a set of blocks and a root content identifier (CID).
 // This function:
-// 1. Decodes the input binary data.
-// 2. Reads the CAR (Content Addressable Archives) header from the decoded data to obtain the root CID.
-// 3. Iteratively reads CAR blocks from the data and constructs block objects from them.
+//  1. Decodes the input binary data.
+//  2. Reads the CAR (Content Addressable Archives) header from the decoded data to obtain the root CID.
+//  3. Iteratively reads CAR blocks from the data and constructs block objects from them.
 //
 // Parameters:
 //
-//	data : Binary data representing a serialized set of blocks and a root CID.
+//   - data : Binary data representing a serialized set of blocks and a root CID.
 //
 // Returns:
 //
-//	cid.Cid     : The root CID extracted from the CAR header, or an undefined CID if an error occurs.
-//	[]blocks.Block : Slice of blocks.Block objects reconstructed from the input data, or nil if an error occurs.
-//	error       : An error is returned if decoding the input data, reading the CAR header, or reading CAR blocks fails.
-//	              Otherwise, it returns nil.
+//   - cid.Cid     : The root CID extracted from the CAR header, or an undefined CID if an error occurs.
+//   - []blocks.Block : Slice of blocks.Block objects reconstructed from the input data, or nil if an error occurs.
+//   - error       : An error is returned if decoding the input data, reading the CAR header, or reading CAR blocks fails.
+//     Otherwise, it returns nil.
 func UnmarshalToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
 	if len(data) == 0 {
 		return cid.Undef, nil, nil
@@ -360,13 +360,13 @@ func UnmarshalToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
 //
 // Parameters:
 //
-//	data : Binary data representing a serialized DirectoryData object.
+//   - data : Binary data representing a serialized DirectoryData object.
 //
 // Returns:
 //
-//	error : An error is returned if unmarshalling the data, putting blocks into blockstore,
-//	        retrieving the root directory node, or creating a new directory from the node fails.
-//	        Otherwise, it returns nil.
+//   - error : An error is returned if unmarshalling the data, putting blocks into blockstore,
+//     retrieving the root directory node, or creating a new directory from the node fails.
+//     Otherwise, it returns nil.
 func (d *DirectoryData) UnmarshalBinary(ctx context.Context, data []byte) error {
 	ds := datastore.NewMapDatastore()
 	bs := blockstore.NewBlockstore(ds, blockstore.WriteThrough())

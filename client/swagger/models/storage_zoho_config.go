@@ -14,7 +14,7 @@ import (
 
 // StorageZohoConfig storage zoho config
 //
-// swagger:model storage.ZohoConfig
+// swagger:model storage.zohoConfig
 type StorageZohoConfig struct {
 
 	// Auth server URL.

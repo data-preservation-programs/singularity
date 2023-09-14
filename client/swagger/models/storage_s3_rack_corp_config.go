@@ -14,7 +14,7 @@ import (
 
 // StorageS3RackCorpConfig storage s3 rack corp config
 //
-// swagger:model storage.S3RackCorpConfig
+// swagger:model storage.s3RackCorpConfig
 type StorageS3RackCorpConfig struct {
 
 	// AWS Access Key ID.

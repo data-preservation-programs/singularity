@@ -56,14 +56,14 @@ func argToDuration(s string) (time.Duration, error) {
 // represents the proposal. Any issues during these operations result in an appropriate error response.
 //
 // Parameters:
-// - ctx:       The context for the operation which can be used for timeouts and cancellations.
-// - db:        The database connection for accessing and storing related data.
-// - dealMaker: An interface responsible for creating deals based on the given configuration.
-// - request:   The request object containing all the necessary information for creating a deal proposal.
+//   - ctx:       The context for the operation which can be used for timeouts and cancellations.
+//   - db:        The database connection for accessing and storing related data.
+//   - dealMaker: An interface responsible for creating deals based on the given configuration.
+//   - request:   The request object containing all the necessary information for creating a deal proposal.
 //
 // Returns:
-// - A pointer to a model.Deal object representing the created deal.
-// - An error indicating any issues that occurred during the process.
+//   - A pointer to a model.Deal object representing the created deal.
+//   - An error indicating any issues that occurred during the process.
 func (DefaultHandler) SendManualHandler(
 	ctx context.Context,
 	db *gorm.DB,

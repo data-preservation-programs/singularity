@@ -15,7 +15,7 @@ import (
 
 // StorageCreateFilefabricStorageRequest storage create filefabric storage request
 //
-// swagger:model storage.CreateFilefabricStorageRequest
+// swagger:model storage.createFilefabricStorageRequest
 type StorageCreateFilefabricStorageRequest struct {
 
 	// config

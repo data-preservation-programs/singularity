@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3IDriveStorageRequest storage create s3 i drive storage request
 //
-// swagger:model storage.CreateS3IDriveStorageRequest
+// swagger:model storage.createS3IDriveStorageRequest
 type StorageCreateS3IDriveStorageRequest struct {
 
 	// config

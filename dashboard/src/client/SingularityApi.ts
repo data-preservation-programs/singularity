@@ -482,6 +482,23 @@ export interface ScheduleUpdateRequest {
   verified?: boolean;
 }
 
+export interface StorageCreateRequest {
+  config?: Record<string, string>;
+  name?: string;
+  path?: string;
+  provider?: string;
+}
+
+export interface StorageDirEntry {
+  dirId?: string;
+  hash?: string;
+  isDir?: boolean;
+  lastModified?: string;
+  numItems?: number;
+  path?: string;
+  size?: number;
+}
+
 export interface StorageAcdConfig {
   /** Auth server URL. */
   authUrl?: string;
@@ -1115,13 +1132,6 @@ export interface StorageCreateQingstorStorageRequest {
   path?: string;
 }
 
-export interface StorageCreateRequest {
-  config?: Record<string, string>;
-  name?: string;
-  path?: string;
-  provider?: string;
-}
-
 export interface StorageCreateS3AWSStorageRequest {
   config?: StorageS3AWSConfig;
   /**
@@ -1538,16 +1548,6 @@ export interface StorageCreateZohoStorageRequest {
   name?: string;
   /** Path of the storage */
   path?: string;
-}
-
-export interface StorageDirEntry {
-  dirId?: string;
-  hash?: string;
-  isDir?: boolean;
-  lastModified?: string;
-  numItems?: number;
-  path?: string;
-  size?: number;
 }
 
 export interface StorageDriveConfig {

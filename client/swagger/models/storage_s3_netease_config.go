@@ -14,7 +14,7 @@ import (
 
 // StorageS3NeteaseConfig storage s3 netease config
 //
-// swagger:model storage.S3NeteaseConfig
+// swagger:model storage.s3NeteaseConfig
 type StorageS3NeteaseConfig struct {
 
 	// AWS Access Key ID.

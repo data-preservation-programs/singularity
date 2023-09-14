@@ -13,6 +13,30 @@ import (
 	"gorm.io/gorm"
 )
 
+// UpdateStorageHandler updates the configuration of a given storage system.
+//
+// This method performs the following operations:
+//   - Retrieves the storage system with the specified name.
+//   - Merges the new configuration with the current configuration.
+//   - Ensures the provided configuration is valid by checking the storage type's backend compatibility.
+//   - Initializes an RCloneHandler with the merged configuration to validate the config against the actual storage backend.
+//   - Updates the storage system's configuration in the database.
+//
+// Parameters:
+//   - ctx: A context.Context for request-scoped values, cancellation signals, and deadlines.
+//   - db: A *gorm.DB instance for database interactions.
+//   - name: The name of the storage system to be updated.
+//   - config: A map representing the new configuration values to be merged with the existing configuration.
+//
+// Returns:
+//   - A pointer to the updated storage model.
+//   - An error if there's an issue during the update process, otherwise nil.
+//
+// Note:
+//
+//	If the specified storage system does not exist, an error will be returned.
+//	The method also ensures that the merged configuration is valid and the storage backend is accessible
+//	using RCloneHandler. If the new configuration is invalid, or if the backend is inaccessible, an error is returned.
 func (DefaultHandler) UpdateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,

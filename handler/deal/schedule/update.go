@@ -47,14 +47,14 @@ type UpdateRequest struct {
 // desired changes are captured, the function commits these updates to the database.
 //
 // Parameters:
-// - ctx: The context for managing timeouts and cancellation.
-// - db: The gorm.DB instance for database operations.
-// - id: The ID of the schedule to be updated.
-// - request: The UpdateRequest containing the desired changes.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for database operations.
+//   - id: The ID of the schedule to be updated.
+//   - request: The UpdateRequest containing the desired changes.
 //
 // Returns:
-// - The updated model.Schedule if the operation is successful.
-// - An error if any issues occur during the operation, including invalid parameters or database errors.
+//   - The updated model.Schedule if the operation is successful.
+//   - An error if any issues occur during the operation, including invalid parameters or database errors.
 func (DefaultHandler) UpdateHandler(
 	ctx context.Context,
 	db *gorm.DB,

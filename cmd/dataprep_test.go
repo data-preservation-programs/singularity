@@ -272,7 +272,7 @@ func TestDataPreparationAddPieceHandler(t *testing.T) {
 			PieceSize:     100,
 			RootCID:       model.CID{},
 			FileSize:      100,
-			StorageID:     ptr.Of(uint32(1)),
+			StorageID:     ptr.Of(model.StorageID(1)),
 			StoragePath:   "test1.car",
 			PreparationID: 1,
 		}, nil)
@@ -293,8 +293,8 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 
 		mockHandler.On("ListPiecesHandler", mock.Anything, mock.Anything, mock.Anything).Return([]dataprep.PieceList{
 			{
-				SourceStorageID: ptr.Of(uint32(1)),
-				AttachmentID:    ptr.Of(uint32(1)),
+				SourceStorageID: ptr.Of(model.StorageID(1)),
+				AttachmentID:    ptr.Of(model.SourceAttachmentID(1)),
 				SourceStorage: &model.Storage{
 					ID:        1,
 					Name:      "local",
@@ -309,7 +309,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     100,
 					FileSize:      200,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test1.car",
 					PreparationID: 1,
 				}, {
@@ -318,7 +318,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     300,
 					FileSize:      400,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test2.car",
 					PreparationID: 1,
 				}},
@@ -330,7 +330,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     500,
 					FileSize:      600,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test3.car",
 					PreparationID: 1,
 				}, {
@@ -339,7 +339,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     700,
 					FileSize:      800,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test4.car",
 					PreparationID: 1,
 				}},

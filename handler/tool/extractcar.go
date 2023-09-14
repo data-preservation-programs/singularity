@@ -90,6 +90,29 @@ func (m multiBlockstore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error
 func (m multiBlockstore) HashOnRead(enabled bool) {
 }
 
+// ExtractCarHandler extracts data from CAR (Content Addressable Archives) files found in the input directory.
+// The extracted data is written to the specified output directory or file based on the given CID.
+//
+// CAR files are used in IPFS and other content-addressable file systems to represent file content. They are
+// essential for offline data transfer, backups, and other use cases where you might need to work with data
+// without IPFS or another file system.
+//
+// Parameters:
+//   - ctx: A pointer to a cli.Context object which provides access to the current command-line context.
+//   - inputDir: The directory path where the function will look for CAR files.
+//   - output: The destination path where the extracted content will be saved.
+//   - c: A CID (Content Identifier) which identifies the data block to be extracted from the CAR file.
+//
+// Returns:
+//   - An error if any issues arise during the extraction process, otherwise nil.
+//
+// Note:
+//
+//	The function only supports CAR files with CIDs of type Raw or DagProtobuf.
+//	It recursively walks the input directory and gathers all .car files.
+//	For each CAR file, it reads the content and extracts the data for the given CID, then writes the extracted
+//	content to the specified output directory or file. If no CAR files are found in the input directory,
+//	an error is returned.
 func ExtractCarHandler(ctx *cli.Context, inputDir string, output string, c cid.Cid) error {
 	if c.Type() != cid.Raw && c.Type() != cid.DagProtobuf {
 		return errors.New("unsupported CID type")

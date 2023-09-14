@@ -15,7 +15,7 @@ import (
 
 // StorageCreateOosNoAuthStorageRequest storage create oos no auth storage request
 //
-// swagger:model storage.CreateOosNo_authStorageRequest
+// swagger:model storage.createOosNo_authStorageRequest
 type StorageCreateOosNoAuthStorageRequest struct {
 
 	// config

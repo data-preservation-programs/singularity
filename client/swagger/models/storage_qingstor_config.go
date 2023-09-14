@@ -14,7 +14,7 @@ import (
 
 // StorageQingstorConfig storage qingstor config
 //
-// swagger:model storage.QingstorConfig
+// swagger:model storage.qingstorConfig
 type StorageQingstorConfig struct {
 
 	// QingStor Access Key ID.

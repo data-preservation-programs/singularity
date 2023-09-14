@@ -14,7 +14,7 @@ import (
 
 // StorageMegaConfig storage mega config
 //
-// swagger:model storage.MegaConfig
+// swagger:model storage.megaConfig
 type StorageMegaConfig struct {
 
 	// Output more debug from Mega.

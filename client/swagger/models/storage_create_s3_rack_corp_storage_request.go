@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3RackCorpStorageRequest storage create s3 rack corp storage request
 //
-// swagger:model storage.CreateS3RackCorpStorageRequest
+// swagger:model storage.createS3RackCorpStorageRequest
 type StorageCreateS3RackCorpStorageRequest struct {
 
 	// config

@@ -44,12 +44,12 @@ func (*HTTPServer) Name() string {
 // that receives an error if the server fails to start or stop.
 //
 // Parameters:
-// ctx: The context for the server. This can be used to cancel the server or set a deadline.
+//   - ctx: The context for the server. This can be used to cancel the server or set a deadline.
 //
 // Returns:
-// A Done channel slice that are closed when the server has stopped.
-// A Fail channel that receives an error if the server fails to start or stop.
-// An error if the server fails to start.
+//   - A Done channel slice that are closed when the server has stopped.
+//   - A Fail channel that receives an error if the server fails to start or stop.
+//   - An error if the server fails to start.
 func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	e := echo.New()
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{}))
@@ -134,11 +134,11 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	storageIDSet := make(map[uint32]struct{})
+	storageIDSet := make(map[model.StorageID]struct{})
 	for _, file := range files {
 		storageIDSet[file.Attachment.StorageID] = struct{}{}
 	}
-	var storageIDs []uint32
+	var storageIDs []model.StorageID
 	for storageID := range storageIDSet {
 		storageIDs = append(storageIDs, storageID)
 	}
@@ -169,11 +169,11 @@ func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMe
 // otherwise, it's encoded as JSON.
 //
 // Parameters:
-// c: The Echo context for the HTTP request.
-// dbNoContext: The Gorm DBNoContext connection to use for database queries.
+//   - c: The Echo context for the HTTP request.
+//   - dbNoContext: The Gorm DBNoContext connection to use for database queries.
 //
 // Returns:
-// An error if there was a problem handling the request.
+//   - An error if there was a problem handling the request.
 func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 	id := c.Param("id")
 	pieceCid, err := cid.Parse(id)
@@ -297,13 +297,13 @@ func (r *rcloneSeeker) Close() error {
 // If it can't create a reader for any of the cars, it returns nil, the zero time, and an aggregate error of all recorded errors.
 //
 // Parameters:
-// ctx: The context for the operation. This can be used to cancel the operation or set a deadline.
-// pieceCid: The CID of the piece to find.
+//   - ctx: The context for the operation. This can be used to cancel the operation or set a deadline.
+//   - pieceCid: The CID of the piece to find.
 //
 // Returns:
-// A ReadSeekCloser that can be used to read the piece content.
-// The modification time of the piece content.
-// An error if there was a problem finding the piece.
+//   - A ReadSeekCloser that can be used to read the piece content.
+//   - -The modification time of the piece content.
+//   - An error if there was a problem finding the piece.
 func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	io.ReadSeekCloser,
 	time.Time,
@@ -399,10 +399,10 @@ func (s *HTTPServer) setCommonHeaders(c echo.Context, pieceCid string) {
 // The name of the served content is the string representation of the piece CID with a ".car" extension.
 //
 // Parameters:
-// c: The Echo context for the HTTP request.
+//   - c: The Echo context for the HTTP request.
 //
 // Returns:
-// An error if there was a problem handling the request.
+//   - An error if there was a problem handling the request.
 func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	id := c.Param("id")
 	pieceCid, err := cid.Parse(id)

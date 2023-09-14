@@ -29,17 +29,17 @@ var waitPendingInterval = time.Minute
 
 // DealPusher represents a struct that encapsulates the data and functionality related to pushing deals in a replication process.
 type DealPusher struct {
-	dbNoContext              *gorm.DB                      // Pointer to a gorm.DB object representing a database connection.
-	walletChooser            replication.WalletChooser     // Object responsible for choosing a wallet for replication.
-	dealMaker                replication.DealMaker         // Object responsible for making a deal in replication.
-	workerID                 uuid.UUID                     // UUID identifying the associated worker.
-	activeSchedule           map[uint32]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.
-	activeScheduleCancelFunc map[uint32]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
-	cronEntries              map[uint32]cron.EntryID       // Map storing cron entries for the DealPusher with schedule IDs as keys and EntryID as values.
-	cron                     *cron.Cron                    // Job scheduler for scheduling tasks at specified intervals.
-	mutex                    sync.RWMutex                  // Mutex for providing mutual exclusion to protect shared resources.
-	sendDealAttempts         uint                          // Number of attempts for sending a deal.
-	host                     host.Host                     // Libp2p host for making deals.
+	dbNoContext              *gorm.DB                                // Pointer to a gorm.DB object representing a database connection.
+	walletChooser            replication.WalletChooser               // Object responsible for choosing a wallet for replication.
+	dealMaker                replication.DealMaker                   // Object responsible for making a deal in replication.
+	workerID                 uuid.UUID                               // UUID identifying the associated worker.
+	activeSchedule           map[model.ScheduleID]*model.Schedule    // Map storing active schedules with schedule IDs as keys and pointers to model.Schedule objects as values.
+	activeScheduleCancelFunc map[model.ScheduleID]context.CancelFunc // Map storing cancel functions for active schedules with schedule IDs as keys and CancelFunc as values.
+	cronEntries              map[model.ScheduleID]cron.EntryID       // Map storing cron entries for the DealPusher with schedule IDs as keys and EntryID as values.
+	cron                     *cron.Cron                              // Job scheduler for scheduling tasks at specified intervals.
+	mutex                    sync.RWMutex                            // Mutex for providing mutual exclusion to protect shared resources.
+	sendDealAttempts         uint                                    // Number of attempts for sending a deal.
+	host                     host.Host                               // Libp2p host for making deals.
 }
 
 func (*DealPusher) Name() string {
@@ -68,16 +68,16 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 // and potentially saved to the Schedule's record in the database, depending on the Schedule's Cron setting.
 //
 // The steps it takes are as follows:
-// 1. Runs the Schedule using the runSchedule method, which attempts to make deals based on the Schedule's configuration.
-// 2. If runSchedule returns an error, logs the error and saves it to the Schedule's record if ScheduleCron is not set.
-// 3. If runSchedule returns a non-empty state (either ScheduleCompleted or ScheduleError), updates the Schedule's state in the database.
-// 4. Logs the Schedule's completion or error state, if applicable, and removes the Schedule from the DealPusher's active schedules.
+//  1. Runs the Schedule using the runSchedule method, which attempts to make deals based on the Schedule's configuration.
+//  2. If runSchedule returns an error, logs the error and saves it to the Schedule's record if ScheduleCron is not set.
+//  3. If runSchedule returns a non-empty state (either ScheduleCompleted or ScheduleError), updates the Schedule's state in the database.
+//  4. Logs the Schedule's completion or error state, if applicable, and removes the Schedule from the DealPusher's active schedules.
 //
 // Parameters:
 //
-//	ctx:      The context for managing the lifecycle of this Schedule run.
-//	          If the context is Done, the function exits cleanly.
-//	schedule: A pointer to the Schedule that this function is processing.
+//   - ctx:      The context for managing the lifecycle of this Schedule run.
+//     If the context is Done, the function exits cleanly.
+//   - schedule: A pointer to the Schedule that this function is processing.
 //
 // This function does not return any values but updates the Schedule's state in the database
 // based on the actions performed in the runSchedule function. It also handles errors and logs relevant information.
@@ -204,20 +204,20 @@ func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Sc
 // and continuously attempts to make deals based on the information and constraints specified in the Schedule.
 //
 // The steps it takes in each iteration are as follows:
-// 1. Counts the number and size of pending and total active deals for the current schedule from the database.
-// 2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
-// 3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
-// 4. Chooses a wallet from the preparation’s associated wallets.
-// 5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
-// 6. Saves the newly created deal to the database.
-// 7. Updates the counts of pending, total, and current deals based on the new deal.
-// 8. If the context is done, returns immediately, otherwise waits for a specified interval before the next iteration.
+//  1. Counts the number and size of pending and total active deals for the current schedule from the database.
+//  2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
+//  3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
+//  4. Chooses a wallet from the preparation’s associated wallets.
+//  5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
+//  6. Saves the newly created deal to the database.
+//  7. Updates the counts of pending, total, and current deals based on the new deal.
+//  8. If the context is done, returns immediately, otherwise waits for a specified interval before the next iteration.
 //
 // Parameters:
 //
-//	ctx:      The context for managing the lifecycle of this Schedule run.
-//	          If the context is Done, the function exits cleanly.
-//	schedule: A pointer to the Schedule that this function is processing.
+//   - ctx:      The context for managing the lifecycle of this Schedule run.
+//     If the context is Done, the function exits cleanly.
+//   - schedule: A pointer to the Schedule that this function is processing.
 //
 // Returns:
 //  1. A ScheduleState which represents the new state of the Schedule
@@ -286,7 +286,7 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 			}
 
 			err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
-				underscore.Map(attachments, func(a model.SourceAttachment) uint32 { return a.ID }),
+				underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
 				db.Table("deals").Select("piece_cid").
 					Where("provider = ? AND state IN (?)",
 						schedule.Provider,
@@ -376,9 +376,9 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 	}
 	return &DealPusher{
 		dbNoContext:              db,
-		activeScheduleCancelFunc: make(map[uint32]context.CancelFunc),
-		activeSchedule:           make(map[uint32]*model.Schedule),
-		cronEntries:              make(map[uint32]cron.EntryID),
+		activeScheduleCancelFunc: make(map[model.ScheduleID]context.CancelFunc),
+		activeSchedule:           make(map[model.ScheduleID]*model.Schedule),
+		cronEntries:              make(map[model.ScheduleID]cron.EntryID),
 		walletChooser:            &replication.RandomWalletChooser{},
 		dealMaker:                dealMaker,
 		workerID:                 uuid.New(),
@@ -401,7 +401,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 //
 // Parameters:
 //
-//	ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
+//   - ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
 //
 // This function is designed to be idempotent, meaning it can be run multiple times with the same effect.
 // It is called repeatedly by the main deal processing loop in DealPusher.Start.
@@ -409,7 +409,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 // Note: Errors encountered during this process are logged but do not stop the function's execution.
 func (d *DealPusher) runOnce(ctx context.Context) {
 	var schedules []model.Schedule
-	scheduleMap := map[uint32]model.Schedule{}
+	scheduleMap := map[model.ScheduleID]model.Schedule{}
 	Logger.Debugw("getting schedules")
 	db := d.dbNoContext.WithContext(ctx)
 	err := db.Preload("Preparation.Wallets").Where("state = ?",
@@ -452,13 +452,13 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 // It first attempts to register the worker with the health check system.
 // If another worker is already running, it waits and retries until it can register or the context is cancelled.
 // Once registered, it launches three main activities in separate goroutines:
-// 1. Reporting its health status.
-// 2. Running the deal processing loop.
-// 3. Handling cleanup when the service is stopped.
+//  1. Reporting its health status.
+//  2. Running the deal processing loop.
+//  3. Handling cleanup when the service is stopped.
 //
 // Parameters:
 //
-//	ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
+//   - ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
 //
 // Returns:
 //   - A slice of channels that the caller can select on to wait for the service to stop.

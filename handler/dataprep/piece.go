@@ -26,10 +26,10 @@ type AddPieceRequest struct {
 }
 
 type PieceList struct {
-	AttachmentID    *uint32        `json:"attachmentId"`
-	SourceStorageID *uint32        `json:"storageId"`
-	SourceStorage   *model.Storage `json:"source"       table:"expand"`
-	Pieces          []model.Car    `json:"pieces"       table:"expand"`
+	AttachmentID    *model.SourceAttachmentID `json:"attachmentId"`
+	SourceStorageID *model.StorageID          `json:"storageId"`
+	SourceStorage   *model.Storage            `json:"source"       table:"expand"`
+	Pieces          []model.Car               `json:"pieces"       table:"expand"`
 }
 
 // ListPiecesHandler retrieves the list of pieces associated with a particular preparation and its source attachments.
@@ -39,13 +39,13 @@ type PieceList struct {
 // associated with any source attachment but are linked to the preparation, they are also fetched.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name for the desired Preparation record.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name for the desired Preparation record.
 //
 // Returns:
-// - A slice of PieceList, each representing a source attachment and its associated pieces.
-// - An error, if any occurred during the operation.
+//   - A slice of PieceList, each representing a source attachment and its associated pieces.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) ListPiecesHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -134,14 +134,14 @@ func _() {}
 // the database associated with the given preparation.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name for the desired Preparation record.
-// - request: A struct of AddPieceRequest which contains the information for the piece to be added.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name for the desired Preparation record.
+//   - request: A struct of AddPieceRequest which contains the information for the piece to be added.
 //
 // Returns:
-// - A pointer to the newly created Car model.
-// - An error, if any occurred during the operation.
+//   - A pointer to the newly created Car model.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) AddPieceHandler(
 	ctx context.Context,
 	db *gorm.DB,

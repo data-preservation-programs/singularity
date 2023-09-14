@@ -19,12 +19,12 @@ const yamuxID = "/yamux/1.0.0"
 // InitHost initializes a new libp2p host with the provided options and listen addresses.
 //
 // Parameters:
-// - opts: A slice of libp2p options to configure the host.
-// - listenAddrs: A variadic list of multiaddresses for the host to listen on.
+//   - opts: A slice of libp2p options to configure the host.
+//   - listenAddrs: A variadic list of multiaddresses for the host to listen on.
 //
 // Returns:
-// 1. A libp2p host instance that represents the initialized host.
-// 2. An error, which will be non-nil if any error occurred during host initialization.
+//  1. A libp2p host instance that represents the initialized host.
+//  2. An error, which will be non-nil if any error occurred during host initialization.
 func InitHost(opts []libp2p.Option, listenAddrs ...multiaddr.Multiaddr) (host.Host, error) {
 	opts = append([]libp2p.Option{
 		libp2p.Identity(nil),

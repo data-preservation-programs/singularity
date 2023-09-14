@@ -14,7 +14,7 @@ import (
 
 // StorageGcsConfig storage gcs config
 //
-// swagger:model storage.GcsConfig
+// swagger:model storage.gcsConfig
 type StorageGcsConfig struct {
 
 	// Access public buckets and objects without credentials.

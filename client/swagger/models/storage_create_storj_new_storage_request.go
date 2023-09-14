@@ -15,7 +15,7 @@ import (
 
 // StorageCreateStorjNewStorageRequest storage create storj new storage request
 //
-// swagger:model storage.CreateStorjNewStorageRequest
+// swagger:model storage.createStorjNewStorageRequest
 type StorageCreateStorjNewStorageRequest struct {
 
 	// config

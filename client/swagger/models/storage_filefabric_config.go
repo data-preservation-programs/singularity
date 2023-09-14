@@ -14,7 +14,7 @@ import (
 
 // StorageFilefabricConfig storage filefabric config
 //
-// swagger:model storage.FilefabricConfig
+// swagger:model storage.filefabricConfig
 type StorageFilefabricConfig struct {
 
 	// The encoding for the backend.

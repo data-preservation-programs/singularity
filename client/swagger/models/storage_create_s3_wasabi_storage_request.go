@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3WasabiStorageRequest storage create s3 wasabi storage request
 //
-// swagger:model storage.CreateS3WasabiStorageRequest
+// swagger:model storage.createS3WasabiStorageRequest
 type StorageCreateS3WasabiStorageRequest struct {
 
 	// config

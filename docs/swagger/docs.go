@@ -1676,7 +1676,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateAcdStorageRequest"
+                            "$ref": "#/definitions/storage.createAcdStorageRequest"
                         }
                     }
                 ],
@@ -1722,7 +1722,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateAzureblobStorageRequest"
+                            "$ref": "#/definitions/storage.createAzureblobStorageRequest"
                         }
                     }
                 ],
@@ -1768,7 +1768,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateB2StorageRequest"
+                            "$ref": "#/definitions/storage.createB2StorageRequest"
                         }
                     }
                 ],
@@ -1814,7 +1814,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateBoxStorageRequest"
+                            "$ref": "#/definitions/storage.createBoxStorageRequest"
                         }
                     }
                 ],
@@ -1860,7 +1860,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateDriveStorageRequest"
+                            "$ref": "#/definitions/storage.createDriveStorageRequest"
                         }
                     }
                 ],
@@ -1906,7 +1906,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateDropboxStorageRequest"
+                            "$ref": "#/definitions/storage.createDropboxStorageRequest"
                         }
                     }
                 ],
@@ -1952,7 +1952,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateFichierStorageRequest"
+                            "$ref": "#/definitions/storage.createFichierStorageRequest"
                         }
                     }
                 ],
@@ -1998,7 +1998,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateFilefabricStorageRequest"
+                            "$ref": "#/definitions/storage.createFilefabricStorageRequest"
                         }
                     }
                 ],
@@ -2044,7 +2044,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateFtpStorageRequest"
+                            "$ref": "#/definitions/storage.createFtpStorageRequest"
                         }
                     }
                 ],
@@ -2090,7 +2090,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateGcsStorageRequest"
+                            "$ref": "#/definitions/storage.createGcsStorageRequest"
                         }
                     }
                 ],
@@ -2136,7 +2136,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateGphotosStorageRequest"
+                            "$ref": "#/definitions/storage.createGphotosStorageRequest"
                         }
                     }
                 ],
@@ -2182,7 +2182,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateHdfsStorageRequest"
+                            "$ref": "#/definitions/storage.createHdfsStorageRequest"
                         }
                     }
                 ],
@@ -2228,7 +2228,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateHidriveStorageRequest"
+                            "$ref": "#/definitions/storage.createHidriveStorageRequest"
                         }
                     }
                 ],
@@ -2274,7 +2274,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateHttpStorageRequest"
+                            "$ref": "#/definitions/storage.createHttpStorageRequest"
                         }
                     }
                 ],
@@ -2320,7 +2320,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateInternetarchiveStorageRequest"
+                            "$ref": "#/definitions/storage.createInternetarchiveStorageRequest"
                         }
                     }
                 ],
@@ -2366,7 +2366,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateJottacloudStorageRequest"
+                            "$ref": "#/definitions/storage.createJottacloudStorageRequest"
                         }
                     }
                 ],
@@ -2412,7 +2412,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateKoofrDigistorageStorageRequest"
+                            "$ref": "#/definitions/storage.createKoofrDigistorageStorageRequest"
                         }
                     }
                 ],
@@ -2458,7 +2458,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateKoofrKoofrStorageRequest"
+                            "$ref": "#/definitions/storage.createKoofrKoofrStorageRequest"
                         }
                     }
                 ],
@@ -2504,7 +2504,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateKoofrOtherStorageRequest"
+                            "$ref": "#/definitions/storage.createKoofrOtherStorageRequest"
                         }
                     }
                 ],
@@ -2550,7 +2550,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateLocalStorageRequest"
+                            "$ref": "#/definitions/storage.createLocalStorageRequest"
                         }
                     }
                 ],
@@ -2596,7 +2596,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateMailruStorageRequest"
+                            "$ref": "#/definitions/storage.createMailruStorageRequest"
                         }
                     }
                 ],
@@ -2642,7 +2642,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateMegaStorageRequest"
+                            "$ref": "#/definitions/storage.createMegaStorageRequest"
                         }
                     }
                 ],
@@ -2688,7 +2688,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateNetstorageStorageRequest"
+                            "$ref": "#/definitions/storage.createNetstorageStorageRequest"
                         }
                     }
                 ],
@@ -2734,7 +2734,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOnedriveStorageRequest"
+                            "$ref": "#/definitions/storage.createOnedriveStorageRequest"
                         }
                     }
                 ],
@@ -2780,7 +2780,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOosEnv_authStorageRequest"
+                            "$ref": "#/definitions/storage.createOosEnv_authStorageRequest"
                         }
                     }
                 ],
@@ -2826,7 +2826,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOosInstance_principal_authStorageRequest"
+                            "$ref": "#/definitions/storage.createOosInstance_principal_authStorageRequest"
                         }
                     }
                 ],
@@ -2872,7 +2872,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOosNo_authStorageRequest"
+                            "$ref": "#/definitions/storage.createOosNo_authStorageRequest"
                         }
                     }
                 ],
@@ -2918,7 +2918,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOosResource_principal_authStorageRequest"
+                            "$ref": "#/definitions/storage.createOosResource_principal_authStorageRequest"
                         }
                     }
                 ],
@@ -2964,7 +2964,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOosUser_principal_authStorageRequest"
+                            "$ref": "#/definitions/storage.createOosUser_principal_authStorageRequest"
                         }
                     }
                 ],
@@ -3010,7 +3010,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateOpendriveStorageRequest"
+                            "$ref": "#/definitions/storage.createOpendriveStorageRequest"
                         }
                     }
                 ],
@@ -3056,7 +3056,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreatePcloudStorageRequest"
+                            "$ref": "#/definitions/storage.createPcloudStorageRequest"
                         }
                     }
                 ],
@@ -3102,7 +3102,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreatePremiumizemeStorageRequest"
+                            "$ref": "#/definitions/storage.createPremiumizemeStorageRequest"
                         }
                     }
                 ],
@@ -3148,7 +3148,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreatePutioStorageRequest"
+                            "$ref": "#/definitions/storage.createPutioStorageRequest"
                         }
                     }
                 ],
@@ -3194,7 +3194,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateQingstorStorageRequest"
+                            "$ref": "#/definitions/storage.createQingstorStorageRequest"
                         }
                     }
                 ],
@@ -3240,7 +3240,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3AlibabaStorageRequest"
+                            "$ref": "#/definitions/storage.createS3AlibabaStorageRequest"
                         }
                     }
                 ],
@@ -3286,7 +3286,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3ArvanCloudStorageRequest"
+                            "$ref": "#/definitions/storage.createS3ArvanCloudStorageRequest"
                         }
                     }
                 ],
@@ -3332,7 +3332,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3AWSStorageRequest"
+                            "$ref": "#/definitions/storage.createS3AWSStorageRequest"
                         }
                     }
                 ],
@@ -3378,7 +3378,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3CephStorageRequest"
+                            "$ref": "#/definitions/storage.createS3CephStorageRequest"
                         }
                     }
                 ],
@@ -3424,7 +3424,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3ChinaMobileStorageRequest"
+                            "$ref": "#/definitions/storage.createS3ChinaMobileStorageRequest"
                         }
                     }
                 ],
@@ -3470,7 +3470,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3CloudflareStorageRequest"
+                            "$ref": "#/definitions/storage.createS3CloudflareStorageRequest"
                         }
                     }
                 ],
@@ -3516,7 +3516,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3DigitalOceanStorageRequest"
+                            "$ref": "#/definitions/storage.createS3DigitalOceanStorageRequest"
                         }
                     }
                 ],
@@ -3562,7 +3562,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3DreamhostStorageRequest"
+                            "$ref": "#/definitions/storage.createS3DreamhostStorageRequest"
                         }
                     }
                 ],
@@ -3608,7 +3608,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3HuaweiOBSStorageRequest"
+                            "$ref": "#/definitions/storage.createS3HuaweiOBSStorageRequest"
                         }
                     }
                 ],
@@ -3654,7 +3654,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3IBMCOSStorageRequest"
+                            "$ref": "#/definitions/storage.createS3IBMCOSStorageRequest"
                         }
                     }
                 ],
@@ -3700,7 +3700,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3IDriveStorageRequest"
+                            "$ref": "#/definitions/storage.createS3IDriveStorageRequest"
                         }
                     }
                 ],
@@ -3746,7 +3746,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3IONOSStorageRequest"
+                            "$ref": "#/definitions/storage.createS3IONOSStorageRequest"
                         }
                     }
                 ],
@@ -3792,7 +3792,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3LiaraStorageRequest"
+                            "$ref": "#/definitions/storage.createS3LiaraStorageRequest"
                         }
                     }
                 ],
@@ -3838,7 +3838,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3LyveCloudStorageRequest"
+                            "$ref": "#/definitions/storage.createS3LyveCloudStorageRequest"
                         }
                     }
                 ],
@@ -3884,7 +3884,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3MinioStorageRequest"
+                            "$ref": "#/definitions/storage.createS3MinioStorageRequest"
                         }
                     }
                 ],
@@ -3930,7 +3930,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3NeteaseStorageRequest"
+                            "$ref": "#/definitions/storage.createS3NeteaseStorageRequest"
                         }
                     }
                 ],
@@ -3976,7 +3976,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3OtherStorageRequest"
+                            "$ref": "#/definitions/storage.createS3OtherStorageRequest"
                         }
                     }
                 ],
@@ -4022,7 +4022,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3QiniuStorageRequest"
+                            "$ref": "#/definitions/storage.createS3QiniuStorageRequest"
                         }
                     }
                 ],
@@ -4068,7 +4068,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3RackCorpStorageRequest"
+                            "$ref": "#/definitions/storage.createS3RackCorpStorageRequest"
                         }
                     }
                 ],
@@ -4114,7 +4114,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3ScalewayStorageRequest"
+                            "$ref": "#/definitions/storage.createS3ScalewayStorageRequest"
                         }
                     }
                 ],
@@ -4160,7 +4160,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3SeaweedFSStorageRequest"
+                            "$ref": "#/definitions/storage.createS3SeaweedFSStorageRequest"
                         }
                     }
                 ],
@@ -4206,7 +4206,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3StackPathStorageRequest"
+                            "$ref": "#/definitions/storage.createS3StackPathStorageRequest"
                         }
                     }
                 ],
@@ -4252,7 +4252,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3StorjStorageRequest"
+                            "$ref": "#/definitions/storage.createS3StorjStorageRequest"
                         }
                     }
                 ],
@@ -4298,7 +4298,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3TencentCOSStorageRequest"
+                            "$ref": "#/definitions/storage.createS3TencentCOSStorageRequest"
                         }
                     }
                 ],
@@ -4344,7 +4344,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateS3WasabiStorageRequest"
+                            "$ref": "#/definitions/storage.createS3WasabiStorageRequest"
                         }
                     }
                 ],
@@ -4390,7 +4390,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSeafileStorageRequest"
+                            "$ref": "#/definitions/storage.createSeafileStorageRequest"
                         }
                     }
                 ],
@@ -4436,7 +4436,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSftpStorageRequest"
+                            "$ref": "#/definitions/storage.createSftpStorageRequest"
                         }
                     }
                 ],
@@ -4482,7 +4482,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSharefileStorageRequest"
+                            "$ref": "#/definitions/storage.createSharefileStorageRequest"
                         }
                     }
                 ],
@@ -4528,7 +4528,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSiaStorageRequest"
+                            "$ref": "#/definitions/storage.createSiaStorageRequest"
                         }
                     }
                 ],
@@ -4574,7 +4574,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSmbStorageRequest"
+                            "$ref": "#/definitions/storage.createSmbStorageRequest"
                         }
                     }
                 ],
@@ -4620,7 +4620,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateStorjExistingStorageRequest"
+                            "$ref": "#/definitions/storage.createStorjExistingStorageRequest"
                         }
                     }
                 ],
@@ -4666,7 +4666,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateStorjNewStorageRequest"
+                            "$ref": "#/definitions/storage.createStorjNewStorageRequest"
                         }
                     }
                 ],
@@ -4712,7 +4712,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSugarsyncStorageRequest"
+                            "$ref": "#/definitions/storage.createSugarsyncStorageRequest"
                         }
                     }
                 ],
@@ -4758,7 +4758,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateSwiftStorageRequest"
+                            "$ref": "#/definitions/storage.createSwiftStorageRequest"
                         }
                     }
                 ],
@@ -4804,7 +4804,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateUptoboxStorageRequest"
+                            "$ref": "#/definitions/storage.createUptoboxStorageRequest"
                         }
                     }
                 ],
@@ -4850,7 +4850,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateWebdavStorageRequest"
+                            "$ref": "#/definitions/storage.createWebdavStorageRequest"
                         }
                     }
                 ],
@@ -4896,7 +4896,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateYandexStorageRequest"
+                            "$ref": "#/definitions/storage.createYandexStorageRequest"
                         }
                     }
                 ],
@@ -4942,7 +4942,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/storage.CreateZohoStorageRequest"
+                            "$ref": "#/definitions/storage.createZohoStorageRequest"
                         }
                     }
                 ],
@@ -6253,7 +6253,53 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.AcdConfig": {
+        "storage.CreateRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                }
+            }
+        },
+        "storage.DirEntry": {
+            "type": "object",
+            "properties": {
+                "dirId": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "isDir": {
+                    "type": "boolean"
+                },
+                "lastModified": {
+                    "type": "string"
+                },
+                "numItems": {
+                    "type": "integer"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "storage.acdConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
@@ -6297,7 +6343,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.AzureblobConfig": {
+        "storage.azureblobConfig": {
             "type": "object",
             "properties": {
                 "accessTier": {
@@ -6445,7 +6491,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.B2Config": {
+        "storage.b2Config": {
             "type": "object",
             "properties": {
                 "account": {
@@ -6525,7 +6571,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.BoxConfig": {
+        "storage.boxConfig": {
             "type": "object",
             "properties": {
                 "accessToken": {
@@ -6592,11 +6638,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateAcdStorageRequest": {
+        "storage.createAcdStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.AcdConfig"
+                    "$ref": "#/definitions/storage.acdConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6609,11 +6655,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateAzureblobStorageRequest": {
+        "storage.createAzureblobStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.AzureblobConfig"
+                    "$ref": "#/definitions/storage.azureblobConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6626,11 +6672,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateB2StorageRequest": {
+        "storage.createB2StorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.B2Config"
+                    "$ref": "#/definitions/storage.b2Config"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6643,11 +6689,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateBoxStorageRequest": {
+        "storage.createBoxStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.BoxConfig"
+                    "$ref": "#/definitions/storage.boxConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6660,11 +6706,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateDriveStorageRequest": {
+        "storage.createDriveStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.DriveConfig"
+                    "$ref": "#/definitions/storage.driveConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6677,11 +6723,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateDropboxStorageRequest": {
+        "storage.createDropboxStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.DropboxConfig"
+                    "$ref": "#/definitions/storage.dropboxConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6694,11 +6740,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateFichierStorageRequest": {
+        "storage.createFichierStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.FichierConfig"
+                    "$ref": "#/definitions/storage.fichierConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6711,11 +6757,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateFilefabricStorageRequest": {
+        "storage.createFilefabricStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.FilefabricConfig"
+                    "$ref": "#/definitions/storage.filefabricConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6728,11 +6774,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateFtpStorageRequest": {
+        "storage.createFtpStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.FtpConfig"
+                    "$ref": "#/definitions/storage.ftpConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6745,11 +6791,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateGcsStorageRequest": {
+        "storage.createGcsStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.GcsConfig"
+                    "$ref": "#/definitions/storage.gcsConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6762,11 +6808,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateGphotosStorageRequest": {
+        "storage.createGphotosStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.GphotosConfig"
+                    "$ref": "#/definitions/storage.gphotosConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6779,11 +6825,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateHdfsStorageRequest": {
+        "storage.createHdfsStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.HdfsConfig"
+                    "$ref": "#/definitions/storage.hdfsConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6796,11 +6842,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateHidriveStorageRequest": {
+        "storage.createHidriveStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.HidriveConfig"
+                    "$ref": "#/definitions/storage.hidriveConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6813,11 +6859,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateHttpStorageRequest": {
+        "storage.createHttpStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.HttpConfig"
+                    "$ref": "#/definitions/storage.httpConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6830,11 +6876,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateInternetarchiveStorageRequest": {
+        "storage.createInternetarchiveStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.InternetarchiveConfig"
+                    "$ref": "#/definitions/storage.internetarchiveConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6847,11 +6893,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateJottacloudStorageRequest": {
+        "storage.createJottacloudStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.JottacloudConfig"
+                    "$ref": "#/definitions/storage.jottacloudConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6864,11 +6910,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateKoofrDigistorageStorageRequest": {
+        "storage.createKoofrDigistorageStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.KoofrDigistorageConfig"
+                    "$ref": "#/definitions/storage.koofrDigistorageConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6881,11 +6927,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateKoofrKoofrStorageRequest": {
+        "storage.createKoofrKoofrStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.KoofrKoofrConfig"
+                    "$ref": "#/definitions/storage.koofrKoofrConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6898,11 +6944,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateKoofrOtherStorageRequest": {
+        "storage.createKoofrOtherStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.KoofrOtherConfig"
+                    "$ref": "#/definitions/storage.koofrOtherConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6915,11 +6961,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateLocalStorageRequest": {
+        "storage.createLocalStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.LocalConfig"
+                    "$ref": "#/definitions/storage.localConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6932,11 +6978,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateMailruStorageRequest": {
+        "storage.createMailruStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.MailruConfig"
+                    "$ref": "#/definitions/storage.mailruConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6949,11 +6995,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateMegaStorageRequest": {
+        "storage.createMegaStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.MegaConfig"
+                    "$ref": "#/definitions/storage.megaConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6966,11 +7012,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateNetstorageStorageRequest": {
+        "storage.createNetstorageStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.NetstorageConfig"
+                    "$ref": "#/definitions/storage.netstorageConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6983,11 +7029,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOnedriveStorageRequest": {
+        "storage.createOnedriveStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OnedriveConfig"
+                    "$ref": "#/definitions/storage.onedriveConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7000,11 +7046,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOosEnv_authStorageRequest": {
+        "storage.createOosEnv_authStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OosEnv_authConfig"
+                    "$ref": "#/definitions/storage.oosEnv_authConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7017,11 +7063,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOosInstance_principal_authStorageRequest": {
+        "storage.createOosInstance_principal_authStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OosInstance_principal_authConfig"
+                    "$ref": "#/definitions/storage.oosInstance_principal_authConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7034,11 +7080,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOosNo_authStorageRequest": {
+        "storage.createOosNo_authStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OosNo_authConfig"
+                    "$ref": "#/definitions/storage.oosNo_authConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7051,11 +7097,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOosResource_principal_authStorageRequest": {
+        "storage.createOosResource_principal_authStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OosResource_principal_authConfig"
+                    "$ref": "#/definitions/storage.oosResource_principal_authConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7068,11 +7114,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOosUser_principal_authStorageRequest": {
+        "storage.createOosUser_principal_authStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OosUser_principal_authConfig"
+                    "$ref": "#/definitions/storage.oosUser_principal_authConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7085,11 +7131,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateOpendriveStorageRequest": {
+        "storage.createOpendriveStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.OpendriveConfig"
+                    "$ref": "#/definitions/storage.opendriveConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7102,11 +7148,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreatePcloudStorageRequest": {
+        "storage.createPcloudStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.PcloudConfig"
+                    "$ref": "#/definitions/storage.pcloudConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7119,11 +7165,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreatePremiumizemeStorageRequest": {
+        "storage.createPremiumizemeStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.PremiumizemeConfig"
+                    "$ref": "#/definitions/storage.premiumizemeConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7136,11 +7182,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreatePutioStorageRequest": {
+        "storage.createPutioStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.PutioConfig"
+                    "$ref": "#/definitions/storage.putioConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7153,11 +7199,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateQingstorStorageRequest": {
+        "storage.createQingstorStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.QingstorConfig"
+                    "$ref": "#/definitions/storage.qingstorConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7170,33 +7216,13 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateRequest": {
+        "storage.createS3AWSStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/storage.s3AWSConfig"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "provider": {
-                    "type": "string"
-                }
-            }
-        },
-        "storage.CreateS3AWSStorageRequest": {
-            "type": "object",
-            "properties": {
-                "config": {
-                    "$ref": "#/definitions/storage.S3AWSConfig"
-                },
-                "name": {
                     "description": "Name of the storage, must be unique",
                     "type": "string",
                     "example": "my-storage"
@@ -7207,11 +7233,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3AlibabaStorageRequest": {
+        "storage.createS3AlibabaStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3AlibabaConfig"
+                    "$ref": "#/definitions/storage.s3AlibabaConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7224,11 +7250,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3ArvanCloudStorageRequest": {
+        "storage.createS3ArvanCloudStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3ArvanCloudConfig"
+                    "$ref": "#/definitions/storage.s3ArvanCloudConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7241,11 +7267,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3CephStorageRequest": {
+        "storage.createS3CephStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3CephConfig"
+                    "$ref": "#/definitions/storage.s3CephConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7258,11 +7284,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3ChinaMobileStorageRequest": {
+        "storage.createS3ChinaMobileStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3ChinaMobileConfig"
+                    "$ref": "#/definitions/storage.s3ChinaMobileConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7275,11 +7301,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3CloudflareStorageRequest": {
+        "storage.createS3CloudflareStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3CloudflareConfig"
+                    "$ref": "#/definitions/storage.s3CloudflareConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7292,11 +7318,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3DigitalOceanStorageRequest": {
+        "storage.createS3DigitalOceanStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3DigitalOceanConfig"
+                    "$ref": "#/definitions/storage.s3DigitalOceanConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7309,11 +7335,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3DreamhostStorageRequest": {
+        "storage.createS3DreamhostStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3DreamhostConfig"
+                    "$ref": "#/definitions/storage.s3DreamhostConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7326,11 +7352,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3HuaweiOBSStorageRequest": {
+        "storage.createS3HuaweiOBSStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3HuaweiOBSConfig"
+                    "$ref": "#/definitions/storage.s3HuaweiOBSConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7343,11 +7369,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3IBMCOSStorageRequest": {
+        "storage.createS3IBMCOSStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3IBMCOSConfig"
+                    "$ref": "#/definitions/storage.s3IBMCOSConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7360,11 +7386,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3IDriveStorageRequest": {
+        "storage.createS3IDriveStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3IDriveConfig"
+                    "$ref": "#/definitions/storage.s3IDriveConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7377,11 +7403,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3IONOSStorageRequest": {
+        "storage.createS3IONOSStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3IONOSConfig"
+                    "$ref": "#/definitions/storage.s3IONOSConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7394,11 +7420,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3LiaraStorageRequest": {
+        "storage.createS3LiaraStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3LiaraConfig"
+                    "$ref": "#/definitions/storage.s3LiaraConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7411,11 +7437,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3LyveCloudStorageRequest": {
+        "storage.createS3LyveCloudStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3LyveCloudConfig"
+                    "$ref": "#/definitions/storage.s3LyveCloudConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7428,11 +7454,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3MinioStorageRequest": {
+        "storage.createS3MinioStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3MinioConfig"
+                    "$ref": "#/definitions/storage.s3MinioConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7445,11 +7471,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3NeteaseStorageRequest": {
+        "storage.createS3NeteaseStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3NeteaseConfig"
+                    "$ref": "#/definitions/storage.s3NeteaseConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7462,11 +7488,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3OtherStorageRequest": {
+        "storage.createS3OtherStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3OtherConfig"
+                    "$ref": "#/definitions/storage.s3OtherConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7479,11 +7505,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3QiniuStorageRequest": {
+        "storage.createS3QiniuStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3QiniuConfig"
+                    "$ref": "#/definitions/storage.s3QiniuConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7496,11 +7522,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3RackCorpStorageRequest": {
+        "storage.createS3RackCorpStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3RackCorpConfig"
+                    "$ref": "#/definitions/storage.s3RackCorpConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7513,11 +7539,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3ScalewayStorageRequest": {
+        "storage.createS3ScalewayStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3ScalewayConfig"
+                    "$ref": "#/definitions/storage.s3ScalewayConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7530,11 +7556,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3SeaweedFSStorageRequest": {
+        "storage.createS3SeaweedFSStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3SeaweedFSConfig"
+                    "$ref": "#/definitions/storage.s3SeaweedFSConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7547,11 +7573,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3StackPathStorageRequest": {
+        "storage.createS3StackPathStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3StackPathConfig"
+                    "$ref": "#/definitions/storage.s3StackPathConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7564,11 +7590,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3StorjStorageRequest": {
+        "storage.createS3StorjStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3StorjConfig"
+                    "$ref": "#/definitions/storage.s3StorjConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7581,11 +7607,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3TencentCOSStorageRequest": {
+        "storage.createS3TencentCOSStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3TencentCOSConfig"
+                    "$ref": "#/definitions/storage.s3TencentCOSConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7598,11 +7624,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateS3WasabiStorageRequest": {
+        "storage.createS3WasabiStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.S3WasabiConfig"
+                    "$ref": "#/definitions/storage.s3WasabiConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7615,11 +7641,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSeafileStorageRequest": {
+        "storage.createSeafileStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SeafileConfig"
+                    "$ref": "#/definitions/storage.seafileConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7632,11 +7658,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSftpStorageRequest": {
+        "storage.createSftpStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SftpConfig"
+                    "$ref": "#/definitions/storage.sftpConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7649,11 +7675,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSharefileStorageRequest": {
+        "storage.createSharefileStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SharefileConfig"
+                    "$ref": "#/definitions/storage.sharefileConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7666,11 +7692,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSiaStorageRequest": {
+        "storage.createSiaStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SiaConfig"
+                    "$ref": "#/definitions/storage.siaConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7683,11 +7709,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSmbStorageRequest": {
+        "storage.createSmbStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SmbConfig"
+                    "$ref": "#/definitions/storage.smbConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7700,11 +7726,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateStorjExistingStorageRequest": {
+        "storage.createStorjExistingStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.StorjExistingConfig"
+                    "$ref": "#/definitions/storage.storjExistingConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7717,11 +7743,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateStorjNewStorageRequest": {
+        "storage.createStorjNewStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.StorjNewConfig"
+                    "$ref": "#/definitions/storage.storjNewConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7734,11 +7760,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSugarsyncStorageRequest": {
+        "storage.createSugarsyncStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SugarsyncConfig"
+                    "$ref": "#/definitions/storage.sugarsyncConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7751,11 +7777,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateSwiftStorageRequest": {
+        "storage.createSwiftStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.SwiftConfig"
+                    "$ref": "#/definitions/storage.swiftConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7768,11 +7794,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateUptoboxStorageRequest": {
+        "storage.createUptoboxStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.UptoboxConfig"
+                    "$ref": "#/definitions/storage.uptoboxConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7785,11 +7811,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateWebdavStorageRequest": {
+        "storage.createWebdavStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.WebdavConfig"
+                    "$ref": "#/definitions/storage.webdavConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7802,11 +7828,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateYandexStorageRequest": {
+        "storage.createYandexStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.YandexConfig"
+                    "$ref": "#/definitions/storage.yandexConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7819,11 +7845,11 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.CreateZohoStorageRequest": {
+        "storage.createZohoStorageRequest": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/storage.ZohoConfig"
+                    "$ref": "#/definitions/storage.zohoConfig"
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7832,37 +7858,11 @@ const docTemplate = `{
                 },
                 "path": {
                     "description": "Path of the storage",
-                    "type": "string"
-                }
-            }
-        },
-        "storage.DirEntry": {
-            "type": "object",
-            "properties": {
-                "dirId": {
-                    "type": "string"
-                },
-                "hash": {
                     "type": "string"
-                },
-                "isDir": {
-                    "type": "boolean"
-                },
-                "lastModified": {
-                    "type": "string"
-                },
-                "numItems": {
-                    "type": "integer"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
                 }
             }
         },
-        "storage.DriveConfig": {
+        "storage.driveConfig": {
             "type": "object",
             "properties": {
                 "acknowledgeAbuse": {
@@ -8069,7 +8069,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.DropboxConfig": {
+        "storage.dropboxConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
@@ -8138,7 +8138,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.FichierConfig": {
+        "storage.fichierConfig": {
             "type": "object",
             "properties": {
                 "apiKey": {
@@ -8164,7 +8164,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.FilefabricConfig": {
+        "storage.filefabricConfig": {
             "type": "object",
             "properties": {
                 "encoding": {
@@ -8199,7 +8199,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.FtpConfig": {
+        "storage.ftpConfig": {
             "type": "object",
             "properties": {
                 "askPassword": {
@@ -8303,7 +8303,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.GcsConfig": {
+        "storage.gcsConfig": {
             "type": "object",
             "properties": {
                 "anonymous": {
@@ -8395,7 +8395,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.GphotosConfig": {
+        "storage.gphotosConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
@@ -8445,7 +8445,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.HdfsConfig": {
+        "storage.hdfsConfig": {
             "type": "object",
             "properties": {
                 "dataTransferProtection": {
@@ -8473,7 +8473,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.HidriveConfig": {
+        "storage.hidriveConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
@@ -8546,7 +8546,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.HttpConfig": {
+        "storage.httpConfig": {
             "type": "object",
             "properties": {
                 "headers": {
@@ -8569,7 +8569,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.InternetarchiveConfig": {
+        "storage.internetarchiveConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -8607,7 +8607,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.JottacloudConfig": {
+        "storage.jottacloudConfig": {
             "type": "object",
             "properties": {
                 "encoding": {
@@ -8642,7 +8642,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.KoofrDigistorageConfig": {
+        "storage.koofrDigistorageConfig": {
             "type": "object",
             "properties": {
                 "encoding": {
@@ -8669,7 +8669,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.KoofrKoofrConfig": {
+        "storage.koofrKoofrConfig": {
             "type": "object",
             "properties": {
                 "encoding": {
@@ -8696,7 +8696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.KoofrOtherConfig": {
+        "storage.koofrOtherConfig": {
             "type": "object",
             "properties": {
                 "encoding": {
@@ -8727,7 +8727,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.LocalConfig": {
+        "storage.localConfig": {
             "type": "object",
             "properties": {
                 "caseInsensitive": {
@@ -8803,7 +8803,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.MailruConfig": {
+        "storage.mailruConfig": {
             "type": "object",
             "properties": {
                 "checkHash": {
@@ -8859,7 +8859,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.MegaConfig": {
+        "storage.megaConfig": {
             "type": "object",
             "properties": {
                 "debug": {
@@ -8892,7 +8892,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.NetstorageConfig": {
+        "storage.netstorageConfig": {
             "type": "object",
             "properties": {
                 "account": {
@@ -8915,7 +8915,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OnedriveConfig": {
+        "storage.onedriveConfig": {
             "type": "object",
             "properties": {
                 "accessScopes": {
@@ -9021,7 +9021,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OosEnv_authConfig": {
+        "storage.oosEnv_authConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -9118,7 +9118,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OosInstance_principal_authConfig": {
+        "storage.oosInstance_principal_authConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -9215,7 +9215,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OosNo_authConfig": {
+        "storage.oosNo_authConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -9308,7 +9308,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OosResource_principal_authConfig": {
+        "storage.oosResource_principal_authConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -9405,7 +9405,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OosUser_principal_authConfig": {
+        "storage.oosUser_principal_authConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -9514,7 +9514,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.OpendriveConfig": {
+        "storage.opendriveConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -9537,7 +9537,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.PcloudConfig": {
+        "storage.pcloudConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
@@ -9586,7 +9586,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.PremiumizemeConfig": {
+        "storage.premiumizemeConfig": {
             "type": "object",
             "properties": {
                 "apiKey": {
@@ -9600,7 +9600,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.PutioConfig": {
+        "storage.putioConfig": {
             "type": "object",
             "properties": {
                 "encoding": {
@@ -9610,7 +9610,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.QingstorConfig": {
+        "storage.qingstorConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -9663,7 +9663,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3AWSConfig": {
+        "storage.s3AWSConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -9900,7 +9900,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3AlibabaConfig": {
+        "storage.s3AlibabaConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -10079,7 +10079,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3ArvanCloudConfig": {
+        "storage.s3ArvanCloudConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -10263,7 +10263,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3CephConfig": {
+        "storage.s3CephConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -10475,7 +10475,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3ChinaMobileConfig": {
+        "storage.s3ChinaMobileConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -10684,7 +10684,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3CloudflareConfig": {
+        "storage.s3CloudflareConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -10858,7 +10858,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3DigitalOceanConfig": {
+        "storage.s3DigitalOceanConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -11041,7 +11041,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3DreamhostConfig": {
+        "storage.s3DreamhostConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -11224,7 +11224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3HuaweiOBSConfig": {
+        "storage.s3HuaweiOBSConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -11403,7 +11403,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3IBMCOSConfig": {
+        "storage.s3IBMCOSConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -11588,7 +11588,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3IDriveConfig": {
+        "storage.s3IDriveConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -11757,7 +11757,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3IONOSConfig": {
+        "storage.s3IONOSConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -11936,7 +11936,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3LiaraConfig": {
+        "storage.s3LiaraConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -12115,7 +12115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3LyveCloudConfig": {
+        "storage.s3LyveCloudConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -12298,7 +12298,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3MinioConfig": {
+        "storage.s3MinioConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -12510,7 +12510,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3NeteaseConfig": {
+        "storage.s3NeteaseConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -12692,7 +12692,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3OtherConfig": {
+        "storage.s3OtherConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -12874,7 +12874,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3QiniuConfig": {
+        "storage.s3QiniuConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -13063,7 +13063,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3RackCorpConfig": {
+        "storage.s3RackCorpConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -13247,7 +13247,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3ScalewayConfig": {
+        "storage.s3ScalewayConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -13431,7 +13431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3SeaweedFSConfig": {
+        "storage.s3SeaweedFSConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -13614,7 +13614,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3StackPathConfig": {
+        "storage.s3StackPathConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -13793,7 +13793,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3StorjConfig": {
+        "storage.s3StorjConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -13963,7 +13963,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3TencentCOSConfig": {
+        "storage.s3TencentCOSConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -14143,7 +14143,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.S3WasabiConfig": {
+        "storage.s3WasabiConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -14326,7 +14326,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SeafileConfig": {
+        "storage.seafileConfig": {
             "type": "object",
             "properties": {
                 "2fa": {
@@ -14371,7 +14371,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SftpConfig": {
+        "storage.sftpConfig": {
             "type": "object",
             "properties": {
                 "askPassword": {
@@ -14518,7 +14518,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SharefileConfig": {
+        "storage.sharefileConfig": {
             "type": "object",
             "properties": {
                 "chunkSize": {
@@ -14547,7 +14547,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SiaConfig": {
+        "storage.siaConfig": {
             "type": "object",
             "properties": {
                 "apiPassword": {
@@ -14571,7 +14571,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SmbConfig": {
+        "storage.smbConfig": {
             "type": "object",
             "properties": {
                 "caseInsensitive": {
@@ -14623,7 +14623,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.StorjExistingConfig": {
+        "storage.storjExistingConfig": {
             "type": "object",
             "properties": {
                 "accessGrant": {
@@ -14632,7 +14632,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.StorjNewConfig": {
+        "storage.storjNewConfig": {
             "type": "object",
             "properties": {
                 "apiKey": {
@@ -14651,7 +14651,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SugarsyncConfig": {
+        "storage.sugarsyncConfig": {
             "type": "object",
             "properties": {
                 "accessKeyId": {
@@ -14702,7 +14702,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.SwiftConfig": {
+        "storage.swiftConfig": {
             "type": "object",
             "properties": {
                 "applicationCredentialId": {
@@ -14811,7 +14811,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.UptoboxConfig": {
+        "storage.uptoboxConfig": {
             "type": "object",
             "properties": {
                 "accessToken": {
@@ -14825,7 +14825,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.WebdavConfig": {
+        "storage.webdavConfig": {
             "type": "object",
             "properties": {
                 "bearerToken": {
@@ -14863,7 +14863,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.YandexConfig": {
+        "storage.yandexConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {
@@ -14898,7 +14898,7 @@ const docTemplate = `{
                 }
             }
         },
-        "storage.ZohoConfig": {
+        "storage.zohoConfig": {
             "type": "object",
             "properties": {
                 "authUrl": {

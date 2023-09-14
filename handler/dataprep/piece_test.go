@@ -25,7 +25,7 @@ func TestListPiecesHandler(t *testing.T) {
 				}).Error
 				require.NoError(t, err)
 				err = db.Create([]model.Car{{
-					AttachmentID:  ptr.Of(uint32(1)),
+					AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
 					PreparationID: 1,
 				}, {
 					PreparationID: 1,
