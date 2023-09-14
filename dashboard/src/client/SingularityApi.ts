@@ -14,11 +14,13 @@ export interface ApiHTTPError {
 }
 
 export interface DataprepAddPieceRequest {
+  /** File size of the CAR file, this is required for boost online deal */
+  fileSize?: number;
   /** CID of the piece */
   pieceCid: string;
   /** Size of the piece */
   pieceSize: string;
-  /** Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal */
+  /** Root CID of the CAR file, used to populate the label field of storage deal */
   rootCid?: string;
 }
 

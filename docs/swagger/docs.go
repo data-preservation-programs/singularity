@@ -5295,6 +5295,10 @@ const docTemplate = `{
                 "pieceSize"
             ],
             "properties": {
+                "fileSize": {
+                    "description": "File size of the CAR file, this is required for boost online deal",
+                    "type": "integer"
+                },
                 "pieceCid": {
                     "description": "CID of the piece",
                     "type": "string"
@@ -5304,7 +5308,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rootCid": {
-                    "description": "Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal",
+                    "description": "Root CID of the CAR file, used to populate the label field of storage deal",
                     "type": "string"
                 }
             }
