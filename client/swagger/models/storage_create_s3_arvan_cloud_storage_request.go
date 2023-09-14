@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3ArvanCloudStorageRequest storage create s3 arvan cloud storage request
 //
-// swagger:model storage.CreateS3ArvanCloudStorageRequest
+// swagger:model storage.createS3ArvanCloudStorageRequest
 type StorageCreateS3ArvanCloudStorageRequest struct {
 
 	// config

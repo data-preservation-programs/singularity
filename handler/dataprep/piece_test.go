@@ -25,7 +25,7 @@ func TestListPiecesHandler(t *testing.T) {
 				}).Error
 				require.NoError(t, err)
 				err = db.Create([]model.Car{{
-					AttachmentID:  ptr.Of(uint32(1)),
+					AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
 					PreparationID: 1,
 				}, {
 					PreparationID: 1,
@@ -95,7 +95,7 @@ func TestAddPieceHandler(t *testing.T) {
 			require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
 			require.ErrorContains(t, err, "invalid piece size")
 		})
-		t.Run("pieceCID not power of 2", func(t *testing.T) {
+		t.Run("pieceSize not power of 2", func(t *testing.T) {
 			_, err := Default.AddPieceHandler(ctx, db, "1", AddPieceRequest{
 				PieceCID:  "baga6ea4seaqchxeb6cwpiephnus27kplk7lku225rdhrsgb3ej4smaqwgop6wkq",
 				PieceSize: "3000",
@@ -155,6 +155,7 @@ func TestAddPieceHandler(t *testing.T) {
 					})
 					require.NoError(t, err)
 					require.NotNil(t, c)
+					require.EqualValues(t, 59, c.FileSize)
 				})
 			})
 		}

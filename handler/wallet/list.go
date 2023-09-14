@@ -11,12 +11,12 @@ import (
 // ListHandler retrieves a list of all the wallets stored in the database.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
 //
 // Returns:
-// - A slice containing all Wallet models from the database.
-// - An error, if any occurred during the database fetch operation.
+//   - A slice containing all Wallet models from the database.
+//   - An error, if any occurred during the database fetch operation.
 func (DefaultHandler) ListHandler(
 	ctx context.Context,
 	db *gorm.DB,

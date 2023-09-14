@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3AlibabaStorageRequest storage create s3 alibaba storage request
 //
-// swagger:model storage.CreateS3AlibabaStorageRequest
+// swagger:model storage.createS3AlibabaStorageRequest
 type StorageCreateS3AlibabaStorageRequest struct {
 
 	// config

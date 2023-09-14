@@ -2,14 +2,16 @@ package cliutil
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/table"
 	"github.com/fatih/color"
+	"github.com/ipfs/go-log/v2"
 	"github.com/urfave/cli/v2"
 )
+
+var logger = log.Logger("cliutil")
 
 var ErrIncorrectNArgs = errors.New("incorrect number of arguments")
 
@@ -47,7 +49,7 @@ func HandleReallyDoIt(context *cli.Context) error {
 func PrintAsJSON(c *cli.Context, obj any) {
 	objJSON, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
-		fmt.Println("Error: Unable to marshal object to JSON.")
+		logger.Errorw("Error: Unable to marshal object to JSON.", "err", err)
 		return
 	}
 	_, _ = c.App.Writer.Write(objJSON)

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateHdfsStorageRequest storage create hdfs storage request
 //
-// swagger:model storage.CreateHdfsStorageRequest
+// swagger:model storage.createHdfsStorageRequest
 type StorageCreateHdfsStorageRequest struct {
 
 	// config

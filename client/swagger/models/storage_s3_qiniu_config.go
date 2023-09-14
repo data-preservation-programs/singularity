@@ -14,7 +14,7 @@ import (
 
 // StorageS3QiniuConfig storage s3 qiniu config
 //
-// swagger:model storage.S3QiniuConfig
+// swagger:model storage.s3QiniuConfig
 type StorageS3QiniuConfig struct {
 
 	// AWS Access Key ID.

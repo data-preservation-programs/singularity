@@ -14,7 +14,7 @@ import (
 
 // StorageDriveConfig storage drive config
 //
-// swagger:model storage.DriveConfig
+// swagger:model storage.driveConfig
 type StorageDriveConfig struct {
 
 	// Set to allow files which return cannotDownloadAbusiveFile to be downloaded.

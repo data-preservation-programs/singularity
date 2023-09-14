@@ -35,7 +35,7 @@ func TestGetFileDealsHandler(t *testing.T) {
 		err := db.Create(&file).Error
 		require.NoError(t, err)
 		car := model.Car{
-			JobID:         ptr.Of(uint64(1)),
+			JobID:         ptr.Of(model.JobID(1)),
 			PieceCID:      model.CID(testutil.TestCid),
 			PreparationID: 1,
 		}

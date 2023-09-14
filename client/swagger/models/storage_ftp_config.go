@@ -14,7 +14,7 @@ import (
 
 // StorageFtpConfig storage ftp config
 //
-// swagger:model storage.FtpConfig
+// swagger:model storage.ftpConfig
 type StorageFtpConfig struct {
 
 	// Allow asking for FTP password when needed.

@@ -14,7 +14,7 @@ import (
 
 // StorageJottacloudConfig storage jottacloud config
 //
-// swagger:model storage.JottacloudConfig
+// swagger:model storage.jottacloudConfig
 type StorageJottacloudConfig struct {
 
 	// The encoding for the backend.

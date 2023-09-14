@@ -73,13 +73,13 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 // The function returns a slice of Car objects which represent the stored chunks and an error if any occurred.
 //
 // Parameters:
-// - ctx: The context which controls the lifetime of the operation.
-// - db: The gorm database instance used for querying and updating database records.
-// - job: The Job model instance which contains information about the attachment to be processed.
+//   - ctx: The context which controls the lifetime of the operation.
+//   - db: The gorm database instance used for querying and updating database records.
+//   - job: The Job model instance which contains information about the attachment to be processed.
 //
 // Returns:
-// - A slice of model.Car instances representing stored chunks.
-// - An error, if any occurred during the operation.
+//   - A slice of model.Car instances representing stored chunks.
+//   - An error, if any occurred during the operation.
 func Pack(
 	ctx context.Context,
 	db *gorm.DB,
@@ -148,9 +148,9 @@ func Pack(
 	}
 
 	// Update all FileRange and file CID that are not split
-	splitFileIDs := make(map[uint64]model.File)
+	splitFileIDs := make(map[model.FileID]model.File)
 	var updatedFiles []model.File
-	splitFileBlks := make(map[uint64][]blocks.Block)
+	splitFileBlks := make(map[model.FileID][]blocks.Block)
 	for _, fileRange := range job.FileRanges {
 		err = database.DoRetry(ctx, func() error {
 			return db.Model(&model.FileRange{}).Where("id = ?", fileRange.ID).
@@ -244,7 +244,7 @@ func Pack(
 		return db.Transaction(func(db *gorm.DB) error {
 			var err error
 			tree := daggen.NewDirectoryTree()
-			var rootDirID uint64
+			var rootDirID model.DirectoryID
 			for _, file := range updatedFiles {
 				dirID := file.DirectoryID
 				for {

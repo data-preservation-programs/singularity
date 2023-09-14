@@ -14,7 +14,7 @@ import (
 
 // StorageDropboxConfig storage dropbox config
 //
-// swagger:model storage.DropboxConfig
+// swagger:model storage.dropboxConfig
 type StorageDropboxConfig struct {
 
 	// Auth server URL.

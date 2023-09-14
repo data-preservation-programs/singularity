@@ -14,7 +14,7 @@ import (
 
 // StorageS3WasabiConfig storage s3 wasabi config
 //
-// swagger:model storage.S3WasabiConfig
+// swagger:model storage.s3WasabiConfig
 type StorageS3WasabiConfig struct {
 
 	// AWS Access Key ID.

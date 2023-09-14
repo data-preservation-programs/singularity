@@ -35,3 +35,5 @@ languagetool:
 	cat ./spelling.txt >> ./$(DIR_NAME)/org/languagetool/resource/en/hunspell/spelling.txt
 	java -jar ./$(DIR_NAME)/languagetool-commandline.jar -l en-US docs/en/README.md
 
+godoclint:
+	find . -path ./client -prune -o -name '*.go' ! -name '*_test.go' -exec grep -EHn '^// -|^// 1.|^//\s+[a-z]+:' {} \;

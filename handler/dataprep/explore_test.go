@@ -45,12 +45,12 @@ func TestExploreHandler(t *testing.T) {
 					},
 					{
 						AttachmentID: 1,
-						ParentID:     ptr.Of(uint64(1)),
+						ParentID:     ptr.Of(model.DirectoryID(1)),
 						Name:         "sub1",
 					},
 					{
 						AttachmentID: 1,
-						ParentID:     ptr.Of(uint64(2)),
+						ParentID:     ptr.Of(model.DirectoryID(2)),
 						Name:         "sub2",
 					},
 				}).Error
@@ -62,7 +62,7 @@ func TestExploreHandler(t *testing.T) {
 						Size:             100,
 						LastModifiedNano: 100,
 						AttachmentID:     1,
-						DirectoryID:      ptr.Of(uint64(2)),
+						DirectoryID:      ptr.Of(model.DirectoryID(2)),
 					},
 					{
 						Path:             "sub1/test2.tst",
@@ -70,7 +70,7 @@ func TestExploreHandler(t *testing.T) {
 						Size:             100,
 						LastModifiedNano: 100,
 						AttachmentID:     1,
-						DirectoryID:      ptr.Of(uint64(2)),
+						DirectoryID:      ptr.Of(model.DirectoryID(2)),
 					},
 					{
 						Path:             "sub1/test1.tst",
@@ -78,7 +78,7 @@ func TestExploreHandler(t *testing.T) {
 						Size:             200,
 						LastModifiedNano: 200,
 						AttachmentID:     1,
-						DirectoryID:      ptr.Of(uint64(2)),
+						DirectoryID:      ptr.Of(model.DirectoryID(2)),
 					},
 				}).Error
 				require.NoError(t, err)

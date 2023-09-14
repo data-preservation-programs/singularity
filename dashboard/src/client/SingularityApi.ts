@@ -14,11 +14,13 @@ export interface ApiHTTPError {
 }
 
 export interface DataprepAddPieceRequest {
+  /** File size of the CAR file, this is required for boost online deal */
+  fileSize?: number;
   /** CID of the piece */
   pieceCid: string;
   /** Size of the piece */
   pieceSize: string;
-  /** Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal */
+  /** Root CID of the CAR file, used to populate the label field of storage deal */
   rootCid?: string;
 }
 
@@ -482,6 +484,20 @@ export interface ScheduleUpdateRequest {
    * @default true
    */
   verified?: boolean;
+}
+
+export interface StorageDirEntry {
+  dirId?: string;
+  hash?: string;
+  isDir?: boolean;
+  lastModified?: string;
+  numItems?: number;
+  path?: string;
+  size?: number;
+}
+
+export interface StorageRenameRequest {
+  name: string;
 }
 
 export interface StorageAcdConfig {
@@ -1533,16 +1549,6 @@ export interface StorageCreateZohoStorageRequest {
   name?: string;
   /** Path of the storage */
   path?: string;
-}
-
-export interface StorageDirEntry {
-  dirId?: string;
-  hash?: string;
-  isDir?: boolean;
-  lastModified?: string;
-  numItems?: number;
-  path?: string;
-  size?: number;
 }
 
 export interface StorageDriveConfig {
@@ -3054,10 +3060,6 @@ export interface StorageQingstorConfig {
    * @example "pek3a"
    */
   zone?: string;
-}
-
-export interface StorageRenameRequest {
-  name: string;
 }
 
 export interface StorageS3AWSConfig {

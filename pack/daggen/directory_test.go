@@ -87,17 +87,17 @@ func TestResolveDirectoryTree(t *testing.T) {
 	ctx := context.Background()
 	root := NewDirectoryData()
 	dir := NewDirectoryData()
-	cache := map[uint64]*DirectoryDetail{
+	cache := map[model.DirectoryID]*DirectoryDetail{
 		1: {
 			Dir:  &model.Directory{ID: 1},
 			Data: &root,
 		},
 		2: {
-			Dir:  &model.Directory{ID: 2, Name: "name", ParentID: ptr.Of(uint64(1))},
+			Dir:  &model.Directory{ID: 2, Name: "name", ParentID: ptr.Of(model.DirectoryID(1))},
 			Data: &dir,
 		},
 	}
-	children := map[uint64][]uint64{
+	children := map[model.DirectoryID][]model.DirectoryID{
 		1: {2},
 	}
 	err := root.AddFile(ctx, "test", cid.NewCidV1(cid.Raw, util.Hash([]byte("test"))), 4)

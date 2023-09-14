@@ -215,16 +215,41 @@ func SetVersionJSON(versionJSON []byte) error {
 }
 
 func SetupErrorHandler() {
-	App.ExitErrHandler = func(c *cli.Context, err error) {
+	errHandler := func(c *cli.Context, err error) {
 		if err == nil {
 			return
+		}
+		if c.Bool("json") {
+			errMessage, err2 := json.MarshalIndent(map[string]string{
+				"err": err.Error(),
+			}, "", "  ")
+			if err2 != nil {
+				panic(err2)
+			}
+			_, _ = App.Writer.Write(errMessage)
+			_, _ = App.Writer.Write([]byte("\n"))
+		} else {
+			concise := cliutil.Failure(err.Error()) + "\n"
+			_, _ = App.Writer.Write([]byte(concise))
 		}
 		if c.Bool("verbose") {
 			report := fmt.Sprintf("%+v\n\n", err)
 			_, _ = App.ErrWriter.Write([]byte(report))
 		}
-		concise := cliutil.Failure(err.Error()) + "\n"
-		_, _ = App.ErrWriter.Write([]byte(concise))
+		var exitCoder cli.ExitCoder
+		if errors.As(err, &exitCoder) {
+			os.Exit(exitCoder.ExitCode())
+		} else {
+			os.Exit(1)
+		}
+	}
+	App.ExitErrHandler = errHandler
+	App.OnUsageError = func(c *cli.Context, err error, isSubcommand bool) error {
+		errHandler(c, err)
+		return err
+	}
+	App.CommandNotFound = func(c *cli.Context, command string) {
+		errHandler(c, errors.Newf("command not found: %s", command))
 	}
 }
 

@@ -14,7 +14,7 @@ import (
 
 // StorageS3ChinaMobileConfig storage s3 china mobile config
 //
-// swagger:model storage.S3ChinaMobileConfig
+// swagger:model storage.s3ChinaMobileConfig
 type StorageS3ChinaMobileConfig struct {
 
 	// AWS Access Key ID.

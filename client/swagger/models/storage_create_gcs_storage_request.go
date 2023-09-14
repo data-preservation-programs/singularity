@@ -15,7 +15,7 @@ import (
 
 // StorageCreateGcsStorageRequest storage create gcs storage request
 //
-// swagger:model storage.CreateGcsStorageRequest
+// swagger:model storage.createGcsStorageRequest
 type StorageCreateGcsStorageRequest struct {
 
 	// config

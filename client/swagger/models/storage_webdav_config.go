@@ -14,7 +14,7 @@ import (
 
 // StorageWebdavConfig storage webdav config
 //
-// swagger:model storage.WebdavConfig
+// swagger:model storage.webdavConfig
 type StorageWebdavConfig struct {
 
 	// Bearer token instead of user/pass (e.g. a Macaroon).

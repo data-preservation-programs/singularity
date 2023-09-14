@@ -24,11 +24,11 @@ type Info struct {
 // successfully, it is then pushed to the database.
 //
 // Parameters:
-// - ctx: The context for managing timeouts and cancellation.
-// - db: The gorm.DB instance for database operations.
-// - preparation: The preparation ID or name.
-// - source: The source ID or name.
-// - fileInfo: Information regarding the file to be pushed.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for database operations.
+//   - preparation: The preparation ID or name.
+//   - source: The source ID or name.
+//   - fileInfo: Information regarding the file to be pushed.
 //
 // Returns:
 //   - A pointer to the pushed model.File, if successful.
@@ -66,7 +66,7 @@ func (DefaultHandler) PushFileHandler(
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "file '%s' is not an object", fileInfo.Path)
 	}
 
-	file, fileRanges, err := push.PushFile(ctx, db, obj, attachment, map[string]uint64{})
+	file, fileRanges, err := push.PushFile(ctx, db, obj, attachment, map[string]model.DirectoryID{})
 
 	if err != nil {
 		return nil, errors.WithStack(err)

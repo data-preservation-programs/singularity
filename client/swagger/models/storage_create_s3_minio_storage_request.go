@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3MinioStorageRequest storage create s3 minio storage request
 //
-// swagger:model storage.CreateS3MinioStorageRequest
+// swagger:model storage.createS3MinioStorageRequest
 type StorageCreateS3MinioStorageRequest struct {
 
 	// config

@@ -39,7 +39,7 @@ func TestPieceReader_FileChanged(t *testing.T) {
 			CarOffset:      59,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			FileID:         ptr.Of(uint64(1)),
+			FileID:         ptr.Of(model.FileID(1)),
 			CID:            model.CID(cidValue),
 		},
 	}
@@ -93,7 +93,7 @@ func TestPieceReader_LargeFile(t *testing.T) {
 			CarOffset:      59,
 			CarBlockLength: int32(size - 59),
 			Varint:         varint.ToUvarint(36 + 1024*1024),
-			FileID:         ptr.Of(uint64(1)),
+			FileID:         ptr.Of(model.FileID(1)),
 			CID:            model.CID(cidValue),
 		},
 	}
@@ -143,21 +143,21 @@ func TestPieceReader_ReadSeek(t *testing.T) {
 			CarOffset:      59,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			FileID:         ptr.Of(uint64(1)),
+			FileID:         ptr.Of(model.FileID(1)),
 			CID:            model.CID(cidValue),
 		},
 		{
 			CarOffset:      116,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			FileID:         ptr.Of(uint64(2)),
+			FileID:         ptr.Of(model.FileID(2)),
 			CID:            model.CID(cidValue),
 		},
 		{
 			CarOffset:      173,
 			CarBlockLength: 57,
 			Varint:         []byte{56},
-			FileID:         ptr.Of(uint64(3)),
+			FileID:         ptr.Of(model.FileID(3)),
 			CID:            model.CID(cidValue),
 		},
 		{
@@ -400,7 +400,7 @@ func TestNewPieceReader_InvalidConstruction(t *testing.T) {
 					CarOffset:      59,
 					CarBlockLength: 57,
 					Varint:         []byte{56},
-					FileID:         ptr.Of(uint64(100)),
+					FileID:         ptr.Of(model.FileID(100)),
 				},
 			},
 			files: []model.File{{

@@ -3,7 +3,7 @@
 //lint:file-ignore U1000 Ignore all unused code, it's generated
 package storage
 
-type AcdConfig struct {
+type acdConfig struct {
 	ClientId          string `json:"clientId"`                                 // OAuth Client Id.
 	ClientSecret      string `json:"clientSecret"`                             // OAuth Client Secret.
 	Token             string `json:"token"`                                    // OAuth Access Token as a JSON blob.
@@ -15,10 +15,10 @@ type AcdConfig struct {
 	Encoding          string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateAcdStorageRequest struct {
+type createAcdStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config AcdConfig
+	Config acdConfig
 }
 
 // @ID CreateAcdStorage
@@ -29,11 +29,11 @@ type CreateAcdStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateAcdStorageRequest true "Request body"
+// @Param request body createAcdStorageRequest true "Request body"
 // @Router /storage/acd [post]
 func createAcdStorage() {}
 
-type AzureblobConfig struct {
+type azureblobConfig struct {
 	Account                    string `json:"account"`                                                            // Azure Storage Account Name.
 	EnvAuth                    bool   `json:"envAuth" default:"false"`                                            // Read credentials from runtime (environment variables, CLI or MSI).
 	Key                        string `json:"key"`                                                                // Storage Account Shared Key.
@@ -68,10 +68,10 @@ type AzureblobConfig struct {
 	NoHeadObject               bool   `json:"noHeadObject" default:"false"`                                       // If set, do not do HEAD before GET when getting objects.
 }
 
-type CreateAzureblobStorageRequest struct {
+type createAzureblobStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config AzureblobConfig
+	Config azureblobConfig
 }
 
 // @ID CreateAzureblobStorage
@@ -82,11 +82,11 @@ type CreateAzureblobStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateAzureblobStorageRequest true "Request body"
+// @Param request body createAzureblobStorageRequest true "Request body"
 // @Router /storage/azureblob [post]
 func createAzureblobStorage() {}
 
-type B2Config struct {
+type b2Config struct {
 	Account              string `json:"account"`                                                    // Account ID or Application Key ID.
 	Key                  string `json:"key"`                                                        // Application Key.
 	Endpoint             string `json:"endpoint"`                                                   // Endpoint for the service.
@@ -105,10 +105,10 @@ type B2Config struct {
 	Encoding             string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateB2StorageRequest struct {
+type createB2StorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config B2Config
+	Config b2Config
 }
 
 // @ID CreateB2Storage
@@ -119,11 +119,11 @@ type CreateB2StorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateB2StorageRequest true "Request body"
+// @Param request body createB2StorageRequest true "Request body"
 // @Router /storage/b2 [post]
 func createB2Storage() {}
 
-type BoxConfig struct {
+type boxConfig struct {
 	ClientId      string `json:"clientId"`                                                              // OAuth Client Id.
 	ClientSecret  string `json:"clientSecret"`                                                          // OAuth Client Secret.
 	Token         string `json:"token"`                                                                 // OAuth Access Token as a JSON blob.
@@ -140,10 +140,10 @@ type BoxConfig struct {
 	Encoding      string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,RightSpace,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateBoxStorageRequest struct {
+type createBoxStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config BoxConfig
+	Config boxConfig
 }
 
 // @ID CreateBoxStorage
@@ -154,11 +154,11 @@ type CreateBoxStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateBoxStorageRequest true "Request body"
+// @Param request body createBoxStorageRequest true "Request body"
 // @Router /storage/box [post]
 func createBoxStorage() {}
 
-type DriveConfig struct {
+type driveConfig struct {
 	ClientId                  string `json:"clientId"`                                   // Google Application Client Id
 	ClientSecret              string `json:"clientSecret"`                               // OAuth Client Secret.
 	Token                     string `json:"token"`                                      // OAuth Access Token as a JSON blob.
@@ -204,10 +204,10 @@ type DriveConfig struct {
 	Encoding                  string `json:"encoding" default:"InvalidUtf8"`             // The encoding for the backend.
 }
 
-type CreateDriveStorageRequest struct {
+type createDriveStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config DriveConfig
+	Config driveConfig
 }
 
 // @ID CreateDriveStorage
@@ -218,11 +218,11 @@ type CreateDriveStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateDriveStorageRequest true "Request body"
+// @Param request body createDriveStorageRequest true "Request body"
 // @Router /storage/drive [post]
 func createDriveStorage() {}
 
-type DropboxConfig struct {
+type dropboxConfig struct {
 	ClientId           string `json:"clientId"`                                                          // OAuth Client Id.
 	ClientSecret       string `json:"clientSecret"`                                                      // OAuth Client Secret.
 	Token              string `json:"token"`                                                             // OAuth Access Token as a JSON blob.
@@ -239,10 +239,10 @@ type DropboxConfig struct {
 	Encoding           string `json:"encoding" default:"Slash,BackSlash,Del,RightSpace,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateDropboxStorageRequest struct {
+type createDropboxStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config DropboxConfig
+	Config dropboxConfig
 }
 
 // @ID CreateDropboxStorage
@@ -253,11 +253,11 @@ type CreateDropboxStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateDropboxStorageRequest true "Request body"
+// @Param request body createDropboxStorageRequest true "Request body"
 // @Router /storage/dropbox [post]
 func createDropboxStorage() {}
 
-type FichierConfig struct {
+type fichierConfig struct {
 	ApiKey         string `json:"apiKey"`                                                                                                                        // Your API Key, get it from https://1fichier.com/console/params.pl.
 	SharedFolder   string `json:"sharedFolder"`                                                                                                                  // If you want to download a shared folder, add this parameter.
 	FilePassword   string `json:"filePassword"`                                                                                                                  // If you want to download a shared file that is password protected, add this parameter.
@@ -265,10 +265,10 @@ type FichierConfig struct {
 	Encoding       string `json:"encoding" default:"Slash,LtGt,DoubleQuote,SingleQuote,BackQuote,Dollar,BackSlash,Del,Ctl,LeftSpace,RightSpace,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateFichierStorageRequest struct {
+type createFichierStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config FichierConfig
+	Config fichierConfig
 }
 
 // @ID CreateFichierStorage
@@ -279,11 +279,11 @@ type CreateFichierStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateFichierStorageRequest true "Request body"
+// @Param request body createFichierStorageRequest true "Request body"
 // @Router /storage/fichier [post]
 func createFichierStorage() {}
 
-type FilefabricConfig struct {
+type filefabricConfig struct {
 	Url            string `json:"url" example:"https://storagemadeeasy.com"`        // URL of the Enterprise File Fabric to connect to.
 	RootFolderId   string `json:"rootFolderId"`                                     // ID of the root folder.
 	PermanentToken string `json:"permanentToken"`                                   // Permanent Authentication Token.
@@ -293,10 +293,10 @@ type FilefabricConfig struct {
 	Encoding       string `json:"encoding" default:"Slash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateFilefabricStorageRequest struct {
+type createFilefabricStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config FilefabricConfig
+	Config filefabricConfig
 }
 
 // @ID CreateFilefabricStorage
@@ -307,11 +307,11 @@ type CreateFilefabricStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateFilefabricStorageRequest true "Request body"
+// @Param request body createFilefabricStorageRequest true "Request body"
 // @Router /storage/filefabric [post]
 func createFilefabricStorage() {}
 
-type FtpConfig struct {
+type ftpConfig struct {
 	Host               string `json:"host"`                                                                             // FTP host to connect to.
 	User               string `json:"user" default:"$USER"`                                                             // FTP username.
 	Port               int    `json:"port" default:"21"`                                                                // FTP port number.
@@ -334,10 +334,10 @@ type FtpConfig struct {
 	Encoding           string `json:"encoding" default:"Slash,Del,Ctl,RightSpace,Dot" example:"Asterisk,Ctl,Dot,Slash"` // The encoding for the backend.
 }
 
-type CreateFtpStorageRequest struct {
+type createFtpStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config FtpConfig
+	Config ftpConfig
 }
 
 // @ID CreateFtpStorage
@@ -348,11 +348,11 @@ type CreateFtpStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateFtpStorageRequest true "Request body"
+// @Param request body createFtpStorageRequest true "Request body"
 // @Router /storage/ftp [post]
 func createFtpStorage() {}
 
-type GcsConfig struct {
+type gcsConfig struct {
 	ClientId                  string `json:"clientId"`                                      // OAuth Client Id.
 	ClientSecret              string `json:"clientSecret"`                                  // OAuth Client Secret.
 	Token                     string `json:"token"`                                         // OAuth Access Token as a JSON blob.
@@ -374,10 +374,10 @@ type GcsConfig struct {
 	EnvAuth                   bool   `json:"envAuth" default:"false" example:"false"`       // Get GCP IAM credentials from runtime (environment variables or instance meta data if no env vars).
 }
 
-type CreateGcsStorageRequest struct {
+type createGcsStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config GcsConfig
+	Config gcsConfig
 }
 
 // @ID CreateGcsStorage
@@ -388,11 +388,11 @@ type CreateGcsStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateGcsStorageRequest true "Request body"
+// @Param request body createGcsStorageRequest true "Request body"
 // @Router /storage/gcs [post]
 func createGcsStorage() {}
 
-type GphotosConfig struct {
+type gphotosConfig struct {
 	ClientId        string `json:"clientId"`                                      // OAuth Client Id.
 	ClientSecret    string `json:"clientSecret"`                                  // OAuth Client Secret.
 	Token           string `json:"token"`                                         // OAuth Access Token as a JSON blob.
@@ -405,10 +405,10 @@ type GphotosConfig struct {
 	Encoding        string `json:"encoding" default:"Slash,CrLf,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateGphotosStorageRequest struct {
+type createGphotosStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config GphotosConfig
+	Config gphotosConfig
 }
 
 // @ID CreateGphotosStorage
@@ -419,11 +419,11 @@ type CreateGphotosStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateGphotosStorageRequest true "Request body"
+// @Param request body createGphotosStorageRequest true "Request body"
 // @Router /storage/gphotos [post]
 func createGphotosStorage() {}
 
-type HdfsConfig struct {
+type hdfsConfig struct {
 	Namenode               string `json:"namenode"`                                               // Hadoop name node and port.
 	Username               string `json:"username" example:"root"`                                // Hadoop user name.
 	ServicePrincipalName   string `json:"servicePrincipalName"`                                   // Kerberos service principal name for the namenode.
@@ -431,10 +431,10 @@ type HdfsConfig struct {
 	Encoding               string `json:"encoding" default:"Slash,Colon,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateHdfsStorageRequest struct {
+type createHdfsStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config HdfsConfig
+	Config hdfsConfig
 }
 
 // @ID CreateHdfsStorage
@@ -445,11 +445,11 @@ type CreateHdfsStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateHdfsStorageRequest true "Request body"
+// @Param request body createHdfsStorageRequest true "Request body"
 // @Router /storage/hdfs [post]
 func createHdfsStorage() {}
 
-type HidriveConfig struct {
+type hidriveConfig struct {
 	ClientId                   string `json:"clientId"`                                              // OAuth Client Id.
 	ClientSecret               string `json:"clientSecret"`                                          // OAuth Client Secret.
 	Token                      string `json:"token"`                                                 // OAuth Access Token as a JSON blob.
@@ -466,10 +466,10 @@ type HidriveConfig struct {
 	Encoding                   string `json:"encoding" default:"Slash,Dot"`                          // The encoding for the backend.
 }
 
-type CreateHidriveStorageRequest struct {
+type createHidriveStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config HidriveConfig
+	Config hidriveConfig
 }
 
 // @ID CreateHidriveStorage
@@ -480,21 +480,21 @@ type CreateHidriveStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateHidriveStorageRequest true "Request body"
+// @Param request body createHidriveStorageRequest true "Request body"
 // @Router /storage/hidrive [post]
 func createHidriveStorage() {}
 
-type HttpConfig struct {
+type httpConfig struct {
 	Url     string `json:"url"`                     // URL of HTTP host to connect to.
 	Headers string `json:"headers"`                 // Set HTTP headers for all transactions.
 	NoSlash bool   `json:"noSlash" default:"false"` // Set this if the site doesn't end directories with /.
 	NoHead  bool   `json:"noHead" default:"false"`  // Don't use HEAD requests.
 }
 
-type CreateHttpStorageRequest struct {
+type createHttpStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config HttpConfig
+	Config httpConfig
 }
 
 // @ID CreateHttpStorage
@@ -505,11 +505,11 @@ type CreateHttpStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateHttpStorageRequest true "Request body"
+// @Param request body createHttpStorageRequest true "Request body"
 // @Router /storage/http [post]
 func createHttpStorage() {}
 
-type InternetarchiveConfig struct {
+type internetarchiveConfig struct {
 	AccessKeyId     string `json:"accessKeyId"`                                                // IAS3 Access Key.
 	SecretAccessKey string `json:"secretAccessKey"`                                            // IAS3 Secret Key (password).
 	Endpoint        string `json:"endpoint" default:"https://s3.us.archive.org"`               // IAS3 Endpoint.
@@ -519,10 +519,10 @@ type InternetarchiveConfig struct {
 	Encoding        string `json:"encoding" default:"Slash,LtGt,CrLf,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateInternetarchiveStorageRequest struct {
+type createInternetarchiveStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config InternetarchiveConfig
+	Config internetarchiveConfig
 }
 
 // @ID CreateInternetarchiveStorage
@@ -533,11 +533,11 @@ type CreateInternetarchiveStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateInternetarchiveStorageRequest true "Request body"
+// @Param request body createInternetarchiveStorageRequest true "Request body"
 // @Router /storage/internetarchive [post]
 func createInternetarchiveStorage() {}
 
-type JottacloudConfig struct {
+type jottacloudConfig struct {
 	Md5MemoryLimit    string `json:"md5MemoryLimit" default:"10Mi"`                                                                  // Files bigger than this will be cached on disk to calculate the MD5 if required.
 	TrashedOnly       bool   `json:"trashedOnly" default:"false"`                                                                    // Only show files that are in the trash.
 	HardDelete        bool   `json:"hardDelete" default:"false"`                                                                     // Delete files permanently rather than putting them into the trash.
@@ -546,10 +546,10 @@ type JottacloudConfig struct {
 	Encoding          string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateJottacloudStorageRequest struct {
+type createJottacloudStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config JottacloudConfig
+	Config jottacloudConfig
 }
 
 // @ID CreateJottacloudStorage
@@ -560,11 +560,11 @@ type CreateJottacloudStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateJottacloudStorageRequest true "Request body"
+// @Param request body createJottacloudStorageRequest true "Request body"
 // @Router /storage/jottacloud [post]
 func createJottacloudStorage() {}
 
-type KoofrDigistorageConfig struct {
+type koofrDigistorageConfig struct {
 	Mountid  string `json:"mountid"`                                                    // Mount ID of the mount to use.
 	Setmtime bool   `json:"setmtime" default:"true"`                                    // Does the backend support setting modification time.
 	User     string `json:"user"`                                                       // Your user name.
@@ -572,10 +572,10 @@ type KoofrDigistorageConfig struct {
 	Encoding string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateKoofrDigistorageStorageRequest struct {
+type createKoofrDigistorageStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config KoofrDigistorageConfig
+	Config koofrDigistorageConfig
 }
 
 // @ID CreateKoofrDigistorageStorage
@@ -586,11 +586,11 @@ type CreateKoofrDigistorageStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateKoofrDigistorageStorageRequest true "Request body"
+// @Param request body createKoofrDigistorageStorageRequest true "Request body"
 // @Router /storage/koofr/digistorage [post]
-func CreateKoofrDigistorageStorage() {}
+func createKoofrDigistorageStorage() {}
 
-type KoofrKoofrConfig struct {
+type koofrKoofrConfig struct {
 	Mountid  string `json:"mountid"`                                                    // Mount ID of the mount to use.
 	Setmtime bool   `json:"setmtime" default:"true"`                                    // Does the backend support setting modification time.
 	User     string `json:"user"`                                                       // Your user name.
@@ -598,10 +598,10 @@ type KoofrKoofrConfig struct {
 	Encoding string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateKoofrKoofrStorageRequest struct {
+type createKoofrKoofrStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config KoofrKoofrConfig
+	Config koofrKoofrConfig
 }
 
 // @ID CreateKoofrKoofrStorage
@@ -612,11 +612,11 @@ type CreateKoofrKoofrStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateKoofrKoofrStorageRequest true "Request body"
+// @Param request body createKoofrKoofrStorageRequest true "Request body"
 // @Router /storage/koofr/koofr [post]
-func CreateKoofrKoofrStorage() {}
+func createKoofrKoofrStorage() {}
 
-type KoofrOtherConfig struct {
+type koofrOtherConfig struct {
 	Endpoint string `json:"endpoint"`                                                   // The Koofr API endpoint to use.
 	Mountid  string `json:"mountid"`                                                    // Mount ID of the mount to use.
 	Setmtime bool   `json:"setmtime" default:"true"`                                    // Does the backend support setting modification time.
@@ -625,10 +625,10 @@ type KoofrOtherConfig struct {
 	Encoding string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateKoofrOtherStorageRequest struct {
+type createKoofrOtherStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config KoofrOtherConfig
+	Config koofrOtherConfig
 }
 
 // @ID CreateKoofrOtherStorage
@@ -639,11 +639,11 @@ type CreateKoofrOtherStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateKoofrOtherStorageRequest true "Request body"
+// @Param request body createKoofrOtherStorageRequest true "Request body"
 // @Router /storage/koofr/other [post]
-func CreateKoofrOtherStorage() {}
+func createKoofrOtherStorage() {}
 
-type LocalConfig struct {
+type localConfig struct {
 	Nounc                bool   `json:"nounc" default:"false" example:"true"` // Disable UNC (long path names) conversion on Windows.
 	CopyLinks            bool   `json:"copyLinks" default:"false"`            // Follow symlinks and copy the pointed to item.
 	Links                bool   `json:"links" default:"false"`                // Translate symlinks to/from regular files with a '.rclonelink' extension.
@@ -660,10 +660,10 @@ type LocalConfig struct {
 	Encoding             string `json:"encoding" default:"Slash,Dot"`         // The encoding for the backend.
 }
 
-type CreateLocalStorageRequest struct {
+type createLocalStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config LocalConfig
+	Config localConfig
 }
 
 // @ID CreateLocalStorage
@@ -674,11 +674,11 @@ type CreateLocalStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateLocalStorageRequest true "Request body"
+// @Param request body createLocalStorageRequest true "Request body"
 // @Router /storage/local [post]
 func createLocalStorage() {}
 
-type MailruConfig struct {
+type mailruConfig struct {
 	User                string `json:"user"`                                                                                                     // User name (usually email).
 	Pass                string `json:"pass"`                                                                                                     // Password.
 	SpeedupEnable       bool   `json:"speedupEnable" default:"true" example:"true"`                                                              // Skip full upload if there is another file with same data hash.
@@ -691,10 +691,10 @@ type MailruConfig struct {
 	Encoding            string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateMailruStorageRequest struct {
+type createMailruStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config MailruConfig
+	Config mailruConfig
 }
 
 // @ID CreateMailruStorage
@@ -705,11 +705,11 @@ type CreateMailruStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateMailruStorageRequest true "Request body"
+// @Param request body createMailruStorageRequest true "Request body"
 // @Router /storage/mailru [post]
 func createMailruStorage() {}
 
-type MegaConfig struct {
+type megaConfig struct {
 	User       string `json:"user"`                                     // User name.
 	Pass       string `json:"pass"`                                     // Password.
 	Debug      bool   `json:"debug" default:"false"`                    // Output more debug from Mega.
@@ -718,10 +718,10 @@ type MegaConfig struct {
 	Encoding   string `json:"encoding" default:"Slash,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateMegaStorageRequest struct {
+type createMegaStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config MegaConfig
+	Config megaConfig
 }
 
 // @ID CreateMegaStorage
@@ -732,21 +732,21 @@ type CreateMegaStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateMegaStorageRequest true "Request body"
+// @Param request body createMegaStorageRequest true "Request body"
 // @Router /storage/mega [post]
 func createMegaStorage() {}
 
-type NetstorageConfig struct {
+type netstorageConfig struct {
 	Protocol string `json:"protocol" default:"https" example:"http"` // Select between HTTP or HTTPS protocol.
 	Host     string `json:"host"`                                    // Domain+path of NetStorage host to connect to.
 	Account  string `json:"account"`                                 // Set the NetStorage account name
 	Secret   string `json:"secret"`                                  // Set the NetStorage account secret/G2O key for authentication.
 }
 
-type CreateNetstorageStorageRequest struct {
+type createNetstorageStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config NetstorageConfig
+	Config netstorageConfig
 }
 
 // @ID CreateNetstorageStorage
@@ -757,11 +757,11 @@ type CreateNetstorageStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateNetstorageStorageRequest true "Request body"
+// @Param request body createNetstorageStorageRequest true "Request body"
 // @Router /storage/netstorage [post]
 func createNetstorageStorage() {}
 
-type OnedriveConfig struct {
+type onedriveConfig struct {
 	ClientId                string `json:"clientId"`                                                                                                                                                                                                                 // OAuth Client Id.
 	ClientSecret            string `json:"clientSecret"`                                                                                                                                                                                                             // OAuth Client Secret.
 	Token                   string `json:"token"`                                                                                                                                                                                                                    // OAuth Access Token as a JSON blob.
@@ -785,10 +785,10 @@ type OnedriveConfig struct {
 	Encoding                string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Del,Ctl,LeftSpace,LeftTilde,RightSpace,RightPeriod,InvalidUtf8,Dot"`                                                                      // The encoding for the backend.
 }
 
-type CreateOnedriveStorageRequest struct {
+type createOnedriveStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OnedriveConfig
+	Config onedriveConfig
 }
 
 // @ID CreateOnedriveStorage
@@ -799,21 +799,21 @@ type CreateOnedriveStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOnedriveStorageRequest true "Request body"
+// @Param request body createOnedriveStorageRequest true "Request body"
 // @Router /storage/onedrive [post]
 func createOnedriveStorage() {}
 
-type OpendriveConfig struct {
+type opendriveConfig struct {
 	Username  string `json:"username"`                                                                                                                                         // Username.
 	Password  string `json:"password"`                                                                                                                                         // Password.
 	Encoding  string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"` // The encoding for the backend.
 	ChunkSize string `json:"chunkSize" default:"10Mi"`                                                                                                                         // Files will be uploaded in chunks this size.
 }
 
-type CreateOpendriveStorageRequest struct {
+type createOpendriveStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OpendriveConfig
+	Config opendriveConfig
 }
 
 // @ID CreateOpendriveStorage
@@ -824,11 +824,11 @@ type CreateOpendriveStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOpendriveStorageRequest true "Request body"
+// @Param request body createOpendriveStorageRequest true "Request body"
 // @Router /storage/opendrive [post]
 func createOpendriveStorage() {}
 
-type OosEnv_authConfig struct {
+type oosEnv_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
 	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
 	Region               string `json:"region"`                                            // Object storage Region
@@ -850,10 +850,10 @@ type OosEnv_authConfig struct {
 	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm" example:""`                   // If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
 }
 
-type CreateOosEnv_authStorageRequest struct {
+type createOosEnv_authStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OosEnv_authConfig
+	Config oosEnv_authConfig
 }
 
 // @ID CreateOosEnv_authStorage
@@ -864,11 +864,11 @@ type CreateOosEnv_authStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOosEnv_authStorageRequest true "Request body"
+// @Param request body createOosEnv_authStorageRequest true "Request body"
 // @Router /storage/oos/env_auth [post]
-func CreateOosEnv_authStorage() {}
+func createOosEnv_authStorage() {}
 
-type OosInstance_principal_authConfig struct {
+type oosInstance_principal_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
 	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
 	Region               string `json:"region"`                                            // Object storage Region
@@ -890,10 +890,10 @@ type OosInstance_principal_authConfig struct {
 	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm" example:""`                   // If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
 }
 
-type CreateOosInstance_principal_authStorageRequest struct {
+type createOosInstance_principal_authStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OosInstance_principal_authConfig
+	Config oosInstance_principal_authConfig
 }
 
 // @ID CreateOosInstance_principal_authStorage
@@ -904,11 +904,11 @@ type CreateOosInstance_principal_authStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOosInstance_principal_authStorageRequest true "Request body"
+// @Param request body createOosInstance_principal_authStorageRequest true "Request body"
 // @Router /storage/oos/instance_principal_auth [post]
-func CreateOosInstance_principal_authStorage() {}
+func createOosInstance_principal_authStorage() {}
 
-type OosNo_authConfig struct {
+type oosNo_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
 	Region               string `json:"region"`                                            // Object storage Region
 	Endpoint             string `json:"endpoint"`                                          // Endpoint for Object storage API.
@@ -929,10 +929,10 @@ type OosNo_authConfig struct {
 	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm" example:""`                   // If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
 }
 
-type CreateOosNo_authStorageRequest struct {
+type createOosNo_authStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OosNo_authConfig
+	Config oosNo_authConfig
 }
 
 // @ID CreateOosNo_authStorage
@@ -943,11 +943,11 @@ type CreateOosNo_authStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOosNo_authStorageRequest true "Request body"
+// @Param request body createOosNo_authStorageRequest true "Request body"
 // @Router /storage/oos/no_auth [post]
-func CreateOosNo_authStorage() {}
+func createOosNo_authStorage() {}
 
-type OosResource_principal_authConfig struct {
+type oosResource_principal_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
 	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
 	Region               string `json:"region"`                                            // Object storage Region
@@ -969,10 +969,10 @@ type OosResource_principal_authConfig struct {
 	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm" example:""`                   // If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
 }
 
-type CreateOosResource_principal_authStorageRequest struct {
+type createOosResource_principal_authStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OosResource_principal_authConfig
+	Config oosResource_principal_authConfig
 }
 
 // @ID CreateOosResource_principal_authStorage
@@ -983,11 +983,11 @@ type CreateOosResource_principal_authStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOosResource_principal_authStorageRequest true "Request body"
+// @Param request body createOosResource_principal_authStorageRequest true "Request body"
 // @Router /storage/oos/resource_principal_auth [post]
-func CreateOosResource_principal_authStorage() {}
+func createOosResource_principal_authStorage() {}
 
-type OosUser_principal_authConfig struct {
+type oosUser_principal_authConfig struct {
 	Namespace            string `json:"namespace"`                                                  // Object storage namespace
 	Compartment          string `json:"compartment"`                                                // Object storage compartment OCID
 	Region               string `json:"region"`                                                     // Object storage Region
@@ -1011,10 +1011,10 @@ type OosUser_principal_authConfig struct {
 	SseCustomerAlgorithm string `json:"sseCustomerAlgorithm" example:""`                            // If using SSE-C, the optional header that specifies "AES256" as the encryption algorithm.
 }
 
-type CreateOosUser_principal_authStorageRequest struct {
+type createOosUser_principal_authStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config OosUser_principal_authConfig
+	Config oosUser_principal_authConfig
 }
 
 // @ID CreateOosUser_principal_authStorage
@@ -1025,11 +1025,11 @@ type CreateOosUser_principal_authStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateOosUser_principal_authStorageRequest true "Request body"
+// @Param request body createOosUser_principal_authStorageRequest true "Request body"
 // @Router /storage/oos/user_principal_auth [post]
-func CreateOosUser_principal_authStorage() {}
+func createOosUser_principal_authStorage() {}
 
-type PcloudConfig struct {
+type pcloudConfig struct {
 	ClientId     string `json:"clientId"`                                                   // OAuth Client Id.
 	ClientSecret string `json:"clientSecret"`                                               // OAuth Client Secret.
 	Token        string `json:"token"`                                                      // OAuth Access Token as a JSON blob.
@@ -1042,10 +1042,10 @@ type PcloudConfig struct {
 	Password     string `json:"password"`                                                   // Your pcloud password.
 }
 
-type CreatePcloudStorageRequest struct {
+type createPcloudStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config PcloudConfig
+	Config pcloudConfig
 }
 
 // @ID CreatePcloudStorage
@@ -1056,19 +1056,19 @@ type CreatePcloudStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreatePcloudStorageRequest true "Request body"
+// @Param request body createPcloudStorageRequest true "Request body"
 // @Router /storage/pcloud [post]
 func createPcloudStorage() {}
 
-type PremiumizemeConfig struct {
+type premiumizemeConfig struct {
 	ApiKey   string `json:"apiKey"`                                                                 // API Key.
 	Encoding string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreatePremiumizemeStorageRequest struct {
+type createPremiumizemeStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config PremiumizemeConfig
+	Config premiumizemeConfig
 }
 
 // @ID CreatePremiumizemeStorage
@@ -1079,18 +1079,18 @@ type CreatePremiumizemeStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreatePremiumizemeStorageRequest true "Request body"
+// @Param request body createPremiumizemeStorageRequest true "Request body"
 // @Router /storage/premiumizeme [post]
 func createPremiumizemeStorage() {}
 
-type PutioConfig struct {
+type putioConfig struct {
 	Encoding string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreatePutioStorageRequest struct {
+type createPutioStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config PutioConfig
+	Config putioConfig
 }
 
 // @ID CreatePutioStorage
@@ -1101,11 +1101,11 @@ type CreatePutioStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreatePutioStorageRequest true "Request body"
+// @Param request body createPutioStorageRequest true "Request body"
 // @Router /storage/putio [post]
 func createPutioStorage() {}
 
-type QingstorConfig struct {
+type qingstorConfig struct {
 	EnvAuth           bool   `json:"envAuth" default:"false" example:"false"`  // Get QingStor credentials from runtime.
 	AccessKeyId       string `json:"accessKeyId"`                              // QingStor Access Key ID.
 	SecretAccessKey   string `json:"secretAccessKey"`                          // QingStor Secret Access Key (password).
@@ -1118,10 +1118,10 @@ type QingstorConfig struct {
 	Encoding          string `json:"encoding" default:"Slash,Ctl,InvalidUtf8"` // The encoding for the backend.
 }
 
-type CreateQingstorStorageRequest struct {
+type createQingstorStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config QingstorConfig
+	Config qingstorConfig
 }
 
 // @ID CreateQingstorStorage
@@ -1132,11 +1132,11 @@ type CreateQingstorStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateQingstorStorageRequest true "Request body"
+// @Param request body createQingstorStorageRequest true "Request body"
 // @Router /storage/qingstor [post]
 func createQingstorStorage() {}
 
-type S3AWSConfig struct {
+type s3AWSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -1187,10 +1187,10 @@ type S3AWSConfig struct {
 	StsEndpoint           string `json:"stsEndpoint"`                              // Endpoint for STS.
 }
 
-type CreateS3AWSStorageRequest struct {
+type createS3AWSStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3AWSConfig
+	Config s3AWSConfig
 }
 
 // @ID CreateS3AWSStorage
@@ -1201,11 +1201,11 @@ type CreateS3AWSStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3AWSStorageRequest true "Request body"
+// @Param request body createS3AWSStorageRequest true "Request body"
 // @Router /storage/s3/aws [post]
-func CreateS3AWSStorage() {}
+func createS3AWSStorage() {}
 
-type S3AlibabaConfig struct {
+type s3AlibabaConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                    // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
@@ -1244,10 +1244,10 @@ type S3AlibabaConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
 }
 
-type CreateS3AlibabaStorageRequest struct {
+type createS3AlibabaStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3AlibabaConfig
+	Config s3AlibabaConfig
 }
 
 // @ID CreateS3AlibabaStorage
@@ -1258,11 +1258,11 @@ type CreateS3AlibabaStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3AlibabaStorageRequest true "Request body"
+// @Param request body createS3AlibabaStorageRequest true "Request body"
 // @Router /storage/s3/alibaba [post]
-func CreateS3AlibabaStorage() {}
+func createS3AlibabaStorage() {}
 
-type S3ArvanCloudConfig struct {
+type s3ArvanCloudConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`           // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                       // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                   // AWS Secret Access Key (password).
@@ -1302,10 +1302,10 @@ type S3ArvanCloudConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                  // Suppress setting and reading of system metadata
 }
 
-type CreateS3ArvanCloudStorageRequest struct {
+type createS3ArvanCloudStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3ArvanCloudConfig
+	Config s3ArvanCloudConfig
 }
 
 // @ID CreateS3ArvanCloudStorage
@@ -1316,11 +1316,11 @@ type CreateS3ArvanCloudStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3ArvanCloudStorageRequest true "Request body"
+// @Param request body createS3ArvanCloudStorageRequest true "Request body"
 // @Router /storage/s3/arvancloud [post]
-func CreateS3ArvanCloudStorage() {}
+func createS3ArvanCloudStorage() {}
 
-type S3CephConfig struct {
+type s3CephConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -1366,10 +1366,10 @@ type S3CephConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3CephStorageRequest struct {
+type createS3CephStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3CephConfig
+	Config s3CephConfig
 }
 
 // @ID CreateS3CephStorage
@@ -1380,11 +1380,11 @@ type CreateS3CephStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3CephStorageRequest true "Request body"
+// @Param request body createS3CephStorageRequest true "Request body"
 // @Router /storage/s3/ceph [post]
-func CreateS3CephStorage() {}
+func createS3CephStorage() {}
 
-type S3ChinaMobileConfig struct {
+type s3ChinaMobileConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`   // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                               // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                           // AWS Secret Access Key (password).
@@ -1429,10 +1429,10 @@ type S3ChinaMobileConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`          // Suppress setting and reading of system metadata
 }
 
-type CreateS3ChinaMobileStorageRequest struct {
+type createS3ChinaMobileStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3ChinaMobileConfig
+	Config s3ChinaMobileConfig
 }
 
 // @ID CreateS3ChinaMobileStorage
@@ -1443,11 +1443,11 @@ type CreateS3ChinaMobileStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3ChinaMobileStorageRequest true "Request body"
+// @Param request body createS3ChinaMobileStorageRequest true "Request body"
 // @Router /storage/s3/chinamobile [post]
-func CreateS3ChinaMobileStorage() {}
+func createS3ChinaMobileStorage() {}
 
-type S3CloudflareConfig struct {
+type s3CloudflareConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -1485,10 +1485,10 @@ type S3CloudflareConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3CloudflareStorageRequest struct {
+type createS3CloudflareStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3CloudflareConfig
+	Config s3CloudflareConfig
 }
 
 // @ID CreateS3CloudflareStorage
@@ -1499,11 +1499,11 @@ type CreateS3CloudflareStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3CloudflareStorageRequest true "Request body"
+// @Param request body createS3CloudflareStorageRequest true "Request body"
 // @Router /storage/s3/cloudflare [post]
-func CreateS3CloudflareStorage() {}
+func createS3CloudflareStorage() {}
 
-type S3DigitalOceanConfig struct {
+type s3DigitalOceanConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                    // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
@@ -1543,10 +1543,10 @@ type S3DigitalOceanConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
 }
 
-type CreateS3DigitalOceanStorageRequest struct {
+type createS3DigitalOceanStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3DigitalOceanConfig
+	Config s3DigitalOceanConfig
 }
 
 // @ID CreateS3DigitalOceanStorage
@@ -1557,11 +1557,11 @@ type CreateS3DigitalOceanStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3DigitalOceanStorageRequest true "Request body"
+// @Param request body createS3DigitalOceanStorageRequest true "Request body"
 // @Router /storage/s3/digitalocean [post]
-func CreateS3DigitalOceanStorage() {}
+func createS3DigitalOceanStorage() {}
 
-type S3DreamhostConfig struct {
+type s3DreamhostConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                   // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                               // AWS Secret Access Key (password).
@@ -1601,10 +1601,10 @@ type S3DreamhostConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`              // Suppress setting and reading of system metadata
 }
 
-type CreateS3DreamhostStorageRequest struct {
+type createS3DreamhostStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3DreamhostConfig
+	Config s3DreamhostConfig
 }
 
 // @ID CreateS3DreamhostStorage
@@ -1615,11 +1615,11 @@ type CreateS3DreamhostStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3DreamhostStorageRequest true "Request body"
+// @Param request body createS3DreamhostStorageRequest true "Request body"
 // @Router /storage/s3/dreamhost [post]
-func CreateS3DreamhostStorage() {}
+func createS3DreamhostStorage() {}
 
-type S3HuaweiOBSConfig struct {
+type s3HuaweiOBSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`             // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                         // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                     // AWS Secret Access Key (password).
@@ -1658,10 +1658,10 @@ type S3HuaweiOBSConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                    // Suppress setting and reading of system metadata
 }
 
-type CreateS3HuaweiOBSStorageRequest struct {
+type createS3HuaweiOBSStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3HuaweiOBSConfig
+	Config s3HuaweiOBSConfig
 }
 
 // @ID CreateS3HuaweiOBSStorage
@@ -1672,11 +1672,11 @@ type CreateS3HuaweiOBSStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3HuaweiOBSStorageRequest true "Request body"
+// @Param request body createS3HuaweiOBSStorageRequest true "Request body"
 // @Router /storage/s3/huaweiobs [post]
-func CreateS3HuaweiOBSStorage() {}
+func createS3HuaweiOBSStorage() {}
 
-type S3IBMCOSConfig struct {
+type s3IBMCOSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`                       // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                                   // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                               // AWS Secret Access Key (password).
@@ -1716,10 +1716,10 @@ type S3IBMCOSConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                              // Suppress setting and reading of system metadata
 }
 
-type CreateS3IBMCOSStorageRequest struct {
+type createS3IBMCOSStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3IBMCOSConfig
+	Config s3IBMCOSConfig
 }
 
 // @ID CreateS3IBMCOSStorage
@@ -1730,11 +1730,11 @@ type CreateS3IBMCOSStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3IBMCOSStorageRequest true "Request body"
+// @Param request body createS3IBMCOSStorageRequest true "Request body"
 // @Router /storage/s3/ibmcos [post]
-func CreateS3IBMCOSStorage() {}
+func createS3IBMCOSStorage() {}
 
-type S3IDriveConfig struct {
+type s3IDriveConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -1771,10 +1771,10 @@ type S3IDriveConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3IDriveStorageRequest struct {
+type createS3IDriveStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3IDriveConfig
+	Config s3IDriveConfig
 }
 
 // @ID CreateS3IDriveStorage
@@ -1785,11 +1785,11 @@ type CreateS3IDriveStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3IDriveStorageRequest true "Request body"
+// @Param request body createS3IDriveStorageRequest true "Request body"
 // @Router /storage/s3/idrive [post]
-func CreateS3IDriveStorage() {}
+func createS3IDriveStorage() {}
 
-type S3IONOSConfig struct {
+type s3IONOSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`           // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                       // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                   // AWS Secret Access Key (password).
@@ -1828,10 +1828,10 @@ type S3IONOSConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                  // Suppress setting and reading of system metadata
 }
 
-type CreateS3IONOSStorageRequest struct {
+type createS3IONOSStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3IONOSConfig
+	Config s3IONOSConfig
 }
 
 // @ID CreateS3IONOSStorage
@@ -1842,11 +1842,11 @@ type CreateS3IONOSStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3IONOSStorageRequest true "Request body"
+// @Param request body createS3IONOSStorageRequest true "Request body"
 // @Router /storage/s3/ionos [post]
-func CreateS3IONOSStorage() {}
+func createS3IONOSStorage() {}
 
-type S3LiaraConfig struct {
+type s3LiaraConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                 // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
@@ -1885,10 +1885,10 @@ type S3LiaraConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
 }
 
-type CreateS3LiaraStorageRequest struct {
+type createS3LiaraStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3LiaraConfig
+	Config s3LiaraConfig
 }
 
 // @ID CreateS3LiaraStorage
@@ -1899,11 +1899,11 @@ type CreateS3LiaraStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3LiaraStorageRequest true "Request body"
+// @Param request body createS3LiaraStorageRequest true "Request body"
 // @Router /storage/s3/liara [post]
-func CreateS3LiaraStorage() {}
+func createS3LiaraStorage() {}
 
-type S3LyveCloudConfig struct {
+type s3LyveCloudConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`               // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                           // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                       // AWS Secret Access Key (password).
@@ -1943,10 +1943,10 @@ type S3LyveCloudConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                      // Suppress setting and reading of system metadata
 }
 
-type CreateS3LyveCloudStorageRequest struct {
+type createS3LyveCloudStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3LyveCloudConfig
+	Config s3LyveCloudConfig
 }
 
 // @ID CreateS3LyveCloudStorage
@@ -1957,11 +1957,11 @@ type CreateS3LyveCloudStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3LyveCloudStorageRequest true "Request body"
+// @Param request body createS3LyveCloudStorageRequest true "Request body"
 // @Router /storage/s3/lyvecloud [post]
-func CreateS3LyveCloudStorage() {}
+func createS3LyveCloudStorage() {}
 
-type S3MinioConfig struct {
+type s3MinioConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2007,10 +2007,10 @@ type S3MinioConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3MinioStorageRequest struct {
+type createS3MinioStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3MinioConfig
+	Config s3MinioConfig
 }
 
 // @ID CreateS3MinioStorage
@@ -2021,11 +2021,11 @@ type CreateS3MinioStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3MinioStorageRequest true "Request body"
+// @Param request body createS3MinioStorageRequest true "Request body"
 // @Router /storage/s3/minio [post]
-func CreateS3MinioStorage() {}
+func createS3MinioStorage() {}
 
-type S3NeteaseConfig struct {
+type s3NeteaseConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2065,10 +2065,10 @@ type S3NeteaseConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3NeteaseStorageRequest struct {
+type createS3NeteaseStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3NeteaseConfig
+	Config s3NeteaseConfig
 }
 
 // @ID CreateS3NeteaseStorage
@@ -2079,11 +2079,11 @@ type CreateS3NeteaseStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3NeteaseStorageRequest true "Request body"
+// @Param request body createS3NeteaseStorageRequest true "Request body"
 // @Router /storage/s3/netease [post]
-func CreateS3NeteaseStorage() {}
+func createS3NeteaseStorage() {}
 
-type S3OtherConfig struct {
+type s3OtherConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2123,10 +2123,10 @@ type S3OtherConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3OtherStorageRequest struct {
+type createS3OtherStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3OtherConfig
+	Config s3OtherConfig
 }
 
 // @ID CreateS3OtherStorage
@@ -2137,11 +2137,11 @@ type CreateS3OtherStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3OtherStorageRequest true "Request body"
+// @Param request body createS3OtherStorageRequest true "Request body"
 // @Router /storage/s3/other [post]
-func CreateS3OtherStorage() {}
+func createS3OtherStorage() {}
 
-type S3QiniuConfig struct {
+type s3QiniuConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`     // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                 // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                             // AWS Secret Access Key (password).
@@ -2182,10 +2182,10 @@ type S3QiniuConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`            // Suppress setting and reading of system metadata
 }
 
-type CreateS3QiniuStorageRequest struct {
+type createS3QiniuStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3QiniuConfig
+	Config s3QiniuConfig
 }
 
 // @ID CreateS3QiniuStorage
@@ -2196,11 +2196,11 @@ type CreateS3QiniuStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3QiniuStorageRequest true "Request body"
+// @Param request body createS3QiniuStorageRequest true "Request body"
 // @Router /storage/s3/qiniu [post]
-func CreateS3QiniuStorage() {}
+func createS3QiniuStorage() {}
 
-type S3RackCorpConfig struct {
+type s3RackCorpConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2240,10 +2240,10 @@ type S3RackCorpConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3RackCorpStorageRequest struct {
+type createS3RackCorpStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3RackCorpConfig
+	Config s3RackCorpConfig
 }
 
 // @ID CreateS3RackCorpStorage
@@ -2254,11 +2254,11 @@ type CreateS3RackCorpStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3RackCorpStorageRequest true "Request body"
+// @Param request body createS3RackCorpStorageRequest true "Request body"
 // @Router /storage/s3/rackcorp [post]
-func CreateS3RackCorpStorage() {}
+func createS3RackCorpStorage() {}
 
-type S3ScalewayConfig struct {
+type s3ScalewayConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2298,10 +2298,10 @@ type S3ScalewayConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3ScalewayStorageRequest struct {
+type createS3ScalewayStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3ScalewayConfig
+	Config s3ScalewayConfig
 }
 
 // @ID CreateS3ScalewayStorage
@@ -2312,11 +2312,11 @@ type CreateS3ScalewayStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3ScalewayStorageRequest true "Request body"
+// @Param request body createS3ScalewayStorageRequest true "Request body"
 // @Router /storage/s3/scaleway [post]
-func CreateS3ScalewayStorage() {}
+func createS3ScalewayStorage() {}
 
-type S3SeaweedFSConfig struct {
+type s3SeaweedFSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2356,10 +2356,10 @@ type S3SeaweedFSConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3SeaweedFSStorageRequest struct {
+type createS3SeaweedFSStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3SeaweedFSConfig
+	Config s3SeaweedFSConfig
 }
 
 // @ID CreateS3SeaweedFSStorage
@@ -2370,11 +2370,11 @@ type CreateS3SeaweedFSStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3SeaweedFSStorageRequest true "Request body"
+// @Param request body createS3SeaweedFSStorageRequest true "Request body"
 // @Router /storage/s3/seaweedfs [post]
-func CreateS3SeaweedFSStorage() {}
+func createS3SeaweedFSStorage() {}
 
-type S3StackPathConfig struct {
+type s3StackPathConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`              // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                          // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                      // AWS Secret Access Key (password).
@@ -2413,10 +2413,10 @@ type S3StackPathConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`                     // Suppress setting and reading of system metadata
 }
 
-type CreateS3StackPathStorageRequest struct {
+type createS3StackPathStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3StackPathConfig
+	Config s3StackPathConfig
 }
 
 // @ID CreateS3StackPathStorage
@@ -2427,11 +2427,11 @@ type CreateS3StackPathStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3StackPathStorageRequest true "Request body"
+// @Param request body createS3StackPathStorageRequest true "Request body"
 // @Router /storage/s3/stackpath [post]
-func CreateS3StackPathStorage() {}
+func createS3StackPathStorage() {}
 
-type S3StorjConfig struct {
+type s3StorjConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2468,10 +2468,10 @@ type S3StorjConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3StorjStorageRequest struct {
+type createS3StorjStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3StorjConfig
+	Config s3StorjConfig
 }
 
 // @ID CreateS3StorjStorage
@@ -2482,11 +2482,11 @@ type CreateS3StorjStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3StorjStorageRequest true "Request body"
+// @Param request body createS3StorjStorageRequest true "Request body"
 // @Router /storage/s3/storj [post]
-func CreateS3StorjStorage() {}
+func createS3StorjStorage() {}
 
-type S3TencentCOSConfig struct {
+type s3TencentCOSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`        // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                                    // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                                // AWS Secret Access Key (password).
@@ -2525,10 +2525,10 @@ type S3TencentCOSConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`               // Suppress setting and reading of system metadata
 }
 
-type CreateS3TencentCOSStorageRequest struct {
+type createS3TencentCOSStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3TencentCOSConfig
+	Config s3TencentCOSConfig
 }
 
 // @ID CreateS3TencentCOSStorage
@@ -2539,11 +2539,11 @@ type CreateS3TencentCOSStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3TencentCOSStorageRequest true "Request body"
+// @Param request body createS3TencentCOSStorageRequest true "Request body"
 // @Router /storage/s3/tencentcos [post]
-func CreateS3TencentCOSStorage() {}
+func createS3TencentCOSStorage() {}
 
-type S3WasabiConfig struct {
+type s3WasabiConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.
 	SecretAccessKey       string `json:"secretAccessKey"`                          // AWS Secret Access Key (password).
@@ -2583,10 +2583,10 @@ type S3WasabiConfig struct {
 	NoSystemMetadata      bool   `json:"noSystemMetadata" default:"false"`         // Suppress setting and reading of system metadata
 }
 
-type CreateS3WasabiStorageRequest struct {
+type createS3WasabiStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config S3WasabiConfig
+	Config s3WasabiConfig
 }
 
 // @ID CreateS3WasabiStorage
@@ -2597,11 +2597,11 @@ type CreateS3WasabiStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateS3WasabiStorageRequest true "Request body"
+// @Param request body createS3WasabiStorageRequest true "Request body"
 // @Router /storage/s3/wasabi [post]
-func CreateS3WasabiStorage() {}
+func createS3WasabiStorage() {}
 
-type SeafileConfig struct {
+type seafileConfig struct {
 	Url           string `json:"url" example:"https://cloud.seafile.com/"`                       // URL of seafile host to connect to.
 	User          string `json:"user"`                                                           // User name (usually email address).
 	Pass          string `json:"pass"`                                                           // Password.
@@ -2613,10 +2613,10 @@ type SeafileConfig struct {
 	Encoding      string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Ctl,InvalidUtf8"` // The encoding for the backend.
 }
 
-type CreateSeafileStorageRequest struct {
+type createSeafileStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SeafileConfig
+	Config seafileConfig
 }
 
 // @ID CreateSeafileStorage
@@ -2627,11 +2627,11 @@ type CreateSeafileStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSeafileStorageRequest true "Request body"
+// @Param request body createSeafileStorageRequest true "Request body"
 // @Router /storage/seafile [post]
 func createSeafileStorage() {}
 
-type SftpConfig struct {
+type sftpConfig struct {
 	Host                    string `json:"host"`                                              // SSH host to connect to.
 	User                    string `json:"user" default:"$USER"`                              // SSH username.
 	Port                    int    `json:"port" default:"22"`                                 // SSH port number.
@@ -2665,10 +2665,10 @@ type SftpConfig struct {
 	Macs                    string `json:"macs"`                                              // Space separated list of MACs (message authentication code) algorithms, ordered by preference.
 }
 
-type CreateSftpStorageRequest struct {
+type createSftpStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SftpConfig
+	Config sftpConfig
 }
 
 // @ID CreateSftpStorage
@@ -2679,11 +2679,11 @@ type CreateSftpStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSftpStorageRequest true "Request body"
+// @Param request body createSftpStorageRequest true "Request body"
 // @Router /storage/sftp [post]
 func createSftpStorage() {}
 
-type SharefileConfig struct {
+type sharefileConfig struct {
 	UploadCutoff string `json:"uploadCutoff" default:"128Mi"`                                                                                                                     // Cutoff for switching to multipart upload.
 	RootFolderId string `json:"rootFolderId" example:""`                                                                                                                          // ID of the root folder.
 	ChunkSize    string `json:"chunkSize" default:"64Mi"`                                                                                                                         // Upload chunk size.
@@ -2691,10 +2691,10 @@ type SharefileConfig struct {
 	Encoding     string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,LeftSpace,LeftPeriod,RightSpace,RightPeriod,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateSharefileStorageRequest struct {
+type createSharefileStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SharefileConfig
+	Config sharefileConfig
 }
 
 // @ID CreateSharefileStorage
@@ -2705,21 +2705,21 @@ type CreateSharefileStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSharefileStorageRequest true "Request body"
+// @Param request body createSharefileStorageRequest true "Request body"
 // @Router /storage/sharefile [post]
 func createSharefileStorage() {}
 
-type SiaConfig struct {
+type siaConfig struct {
 	ApiUrl      string `json:"apiUrl" default:"http://127.0.0.1:9980"`                                 // Sia daemon API URL, like http://sia.daemon.host:9980.
 	ApiPassword string `json:"apiPassword"`                                                            // Sia Daemon API Password.
 	UserAgent   string `json:"userAgent" default:"Sia-Agent"`                                          // Siad User Agent
 	Encoding    string `json:"encoding" default:"Slash,Question,Hash,Percent,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateSiaStorageRequest struct {
+type createSiaStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SiaConfig
+	Config siaConfig
 }
 
 // @ID CreateSiaStorage
@@ -2730,11 +2730,11 @@ type CreateSiaStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSiaStorageRequest true "Request body"
+// @Param request body createSiaStorageRequest true "Request body"
 // @Router /storage/sia [post]
 func createSiaStorage() {}
 
-type SmbConfig struct {
+type smbConfig struct {
 	Host             string `json:"host"`                                                                                                                        // SMB server hostname to connect to.
 	User             string `json:"user" default:"$USER"`                                                                                                        // SMB username.
 	Port             int    `json:"port" default:"445"`                                                                                                          // SMB port number.
@@ -2747,10 +2747,10 @@ type SmbConfig struct {
 	Encoding         string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,Ctl,RightSpace,RightPeriod,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateSmbStorageRequest struct {
+type createSmbStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SmbConfig
+	Config smbConfig
 }
 
 // @ID CreateSmbStorage
@@ -2761,18 +2761,18 @@ type CreateSmbStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSmbStorageRequest true "Request body"
+// @Param request body createSmbStorageRequest true "Request body"
 // @Router /storage/smb [post]
 func createSmbStorage() {}
 
-type StorjExistingConfig struct {
+type storjExistingConfig struct {
 	AccessGrant string `json:"accessGrant"` // Access grant.
 }
 
-type CreateStorjExistingStorageRequest struct {
+type createStorjExistingStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config StorjExistingConfig
+	Config storjExistingConfig
 }
 
 // @ID CreateStorjExistingStorage
@@ -2783,20 +2783,20 @@ type CreateStorjExistingStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateStorjExistingStorageRequest true "Request body"
+// @Param request body createStorjExistingStorageRequest true "Request body"
 // @Router /storage/storj/existing [post]
-func CreateStorjExistingStorage() {}
+func createStorjExistingStorage() {}
 
-type StorjNewConfig struct {
+type storjNewConfig struct {
 	SatelliteAddress string `json:"satelliteAddress" default:"us1.storj.io" example:"us1.storj.io"` // Satellite address.
 	ApiKey           string `json:"apiKey"`                                                         // API key.
 	Passphrase       string `json:"passphrase"`                                                     // Encryption passphrase.
 }
 
-type CreateStorjNewStorageRequest struct {
+type createStorjNewStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config StorjNewConfig
+	Config storjNewConfig
 }
 
 // @ID CreateStorjNewStorage
@@ -2807,11 +2807,11 @@ type CreateStorjNewStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateStorjNewStorageRequest true "Request body"
+// @Param request body createStorjNewStorageRequest true "Request body"
 // @Router /storage/storj/new [post]
-func CreateStorjNewStorage() {}
+func createStorjNewStorage() {}
 
-type SugarsyncConfig struct {
+type sugarsyncConfig struct {
 	AppId               string `json:"appId"`                                        // Sugarsync App ID.
 	AccessKeyId         string `json:"accessKeyId"`                                  // Sugarsync Access Key ID.
 	PrivateAccessKey    string `json:"privateAccessKey"`                             // Sugarsync Private Access Key.
@@ -2825,10 +2825,10 @@ type SugarsyncConfig struct {
 	Encoding            string `json:"encoding" default:"Slash,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateSugarsyncStorageRequest struct {
+type createSugarsyncStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SugarsyncConfig
+	Config sugarsyncConfig
 }
 
 // @ID CreateSugarsyncStorage
@@ -2839,11 +2839,11 @@ type CreateSugarsyncStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSugarsyncStorageRequest true "Request body"
+// @Param request body createSugarsyncStorageRequest true "Request body"
 // @Router /storage/sugarsync [post]
 func createSugarsyncStorage() {}
 
-type SwiftConfig struct {
+type swiftConfig struct {
 	EnvAuth                     bool   `json:"envAuth" default:"false" example:"false"`                 // Get swift credentials from environment variables in standard OpenStack form.
 	User                        string `json:"user"`                                                    // User name to log in (OS_USERNAME).
 	Key                         string `json:"key"`                                                     // API key or password (OS_PASSWORD).
@@ -2869,10 +2869,10 @@ type SwiftConfig struct {
 	Encoding                    string `json:"encoding" default:"Slash,InvalidUtf8"`                    // The encoding for the backend.
 }
 
-type CreateSwiftStorageRequest struct {
+type createSwiftStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config SwiftConfig
+	Config swiftConfig
 }
 
 // @ID CreateSwiftStorage
@@ -2883,19 +2883,19 @@ type CreateSwiftStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateSwiftStorageRequest true "Request body"
+// @Param request body createSwiftStorageRequest true "Request body"
 // @Router /storage/swift [post]
 func createSwiftStorage() {}
 
-type UptoboxConfig struct {
+type uptoboxConfig struct {
 	AccessToken string `json:"accessToken"`                                                                           // Your access token.
 	Encoding    string `json:"encoding" default:"Slash,LtGt,DoubleQuote,BackQuote,Del,Ctl,LeftSpace,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateUptoboxStorageRequest struct {
+type createUptoboxStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config UptoboxConfig
+	Config uptoboxConfig
 }
 
 // @ID CreateUptoboxStorage
@@ -2906,11 +2906,11 @@ type CreateUptoboxStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateUptoboxStorageRequest true "Request body"
+// @Param request body createUptoboxStorageRequest true "Request body"
 // @Router /storage/uptobox [post]
 func createUptoboxStorage() {}
 
-type WebdavConfig struct {
+type webdavConfig struct {
 	Url                string `json:"url"`                        // URL of http host to connect to.
 	Vendor             string `json:"vendor" example:"nextcloud"` // Name of the WebDAV site/service/software you are using.
 	User               string `json:"user"`                       // User name.
@@ -2921,10 +2921,10 @@ type WebdavConfig struct {
 	Headers            string `json:"headers"`                    // Set HTTP headers for all transactions.
 }
 
-type CreateWebdavStorageRequest struct {
+type createWebdavStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config WebdavConfig
+	Config webdavConfig
 }
 
 // @ID CreateWebdavStorage
@@ -2935,11 +2935,11 @@ type CreateWebdavStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateWebdavStorageRequest true "Request body"
+// @Param request body createWebdavStorageRequest true "Request body"
 // @Router /storage/webdav [post]
 func createWebdavStorage() {}
 
-type YandexConfig struct {
+type yandexConfig struct {
 	ClientId     string `json:"clientId"`                                         // OAuth Client Id.
 	ClientSecret string `json:"clientSecret"`                                     // OAuth Client Secret.
 	Token        string `json:"token"`                                            // OAuth Access Token as a JSON blob.
@@ -2949,10 +2949,10 @@ type YandexConfig struct {
 	Encoding     string `json:"encoding" default:"Slash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
 }
 
-type CreateYandexStorageRequest struct {
+type createYandexStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config YandexConfig
+	Config yandexConfig
 }
 
 // @ID CreateYandexStorage
@@ -2963,11 +2963,11 @@ type CreateYandexStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateYandexStorageRequest true "Request body"
+// @Param request body createYandexStorageRequest true "Request body"
 // @Router /storage/yandex [post]
 func createYandexStorage() {}
 
-type ZohoConfig struct {
+type zohoConfig struct {
 	ClientId     string `json:"clientId"`                               // OAuth Client Id.
 	ClientSecret string `json:"clientSecret"`                           // OAuth Client Secret.
 	Token        string `json:"token"`                                  // OAuth Access Token as a JSON blob.
@@ -2977,10 +2977,10 @@ type ZohoConfig struct {
 	Encoding     string `json:"encoding" default:"Del,Ctl,InvalidUtf8"` // The encoding for the backend.
 }
 
-type CreateZohoStorageRequest struct {
+type createZohoStorageRequest struct {
 	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
 	Path   string `json:"path"`                      // Path of the storage
-	Config ZohoConfig
+	Config zohoConfig
 }
 
 // @ID CreateZohoStorage
@@ -2991,6 +2991,6 @@ type CreateZohoStorageRequest struct {
 // @Success 200 {object} model.Storage
 // @Failure 400 {object} api.HTTPError
 // @Failure 500 {object} api.HTTPError
-// @Param request body CreateZohoStorageRequest true "Request body"
+// @Param request body createZohoStorageRequest true "Request body"
 // @Router /storage/zoho [post]
 func createZohoStorage() {}
