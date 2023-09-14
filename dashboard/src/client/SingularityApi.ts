@@ -36,7 +36,7 @@ export interface DataprepCreateRequest {
    */
   maxSize?: string;
   /** Name of the preparation */
-  name?: string;
+  name: string;
   /** Name of Output storage systems to be used for the output */
   outputStorages?: string[];
   /** Target piece size of the CAR files used for piece commitment calculation */
@@ -63,6 +63,10 @@ export interface DataprepPieceList {
   pieces?: ModelCar[];
   source?: ModelStorage;
   storageId?: number;
+}
+
+export interface DataprepRenameRequest {
+  name: string;
 }
 
 export interface DataprepVersion {
@@ -482,13 +486,6 @@ export interface ScheduleUpdateRequest {
   verified?: boolean;
 }
 
-export interface StorageCreateRequest {
-  config?: Record<string, string>;
-  name?: string;
-  path?: string;
-  provider?: string;
-}
-
 export interface StorageDirEntry {
   dirId?: string;
   hash?: string;
@@ -497,6 +494,10 @@ export interface StorageDirEntry {
   numItems?: number;
   path?: string;
   size?: number;
+}
+
+export interface StorageRenameRequest {
+  name: string;
 }
 
 export interface StorageAcdConfig {
@@ -8360,6 +8361,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name RenamePreparation
+     * @summary Rename a preparation
+     * @request PATCH:/preparation/{name}/rename
+     */
+    renamePreparation: (name: string, request: DataprepRenameRequest, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${name}/rename`,
+        method: "PATCH",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
   };
   schedule = {
     /**
@@ -9842,15 +9861,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name CreateStorage
-     * @summary Create a new storage
-     * @request POST:/storage/{storageType}
+     * @name RenameStorage
+     * @summary Rename a storage connection
+     * @request PATCH:/storage/{name}/rename
      */
-    createStorage: (storageType: string, body: StorageCreateRequest, params: RequestParams = {}) =>
+    renameStorage: (name: string, request: StorageRenameRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
-        path: `/storage/${storageType}`,
-        method: "POST",
-        body: body,
+        path: `/storage/${name}/rename`,
+        method: "PATCH",
+        body: request,
         type: ContentType.Json,
         format: "json",
         ...params,

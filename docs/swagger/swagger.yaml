@@ -54,6 +54,8 @@ definitions:
         items:
           type: string
         type: array
+    required:
+    - name
     type: object
   dataprep.DirEntry:
     properties:
@@ -91,6 +93,13 @@ definitions:
         $ref: '#/definitions/model.Storage'
       storageId:
         type: integer
+    type: object
+  dataprep.RenameRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   dataprep.Version:
     properties:
@@ -707,19 +716,6 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
-  storage.CreateRequest:
-    properties:
-      config:
-        additionalProperties:
-          type: string
-        type: object
-      name:
-        type: string
-      path:
-        type: string
-      provider:
-        type: string
-    type: object
   storage.DirEntry:
     properties:
       dirId:
@@ -736,6 +732,13 @@ definitions:
         type: string
       size:
         type: integer
+    type: object
+  storage.RenameRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   storage.acdConfig:
     properties:
@@ -8474,6 +8477,41 @@ paths:
       summary: Attach a new wallet with a preparation
       tags:
       - Wallet Association
+  /preparation/{name}/rename:
+    patch:
+      consumes:
+      - application/json
+      operationId: RenamePreparation
+      parameters:
+      - description: Preparation ID or name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: New preparation name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataprep.RenameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Preparation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Rename a preparation
+      tags:
+      - Preparation
   /schedule:
     get:
       operationId: ListSchedules
@@ -8768,23 +8806,23 @@ paths:
       summary: Explore directory entries in a storage system
       tags:
       - Storage
-  /storage/{storageType}:
-    post:
+  /storage/{name}/rename:
+    patch:
       consumes:
       - application/json
-      operationId: CreateStorage
+      operationId: RenameStorage
       parameters:
-      - description: Storage type
+      - description: Storage ID or name
         in: path
-        name: storageType
+        name: name
         required: true
         type: string
-      - description: Storage configuration
+      - description: New storage name
         in: body
-        name: body
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateRequest'
+          $ref: '#/definitions/storage.RenameRequest'
       produces:
       - application/json
       responses:
@@ -8800,7 +8838,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.HTTPError'
-      summary: Create a new storage
+      summary: Rename a storage connection
       tags:
       - Storage
   /storage/acd:

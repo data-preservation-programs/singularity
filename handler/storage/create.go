@@ -16,7 +16,7 @@ import (
 
 type CreateRequest struct {
 	Provider string            `json:"provider"`
-	Name     string            `json:"name"`
+	Name     string            `binding:"required" json:"name"`
 	Path     string            `json:"path"`
 	Config   map[string]string `json:"config"`
 }
@@ -110,16 +110,3 @@ func (DefaultHandler) CreateStorageHandler(
 
 	return &storage, err
 }
-
-// @ID CreateStorage
-// @Summary Create a new storage
-// @Tags Storage
-// @Accept json
-// @Produce json
-// @Param storageType path string true "Storage type"
-// @Param body body CreateRequest true "Storage configuration"
-// @Success 200 {object} model.Storage
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /storage/{storageType} [post]
-func _() {}

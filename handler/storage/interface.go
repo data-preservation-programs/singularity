@@ -35,6 +35,12 @@ type Handler interface {
 		name string,
 		config map[string]string,
 	) (*model.Storage, error)
+	RenameStorageHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		name string,
+		request RenameRequest,
+	) (*model.Storage, error)
 }
 
 type DefaultHandler struct{}
@@ -45,6 +51,11 @@ var _ Handler = &MockStorage{}
 
 type MockStorage struct {
 	mock.Mock
+}
+
+func (m *MockStorage) RenameStorageHandler(ctx context.Context, db *gorm.DB, name string, request RenameRequest) (*model.Storage, error) {
+	args := m.Called(ctx, db, name, request)
+	return args.Get(0).(*model.Storage), args.Error(1)
 }
 
 func (m *MockStorage) CreateStorageHandler(ctx context.Context, db *gorm.DB, storageType string, request CreateRequest) (*model.Storage, error) {
