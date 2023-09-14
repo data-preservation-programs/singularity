@@ -13,14 +13,14 @@ import (
 // AttachHandler associates a wallet with a specific preparation based on given preparationID and wallet address or ID.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - preparationID: The ID or name of the preparation to which the wallet will be attached.
-// - wallet: The address or ID of the wallet to be attached to the preparation.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - preparationID: The ID or name of the preparation to which the wallet will be attached.
+//   - wallet: The address or ID of the wallet to be attached to the preparation.
 //
 // Returns:
-// - A pointer to the updated Preparation instance.
-// - An error, if any occurred during the association operation.
+//   - A pointer to the updated Preparation instance.
+//   - An error, if any occurred during the association operation.
 func (DefaultHandler) AttachHandler(
 	ctx context.Context,
 	db *gorm.DB,

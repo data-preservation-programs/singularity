@@ -14,11 +14,13 @@ export interface ApiHTTPError {
 }
 
 export interface DataprepAddPieceRequest {
+  /** File size of the CAR file, this is required for boost online deal */
+  fileSize?: number;
   /** CID of the piece */
   pieceCid: string;
   /** Size of the piece */
   pieceSize: string;
-  /** Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal */
+  /** Root CID of the CAR file, used to populate the label field of storage deal */
   rootCid?: string;
 }
 
@@ -34,7 +36,7 @@ export interface DataprepCreateRequest {
    */
   maxSize?: string;
   /** Name of the preparation */
-  name?: string;
+  name: string;
   /**
    * Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
    * @default false
@@ -71,6 +73,10 @@ export interface DataprepPieceList {
   pieces?: ModelCar[];
   source?: ModelStorage;
   storageId?: number;
+}
+
+export interface DataprepRenameRequest {
+  name: string;
 }
 
 export interface DataprepVersion {
@@ -490,6 +496,20 @@ export interface ScheduleUpdateRequest {
    * @default true
    */
   verified?: boolean;
+}
+
+export interface StorageDirEntry {
+  dirId?: string;
+  hash?: string;
+  isDir?: boolean;
+  lastModified?: string;
+  numItems?: number;
+  path?: string;
+  size?: number;
+}
+
+export interface StorageRenameRequest {
+  name: string;
 }
 
 export interface StorageAcdConfig {
@@ -1125,13 +1145,6 @@ export interface StorageCreateQingstorStorageRequest {
   path?: string;
 }
 
-export interface StorageCreateRequest {
-  config?: Record<string, string>;
-  name?: string;
-  path?: string;
-  provider?: string;
-}
-
 export interface StorageCreateS3AWSStorageRequest {
   config?: StorageS3AWSConfig;
   /**
@@ -1548,16 +1561,6 @@ export interface StorageCreateZohoStorageRequest {
   name?: string;
   /** Path of the storage */
   path?: string;
-}
-
-export interface StorageDirEntry {
-  dirId?: string;
-  hash?: string;
-  isDir?: boolean;
-  lastModified?: string;
-  numItems?: number;
-  path?: string;
-  size?: number;
 }
 
 export interface StorageDriveConfig {
@@ -8370,6 +8373,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         format: "json",
         ...params,
       }),
+
+    /**
+     * No description
+     *
+     * @tags Preparation
+     * @name RenamePreparation
+     * @summary Rename a preparation
+     * @request PATCH:/preparation/{name}/rename
+     */
+    renamePreparation: (name: string, request: DataprepRenameRequest, params: RequestParams = {}) =>
+      this.request<ModelPreparation, ApiHTTPError>({
+        path: `/preparation/${name}/rename`,
+        method: "PATCH",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
   };
   schedule = {
     /**
@@ -9852,15 +9873,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * No description
      *
      * @tags Storage
-     * @name CreateStorage
-     * @summary Create a new storage
-     * @request POST:/storage/{storageType}
+     * @name RenameStorage
+     * @summary Rename a storage connection
+     * @request PATCH:/storage/{name}/rename
      */
-    createStorage: (storageType: string, body: StorageCreateRequest, params: RequestParams = {}) =>
+    renameStorage: (name: string, request: StorageRenameRequest, params: RequestParams = {}) =>
       this.request<ModelStorage, ApiHTTPError>({
-        path: `/storage/${storageType}`,
-        method: "POST",
-        body: body,
+        path: `/storage/${name}/rename`,
+        method: "PATCH",
+        body: request,
         type: ContentType.Json,
         format: "json",
         ...params,

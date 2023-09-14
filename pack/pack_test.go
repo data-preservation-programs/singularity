@@ -103,7 +103,7 @@ func TestAssembleCar(t *testing.T) {
 							Size:             stat.Size(),
 							LastModifiedNano: stat.ModTime().UnixNano(),
 							AttachmentID:     1,
-							DirectoryID:      ptr.Of(uint64(1)),
+							DirectoryID:      ptr.Of(model.DirectoryID(1)),
 						},
 					},
 				},

@@ -14,7 +14,7 @@ import (
 
 // StorageS3TencentCOSConfig storage s3 tencent c o s config
 //
-// swagger:model storage.S3TencentCOSConfig
+// swagger:model storage.s3TencentCOSConfig
 type StorageS3TencentCOSConfig struct {
 
 	// AWS Access Key ID.

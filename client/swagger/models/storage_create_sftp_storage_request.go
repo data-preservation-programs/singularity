@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSftpStorageRequest storage create sftp storage request
 //
-// swagger:model storage.CreateSftpStorageRequest
+// swagger:model storage.createSftpStorageRequest
 type StorageCreateSftpStorageRequest struct {
 
 	// config

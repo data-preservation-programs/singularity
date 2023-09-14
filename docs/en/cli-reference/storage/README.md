@@ -11,9 +11,10 @@ USAGE:
 COMMANDS:
    create   Create a new storage which can be used as source or output
    explore  Explore a storage by listing all entries under a path
-   list     List all storages system connections
+   list     List all storage system connections
    remove   Remove a storage connection if it's not used by any preparation
    update   Update the configuration of an existing storage connection
+   rename   Rename a storage system connection
    help, h  Shows a list of commands or help for one command
 
 OPTIONS:

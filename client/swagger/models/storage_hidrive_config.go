@@ -14,7 +14,7 @@ import (
 
 // StorageHidriveConfig storage hidrive config
 //
-// swagger:model storage.HidriveConfig
+// swagger:model storage.hidriveConfig
 type StorageHidriveConfig struct {
 
 	// Auth server URL.

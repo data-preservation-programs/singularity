@@ -14,7 +14,7 @@ import (
 
 // StorageS3StorjConfig storage s3 storj config
 //
-// swagger:model storage.S3StorjConfig
+// swagger:model storage.s3StorjConfig
 type StorageS3StorjConfig struct {
 
 	// AWS Access Key ID.

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3StorjStorageRequest storage create s3 storj storage request
 //
-// swagger:model storage.CreateS3StorjStorageRequest
+// swagger:model storage.createS3StorjStorageRequest
 type StorageCreateS3StorjStorageRequest struct {
 
 	// config

@@ -10,7 +10,7 @@ import (
 
 var ListCmd = &cli.Command{
 	Name:  "list",
-	Usage: "List all storages system connections",
+	Usage: "List all storage system connections",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {

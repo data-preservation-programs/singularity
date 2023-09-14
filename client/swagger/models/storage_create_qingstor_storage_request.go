@@ -15,7 +15,7 @@ import (
 
 // StorageCreateQingstorStorageRequest storage create qingstor storage request
 //
-// swagger:model storage.CreateQingstorStorageRequest
+// swagger:model storage.createQingstorStorageRequest
 type StorageCreateQingstorStorageRequest struct {
 
 	// config

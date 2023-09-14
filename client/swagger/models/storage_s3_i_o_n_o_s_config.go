@@ -14,7 +14,7 @@ import (
 
 // StorageS3IONOSConfig storage s3 i o n o s config
 //
-// swagger:model storage.S3IONOSConfig
+// swagger:model storage.s3IONOSConfig
 type StorageS3IONOSConfig struct {
 
 	// AWS Access Key ID.

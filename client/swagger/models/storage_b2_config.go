@@ -14,7 +14,7 @@ import (
 
 // StorageB2Config storage b2 config
 //
-// swagger:model storage.B2Config
+// swagger:model storage.b2Config
 type StorageB2Config struct {
 
 	// Account ID or Application Key ID.

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateWebdavStorageRequest storage create webdav storage request
 //
-// swagger:model storage.CreateWebdavStorageRequest
+// swagger:model storage.createWebdavStorageRequest
 type StorageCreateWebdavStorageRequest struct {
 
 	// config

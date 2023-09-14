@@ -250,7 +250,7 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 			KeepUnsealed:   true,
 			AnnounceToIPNI: true,
 		},
-		0,
+		100,
 		rootCID,
 		peer.AddrInfo{
 			ID:    server.ID(),
@@ -259,6 +259,41 @@ func TestDealMaker_MakeDeal120(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, resp.Accepted)
 	require.Equal(t, "accepted", resp.Message)
+}
+
+func TestDealMaker_MakeDeal120_RequireFileSize(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	server := setupBasicHost(t, ctx, "10001")
+	client := setupBasicHost(t, ctx, "10002")
+	defer server.Close()
+	defer client.Close()
+	maker := NewDealMaker(nil, client, time.Hour, time.Second)
+	defer maker.Close()
+	rootCID, err := cid.Decode("bafy2bzaceczlclcg4notjmrz4ayenf7fi4mngnqbgjs27r3resyhzwxjnviay")
+	require.NoError(t, err)
+	proposal := testProposal(t)
+	_, err = maker.MakeDeal120(
+		ctx,
+		proposal,
+		uuid.New(),
+		DealConfig{
+			Provider:       "f01001",
+			StartDelay:     time.Minute,
+			Duration:       time.Hour,
+			Verified:       true,
+			HTTPHeaders:    map[string]string{"key": "value"},
+			URLTemplate:    "http://localhost:8080/piece/{PIECE_CID}",
+			KeepUnsealed:   true,
+			AnnounceToIPNI: true,
+		},
+		0,
+		rootCID,
+		peer.AddrInfo{
+			ID:    server.ID(),
+			Addrs: server.Addrs(),
+		})
+	require.ErrorIs(t, err, ErrFileSizeNotSpecifiedForOnlineDeal)
 }
 
 func TestDealMaker_GetCollateral(t *testing.T) {

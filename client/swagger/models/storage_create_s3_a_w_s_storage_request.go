@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3AWSStorageRequest storage create s3 a w s storage request
 //
-// swagger:model storage.CreateS3AWSStorageRequest
+// swagger:model storage.createS3AWSStorageRequest
 type StorageCreateS3AWSStorageRequest struct {
 
 	// config

@@ -21,14 +21,15 @@ type AddPieceRequest struct {
 	PieceCID  string `binding:"required" json:"pieceCid"`      // CID of the piece
 	PieceSize string `binding:"required" json:"pieceSize"`     // Size of the piece
 	FilePath  string `json:"filePath"    swaggerignore:"true"` // Path to the CAR file, used to determine the size of the file and root CID
-	RootCID   string `json:"rootCid"`                          // Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
+	RootCID   string `json:"rootCid"`                          // Root CID of the CAR file, used to populate the label field of storage deal
+	FileSize  int64  `json:"fileSize"`                         // File size of the CAR file, this is required for boost online deal
 }
 
 type PieceList struct {
-	AttachmentID    *uint32        `json:"attachmentId"`
-	SourceStorageID *uint32        `json:"storageId"`
-	SourceStorage   *model.Storage `json:"source"       table:"expand"`
-	Pieces          []model.Car    `json:"pieces"       table:"expand"`
+	AttachmentID    *model.SourceAttachmentID `json:"attachmentId"`
+	SourceStorageID *model.StorageID          `json:"storageId"`
+	SourceStorage   *model.Storage            `json:"source"       table:"expand"`
+	Pieces          []model.Car               `json:"pieces"       table:"expand"`
 }
 
 // ListPiecesHandler retrieves the list of pieces associated with a particular preparation and its source attachments.
@@ -38,13 +39,13 @@ type PieceList struct {
 // associated with any source attachment but are linked to the preparation, they are also fetched.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name for the desired Preparation record.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name for the desired Preparation record.
 //
 // Returns:
-// - A slice of PieceList, each representing a source attachment and its associated pieces.
-// - An error, if any occurred during the operation.
+//   - A slice of PieceList, each representing a source attachment and its associated pieces.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) ListPiecesHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -133,14 +134,14 @@ func _() {}
 // the database associated with the given preparation.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name for the desired Preparation record.
-// - request: A struct of AddPieceRequest which contains the information for the piece to be added.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name for the desired Preparation record.
+//   - request: A struct of AddPieceRequest which contains the information for the piece to be added.
 //
 // Returns:
-// - A pointer to the newly created Car model.
-// - An error, if any occurred during the operation.
+//   - A pointer to the newly created Car model.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) AddPieceHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -172,6 +173,7 @@ func (DefaultHandler) AddPieceHandler(
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "piece size must be a power of 2")
 	}
 	rootCID := packutil.EmptyFileCid
+	fileSize := request.FileSize
 	if request.RootCID != "" {
 		rootCID, err = cid.Parse(request.RootCID)
 		if err != nil {
@@ -193,12 +195,21 @@ func (DefaultHandler) AddPieceHandler(
 		rootCID = header.Roots[0]
 	}
 
+	if fileSize == 0 && request.FilePath != "" {
+		stat, err := os.Stat(request.FilePath)
+		if err != nil {
+			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "failed to stat file %s", request.FilePath)
+		}
+		fileSize = stat.Size()
+	}
+
 	mCar := model.Car{
 		PieceCID:      model.CID(pieceCID),
 		PieceSize:     pieceSize,
 		RootCID:       model.CID(rootCID),
 		StoragePath:   request.FilePath,
 		PreparationID: preparation.ID,
+		FileSize:      fileSize,
 	}
 
 	err = database.DoRetry(ctx, func() error { return db.Create(&mCar).Error })

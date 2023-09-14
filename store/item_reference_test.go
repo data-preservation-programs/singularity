@@ -135,7 +135,7 @@ func TestFileReferenceBlockStore_Get_FileBlock(t *testing.T) {
 
 		err = db.Create(&model.CarBlock{
 			Car: &model.Car{
-				AttachmentID:  ptr.Of(uint32(1)),
+				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
 				PreparationID: 1,
 			},
 			CID: model.CID(cidValue),

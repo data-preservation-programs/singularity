@@ -24,10 +24,10 @@ import (
 type DagGenerator struct {
 	ctx          context.Context
 	db           *gorm.DB
-	attachmentID uint32
+	attachmentID model.SourceAttachmentID
 	rows         *sql.Rows
 	root         cid.Cid
-	dirCIDs      map[uint64]model.CID
+	dirCIDs      map[model.DirectoryID]model.CID
 	buffer       io.Reader
 	done         bool
 	carBlocks    []model.CarBlock
@@ -35,6 +35,25 @@ type DagGenerator struct {
 	noInline     bool
 }
 
+// Read implements the io.Reader interface for the DagGenerator. It generates
+// a CAR (Content Addressable Archive) representation of directories from a database,
+// which can be read in chunks using the provided byte slice.
+//
+// Read operation involves several key steps:
+//  1. It checks if the context has been canceled or if an error has occurred.
+//  2. If there's an existing buffer, it reads from it.
+//  3. If reading reaches the end of the current buffer, or if no buffer has been initialized,
+//     the method fetches the next directory from the database and processes it.
+//  4. The directory data is then converted to CAR format, and the resulting bytes are buffered.
+//  5. Finally, the buffered data is read into the provided slice.
+//
+// Parameters:
+//   - p: A byte slice that will be filled with the generated CAR data.
+//
+// Returns:
+//   - The number of bytes read.
+//   - An error if there's an issue during the operation. If the end of the data is reached,
+//     it returns io.EOF.
 func (d *DagGenerator) Read(p []byte) (int, error) {
 	if d.ctx.Err() != nil {
 		return 0, d.ctx.Err()
@@ -117,13 +136,13 @@ func (d *DagGenerator) Close() error {
 	return nil
 }
 
-func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID uint32, root cid.Cid, noInline bool) *DagGenerator {
+func NewDagGenerator(ctx context.Context, db *gorm.DB, attachmentID model.SourceAttachmentID, root cid.Cid, noInline bool) *DagGenerator {
 	return &DagGenerator{
 		ctx:          ctx,
 		db:           db,
 		attachmentID: attachmentID,
 		root:         root,
-		dirCIDs:      make(map[uint64]model.CID),
+		dirCIDs:      make(map[model.DirectoryID]model.CID),
 		noInline:     noInline,
 	}
 }
@@ -139,22 +158,22 @@ var ErrDagDisabled = errors.New("dag generation is disabled for this preparation
 // block structure of the data.
 //
 // The function:
-// - Initializes necessary components like writers and calculators
-// - Iterates through the directories linked with the source and fetches blocks
-// - Writes the blocks into a CAR file
-// - Closes the CAR file and renames it appropriately
-// - Saves the CAR meta-information into the database
+//   - Initializes necessary components like writers and calculators
+//   - Iterates through the directories linked with the source and fetches blocks
+//   - Writes the blocks into a CAR file
+//   - Closes the CAR file and renames it appropriately
+//   - Saves the CAR meta-information into the database
 //
 // Parameters:
-// - ctx context.Context: The context to control cancellations and timeouts.
-// - source model.Source: The source for which the DAG needs to be generated.
+//   - ctx context.Context: The context to control cancellations and timeouts.
+//   - source model.Source: The source for which the DAG needs to be generated.
 //
 // The function performs several database and file system operations,
 // each of which might result in an error. Errors are wrapped with context
 // information and returned.
 //
 // Returns:
-// - error: Standard error interface, returns nil if no error occurred during execution.
+//   - error: Standard error interface, returns nil if no error occurred during execution.
 func (w *Thread) ExportDag(ctx context.Context, job model.Job) error {
 	if job.Attachment.Preparation.NoDag {
 		return errors.WithStack(ErrDagDisabled)

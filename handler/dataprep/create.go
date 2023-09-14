@@ -13,7 +13,7 @@ import (
 )
 
 type CreateRequest struct {
-	Name              string   `json:"name"`                                    // Name of the preparation
+	Name              string   `binding:"required"    json:"name"`              // Name of the preparation
 	SourceStorages    []string `json:"sourceStorages"`                          // Name of Source storage systems to be used for the source
 	OutputStorages    []string `json:"outputStorages"`                          // Name of Output storage systems to be used for the output
 	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"`           // Maximum size of the CAR files to be created
@@ -30,9 +30,9 @@ type CreateRequest struct {
 // allowing for padding. The encryption and storages compatibility is also validated.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - request: The CreateRequest structure containing the parameters for the creation request.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - request: The CreateRequest structure containing the parameters for the creation request.
 //
 // Returns:
 //   - A pointer to the validated Preparation model which can be used for subsequent operations.
@@ -128,13 +128,13 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 // creates a new Preparation record in the database.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - request: The CreateRequest structure containing the parameters for the creation request.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - request: The CreateRequest structure containing the parameters for the creation request.
 //
 // Returns:
-// - A pointer to the newly created Preparation model.
-// - An error, if any occurred during the validation or creation process.
+//   - A pointer to the newly created Preparation model.
+//   - An error, if any occurred during the validation or creation process.
 //
 // Note:
 // This function relies on the ValidateCreateRequest function to ensure that the provided

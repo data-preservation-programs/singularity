@@ -145,20 +145,20 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 // and wraps it into a function suitable for Echo's routing.
 //
 // Supported input parameters for the handler functions are:
-// - context.Context: Will be passed the request context.
-// - *gorm.DB: Will be passed the Server's database instance with the request's context.
-// - jsonrpc.RPCClient: Will be passed the Server's Lotus client.
-// - replication.DealMaker: Will be passed the Server's deal maker.
-// - Any other supported path parameters (string, int, uint) or a request body.
+//   - context.Context: Will be passed the request context.
+//   - *gorm.DB: Will be passed the Server's database instance with the request's context.
+//   - jsonrpc.RPCClient: Will be passed the Server's Lotus client.
+//   - replication.DealMaker: Will be passed the Server's deal maker.
+//   - Any other supported path parameters (string, int, uint) or a request body.
 //
 // The handler function should return either a single error or a result and an error.
 // The output will be interpreted and converted into appropriate HTTP responses.
 //
 // Parameters:
-// - handlerFunc: A function to be converted, it should have a supported signature.
+//   - handlerFunc: A function to be converted, it should have a supported signature.
 //
 // Returns:
-// - An echo.HandlerFunc suitable for use with Echo's router.
+//   - An echo.HandlerFunc suitable for use with Echo's router.
 //
 // Notes:
 // This method assumes a specific ordering and kind of parameters in the handler functions.
@@ -291,12 +291,14 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.GET("/api/storage", s.toEchoHandler(s.storageHandler.ListStoragesHandler))
 	e.DELETE("/api/storage/:name", s.toEchoHandler(s.storageHandler.RemoveHandler))
 	e.PATCH("/api/storage/:name", s.toEchoHandler(s.storageHandler.UpdateStorageHandler))
+	e.PATCH("/api/storage/:name/rename", s.toEchoHandler(s.storageHandler.RenameStorageHandler))
 
 	// Preparation
 	e.POST("/api/preparation", s.toEchoHandler(s.dataprepHandler.CreatePreparationHandler))
 	e.GET("/api/preparation", s.toEchoHandler(s.dataprepHandler.ListHandler))
 	e.GET("/api/preparation/:id", s.toEchoHandler(s.jobHandler.GetStatusHandler))
 	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(s.dataprepHandler.ListSchedulesHandler))
+	e.PATCH("/api/preparation/:name/rename", s.toEchoHandler(s.dataprepHandler.RenamePreparationHandler))
 
 	// Job management
 	e.POST("/api/preparation/:id/source/:name/start-daggen", s.toEchoHandler(s.jobHandler.StartDagGenHandler))
@@ -353,6 +355,27 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 var logger = logging.Logger("api")
 
+// Start initializes the server, sets up routes and middlewares, and starts listening for incoming requests.
+//
+// This method:
+//   - Initializes analytics.
+//   - Configures the echo server with recovery, logging, and CORS middleware.
+//   - Sets up various routes, including serving static files for the dashboard and a swagger UI.
+//   - Starts the echo server and manages its lifecycle with background goroutines.
+//   - Gracefully shuts down the server on context cancellation.
+//   - Closes database connections and other resources.
+//
+// Parameters:
+//   - ctx: A context.Context used to control the server's lifecycle and propagate cancellation.
+//
+// Returns:
+//   - A slice of channels (service.Done) that signal when different parts of the service
+//     have completed their work. This includes:
+//     1. The main echo server's completion.
+//     2. The host's completion.
+//     3. Completion of analytics event flushing.
+//   - A channel (service.Fail) that reports errors that occur while the server is running.
+//   - An error if there is an issue during the initialization phase, otherwise nil.
 func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	err := analytics.Init(ctx, s.db)
 	if err != nil {

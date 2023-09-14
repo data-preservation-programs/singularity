@@ -16,7 +16,7 @@ import (
 
 type CreateRequest struct {
 	Provider string            `json:"provider"`
-	Name     string            `json:"name"`
+	Name     string            `binding:"required" json:"name"`
 	Path     string            `json:"path"`
 	Config   map[string]string `json:"config"`
 }
@@ -26,17 +26,17 @@ type CreateRequest struct {
 // it creates a new storage entry in the database.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - storageType: The type of storage system (e.g., S3, GCS, local).
-// - provider: The provider for the storage system (e.g., AWS, Google, etc.).
-// - name: A unique name to represent the storage in the database.
-// - path: The path or endpoint to access the storage.
-// - config: A map containing the configuration key-value pairs required by the storage backend.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - storageType: The type of storage system (e.g., S3, GCS, local).
+//   - provider: The provider for the storage system (e.g., AWS, Google, etc.).
+//   - name: A unique name to represent the storage in the database.
+//   - path: The path or endpoint to access the storage.
+//   - config: A map containing the configuration key-value pairs required by the storage backend.
 //
 // Returns:
-// - A pointer to the newly created Storage model if successful.
-// - An error, if any occurred during the operation.
+//   - A pointer to the newly created Storage model if successful.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) CreateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -110,16 +110,3 @@ func (DefaultHandler) CreateStorageHandler(
 
 	return &storage, err
 }
-
-// @ID CreateStorage
-// @Summary Create a new storage
-// @Tags Storage
-// @Accept json
-// @Produce json
-// @Param storageType path string true "Storage type"
-// @Param body body CreateRequest true "Storage configuration"
-// @Success 200 {object} model.Storage
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Router /storage/{storageType} [post]
-func _() {}

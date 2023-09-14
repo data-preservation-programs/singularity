@@ -19,13 +19,13 @@ var pausableStates = []model.ScheduleState{
 // If the schedule is already completed, an error will be returned.
 //
 // Parameters:
-// - ctx: The context for the operation, which can include cancellation signals, timeout details, etc.
-// - db: The database connection used for CRUD operations.
-// - scheduleID: The ID of the schedule to be paused.
+//   - ctx: The context for the operation, which can include cancellation signals, timeout details, etc.
+//   - db: The database connection used for CRUD operations.
+//   - scheduleID: The ID of the schedule to be paused.
 //
 // Returns:
-// - A pointer to the updated Schedule if successful.
-// - An error if there are issues during the operation, e.g., if the schedule is not found or already completed.
+//   - A pointer to the updated Schedule if successful.
+//   - An error if there are issues during the operation, e.g., if the schedule is not found or already completed.
 func (DefaultHandler) PauseHandler(
 	ctx context.Context,
 	db *gorm.DB,

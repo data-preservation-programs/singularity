@@ -9,6 +9,21 @@ import (
 	"gorm.io/gorm"
 )
 
+// ListAttachedHandler fetches and returns a list of wallets associated with a given preparation,
+// identified by either its ID or name.
+//
+// The function looks for the preparation with the specified ID or name in the database. If found,
+// it retrieves all wallets associated with that preparation. If no such preparation is found,
+// an error is returned.
+//
+// Parameters:
+//   - ctx: The context in which the handler function is executed, used for controlling cancelation.
+//   - db: A pointer to a gorm.DB object, which provides database access.
+//   - preparationID: The ID or name of the preparation whose attached wallets need to be fetched.
+//
+// Returns:
+//   - A slice of model.Wallet objects that are attached to the specified preparation.
+//   - An error if any issues arise during the process or if the preparation is not found, otherwise nil.
 func (DefaultHandler) ListAttachedHandler(
 	ctx context.Context,
 	db *gorm.DB,

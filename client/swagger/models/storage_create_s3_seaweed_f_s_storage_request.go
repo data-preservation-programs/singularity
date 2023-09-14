@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3SeaweedFSStorageRequest storage create s3 seaweed f s storage request
 //
-// swagger:model storage.CreateS3SeaweedFSStorageRequest
+// swagger:model storage.createS3SeaweedFSStorageRequest
 type StorageCreateS3SeaweedFSStorageRequest struct {
 
 	// config

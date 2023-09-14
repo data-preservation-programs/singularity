@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3TencentCOSStorageRequest storage create s3 tencent c o s storage request
 //
-// swagger:model storage.CreateS3TencentCOSStorageRequest
+// swagger:model storage.createS3TencentCOSStorageRequest
 type StorageCreateS3TencentCOSStorageRequest struct {
 
 	// config

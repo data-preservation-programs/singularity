@@ -76,7 +76,7 @@ func TestListDealHandler(t *testing.T) {
 				SectorStartEpoch: 1500,
 				Price:            "0",
 				Verified:         true,
-				ScheduleID:       ptr.Of(uint32(5)),
+				ScheduleID:       ptr.Of(model.ScheduleID(5)),
 				ClientID:         "client_id",
 			},
 			{
@@ -94,7 +94,7 @@ func TestListDealHandler(t *testing.T) {
 				SectorStartEpoch: 1600,
 				Price:            "0",
 				Verified:         false,
-				ScheduleID:       ptr.Of(uint32(5)),
+				ScheduleID:       ptr.Of(model.ScheduleID(5)),
 				ClientID:         "client_id",
 			},
 		}, nil)

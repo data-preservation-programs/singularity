@@ -61,6 +61,22 @@ func swapDataPrepHandler(mockHandler dataprep.Handler) func() {
 	}
 }
 
+func TestDataPrepRenameHandler(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(dataprep.MockDataPrep)
+		defer swapDataPrepHandler(mockHandler)()
+
+		mockHandler.On("RenamePreparationHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
+		_, _, err := runner.Run(ctx, "singularity prep rename 1 new_name")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose prep rename 1 new_name")
+		require.NoError(t, err)
+	})
+}
+
 func TestDataPrepCreateHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()
@@ -272,14 +288,14 @@ func TestDataPreparationAddPieceHandler(t *testing.T) {
 			PieceSize:     100,
 			RootCID:       model.CID{},
 			FileSize:      100,
-			StorageID:     ptr.Of(uint32(1)),
+			StorageID:     ptr.Of(model.StorageID(1)),
 			StoragePath:   "test1.car",
 			PreparationID: 1,
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity prep add-piece --piece-cid xxx --piece-size 100 1")
+		_, _, err := runner.Run(ctx, "singularity prep add-piece --piece-cid xxx --piece-size 100 --file-size 100 1")
 		require.NoError(t, err)
 
-		_, _, err = runner.Run(ctx, "singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 1")
+		_, _, err = runner.Run(ctx, "singularity --verbose prep add-piece --piece-cid xxx --piece-size 100 --file-size 100 1")
 		require.NoError(t, err)
 	})
 }
@@ -293,8 +309,8 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 
 		mockHandler.On("ListPiecesHandler", mock.Anything, mock.Anything, mock.Anything).Return([]dataprep.PieceList{
 			{
-				SourceStorageID: ptr.Of(uint32(1)),
-				AttachmentID:    ptr.Of(uint32(1)),
+				SourceStorageID: ptr.Of(model.StorageID(1)),
+				AttachmentID:    ptr.Of(model.SourceAttachmentID(1)),
 				SourceStorage: &model.Storage{
 					ID:        1,
 					Name:      "local",
@@ -309,7 +325,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     100,
 					FileSize:      200,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test1.car",
 					PreparationID: 1,
 				}, {
@@ -318,7 +334,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     300,
 					FileSize:      400,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test2.car",
 					PreparationID: 1,
 				}},
@@ -330,7 +346,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     500,
 					FileSize:      600,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test3.car",
 					PreparationID: 1,
 				}, {
@@ -339,7 +355,7 @@ func TestDataPreparationListPiecesHandler(t *testing.T) {
 					PieceCID:      model.CID(testutil.TestCid),
 					PieceSize:     700,
 					FileSize:      800,
-					StorageID:     ptr.Of(uint32(1)),
+					StorageID:     ptr.Of(model.StorageID(1)),
 					StoragePath:   "test4.car",
 					PreparationID: 1,
 				}},

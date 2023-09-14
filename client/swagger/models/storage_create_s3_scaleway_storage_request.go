@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3ScalewayStorageRequest storage create s3 scaleway storage request
 //
-// swagger:model storage.CreateS3ScalewayStorageRequest
+// swagger:model storage.createS3ScalewayStorageRequest
 type StorageCreateS3ScalewayStorageRequest struct {
 
 	// config

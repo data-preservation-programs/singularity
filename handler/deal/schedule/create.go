@@ -76,14 +76,14 @@ func argToDuration(s string) (time.Duration, error) {
 //  11. Returns the newly created schedule.
 //
 // Parameters:
-// - ctx: The context for the operation, used for timeouts and cancellation.
-// - db: The database connection, used for CRUD operations related to schedules.
-// - lotusClient: The Lotus client, used for Filecoin RPC calls.
-// - request: The request object containing the data for the new schedule.
+//   - ctx: The context for the operation, used for timeouts and cancellation.
+//   - db: The database connection, used for CRUD operations related to schedules.
+//   - lotusClient: The Lotus client, used for Filecoin RPC calls.
+//   - request: The request object containing the data for the new schedule.
 //
 // Returns:
-// - A pointer to the created model.Schedule if successful.
-// - An error indicating the reason for any failure during the operation.
+//   - A pointer to the created model.Schedule if successful.
+//   - An error indicating the reason for any failure during the operation.
 func (DefaultHandler) CreateHandler(
 	ctx context.Context,
 	db *gorm.DB,

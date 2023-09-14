@@ -32,6 +32,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-log/v2"
 	"github.com/parnurzeal/gorequest"
 	"github.com/stretchr/testify/mock"
@@ -69,6 +70,8 @@ func setupMockDataPrep() dataprep.Handler {
 	m.On("AddPieceHandler", mock.Anything, mock.Anything, "id", mock.Anything).
 		Return(&model.Car{}, nil)
 	m.On("AddSourceStorageHandler", mock.Anything, mock.Anything, "id", "name").
+		Return(&model.Preparation{}, nil)
+	m.On("RenamePreparationHandler", mock.Anything, mock.Anything, "old", mock.Anything).
 		Return(&model.Preparation{}, nil)
 	return m
 }
@@ -144,6 +147,8 @@ func setupMockStorage() storage.Handler {
 	m.On("RemoveHandler", mock.Anything, mock.Anything, "name").
 		Return(nil)
 	m.On("UpdateStorageHandler", mock.Anything, mock.Anything, "name", mock.Anything).
+		Return(&model.Storage{}, nil)
+	m.On("RenameStorageHandler", mock.Anything, mock.Anything, "old", mock.Anything).
 		Return(&model.Storage{}, nil)
 	return m
 }
@@ -284,19 +289,12 @@ func TestAllAPIs(t *testing.T) {
 		})
 
 		t.Run("storage", func(t *testing.T) {
-			t.Run("CreateStorage", func(t *testing.T) {
-				resp, err := client.Storage.CreateStorage(&storage2.CreateStorageParams{
-					Body:        &models.StorageCreateRequest{},
-					StorageType: "type",
-					Context:     ctx,
-				})
-				require.NoError(t, err)
-				require.True(t, resp.IsSuccess())
-				require.NotNil(t, resp.Payload)
-			})
-			t.Run("CreateLocalStorage", func(t *testing.T) {
-				resp, err := client.Storage.CreateLocalStorage(&storage2.CreateLocalStorageParams{
-					Request: &models.StorageCreateLocalStorageRequest{},
+			t.Run("RenameStorage", func(t *testing.T) {
+				resp, err := client.Storage.RenameStorage(&storage2.RenameStorageParams{
+					Name: "old",
+					Request: &models.StorageRenameRequest{
+						Name: ptr.Of("new"),
+					},
 					Context: ctx,
 				})
 				require.NoError(t, err)
@@ -491,6 +489,18 @@ func TestAllAPIs(t *testing.T) {
 		})
 
 		t.Run("preparation", func(t *testing.T) {
+			t.Run("RenamePreparation", func(t *testing.T) {
+				resp, err := client.Preparation.RenamePreparation(&preparation.RenamePreparationParams{
+					Name: "old",
+					Request: &models.DataprepRenameRequest{
+						Name: ptr.Of("new"),
+					},
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+				require.NotNil(t, resp.Payload)
+			})
 			t.Run("CreatePreparation", func(t *testing.T) {
 				resp, err := client.Preparation.CreatePreparation(&preparation.CreatePreparationParams{
 					Context: ctx,

@@ -14,7 +14,7 @@ import (
 
 // StorageS3DreamhostConfig storage s3 dreamhost config
 //
-// swagger:model storage.S3DreamhostConfig
+// swagger:model storage.s3DreamhostConfig
 type StorageS3DreamhostConfig struct {
 
 	// AWS Access Key ID.

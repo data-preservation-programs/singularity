@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3ChinaMobileStorageRequest storage create s3 china mobile storage request
 //
-// swagger:model storage.CreateS3ChinaMobileStorageRequest
+// swagger:model storage.createS3ChinaMobileStorageRequest
 type StorageCreateS3ChinaMobileStorageRequest struct {
 
 	// config

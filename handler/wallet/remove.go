@@ -13,12 +13,12 @@ import (
 // RemoveHandler deletes a wallet from the database based on its address or ID.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - address: The address or ID of the wallet to be deleted.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - address: The address or ID of the wallet to be deleted.
 //
 // Returns:
-// - An error, if any occurred during the database deletion operation.
+//   - An error, if any occurred during the database deletion operation.
 func (DefaultHandler) RemoveHandler(
 	ctx context.Context,
 	db *gorm.DB,

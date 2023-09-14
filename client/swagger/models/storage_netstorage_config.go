@@ -14,7 +14,7 @@ import (
 
 // StorageNetstorageConfig storage netstorage config
 //
-// swagger:model storage.NetstorageConfig
+// swagger:model storage.netstorageConfig
 type StorageNetstorageConfig struct {
 
 	// Set the NetStorage account name

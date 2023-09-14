@@ -14,7 +14,7 @@ import (
 
 // StorageOosNoAuthConfig storage oos no auth config
 //
-// swagger:model storage.OosNo_authConfig
+// swagger:model storage.oosNo_authConfig
 type StorageOosNoAuthConfig struct {
 
 	// Chunk size to use for uploading.

@@ -14,7 +14,7 @@ import (
 
 // StorageSharefileConfig storage sharefile config
 //
-// swagger:model storage.SharefileConfig
+// swagger:model storage.sharefileConfig
 type StorageSharefileConfig struct {
 
 	// Upload chunk size.

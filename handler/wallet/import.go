@@ -39,14 +39,14 @@ func _() {}
 // new wallet record in the local database.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - lotusClient: The RPC client used to interact with a Lotus node for actor lookup.
-// - request: The request containing the private key for the wallet import operation.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - lotusClient: The RPC client used to interact with a Lotus node for actor lookup.
+//   - request: The request containing the private key for the wallet import operation.
 //
 // Returns:
-// - A pointer to the created Wallet model if successful.
-// - An error, if any occurred during the operation.
+//   - A pointer to the created Wallet model if successful.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) ImportHandler(
 	ctx context.Context,
 	db *gorm.DB,

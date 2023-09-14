@@ -19,6 +19,9 @@ import (
 // swagger:model dataprep.AddPieceRequest
 type DataprepAddPieceRequest struct {
 
+	// File size of the CAR file, this is required for boost online deal
+	FileSize int64 `json:"fileSize,omitempty"`
+
 	// CID of the piece
 	// Required: true
 	PieceCid *string `json:"pieceCid"`
@@ -27,7 +30,7 @@ type DataprepAddPieceRequest struct {
 	// Required: true
 	PieceSize *string `json:"pieceSize"`
 
-	// Root CID of the CAR file, if not provided, will be determined by the CAR file header. Used to populate the label field of storage deal
+	// Root CID of the CAR file, used to populate the label field of storage deal
 	RootCid string `json:"rootCid,omitempty"`
 }
 

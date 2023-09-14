@@ -17,14 +17,14 @@ import (
 // If both are valid, it creates an association between the output storage and the Preparation.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name of the Preparation to which the output storage should be attached.
-// - output: The ID or name of the output storage to be attached.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name of the Preparation to which the output storage should be attached.
+//   - output: The ID or name of the output storage to be attached.
 //
 // Returns:
-// - A pointer to the updated Preparation model with the new output storage associated.
-// - An error, if any occurred during the verification or attachment process.
+//   - A pointer to the updated Preparation model with the new output storage associated.
+//   - An error, if any occurred during the verification or attachment process.
 //
 // Note:
 // This function performs several checks to ensure the output storage and the Preparation exist.
@@ -100,14 +100,14 @@ func _() {}
 //  2. Removing the only output storage while using encryption is disallowed.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name of the Preparation from which the output storage should be detached.
-// - output: The ID or name of the output storage to be detached.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name of the Preparation from which the output storage should be detached.
+//   - output: The ID or name of the output storage to be detached.
 //
 // Returns:
-// - A pointer to the updated Preparation model with the output storage removed.
-// - An error, if any occurred during the verification or detachment process.
+//   - A pointer to the updated Preparation model with the output storage removed.
+//   - An error, if any occurred during the verification or detachment process.
 //
 // Note:
 // This function performs several validation steps to ensure integrity while removing the association.

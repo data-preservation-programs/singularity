@@ -14,7 +14,7 @@ import (
 
 // StorageMailruConfig storage mailru config
 //
-// swagger:model storage.MailruConfig
+// swagger:model storage.mailruConfig
 type StorageMailruConfig struct {
 
 	// What should copy do if file checksum is mismatched or invalid.

@@ -11,20 +11,20 @@ import (
 )
 
 type SourceStatus struct {
-	AttachmentID    *uint32         `json:"attachmentId"`
-	SourceStorageID *uint32         `json:"storageId"`
-	SourceStorage   *model.Storage  `json:"source"       table:"expand;header:Source Storage"`
-	OutputStorages  []model.Storage `json:"output"       table:"expand;header:Output Storages"`
-	Jobs            []model.Job     `json:"jobs"         table:"expand"`
+	AttachmentID    *model.SourceAttachmentID `json:"attachmentId"`
+	SourceStorageID *model.StorageID          `json:"storageId"`
+	SourceStorage   *model.Storage            `json:"source"       table:"expand;header:Source Storage"`
+	OutputStorages  []model.Storage           `json:"output"       table:"expand;header:Output Storages"`
+	Jobs            []model.Job               `json:"jobs"         table:"expand"`
 }
 
 // GetStatusHandler fetches and returns the current status of a specific Preparation.
 // The status includes the Preparation record and associated jobs for each source attachment.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name for the desired Preparation record.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name for the desired Preparation record.
 //
 // Returns:
 //   - A pointer to a Status structure that encapsulates the Preparation record and

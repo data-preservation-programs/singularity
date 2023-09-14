@@ -14,7 +14,7 @@ import (
 
 // StorageFichierConfig storage fichier config
 //
-// swagger:model storage.FichierConfig
+// swagger:model storage.fichierConfig
 type StorageFichierConfig struct {
 
 	// Your API Key, get it from https://1fichier.com/console/params.pl.

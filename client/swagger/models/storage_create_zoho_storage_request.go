@@ -15,7 +15,7 @@ import (
 
 // StorageCreateZohoStorageRequest storage create zoho storage request
 //
-// swagger:model storage.CreateZohoStorageRequest
+// swagger:model storage.createZohoStorageRequest
 type StorageCreateZohoStorageRequest struct {
 
 	// config

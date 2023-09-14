@@ -15,13 +15,13 @@ import (
 // Once the preparation is successfully fetched, it retrieves all schedules linked with this preparation.
 //
 // Parameters:
-// - ctx: The context for managing timeouts and cancellation.
-// - db: The gorm.DB instance for database operations.
-// - id: The ID or name of the preparation to find associated schedules for.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for database operations.
+//   - id: The ID or name of the preparation to find associated schedules for.
 //
 // Returns:
-// - A slice of model.Schedule if the operation is successful.
-// - An error if any issues occur during the operation, including database retrieval errors.
+//   - A slice of model.Schedule if the operation is successful.
+//   - An error if any issues occur during the operation, including database retrieval errors.
 func (DefaultHandler) ListSchedulesHandler(
 	ctx context.Context,
 	db *gorm.DB,

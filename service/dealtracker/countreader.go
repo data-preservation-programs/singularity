@@ -25,11 +25,11 @@ func NewCountingReader(r io.Reader) *CountingReader {
 // It implements the io.Reader interface.
 //
 // Parameters:
-// - p: The byte slice to read data into.
+//   - p: The byte slice to read data into.
 //
 // Returns:
-// - n: The number of bytes read.
-// - err: Any error encountered during the read operation.
+//   - n: The number of bytes read.
+//   - err: Any error encountered during the read operation.
 func (cr *CountingReader) Read(p []byte) (n int, err error) {
 	n, err = cr.r.Read(p)
 	cr.mu.Lock()
