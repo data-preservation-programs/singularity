@@ -154,6 +154,9 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
 	}
 
+	ctx, _ = fs.AddConfig(ctx)
+	config := fs.GetConfig(ctx)
+	config.UseServerModTime = true
 	f, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(s.Config))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
