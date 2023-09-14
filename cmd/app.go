@@ -218,9 +218,12 @@ func SetupErrorHandler() {
 			return
 		}
 		if c.Bool("json") {
-			errMessage, _ := json.MarshalIndent(map[string]string{
+			errMessage, err2 := json.MarshalIndent(map[string]string{
 				"err": err.Error(),
 			}, "", "  ")
+			if err2 != nil {
+				panic(err2)
+			}
 			_, _ = App.Writer.Write(errMessage)
 			_, _ = App.Writer.Write([]byte("\n"))
 		} else {
