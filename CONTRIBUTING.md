@@ -24,7 +24,10 @@ Singularity, including all related modules, follows the
 - [Issues and tracking](#issues-and-tracking)
   - [Good First Issues](#good-first-issues)
 - [Additional Developer Notes](#additional-developer-notes)
+  - [Add a new CLI command](#add-a-new-cli-command)
   - [Testing](#testing)
+  - [Code Style](#code-style)
+  - [Code Generation](#code-generation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -104,6 +107,22 @@ To pick up an issue:
 
 ## Additional Developer Notes
 
+### Add a new CLI command
+- Create a handler implementation under `handler/*` directory
+- Make proper godoc comments for the implementation
+- Add the handler function to the interface under `handler/*/interface.go`
+- Update the MockHandler under `handler/*/interface.go`
+- Create unit tests for this handler implementation
+- Create a function to document the swagger API `func _(){}`
+- Create corresponding API route handler in `api/api.go`
+- Create a CLI command under `cmd/*` directory
+- Update `cmd/app.go` to register the new command
+- Add the CLI command unit test in one of `cmd/*_test.go`
+- Optionally add CLI command integration tests in `cmd/functional_test.go`
+- Run `make generate` or `go generate ./...`
+- Add the swagger API unit test in `api/api_test.go`
+- Optionally add swagger API integration tests in `cmd/api_test.go`
+
 ### Testing
 
 - All new code should be accompanied by unit tests. Prefer focussed unit tests to integration tests for thorough validation of behaviour. Existing code is not necessarily a good model, here.
@@ -113,4 +132,4 @@ To pick up an issue:
 - Make sure your code is formatted and pass `make lint` before submitting a PR.
 
 ### Code Generation
-- Make sure all code generation is up to date before submitting a PR. To generate the code, run `make generate`.
+- Make sure all code generations are up-to-date before submitting a PR. To generate the code, run `make generate`.

@@ -61,6 +61,22 @@ func swapDataPrepHandler(mockHandler dataprep.Handler) func() {
 	}
 }
 
+func TestDataPrepRenameHandler(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(dataprep.MockDataPrep)
+		defer swapDataPrepHandler(mockHandler)()
+
+		mockHandler.On("RenamePreparationHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&testPreparation, nil)
+		_, _, err := runner.Run(ctx, "singularity prep rename 1 new_name")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose prep rename 1 new_name")
+		require.NoError(t, err)
+	})
+}
+
 func TestDataPrepCreateHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()

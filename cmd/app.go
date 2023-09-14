@@ -165,6 +165,7 @@ Network Support:
 				storage.ListCmd,
 				storage.RemoveCmd,
 				storage.UpdateCmd,
+				storage.RenameCmd,
 			},
 		},
 		{
@@ -175,6 +176,7 @@ Network Support:
 				dataprep.CreateCmd,
 				dataprep.ListCmd,
 				dataprep.StatusCmd,
+				dataprep.RenameCmd,
 				dataprep.AttachSourceCmd,
 				dataprep.AttachOutputCmd,
 				dataprep.DetachOutputCmd,

@@ -158,7 +158,7 @@ func setupPreparation(t *testing.T, ctx context.Context) (*http.SingularityAPI, 
 	createPrepResp, err := client.Preparation.CreatePreparation(&preparation.CreatePreparationParams{
 		Request: &models.DataprepCreateRequest{
 			MaxSize:        ptr.Of("3MB"),
-			Name:           "prep",
+			Name:           ptr.Of("prep"),
 			OutputStorages: []string{"output"},
 			SourceStorages: []string{"source"},
 		},
