@@ -15,6 +15,27 @@ import (
 
 var logger = log.Logger("scan")
 
+// Scan traverses a source attachment, which represents a remote storage location,
+// and processes its files. During this process, it identifies new files in the storage
+// that are not already in the database and adds them. Existing files that have
+// not yet been packaged into jobs are grouped into jobs of a specified size.
+//
+// The scan starts from the last scanned path, ensuring incremental scanning, and updates
+// the `last_scanned_path` field of the SourceAttachment after each file to allow
+// resuming interrupted scans.
+//
+// Parameters:
+//   - ctx: Context for timeout and cancellation.
+//   - db: A pointer to a gorm.DB object, providing database access.
+//   - attachment: The source attachment that points to the storage location to scan.
+//
+// Returns:
+//   - An error if there are issues during the scan or database operations, otherwise nil.
+//
+// Note: This function assumes the use of a global logger object for logging and leverages
+//
+//	the storagesystem package to interact with the storage system of the SourceAttachment.
+//	The push package is used for processing files and managing file ranges.
 func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) error {
 	db = db.WithContext(ctx)
 	directoryCache := make(map[string]model.DirectoryID)

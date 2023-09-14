@@ -16,14 +16,14 @@ import (
 // between the source storage and the specified Preparation.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name of the Preparation to which the source storage should be attached.
-// - source: The ID or name of the source storage to be attached.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name of the Preparation to which the source storage should be attached.
+//   - source: The ID or name of the source storage to be attached.
 //
 // Returns:
-// - A pointer to the updated Preparation model with the new source storage associated.
-// - An error, if any occurred during the verification or attachment process.
+//   - A pointer to the updated Preparation model with the new source storage associated.
+//   - An error, if any occurred during the verification or attachment process.
 //
 // Note:
 // This function ensures that the given source storage exists and that the given Preparation exists

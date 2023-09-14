@@ -12,12 +12,12 @@ import (
 // It also preloads the associated source and output storages for each Preparation.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
 //
 // Returns:
-// - A slice containing all Preparation records from the database.
-// - An error, if any occurred during the database query operation.
+//   - A slice containing all Preparation records from the database.
+//   - An error, if any occurred during the database query operation.
 //
 // Note:
 // The function uses the Preload() method of gorm to automatically load the related source

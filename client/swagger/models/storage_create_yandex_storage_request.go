@@ -15,7 +15,7 @@ import (
 
 // StorageCreateYandexStorageRequest storage create yandex storage request
 //
-// swagger:model storage.CreateYandexStorageRequest
+// swagger:model storage.createYandexStorageRequest
 type StorageCreateYandexStorageRequest struct {
 
 	// config

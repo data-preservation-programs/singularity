@@ -14,7 +14,7 @@ import (
 
 // StorageS3ArvanCloudConfig storage s3 arvan cloud config
 //
-// swagger:model storage.S3ArvanCloudConfig
+// swagger:model storage.s3ArvanCloudConfig
 type StorageS3ArvanCloudConfig struct {
 
 	// AWS Access Key ID.

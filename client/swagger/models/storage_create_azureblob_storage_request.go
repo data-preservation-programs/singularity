@@ -15,7 +15,7 @@ import (
 
 // StorageCreateAzureblobStorageRequest storage create azureblob storage request
 //
-// swagger:model storage.CreateAzureblobStorageRequest
+// swagger:model storage.createAzureblobStorageRequest
 type StorageCreateAzureblobStorageRequest struct {
 
 	// config

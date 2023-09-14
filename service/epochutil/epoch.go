@@ -27,13 +27,13 @@ type block struct {
 //
 // Parameters:
 //
-//	ctx: The context used to control the lifecycle of the RPC request. If the context is done, the function exits cleanly.
-//	lotusAPI: The endpoint of the Lotus JSON-RPC API.
-//	lotusToken: The token used to authenticate with the Lotus JSON-RPC API.
+//   - ctx: The context used to control the lifecycle of the RPC request. If the context is done, the function exits cleanly.
+//   - lotusAPI: The endpoint of the Lotus JSON-RPC API.
+//   - lotusToken: The token used to authenticate with the Lotus JSON-RPC API.
 //
 // Returns:
 //
-//	error: An error that represents the failure of the operation, or nil if the operation was successful.
+//   - error: An error that represents the failure of the operation, or nil if the operation was successful.
 func Initialize(ctx context.Context, lotusAPI string, lotusToken string) error {
 	if strings.HasPrefix(lotusAPI, "https://api.node.glif.io/rpc") {
 		GenesisTimestamp = int32(1598306400)

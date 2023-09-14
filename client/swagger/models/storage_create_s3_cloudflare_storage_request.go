@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3CloudflareStorageRequest storage create s3 cloudflare storage request
 //
-// swagger:model storage.CreateS3CloudflareStorageRequest
+// swagger:model storage.createS3CloudflareStorageRequest
 type StorageCreateS3CloudflareStorageRequest struct {
 
 	// config

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateJottacloudStorageRequest storage create jottacloud storage request
 //
-// swagger:model storage.CreateJottacloudStorageRequest
+// swagger:model storage.createJottacloudStorageRequest
 type StorageCreateJottacloudStorageRequest struct {
 
 	// config

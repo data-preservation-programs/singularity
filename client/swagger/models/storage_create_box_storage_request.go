@@ -15,7 +15,7 @@ import (
 
 // StorageCreateBoxStorageRequest storage create box storage request
 //
-// swagger:model storage.CreateBoxStorageRequest
+// swagger:model storage.createBoxStorageRequest
 type StorageCreateBoxStorageRequest struct {
 
 	// config

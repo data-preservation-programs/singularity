@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3IBMCOSStorageRequest storage create s3 i b m c o s storage request
 //
-// swagger:model storage.CreateS3IBMCOSStorageRequest
+// swagger:model storage.createS3IBMCOSStorageRequest
 type StorageCreateS3IBMCOSStorageRequest struct {
 
 	// config

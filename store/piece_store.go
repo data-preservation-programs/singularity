@@ -34,16 +34,16 @@ var ErrFileHasChanged = errors.New("file has changed")
 // PieceReader is a struct that represents a reader for pieces of data.
 //
 // Fields:
-// ctx: The context in which the PieceReader operates. This can be used to cancel operations or set deadlines.
-// fileSize: The size of the file being read.
-// header: A byte slice representing the header of the file.
-// handlerMap: Handler map from storage ID to the actual RCloneHandler
-// carBlocks: A slice of CarBlocks. These represent the blocks of data in the CAR (Content Addressable Archive) format.
-// files: A map where the keys are file ID. This represents the files of data being read.
-// reader: An io.ReadCloser that is used to read the data and close the reader when done.
-// readerFor: A uint64 file ID that represents the current file being read.
-// pos: An int64 that represents the current position in the data being read.
-// blockIndex: An integer that represents the index of the current block being read.
+//   - ctx: The context in which the PieceReader operates. This can be used to cancel operations or set deadlines.
+//   - fileSize: The size of the file being read.
+//   - header: A byte slice representing the header of the file.
+//   - handlerMap: Handler map from storage ID to the actual RCloneHandler
+//   - carBlocks: A slice of CarBlocks. These represent the blocks of data in the CAR (Content Addressable Archive) format.
+//   - files: A map where the keys are file ID. This represents the files of data being read.
+//   - reader: An io.ReadCloser that is used to read the data and close the reader when done.
+//   - readerFor: A uint64 file ID that represents the current file being read.
+//   - pos: An int64 that represents the current position in the data being read.
+//   - blockIndex: An integer that represents the index of the current block being read.
 type PieceReader struct {
 	ctx        context.Context
 	fileSize   int64
@@ -60,18 +60,18 @@ type PieceReader struct {
 // Seek is a method on the PieceReader struct that changes the position of the reader.
 // It takes an offset and a 'whence' value as input, similar to the standard io.Seeker interface.
 // The offset is added to the position determined by 'whence'.
-// If 'whence' is io.SeekStart, the offset is from the start of the file.
-// If 'whence' is io.SeekCurrent, the offset is from the current position.
-// If 'whence' is io.SeekEnd, the offset is from the end of the file.
-// If the resulting position is negative or beyond the end of the file, an error is returned.
-// If a reader is currently open, it is closed before the position is changed.
+//   - If 'whence' is io.SeekStart, the offset is from the start of the file.
+//   - If 'whence' is io.SeekCurrent, the offset is from the current position.
+//   - If 'whence' is io.SeekEnd, the offset is from the end of the file.
+//   - If the resulting position is negative or beyond the end of the file, an error is returned.
+//   - If a reader is currently open, it is closed before the position is changed.
 //
 // Parameters:
-// offset: The offset to move the position by. Can be negative.
-// whence: The position to move the offset from. Must be one of io.SeekStart, io.SeekCurrent, or io.SeekEnd.
+//   - offset: The offset to move the position by. Can be negative.
+//   - whence: The position to move the offset from. Must be one of io.SeekStart, io.SeekCurrent, or io.SeekEnd.
 //
 // Returns:
-// The new position after seeking, and an error if the seek operation failed.
+//   - The new position after seeking, and an error if the seek operation failed.
 func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
 	case io.SeekStart:
@@ -110,7 +110,7 @@ func (pr *PieceReader) Seek(offset int64, whence int) (int64, error) {
 // The new PieceReader starts at the beginning of the data (position 0).
 //
 // Returns:
-// A new PieceReader that has the same state as the original, but starting at position 0.
+//   - A new PieceReader that has the same state as the original, but starting at position 0.
 func (pr *PieceReader) Clone() *PieceReader {
 	reader := &PieceReader{
 		ctx:        pr.ctx,
@@ -135,15 +135,15 @@ func (pr *PieceReader) Clone() *PieceReader {
 // The returned PieceReader starts at the beginning of the data (position 0).
 //
 // Parameters:
-// ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
-// car: A Car model that represents the CAR (Content Addressable Archive) file being read.
-// source: A Source model that represents the source of the data.
-// carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
-// files: A slice of File models that represent the files of data being read.
-// resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
+//   - ctx: The context for the new PieceReader. This can be used to cancel operations or set deadlines.
+//   - car: A Car model that represents the CAR (Content Addressable Archive) file being read.
+//   - source: A Source model that represents the source of the data.
+//   - carBlocks: A slice of CarBlock models that represent the blocks of data in the CAR file.
+//   - files: A slice of File models that represent the files of data being read.
+//   - resolver: A HandlerResolver that is used to resolve the handler for the source of the data.
 //
 // Returns:
-// A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
+//   - A new PieceReader that has been initialized with the provided data, and an error if the initialization failed.
 func NewPieceReader(
 	ctx context.Context,
 	car model.Car,
@@ -231,20 +231,20 @@ func NewPieceReader(
 }
 
 // Read is a method on the PieceReader struct that reads data into the provided byte slice.
-// It reads data from the current position of the PieceReader and advances the position accordingly.
-// If the context of the PieceReader has been cancelled, it returns an error immediately.
-// If the end of the file has been reached, it returns io.EOF.
-// If the PieceReader is currently at a block boundary, it advances to the next block before reading data.
-// If the PieceReader is currently at a varint or CID boundary within a block, it reads the varint or CID data.
-// If the PieceReader is currently at a raw block boundary within a block, it reads the raw block data.
-// If the PieceReader is currently at an file boundary within a block, it reads the file data.
-// If the PieceReader encounters an error while reading data, it returns the error.
+//   - It reads data from the current position of the PieceReader and advances the position accordingly.
+//   - If the context of the PieceReader has been cancelled, it returns an error immediately.
+//   - If the end of the file has been reached, it returns io.EOF.
+//   - If the PieceReader is currently at a block boundary, it advances to the next block before reading data.
+//   - If the PieceReader is currently at a varint or CID boundary within a block, it reads the varint or CID data.
+//   - If the PieceReader is currently at a raw block boundary within a block, it reads the raw block data.
+//   - If the PieceReader is currently at an file boundary within a block, it reads the file data.
+//   - If the PieceReader encounters an error while reading data, it returns the error.
 //
 // Parameters:
-// p: The byte slice to read data into.
+//   - p: The byte slice to read data into.
 //
 // Returns:
-// The number of bytes read, and an error if the read operation failed.
+//   - The number of bytes read, and an error if the read operation failed.
 func (pr *PieceReader) Read(p []byte) (n int, err error) {
 	if pr.ctx.Err() != nil {
 		return 0, pr.ctx.Err()

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateOnedriveStorageRequest storage create onedrive storage request
 //
-// swagger:model storage.CreateOnedriveStorageRequest
+// swagger:model storage.createOnedriveStorageRequest
 type StorageCreateOnedriveStorageRequest struct {
 
 	// config

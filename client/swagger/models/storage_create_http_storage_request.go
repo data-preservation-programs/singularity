@@ -15,7 +15,7 @@ import (
 
 // StorageCreateHTTPStorageRequest storage create Http storage request
 //
-// swagger:model storage.CreateHttpStorageRequest
+// swagger:model storage.createHttpStorageRequest
 type StorageCreateHTTPStorageRequest struct {
 
 	// config

@@ -19,7 +19,7 @@ import (
 // It uses a GORM database.
 //
 // Fields:
-// DBNoContext: The GORM database used for storage. This should be initialized and connected to a database before use.
+//   - DBNoContext: The GORM database used for storage. This should be initialized and connected to a database before use.
 type FileReferenceBlockStore struct {
 	DBNoContext *gorm.DB
 }
@@ -28,11 +28,11 @@ type FileReferenceBlockStore struct {
 // It uses the context for the database operation and returns an error if the operation fails.
 //
 // Parameters:
-// ctx: The context for the database operation. This can be used to cancel the operation or set a deadline.
-// cid: The CID of the block to check for.
+//   - ctx: The context for the database operation. This can be used to cancel the operation or set a deadline.
+//   - cid: The CID of the block to check for.
 //
 // Returns:
-// A boolean indicating whether the block exists in the store, and an error if the operation failed.
+//   - A boolean indicating whether the block exists in the store, and an error if the operation failed.
 func (i *FileReferenceBlockStore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 	var count int64
 	err := i.DBNoContext.WithContext(ctx).Model(&model.CarBlock{}).Select("cid").Where("cid = ?", model.CID(cid)).Count(&count).Error
@@ -81,11 +81,11 @@ func (i *FileReferenceBlockStore) Get(ctx context.Context, cid cid.Cid) (blocks.
 // It uses the context for the database operation and returns an error if the operation fails.
 //
 // Parameters:
-// ctx: The context for the database operation. This can be used to cancel the operation or set a deadline.
-// c: The CID of the block whose size is to be retrieved.
+//   - ctx: The context for the database operation. This can be used to cancel the operation or set a deadline.
+//   - c: The CID of the block whose size is to be retrieved.
 //
 // Returns:
-// The size of the block in bytes, and an error if the operation failed. If the block does not exist in the store, it returns a
+//   - The size of the block in bytes, and an error if the operation failed. If the block does not exist in the store, it returns a
 func (i *FileReferenceBlockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 	var carBlock model.CarBlock
 	err := i.DBNoContext.WithContext(ctx).Where("cid = ?", model.CID(c)).First(&carBlock).Error

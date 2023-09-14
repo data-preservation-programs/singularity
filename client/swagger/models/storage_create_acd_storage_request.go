@@ -15,7 +15,7 @@ import (
 
 // StorageCreateAcdStorageRequest storage create acd storage request
 //
-// swagger:model storage.CreateAcdStorageRequest
+// swagger:model storage.createAcdStorageRequest
 type StorageCreateAcdStorageRequest struct {
 
 	// config

@@ -14,7 +14,7 @@ import (
 
 // StorageS3AlibabaConfig storage s3 alibaba config
 //
-// swagger:model storage.S3AlibabaConfig
+// swagger:model storage.s3AlibabaConfig
 type StorageS3AlibabaConfig struct {
 
 	// AWS Access Key ID.

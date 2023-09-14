@@ -14,7 +14,7 @@ import (
 
 // StorageS3ScalewayConfig storage s3 scaleway config
 //
-// swagger:model storage.S3ScalewayConfig
+// swagger:model storage.s3ScalewayConfig
 type StorageS3ScalewayConfig struct {
 
 	// AWS Access Key ID.

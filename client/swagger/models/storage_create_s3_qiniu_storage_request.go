@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3QiniuStorageRequest storage create s3 qiniu storage request
 //
-// swagger:model storage.CreateS3QiniuStorageRequest
+// swagger:model storage.createS3QiniuStorageRequest
 type StorageCreateS3QiniuStorageRequest struct {
 
 	// config

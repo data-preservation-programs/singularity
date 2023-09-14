@@ -68,16 +68,16 @@ func (c cronLogger) Error(err error, msg string, keysAndValues ...any) {
 // and potentially saved to the Schedule's record in the database, depending on the Schedule's Cron setting.
 //
 // The steps it takes are as follows:
-// 1. Runs the Schedule using the runSchedule method, which attempts to make deals based on the Schedule's configuration.
-// 2. If runSchedule returns an error, logs the error and saves it to the Schedule's record if ScheduleCron is not set.
-// 3. If runSchedule returns a non-empty state (either ScheduleCompleted or ScheduleError), updates the Schedule's state in the database.
-// 4. Logs the Schedule's completion or error state, if applicable, and removes the Schedule from the DealPusher's active schedules.
+//  1. Runs the Schedule using the runSchedule method, which attempts to make deals based on the Schedule's configuration.
+//  2. If runSchedule returns an error, logs the error and saves it to the Schedule's record if ScheduleCron is not set.
+//  3. If runSchedule returns a non-empty state (either ScheduleCompleted or ScheduleError), updates the Schedule's state in the database.
+//  4. Logs the Schedule's completion or error state, if applicable, and removes the Schedule from the DealPusher's active schedules.
 //
 // Parameters:
 //
-//	ctx:      The context for managing the lifecycle of this Schedule run.
-//	          If the context is Done, the function exits cleanly.
-//	schedule: A pointer to the Schedule that this function is processing.
+//   - ctx:      The context for managing the lifecycle of this Schedule run.
+//     If the context is Done, the function exits cleanly.
+//   - schedule: A pointer to the Schedule that this function is processing.
 //
 // This function does not return any values but updates the Schedule's state in the database
 // based on the actions performed in the runSchedule function. It also handles errors and logs relevant information.
@@ -204,20 +204,20 @@ func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Sc
 // and continuously attempts to make deals based on the information and constraints specified in the Schedule.
 //
 // The steps it takes in each iteration are as follows:
-// 1. Counts the number and size of pending and total active deals for the current schedule from the database.
-// 2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
-// 3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
-// 4. Chooses a wallet from the preparation’s associated wallets.
-// 5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
-// 6. Saves the newly created deal to the database.
-// 7. Updates the counts of pending, total, and current deals based on the new deal.
-// 8. If the context is done, returns immediately, otherwise waits for a specified interval before the next iteration.
+//  1. Counts the number and size of pending and total active deals for the current schedule from the database.
+//  2. Checks various conditions defined in the Schedule to decide whether to proceed with making a new deal.
+//  3. Finds a car (Content Addressed Archive) that has not been sent to the provider for a deal.
+//  4. Chooses a wallet from the preparation’s associated wallets.
+//  5. Makes a deal using the details from the car and wallet, and the deal parameters defined in the Schedule.
+//  6. Saves the newly created deal to the database.
+//  7. Updates the counts of pending, total, and current deals based on the new deal.
+//  8. If the context is done, returns immediately, otherwise waits for a specified interval before the next iteration.
 //
 // Parameters:
 //
-//	ctx:      The context for managing the lifecycle of this Schedule run.
-//	          If the context is Done, the function exits cleanly.
-//	schedule: A pointer to the Schedule that this function is processing.
+//   - ctx:      The context for managing the lifecycle of this Schedule run.
+//     If the context is Done, the function exits cleanly.
+//   - schedule: A pointer to the Schedule that this function is processing.
 //
 // Returns:
 //  1. A ScheduleState which represents the new state of the Schedule
@@ -401,7 +401,7 @@ func NewDealPusher(db *gorm.DB, lotusURL string,
 //
 // Parameters:
 //
-//	ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
+//   - ctx : The context for managing the lifecycle of this iteration. If Done, the function exits cleanly.
 //
 // This function is designed to be idempotent, meaning it can be run multiple times with the same effect.
 // It is called repeatedly by the main deal processing loop in DealPusher.Start.
@@ -452,13 +452,13 @@ func (d *DealPusher) runOnce(ctx context.Context) {
 // It first attempts to register the worker with the health check system.
 // If another worker is already running, it waits and retries until it can register or the context is cancelled.
 // Once registered, it launches three main activities in separate goroutines:
-// 1. Reporting its health status.
-// 2. Running the deal processing loop.
-// 3. Handling cleanup when the service is stopped.
+//  1. Reporting its health status.
+//  2. Running the deal processing loop.
+//  3. Handling cleanup when the service is stopped.
 //
 // Parameters:
 //
-//	ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
+//   - ctx : The context for managing the lifecycle of the Start function. If Done, the function exits cleanly.
 //
 // Returns:
 //   - A slice of channels that the caller can select on to wait for the service to stop.

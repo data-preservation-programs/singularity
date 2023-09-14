@@ -15,13 +15,13 @@ import (
 // with the deals table using the piece_cid field.
 //
 // Parameters:
-// - ctx: The context for managing timeouts and cancellation.
-// - db: The gorm.DB instance for database operations.
-// - id: The ID of the file for which deals need to be retrieved.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for database operations.
+//   - id: The ID of the file for which deals need to be retrieved.
 //
 // Returns:
-// - A slice of model.Deal containing the deals associated with the provided file ID.
-// - An error if any issues occur during the database operation.
+//   - A slice of model.Deal containing the deals associated with the provided file ID.
+//   - An error if any issues occur during the database operation.
 func (DefaultHandler) GetFileDealsHandler(
 	ctx context.Context,
 	db *gorm.DB,

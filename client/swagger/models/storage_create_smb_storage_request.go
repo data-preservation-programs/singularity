@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSmbStorageRequest storage create smb storage request
 //
-// swagger:model storage.CreateSmbStorageRequest
+// swagger:model storage.createSmbStorageRequest
 type StorageCreateSmbStorageRequest struct {
 
 	// config

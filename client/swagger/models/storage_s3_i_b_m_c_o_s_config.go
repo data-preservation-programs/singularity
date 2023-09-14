@@ -14,7 +14,7 @@ import (
 
 // StorageS3IBMCOSConfig storage s3 i b m c o s config
 //
-// swagger:model storage.S3IBMCOSConfig
+// swagger:model storage.s3IBMCOSConfig
 type StorageS3IBMCOSConfig struct {
 
 	// AWS Access Key ID.

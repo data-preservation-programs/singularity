@@ -15,7 +15,7 @@ import (
 
 // StorageCreateUptoboxStorageRequest storage create uptobox storage request
 //
-// swagger:model storage.CreateUptoboxStorageRequest
+// swagger:model storage.createUptoboxStorageRequest
 type StorageCreateUptoboxStorageRequest struct {
 
 	// config

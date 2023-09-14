@@ -14,7 +14,7 @@ import (
 
 // StorageOnedriveConfig storage onedrive config
 //
-// swagger:model storage.OnedriveConfig
+// swagger:model storage.onedriveConfig
 type StorageOnedriveConfig struct {
 
 	// Set scopes to be requested by rclone.
