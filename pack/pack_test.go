@@ -110,7 +110,7 @@ func TestAssembleCar(t *testing.T) {
 			},
 		},
 		{
-			name:     "single file non-inline with deletion",
+			name:     "single file non-inline with deletion, non-Dag",
 			fileSize: 101,
 			one:      true,
 			job: model.Job{
@@ -128,6 +128,7 @@ func TestAssembleCar(t *testing.T) {
 							},
 						},
 						DeleteAfterExport: true,
+						NoDag:             true,
 					},
 					Storage: &model.Storage{
 						Name: "tmp",
@@ -162,6 +163,14 @@ func TestAssembleCar(t *testing.T) {
 				car, err := Pack(ctx, db, job.job)
 				require.NoError(t, err)
 				require.Equal(t, job.fileSize, car.FileSize)
+				var root model.Directory
+				err = db.First(&root, "attachment_id = ? AND parent_id IS NULL", job.job.AttachmentID).Error
+				require.NoError(t, err)
+				if job.job.Attachment.Preparation.NoDag {
+					require.Equal(t, "", root.CID.String())
+				} else {
+					require.NotEqual(t, "", root.CID.String())
+				}
 			}
 			if job.one {
 				testutil.One(t, testFunc)

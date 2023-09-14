@@ -51,6 +51,7 @@ type Assembler struct {
 	carBlocks []model.CarBlock
 	// assembleLinkFor is a pointer to the index in fileRanges for which links need to be assembled.
 	assembleLinkFor *int
+	noInline        bool
 }
 
 // Close closes the assembler and all of its underlying readers
@@ -67,13 +68,14 @@ func (a *Assembler) Close() error {
 
 // NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader,
-	fileRanges []model.FileRange) *Assembler {
+	fileRanges []model.FileRange, noInline bool) *Assembler {
 	return &Assembler{
 		ctx:        ctx,
 		reader:     reader,
 		fileRanges: fileRanges,
 		buf:        make([]byte, packutil.ChunkSize),
 		objects:    make(map[model.FileID]fs.Object),
+		noInline:   noInline,
 	}
 }
 
@@ -156,7 +158,9 @@ func (a *Assembler) assembleLinks() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	a.carBlocks = append(a.carBlocks, carBlocks...)
+	if !a.noInline {
+		a.carBlocks = append(a.carBlocks, carBlocks...)
+	}
 	a.pendingLinks = nil
 	return nil
 }
@@ -225,7 +229,9 @@ func (a *Assembler) prefetch() error {
 			return errors.WithStack(err2)
 		}
 		carBlocks[0].RawBlock = nil
-		a.carBlocks = append(a.carBlocks, carBlocks[0])
+		if !a.noInline {
+			a.carBlocks = append(a.carBlocks, carBlocks...)
+		}
 		a.pendingLinks = append(a.pendingLinks, format.Link{
 			Cid:  cidValue,
 			Size: uint64(n),

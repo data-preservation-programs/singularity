@@ -34,6 +34,12 @@ type ModelPreparation struct {
 	// name
 	Name string `json:"name,omitempty"`
 
+	// no dag
+	NoDag bool `json:"noDag,omitempty"`
+
+	// no inline
+	NoInline bool `json:"noInline,omitempty"`
+
 	// output storages
 	OutputStorages []*ModelStorage `json:"outputStorages"`
 

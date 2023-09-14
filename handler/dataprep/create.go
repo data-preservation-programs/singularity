@@ -19,6 +19,8 @@ type CreateRequest struct {
 	MaxSizeStr        string   `default:"31.5GiB"     json:"maxSize"`           // Maximum size of the CAR files to be created
 	PieceSizeStr      string   `default:""            json:"pieceSize"`         // Target piece size of the CAR files used for piece commitment calculation
 	DeleteAfterExport bool     `default:"false"       json:"deleteAfterExport"` // Whether to delete the source files after export
+	NoInline          bool     `default:"false"       json:"noInline"`          // Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
+	NoDag             bool     `default:"false"       json:"noDag"`             // Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
 }
 
 // ValidateCreateRequest processes and validates the creation request parameters.
@@ -105,6 +107,10 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "deleteAfterExport cannot be set without output storages")
 	}
 
+	if len(outputs) == 0 && request.NoInline {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "inline preparation cannot be disabled without output storages")
+	}
+
 	return &model.Preparation{
 		MaxSize:           int64(maxSize),
 		PieceSize:         int64(pieceSize),
@@ -112,6 +118,8 @@ func ValidateCreateRequest(ctx context.Context, db *gorm.DB, request CreateReque
 		OutputStorages:    outputs,
 		DeleteAfterExport: request.DeleteAfterExport,
 		Name:              request.Name,
+		NoInline:          request.NoInline,
+		NoDag:             request.NoDag,
 	}, nil
 }
 

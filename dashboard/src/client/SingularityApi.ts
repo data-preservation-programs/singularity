@@ -37,6 +37,16 @@ export interface DataprepCreateRequest {
   maxSize?: string;
   /** Name of the preparation */
   name: string;
+  /**
+   * Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.
+   * @default false
+   */
+  noDag?: boolean;
+  /**
+   * Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.
+   * @default false
+   */
+  noInline?: boolean;
   /** Name of Output storage systems to be used for the output */
   outputStorages?: string[];
   /** Target piece size of the CAR files used for piece commitment calculation */
@@ -280,6 +290,8 @@ export interface ModelPreparation {
   id?: number;
   maxSize?: number;
   name?: string;
+  noDag?: boolean;
+  noInline?: boolean;
   outputStorages?: ModelStorage[];
   pieceSize?: number;
   sourceStorages?: ModelStorage[];

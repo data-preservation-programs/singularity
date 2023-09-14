@@ -135,6 +135,22 @@ func TestRemoveOutputStorageHandler_DeleteAfterExportTrue(t *testing.T) {
 	})
 }
 
+func TestRemoveOutputStorageHandler_NoInlineWithoutOutput(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			NoInline: true,
+			OutputStorages: []model.Storage{{
+				Name: "output",
+			}},
+		}).Error
+		require.NoError(t, err)
+
+		_, err = Default.RemoveOutputStorageHandler(ctx, db, "1", "output")
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "cannot remove the only output storage from a preparation with inline preparation disabled")
+	})
+}
+
 func TestRemoveOutputStorageHandler_Success(t *testing.T) {
 	for _, name := range []string{"1", "name"} {
 		t.Run(name, func(t *testing.T) {

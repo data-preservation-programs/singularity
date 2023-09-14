@@ -140,6 +140,10 @@ func (DefaultHandler) RemoveOutputStorageHandler(ctx context.Context, db *gorm.D
 		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "cannot remove the only output storage from a preparation with deleteAfterExport enabled")
 	}
 
+	if preparation.NoInline && len(preparation.OutputStorages) == 1 {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "cannot remove the only output storage from a preparation with inline preparation disabled")
+	}
+
 	err = database.DoRetry(ctx, func() error {
 		return db.Where("storage_id = ? AND preparation_id = ?", storage.ID, preparation.ID).Delete(&model.OutputAttachment{}).Error
 	})

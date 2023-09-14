@@ -59,6 +59,14 @@ var CreateCmd = &cli.Command{
 			Name:  "delete-after-export",
 			Usage: "Whether to delete the source files after export to CAR files",
 		},
+		&cli.BoolFlag{
+			Name:  "no-inline",
+			Usage: "Whether to disable inline storage for the preparation. Can save database space but requires at least one output storage.",
+		},
+		&cli.BoolFlag{
+			Name:  "no-dag",
+			Usage: "Whether to disable maintaining folder dag structure for the sources. If disabled, DagGen will not be possible and folders will not have an associated CID.",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -97,6 +105,8 @@ var CreateCmd = &cli.Command{
 			PieceSizeStr:      pieceSizeStr,
 			DeleteAfterExport: c.Bool("delete-after-export"),
 			Name:              name,
+			NoInline:          c.Bool("no-inline"),
+			NoDag:             c.Bool("no-dag"),
 		})
 		if err != nil {
 			return errors.WithStack(err)

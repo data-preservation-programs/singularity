@@ -70,7 +70,7 @@ func TestAssembler(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Run(fmt.Sprintf("single size=%d", size), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange})
+			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange}, false)
 			defer assembler.Close()
 			content, err := io.ReadAll(assembler)
 			require.NoError(t, err)
@@ -84,13 +84,24 @@ func TestAssembler(t *testing.T) {
 		return allFileRanges[i].ID < allFileRanges[j].ID
 	})
 	t.Run("all", func(t *testing.T) {
-		assembler := NewAssembler(context.Background(), reader, allFileRanges)
+		assembler := NewAssembler(context.Background(), reader, allFileRanges, false)
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
 		require.Equal(t, 38802198, len(content))
 		validateCarContent(t, content)
 		validateAssembler(t, assembler)
+		require.Greater(t, len(assembler.carBlocks), 0)
+	})
+	t.Run("noinline", func(t *testing.T) {
+		assembler := NewAssembler(context.Background(), reader, allFileRanges, true)
+		defer assembler.Close()
+		content, err := io.ReadAll(assembler)
+		require.NoError(t, err)
+		require.Equal(t, 38802198, len(content))
+		validateCarContent(t, content)
+		validateAssembler(t, assembler)
+		require.Len(t, assembler.carBlocks, 0)
 	})
 }
 
