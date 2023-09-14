@@ -14,7 +14,7 @@ import (
 
 // StorageAcdConfig storage acd config
 //
-// swagger:model storage.AcdConfig
+// swagger:model storage.acdConfig
 type StorageAcdConfig struct {
 
 	// Auth server URL.

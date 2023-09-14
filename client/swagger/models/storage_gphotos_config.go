@@ -14,7 +14,7 @@ import (
 
 // StorageGphotosConfig storage gphotos config
 //
-// swagger:model storage.GphotosConfig
+// swagger:model storage.gphotosConfig
 type StorageGphotosConfig struct {
 
 	// Auth server URL.

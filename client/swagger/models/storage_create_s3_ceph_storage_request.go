@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3CephStorageRequest storage create s3 ceph storage request
 //
-// swagger:model storage.CreateS3CephStorageRequest
+// swagger:model storage.createS3CephStorageRequest
 type StorageCreateS3CephStorageRequest struct {
 
 	// config

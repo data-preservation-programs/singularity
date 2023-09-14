@@ -14,7 +14,7 @@ import (
 
 // StorageS3CephConfig storage s3 ceph config
 //
-// swagger:model storage.S3CephConfig
+// swagger:model storage.s3CephConfig
 type StorageS3CephConfig struct {
 
 	// AWS Access Key ID.

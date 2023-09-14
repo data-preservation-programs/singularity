@@ -14,7 +14,7 @@ import (
 
 // StorageLocalConfig storage local config
 //
-// swagger:model storage.LocalConfig
+// swagger:model storage.localConfig
 type StorageLocalConfig struct {
 
 	// Force the filesystem to report itself as case insensitive.

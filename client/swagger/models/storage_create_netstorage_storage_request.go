@@ -15,7 +15,7 @@ import (
 
 // StorageCreateNetstorageStorageRequest storage create netstorage storage request
 //
-// swagger:model storage.CreateNetstorageStorageRequest
+// swagger:model storage.createNetstorageStorageRequest
 type StorageCreateNetstorageStorageRequest struct {
 
 	// config

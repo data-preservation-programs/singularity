@@ -206,13 +206,13 @@ func (DefaultHandler) PausePackHandler(
 // CAR format.
 //
 // Parameters:
-// - ctx: The context for managing timeouts and cancellation.
-// - db: The gorm.DB instance for database operations.
-// - jobID: The ID of the job to be packed.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for database operations.
+//   - jobID: The ID of the job to be packed.
 //
 // Returns:
-// - A pointer to the packed model.Car, if successful.
-// - An error if any issues occur during the operation, including database retrieval errors or packing errors.
+//   - A pointer to the packed model.Car, if successful.
+//   - An error if any issues occur during the operation, including database retrieval errors or packing errors.
 func (DefaultHandler) PackHandler(
 	ctx context.Context,
 	db *gorm.DB,

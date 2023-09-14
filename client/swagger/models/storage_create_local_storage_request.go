@@ -15,7 +15,7 @@ import (
 
 // StorageCreateLocalStorageRequest storage create local storage request
 //
-// swagger:model storage.CreateLocalStorageRequest
+// swagger:model storage.createLocalStorageRequest
 type StorageCreateLocalStorageRequest struct {
 
 	// config

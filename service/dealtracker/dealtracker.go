@@ -115,14 +115,14 @@ func NewDealTracker(
 // ThreadSafeReadCloser is a thread-safe implementation of the io.ReadCloser interface.
 //
 // The ThreadSafeReadCloser struct has the following fields:
-// - reader: The underlying io.Reader.
-// - closer: The function to close the reader.
-// - closed: A boolean indicating whether the reader is closed.
-// - mu: A mutex used to synchronize access to the closed field.
+//   - reader: The underlying io.Reader.
+//   - closer: The function to close the reader.
+//   - closed: A boolean indicating whether the reader is closed.
+//   - mu: A mutex used to synchronize access to the closed field.
 //
 // The ThreadSafeReadCloser struct implements the io.ReadCloser interface and provides the following methods:
-// - Read: Reads data from the underlying reader. It acquires a lock on the mutex to ensure thread safety.
-// - Close: Closes the reader. It acquires a lock on the mutex to ensure thread safety and sets the closed field to true before calling the closer function.
+//   - Read: Reads data from the underlying reader. It acquires a lock on the mutex to ensure thread safety.
+//   - Close: Closes the reader. It acquires a lock on the mutex to ensure thread safety and sets the closed field to true before calling the closer function.
 type ThreadSafeReadCloser struct {
 	reader io.Reader
 	closer func()
@@ -150,24 +150,29 @@ func (t *ThreadSafeReadCloser) Close() {
 // along with a Counter, io.Closer, and any error encountered.
 //
 // The function takes the following parameters:
-// - request: The HTTP request to retrieve the deal state.
-// - depth: The depth of the JSON decoding.
-// - decompress: A boolean flag indicating whether to decompress the response body.
+//   - request: The HTTP request to retrieve the deal state.
+//   - depth: The depth of the JSON decoding.
+//   - decompress: A boolean flag indicating whether to decompress the response body.
 //
 // The function performs the following steps:
-// 1. Sends an HTTP request using http.DefaultClient.Do.
-// 2. If an error occurs during the request, it returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
-// 3. If the response status code is not http.StatusOK, it closes the response body and returns nil for the channel, Counter, io.Closer, and an error indicating the failure.
-// 4. Creates a countingReader using NewCountingReader to count the number of bytes read from the response body.
-// 5. If decompress is true, creates a zstd decompressor using zstd.NewReader and wraps it in a ThreadSafeReadCloser.
-//   - If an error occurs during decompression, it closes the response body and returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
-//   - Creates a jstream.Decoder using jstream.NewDecoder with the decompressor and specified depth, and sets it to emit key-value pairs.
-//   - Creates a CloserFunc that closes the decompressor and response body.
 //
-// 6. If decompress is false, creates a jstream.Decoder using jstream.NewDecoder with the countingReader and specified depth, and sets it to emit key-value pairs.
-//   - Sets the response body as the closer.
+//  1. Sends an HTTP request using http.DefaultClient.Do.
 //
-// 7. Returns the jstream.MetaValue stream from jsonDecoder.Stream(), the countingReader, closer, and nil for the error.
+//  2. If an error occurs during the request, it returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
+//
+//  3. If the response status code is not http.StatusOK, it closes the response body and returns nil for the channel, Counter, io.Closer, and an error indicating the failure.
+//
+//  4. Creates a countingReader using NewCountingReader to count the number of bytes read from the response body.
+//
+//  5. If decompress is true, creates a zstd decompressor using zstd.NewReader and wraps it in a ThreadSafeReadCloser.
+//     - If an error occurs during decompression, it closes the response body and returns nil for the channel, Counter, io.Closer, and the error wrapped with an appropriate message.
+//     - Creates a jstream.Decoder using jstream.NewDecoder with the decompressor and specified depth, and sets it to emit key-value pairs.
+//     - Creates a CloserFunc that closes the decompressor and response body.
+//
+//  6. If decompress is false, creates a jstream.Decoder using jstream.NewDecoder with the countingReader and specified depth, and sets it to emit key-value pairs.
+//     - Sets the response body as the closer.
+//
+//  7. Returns the jstream.MetaValue stream from jsonDecoder.Stream(), the countingReader, closer, and nil for the error.
 func DealStateStreamFromHTTPRequest(request *http.Request, depth int, decompress bool) (chan *jstream.MetaValue, Counter, io.Closer, error) {
 	//nolint: bodyclose
 	resp, err := http.DefaultClient.Do(request)
@@ -234,28 +239,31 @@ func (*DealTracker) Name() string {
 // Start starts the DealTracker and returns a list of service.Done channels, a service.Fail channel, and an error.
 //
 // The Start method takes a context.Context as input and performs the following steps:
-// 1. Defines a getState function that returns a healthcheck.State with JobType set to model.DealTracking.
-// 2. Registers the worker using healthcheck.Register with the provided context, dbNoContext, workerID, getState function, and false for the force flag.
-//   - If an error occurs during registration, it returns nil for the service.Done channels, nil for the service.Fail channel, and the error wrapped with an appropriate message.
-//   - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels,
+//
+//  1. Defines a getState function that returns a healthcheck.State with JobType set to model.DealTracking.
+//
+//  2. Registers the worker using healthcheck.Register with the provided context, dbNoContext, workerID, getState function, and false for the force flag.
+//     - If an error occurs during registration, it returns nil for the service.Done channels, nil for the service.Fail channel, and the error wrapped with an appropriate message.
+//     - If another worker is already running, it logs a warning and checks if d.once is true. If d.once is true, it returns nil for the service.Done channels,
 //     nil for the service.Fail channel, and an error indicating that another worker is already running.
 //
-// 3. Logs a warning message and waits for 1 minute before retrying.
-//   - If the context is done during the wait, it returns nil for the service.Done channels, nil for the service.Fail channel, and the context error.
+//  3. Logs a warning message and waits for 1 minute before retrying.
+//     - If the context is done during the wait, it returns nil for the service.Done channels, nil for the service.Fail channel, and the context error.
 //
-// 4. Starts reporting health using healthcheck.StartReportHealth with the provided context, dbNoContext, workerID, and getState function in a separate goroutine.
-// 5. Runs the main loop in a separate goroutine.
-//   - Calls d.runOnce to execute the main logic of the DealTracker.
-//   - If an error occurs during execution, it logs an error message.
-//   - If d.once is true, it returns from the goroutine.
-//   - Waits for the specified interval before running the next iteration.
-//   - If the context is done during the wait, it returns from the goroutine.
+//  4. Starts reporting health using healthcheck.StartReportHealth with the provided context, dbNoContext, workerID, and getState function in a separate goroutine.
 //
-// 6. Cleans up resources when the context is done.
-//   - Calls d.cleanup to perform cleanup operations.
-//   - If an error occurs during cleanup, it logs an error message.
+//  5. Runs the main loop in a separate goroutine.
+//     - Calls d.runOnce to execute the main logic of the DealTracker.
+//     - If an error occurs during execution, it logs an error message.
+//     - If d.once is true, it returns from the goroutine.
+//     - Waits for the specified interval before running the next iteration.
+//     - If the context is done during the wait, it returns from the goroutine.
 //
-// 7. Returns a list of service.Done channels containing healthcheckDone, runDone, and cleanupDone, the service.Fail channel fail, and nil for the error.
+//  6. Cleans up resources when the context is done.
+//     - Calls d.cleanup to perform cleanup operations.
+//     - If an error occurs during cleanup, it logs an error message.
+//
+//  7. Returns a list of service.Done channels containing healthcheckDone, runDone, and cleanupDone, the service.Fail channel fail, and nil for the error.
 func (d *DealTracker) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
@@ -358,26 +366,26 @@ type UnknownDeal struct {
 // found on-chain but not in the local data, and marks expired deals and deal proposals as such.
 //
 // The steps it takes are as follows:
-// 1. Calculate the delay time based on Lotus head time if dealZstURL is empty, or default to 1 hour.
-// 2. Retrieve the wallets from the local database.
-// 3. Create a set of wallet IDs for lookup purposes.
-// 4. Retrieve the known deals from the local database.
-// 5. Retrieve the unknown deals from the local database.
-// 6. Invoke trackDeal function to compare and update the local deals with on-chain data.
-// 7. In trackDeal's callback, update existing deals if the state has changed.
-// 8. In trackDeal's callback, match unknown deals in the local database to known deals on-chain.
-// 9. In trackDeal's callback, insert new deals found on-chain that don't exist in the local database.
-// 10. Mark all expired active deals as 'expired' in the local database.
-// 11. Mark all expired deal proposals as 'proposal_expired' in the local database.
+//  1. Calculate the delay time based on Lotus head time if dealZstURL is empty, or default to 1 hour.
+//  2. Retrieve the wallets from the local database.
+//  3. Create a set of wallet IDs for lookup purposes.
+//  4. Retrieve the known deals from the local database.
+//  5. Retrieve the unknown deals from the local database.
+//  6. Invoke trackDeal function to compare and update the local deals with on-chain data.
+//  7. In trackDeal's callback, update existing deals if the state has changed.
+//  8. In trackDeal's callback, match unknown deals in the local database to known deals on-chain.
+//  9. In trackDeal's callback, insert new deals found on-chain that don't exist in the local database.
+//  10. Mark all expired active deals as 'expired' in the local database.
+//  11. Mark all expired deal proposals as 'proposal_expired' in the local database.
 //
 // Parameters:
 //
-//	ctx: The context to control the lifecycle of the run. If the context is done,
-//	     the function exits cleanly.
+//   - ctx: The context to control the lifecycle of the run. If the context is done,
+//     the function exits cleanly.
 //
 // Returns:
 //
-//	error: An error that represents the failure of the operation, or nil if the operation was successful.
+//   - error: An error that represents the failure of the operation, or nil if the operation was successful.
 func (d *DealTracker) runOnce(ctx context.Context) error {
 	var lastEpoch int32
 

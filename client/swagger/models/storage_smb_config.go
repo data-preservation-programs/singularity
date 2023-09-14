@@ -14,7 +14,7 @@ import (
 
 // StorageSmbConfig storage smb config
 //
-// swagger:model storage.SmbConfig
+// swagger:model storage.smbConfig
 type StorageSmbConfig struct {
 
 	// Whether the server is configured to be case-insensitive.

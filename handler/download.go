@@ -23,15 +23,15 @@ import (
 // The content is then saved to a .car file in the specified directory.
 //
 // Parameters:
-// - ctx: The context for the operation.
-// - piece: The identifier of the content piece to be downloaded.
-// - api: The base URL of the API from which metadata is to be fetched.
-// - config: A map containing configuration settings for various storage types.
-// - outDir: The directory where the downloaded content should be saved.
-// - concurrency: The number of concurrent operations allowed during the download.
+//   - ctx: The context for the operation.
+//   - piece: The identifier of the content piece to be downloaded.
+//   - api: The base URL of the API from which metadata is to be fetched.
+//   - config: A map containing configuration settings for various storage types.
+//   - outDir: The directory where the downloaded content should be saved.
+//   - concurrency: The number of concurrent operations allowed during the download.
 //
 // Returns:
-// - An error, if any occurred during the download process.
+//   - An error, if any occurred during the download process.
 func DownloadHandler(ctx *cli.Context,
 	piece string,
 	api string,
@@ -112,13 +112,13 @@ func DownloadHandler(ctx *cli.Context,
 // The content is divided into parts and downloaded concurrently based on the provided concurrency level.
 //
 // Parameters:
-// - cctx: The context for the operation, allowing for cancellation.
-// - reader: The PieceReader providing the content.
-// - outPath: The path where the downloaded content should be saved.
-// - concurrency: The number of concurrent download tasks.
+//   - cctx: The context for the operation, allowing for cancellation.
+//   - reader: The PieceReader providing the content.
+//   - outPath: The path where the downloaded content should be saved.
+//   - concurrency: The number of concurrent download tasks.
 //
 // Returns:
-// - An error, if any occurred during the download process.
+//   - An error, if any occurred during the download process.
 func download(cctx *cli.Context, reader *store.PieceReader, outPath string, concurrency int) error {
 	size, err := reader.Seek(0, io.SeekEnd)
 	if err != nil {

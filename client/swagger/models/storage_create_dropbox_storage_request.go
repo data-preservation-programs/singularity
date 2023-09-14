@@ -15,7 +15,7 @@ import (
 
 // StorageCreateDropboxStorageRequest storage create dropbox storage request
 //
-// swagger:model storage.CreateDropboxStorageRequest
+// swagger:model storage.createDropboxStorageRequest
 type StorageCreateDropboxStorageRequest struct {
 
 	// config

@@ -14,7 +14,7 @@ import (
 
 // StorageS3DigitalOceanConfig storage s3 digital ocean config
 //
-// swagger:model storage.S3DigitalOceanConfig
+// swagger:model storage.s3DigitalOceanConfig
 type StorageS3DigitalOceanConfig struct {
 
 	// AWS Access Key ID.

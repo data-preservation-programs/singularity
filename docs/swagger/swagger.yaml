@@ -703,7 +703,37 @@ definitions:
         description: Whether the deal should be verified
         type: boolean
     type: object
-  storage.AcdConfig:
+  storage.CreateRequest:
+    properties:
+      config:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        type: string
+      path:
+        type: string
+      provider:
+        type: string
+    type: object
+  storage.DirEntry:
+    properties:
+      dirId:
+        type: string
+      hash:
+        type: string
+      isDir:
+        type: boolean
+      lastModified:
+        type: string
+      numItems:
+        type: integer
+      path:
+        type: string
+      size:
+        type: integer
+    type: object
+  storage.acdConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -737,7 +767,7 @@ definitions:
           to see if it appears.
         type: string
     type: object
-  storage.AzureblobConfig:
+  storage.azureblobConfig:
     properties:
       accessTier:
         description: 'Access tier of blob: hot, cool or archive.'
@@ -856,7 +886,7 @@ definitions:
         description: User name (usually an email address)
         type: string
     type: object
-  storage.B2Config:
+  storage.b2Config:
     properties:
       account:
         description: Account ID or Application Key ID.
@@ -919,7 +949,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.BoxConfig:
+  storage.boxConfig:
     properties:
       accessToken:
         description: Box App Primary Access Token
@@ -970,10 +1000,10 @@ definitions:
         description: Cutoff for switching to multipart upload (>= 50 MiB).
         type: string
     type: object
-  storage.CreateAcdStorageRequest:
+  storage.createAcdStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.AcdConfig'
+        $ref: '#/definitions/storage.acdConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -982,10 +1012,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateAzureblobStorageRequest:
+  storage.createAzureblobStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.AzureblobConfig'
+        $ref: '#/definitions/storage.azureblobConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -994,10 +1024,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateB2StorageRequest:
+  storage.createB2StorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.B2Config'
+        $ref: '#/definitions/storage.b2Config'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1006,10 +1036,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateBoxStorageRequest:
+  storage.createBoxStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.BoxConfig'
+        $ref: '#/definitions/storage.boxConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1018,10 +1048,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateDriveStorageRequest:
+  storage.createDriveStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.DriveConfig'
+        $ref: '#/definitions/storage.driveConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1030,10 +1060,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateDropboxStorageRequest:
+  storage.createDropboxStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.DropboxConfig'
+        $ref: '#/definitions/storage.dropboxConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1042,10 +1072,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateFichierStorageRequest:
+  storage.createFichierStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.FichierConfig'
+        $ref: '#/definitions/storage.fichierConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1054,10 +1084,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateFilefabricStorageRequest:
+  storage.createFilefabricStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.FilefabricConfig'
+        $ref: '#/definitions/storage.filefabricConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1066,10 +1096,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateFtpStorageRequest:
+  storage.createFtpStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.FtpConfig'
+        $ref: '#/definitions/storage.ftpConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1078,10 +1108,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateGcsStorageRequest:
+  storage.createGcsStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.GcsConfig'
+        $ref: '#/definitions/storage.gcsConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1090,10 +1120,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateGphotosStorageRequest:
+  storage.createGphotosStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.GphotosConfig'
+        $ref: '#/definitions/storage.gphotosConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1102,10 +1132,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateHdfsStorageRequest:
+  storage.createHdfsStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.HdfsConfig'
+        $ref: '#/definitions/storage.hdfsConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1114,10 +1144,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateHidriveStorageRequest:
+  storage.createHidriveStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.HidriveConfig'
+        $ref: '#/definitions/storage.hidriveConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1126,10 +1156,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateHttpStorageRequest:
+  storage.createHttpStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.HttpConfig'
+        $ref: '#/definitions/storage.httpConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1138,10 +1168,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateInternetarchiveStorageRequest:
+  storage.createInternetarchiveStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.InternetarchiveConfig'
+        $ref: '#/definitions/storage.internetarchiveConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1150,10 +1180,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateJottacloudStorageRequest:
+  storage.createJottacloudStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.JottacloudConfig'
+        $ref: '#/definitions/storage.jottacloudConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1162,10 +1192,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateKoofrDigistorageStorageRequest:
+  storage.createKoofrDigistorageStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.KoofrDigistorageConfig'
+        $ref: '#/definitions/storage.koofrDigistorageConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1174,10 +1204,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateKoofrKoofrStorageRequest:
+  storage.createKoofrKoofrStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.KoofrKoofrConfig'
+        $ref: '#/definitions/storage.koofrKoofrConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1186,10 +1216,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateKoofrOtherStorageRequest:
+  storage.createKoofrOtherStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.KoofrOtherConfig'
+        $ref: '#/definitions/storage.koofrOtherConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1198,10 +1228,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateLocalStorageRequest:
+  storage.createLocalStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.LocalConfig'
+        $ref: '#/definitions/storage.localConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1210,10 +1240,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateMailruStorageRequest:
+  storage.createMailruStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.MailruConfig'
+        $ref: '#/definitions/storage.mailruConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1222,10 +1252,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateMegaStorageRequest:
+  storage.createMegaStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.MegaConfig'
+        $ref: '#/definitions/storage.megaConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1234,10 +1264,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateNetstorageStorageRequest:
+  storage.createNetstorageStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.NetstorageConfig'
+        $ref: '#/definitions/storage.netstorageConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1246,10 +1276,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOnedriveStorageRequest:
+  storage.createOnedriveStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OnedriveConfig'
+        $ref: '#/definitions/storage.onedriveConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1258,10 +1288,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOosEnv_authStorageRequest:
+  storage.createOosEnv_authStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OosEnv_authConfig'
+        $ref: '#/definitions/storage.oosEnv_authConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1270,10 +1300,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOosInstance_principal_authStorageRequest:
+  storage.createOosInstance_principal_authStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OosInstance_principal_authConfig'
+        $ref: '#/definitions/storage.oosInstance_principal_authConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1282,10 +1312,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOosNo_authStorageRequest:
+  storage.createOosNo_authStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OosNo_authConfig'
+        $ref: '#/definitions/storage.oosNo_authConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1294,10 +1324,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOosResource_principal_authStorageRequest:
+  storage.createOosResource_principal_authStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OosResource_principal_authConfig'
+        $ref: '#/definitions/storage.oosResource_principal_authConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1306,10 +1336,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOosUser_principal_authStorageRequest:
+  storage.createOosUser_principal_authStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OosUser_principal_authConfig'
+        $ref: '#/definitions/storage.oosUser_principal_authConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1318,10 +1348,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateOpendriveStorageRequest:
+  storage.createOpendriveStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.OpendriveConfig'
+        $ref: '#/definitions/storage.opendriveConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1330,10 +1360,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreatePcloudStorageRequest:
+  storage.createPcloudStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.PcloudConfig'
+        $ref: '#/definitions/storage.pcloudConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1342,10 +1372,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreatePremiumizemeStorageRequest:
+  storage.createPremiumizemeStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.PremiumizemeConfig'
+        $ref: '#/definitions/storage.premiumizemeConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1354,10 +1384,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreatePutioStorageRequest:
+  storage.createPutioStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.PutioConfig'
+        $ref: '#/definitions/storage.putioConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1366,10 +1396,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateQingstorStorageRequest:
+  storage.createQingstorStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.QingstorConfig'
+        $ref: '#/definitions/storage.qingstorConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1378,24 +1408,11 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateRequest:
+  storage.createS3AWSStorageRequest:
     properties:
       config:
-        additionalProperties:
-          type: string
-        type: object
+        $ref: '#/definitions/storage.s3AWSConfig'
       name:
-        type: string
-      path:
-        type: string
-      provider:
-        type: string
-    type: object
-  storage.CreateS3AWSStorageRequest:
-    properties:
-      config:
-        $ref: '#/definitions/storage.S3AWSConfig'
-      name:
         description: Name of the storage, must be unique
         example: my-storage
         type: string
@@ -1403,10 +1420,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3AlibabaStorageRequest:
+  storage.createS3AlibabaStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3AlibabaConfig'
+        $ref: '#/definitions/storage.s3AlibabaConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1415,10 +1432,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3ArvanCloudStorageRequest:
+  storage.createS3ArvanCloudStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3ArvanCloudConfig'
+        $ref: '#/definitions/storage.s3ArvanCloudConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1427,10 +1444,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3CephStorageRequest:
+  storage.createS3CephStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3CephConfig'
+        $ref: '#/definitions/storage.s3CephConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1439,10 +1456,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3ChinaMobileStorageRequest:
+  storage.createS3ChinaMobileStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3ChinaMobileConfig'
+        $ref: '#/definitions/storage.s3ChinaMobileConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1451,10 +1468,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3CloudflareStorageRequest:
+  storage.createS3CloudflareStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3CloudflareConfig'
+        $ref: '#/definitions/storage.s3CloudflareConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1463,10 +1480,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3DigitalOceanStorageRequest:
+  storage.createS3DigitalOceanStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3DigitalOceanConfig'
+        $ref: '#/definitions/storage.s3DigitalOceanConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1475,10 +1492,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3DreamhostStorageRequest:
+  storage.createS3DreamhostStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3DreamhostConfig'
+        $ref: '#/definitions/storage.s3DreamhostConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1487,10 +1504,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3HuaweiOBSStorageRequest:
+  storage.createS3HuaweiOBSStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3HuaweiOBSConfig'
+        $ref: '#/definitions/storage.s3HuaweiOBSConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1499,10 +1516,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3IBMCOSStorageRequest:
+  storage.createS3IBMCOSStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3IBMCOSConfig'
+        $ref: '#/definitions/storage.s3IBMCOSConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1511,10 +1528,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3IDriveStorageRequest:
+  storage.createS3IDriveStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3IDriveConfig'
+        $ref: '#/definitions/storage.s3IDriveConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1523,10 +1540,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3IONOSStorageRequest:
+  storage.createS3IONOSStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3IONOSConfig'
+        $ref: '#/definitions/storage.s3IONOSConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1535,10 +1552,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3LiaraStorageRequest:
+  storage.createS3LiaraStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3LiaraConfig'
+        $ref: '#/definitions/storage.s3LiaraConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1547,10 +1564,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3LyveCloudStorageRequest:
+  storage.createS3LyveCloudStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3LyveCloudConfig'
+        $ref: '#/definitions/storage.s3LyveCloudConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1559,10 +1576,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3MinioStorageRequest:
+  storage.createS3MinioStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3MinioConfig'
+        $ref: '#/definitions/storage.s3MinioConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1571,10 +1588,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3NeteaseStorageRequest:
+  storage.createS3NeteaseStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3NeteaseConfig'
+        $ref: '#/definitions/storage.s3NeteaseConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1583,10 +1600,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3OtherStorageRequest:
+  storage.createS3OtherStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3OtherConfig'
+        $ref: '#/definitions/storage.s3OtherConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1595,10 +1612,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3QiniuStorageRequest:
+  storage.createS3QiniuStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3QiniuConfig'
+        $ref: '#/definitions/storage.s3QiniuConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1607,10 +1624,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3RackCorpStorageRequest:
+  storage.createS3RackCorpStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3RackCorpConfig'
+        $ref: '#/definitions/storage.s3RackCorpConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1619,10 +1636,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3ScalewayStorageRequest:
+  storage.createS3ScalewayStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3ScalewayConfig'
+        $ref: '#/definitions/storage.s3ScalewayConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1631,10 +1648,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3SeaweedFSStorageRequest:
+  storage.createS3SeaweedFSStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3SeaweedFSConfig'
+        $ref: '#/definitions/storage.s3SeaweedFSConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1643,10 +1660,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3StackPathStorageRequest:
+  storage.createS3StackPathStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3StackPathConfig'
+        $ref: '#/definitions/storage.s3StackPathConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1655,10 +1672,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3StorjStorageRequest:
+  storage.createS3StorjStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3StorjConfig'
+        $ref: '#/definitions/storage.s3StorjConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1667,10 +1684,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3TencentCOSStorageRequest:
+  storage.createS3TencentCOSStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3TencentCOSConfig'
+        $ref: '#/definitions/storage.s3TencentCOSConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1679,10 +1696,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateS3WasabiStorageRequest:
+  storage.createS3WasabiStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.S3WasabiConfig'
+        $ref: '#/definitions/storage.s3WasabiConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1691,10 +1708,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSeafileStorageRequest:
+  storage.createSeafileStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SeafileConfig'
+        $ref: '#/definitions/storage.seafileConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1703,10 +1720,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSftpStorageRequest:
+  storage.createSftpStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SftpConfig'
+        $ref: '#/definitions/storage.sftpConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1715,10 +1732,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSharefileStorageRequest:
+  storage.createSharefileStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SharefileConfig'
+        $ref: '#/definitions/storage.sharefileConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1727,10 +1744,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSiaStorageRequest:
+  storage.createSiaStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SiaConfig'
+        $ref: '#/definitions/storage.siaConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1739,10 +1756,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSmbStorageRequest:
+  storage.createSmbStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SmbConfig'
+        $ref: '#/definitions/storage.smbConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1751,10 +1768,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateStorjExistingStorageRequest:
+  storage.createStorjExistingStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.StorjExistingConfig'
+        $ref: '#/definitions/storage.storjExistingConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1763,10 +1780,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateStorjNewStorageRequest:
+  storage.createStorjNewStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.StorjNewConfig'
+        $ref: '#/definitions/storage.storjNewConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1775,10 +1792,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSugarsyncStorageRequest:
+  storage.createSugarsyncStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SugarsyncConfig'
+        $ref: '#/definitions/storage.sugarsyncConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1787,10 +1804,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateSwiftStorageRequest:
+  storage.createSwiftStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.SwiftConfig'
+        $ref: '#/definitions/storage.swiftConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1799,10 +1816,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateUptoboxStorageRequest:
+  storage.createUptoboxStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.UptoboxConfig'
+        $ref: '#/definitions/storage.uptoboxConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1811,10 +1828,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateWebdavStorageRequest:
+  storage.createWebdavStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.WebdavConfig'
+        $ref: '#/definitions/storage.webdavConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1823,10 +1840,10 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateYandexStorageRequest:
+  storage.createYandexStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.YandexConfig'
+        $ref: '#/definitions/storage.yandexConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1835,36 +1852,19 @@ definitions:
         description: Path of the storage
         type: string
     type: object
-  storage.CreateZohoStorageRequest:
+  storage.createZohoStorageRequest:
     properties:
       config:
-        $ref: '#/definitions/storage.ZohoConfig'
+        $ref: '#/definitions/storage.zohoConfig'
       name:
         description: Name of the storage, must be unique
         example: my-storage
         type: string
       path:
         description: Path of the storage
-        type: string
-    type: object
-  storage.DirEntry:
-    properties:
-      dirId:
-        type: string
-      hash:
-        type: string
-      isDir:
-        type: boolean
-      lastModified:
-        type: string
-      numItems:
-        type: integer
-      path:
         type: string
-      size:
-        type: integer
     type: object
-  storage.DriveConfig:
+  storage.driveConfig:
     properties:
       acknowledgeAbuse:
         default: false
@@ -2030,7 +2030,7 @@ definitions:
         description: If Object's are greater, use drive v2 API to download.
         type: string
     type: object
-  storage.DropboxConfig:
+  storage.dropboxConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -2083,7 +2083,7 @@ definitions:
         description: Token server url.
         type: string
     type: object
-  storage.FichierConfig:
+  storage.fichierConfig:
     properties:
       apiKey:
         description: Your API Key, get it from https://1fichier.com/console/params.pl.
@@ -2104,7 +2104,7 @@ definitions:
         description: If you want to download a shared folder, add this parameter.
         type: string
     type: object
-  storage.FilefabricConfig:
+  storage.filefabricConfig:
     properties:
       encoding:
         default: Slash,Del,Ctl,InvalidUtf8,Dot
@@ -2130,7 +2130,7 @@ definitions:
         description: Version read from the file fabric.
         type: string
     type: object
-  storage.FtpConfig:
+  storage.ftpConfig:
     properties:
       askPassword:
         default: false
@@ -2213,7 +2213,7 @@ definitions:
         description: Use MDTM to set modification time (VsFtpd quirk)
         type: boolean
     type: object
-  storage.GcsConfig:
+  storage.gcsConfig:
     properties:
       anonymous:
         default: false
@@ -2286,7 +2286,7 @@ definitions:
         description: Token server url.
         type: string
     type: object
-  storage.GphotosConfig:
+  storage.gphotosConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -2325,7 +2325,7 @@ definitions:
         description: Token server url.
         type: string
     type: object
-  storage.HdfsConfig:
+  storage.hdfsConfig:
     properties:
       dataTransferProtection:
         description: 'Kerberos data transfer protection: authentication|integrity|privacy.'
@@ -2346,7 +2346,7 @@ definitions:
         example: root
         type: string
     type: object
-  storage.HidriveConfig:
+  storage.hidriveConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -2406,7 +2406,7 @@ definitions:
         description: Cutoff/Threshold for chunked uploads.
         type: string
     type: object
-  storage.HttpConfig:
+  storage.httpConfig:
     properties:
       headers:
         description: Set HTTP headers for all transactions.
@@ -2423,7 +2423,7 @@ definitions:
         description: URL of HTTP host to connect to.
         type: string
     type: object
-  storage.InternetarchiveConfig:
+  storage.internetarchiveConfig:
     properties:
       accessKeyId:
         description: IAS3 Access Key.
@@ -2454,7 +2454,7 @@ definitions:
           archive and book_op) to finish.
         type: string
     type: object
-  storage.JottacloudConfig:
+  storage.jottacloudConfig:
     properties:
       encoding:
         default: Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,Del,Ctl,InvalidUtf8,Dot
@@ -2483,7 +2483,7 @@ definitions:
         description: Files bigger than this can be resumed if the upload fail's.
         type: string
     type: object
-  storage.KoofrDigistorageConfig:
+  storage.koofrDigistorageConfig:
     properties:
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
@@ -2503,7 +2503,7 @@ definitions:
         description: Your user name.
         type: string
     type: object
-  storage.KoofrKoofrConfig:
+  storage.koofrKoofrConfig:
     properties:
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
@@ -2523,7 +2523,7 @@ definitions:
         description: Your user name.
         type: string
     type: object
-  storage.KoofrOtherConfig:
+  storage.koofrOtherConfig:
     properties:
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
@@ -2547,7 +2547,7 @@ definitions:
         description: Your user name.
         type: string
     type: object
-  storage.LocalConfig:
+  storage.localConfig:
     properties:
       caseInsensitive:
         default: false
@@ -2609,7 +2609,7 @@ definitions:
           (deprecated).
         type: boolean
     type: object
-  storage.MailruConfig:
+  storage.mailruConfig:
     properties:
       checkHash:
         default: true
@@ -2656,7 +2656,7 @@ definitions:
         description: HTTP user agent used internally by client.
         type: string
     type: object
-  storage.MegaConfig:
+  storage.megaConfig:
     properties:
       debug:
         default: false
@@ -2681,7 +2681,7 @@ definitions:
         description: User name.
         type: string
     type: object
-  storage.NetstorageConfig:
+  storage.netstorageConfig:
     properties:
       account:
         description: Set the NetStorage account name
@@ -2698,7 +2698,7 @@ definitions:
         description: Set the NetStorage account secret/G2O key for authentication.
         type: string
     type: object
-  storage.OnedriveConfig:
+  storage.onedriveConfig:
     properties:
       accessScopes:
         default: Files.Read Files.ReadWrite Files.Read.All Files.ReadWrite.All Sites.Read.All
@@ -2785,7 +2785,7 @@ definitions:
         description: Token server url.
         type: string
     type: object
-  storage.OosEnv_authConfig:
+  storage.oosEnv_authConfig:
     properties:
       chunkSize:
         default: 5Mi
@@ -2868,7 +2868,7 @@ definitions:
         description: Cutoff for switching to chunked upload.
         type: string
     type: object
-  storage.OosInstance_principal_authConfig:
+  storage.oosInstance_principal_authConfig:
     properties:
       chunkSize:
         default: 5Mi
@@ -2951,7 +2951,7 @@ definitions:
         description: Cutoff for switching to chunked upload.
         type: string
     type: object
-  storage.OosNo_authConfig:
+  storage.oosNo_authConfig:
     properties:
       chunkSize:
         default: 5Mi
@@ -3031,7 +3031,7 @@ definitions:
         description: Cutoff for switching to chunked upload.
         type: string
     type: object
-  storage.OosResource_principal_authConfig:
+  storage.oosResource_principal_authConfig:
     properties:
       chunkSize:
         default: 5Mi
@@ -3114,7 +3114,7 @@ definitions:
         description: Cutoff for switching to chunked upload.
         type: string
     type: object
-  storage.OosUser_principal_authConfig:
+  storage.oosUser_principal_authConfig:
     properties:
       chunkSize:
         default: 5Mi
@@ -3207,7 +3207,7 @@ definitions:
         description: Cutoff for switching to chunked upload.
         type: string
     type: object
-  storage.OpendriveConfig:
+  storage.opendriveConfig:
     properties:
       chunkSize:
         default: 10Mi
@@ -3224,7 +3224,7 @@ definitions:
         description: Username.
         type: string
     type: object
-  storage.PcloudConfig:
+  storage.pcloudConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -3261,7 +3261,7 @@ definitions:
         description: Your pcloud username.
         type: string
     type: object
-  storage.PremiumizemeConfig:
+  storage.premiumizemeConfig:
     properties:
       apiKey:
         description: API Key.
@@ -3271,14 +3271,14 @@ definitions:
         description: The encoding for the backend.
         type: string
     type: object
-  storage.PutioConfig:
+  storage.putioConfig:
     properties:
       encoding:
         default: Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot
         description: The encoding for the backend.
         type: string
     type: object
-  storage.QingstorConfig:
+  storage.qingstorConfig:
     properties:
       accessKeyId:
         description: QingStor Access Key ID.
@@ -3319,7 +3319,7 @@ definitions:
         example: pek3a
         type: string
     type: object
-  storage.S3AWSConfig:
+  storage.s3AWSConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -3515,7 +3515,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3AlibabaConfig:
+  storage.s3AlibabaConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -3659,7 +3659,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3ArvanCloudConfig:
+  storage.s3ArvanCloudConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -3807,7 +3807,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3CephConfig:
+  storage.s3CephConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -3982,7 +3982,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3ChinaMobileConfig:
+  storage.s3ChinaMobileConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -4156,7 +4156,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3CloudflareConfig:
+  storage.s3CloudflareConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -4295,7 +4295,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3DigitalOceanConfig:
+  storage.s3DigitalOceanConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -4442,7 +4442,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3DreamhostConfig:
+  storage.s3DreamhostConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -4589,7 +4589,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3HuaweiOBSConfig:
+  storage.s3HuaweiOBSConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -4734,7 +4734,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3IBMCOSConfig:
+  storage.s3IBMCOSConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -4884,7 +4884,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3IDriveConfig:
+  storage.s3IDriveConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5020,7 +5020,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3IONOSConfig:
+  storage.s3IONOSConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5164,7 +5164,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3LiaraConfig:
+  storage.s3LiaraConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5308,7 +5308,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3LyveCloudConfig:
+  storage.s3LyveCloudConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5455,7 +5455,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3MinioConfig:
+  storage.s3MinioConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5630,7 +5630,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3NeteaseConfig:
+  storage.s3NeteaseConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5776,7 +5776,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3OtherConfig:
+  storage.s3OtherConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -5922,7 +5922,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3QiniuConfig:
+  storage.s3QiniuConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6074,7 +6074,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3RackCorpConfig:
+  storage.s3RackCorpConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6224,7 +6224,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3ScalewayConfig:
+  storage.s3ScalewayConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6372,7 +6372,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3SeaweedFSConfig:
+  storage.s3SeaweedFSConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6519,7 +6519,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3StackPathConfig:
+  storage.s3StackPathConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6663,7 +6663,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3StorjConfig:
+  storage.s3StorjConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6799,7 +6799,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3TencentCOSConfig:
+  storage.s3TencentCOSConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -6945,7 +6945,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.S3WasabiConfig:
+  storage.s3WasabiConfig:
     properties:
       accessKeyId:
         description: AWS Access Key ID.
@@ -7092,7 +7092,7 @@ definitions:
         description: Include old versions in directory listings.
         type: boolean
     type: object
-  storage.SeafileConfig:
+  storage.seafileConfig:
     properties:
       2fa:
         default: false
@@ -7126,7 +7126,7 @@ definitions:
         description: User name (usually email address).
         type: string
     type: object
-  storage.SftpConfig:
+  storage.sftpConfig:
     properties:
       askPassword:
         default: false
@@ -7244,7 +7244,7 @@ definitions:
         description: SSH username.
         type: string
     type: object
-  storage.SharefileConfig:
+  storage.sharefileConfig:
     properties:
       chunkSize:
         default: 64Mi
@@ -7266,7 +7266,7 @@ definitions:
         description: Cutoff for switching to multipart upload.
         type: string
     type: object
-  storage.SiaConfig:
+  storage.siaConfig:
     properties:
       apiPassword:
         description: Sia Daemon API Password.
@@ -7284,7 +7284,7 @@ definitions:
         description: Siad User Agent
         type: string
     type: object
-  storage.SmbConfig:
+  storage.smbConfig:
     properties:
       caseInsensitive:
         default: true
@@ -7325,13 +7325,13 @@ definitions:
         description: SMB username.
         type: string
     type: object
-  storage.StorjExistingConfig:
+  storage.storjExistingConfig:
     properties:
       accessGrant:
         description: Access grant.
         type: string
     type: object
-  storage.StorjNewConfig:
+  storage.storjNewConfig:
     properties:
       apiKey:
         description: API key.
@@ -7345,7 +7345,7 @@ definitions:
         example: us1.storj.io
         type: string
     type: object
-  storage.SugarsyncConfig:
+  storage.sugarsyncConfig:
     properties:
       accessKeyId:
         description: Sugarsync Access Key ID.
@@ -7383,7 +7383,7 @@ definitions:
         description: Sugarsync user.
         type: string
     type: object
-  storage.SwiftConfig:
+  storage.swiftConfig:
     properties:
       applicationCredentialId:
         description: Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).
@@ -7472,7 +7472,7 @@ definitions:
           leave this blank (v3 auth) (OS_USER_ID).
         type: string
     type: object
-  storage.UptoboxConfig:
+  storage.uptoboxConfig:
     properties:
       accessToken:
         description: Your access token.
@@ -7482,7 +7482,7 @@ definitions:
         description: The encoding for the backend.
         type: string
     type: object
-  storage.WebdavConfig:
+  storage.webdavConfig:
     properties:
       bearerToken:
         description: Bearer token instead of user/pass (e.g. a Macaroon).
@@ -7510,7 +7510,7 @@ definitions:
         example: nextcloud
         type: string
     type: object
-  storage.YandexConfig:
+  storage.yandexConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -7536,7 +7536,7 @@ definitions:
         description: Token server url.
         type: string
     type: object
-  storage.ZohoConfig:
+  storage.zohoConfig:
     properties:
       authUrl:
         description: Auth server URL.
@@ -8810,7 +8810,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateAcdStorageRequest'
+          $ref: '#/definitions/storage.createAcdStorageRequest'
       produces:
       - application/json
       responses:
@@ -8840,7 +8840,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateAzureblobStorageRequest'
+          $ref: '#/definitions/storage.createAzureblobStorageRequest'
       produces:
       - application/json
       responses:
@@ -8870,7 +8870,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateB2StorageRequest'
+          $ref: '#/definitions/storage.createB2StorageRequest'
       produces:
       - application/json
       responses:
@@ -8900,7 +8900,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateBoxStorageRequest'
+          $ref: '#/definitions/storage.createBoxStorageRequest'
       produces:
       - application/json
       responses:
@@ -8930,7 +8930,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateDriveStorageRequest'
+          $ref: '#/definitions/storage.createDriveStorageRequest'
       produces:
       - application/json
       responses:
@@ -8960,7 +8960,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateDropboxStorageRequest'
+          $ref: '#/definitions/storage.createDropboxStorageRequest'
       produces:
       - application/json
       responses:
@@ -8990,7 +8990,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateFichierStorageRequest'
+          $ref: '#/definitions/storage.createFichierStorageRequest'
       produces:
       - application/json
       responses:
@@ -9020,7 +9020,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateFilefabricStorageRequest'
+          $ref: '#/definitions/storage.createFilefabricStorageRequest'
       produces:
       - application/json
       responses:
@@ -9050,7 +9050,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateFtpStorageRequest'
+          $ref: '#/definitions/storage.createFtpStorageRequest'
       produces:
       - application/json
       responses:
@@ -9080,7 +9080,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateGcsStorageRequest'
+          $ref: '#/definitions/storage.createGcsStorageRequest'
       produces:
       - application/json
       responses:
@@ -9110,7 +9110,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateGphotosStorageRequest'
+          $ref: '#/definitions/storage.createGphotosStorageRequest'
       produces:
       - application/json
       responses:
@@ -9140,7 +9140,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateHdfsStorageRequest'
+          $ref: '#/definitions/storage.createHdfsStorageRequest'
       produces:
       - application/json
       responses:
@@ -9170,7 +9170,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateHidriveStorageRequest'
+          $ref: '#/definitions/storage.createHidriveStorageRequest'
       produces:
       - application/json
       responses:
@@ -9200,7 +9200,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateHttpStorageRequest'
+          $ref: '#/definitions/storage.createHttpStorageRequest'
       produces:
       - application/json
       responses:
@@ -9230,7 +9230,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateInternetarchiveStorageRequest'
+          $ref: '#/definitions/storage.createInternetarchiveStorageRequest'
       produces:
       - application/json
       responses:
@@ -9260,7 +9260,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateJottacloudStorageRequest'
+          $ref: '#/definitions/storage.createJottacloudStorageRequest'
       produces:
       - application/json
       responses:
@@ -9290,7 +9290,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateKoofrDigistorageStorageRequest'
+          $ref: '#/definitions/storage.createKoofrDigistorageStorageRequest'
       produces:
       - application/json
       responses:
@@ -9320,7 +9320,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateKoofrKoofrStorageRequest'
+          $ref: '#/definitions/storage.createKoofrKoofrStorageRequest'
       produces:
       - application/json
       responses:
@@ -9350,7 +9350,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateKoofrOtherStorageRequest'
+          $ref: '#/definitions/storage.createKoofrOtherStorageRequest'
       produces:
       - application/json
       responses:
@@ -9381,7 +9381,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateLocalStorageRequest'
+          $ref: '#/definitions/storage.createLocalStorageRequest'
       produces:
       - application/json
       responses:
@@ -9411,7 +9411,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateMailruStorageRequest'
+          $ref: '#/definitions/storage.createMailruStorageRequest'
       produces:
       - application/json
       responses:
@@ -9441,7 +9441,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateMegaStorageRequest'
+          $ref: '#/definitions/storage.createMegaStorageRequest'
       produces:
       - application/json
       responses:
@@ -9471,7 +9471,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateNetstorageStorageRequest'
+          $ref: '#/definitions/storage.createNetstorageStorageRequest'
       produces:
       - application/json
       responses:
@@ -9501,7 +9501,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOnedriveStorageRequest'
+          $ref: '#/definitions/storage.createOnedriveStorageRequest'
       produces:
       - application/json
       responses:
@@ -9531,7 +9531,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOosEnv_authStorageRequest'
+          $ref: '#/definitions/storage.createOosEnv_authStorageRequest'
       produces:
       - application/json
       responses:
@@ -9562,7 +9562,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOosInstance_principal_authStorageRequest'
+          $ref: '#/definitions/storage.createOosInstance_principal_authStorageRequest'
       produces:
       - application/json
       responses:
@@ -9593,7 +9593,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOosNo_authStorageRequest'
+          $ref: '#/definitions/storage.createOosNo_authStorageRequest'
       produces:
       - application/json
       responses:
@@ -9624,7 +9624,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOosResource_principal_authStorageRequest'
+          $ref: '#/definitions/storage.createOosResource_principal_authStorageRequest'
       produces:
       - application/json
       responses:
@@ -9655,7 +9655,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOosUser_principal_authStorageRequest'
+          $ref: '#/definitions/storage.createOosUser_principal_authStorageRequest'
       produces:
       - application/json
       responses:
@@ -9686,7 +9686,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateOpendriveStorageRequest'
+          $ref: '#/definitions/storage.createOpendriveStorageRequest'
       produces:
       - application/json
       responses:
@@ -9716,7 +9716,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreatePcloudStorageRequest'
+          $ref: '#/definitions/storage.createPcloudStorageRequest'
       produces:
       - application/json
       responses:
@@ -9746,7 +9746,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreatePremiumizemeStorageRequest'
+          $ref: '#/definitions/storage.createPremiumizemeStorageRequest'
       produces:
       - application/json
       responses:
@@ -9776,7 +9776,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreatePutioStorageRequest'
+          $ref: '#/definitions/storage.createPutioStorageRequest'
       produces:
       - application/json
       responses:
@@ -9806,7 +9806,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateQingstorStorageRequest'
+          $ref: '#/definitions/storage.createQingstorStorageRequest'
       produces:
       - application/json
       responses:
@@ -9836,7 +9836,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3AlibabaStorageRequest'
+          $ref: '#/definitions/storage.createS3AlibabaStorageRequest'
       produces:
       - application/json
       responses:
@@ -9867,7 +9867,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3ArvanCloudStorageRequest'
+          $ref: '#/definitions/storage.createS3ArvanCloudStorageRequest'
       produces:
       - application/json
       responses:
@@ -9897,7 +9897,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3AWSStorageRequest'
+          $ref: '#/definitions/storage.createS3AWSStorageRequest'
       produces:
       - application/json
       responses:
@@ -9927,7 +9927,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3CephStorageRequest'
+          $ref: '#/definitions/storage.createS3CephStorageRequest'
       produces:
       - application/json
       responses:
@@ -9957,7 +9957,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3ChinaMobileStorageRequest'
+          $ref: '#/definitions/storage.createS3ChinaMobileStorageRequest'
       produces:
       - application/json
       responses:
@@ -9988,7 +9988,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3CloudflareStorageRequest'
+          $ref: '#/definitions/storage.createS3CloudflareStorageRequest'
       produces:
       - application/json
       responses:
@@ -10018,7 +10018,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3DigitalOceanStorageRequest'
+          $ref: '#/definitions/storage.createS3DigitalOceanStorageRequest'
       produces:
       - application/json
       responses:
@@ -10048,7 +10048,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3DreamhostStorageRequest'
+          $ref: '#/definitions/storage.createS3DreamhostStorageRequest'
       produces:
       - application/json
       responses:
@@ -10078,7 +10078,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3HuaweiOBSStorageRequest'
+          $ref: '#/definitions/storage.createS3HuaweiOBSStorageRequest'
       produces:
       - application/json
       responses:
@@ -10108,7 +10108,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3IBMCOSStorageRequest'
+          $ref: '#/definitions/storage.createS3IBMCOSStorageRequest'
       produces:
       - application/json
       responses:
@@ -10138,7 +10138,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3IDriveStorageRequest'
+          $ref: '#/definitions/storage.createS3IDriveStorageRequest'
       produces:
       - application/json
       responses:
@@ -10168,7 +10168,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3IONOSStorageRequest'
+          $ref: '#/definitions/storage.createS3IONOSStorageRequest'
       produces:
       - application/json
       responses:
@@ -10198,7 +10198,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3LiaraStorageRequest'
+          $ref: '#/definitions/storage.createS3LiaraStorageRequest'
       produces:
       - application/json
       responses:
@@ -10228,7 +10228,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3LyveCloudStorageRequest'
+          $ref: '#/definitions/storage.createS3LyveCloudStorageRequest'
       produces:
       - application/json
       responses:
@@ -10258,7 +10258,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3MinioStorageRequest'
+          $ref: '#/definitions/storage.createS3MinioStorageRequest'
       produces:
       - application/json
       responses:
@@ -10288,7 +10288,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3NeteaseStorageRequest'
+          $ref: '#/definitions/storage.createS3NeteaseStorageRequest'
       produces:
       - application/json
       responses:
@@ -10318,7 +10318,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3OtherStorageRequest'
+          $ref: '#/definitions/storage.createS3OtherStorageRequest'
       produces:
       - application/json
       responses:
@@ -10348,7 +10348,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3QiniuStorageRequest'
+          $ref: '#/definitions/storage.createS3QiniuStorageRequest'
       produces:
       - application/json
       responses:
@@ -10378,7 +10378,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3RackCorpStorageRequest'
+          $ref: '#/definitions/storage.createS3RackCorpStorageRequest'
       produces:
       - application/json
       responses:
@@ -10408,7 +10408,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3ScalewayStorageRequest'
+          $ref: '#/definitions/storage.createS3ScalewayStorageRequest'
       produces:
       - application/json
       responses:
@@ -10438,7 +10438,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3SeaweedFSStorageRequest'
+          $ref: '#/definitions/storage.createS3SeaweedFSStorageRequest'
       produces:
       - application/json
       responses:
@@ -10468,7 +10468,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3StackPathStorageRequest'
+          $ref: '#/definitions/storage.createS3StackPathStorageRequest'
       produces:
       - application/json
       responses:
@@ -10498,7 +10498,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3StorjStorageRequest'
+          $ref: '#/definitions/storage.createS3StorjStorageRequest'
       produces:
       - application/json
       responses:
@@ -10528,7 +10528,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3TencentCOSStorageRequest'
+          $ref: '#/definitions/storage.createS3TencentCOSStorageRequest'
       produces:
       - application/json
       responses:
@@ -10558,7 +10558,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateS3WasabiStorageRequest'
+          $ref: '#/definitions/storage.createS3WasabiStorageRequest'
       produces:
       - application/json
       responses:
@@ -10588,7 +10588,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSeafileStorageRequest'
+          $ref: '#/definitions/storage.createSeafileStorageRequest'
       produces:
       - application/json
       responses:
@@ -10618,7 +10618,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSftpStorageRequest'
+          $ref: '#/definitions/storage.createSftpStorageRequest'
       produces:
       - application/json
       responses:
@@ -10648,7 +10648,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSharefileStorageRequest'
+          $ref: '#/definitions/storage.createSharefileStorageRequest'
       produces:
       - application/json
       responses:
@@ -10678,7 +10678,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSiaStorageRequest'
+          $ref: '#/definitions/storage.createSiaStorageRequest'
       produces:
       - application/json
       responses:
@@ -10708,7 +10708,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSmbStorageRequest'
+          $ref: '#/definitions/storage.createSmbStorageRequest'
       produces:
       - application/json
       responses:
@@ -10738,7 +10738,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateStorjExistingStorageRequest'
+          $ref: '#/definitions/storage.createStorjExistingStorageRequest'
       produces:
       - application/json
       responses:
@@ -10768,7 +10768,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateStorjNewStorageRequest'
+          $ref: '#/definitions/storage.createStorjNewStorageRequest'
       produces:
       - application/json
       responses:
@@ -10799,7 +10799,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSugarsyncStorageRequest'
+          $ref: '#/definitions/storage.createSugarsyncStorageRequest'
       produces:
       - application/json
       responses:
@@ -10829,7 +10829,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateSwiftStorageRequest'
+          $ref: '#/definitions/storage.createSwiftStorageRequest'
       produces:
       - application/json
       responses:
@@ -10859,7 +10859,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateUptoboxStorageRequest'
+          $ref: '#/definitions/storage.createUptoboxStorageRequest'
       produces:
       - application/json
       responses:
@@ -10889,7 +10889,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateWebdavStorageRequest'
+          $ref: '#/definitions/storage.createWebdavStorageRequest'
       produces:
       - application/json
       responses:
@@ -10919,7 +10919,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateYandexStorageRequest'
+          $ref: '#/definitions/storage.createYandexStorageRequest'
       produces:
       - application/json
       responses:
@@ -10949,7 +10949,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/storage.CreateZohoStorageRequest'
+          $ref: '#/definitions/storage.createZohoStorageRequest'
       produces:
       - application/json
       responses:

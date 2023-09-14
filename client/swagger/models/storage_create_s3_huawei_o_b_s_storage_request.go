@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3HuaweiOBSStorageRequest storage create s3 huawei o b s storage request
 //
-// swagger:model storage.CreateS3HuaweiOBSStorageRequest
+// swagger:model storage.createS3HuaweiOBSStorageRequest
 type StorageCreateS3HuaweiOBSStorageRequest struct {
 
 	// config

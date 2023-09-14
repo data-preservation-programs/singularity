@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSugarsyncStorageRequest storage create sugarsync storage request
 //
-// swagger:model storage.CreateSugarsyncStorageRequest
+// swagger:model storage.createSugarsyncStorageRequest
 type StorageCreateSugarsyncStorageRequest struct {
 
 	// config

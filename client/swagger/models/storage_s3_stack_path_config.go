@@ -14,7 +14,7 @@ import (
 
 // StorageS3StackPathConfig storage s3 stack path config
 //
-// swagger:model storage.S3StackPathConfig
+// swagger:model storage.s3StackPathConfig
 type StorageS3StackPathConfig struct {
 
 	// AWS Access Key ID.

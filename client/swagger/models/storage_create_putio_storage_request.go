@@ -15,7 +15,7 @@ import (
 
 // StorageCreatePutioStorageRequest storage create putio storage request
 //
-// swagger:model storage.CreatePutioStorageRequest
+// swagger:model storage.createPutioStorageRequest
 type StorageCreatePutioStorageRequest struct {
 
 	// config

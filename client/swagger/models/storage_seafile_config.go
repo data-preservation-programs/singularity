@@ -14,7 +14,7 @@ import (
 
 // StorageSeafileConfig storage seafile config
 //
-// swagger:model storage.SeafileConfig
+// swagger:model storage.seafileConfig
 type StorageSeafileConfig struct {
 
 	// Two-factor authentication ('true' if the account has 2FA enabled).

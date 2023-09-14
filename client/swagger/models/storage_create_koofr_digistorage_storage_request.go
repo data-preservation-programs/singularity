@@ -15,7 +15,7 @@ import (
 
 // StorageCreateKoofrDigistorageStorageRequest storage create koofr digistorage storage request
 //
-// swagger:model storage.CreateKoofrDigistorageStorageRequest
+// swagger:model storage.createKoofrDigistorageStorageRequest
 type StorageCreateKoofrDigistorageStorageRequest struct {
 
 	// config

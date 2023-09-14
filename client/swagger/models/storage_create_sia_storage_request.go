@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSiaStorageRequest storage create sia storage request
 //
-// swagger:model storage.CreateSiaStorageRequest
+// swagger:model storage.createSiaStorageRequest
 type StorageCreateSiaStorageRequest struct {
 
 	// config

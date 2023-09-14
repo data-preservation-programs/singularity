@@ -63,7 +63,7 @@ func StartHealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // All database operations are retried on failure using the DoRetry function.
 //
 // Parameters:
-// db: The Gorm DBNoContext connection to use for database queries.
+//   - db: The Gorm DBNoContext connection to use for database queries.
 func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 	db = db.WithContext(ctx)
 	logger.Debugw("running healthcheck cleanup")
@@ -94,8 +94,8 @@ func HealthCheckCleanup(ctx context.Context, db *gorm.DB) {
 // If allowDuplicate is set to true, it allows the registration of duplicate workers.
 //
 // The function returns two values:
-// - alreadyRunning: A boolean indicating if the worker is already running.
-// - err: An error that will be nil if no errors occurred.
+//   - alreadyRunning: A boolean indicating if the worker is already running.
+//   - err: An error that will be nil if no errors occurred.
 //
 // The function first gets the hostname of the machine where it's running. If it fails to get the hostname, it returns an error.
 // Then it gets the current state of the worker using the getState function.

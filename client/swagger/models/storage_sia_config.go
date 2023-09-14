@@ -14,7 +14,7 @@ import (
 
 // StorageSiaConfig storage sia config
 //
-// swagger:model storage.SiaConfig
+// swagger:model storage.siaConfig
 type StorageSiaConfig struct {
 
 	// Sia Daemon API Password.

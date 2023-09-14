@@ -14,7 +14,7 @@ import (
 
 // StorageHdfsConfig storage hdfs config
 //
-// swagger:model storage.HdfsConfig
+// swagger:model storage.hdfsConfig
 type StorageHdfsConfig struct {
 
 	// Kerberos data transfer protection: authentication|integrity|privacy.

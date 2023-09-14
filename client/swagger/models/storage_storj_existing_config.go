@@ -14,7 +14,7 @@ import (
 
 // StorageStorjExistingConfig storage storj existing config
 //
-// swagger:model storage.StorjExistingConfig
+// swagger:model storage.storjExistingConfig
 type StorageStorjExistingConfig struct {
 
 	// Access grant.

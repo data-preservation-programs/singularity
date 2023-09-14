@@ -303,7 +303,7 @@ type CarBlock struct {
 // or by subtracting the CID byte length and varint length from the total CarBlock length.
 //
 // Returns:
-// - An int32 representing the length of the block data in bytes.
+//   - An int32 representing the length of the block data in bytes.
 func (c CarBlock) BlockLength() int32 {
 	if c.blockLength != 0 {
 		return c.blockLength
