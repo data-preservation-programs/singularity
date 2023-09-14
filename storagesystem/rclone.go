@@ -35,7 +35,7 @@ func (h RCloneHandler) Name() string {
 func (h RCloneHandler) Write(ctx context.Context, path string, in io.Reader) (fs.Object, error) {
 	objInfo := object.NewStaticObjectInfo(path, time.Now(), -1, true, nil, nil)
 	if strings.HasSuffix(path, ".car") {
-		objInfo = objInfo.WithMimeType("application/car")
+		objInfo = objInfo.WithMimeType("application/vnd.ipfs.car")
 	}
 	return h.fs.Put(ctx, in, objInfo)
 }
