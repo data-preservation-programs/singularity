@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSeafileStorageRequest storage create seafile storage request
 //
-// swagger:model storage.CreateSeafileStorageRequest
+// swagger:model storage.createSeafileStorageRequest
 type StorageCreateSeafileStorageRequest struct {
 
 	// config

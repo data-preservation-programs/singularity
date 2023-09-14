@@ -26,17 +26,17 @@ type CreateRequest struct {
 // it creates a new storage entry in the database.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - storageType: The type of storage system (e.g., S3, GCS, local).
-// - provider: The provider for the storage system (e.g., AWS, Google, etc.).
-// - name: A unique name to represent the storage in the database.
-// - path: The path or endpoint to access the storage.
-// - config: A map containing the configuration key-value pairs required by the storage backend.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - storageType: The type of storage system (e.g., S3, GCS, local).
+//   - provider: The provider for the storage system (e.g., AWS, Google, etc.).
+//   - name: A unique name to represent the storage in the database.
+//   - path: The path or endpoint to access the storage.
+//   - config: A map containing the configuration key-value pairs required by the storage backend.
 //
 // Returns:
-// - A pointer to the newly created Storage model if successful.
-// - An error, if any occurred during the operation.
+//   - A pointer to the newly created Storage model if successful.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) CreateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,

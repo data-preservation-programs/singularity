@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSwiftStorageRequest storage create swift storage request
 //
-// swagger:model storage.CreateSwiftStorageRequest
+// swagger:model storage.createSwiftStorageRequest
 type StorageCreateSwiftStorageRequest struct {
 
 	// config

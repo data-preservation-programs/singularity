@@ -15,7 +15,7 @@ import (
 
 // StorageCreateInternetarchiveStorageRequest storage create internetarchive storage request
 //
-// swagger:model storage.CreateInternetarchiveStorageRequest
+// swagger:model storage.createInternetarchiveStorageRequest
 type StorageCreateInternetarchiveStorageRequest struct {
 
 	// config

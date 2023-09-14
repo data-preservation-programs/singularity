@@ -15,7 +15,7 @@ import (
 
 // StorageCreateKoofrKoofrStorageRequest storage create koofr koofr storage request
 //
-// swagger:model storage.CreateKoofrKoofrStorageRequest
+// swagger:model storage.createKoofrKoofrStorageRequest
 type StorageCreateKoofrKoofrStorageRequest struct {
 
 	// config

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3IONOSStorageRequest storage create s3 i o n o s storage request
 //
-// swagger:model storage.CreateS3IONOSStorageRequest
+// swagger:model storage.createS3IONOSStorageRequest
 type StorageCreateS3IONOSStorageRequest struct {
 
 	// config

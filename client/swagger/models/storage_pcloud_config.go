@@ -14,7 +14,7 @@ import (
 
 // StoragePcloudConfig storage pcloud config
 //
-// swagger:model storage.PcloudConfig
+// swagger:model storage.pcloudConfig
 type StoragePcloudConfig struct {
 
 	// Auth server URL.

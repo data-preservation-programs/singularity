@@ -14,7 +14,7 @@ import (
 
 // StorageKoofrKoofrConfig storage koofr koofr config
 //
-// swagger:model storage.KoofrKoofrConfig
+// swagger:model storage.koofrKoofrConfig
 type StorageKoofrKoofrConfig struct {
 
 	// The encoding for the backend.

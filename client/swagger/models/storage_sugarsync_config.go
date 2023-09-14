@@ -14,7 +14,7 @@ import (
 
 // StorageSugarsyncConfig storage sugarsync config
 //
-// swagger:model storage.SugarsyncConfig
+// swagger:model storage.sugarsyncConfig
 type StorageSugarsyncConfig struct {
 
 	// Sugarsync Access Key ID.

@@ -21,12 +21,12 @@ func _() {}
 // ListHandler retrieves all the schedules from the database.
 //
 // Parameters:
-// - ctx: The context for the operation, which can include cancellation signals, timeout details, etc.
-// - db: The database connection used for CRUD operations.
+//   - ctx: The context for the operation, which can include cancellation signals, timeout details, etc.
+//   - db: The database connection used for CRUD operations.
 //
 // Returns:
-// - A slice of Schedule models if successful.
-// - An error if there are issues during the operation.
+//   - A slice of Schedule models if successful.
+//   - An error if there are issues during the operation.
 func (DefaultHandler) ListHandler(
 	ctx context.Context,
 	db *gorm.DB,

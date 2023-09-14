@@ -14,7 +14,7 @@ import (
 
 // StorageS3LyveCloudConfig storage s3 lyve cloud config
 //
-// swagger:model storage.S3LyveCloudConfig
+// swagger:model storage.s3LyveCloudConfig
 type StorageS3LyveCloudConfig struct {
 
 	// AWS Access Key ID.

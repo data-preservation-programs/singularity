@@ -15,7 +15,7 @@ import (
 
 // StorageCreateGphotosStorageRequest storage create gphotos storage request
 //
-// swagger:model storage.CreateGphotosStorageRequest
+// swagger:model storage.createGphotosStorageRequest
 type StorageCreateGphotosStorageRequest struct {
 
 	// config

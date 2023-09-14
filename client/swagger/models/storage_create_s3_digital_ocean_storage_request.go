@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3DigitalOceanStorageRequest storage create s3 digital ocean storage request
 //
-// swagger:model storage.CreateS3DigitalOceanStorageRequest
+// swagger:model storage.createS3DigitalOceanStorageRequest
 type StorageCreateS3DigitalOceanStorageRequest struct {
 
 	// config

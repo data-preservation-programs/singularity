@@ -15,7 +15,7 @@ import (
 
 // StorageCreateMegaStorageRequest storage create mega storage request
 //
-// swagger:model storage.CreateMegaStorageRequest
+// swagger:model storage.createMegaStorageRequest
 type StorageCreateMegaStorageRequest struct {
 
 	// config

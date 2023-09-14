@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3LiaraStorageRequest storage create s3 liara storage request
 //
-// swagger:model storage.CreateS3LiaraStorageRequest
+// swagger:model storage.createS3LiaraStorageRequest
 type StorageCreateS3LiaraStorageRequest struct {
 
 	// config

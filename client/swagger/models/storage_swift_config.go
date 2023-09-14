@@ -14,7 +14,7 @@ import (
 
 // StorageSwiftConfig storage swift config
 //
-// swagger:model storage.SwiftConfig
+// swagger:model storage.swiftConfig
 type StorageSwiftConfig struct {
 
 	// Application Credential ID (OS_APPLICATION_CREDENTIAL_ID).

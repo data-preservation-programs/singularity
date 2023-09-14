@@ -14,7 +14,7 @@ import (
 
 // StorageS3HuaweiOBSConfig storage s3 huawei o b s config
 //
-// swagger:model storage.S3HuaweiOBSConfig
+// swagger:model storage.s3HuaweiOBSConfig
 type StorageS3HuaweiOBSConfig struct {
 
 	// AWS Access Key ID.

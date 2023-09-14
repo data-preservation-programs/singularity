@@ -14,7 +14,7 @@ import (
 
 // StoragePremiumizemeConfig storage premiumizeme config
 //
-// swagger:model storage.PremiumizemeConfig
+// swagger:model storage.premiumizemeConfig
 type StoragePremiumizemeConfig struct {
 
 	// API Key.

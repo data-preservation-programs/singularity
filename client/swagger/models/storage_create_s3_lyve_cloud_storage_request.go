@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3LyveCloudStorageRequest storage create s3 lyve cloud storage request
 //
-// swagger:model storage.CreateS3LyveCloudStorageRequest
+// swagger:model storage.createS3LyveCloudStorageRequest
 type StorageCreateS3LyveCloudStorageRequest struct {
 
 	// config

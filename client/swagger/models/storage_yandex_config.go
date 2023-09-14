@@ -14,7 +14,7 @@ import (
 
 // StorageYandexConfig storage yandex config
 //
-// swagger:model storage.YandexConfig
+// swagger:model storage.yandexConfig
 type StorageYandexConfig struct {
 
 	// Auth server URL.

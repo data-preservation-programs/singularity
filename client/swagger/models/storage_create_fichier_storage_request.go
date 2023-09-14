@@ -15,7 +15,7 @@ import (
 
 // StorageCreateFichierStorageRequest storage create fichier storage request
 //
-// swagger:model storage.CreateFichierStorageRequest
+// swagger:model storage.createFichierStorageRequest
 type StorageCreateFichierStorageRequest struct {
 
 	// config

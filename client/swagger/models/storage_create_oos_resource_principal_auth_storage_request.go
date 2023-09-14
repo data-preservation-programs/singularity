@@ -15,7 +15,7 @@ import (
 
 // StorageCreateOosResourcePrincipalAuthStorageRequest storage create oos resource principal auth storage request
 //
-// swagger:model storage.CreateOosResource_principal_authStorageRequest
+// swagger:model storage.createOosResource_principal_authStorageRequest
 type StorageCreateOosResourcePrincipalAuthStorageRequest struct {
 
 	// config

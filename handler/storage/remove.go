@@ -15,9 +15,9 @@ import (
 // and if so, returns an error.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - name: The ID or name of the storage entry to be deleted.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - name: The ID or name of the storage entry to be deleted.
 //
 // Returns:
 //   - An error, if any occurred during the operation. Returns a specific error
