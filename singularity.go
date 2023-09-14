@@ -53,5 +53,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = cmd.App.RunContext(context.TODO(), os.Args)
+	err = cmd.App.RunContext(context.TODO(), os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
