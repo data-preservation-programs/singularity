@@ -14,7 +14,7 @@ import (
 
 // StorageInternetarchiveConfig storage internetarchive config
 //
-// swagger:model storage.InternetarchiveConfig
+// swagger:model storage.internetarchiveConfig
 type StorageInternetarchiveConfig struct {
 
 	// IAS3 Access Key.

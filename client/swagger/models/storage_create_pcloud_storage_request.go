@@ -15,7 +15,7 @@ import (
 
 // StorageCreatePcloudStorageRequest storage create pcloud storage request
 //
-// swagger:model storage.CreatePcloudStorageRequest
+// swagger:model storage.createPcloudStorageRequest
 type StorageCreatePcloudStorageRequest struct {
 
 	// config

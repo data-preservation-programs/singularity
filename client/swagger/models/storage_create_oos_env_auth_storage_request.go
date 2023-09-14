@@ -15,7 +15,7 @@ import (
 
 // StorageCreateOosEnvAuthStorageRequest storage create oos env auth storage request
 //
-// swagger:model storage.CreateOosEnv_authStorageRequest
+// swagger:model storage.createOosEnv_authStorageRequest
 type StorageCreateOosEnvAuthStorageRequest struct {
 
 	// config

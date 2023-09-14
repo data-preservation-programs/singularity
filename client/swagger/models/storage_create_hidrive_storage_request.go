@@ -15,7 +15,7 @@ import (
 
 // StorageCreateHidriveStorageRequest storage create hidrive storage request
 //
-// swagger:model storage.CreateHidriveStorageRequest
+// swagger:model storage.createHidriveStorageRequest
 type StorageCreateHidriveStorageRequest struct {
 
 	// config

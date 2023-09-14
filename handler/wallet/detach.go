@@ -14,14 +14,14 @@ import (
 // DetachHandler removes the association of a wallet from a specific preparation based on the given preparationID and wallet address or ID.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - preparationID: The ID or name of the preparation from which the wallet will be removed.
-// - wallet: The address or ID of the wallet to be removed from the preparation.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - preparationID: The ID or name of the preparation from which the wallet will be removed.
+//   - wallet: The address or ID of the wallet to be removed from the preparation.
 //
 // Returns:
-// - A pointer to the updated Preparation instance.
-// - An error, if any occurred during the removal operation.
+//   - A pointer to the updated Preparation instance.
+//   - An error, if any occurred during the removal operation.
 func (DefaultHandler) DetachHandler(
 	ctx context.Context,
 	db *gorm.DB,

@@ -45,15 +45,15 @@ type Version struct {
 // constructing a result list from the gathered data.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name of the preparation associated with the storage.
-// - name: The ID or name of the desired Storage record.
-// - path: The directory path in the storage system to explore.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name of the preparation associated with the storage.
+//   - name: The ID or name of the desired Storage record.
+//   - path: The directory path in the storage system to explore.
 //
 // Returns:
-// - ExploreResult struct representing the entries in the explored directory.
-// - An error, if any occurred during the operation.
+//   - ExploreResult struct representing the entries in the explored directory.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) ExploreHandler(
 	ctx context.Context,
 	db *gorm.DB,

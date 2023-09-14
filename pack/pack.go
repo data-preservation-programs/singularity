@@ -73,13 +73,13 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 // The function returns a slice of Car objects which represent the stored chunks and an error if any occurred.
 //
 // Parameters:
-// - ctx: The context which controls the lifetime of the operation.
-// - db: The gorm database instance used for querying and updating database records.
-// - job: The Job model instance which contains information about the attachment to be processed.
+//   - ctx: The context which controls the lifetime of the operation.
+//   - db: The gorm database instance used for querying and updating database records.
+//   - job: The Job model instance which contains information about the attachment to be processed.
 //
 // Returns:
-// - A slice of model.Car instances representing stored chunks.
-// - An error, if any occurred during the operation.
+//   - A slice of model.Car instances representing stored chunks.
+//   - An error, if any occurred during the operation.
 func Pack(
 	ctx context.Context,
 	db *gorm.DB,

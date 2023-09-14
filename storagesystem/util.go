@@ -38,8 +38,8 @@ import (
 //     indicating that 'file' and 'object' are considered to be the same entry.
 //
 // Note:
-// - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
-// - For local file systems, hash computation is skipped to avoid inefficient operations.
+//   - In certain cases (e.g., failures during fetch), the last modified time might not be reliable.
+//   - For local file systems, hash computation is skipped to avoid inefficient operations.
 func IsSameEntry(ctx context.Context, file model.File, object fs.ObjectInfo) (bool, string) {
 	if file.Size != object.Size() {
 		return false, fmt.Sprintf("size mismatch: %d != %d", file.Size, object.Size())
@@ -58,6 +58,19 @@ func IsSameEntry(ctx context.Context, file model.File, object fs.ObjectInfo) (bo
 			file.LastModifiedNano)
 }
 
+// GetHash computes the hash value of a given object based on the supported hash type by its
+// filesystem. If the filesystem's hash computation is slow or if there is any error during hash computation,
+// the function returns an empty string or an error respectively.
+//
+// Parameters:
+//   - ctx: A context to allow for timeout or cancellation of operations.
+//   - object: An fs.ObjectInfo representing the object for which the hash needs to be computed.
+//
+// Returns:
+//   - The computed hash string of the object. If the filesystem's hash computation is considered slow or
+//     if there is an error in hash computation, an empty string is returned.
+//   - An error if the function encounters any issues during its operation, such as failure in hash computation.
+//     If no error occurs, the error is nil.
 func GetHash(ctx context.Context, object fs.ObjectInfo) (string, error) {
 	if object.Fs().Features().SlowHash {
 		return "", nil
@@ -80,6 +93,24 @@ var ErrStorageNotAvailable = errors.New("storage not available")
 var freeSpaceWarningThreshold = 0.05
 var freeSpaceErrorThreshold = 0.01
 
+// GetRandomOutputWriter selects a storage from the provided storages list based on its available
+// space and returns an associated Writer to interact with that storage.
+//
+// The function works as follows:
+//  1. Iterates over each storage to obtain its usage information (free and total space).
+//  2. Calculates a weight for each storage based on its free space ratio.
+//  3. If the available space of a storage is below a threshold, it will not be considered for selection.
+//  4. Selects a storage based on its weight and returns the Writer for it.
+//
+// Parameters:
+//   - ctx: A context that allows for timeout or cancellation of operations.
+//   - storages: A slice of storage models to choose from.
+//
+// Returns:
+//   - A pointer to the ID of the selected storage.
+//   - A Writer object that can be used to write data to the selected storage.
+//   - An error if the function encounters any issues during its operation or if no suitable storage
+//     is found. If all storages are full, it returns the ErrStorageNotAvailable error.
 func GetRandomOutputWriter(ctx context.Context, storages []model.Storage) (*model.StorageID, Writer, error) {
 	if len(storages) == 0 {
 		return nil, nil, nil

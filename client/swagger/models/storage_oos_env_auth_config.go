@@ -14,7 +14,7 @@ import (
 
 // StorageOosEnvAuthConfig storage oos env auth config
 //
-// swagger:model storage.OosEnv_authConfig
+// swagger:model storage.oosEnv_authConfig
 type StorageOosEnvAuthConfig struct {
 
 	// Chunk size to use for uploading.

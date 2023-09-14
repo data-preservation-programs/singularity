@@ -49,20 +49,20 @@ type Thread struct {
 
 // Start initializes and starts the execution of a worker thread.
 // This function:
-// 1. Creates a cancellable context derived from the input context.
-// 2. Registers the worker with a health check service, providing a state function for reporting its status.
-// 3. Launches separate goroutines to report health status, clean up old health check records, execute the worker's task, and handle cleanup.
-// 4. Returns channels that are closed when the health reporting, health check cleanup, worker execution, and worker cleanup are complete.
+//  1. Creates a cancellable context derived from the input context.
+//  2. Registers the worker with a health check service, providing a state function for reporting its status.
+//  3. Launches separate goroutines to report health status, clean up old health check records, execute the worker's task, and handle cleanup.
+//  4. Returns channels that are closed when the health reporting, health check cleanup, worker execution, and worker cleanup are complete.
 //
 // Parameters:
 //
-//	ctx : The parent context for this thread, used to propagate cancellations.
+//   - ctx : The parent context for this thread, used to propagate cancellations.
 //
 // Returns:
 //
-//	[]service.Done : A slice of channels that are closed when respective components of the worker complete their execution.
-//	service.Fail   : A channel that receives an error if the worker encounters a failure during its execution.
-//	error          : An error is returned if the worker fails to register with the health check service. Otherwise, it returns nil.
+//   - []service.Done : A slice of channels that are closed when respective components of the worker complete their execution.
+//   - service.Fail   : A channel that receives an error if the worker encounters a failure during its execution.
+//   - error          : An error is returned if the worker fails to register with the health check service. Otherwise, it returns nil.
 func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error) {
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
@@ -126,17 +126,17 @@ func (w *Thread) cleanup(ctx context.Context) error {
 
 // Run initializes and starts a set of worker threads based on the Concurrency specified in the configuration.
 // This function:
-// 1. Creates an array of worker threads, each having a unique identifier.
-// 2. Initializes each thread with a shared set of dependencies (e.g., database, logger) and individual configuration.
-// 3. Invokes the StartServers function to run all the threads, passing the initialized threads and a logger.
+//  1. Creates an array of worker threads, each having a unique identifier.
+//  2. Initializes each thread with a shared set of dependencies (e.g., database, logger) and individual configuration.
+//  3. Invokes the StartServers function to run all the threads, passing the initialized threads and a logger.
 //
 // Parameters:
 //
-//	ctx : The context under which all the worker threads are run, used to propagate cancellations.
+//   - ctx : The context under which all the worker threads are run, used to propagate cancellations.
 //
 // Returns:
 //
-//	error : An error is returned if the StartServers function encounters an issue while starting the threads. Otherwise, it returns nil.
+//   - error : An error is returned if the StartServers function encounters an issue while starting the threads. Otherwise, it returns nil.
 func (w Worker) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -209,16 +209,16 @@ func (w *Thread) handleWorkError(ctx context.Context, jobID model.JobID, err err
 
 // run is the core loop that a Thread executes when started.
 // It continually looks for work to process, handles errors, and reports updates:
-// 1. It attempts to find work to do. The types of work are defined by WorkType enumeration (e.g., Scan, Pack, Dag).
-// 2. It processes the found work based on its type, reporting errors if they occur.
-// 3. If an error occurs, it either exits or waits for a minute before looking for more work, based on the configuration.
-// 4. If no work is found, it either exits or waits for 15 seconds before looking for more work, based on the configuration.
-// 5. It gracefully stops if the provided context is cancelled.
+//  1. It attempts to find work to do. The types of work are defined by WorkType enumeration (e.g., Scan, Pack, Dag).
+//  2. It processes the found work based on its type, reporting errors if they occur.
+//  3. If an error occurs, it either exits or waits for a minute before looking for more work, based on the configuration.
+//  4. If no work is found, it either exits or waits for 15 seconds before looking for more work, based on the configuration.
+//  5. It gracefully stops if the provided context is cancelled.
 //
 // Parameters:
 //
-//	ctx     : The context used for managing the lifecycle of the run loop. If Done, the loop exits cleanly.
-//	errChan : A channel for reporting errors that cause the loop to exit when ExitOnError is true.
+//   - ctx     : The context used for managing the lifecycle of the run loop. If Done, the loop exits cleanly.
+//   - errChan : A channel for reporting errors that cause the loop to exit when ExitOnError is true.
 //
 // This function is intended to run as a goroutine.
 //

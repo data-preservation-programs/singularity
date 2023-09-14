@@ -14,7 +14,7 @@ import (
 
 // StorageS3CloudflareConfig storage s3 cloudflare config
 //
-// swagger:model storage.S3CloudflareConfig
+// swagger:model storage.s3CloudflareConfig
 type StorageS3CloudflareConfig struct {
 
 	// AWS Access Key ID.

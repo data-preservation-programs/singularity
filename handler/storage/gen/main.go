@@ -162,7 +162,7 @@ func main() {
 					Description: description,
 				})
 			}
-			typeName := upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "Config"
+			typeName := backend.Prefix + upperFirst(providerOptions.Provider) + "Config"
 			t := Type{
 				Name:   typeName,
 				Fields: fields,
@@ -174,14 +174,14 @@ func main() {
 
 			if len(backend.ProviderOptions) > 1 {
 				cobj := CreateStructType{
-					Name:       "Create" + upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "StorageRequest",
+					Name:       "create" + upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "StorageRequest",
 					ConfigType: typeName,
 				}
 				err = createStructTemplate.Execute(f, cobj)
 				if err != nil {
 					panic(err)
 				}
-				funcName := "Create" + upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "Storage"
+				funcName := "create" + upperFirst(backend.Prefix) + upperFirst(providerOptions.Provider) + "Storage"
 				fobj := S3Func{
 					FuncName:            funcName,
 					ClientFuncName:      upperFirst(funcName),
@@ -198,7 +198,7 @@ func main() {
 				}
 			} else {
 				cobj := CreateStructType{
-					Name:       "Create" + upperFirst(backend.Prefix) + "StorageRequest",
+					Name:       "create" + upperFirst(backend.Prefix) + "StorageRequest",
 					ConfigType: typeName,
 				}
 				err = createStructTemplate.Execute(f, cobj)

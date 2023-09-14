@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3NeteaseStorageRequest storage create s3 netease storage request
 //
-// swagger:model storage.CreateS3NeteaseStorageRequest
+// swagger:model storage.createS3NeteaseStorageRequest
 type StorageCreateS3NeteaseStorageRequest struct {
 
 	// config

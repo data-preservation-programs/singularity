@@ -14,7 +14,7 @@ import (
 
 // StorageAzureblobConfig storage azureblob config
 //
-// swagger:model storage.AzureblobConfig
+// swagger:model storage.azureblobConfig
 type StorageAzureblobConfig struct {
 
 	// Access tier of blob: hot, cool or archive.

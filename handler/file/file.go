@@ -15,13 +15,13 @@ import (
 // provided ID, it returns an ErrNotFound error.
 //
 // Parameters:
-// - ctx: The context for managing timeouts and cancellation.
-// - db: The gorm.DB instance for database operations.
-// - id: The ID of the file to be retrieved.
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for database operations.
+//   - id: The ID of the file to be retrieved.
 //
 // Returns:
-// - A pointer to the retrieved model.File, if found.
-// - An error if any issues occur during the database operation, including when the file is not found.
+//   - A pointer to the retrieved model.File, if found.
+//   - An error if any issues occur during the database operation, including when the file is not found.
 func (DefaultHandler) GetFileHandler(
 	ctx context.Context,
 	db *gorm.DB,

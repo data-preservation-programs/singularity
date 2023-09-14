@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3StackPathStorageRequest storage create s3 stack path storage request
 //
-// swagger:model storage.CreateS3StackPathStorageRequest
+// swagger:model storage.createS3StackPathStorageRequest
 type StorageCreateS3StackPathStorageRequest struct {
 
 	// config

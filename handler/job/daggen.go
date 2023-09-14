@@ -12,14 +12,14 @@ import (
 // This function is a wrapper around the more general `StartJobHandler` function and sets the job type to 'Scan'.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
-// - name: The name of the source storage.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The unique identifier for the desired Preparation record.
+//   - name: The name of the source storage.
 //
 // Returns:
-// - A pointer to the model.Job record that was initiated.
-// - An error, if any occurred during the operation.
+//   - A pointer to the model.Job record that was initiated.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) StartDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,
@@ -46,14 +46,14 @@ func _() {}
 // This function is a wrapper around the more general `PauseJobHandler` function, specifically for pausing 'Scan' type jobs.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
-// - name: The name of the source storage.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The unique identifier for the desired Preparation record.
+//   - name: The name of the source storage.
 //
 // Returns:
-// - A pointer to the model.Job record that was paused.
-// - An error, if any occurred during the operation.
+//   - A pointer to the model.Job record that was paused.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) PauseDagGenHandler(
 	ctx context.Context,
 	db *gorm.DB,

@@ -15,7 +15,7 @@ import (
 
 // StorageCreateOpendriveStorageRequest storage create opendrive storage request
 //
-// swagger:model storage.CreateOpendriveStorageRequest
+// swagger:model storage.createOpendriveStorageRequest
 type StorageCreateOpendriveStorageRequest struct {
 
 	// config

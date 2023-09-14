@@ -44,6 +44,7 @@ type Runner struct {
 var colorMutex = sync.Mutex{}
 
 // NewRunner creates a new Runner to capture CLI args
+//
 // Note: tests invoking this function should stay in cmd.Test package
 // because this function relies on environment variables to set database connection string
 // so it won't work with parallel execution of different test packages.

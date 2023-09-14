@@ -14,7 +14,7 @@ import (
 
 // StorageS3LiaraConfig storage s3 liara config
 //
-// swagger:model storage.S3LiaraConfig
+// swagger:model storage.s3LiaraConfig
 type StorageS3LiaraConfig struct {
 
 	// AWS Access Key ID.

@@ -35,11 +35,11 @@ func validateSourceStorage(ctx context.Context, db *gorm.DB, id string, name str
 // the job to be ready to start again. If the job is already running, it returns an error.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The ID or name for the desired Preparation record.
-// - name: The ID or name of the source storage.
-// - jobType: The type of the job (e.g., Scan, Upload).
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The ID or name for the desired Preparation record.
+//   - name: The ID or name of the source storage.
+//   - jobType: The type of the job (e.g., Scan, Upload).
 //
 // Returns:
 //   - A pointer to the model.Job record that was created or updated.
@@ -115,11 +115,11 @@ func _() {}
 // exist or is not in a pausable state, it returns an appropriate error.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - id: The unique identifier for the desired Preparation record.
-// - name: The name of the source storage.
-// - jobType: The type of the job (e.g., Scan, Upload).
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - id: The unique identifier for the desired Preparation record.
+//   - name: The name of the source storage.
+//   - jobType: The type of the job (e.g., Scan, Upload).
 //
 // Returns:
 //   - A pointer to the model.Job record that was paused.

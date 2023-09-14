@@ -15,7 +15,7 @@ import (
 
 // StorageCreateMailruStorageRequest storage create mailru storage request
 //
-// swagger:model storage.CreateMailruStorageRequest
+// swagger:model storage.createMailruStorageRequest
 type StorageCreateMailruStorageRequest struct {
 
 	// config

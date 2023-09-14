@@ -15,7 +15,7 @@ import (
 
 // StorageCreateSharefileStorageRequest storage create sharefile storage request
 //
-// swagger:model storage.CreateSharefileStorageRequest
+// swagger:model storage.createSharefileStorageRequest
 type StorageCreateSharefileStorageRequest struct {
 
 	// config

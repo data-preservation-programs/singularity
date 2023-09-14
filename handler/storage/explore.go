@@ -32,14 +32,14 @@ type DirEntry struct {
 // and the relevant information for each entry is returned.
 //
 // Parameters:
-// - ctx: The context for database transactions and other operations.
-// - db: A pointer to the gorm.DB instance representing the database connection.
-// - name: The name of the desired Storage record.
-// - path: The directory path in the storage system to explore.
+//   - ctx: The context for database transactions and other operations.
+//   - db: A pointer to the gorm.DB instance representing the database connection.
+//   - name: The name of the desired Storage record.
+//   - path: The directory path in the storage system to explore.
 //
 // Returns:
-// - A slice of DirEntry structs representing the entries in the explored directory.
-// - An error, if any occurred during the operation.
+//   - A slice of DirEntry structs representing the entries in the explored directory.
+//   - An error, if any occurred during the operation.
 func (DefaultHandler) ExploreHandler(
 	ctx context.Context,
 	db *gorm.DB,

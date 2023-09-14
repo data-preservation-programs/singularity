@@ -15,12 +15,12 @@ import (
 // it marks that Job as being processed by the current worker thread.
 //
 // Parameters:
-// - ctx: The context which controls the lifetime of the operation.
-// - typesOrdered: A slice of model.JobType values representing the job types to search for in order of preference.
+//   - ctx: The context which controls the lifetime of the operation.
+//   - typesOrdered: A slice of model.JobType values representing the job types to search for in order of preference.
 //
 // Returns:
-// - A pointer to the found model.Job instance or nil if no suitable Job was found.
-// - An error, if any occurred during the operation.
+//   - A pointer to the found model.Job instance or nil if no suitable Job was found.
+//   - An error, if any occurred during the operation.
 func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*model.Job, error) {
 	db := w.dbNoContext.WithContext(ctx)
 

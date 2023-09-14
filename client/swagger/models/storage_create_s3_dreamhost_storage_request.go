@@ -15,7 +15,7 @@ import (
 
 // StorageCreateS3DreamhostStorageRequest storage create s3 dreamhost storage request
 //
-// swagger:model storage.CreateS3DreamhostStorageRequest
+// swagger:model storage.createS3DreamhostStorageRequest
 type StorageCreateS3DreamhostStorageRequest struct {
 
 	// config

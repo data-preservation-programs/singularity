@@ -14,7 +14,7 @@ import (
 
 // StorageS3IDriveConfig storage s3 i drive config
 //
-// swagger:model storage.S3IDriveConfig
+// swagger:model storage.s3IDriveConfig
 type StorageS3IDriveConfig struct {
 
 	// AWS Access Key ID.

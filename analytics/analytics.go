@@ -23,6 +23,17 @@ var Enabled = true
 
 var logger = log.Logger("analytics")
 
+// Init initializes the global variables 'Instance' and 'Enabled' based on values stored in the database
+// and environment variables respectively. The function uses the 'instance_id' key to fetch the 'Instance'
+// value from the database. If the 'Instance' value is already set, the function returns early. If the environment
+// variable 'SINGULARITY_ANALYTICS' is set to "0", 'Enabled' is set to false.
+//
+// Parameters:
+//   - ctx: The context for managing timeouts and cancellation.
+//   - db: The gorm.DB instance for making database queries.
+//
+// Returns:
+//   - An error if there are issues fetching the instance id from the database or if the database appears empty.
 func Init(ctx context.Context, db *gorm.DB) error {
 	if Instance != "" {
 		return nil
@@ -75,6 +86,25 @@ func (c *Collector) QueueDealEvent(event DealProposalEvent) {
 
 var zstdEncoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
 
+// Flush ensures that all buffered events in the Collector are sent to the
+// remote metrics service. This function uses batch processing to send events
+// in chunks. Each chunk can have a maximum of 100 events. If the global
+// 'Enabled' flag is false, the function exits early without doing anything.
+//
+// Process:
+//  1. The function checks if there are any events buffered in the Collector.
+//  2. If there are more than 100 events of a specific type, it picks the
+//     first 100 and sends them. Otherwise, it sends all available events.
+//  3. It then encodes the selected events using CBOR and compresses them
+//     using the zstandard compression algorithm.
+//  4. The compressed data is encoded using Base64 encoding and sent to the
+//     remote metrics service using an HTTP POST request.
+//  5. If the HTTP response is not '200 OK', the function reads the response
+//     body and returns an error.
+//
+// Returns:
+//   - nil if all buffered events are successfully sent.
+//   - An error if there are issues during any stage of the process.
 func (c *Collector) Flush() error {
 	if !Enabled {
 		return nil

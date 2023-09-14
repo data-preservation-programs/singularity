@@ -14,7 +14,7 @@ import (
 
 // StorageStorjNewConfig storage storj new config
 //
-// swagger:model storage.StorjNewConfig
+// swagger:model storage.storjNewConfig
 type StorageStorjNewConfig struct {
 
 	// API key.
