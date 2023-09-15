@@ -636,7 +636,7 @@ type MinerInfoFetcher struct {
 func (m MinerInfoFetcher) GetProviderInfo(ctx context.Context, provider string) (*MinerInfo, error) {
 	logger.Debugw("getting miner info", "miner", provider)
 	minerInfo := new(MinerInfo)
-	err := d.lotusClient.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
+	err := m.Client.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get miner info, miner: %s", provider)
 	}
@@ -657,4 +657,6 @@ func (m MinerInfoFetcher) GetProviderInfo(ctx context.Context, provider string) 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to decode peer id %s", minerInfo.PeerIDEncoded)
 	}
+
+	return minerInfo, nil
 }
