@@ -8,6 +8,7 @@ import (
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
+	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
@@ -31,6 +32,10 @@ func TestScan(t *testing.T) {
 		err = os.WriteFile(filepath.Join(tmp, path), testutil.GenerateRandomBytes(size), 0644)
 		require.NoError(t, err)
 	}
+
+	// Create empty folder
+	err := os.MkdirAll(filepath.Join(tmp, "emptyfolder"), 0755)
+	require.NoError(t, err)
 
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		job := model.Job{
@@ -59,7 +64,10 @@ func TestScan(t *testing.T) {
 		var dirs []model.Directory
 		err = db.Find(&dirs).Error
 		require.NoError(t, err)
-		require.Len(t, dirs, 4)
+		require.Len(t, dirs, 5)
+		require.True(t, underscore.Any(dirs, func(dir model.Directory) bool {
+			return dir.Name == "emptyfolder"
+		}))
 		var jobs []model.Job
 		err = db.Preload("FileRanges").Find(&jobs).Error
 		require.NoError(t, err)

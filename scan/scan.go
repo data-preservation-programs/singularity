@@ -2,6 +2,7 @@ package scan
 
 import (
 	"context"
+	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -74,6 +75,27 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 	for entry := range entryChan {
 		if entry.Error != nil {
 			logger.Errorw("failed to scan", "error", entry.Error)
+			continue
+		}
+
+		if entry.Dir != nil {
+			rootID, err := attachment.RootDirectoryID(ctx, db)
+			if err != nil {
+				return errors.Wrapf(err, "failed to get root directory for attachment %d", attachment.ID)
+			}
+			dummyFilePath := entry.Dir.Remote()
+			if strings.HasSuffix(dummyFilePath, "/") {
+				dummyFilePath += "dummy.file"
+			} else {
+				dummyFilePath += "/dummy.file"
+			}
+			err = push.EnsureParentDirectories(ctx, db, &model.File{
+				AttachmentID: attachment.ID,
+				Path:         dummyFilePath,
+			}, rootID, directoryCache)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 			continue
 		}
 
