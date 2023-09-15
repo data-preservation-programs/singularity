@@ -1,11 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net"
 	http2 "net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -100,6 +102,12 @@ func setupMockSchedule() schedule.Handler {
 	return m
 }
 
+type nopCloser struct {
+	io.ReadSeeker
+}
+
+func (nopCloser) Close() error { return nil }
+
 func setupMockFile() file.Handler {
 	m := new(file.MockFile)
 	m.On("GetFileDealsHandler", mock.Anything, mock.Anything, uint64(1)).
@@ -110,6 +118,8 @@ func setupMockFile() file.Handler {
 		Return(int64(1), nil)
 	m.On("PushFileHandler", mock.Anything, mock.Anything, "id", "name", mock.Anything).
 		Return(&model.File{}, nil)
+	m.On("RetrieveFileHandler", mock.Anything, mock.Anything, uint64(1)).
+		Return(io.ReadSeekCloser(nopCloser{strings.NewReader("hello world")}), "hello.txt", time.Date(1999, 12, 31, 11, 59, 59, 0, time.UTC), nil)
 	return m
 }
 
@@ -651,6 +661,18 @@ func TestAllAPIs(t *testing.T) {
 				require.NoError(t, err)
 				require.True(t, resp.IsSuccess())
 				require.NotNil(t, resp.Payload)
+			})
+			t.Run("RetrieveFile", func(t *testing.T) {
+				buf := new(bytes.Buffer)
+				resp, partial, err := client.File.RetrieveFile(&file2.RetrieveFileParams{
+					ID:      1,
+					Context: ctx,
+				}, buf)
+				require.NoError(t, err)
+				require.NotNil(t, resp)
+				require.True(t, resp.IsSuccess())
+				require.Nil(t, partial)
+				require.Equal(t, "hello world", buf.String())
 			})
 		})
 	})

@@ -225,58 +225,6 @@ type PieceMetadata struct {
 	Files     []model.File     `json:"files"`
 }
 
-type rcloneSeeker struct {
-	path    string
-	size    int64
-	handler storagesystem.Handler
-	offset  int64
-	file    io.ReadCloser
-}
-
-func (r *rcloneSeeker) Read(p []byte) (n int, err error) {
-	if r.file == nil {
-		var err error
-		r.file, _, err = r.handler.Read(context.Background(), r.path, r.offset, r.size-r.offset)
-		if err != nil {
-			return 0, errors.WithStack(err)
-		}
-	}
-	return r.file.Read(p)
-}
-
-func (r *rcloneSeeker) Seek(offset int64, whence int) (int64, error) {
-	if r.file != nil {
-		err := r.file.Close()
-		if err != nil {
-			return 0, errors.WithStack(err)
-		}
-	}
-	switch whence {
-	case io.SeekStart:
-		r.offset = offset
-	case io.SeekCurrent:
-		r.offset += offset
-	case io.SeekEnd:
-		r.offset = r.size + offset
-	default:
-		return 0, errors.New("Unknown seek mode")
-	}
-	if r.offset > r.size {
-		return 0, errors.New("Seeking past end of file")
-	}
-	if r.offset < 0 {
-		return 0, errors.New("Seeking before start of file")
-	}
-	return r.offset, nil
-}
-
-func (r *rcloneSeeker) Close() error {
-	if r.file != nil {
-		return r.file.Close()
-	}
-	return nil
-}
-
 // findPiece is a method on the HTTPServer struct that finds a piece by its CID.
 //
 // It first queries the database for cars associated with the CID. If there's an error querying the database,
@@ -332,15 +280,10 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 				errs = append(errs, errors.Wrapf(err, "failed to create rclone handler with storage %d", car.Storage.ID))
 				continue
 			}
-			obj, err := rclone.Check(ctx, car.StoragePath)
+			seeker, obj, err := storagesystem.Open(rclone, ctx, car.StoragePath)
 			if err != nil {
-				errs = append(errs, errors.Wrapf(err, "failed to check storage path %s", car.StoragePath))
+				errs = append(errs, errors.Wrapf(err, "failed to open storage path %s", car.StoragePath))
 				continue
-			}
-			seeker := &rcloneSeeker{
-				path:    car.StoragePath,
-				size:    obj.Size(),
-				handler: rclone,
 			}
 			return seeker, obj.ModTime(ctx), nil
 		}

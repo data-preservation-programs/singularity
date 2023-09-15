@@ -50,6 +50,7 @@ import (
 	_ "github.com/rclone/rclone/backend/yandex"
 	_ "github.com/rclone/rclone/backend/zoho"
 	"github.com/rclone/rclone/fs"
+	"github.com/rclone/rclone/lib/encoder"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
@@ -284,6 +285,9 @@ func init() {
 
 			for _, provider := range providers {
 				option := option.Copy()
+				if backend.Name == "local" && option.Name == "encoding" {
+					option.Default = encoder.Base
+				}
 				option.Examples = underscore.Filter(option.Examples, func(example fs.OptionExample) bool {
 					return example.Provider == "" || example.Provider == provider
 				})

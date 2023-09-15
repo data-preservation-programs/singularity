@@ -3,6 +3,8 @@ package file
 
 import (
 	"context"
+	"io"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/stretchr/testify/mock"
@@ -34,6 +36,12 @@ type Handler interface {
 		source string,
 		fileInfo Info,
 	) (*model.File, error)
+
+	RetrieveFileHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		id uint64,
+	) (data io.ReadSeekCloser, name string, modTime time.Time, err error)
 }
 
 type DefaultHandler struct{}
@@ -68,4 +76,13 @@ func (m *MockFile) GetFileDealsHandler(
 ) ([]model.Deal, error) {
 	args := m.Called(ctx, db, id)
 	return args.Get(0).([]model.Deal), args.Error(1)
+}
+
+func (m *MockFile) RetrieveFileHandler(
+	ctx context.Context,
+	db *gorm.DB,
+	id uint64,
+) (data io.ReadSeekCloser, name string, modTime time.Time, err error) {
+	args := m.Called(ctx, db, id)
+	return args.Get(0).(io.ReadSeekCloser), args.Get(1).(string), args.Get(2).(time.Time), args.Error(3)
 }
