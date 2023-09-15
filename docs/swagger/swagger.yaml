@@ -271,6 +271,49 @@ definitions:
           is stored at the local absolute path.
         type: string
     type: object
+  model.ClientConfig:
+    properties:
+      caCert:
+        description: Paths to CA certificate used to verify servers
+        items:
+          type: string
+        type: array
+      clientCert:
+        description: Path to Client SSL certificate (PEM) for mutual TLS auth
+        type: string
+      clientKey:
+        description: Path to Client SSL private key (PEM) for mutual TLS auth
+        type: string
+      connectTimeout:
+        description: HTTP Client Connect timeout
+        type: integer
+      disableHttp2:
+        description: Disable HTTP/2 in the transport
+        type: boolean
+      disableHttpKeepAlives:
+        description: Disable HTTP keep-alives and use each connection once.
+        type: boolean
+      expectContinueTimeout:
+        description: Timeout when using expect / 100-continue in HTTP
+        type: integer
+      headers:
+        additionalProperties:
+          type: string
+        description: Set HTTP header for all transactions
+        type: object
+      insecureSkipVerify:
+        description: Do not verify the server SSL certificate (insecure)
+        type: boolean
+      noGzip:
+        description: 'Don''t set Accept-Encoding: gzip'
+        type: boolean
+      timeout:
+        description: IO idle timeout
+        type: integer
+      userAgent:
+        description: Set the user-agent to a specified string
+        type: string
+    type: object
   model.ConfigMap:
     additionalProperties:
       type: string
@@ -531,6 +574,10 @@ definitions:
     - ScheduleCompleted
   model.Storage:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: ClientConfig is the HTTP configuration for the storage, if applicable.
       config:
         allOf:
         - $ref: '#/definitions/model.ConfigMap'
@@ -1024,8 +1071,14 @@ definitions:
     type: object
   storage.createAcdStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.acdConfig'
+        allOf:
+        - $ref: '#/definitions/storage.acdConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1036,8 +1089,14 @@ definitions:
     type: object
   storage.createAzureblobStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.azureblobConfig'
+        allOf:
+        - $ref: '#/definitions/storage.azureblobConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1048,8 +1107,14 @@ definitions:
     type: object
   storage.createB2StorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.b2Config'
+        allOf:
+        - $ref: '#/definitions/storage.b2Config'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1060,8 +1125,14 @@ definitions:
     type: object
   storage.createBoxStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.boxConfig'
+        allOf:
+        - $ref: '#/definitions/storage.boxConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1072,8 +1143,14 @@ definitions:
     type: object
   storage.createDriveStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.driveConfig'
+        allOf:
+        - $ref: '#/definitions/storage.driveConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1084,8 +1161,14 @@ definitions:
     type: object
   storage.createDropboxStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.dropboxConfig'
+        allOf:
+        - $ref: '#/definitions/storage.dropboxConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1096,8 +1179,14 @@ definitions:
     type: object
   storage.createFichierStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.fichierConfig'
+        allOf:
+        - $ref: '#/definitions/storage.fichierConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1108,8 +1197,14 @@ definitions:
     type: object
   storage.createFilefabricStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.filefabricConfig'
+        allOf:
+        - $ref: '#/definitions/storage.filefabricConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1120,8 +1215,14 @@ definitions:
     type: object
   storage.createFtpStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.ftpConfig'
+        allOf:
+        - $ref: '#/definitions/storage.ftpConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1132,8 +1233,14 @@ definitions:
     type: object
   storage.createGcsStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.gcsConfig'
+        allOf:
+        - $ref: '#/definitions/storage.gcsConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1144,8 +1251,14 @@ definitions:
     type: object
   storage.createGphotosStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.gphotosConfig'
+        allOf:
+        - $ref: '#/definitions/storage.gphotosConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1156,8 +1269,14 @@ definitions:
     type: object
   storage.createHdfsStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.hdfsConfig'
+        allOf:
+        - $ref: '#/definitions/storage.hdfsConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1168,8 +1287,14 @@ definitions:
     type: object
   storage.createHidriveStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.hidriveConfig'
+        allOf:
+        - $ref: '#/definitions/storage.hidriveConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1180,8 +1305,14 @@ definitions:
     type: object
   storage.createHttpStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.httpConfig'
+        allOf:
+        - $ref: '#/definitions/storage.httpConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1192,8 +1323,14 @@ definitions:
     type: object
   storage.createInternetarchiveStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.internetarchiveConfig'
+        allOf:
+        - $ref: '#/definitions/storage.internetarchiveConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1204,8 +1341,14 @@ definitions:
     type: object
   storage.createJottacloudStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.jottacloudConfig'
+        allOf:
+        - $ref: '#/definitions/storage.jottacloudConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1216,8 +1359,14 @@ definitions:
     type: object
   storage.createKoofrDigistorageStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.koofrDigistorageConfig'
+        allOf:
+        - $ref: '#/definitions/storage.koofrDigistorageConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1228,8 +1377,14 @@ definitions:
     type: object
   storage.createKoofrKoofrStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.koofrKoofrConfig'
+        allOf:
+        - $ref: '#/definitions/storage.koofrKoofrConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1240,8 +1395,14 @@ definitions:
     type: object
   storage.createKoofrOtherStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.koofrOtherConfig'
+        allOf:
+        - $ref: '#/definitions/storage.koofrOtherConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1252,8 +1413,14 @@ definitions:
     type: object
   storage.createLocalStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.localConfig'
+        allOf:
+        - $ref: '#/definitions/storage.localConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1264,8 +1431,14 @@ definitions:
     type: object
   storage.createMailruStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.mailruConfig'
+        allOf:
+        - $ref: '#/definitions/storage.mailruConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1276,8 +1449,14 @@ definitions:
     type: object
   storage.createMegaStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.megaConfig'
+        allOf:
+        - $ref: '#/definitions/storage.megaConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1288,8 +1467,14 @@ definitions:
     type: object
   storage.createNetstorageStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.netstorageConfig'
+        allOf:
+        - $ref: '#/definitions/storage.netstorageConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1300,8 +1485,14 @@ definitions:
     type: object
   storage.createOnedriveStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.onedriveConfig'
+        allOf:
+        - $ref: '#/definitions/storage.onedriveConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1312,8 +1503,14 @@ definitions:
     type: object
   storage.createOosEnv_authStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.oosEnv_authConfig'
+        allOf:
+        - $ref: '#/definitions/storage.oosEnv_authConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1324,8 +1521,14 @@ definitions:
     type: object
   storage.createOosInstance_principal_authStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.oosInstance_principal_authConfig'
+        allOf:
+        - $ref: '#/definitions/storage.oosInstance_principal_authConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1336,8 +1539,14 @@ definitions:
     type: object
   storage.createOosNo_authStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.oosNo_authConfig'
+        allOf:
+        - $ref: '#/definitions/storage.oosNo_authConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1348,8 +1557,14 @@ definitions:
     type: object
   storage.createOosResource_principal_authStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.oosResource_principal_authConfig'
+        allOf:
+        - $ref: '#/definitions/storage.oosResource_principal_authConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1360,8 +1575,14 @@ definitions:
     type: object
   storage.createOosUser_principal_authStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.oosUser_principal_authConfig'
+        allOf:
+        - $ref: '#/definitions/storage.oosUser_principal_authConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1372,8 +1593,14 @@ definitions:
     type: object
   storage.createOpendriveStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.opendriveConfig'
+        allOf:
+        - $ref: '#/definitions/storage.opendriveConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1384,8 +1611,14 @@ definitions:
     type: object
   storage.createPcloudStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.pcloudConfig'
+        allOf:
+        - $ref: '#/definitions/storage.pcloudConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1396,8 +1629,14 @@ definitions:
     type: object
   storage.createPremiumizemeStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.premiumizemeConfig'
+        allOf:
+        - $ref: '#/definitions/storage.premiumizemeConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1408,8 +1647,14 @@ definitions:
     type: object
   storage.createPutioStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.putioConfig'
+        allOf:
+        - $ref: '#/definitions/storage.putioConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1420,8 +1665,14 @@ definitions:
     type: object
   storage.createQingstorStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.qingstorConfig'
+        allOf:
+        - $ref: '#/definitions/storage.qingstorConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1432,8 +1683,14 @@ definitions:
     type: object
   storage.createS3AWSStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3AWSConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3AWSConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1444,8 +1701,14 @@ definitions:
     type: object
   storage.createS3AlibabaStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3AlibabaConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3AlibabaConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1456,8 +1719,14 @@ definitions:
     type: object
   storage.createS3ArvanCloudStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3ArvanCloudConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3ArvanCloudConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1468,8 +1737,14 @@ definitions:
     type: object
   storage.createS3CephStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3CephConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3CephConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1480,8 +1755,14 @@ definitions:
     type: object
   storage.createS3ChinaMobileStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3ChinaMobileConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3ChinaMobileConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1492,8 +1773,14 @@ definitions:
     type: object
   storage.createS3CloudflareStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3CloudflareConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3CloudflareConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1504,8 +1791,14 @@ definitions:
     type: object
   storage.createS3DigitalOceanStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3DigitalOceanConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3DigitalOceanConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1516,8 +1809,14 @@ definitions:
     type: object
   storage.createS3DreamhostStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3DreamhostConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3DreamhostConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1528,8 +1827,14 @@ definitions:
     type: object
   storage.createS3HuaweiOBSStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3HuaweiOBSConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3HuaweiOBSConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1540,8 +1845,14 @@ definitions:
     type: object
   storage.createS3IBMCOSStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3IBMCOSConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3IBMCOSConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1552,8 +1863,14 @@ definitions:
     type: object
   storage.createS3IDriveStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3IDriveConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3IDriveConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1564,8 +1881,14 @@ definitions:
     type: object
   storage.createS3IONOSStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3IONOSConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3IONOSConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1576,8 +1899,14 @@ definitions:
     type: object
   storage.createS3LiaraStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3LiaraConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3LiaraConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1588,8 +1917,14 @@ definitions:
     type: object
   storage.createS3LyveCloudStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3LyveCloudConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3LyveCloudConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1600,8 +1935,14 @@ definitions:
     type: object
   storage.createS3MinioStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3MinioConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3MinioConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1612,8 +1953,14 @@ definitions:
     type: object
   storage.createS3NeteaseStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3NeteaseConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3NeteaseConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1624,8 +1971,14 @@ definitions:
     type: object
   storage.createS3OtherStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3OtherConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3OtherConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1636,8 +1989,14 @@ definitions:
     type: object
   storage.createS3QiniuStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3QiniuConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3QiniuConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1648,8 +2007,14 @@ definitions:
     type: object
   storage.createS3RackCorpStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3RackCorpConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3RackCorpConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1660,8 +2025,14 @@ definitions:
     type: object
   storage.createS3ScalewayStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3ScalewayConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3ScalewayConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1672,8 +2043,14 @@ definitions:
     type: object
   storage.createS3SeaweedFSStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3SeaweedFSConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3SeaweedFSConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1684,8 +2061,14 @@ definitions:
     type: object
   storage.createS3StackPathStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3StackPathConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3StackPathConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1696,8 +2079,14 @@ definitions:
     type: object
   storage.createS3StorjStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3StorjConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3StorjConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1708,8 +2097,14 @@ definitions:
     type: object
   storage.createS3TencentCOSStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3TencentCOSConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3TencentCOSConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1720,8 +2115,14 @@ definitions:
     type: object
   storage.createS3WasabiStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.s3WasabiConfig'
+        allOf:
+        - $ref: '#/definitions/storage.s3WasabiConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1732,8 +2133,14 @@ definitions:
     type: object
   storage.createSeafileStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.seafileConfig'
+        allOf:
+        - $ref: '#/definitions/storage.seafileConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1744,8 +2151,14 @@ definitions:
     type: object
   storage.createSftpStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.sftpConfig'
+        allOf:
+        - $ref: '#/definitions/storage.sftpConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1756,8 +2169,14 @@ definitions:
     type: object
   storage.createSharefileStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.sharefileConfig'
+        allOf:
+        - $ref: '#/definitions/storage.sharefileConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1768,8 +2187,14 @@ definitions:
     type: object
   storage.createSiaStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.siaConfig'
+        allOf:
+        - $ref: '#/definitions/storage.siaConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1780,8 +2205,14 @@ definitions:
     type: object
   storage.createSmbStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.smbConfig'
+        allOf:
+        - $ref: '#/definitions/storage.smbConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1792,8 +2223,14 @@ definitions:
     type: object
   storage.createStorjExistingStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.storjExistingConfig'
+        allOf:
+        - $ref: '#/definitions/storage.storjExistingConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1804,8 +2241,14 @@ definitions:
     type: object
   storage.createStorjNewStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.storjNewConfig'
+        allOf:
+        - $ref: '#/definitions/storage.storjNewConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1816,8 +2259,14 @@ definitions:
     type: object
   storage.createSugarsyncStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.sugarsyncConfig'
+        allOf:
+        - $ref: '#/definitions/storage.sugarsyncConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1828,8 +2277,14 @@ definitions:
     type: object
   storage.createSwiftStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.swiftConfig'
+        allOf:
+        - $ref: '#/definitions/storage.swiftConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1840,8 +2295,14 @@ definitions:
     type: object
   storage.createUptoboxStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.uptoboxConfig'
+        allOf:
+        - $ref: '#/definitions/storage.uptoboxConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1852,8 +2313,14 @@ definitions:
     type: object
   storage.createWebdavStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.webdavConfig'
+        allOf:
+        - $ref: '#/definitions/storage.webdavConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1864,8 +2331,14 @@ definitions:
     type: object
   storage.createYandexStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.yandexConfig'
+        allOf:
+        - $ref: '#/definitions/storage.yandexConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage
@@ -1876,8 +2349,14 @@ definitions:
     type: object
   storage.createZohoStorageRequest:
     properties:
+      clientConfig:
+        allOf:
+        - $ref: '#/definitions/model.ClientConfig'
+        description: config for underlying HTTP client
       config:
-        $ref: '#/definitions/storage.zohoConfig'
+        allOf:
+        - $ref: '#/definitions/storage.zohoConfig'
+        description: config for the storage
       name:
         description: Name of the storage, must be unique
         example: my-storage

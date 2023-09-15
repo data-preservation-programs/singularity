@@ -156,11 +156,57 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 
 	ctx, _ = fs.AddConfig(ctx)
 	config := fs.GetConfig(ctx)
-	config.UseServerModTime = true
+	overrideConfig(config, s)
+
 	f, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(s.Config))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
 	return &RCloneHandler{s.Name, f}, nil
+}
+
+func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
+	config.UseServerModTime = true
+	if s.ClientConfig.ConnectTimeout != nil {
+		config.ConnectTimeout = *s.ClientConfig.ConnectTimeout
+	}
+	if s.ClientConfig.Timeout != nil {
+		config.Timeout = *s.ClientConfig.Timeout
+	}
+	if s.ClientConfig.ExpectContinueTimeout != nil {
+		config.ExpectContinueTimeout = *s.ClientConfig.ExpectContinueTimeout
+	}
+	if s.ClientConfig.InsecureSkipVerify != nil {
+		config.InsecureSkipVerify = true
+	}
+	if s.ClientConfig.NoGzip != nil {
+		config.NoGzip = true
+	}
+	if s.ClientConfig.UserAgent != nil {
+		config.UserAgent = *s.ClientConfig.UserAgent
+	}
+	if len(s.ClientConfig.CaCert) > 0 {
+		config.CaCert = s.ClientConfig.CaCert
+	}
+	if s.ClientConfig.ClientCert != nil {
+		config.ClientCert = *s.ClientConfig.ClientCert
+	}
+	if s.ClientConfig.ClientKey != nil {
+		config.ClientKey = *s.ClientConfig.ClientKey
+	}
+	if len(s.ClientConfig.Headers) > 0 {
+		for k, v := range s.ClientConfig.Headers {
+			config.Headers = append(config.Headers, &fs.HTTPOption{
+				Key:   k,
+				Value: v,
+			})
+		}
+	}
+	if s.ClientConfig.DisableHTTP2 != nil {
+		config.DisableHTTP2 = *s.ClientConfig.DisableHTTP2
+	}
+	if s.ClientConfig.DisableHTTPKeepAlives != nil {
+		config.DisableHTTPKeepAlives = *s.ClientConfig.DisableHTTPKeepAlives
+	}
 }

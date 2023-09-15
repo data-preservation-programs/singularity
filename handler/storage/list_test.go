@@ -13,7 +13,7 @@ import (
 func TestListStoragesHandler(t *testing.T) {
 	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		tmp := t.TempDir()
-		_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
+		_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil, model.ClientConfig{}})
 		require.NoError(t, err)
 		err = db.Create(&model.Preparation{
 			SourceStorages: []model.Storage{

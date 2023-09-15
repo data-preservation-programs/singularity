@@ -5703,6 +5703,65 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ClientConfig": {
+            "type": "object",
+            "properties": {
+                "caCert": {
+                    "description": "Paths to CA certificate used to verify servers",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "clientCert": {
+                    "description": "Path to Client SSL certificate (PEM) for mutual TLS auth",
+                    "type": "string"
+                },
+                "clientKey": {
+                    "description": "Path to Client SSL private key (PEM) for mutual TLS auth",
+                    "type": "string"
+                },
+                "connectTimeout": {
+                    "description": "HTTP Client Connect timeout",
+                    "type": "integer"
+                },
+                "disableHttp2": {
+                    "description": "Disable HTTP/2 in the transport",
+                    "type": "boolean"
+                },
+                "disableHttpKeepAlives": {
+                    "description": "Disable HTTP keep-alives and use each connection once.",
+                    "type": "boolean"
+                },
+                "expectContinueTimeout": {
+                    "description": "Timeout when using expect / 100-continue in HTTP",
+                    "type": "integer"
+                },
+                "headers": {
+                    "description": "Set HTTP header for all transactions",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "insecureSkipVerify": {
+                    "description": "Do not verify the server SSL certificate (insecure)",
+                    "type": "boolean"
+                },
+                "noGzip": {
+                    "description": "Don't set Accept-Encoding: gzip",
+                    "type": "boolean"
+                },
+                "timeout": {
+                    "description": "IO idle timeout",
+                    "type": "integer"
+                },
+                "userAgent": {
+                    "description": "Set the user-agent to a specified string",
+                    "type": "string"
+                }
+            }
+        },
         "model.ConfigMap": {
             "type": "object",
             "additionalProperties": {
@@ -6071,6 +6130,14 @@ const docTemplate = `{
         "model.Storage": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "ClientConfig is the HTTP configuration for the storage, if applicable.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
                     "description": "Config is a map of key-value pairs that can be used to store RClone options.",
                     "allOf": [
@@ -6715,8 +6782,21 @@ const docTemplate = `{
         "storage.createAcdStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.acdConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.acdConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6732,8 +6812,21 @@ const docTemplate = `{
         "storage.createAzureblobStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.azureblobConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.azureblobConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6749,8 +6842,21 @@ const docTemplate = `{
         "storage.createB2StorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.b2Config"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.b2Config"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6766,8 +6872,21 @@ const docTemplate = `{
         "storage.createBoxStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.boxConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.boxConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6783,8 +6902,21 @@ const docTemplate = `{
         "storage.createDriveStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.driveConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.driveConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6800,8 +6932,21 @@ const docTemplate = `{
         "storage.createDropboxStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.dropboxConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.dropboxConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6817,8 +6962,21 @@ const docTemplate = `{
         "storage.createFichierStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.fichierConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.fichierConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6834,8 +6992,21 @@ const docTemplate = `{
         "storage.createFilefabricStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.filefabricConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.filefabricConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6851,8 +7022,21 @@ const docTemplate = `{
         "storage.createFtpStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.ftpConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.ftpConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6868,8 +7052,21 @@ const docTemplate = `{
         "storage.createGcsStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.gcsConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.gcsConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6885,8 +7082,21 @@ const docTemplate = `{
         "storage.createGphotosStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.gphotosConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.gphotosConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6902,8 +7112,21 @@ const docTemplate = `{
         "storage.createHdfsStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.hdfsConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.hdfsConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6919,8 +7142,21 @@ const docTemplate = `{
         "storage.createHidriveStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.hidriveConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.hidriveConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6936,8 +7172,21 @@ const docTemplate = `{
         "storage.createHttpStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.httpConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.httpConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6953,8 +7202,21 @@ const docTemplate = `{
         "storage.createInternetarchiveStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.internetarchiveConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.internetarchiveConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6970,8 +7232,21 @@ const docTemplate = `{
         "storage.createJottacloudStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.jottacloudConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.jottacloudConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -6987,8 +7262,21 @@ const docTemplate = `{
         "storage.createKoofrDigistorageStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.koofrDigistorageConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.koofrDigistorageConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7004,8 +7292,21 @@ const docTemplate = `{
         "storage.createKoofrKoofrStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.koofrKoofrConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.koofrKoofrConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7021,8 +7322,21 @@ const docTemplate = `{
         "storage.createKoofrOtherStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.koofrOtherConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.koofrOtherConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7038,8 +7352,21 @@ const docTemplate = `{
         "storage.createLocalStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.localConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.localConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7055,8 +7382,21 @@ const docTemplate = `{
         "storage.createMailruStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.mailruConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.mailruConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7072,8 +7412,21 @@ const docTemplate = `{
         "storage.createMegaStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.megaConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.megaConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7089,8 +7442,21 @@ const docTemplate = `{
         "storage.createNetstorageStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.netstorageConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.netstorageConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7106,8 +7472,21 @@ const docTemplate = `{
         "storage.createOnedriveStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.onedriveConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.onedriveConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7123,8 +7502,21 @@ const docTemplate = `{
         "storage.createOosEnv_authStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.oosEnv_authConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.oosEnv_authConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7140,8 +7532,21 @@ const docTemplate = `{
         "storage.createOosInstance_principal_authStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.oosInstance_principal_authConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.oosInstance_principal_authConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7157,8 +7562,21 @@ const docTemplate = `{
         "storage.createOosNo_authStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.oosNo_authConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.oosNo_authConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7174,8 +7592,21 @@ const docTemplate = `{
         "storage.createOosResource_principal_authStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.oosResource_principal_authConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.oosResource_principal_authConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7191,8 +7622,21 @@ const docTemplate = `{
         "storage.createOosUser_principal_authStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.oosUser_principal_authConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.oosUser_principal_authConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7208,8 +7652,21 @@ const docTemplate = `{
         "storage.createOpendriveStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.opendriveConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.opendriveConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7225,8 +7682,21 @@ const docTemplate = `{
         "storage.createPcloudStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.pcloudConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.pcloudConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7242,8 +7712,21 @@ const docTemplate = `{
         "storage.createPremiumizemeStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.premiumizemeConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.premiumizemeConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7259,8 +7742,21 @@ const docTemplate = `{
         "storage.createPutioStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.putioConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.putioConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7276,8 +7772,21 @@ const docTemplate = `{
         "storage.createQingstorStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.qingstorConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.qingstorConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7293,8 +7802,21 @@ const docTemplate = `{
         "storage.createS3AWSStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3AWSConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3AWSConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7310,8 +7832,21 @@ const docTemplate = `{
         "storage.createS3AlibabaStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3AlibabaConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3AlibabaConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7327,8 +7862,21 @@ const docTemplate = `{
         "storage.createS3ArvanCloudStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3ArvanCloudConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3ArvanCloudConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7344,8 +7892,21 @@ const docTemplate = `{
         "storage.createS3CephStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3CephConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3CephConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7361,8 +7922,21 @@ const docTemplate = `{
         "storage.createS3ChinaMobileStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3ChinaMobileConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3ChinaMobileConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7378,8 +7952,21 @@ const docTemplate = `{
         "storage.createS3CloudflareStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3CloudflareConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3CloudflareConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7395,8 +7982,21 @@ const docTemplate = `{
         "storage.createS3DigitalOceanStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3DigitalOceanConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3DigitalOceanConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7412,8 +8012,21 @@ const docTemplate = `{
         "storage.createS3DreamhostStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3DreamhostConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3DreamhostConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7429,8 +8042,21 @@ const docTemplate = `{
         "storage.createS3HuaweiOBSStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3HuaweiOBSConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3HuaweiOBSConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7446,8 +8072,21 @@ const docTemplate = `{
         "storage.createS3IBMCOSStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3IBMCOSConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3IBMCOSConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7463,8 +8102,21 @@ const docTemplate = `{
         "storage.createS3IDriveStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3IDriveConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3IDriveConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7480,8 +8132,21 @@ const docTemplate = `{
         "storage.createS3IONOSStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3IONOSConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3IONOSConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7497,8 +8162,21 @@ const docTemplate = `{
         "storage.createS3LiaraStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3LiaraConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3LiaraConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7514,8 +8192,21 @@ const docTemplate = `{
         "storage.createS3LyveCloudStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3LyveCloudConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3LyveCloudConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7531,8 +8222,21 @@ const docTemplate = `{
         "storage.createS3MinioStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3MinioConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3MinioConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7548,8 +8252,21 @@ const docTemplate = `{
         "storage.createS3NeteaseStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3NeteaseConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3NeteaseConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7565,8 +8282,21 @@ const docTemplate = `{
         "storage.createS3OtherStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3OtherConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3OtherConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7582,8 +8312,21 @@ const docTemplate = `{
         "storage.createS3QiniuStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3QiniuConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3QiniuConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7599,8 +8342,21 @@ const docTemplate = `{
         "storage.createS3RackCorpStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3RackCorpConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3RackCorpConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7616,8 +8372,21 @@ const docTemplate = `{
         "storage.createS3ScalewayStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3ScalewayConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3ScalewayConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7633,8 +8402,21 @@ const docTemplate = `{
         "storage.createS3SeaweedFSStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3SeaweedFSConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3SeaweedFSConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7650,8 +8432,21 @@ const docTemplate = `{
         "storage.createS3StackPathStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3StackPathConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3StackPathConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7667,8 +8462,21 @@ const docTemplate = `{
         "storage.createS3StorjStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3StorjConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3StorjConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7684,8 +8492,21 @@ const docTemplate = `{
         "storage.createS3TencentCOSStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3TencentCOSConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3TencentCOSConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7701,8 +8522,21 @@ const docTemplate = `{
         "storage.createS3WasabiStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.s3WasabiConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.s3WasabiConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7718,8 +8552,21 @@ const docTemplate = `{
         "storage.createSeafileStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.seafileConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.seafileConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7735,8 +8582,21 @@ const docTemplate = `{
         "storage.createSftpStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.sftpConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.sftpConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7752,8 +8612,21 @@ const docTemplate = `{
         "storage.createSharefileStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.sharefileConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.sharefileConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7769,8 +8642,21 @@ const docTemplate = `{
         "storage.createSiaStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.siaConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.siaConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7786,8 +8672,21 @@ const docTemplate = `{
         "storage.createSmbStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.smbConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.smbConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7803,8 +8702,21 @@ const docTemplate = `{
         "storage.createStorjExistingStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.storjExistingConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.storjExistingConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7820,8 +8732,21 @@ const docTemplate = `{
         "storage.createStorjNewStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.storjNewConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.storjNewConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7837,8 +8762,21 @@ const docTemplate = `{
         "storage.createSugarsyncStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.sugarsyncConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.sugarsyncConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7854,8 +8792,21 @@ const docTemplate = `{
         "storage.createSwiftStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.swiftConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.swiftConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7871,8 +8822,21 @@ const docTemplate = `{
         "storage.createUptoboxStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.uptoboxConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.uptoboxConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7888,8 +8852,21 @@ const docTemplate = `{
         "storage.createWebdavStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.webdavConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.webdavConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7905,8 +8882,21 @@ const docTemplate = `{
         "storage.createYandexStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.yandexConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.yandexConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",
@@ -7922,8 +8912,21 @@ const docTemplate = `{
         "storage.createZohoStorageRequest": {
             "type": "object",
             "properties": {
+                "clientConfig": {
+                    "description": "config for underlying HTTP client",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ClientConfig"
+                        }
+                    ]
+                },
                 "config": {
-                    "$ref": "#/definitions/storage.zohoConfig"
+                    "description": "config for the storage",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/storage.zohoConfig"
+                        }
+                    ]
                 },
                 "name": {
                     "description": "Name of the storage, must be unique",

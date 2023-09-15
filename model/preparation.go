@@ -62,13 +62,14 @@ type StorageID uint32
 
 // Storage is a storage system definition that can be used as either source or output of a Preparation.
 type Storage struct {
-	ID        StorageID `gorm:"primaryKey" json:"id"`
-	Name      string    `gorm:"unique"     json:"name"`
-	CreatedAt time.Time `json:"createdAt"  table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt time.Time `json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
-	Type      string    `json:"type"`
-	Path      string    `json:"path"`                                                                  // Path is the path to the storage root.
-	Config    ConfigMap `gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
+	ID           StorageID    `gorm:"primaryKey" json:"id"`
+	Name         string       `gorm:"unique"     json:"name"`
+	CreatedAt    time.Time    `json:"createdAt"  table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt    time.Time    `json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
+	Type         string       `json:"type"`
+	Path         string       `json:"path"`                                                                  // Path is the path to the storage root.
+	Config       ConfigMap    `gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
+	ClientConfig ClientConfig `gorm:"type:JSON"  json:"clientConfig"                        table:"verbose"` // ClientConfig is the HTTP configuration for the storage, if applicable.
 
 	// Associations
 	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" table:"expand;header:As Source: "`

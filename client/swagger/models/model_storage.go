@@ -19,6 +19,11 @@ import (
 // swagger:model model.Storage
 type ModelStorage struct {
 
+	// ClientConfig is the HTTP configuration for the storage, if applicable.
+	ClientConfig struct {
+		ModelClientConfig
+	} `json:"clientConfig,omitempty"`
+
 	// Config is a map of key-value pairs that can be used to store RClone options.
 	Config struct {
 		ModelConfigMap
@@ -53,6 +58,10 @@ type ModelStorage struct {
 func (m *ModelStorage) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateClientConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateConfig(formats); err != nil {
 		res = append(res, err)
 	}
@@ -68,6 +77,14 @@ func (m *ModelStorage) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelStorage) validateClientConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientConfig) { // not required
+		return nil
+	}
+
 	return nil
 }
 
@@ -135,6 +152,10 @@ func (m *ModelStorage) validatePreparationsAsSource(formats strfmt.Registry) err
 func (m *ModelStorage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateClientConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateConfig(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -150,6 +171,11 @@ func (m *ModelStorage) ContextValidate(ctx context.Context, formats strfmt.Regis
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ModelStorage) contextValidateClientConfig(ctx context.Context, formats strfmt.Registry) error {
+
 	return nil
 }
 

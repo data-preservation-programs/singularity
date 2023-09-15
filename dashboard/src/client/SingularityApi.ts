@@ -192,6 +192,33 @@ export interface ModelCar {
   storagePath?: string;
 }
 
+export interface ModelClientConfig {
+  /** Paths to CA certificate used to verify servers */
+  caCert?: string[];
+  /** Path to Client SSL certificate (PEM) for mutual TLS auth */
+  clientCert?: string;
+  /** Path to Client SSL private key (PEM) for mutual TLS auth */
+  clientKey?: string;
+  /** HTTP Client Connect timeout */
+  connectTimeout?: number;
+  /** Disable HTTP/2 in the transport */
+  disableHttp2?: boolean;
+  /** Disable HTTP keep-alives and use each connection once. */
+  disableHttpKeepAlives?: boolean;
+  /** Timeout when using expect / 100-continue in HTTP */
+  expectContinueTimeout?: number;
+  /** Set HTTP header for all transactions */
+  headers?: Record<string, string>;
+  /** Do not verify the server SSL certificate (insecure) */
+  insecureSkipVerify?: boolean;
+  /** Don't set Accept-Encoding: gzip */
+  noGzip?: boolean;
+  /** IO idle timeout */
+  timeout?: number;
+  /** Set the user-agent to a specified string */
+  userAgent?: string;
+}
+
 export type ModelConfigMap = Record<string, string>;
 
 export interface ModelDeal {
@@ -337,6 +364,8 @@ export enum ModelScheduleState {
 }
 
 export interface ModelStorage {
+  /** ClientConfig is the HTTP configuration for the storage, if applicable. */
+  clientConfig?: ModelClientConfig;
   /** Config is a map of key-value pairs that can be used to store RClone options. */
   config?: ModelConfigMap;
   createdAt?: string;
@@ -772,6 +801,9 @@ export interface StorageBoxConfig {
 }
 
 export interface StorageCreateAcdStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageAcdConfig;
   /**
    * Name of the storage, must be unique
@@ -783,6 +815,9 @@ export interface StorageCreateAcdStorageRequest {
 }
 
 export interface StorageCreateAzureblobStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageAzureblobConfig;
   /**
    * Name of the storage, must be unique
@@ -794,6 +829,9 @@ export interface StorageCreateAzureblobStorageRequest {
 }
 
 export interface StorageCreateB2StorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageB2Config;
   /**
    * Name of the storage, must be unique
@@ -805,6 +843,9 @@ export interface StorageCreateB2StorageRequest {
 }
 
 export interface StorageCreateBoxStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageBoxConfig;
   /**
    * Name of the storage, must be unique
@@ -816,6 +857,9 @@ export interface StorageCreateBoxStorageRequest {
 }
 
 export interface StorageCreateDriveStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageDriveConfig;
   /**
    * Name of the storage, must be unique
@@ -827,6 +871,9 @@ export interface StorageCreateDriveStorageRequest {
 }
 
 export interface StorageCreateDropboxStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageDropboxConfig;
   /**
    * Name of the storage, must be unique
@@ -838,6 +885,9 @@ export interface StorageCreateDropboxStorageRequest {
 }
 
 export interface StorageCreateFichierStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageFichierConfig;
   /**
    * Name of the storage, must be unique
@@ -849,6 +899,9 @@ export interface StorageCreateFichierStorageRequest {
 }
 
 export interface StorageCreateFilefabricStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageFilefabricConfig;
   /**
    * Name of the storage, must be unique
@@ -860,6 +913,9 @@ export interface StorageCreateFilefabricStorageRequest {
 }
 
 export interface StorageCreateFtpStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageFtpConfig;
   /**
    * Name of the storage, must be unique
@@ -871,6 +927,9 @@ export interface StorageCreateFtpStorageRequest {
 }
 
 export interface StorageCreateGcsStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageGcsConfig;
   /**
    * Name of the storage, must be unique
@@ -882,6 +941,9 @@ export interface StorageCreateGcsStorageRequest {
 }
 
 export interface StorageCreateGphotosStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageGphotosConfig;
   /**
    * Name of the storage, must be unique
@@ -893,6 +955,9 @@ export interface StorageCreateGphotosStorageRequest {
 }
 
 export interface StorageCreateHdfsStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageHdfsConfig;
   /**
    * Name of the storage, must be unique
@@ -904,6 +969,9 @@ export interface StorageCreateHdfsStorageRequest {
 }
 
 export interface StorageCreateHidriveStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageHidriveConfig;
   /**
    * Name of the storage, must be unique
@@ -915,6 +983,9 @@ export interface StorageCreateHidriveStorageRequest {
 }
 
 export interface StorageCreateHttpStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageHttpConfig;
   /**
    * Name of the storage, must be unique
@@ -926,6 +997,9 @@ export interface StorageCreateHttpStorageRequest {
 }
 
 export interface StorageCreateInternetarchiveStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageInternetarchiveConfig;
   /**
    * Name of the storage, must be unique
@@ -937,6 +1011,9 @@ export interface StorageCreateInternetarchiveStorageRequest {
 }
 
 export interface StorageCreateJottacloudStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageJottacloudConfig;
   /**
    * Name of the storage, must be unique
@@ -948,6 +1025,9 @@ export interface StorageCreateJottacloudStorageRequest {
 }
 
 export interface StorageCreateKoofrDigistorageStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageKoofrDigistorageConfig;
   /**
    * Name of the storage, must be unique
@@ -959,6 +1039,9 @@ export interface StorageCreateKoofrDigistorageStorageRequest {
 }
 
 export interface StorageCreateKoofrKoofrStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageKoofrKoofrConfig;
   /**
    * Name of the storage, must be unique
@@ -970,6 +1053,9 @@ export interface StorageCreateKoofrKoofrStorageRequest {
 }
 
 export interface StorageCreateKoofrOtherStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageKoofrOtherConfig;
   /**
    * Name of the storage, must be unique
@@ -981,6 +1067,9 @@ export interface StorageCreateKoofrOtherStorageRequest {
 }
 
 export interface StorageCreateLocalStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageLocalConfig;
   /**
    * Name of the storage, must be unique
@@ -992,6 +1081,9 @@ export interface StorageCreateLocalStorageRequest {
 }
 
 export interface StorageCreateMailruStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageMailruConfig;
   /**
    * Name of the storage, must be unique
@@ -1003,6 +1095,9 @@ export interface StorageCreateMailruStorageRequest {
 }
 
 export interface StorageCreateMegaStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageMegaConfig;
   /**
    * Name of the storage, must be unique
@@ -1014,6 +1109,9 @@ export interface StorageCreateMegaStorageRequest {
 }
 
 export interface StorageCreateNetstorageStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageNetstorageConfig;
   /**
    * Name of the storage, must be unique
@@ -1025,6 +1123,9 @@ export interface StorageCreateNetstorageStorageRequest {
 }
 
 export interface StorageCreateOnedriveStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOnedriveConfig;
   /**
    * Name of the storage, must be unique
@@ -1036,6 +1137,9 @@ export interface StorageCreateOnedriveStorageRequest {
 }
 
 export interface StorageCreateOosEnvAuthStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOosEnvAuthConfig;
   /**
    * Name of the storage, must be unique
@@ -1047,6 +1151,9 @@ export interface StorageCreateOosEnvAuthStorageRequest {
 }
 
 export interface StorageCreateOosInstancePrincipalAuthStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOosInstancePrincipalAuthConfig;
   /**
    * Name of the storage, must be unique
@@ -1058,6 +1165,9 @@ export interface StorageCreateOosInstancePrincipalAuthStorageRequest {
 }
 
 export interface StorageCreateOosNoAuthStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOosNoAuthConfig;
   /**
    * Name of the storage, must be unique
@@ -1069,6 +1179,9 @@ export interface StorageCreateOosNoAuthStorageRequest {
 }
 
 export interface StorageCreateOosResourcePrincipalAuthStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOosResourcePrincipalAuthConfig;
   /**
    * Name of the storage, must be unique
@@ -1080,6 +1193,9 @@ export interface StorageCreateOosResourcePrincipalAuthStorageRequest {
 }
 
 export interface StorageCreateOosUserPrincipalAuthStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOosUserPrincipalAuthConfig;
   /**
    * Name of the storage, must be unique
@@ -1091,6 +1207,9 @@ export interface StorageCreateOosUserPrincipalAuthStorageRequest {
 }
 
 export interface StorageCreateOpendriveStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageOpendriveConfig;
   /**
    * Name of the storage, must be unique
@@ -1102,6 +1221,9 @@ export interface StorageCreateOpendriveStorageRequest {
 }
 
 export interface StorageCreatePcloudStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StoragePcloudConfig;
   /**
    * Name of the storage, must be unique
@@ -1113,6 +1235,9 @@ export interface StorageCreatePcloudStorageRequest {
 }
 
 export interface StorageCreatePremiumizemeStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StoragePremiumizemeConfig;
   /**
    * Name of the storage, must be unique
@@ -1124,6 +1249,9 @@ export interface StorageCreatePremiumizemeStorageRequest {
 }
 
 export interface StorageCreatePutioStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StoragePutioConfig;
   /**
    * Name of the storage, must be unique
@@ -1135,6 +1263,9 @@ export interface StorageCreatePutioStorageRequest {
 }
 
 export interface StorageCreateQingstorStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageQingstorConfig;
   /**
    * Name of the storage, must be unique
@@ -1146,6 +1277,9 @@ export interface StorageCreateQingstorStorageRequest {
 }
 
 export interface StorageCreateS3AWSStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3AWSConfig;
   /**
    * Name of the storage, must be unique
@@ -1157,6 +1291,9 @@ export interface StorageCreateS3AWSStorageRequest {
 }
 
 export interface StorageCreateS3AlibabaStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3AlibabaConfig;
   /**
    * Name of the storage, must be unique
@@ -1168,6 +1305,9 @@ export interface StorageCreateS3AlibabaStorageRequest {
 }
 
 export interface StorageCreateS3ArvanCloudStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3ArvanCloudConfig;
   /**
    * Name of the storage, must be unique
@@ -1179,6 +1319,9 @@ export interface StorageCreateS3ArvanCloudStorageRequest {
 }
 
 export interface StorageCreateS3CephStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3CephConfig;
   /**
    * Name of the storage, must be unique
@@ -1190,6 +1333,9 @@ export interface StorageCreateS3CephStorageRequest {
 }
 
 export interface StorageCreateS3ChinaMobileStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3ChinaMobileConfig;
   /**
    * Name of the storage, must be unique
@@ -1201,6 +1347,9 @@ export interface StorageCreateS3ChinaMobileStorageRequest {
 }
 
 export interface StorageCreateS3CloudflareStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3CloudflareConfig;
   /**
    * Name of the storage, must be unique
@@ -1212,6 +1361,9 @@ export interface StorageCreateS3CloudflareStorageRequest {
 }
 
 export interface StorageCreateS3DigitalOceanStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3DigitalOceanConfig;
   /**
    * Name of the storage, must be unique
@@ -1223,6 +1375,9 @@ export interface StorageCreateS3DigitalOceanStorageRequest {
 }
 
 export interface StorageCreateS3DreamhostStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3DreamhostConfig;
   /**
    * Name of the storage, must be unique
@@ -1234,6 +1389,9 @@ export interface StorageCreateS3DreamhostStorageRequest {
 }
 
 export interface StorageCreateS3HuaweiOBSStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3HuaweiOBSConfig;
   /**
    * Name of the storage, must be unique
@@ -1245,6 +1403,9 @@ export interface StorageCreateS3HuaweiOBSStorageRequest {
 }
 
 export interface StorageCreateS3IBMCOSStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3IBMCOSConfig;
   /**
    * Name of the storage, must be unique
@@ -1256,6 +1417,9 @@ export interface StorageCreateS3IBMCOSStorageRequest {
 }
 
 export interface StorageCreateS3IDriveStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3IDriveConfig;
   /**
    * Name of the storage, must be unique
@@ -1267,6 +1431,9 @@ export interface StorageCreateS3IDriveStorageRequest {
 }
 
 export interface StorageCreateS3IONOSStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3IONOSConfig;
   /**
    * Name of the storage, must be unique
@@ -1278,6 +1445,9 @@ export interface StorageCreateS3IONOSStorageRequest {
 }
 
 export interface StorageCreateS3LiaraStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3LiaraConfig;
   /**
    * Name of the storage, must be unique
@@ -1289,6 +1459,9 @@ export interface StorageCreateS3LiaraStorageRequest {
 }
 
 export interface StorageCreateS3LyveCloudStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3LyveCloudConfig;
   /**
    * Name of the storage, must be unique
@@ -1300,6 +1473,9 @@ export interface StorageCreateS3LyveCloudStorageRequest {
 }
 
 export interface StorageCreateS3MinioStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3MinioConfig;
   /**
    * Name of the storage, must be unique
@@ -1311,6 +1487,9 @@ export interface StorageCreateS3MinioStorageRequest {
 }
 
 export interface StorageCreateS3NeteaseStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3NeteaseConfig;
   /**
    * Name of the storage, must be unique
@@ -1322,6 +1501,9 @@ export interface StorageCreateS3NeteaseStorageRequest {
 }
 
 export interface StorageCreateS3OtherStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3OtherConfig;
   /**
    * Name of the storage, must be unique
@@ -1333,6 +1515,9 @@ export interface StorageCreateS3OtherStorageRequest {
 }
 
 export interface StorageCreateS3QiniuStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3QiniuConfig;
   /**
    * Name of the storage, must be unique
@@ -1344,6 +1529,9 @@ export interface StorageCreateS3QiniuStorageRequest {
 }
 
 export interface StorageCreateS3RackCorpStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3RackCorpConfig;
   /**
    * Name of the storage, must be unique
@@ -1355,6 +1543,9 @@ export interface StorageCreateS3RackCorpStorageRequest {
 }
 
 export interface StorageCreateS3ScalewayStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3ScalewayConfig;
   /**
    * Name of the storage, must be unique
@@ -1366,6 +1557,9 @@ export interface StorageCreateS3ScalewayStorageRequest {
 }
 
 export interface StorageCreateS3SeaweedFSStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3SeaweedFSConfig;
   /**
    * Name of the storage, must be unique
@@ -1377,6 +1571,9 @@ export interface StorageCreateS3SeaweedFSStorageRequest {
 }
 
 export interface StorageCreateS3StackPathStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3StackPathConfig;
   /**
    * Name of the storage, must be unique
@@ -1388,6 +1585,9 @@ export interface StorageCreateS3StackPathStorageRequest {
 }
 
 export interface StorageCreateS3StorjStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3StorjConfig;
   /**
    * Name of the storage, must be unique
@@ -1399,6 +1599,9 @@ export interface StorageCreateS3StorjStorageRequest {
 }
 
 export interface StorageCreateS3TencentCOSStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3TencentCOSConfig;
   /**
    * Name of the storage, must be unique
@@ -1410,6 +1613,9 @@ export interface StorageCreateS3TencentCOSStorageRequest {
 }
 
 export interface StorageCreateS3WasabiStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageS3WasabiConfig;
   /**
    * Name of the storage, must be unique
@@ -1421,6 +1627,9 @@ export interface StorageCreateS3WasabiStorageRequest {
 }
 
 export interface StorageCreateSeafileStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSeafileConfig;
   /**
    * Name of the storage, must be unique
@@ -1432,6 +1641,9 @@ export interface StorageCreateSeafileStorageRequest {
 }
 
 export interface StorageCreateSftpStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSftpConfig;
   /**
    * Name of the storage, must be unique
@@ -1443,6 +1655,9 @@ export interface StorageCreateSftpStorageRequest {
 }
 
 export interface StorageCreateSharefileStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSharefileConfig;
   /**
    * Name of the storage, must be unique
@@ -1454,6 +1669,9 @@ export interface StorageCreateSharefileStorageRequest {
 }
 
 export interface StorageCreateSiaStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSiaConfig;
   /**
    * Name of the storage, must be unique
@@ -1465,6 +1683,9 @@ export interface StorageCreateSiaStorageRequest {
 }
 
 export interface StorageCreateSmbStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSmbConfig;
   /**
    * Name of the storage, must be unique
@@ -1476,6 +1697,9 @@ export interface StorageCreateSmbStorageRequest {
 }
 
 export interface StorageCreateStorjExistingStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageStorjExistingConfig;
   /**
    * Name of the storage, must be unique
@@ -1487,6 +1711,9 @@ export interface StorageCreateStorjExistingStorageRequest {
 }
 
 export interface StorageCreateStorjNewStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageStorjNewConfig;
   /**
    * Name of the storage, must be unique
@@ -1498,6 +1725,9 @@ export interface StorageCreateStorjNewStorageRequest {
 }
 
 export interface StorageCreateSugarsyncStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSugarsyncConfig;
   /**
    * Name of the storage, must be unique
@@ -1509,6 +1739,9 @@ export interface StorageCreateSugarsyncStorageRequest {
 }
 
 export interface StorageCreateSwiftStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageSwiftConfig;
   /**
    * Name of the storage, must be unique
@@ -1520,6 +1753,9 @@ export interface StorageCreateSwiftStorageRequest {
 }
 
 export interface StorageCreateUptoboxStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageUptoboxConfig;
   /**
    * Name of the storage, must be unique
@@ -1531,6 +1767,9 @@ export interface StorageCreateUptoboxStorageRequest {
 }
 
 export interface StorageCreateWebdavStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageWebdavConfig;
   /**
    * Name of the storage, must be unique
@@ -1542,6 +1781,9 @@ export interface StorageCreateWebdavStorageRequest {
 }
 
 export interface StorageCreateYandexStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageYandexConfig;
   /**
    * Name of the storage, must be unique
@@ -1553,6 +1795,9 @@ export interface StorageCreateYandexStorageRequest {
 }
 
 export interface StorageCreateZohoStorageRequest {
+  /** config for underlying HTTP client */
+  clientConfig?: ModelClientConfig;
+  /** config for the storage */
   config?: StorageZohoConfig;
   /**
    * Name of the storage, must be unique
