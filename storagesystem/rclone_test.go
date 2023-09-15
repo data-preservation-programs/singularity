@@ -131,6 +131,9 @@ func TestRCloneHandler(t *testing.T) {
 			require.NotNil(t, entryChan)
 			scannedEntries = []Entry{}
 			for entry := range entryChan {
+				if entry.Info == nil {
+					continue
+				}
 				scannedEntries = append(scannedEntries, entry)
 			}
 			require.Len(t, scannedEntries, expect)

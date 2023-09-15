@@ -88,20 +88,20 @@ func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch ch
 		switch v := entry.(type) {
 		case fs.Directory:
 			dirPath := v.Remote()
-			// If 'last' starts with directory path followed by a slash, scan inside the directory with the remaining path.
-			if strings.HasPrefix(last, dirPath+"/") {
+			switch {
+			case strings.HasPrefix(last, dirPath+"/"):
+				// If 'last' starts with directory path followed by a slash, scan inside the directory with the remaining path.
 				err = h.scan(ctx, dirPath, last, ch)
 				if err != nil {
 					return errors.WithStack(err)
 				}
-			} else if startScanning || strings.Compare(dirPath, last) > 0 {
+			case startScanning || strings.Compare(dirPath, last) > 0:
 				// If we have started scanning or the directory is greater than 'last', scan inside without 'last' param.
 				err = h.scan(ctx, dirPath, "", ch)
 				if err != nil {
 					return errors.WithStack(err)
 				}
-			} else {
-				// Otherwise, skip the directory.
+			default:
 				continue
 			}
 			select {
