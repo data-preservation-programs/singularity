@@ -672,7 +672,7 @@ func TestAllAPIs(t *testing.T) {
 				require.NotNil(t, resp)
 				require.True(t, resp.IsSuccess())
 				require.Nil(t, partial)
-				require.Equal(t, "hello world", string(buf.Bytes()))
+				require.Equal(t, "hello world", buf.String())
 			})
 		})
 	})
