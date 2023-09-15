@@ -38,19 +38,17 @@ func runAPI(t *testing.T, ctx context.Context) func() {
 	}()
 
 	var resp *http2.Response
-	var body string
 	// try every 100ms for up to 5 seconds for server to come up
 	for i := 0; i < 50; i++ {
 		time.Sleep(100 * time.Millisecond)
-		resp, body, _ = gorequest.New().
-			Get(fmt.Sprintf("http://%s/robots.txt", apiBind)).End()
+		resp, _, _ = gorequest.New().
+			Get(fmt.Sprintf("http://%s/health", apiBind)).End()
 		if resp != nil && resp.StatusCode == http2.StatusOK {
 			break
 		}
 	}
 	require.NotNil(t, resp)
 	require.Equal(t, http2.StatusOK, resp.StatusCode)
-	require.Contains(t, body, "robotstxt.org")
 	return func() {
 		select {
 		case <-done:

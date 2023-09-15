@@ -420,6 +420,9 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 	s.setupRoutes(e)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 	e.Listener = s.listener
 
 	done := make(chan struct{})
