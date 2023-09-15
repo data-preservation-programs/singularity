@@ -145,30 +145,10 @@ func (d DealMakerImpl) GetProviderInfo(ctx context.Context, provider string) (*M
 		return file.Value(), nil
 	}
 
-	logger.Debugw("getting miner info", "miner", provider)
-	minerInfo := new(MinerInfo)
-	err := d.lotusClient.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
+	minerInfo, err := MinerInfoFetcher{Client: d.lotusClient}.GetProviderInfo(ctx, provider)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get miner info, miner: %s", provider)
+		return nil, err
 	}
-
-	logger.Debug("got miner info", "miner", provider, "minerInfo", minerInfo)
-	minerInfo.Multiaddrs = make([]multiaddr.Multiaddr, len(minerInfo.MultiaddrsBase64Encoded))
-	for i, addr := range minerInfo.MultiaddrsBase64Encoded {
-		decoded, err := base64.StdEncoding.DecodeString(addr)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to decode multiaddr %s", addr)
-		}
-		minerInfo.Multiaddrs[i], err = multiaddr.NewMultiaddrBytes(decoded)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse multiaddr %s", addr)
-		}
-	}
-	minerInfo.PeerID, err = peer.Decode(minerInfo.PeerIDEncoded)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to decode peer id %s", minerInfo.PeerIDEncoded)
-	}
-
 	d.minerInfoCache.Set(provider, minerInfo, ttlcache.DefaultTTL)
 	return minerInfo, nil
 }
@@ -647,4 +627,34 @@ func queueDealEvent(deal model.Deal) {
 		EndEpoch:   deal.EndEpoch - deal.StartEpoch,
 	}
 	analytics.Default.QueueDealEvent(dealEvent)
+}
+
+type MinerInfoFetcher struct {
+	Client jsonrpc.RPCClient
+}
+
+func (m MinerInfoFetcher) GetProviderInfo(ctx context.Context, provider string) (*MinerInfo, error) {
+	logger.Debugw("getting miner info", "miner", provider)
+	minerInfo := new(MinerInfo)
+	err := d.lotusClient.CallFor(ctx, minerInfo, "Filecoin.StateMinerInfo", provider, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get miner info, miner: %s", provider)
+	}
+
+	logger.Debug("got miner info", "miner", provider, "minerInfo", minerInfo)
+	minerInfo.Multiaddrs = make([]multiaddr.Multiaddr, len(minerInfo.MultiaddrsBase64Encoded))
+	for i, addr := range minerInfo.MultiaddrsBase64Encoded {
+		decoded, err := base64.StdEncoding.DecodeString(addr)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to decode multiaddr %s", addr)
+		}
+		minerInfo.Multiaddrs[i], err = multiaddr.NewMultiaddrBytes(decoded)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse multiaddr %s", addr)
+		}
+	}
+	minerInfo.PeerID, err = peer.Decode(minerInfo.PeerIDEncoded)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to decode peer id %s", minerInfo.PeerIDEncoded)
+	}
 }
