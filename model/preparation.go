@@ -62,20 +62,18 @@ type StorageID uint32
 
 // Storage is a storage system definition that can be used as either source or output of a Preparation.
 type Storage struct {
-	ID           StorageID    `gorm:"primaryKey" json:"id"`
-	Name         string       `gorm:"unique"     json:"name"`
-	CreatedAt    time.Time    `json:"createdAt"  table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt    time.Time    `json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
-	Type         string       `json:"type"`
-	Path         string       `json:"path"`                                                                  // Path is the path to the storage root.
-	Config       ConfigMap    `gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
-	ClientConfig ClientConfig `gorm:"type:JSON"  json:"clientConfig"                        table:"verbose"` // ClientConfig is the HTTP configuration for the storage, if applicable.
+	ID           StorageID    `cbor:"-"                    gorm:"primaryKey" json:"id"`
+	Name         string       `cbor:"-"                    gorm:"unique"     json:"name"`
+	CreatedAt    time.Time    `cbor:"-"                    json:"createdAt"  table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt    time.Time    `cbor:"-"                    json:"updatedAt"  table:"verbose;format:2006-01-02 15:04:05"`
+	Type         string       `cbor:"1,keyasint,omitempty" json:"type"`
+	Path         string       `cbor:"2,keyasint,omitempty" json:"path"`                                                                  // Path is the path to the storage root.
+	Config       ConfigMap    `cbor:"3,keyasint,omitempty" gorm:"type:JSON"  json:"config"                              table:"verbose"` // Config is a map of key-value pairs that can be used to store RClone options.
+	ClientConfig ClientConfig `cbor:"4,keyasint,omitempty" gorm:"type:JSON"  json:"clientConfig"                        table:"verbose"` // ClientConfig is the HTTP configuration for the storage, if applicable.
 
 	// Associations
-	PreparationsAsSource []Preparation `gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" table:"expand;header:As Source: "`
-	PreparationsAsOutput []Preparation `gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" table:"expand;header:As Output: "`
-	// For Cbor marshalling
-	_ struct{} `cbor:",toarray"                                                               json:"-"                          swaggerignore:"true"`
+	PreparationsAsSource []Preparation `cbor:"-" gorm:"many2many:source_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsSource,omitempty" table:"expand;header:As Source: "`
+	PreparationsAsOutput []Preparation `cbor:"-" gorm:"many2many:output_attachments;constraint:OnDelete:CASCADE" json:"preparationsAsOutput,omitempty" table:"expand;header:As Output: "`
 }
 
 func (s *Storage) FindByIDOrName(db *gorm.DB, name string, preloads ...string) error {
@@ -182,22 +180,19 @@ type FileID uint64
 // The index on Path is used as part of scanning to find existing file and add new versions.
 // The index on DirectoryID is used to find all files in a directory.
 type File struct {
-	ID               FileID `gorm:"primaryKey"                     json:"id"`
-	CID              CID    `gorm:"column:cid;type:bytes;size:255" json:"cid"  swaggertype:"string"` // CID is the CID of the file.
-	Path             string `gorm:"index"                          json:"path"`                      // Path is the relative path to the file inside the storage.
-	Hash             string `json:"hash"`                                                            // Hash is the hash of the file.
-	Size             int64  `json:"size"`                                                            // Size is the size of the file in bytes.
-	LastModifiedNano int64  `json:"lastModifiedNano"`
+	ID               FileID `cbor:"1,keyasint,omitempty" gorm:"primaryKey"                     json:"id"`
+	CID              CID    `cbor:"-"                    gorm:"column:cid;type:bytes;size:255" json:"cid"  swaggertype:"string"` // CID is the CID of the file.
+	Path             string `cbor:"2,keyasint,omitempty" gorm:"index"                          json:"path"`                      // Path is the relative path to the file inside the storage.
+	Hash             string `cbor:"3,keyasint,omitempty" json:"hash"`                                                            // Hash is the hash of the file.
+	Size             int64  `cbor:"4,keyasint,omitempty" json:"size"`                                                            // Size is the size of the file in bytes.
+	LastModifiedNano int64  `cbor:"5,keyasint,omitempty" json:"lastModifiedNano"`
 
 	// Associations
-	AttachmentID SourceAttachmentID `json:"attachmentId"`
-	Attachment   *SourceAttachment  `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
-	DirectoryID  *DirectoryID       `gorm:"index"                                               json:"directoryId"`
-	Directory    *Directory         `gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
-	FileRanges   []FileRange        `gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
-
-	// For Cbor marshalling
-	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
+	AttachmentID SourceAttachmentID `cbor:"-" json:"attachmentId"`
+	Attachment   *SourceAttachment  `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE" json:"attachment,omitempty" swaggerignore:"true"`
+	DirectoryID  *DirectoryID       `cbor:"-" gorm:"index"                                               json:"directoryId"`
+	Directory    *Directory         `cbor:"-" gorm:"foreignKey:DirectoryID;constraint:OnDelete:CASCADE"  json:"directory,omitempty"  swaggerignore:"true"`
+	FileRanges   []FileRange        `cbor:"-" gorm:"constraint:OnDelete:CASCADE"                         json:"fileRanges,omitempty"`
 }
 
 func (i File) FileName() string {
@@ -247,27 +242,24 @@ type CarID uint32
 // on the fly using CarBlock.
 // The index on PieceCID is to find all CARs that can matches the PieceCID
 type Car struct {
-	ID          CarID      `gorm:"primaryKey"                                        json:"id"                                  table:"verbose"`
-	CreatedAt   time.Time  `json:"createdAt"                                         table:"verbose;format:2006-01-02 15:04:05"`
-	PieceCID    CID        `gorm:"column:piece_cid;index;type:bytes;size:255"        json:"pieceCid"                            swaggertype:"string"`
-	PieceSize   int64      `json:"pieceSize"`
-	RootCID     CID        `gorm:"column:root_cid;type:bytes"                        json:"rootCid"                             swaggertype:"string"`
-	FileSize    int64      `json:"fileSize"`
-	StorageID   *StorageID `json:"storageId"                                         table:"verbose"`
-	Storage     *Storage   `gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty"                   swaggerignore:"true" table:"expand"`
-	StoragePath string     `json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
-	NumOfFiles  int64      `json:"numOfFiles"                                        table:"verbose"`
+	ID          CarID      `cbor:"-"                    gorm:"primaryKey"                                        json:"id"                                  table:"verbose"`
+	CreatedAt   time.Time  `cbor:"-"                    json:"createdAt"                                         table:"verbose;format:2006-01-02 15:04:05"`
+	PieceCID    CID        `cbor:"1,keyasint,omitempty" gorm:"column:piece_cid;index;type:bytes;size:255"        json:"pieceCid"                            swaggertype:"string"`
+	PieceSize   int64      `cbor:"2,keyasint,omitempty" json:"pieceSize"`
+	RootCID     CID        `cbor:"3,keyasint,omitempty" gorm:"column:root_cid;type:bytes"                        json:"rootCid"                             swaggertype:"string"`
+	FileSize    int64      `cbor:"4,keyasint,omitempty" json:"fileSize"`
+	StorageID   *StorageID `cbor:"-"                    json:"storageId"                                         table:"verbose"`
+	Storage     *Storage   `cbor:"-"                    gorm:"foreignKey:StorageID;constraint:OnDelete:SET NULL" json:"storage,omitempty"                   swaggerignore:"true" table:"expand"`
+	StoragePath string     `cbor:"-"                    json:"storagePath"` // StoragePath is the path to the CAR file inside the storage. If the StorageID is nil but StoragePath is not empty, it means the CAR file is stored at the local absolute path.
+	NumOfFiles  int64      `cbor:"-"                    json:"numOfFiles"                                        table:"verbose"`
 
 	// Association
-	PreparationID PreparationID       `json:"preparationId"                                        table:"-"`
-	Preparation   *Preparation        `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"-"`
-	AttachmentID  *SourceAttachmentID `json:"attachmentId"                                         table:"-"`
-	Attachment    *SourceAttachment   `gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE"  json:"attachment,omitempty"  swaggerignore:"true" table:"-"`
-	JobID         *JobID              `json:"jobId,omitempty"                                      table:"-"`
-	Job           *Job                `gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"        json:"job,omitempty"         swaggerignore:"true" table:"-"`
-
-	// For Cbor marshalling
-	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
+	PreparationID PreparationID       `cbor:"-" json:"preparationId"                                        table:"-"`
+	Preparation   *Preparation        `cbor:"-" gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true" table:"-"`
+	AttachmentID  *SourceAttachmentID `cbor:"-" json:"attachmentId"                                         table:"-"`
+	Attachment    *SourceAttachment   `cbor:"-" gorm:"foreignKey:AttachmentID;constraint:OnDelete:CASCADE"  json:"attachment,omitempty"  swaggerignore:"true" table:"-"`
+	JobID         *JobID              `cbor:"-" json:"jobId,omitempty"                                      table:"-"`
+	Job           *Job                `cbor:"-" gorm:"foreignKey:JobID;constraint:OnDelete:SET NULL"        json:"job,omitempty"         swaggerignore:"true" table:"-"`
 }
 
 type CarBlockID uint64
@@ -279,25 +271,22 @@ type CarBlockID uint64
 // The index on CarID is used to find all blocks in a Car.
 // The index on CID is used to find a specific block with CID.
 type CarBlock struct {
-	ID             CarBlockID `gorm:"primaryKey"                           json:"id"`
-	CID            CID        `gorm:"index;column:cid;type:bytes;size:255" json:"cid" swaggertype:"string"` // CID is the CID of the block.
-	CarOffset      int64      `json:"carOffset"`                                                            // Offset of the block in the Car
-	CarBlockLength int32      `json:"carBlockLength"`                                                       // Length of the block in the Car, including varint, CID and raw block
-	Varint         []byte     `json:"varint"`                                                               // Varint is the varint that represents the length of the block and the CID.
-	RawBlock       []byte     `json:"rawBlock"`                                                             // Raw block
-	FileOffset     int64      `json:"fileOffset"`                                                           // Offset of the block in the File
+	ID             CarBlockID `cbor:"-"                    gorm:"primaryKey"                           json:"id"`
+	CID            CID        `cbor:"1,keyasint,omitempty" gorm:"index;column:cid;type:bytes;size:255" json:"cid" swaggertype:"string"` // CID is the CID of the block.
+	CarOffset      int64      `cbor:"2,keyasint,omitempty" json:"carOffset"`                                                            // Offset of the block in the Car
+	CarBlockLength int32      `cbor:"3,keyasint,omitempty" json:"carBlockLength"`                                                       // Length of the block in the Car, including varint, CID and raw block
+	Varint         []byte     `cbor:"4,keyasint,omitempty" json:"varint"`                                                               // Varint is the varint that represents the length of the block and the CID.
+	RawBlock       []byte     `cbor:"5,keyasint,omitempty" json:"rawBlock"`                                                             // Raw block
+	FileOffset     int64      `cbor:"6,keyasint,omitempty" json:"fileOffset"`                                                           // Offset of the block in the File
 
 	// Internal Caching
 	blockLength int32 // Block length in bytes
 
 	// Associations
-	CarID  CarID   `gorm:"index"                                         json:"carId"`
-	Car    *Car    `gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"  json:"car,omitempty"  swaggerignore:"true"`
-	FileID *FileID `json:"fileId"`
-	File   *File   `gorm:"foreignKey:FileID;constraint:OnDelete:CASCADE" json:"file,omitempty" swaggerignore:"true"`
-
-	// For Cbor marshalling
-	_ struct{} `cbor:",toarray"                                                  json:"-"                    swaggerignore:"true"`
+	CarID  CarID   `cbor:"-"                    gorm:"index"                                         json:"carId"`
+	Car    *Car    `cbor:"-"                    gorm:"foreignKey:CarID;constraint:OnDelete:CASCADE"  json:"car,omitempty"  swaggerignore:"true"`
+	FileID *FileID `cbor:"7,keyasint,omitempty" json:"fileId"`
+	File   *File   `cbor:"-"                    gorm:"foreignKey:FileID;constraint:OnDelete:CASCADE" json:"file,omitempty" swaggerignore:"true"`
 }
 
 // BlockLength computes and returns the length of the block data in bytes.

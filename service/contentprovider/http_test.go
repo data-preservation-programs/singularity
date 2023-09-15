@@ -59,7 +59,9 @@ func TestHTTPServerHandler(t *testing.T) {
 			PreparationID: 1,
 			Attachment: &model.SourceAttachment{
 				Preparation: &model.Preparation{},
-				Storage:     &model.Storage{},
+				Storage: &model.Storage{
+					Type: "local",
+				},
 			},
 			RootCID: model.CID(testutil.TestCid),
 		}).Error

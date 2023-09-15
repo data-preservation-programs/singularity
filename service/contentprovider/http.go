@@ -124,32 +124,26 @@ func (s *HTTPServer) Start(ctx context.Context) ([]service.Done, service.Fail, e
 
 func getPieceMetadata(ctx context.Context, db *gorm.DB, car model.Car) (*PieceMetadata, error) {
 	db = db.WithContext(ctx)
+
+	var attachment model.SourceAttachment
+	err := db.Model(&car).Preload("Storage").Association("Attachment").Find(&attachment)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
 	var carBlocks []model.CarBlock
-	err := db.Where("car_id = ?", car.ID).Find(&carBlocks).Error
+	err = db.Where("car_id = ?", car.ID).Find(&carBlocks).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	var files []model.File
-	err = db.Preload("Attachment").Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	storageIDSet := make(map[model.StorageID]struct{})
-	for _, file := range files {
-		storageIDSet[file.Attachment.StorageID] = struct{}{}
-	}
-	var storageIDs []model.StorageID
-	for storageID := range storageIDSet {
-		storageIDs = append(storageIDs, storageID)
-	}
-	var storages []model.Storage
-	err = db.Where("id IN ?", storageIDs).Find(&storages).Error
+	err = db.Where("id IN (?)", db.Model(&model.CarBlock{}).Select("file_id").Where("car_id = ?", car.ID)).Find(&files).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return &PieceMetadata{
 		Car:       car,
-		Storages:  storages,
+		Storage:   *attachment.Storage,
 		CarBlocks: carBlocks,
 		Files:     files,
 	}, nil
@@ -188,17 +182,19 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 		return c.String(http.StatusNotFound, "piece not found")
 	}
 
+	if car.AttachmentID == nil {
+		return c.String(http.StatusNotFound, "piece metadata not found")
+	}
+
 	metadata, err := getPieceMetadata(ctx, db, car)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error: %s", err.Error()))
 	}
 
 	// Remove all credentials
-	for i := range metadata.Storages {
-		for k := range metadata.Storages[i].Config {
-			if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
-				delete(metadata.Storages[i].Config, k)
-			}
+	for k := range metadata.Storage.Config {
+		if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
+			delete(metadata.Storage.Config, k)
 		}
 	}
 
@@ -219,10 +215,10 @@ func (s *HTTPServer) getMetadataHandler(c echo.Context) error {
 }
 
 type PieceMetadata struct {
-	Car       model.Car        `json:"car"`
-	Storages  []model.Storage  `json:"storages"`
-	CarBlocks []model.CarBlock `json:"carBlocks"`
-	Files     []model.File     `json:"files"`
+	Car       model.Car        `cbor:"1,keyasint,omitempty" json:"car"`
+	Storage   model.Storage    `cbor:"2,keyasint,omitempty" json:"storage"`
+	CarBlocks []model.CarBlock `cbor:"3,keyasint,omitempty" json:"carBlocks"`
+	Files     []model.File     `cbor:"4,keyasint,omitempty" json:"files"`
 }
 
 // findPiece is a method on the HTTPServer struct that finds a piece by its CID.
@@ -308,12 +304,15 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	}
 
 	for _, car := range cars {
+		if car.AttachmentID == nil {
+			continue
+		}
 		metadata, err := getPieceMetadata(ctx, s.dbNoContext.WithContext(ctx), car)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to get piece metadata"))
 			continue
 		}
-		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Storages, metadata.CarBlocks, metadata.Files)
+		reader, err := store.NewPieceReader(ctx, metadata.Car, metadata.Storage, metadata.CarBlocks, metadata.Files)
 		if err != nil {
 			errs = append(errs, errors.Wrap(err, "failed to create piece reader"))
 			continue
