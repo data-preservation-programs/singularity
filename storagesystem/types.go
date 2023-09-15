@@ -56,10 +56,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// Entry is a struct that represents a single file during a data source scan.
+// Entry is a struct that represents a single file or directory during a data source scan.
 type Entry struct {
 	Error error
 	Info  fs.Object
+	Dir   fs.Directory
 }
 
 // Handler is an interface for all relevant operations allowed by an RClone backend.

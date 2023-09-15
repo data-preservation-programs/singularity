@@ -229,6 +229,9 @@ func TestDataPrep(t *testing.T) {
 	}
 	for _, entry := range entries {
 		require.NoError(t, entry.Error)
+		if entry.Info == nil {
+			continue
+		}
 		entryPath := entry.Info.Remote()
 		destPath := filepath.Join(s3tmp, entryPath)
 		err = os.MkdirAll(filepath.Dir(destPath), 0777)
