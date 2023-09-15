@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var clientConfigFlagsForUpdate = []cli.Flag{
+var ClientConfigFlagsForUpdate = []cli.Flag{
 	&cli.DurationFlag{
 		Name:        "client-connect-timeout",
 		Usage:       "HTTP Client Connect timeout",
@@ -91,7 +91,7 @@ var UpdateCmd = &cli.Command{
 					}
 					command.ArgsUsage = "<name|id>"
 					command.Before = cliutil.CheckNArgs
-					command.Flags = append(command.Flags, clientConfigFlagsForUpdate...)
+					command.Flags = append(command.Flags, ClientConfigFlagsForUpdate...)
 					return command
 				}),
 			}
@@ -103,7 +103,7 @@ var UpdateCmd = &cli.Command{
 		command.ArgsUsage = "<name|id>"
 		command.Before = cliutil.CheckNArgs
 		if backend.Prefix != "local" {
-			command.Flags = append(command.Flags, clientConfigFlagsForUpdate...)
+			command.Flags = append(command.Flags, ClientConfigFlagsForUpdate...)
 		}
 		return command
 	}),
@@ -141,7 +141,7 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 		}
 	}
 
-	clientConfig, err := getClientConfigForUpdate(c)
+	clientConfig, err := GetClientConfigForUpdate(c)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -157,7 +157,7 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 	return nil
 }
 
-func getClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
+func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 	var config model.ClientConfig
 	if c.IsSet("client-connect-timeout") {
 		config.ConnectTimeout = ptr.Of(c.Duration("client-connect-timeout"))

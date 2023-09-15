@@ -11,6 +11,8 @@ import (
 	"sync"
 
 	"github.com/cockroachdb/errors"
+	"github.com/data-preservation-programs/singularity/handler/storage"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/store"
@@ -36,6 +38,7 @@ func DownloadHandler(ctx *cli.Context,
 	piece string,
 	api string,
 	config map[string]string,
+	clientConfig model.ClientConfig,
 	outDir string,
 	concurrency int,
 ) error {
@@ -59,47 +62,46 @@ func DownloadHandler(ctx *cli.Context,
 		return errors.Wrap(err, "failed to decode metadata")
 	}
 
-	for i, storage := range pieceMetadata.Storages {
-		cfg := make(map[string]string)
-		backend, ok := storagesystem.BackendMap[storage.Type]
-		if !ok {
-			return errors.Newf("storage type %s is not supported", storage.Type)
-		}
-
-		prefix := storage.Type + "-"
-		provider := storage.Config["provider"]
-		if provider == "" {
-			provider = config[prefix+"provider"]
-		}
-		providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
-			return providerOption.Provider == provider
-		})
-		if err != nil {
-			return errors.Newf("provider '%s' is not supported", provider)
-		}
-
-		for _, option := range providerOptions.Options {
-			if option.Default != nil {
-				cfg[option.Name] = fmt.Sprintf("%v", option.Default)
-			}
-		}
-
-		for key, value := range storage.Config {
-			cfg[key] = value
-		}
-
-		for key, value := range config {
-			if strings.HasPrefix(key, prefix) {
-				trimmed := strings.TrimPrefix(key, prefix)
-				snake := strings.ReplaceAll(trimmed, "-", "_")
-				cfg[snake] = value
-			}
-		}
-
-		pieceMetadata.Storages[i].Config = cfg
+	cfg := make(map[string]string)
+	backend, ok := storagesystem.BackendMap[pieceMetadata.Storage.Type]
+	if !ok {
+		return errors.Newf("storage type %s is not supported", pieceMetadata.Storage.Type)
 	}
 
-	pieceReader, err := store.NewPieceReader(ctx.Context, pieceMetadata.Car, pieceMetadata.Storages, pieceMetadata.CarBlocks, pieceMetadata.Files)
+	prefix := pieceMetadata.Storage.Type + "-"
+	provider := pieceMetadata.Storage.Config["provider"]
+	if provider == "" {
+		provider = config[prefix+"provider"]
+	}
+	providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
+		return providerOption.Provider == provider
+	})
+	if err != nil {
+		return errors.Newf("provider '%s' is not supported", provider)
+	}
+
+	for _, option := range providerOptions.Options {
+		if option.Default != nil {
+			cfg[option.Name] = fmt.Sprintf("%v", option.Default)
+		}
+	}
+
+	for key, value := range pieceMetadata.Storage.Config {
+		cfg[key] = value
+	}
+
+	for key, value := range config {
+		if strings.HasPrefix(key, prefix) {
+			trimmed := strings.TrimPrefix(key, prefix)
+			snake := strings.ReplaceAll(trimmed, "-", "_")
+			cfg[snake] = value
+		}
+	}
+
+	pieceMetadata.Storage.Config = cfg
+	storage.OverrideStorageWithClientConfig(&pieceMetadata.Storage, clientConfig)
+
+	pieceReader, err := store.NewPieceReader(ctx.Context, pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")
 	}
