@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/fs"
 	"net"
 	"net/http"
 	"net/url"
@@ -30,7 +29,6 @@ import (
 	"github.com/ybbus/jsonrpc/v3"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/dashboard"
 	"github.com/data-preservation-programs/singularity/database"
 	_ "github.com/data-preservation-programs/singularity/docs/swagger"
 	logging "github.com/ipfs/go-log/v2"
@@ -420,13 +418,11 @@ func (s Server) Start(ctx context.Context) ([]service.Done, service.Fail, error)
 
 	//nolint:contextcheck
 	s.setupRoutes(e)
-	efs, err := fs.Sub(dashboard.DashboardStaticFiles, "build")
-	if err != nil {
-		return nil, nil, errors.WithStack(err)
-	}
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(efs))))
+	e.GET("/health", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 	e.Listener = s.listener
 
 	done := make(chan struct{})
