@@ -91,7 +91,7 @@ func (DefaultHandler) UpdateStorageHandler(
 	}
 
 	storage.Config = rcloneConfig
-	overrideStorageWithClientConfig(&storage, request.ClientConfig)
+	OverrideStorageWithClientConfig(&storage, request.ClientConfig)
 	rclone, err := storagesystem.NewRCloneHandler(ctx, storage)
 	if err != nil {
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrap(err, "creating rclone handler failed"))
@@ -115,7 +115,7 @@ func (DefaultHandler) UpdateStorageHandler(
 	return &storage, err
 }
 
-func overrideStorageWithClientConfig(storage *model.Storage, config model.ClientConfig) {
+func OverrideStorageWithClientConfig(storage *model.Storage, config model.ClientConfig) {
 	if config.ConnectTimeout != nil {
 		storage.ClientConfig.ConnectTimeout = config.ConnectTimeout
 	}

@@ -18,7 +18,6 @@ import (
 
 var logger = log.Logger("piece_store")
 var ErrNoCarBlocks = errors.New("no Blocks provided")
-var ErrStorageMismatch = errors.New("file storage does not match provided storage")
 var ErrInvalidStartOffset = errors.New("first block must start at car Header")
 var ErrInvalidEndOffset = errors.New("last block must end at car end")
 var ErrIncontiguousBlocks = errors.New("Blocks must be contiguous")
@@ -48,7 +47,7 @@ type PieceReader struct {
 	ctx        context.Context
 	fileSize   int64
 	header     []byte
-	handlerMap map[model.StorageID]storagesystem.Handler
+	handler    storagesystem.Handler
 	carBlocks  []model.CarBlock
 	files      map[model.FileID]model.File
 	reader     io.ReadCloser
@@ -116,7 +115,7 @@ func (pr *PieceReader) Clone() *PieceReader {
 		ctx:        pr.ctx,
 		fileSize:   pr.fileSize,
 		header:     pr.header,
-		handlerMap: pr.handlerMap,
+		handler:    pr.handler,
 		carBlocks:  pr.carBlocks,
 		files:      pr.files,
 		reader:     pr.reader,
@@ -147,29 +146,21 @@ func (pr *PieceReader) Clone() *PieceReader {
 func NewPieceReader(
 	ctx context.Context,
 	car model.Car,
-	storages []model.Storage,
+	storage model.Storage,
 	carBlocks []model.CarBlock,
 	files []model.File,
 ) (
 	*PieceReader,
 	error,
 ) {
-	filesMap := make(map[model.FileID]model.File)
-	storageIDs := make(map[model.StorageID]struct{})
-	for _, storage := range storages {
-		storageIDs[storage.ID] = struct{}{}
-	}
-	for _, file := range files {
-		filesMap[file.ID] = file
-		_, ok := storageIDs[file.Attachment.StorageID]
-		if !ok {
-			return nil, ErrStorageMismatch
-		}
-	}
-
 	// Sanitize carBlocks
 	if len(carBlocks) == 0 {
 		return nil, ErrNoCarBlocks
+	}
+
+	filesMap := make(map[model.FileID]model.File)
+	for _, file := range files {
+		filesMap[file.ID] = file
 	}
 
 	header, err := util.GenerateCarHeader(cid.Cid(car.RootCID))
@@ -210,20 +201,16 @@ func NewPieceReader(
 		}
 	}
 
-	handlerMap := make(map[model.StorageID]storagesystem.Handler)
-	for _, s := range storages {
-		handler, err := storagesystem.NewRCloneHandler(ctx, s)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-		handlerMap[s.ID] = handler
+	handler, err := storagesystem.NewRCloneHandler(ctx, storage)
+	if err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	return &PieceReader{
 		ctx:        ctx,
 		header:     header,
 		fileSize:   car.FileSize,
-		handlerMap: handlerMap,
+		handler:    handler,
 		carBlocks:  carBlocks,
 		files:      filesMap,
 		blockIndex: -1,
@@ -298,9 +285,9 @@ func (pr *PieceReader) Read(p []byte) (n int, err error) {
 		file := pr.files[*carBlock.FileID]
 		fileOffset := pr.pos - carBlock.CarOffset - int64(len(carBlock.Varint)) - int64(cid.Cid(carBlock.CID).ByteLen())
 		fileOffset += carBlock.FileOffset
-		logger.Infow("reading file", "sourceStorageID", file.Attachment.StorageID, "path", file.Path, "offset", fileOffset)
+		logger.Infow("reading file", "path", file.Path, "offset", fileOffset)
 		var obj fs.Object
-		pr.reader, obj, err = pr.handlerMap[file.Attachment.StorageID].Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
+		pr.reader, obj, err = pr.handler.Read(pr.ctx, file.Path, fileOffset, file.Size-fileOffset)
 		if err != nil {
 			return 0, errors.Wrap(err, "failed to read file")
 		}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/cmd/storage"
 	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/ipfs/go-log"
@@ -45,6 +46,8 @@ var DownloadCmd = &cli.Command{
 				Value:    false,
 			},
 		}
+
+		flags = append(flags, storage.ClientConfigFlagsForUpdate...)
 
 		keys := make(map[string]struct{})
 		for _, backend := range storagesystem.Backends {
@@ -90,7 +93,11 @@ var DownloadCmd = &cli.Command{
 				config[key] = value
 			}
 		}
-		err := handler.DownloadHandler(c, piece, api, config, outDir, concurrency)
+		clientConfig, err := storage.GetClientConfigForUpdate(c)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		err = handler.DownloadHandler(c, piece, api, config, *clientConfig, outDir, concurrency)
 		if err == nil {
 			log.Logger("Download").Info("Download complete")
 			return nil
