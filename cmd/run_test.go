@@ -32,20 +32,18 @@ func TestRunAPI(t *testing.T) {
 			close(done)
 		}()
 		var resp *http.Response
-		var body string
 		var errs []error
 		// try every 100ms for up to 5 seconds for server to come up
 		for i := 0; i < 50; i++ {
 			time.Sleep(100 * time.Millisecond)
-			resp, body, errs = gorequest.New().
-				Get("http://127.0.0.1:9090/robots.txt").End()
+			resp, _, errs = gorequest.New().
+				Get("http://127.0.0.1:9090/health").End()
 			if resp != nil && resp.StatusCode == http.StatusOK {
 				break
 			}
 		}
 		require.Len(t, errs, 0)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
-		require.Contains(t, body, "robotstxt.org")
 		cancel()
 		<-done
 	})
