@@ -3,7 +3,9 @@ package model
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/ipfs/go-cid"
@@ -13,12 +15,28 @@ import (
 var ErrInvalidCIDEntry = errors.New("invalid CID entry in the database")
 var ErrInvalidStringSliceEntry = errors.New("invalid string slice entry in the database")
 var ErrInvalidStringMapEntry = errors.New("invalid string map entry in the database")
+var ErrInvalidHTTPConfigEntry = errors.New("invalid ClientConfig entry in the database")
 
 type StringSlice []string
 
 type ConfigMap map[string]string
 
 type CID cid.Cid
+
+type ClientConfig struct {
+	ConnectTimeout        *time.Duration    `json:"connectTimeout,omitempty"        swaggertype:"primitive,integer"` // HTTP Client Connect timeout
+	Timeout               *time.Duration    `json:"timeout,omitempty"               swaggertype:"primitive,integer"` // IO idle timeout
+	ExpectContinueTimeout *time.Duration    `json:"expectContinueTimeout,omitempty" swaggertype:"primitive,integer"` // Timeout when using expect / 100-continue in HTTP
+	InsecureSkipVerify    *bool             `json:"insecureSkipVerify,omitempty"`                                    // Do not verify the server SSL certificate (insecure)
+	NoGzip                *bool             `json:"noGzip,omitempty"`                                                // Don't set Accept-Encoding: gzip
+	UserAgent             *string           `json:"userAgent,omitempty"`                                             // Set the user-agent to a specified string
+	CaCert                []string          `json:"caCert,omitempty"`                                                // Paths to CA certificate used to verify servers
+	ClientCert            *string           `json:"clientCert,omitempty"`                                            // Path to Client SSL certificate (PEM) for mutual TLS auth
+	ClientKey             *string           `json:"clientKey,omitempty"`                                             // Path to Client SSL private key (PEM) for mutual TLS auth
+	Headers               map[string]string `json:"headers,omitempty"`                                               // Set HTTP header for all transactions
+	DisableHTTP2          *bool             `json:"disableHttp2,omitempty"`                                          // Disable HTTP/2 in the transport
+	DisableHTTPKeepAlives *bool             `json:"disableHttpKeepAlives,omitempty"`                                 // Disable HTTP keep-alives and use each connection once.
+}
 
 func (c CID) MarshalBinary() ([]byte, error) {
 	return cid.Cid(c).MarshalBinary()
@@ -156,6 +174,65 @@ func (m ConfigMap) String() string {
 	}
 	slices.Sort(values)
 	return strings.Join(values, " ")
+}
+
+func (c ClientConfig) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+func (c ClientConfig) String() string {
+	var values []string
+	if c.ConnectTimeout != nil {
+		values = append(values, "connectTimeout:"+c.ConnectTimeout.String())
+	}
+	if c.Timeout != nil {
+		values = append(values, "timeout:"+c.Timeout.String())
+	}
+	if c.ExpectContinueTimeout != nil {
+		values = append(values, "expectContinueTimeout:"+c.ExpectContinueTimeout.String())
+	}
+	if c.InsecureSkipVerify != nil {
+		values = append(values, "insecureSkipVerify:"+fmt.Sprint(*c.InsecureSkipVerify))
+	}
+	if c.NoGzip != nil {
+		values = append(values, "noGzip:"+fmt.Sprint(*c.NoGzip))
+	}
+	if c.UserAgent != nil {
+		values = append(values, "userAgent:"+*c.UserAgent)
+	}
+	if len(c.CaCert) > 0 {
+		values = append(values, "caCert:"+strings.Join(c.CaCert, ","))
+	}
+	if c.ClientCert != nil {
+		values = append(values, "clientCert:"+*c.ClientCert)
+	}
+	if c.ClientKey != nil {
+		values = append(values, "clientKey:"+*c.ClientKey)
+	}
+	if len(c.Headers) > 0 {
+		values = append(values, "headers:<hidden>")
+	}
+	if c.DisableHTTP2 != nil {
+		values = append(values, "disableHTTP2"+fmt.Sprint(*c.DisableHTTP2))
+	}
+	if c.DisableHTTPKeepAlives != nil {
+		values = append(values, "disableHTTPKeepAlives:"+fmt.Sprint(*c.DisableHTTPKeepAlives))
+	}
+	return strings.Join(values, " ")
+}
+
+func (c *ClientConfig) Scan(src any) error {
+	if src == nil {
+		*c = ClientConfig{}
+		return nil
+	}
+
+	source, ok := src.([]byte)
+	if !ok {
+		return ErrInvalidHTTPConfigEntry
+	}
+
+	return json.Unmarshal(source, c)
 }
 
 type WorkerType string

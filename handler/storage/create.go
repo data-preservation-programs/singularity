@@ -15,10 +15,11 @@ import (
 )
 
 type CreateRequest struct {
-	Provider string            `json:"provider"`
-	Name     string            `binding:"required" json:"name"`
-	Path     string            `json:"path"`
-	Config   map[string]string `json:"config"`
+	Provider     string             `json:"provider"`
+	Name         string             `binding:"required"  json:"name"`
+	Path         string             `json:"path"`
+	Config       map[string]string  `json:"config"`
+	ClientConfig model.ClientConfig `json:"clientConfig"`
 }
 
 // CreateStorageHandler initializes a new storage using the provided configurations
@@ -85,10 +86,11 @@ func (DefaultHandler) CreateStorageHandler(
 	}
 
 	storage := model.Storage{
-		Name:   name,
-		Type:   storageType,
-		Path:   path,
-		Config: rcloneConfig,
+		Name:         name,
+		Type:         storageType,
+		Path:         path,
+		Config:       rcloneConfig,
+		ClientConfig: request.ClientConfig,
 	}
 	rclone, err := storagesystem.NewRCloneHandler(ctx, storage)
 	if err != nil {

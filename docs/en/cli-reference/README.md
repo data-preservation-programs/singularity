@@ -29,6 +29,13 @@ DESCRIPTION:
          * Set LOTUS_TEST to 0 or 1 based on whether the network address starts with 'f' or 't'
        Switching between different networks with the same database instance is not recommended.
 
+   Logging:
+     Singularity uses go-log for logging and can be controlled by below environment variables:
+       * GOLOG_LOG_LEVEL  - example values: debug, info, warn, error, dpanic, panic, fatal
+       * GOLOG_LOG_FMT    - example values: color, nocolor, json
+       * More details can be found at https://github.com/ipfs/go-log
+
+
 COMMANDS:
    version, v  Print version information
    help, h     Shows a list of commands or help for one command

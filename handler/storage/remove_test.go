@@ -17,7 +17,7 @@ func TestRemoveStorageHandler(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 					tmp := t.TempDir()
-					_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
+					_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil, model.ClientConfig{}})
 					require.NoError(t, err)
 					err = Default.RemoveHandler(ctx, db, name)
 					require.NoError(t, err)
@@ -34,7 +34,7 @@ func TestRemoveStorageHandler(t *testing.T) {
 	t.Run("remove storage that is still in use", func(t *testing.T) {
 		testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 			tmp := t.TempDir()
-			_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil})
+			_, err := Default.CreateStorageHandler(ctx, db, "local", CreateRequest{"", "name", tmp, nil, model.ClientConfig{}})
 			require.NoError(t, err)
 			source := model.SourceAttachment{
 				StorageID:   1,

@@ -92,7 +92,9 @@ func TestStorageCreateHandler_S3Provider(t *testing.T) {
 			Path:      "bucket",
 			Config:    map[string]string{"region": "us-east-1"},
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity storage create s3 aws --region us-east-1 --name name --path bucket")
+		_, _, err := runner.Run(ctx, "singularity storage create s3 aws --region us-east-1 --name name --path bucket --client-connect-timeout 1m --client-timeout 1m "+
+			"--client-expect-continue-timeout 1m --client-insecure-skip-verify --client-no-gzip --client-user-agent x --client-ca-cert x "+
+			"--client-cert x --client-key x --client-header a=b --client-header a= name")
 		require.NoError(t, err)
 
 		_, _, err = runner.Run(ctx, "singularity --verbose storage create s3 aws --region us-east-1 --name name --path bucket")
@@ -216,8 +218,9 @@ func TestStorageUpdateHandler_S3Provider(t *testing.T) {
 			Path:      "bucket",
 			Config:    map[string]string{"region": "us-east-1"},
 		}, nil)
-		_, _, err = runner.Run(ctx, "singularity storage update s3 aws --region us-east-1 name")
-		require.NoError(t, err)
+		_, _, err = runner.Run(ctx, "singularity storage update s3 aws --region us-east-1 --client-connect-timeout 1m --client-timeout 1m "+
+			"--client-expect-continue-timeout 1m --client-insecure-skip-verify --client-no-gzip --client-user-agent x --client-ca-cert x "+
+			"--client-cert x --client-key x --client-header a=b --client-header a= --client-header '' name")
 		require.NoError(t, err)
 
 		_, _, err = runner.Run(ctx, "singularity --verbose storage update s3 aws --region us-east-1 name")

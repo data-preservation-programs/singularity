@@ -19,6 +19,8 @@ const header = `//lint:file-ignore U1000 Ignore all unused code, it's generated
 // Code generated. DO NOT EDIT.
 package storage
 
+import "github.com/data-preservation-programs/singularity/model"
+
 `
 
 const structTemplate = `
@@ -33,7 +35,8 @@ const createStructTemplate = `
 type {{.Name}} struct {
 	Name string ` + "`json:\"name\" example:\"my-storage\"`" + ` // Name of the storage, must be unique
 	Path string ` + "`json:\"path\"`" + ` // Path of the storage
-	Config {{.ConfigType}}
+	Config {{.ConfigType}} ` + "`json:\"config\"`" + ` // config for the storage
+    ClientConfig model.ClientConfig ` + "`json:\"clientConfig\"`" + ` // config for underlying HTTP client
 }
 `
 

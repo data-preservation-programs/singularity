@@ -18,8 +18,15 @@ import (
 // swagger:model storage.createB2StorageRequest
 type StorageCreateB2StorageRequest struct {
 
-	// config
-	Config *StorageB2Config `json:"config,omitempty"`
+	// config for underlying HTTP client
+	ClientConfig struct {
+		ModelClientConfig
+	} `json:"clientConfig,omitempty"`
+
+	// config for the storage
+	Config struct {
+		StorageB2Config
+	} `json:"config,omitempty"`
 
 	// Name of the storage, must be unique
 	// Example: my-storage
@@ -33,6 +40,10 @@ type StorageCreateB2StorageRequest struct {
 func (m *StorageCreateB2StorageRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateClientConfig(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateConfig(formats); err != nil {
 		res = append(res, err)
 	}
@@ -43,20 +54,17 @@ func (m *StorageCreateB2StorageRequest) Validate(formats strfmt.Registry) error 
 	return nil
 }
 
-func (m *StorageCreateB2StorageRequest) validateConfig(formats strfmt.Registry) error {
-	if swag.IsZero(m.Config) { // not required
+func (m *StorageCreateB2StorageRequest) validateClientConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.ClientConfig) { // not required
 		return nil
 	}
 
-	if m.Config != nil {
-		if err := m.Config.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("config")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("config")
-			}
-			return err
-		}
+	return nil
+}
+
+func (m *StorageCreateB2StorageRequest) validateConfig(formats strfmt.Registry) error {
+	if swag.IsZero(m.Config) { // not required
+		return nil
 	}
 
 	return nil
@@ -65,6 +73,10 @@ func (m *StorageCreateB2StorageRequest) validateConfig(formats strfmt.Registry) 
 // ContextValidate validate this storage create b2 storage request based on the context it is used
 func (m *StorageCreateB2StorageRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.contextValidateClientConfig(ctx, formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.contextValidateConfig(ctx, formats); err != nil {
 		res = append(res, err)
@@ -76,23 +88,12 @@ func (m *StorageCreateB2StorageRequest) ContextValidate(ctx context.Context, for
 	return nil
 }
 
+func (m *StorageCreateB2StorageRequest) contextValidateClientConfig(ctx context.Context, formats strfmt.Registry) error {
+
+	return nil
+}
+
 func (m *StorageCreateB2StorageRequest) contextValidateConfig(ctx context.Context, formats strfmt.Registry) error {
-
-	if m.Config != nil {
-
-		if swag.IsZero(m.Config) { // not required
-			return nil
-		}
-
-		if err := m.Config.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("config")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
-				return ce.ValidateName("config")
-			}
-			return err
-		}
-	}
 
 	return nil
 }

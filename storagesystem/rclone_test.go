@@ -7,10 +7,36 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/gotidy/ptr"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRCloneHandler_OverrideConfig(t *testing.T) {
+	tmp := t.TempDir()
+
+	ctx := context.Background()
+	handler, err := NewRCloneHandler(ctx, model.Storage{Type: "local", Path: tmp, ClientConfig: model.ClientConfig{
+		ConnectTimeout:        ptr.Of(time.Hour),
+		Timeout:               ptr.Of(time.Hour),
+		ExpectContinueTimeout: ptr.Of(time.Hour),
+		InsecureSkipVerify:    ptr.Of(true),
+		NoGzip:                ptr.Of(true),
+		UserAgent:             ptr.Of("test"),
+		CaCert:                []string{"a"},
+		ClientCert:            ptr.Of("test"),
+		ClientKey:             ptr.Of("test"),
+		Headers:               map[string]string{"a": "b"},
+		DisableHTTP2:          ptr.Of(true),
+		DisableHTTPKeepAlives: ptr.Of(true),
+	}})
+	require.NoError(t, err)
+	entries, err := handler.List(ctx, "")
+	require.NoError(t, err)
+	require.Len(t, entries, 0)
+}
 
 func TestRCloneHandler(t *testing.T) {
 	tmp := t.TempDir()
