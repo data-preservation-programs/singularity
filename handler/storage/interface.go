@@ -33,7 +33,7 @@ type Handler interface {
 		ctx context.Context,
 		db *gorm.DB,
 		name string,
-		config map[string]string,
+		request UpdateRequest,
 	) (*model.Storage, error)
 	RenameStorageHandler(
 		ctx context.Context,
@@ -78,7 +78,7 @@ func (m *MockStorage) RemoveHandler(ctx context.Context, db *gorm.DB, name strin
 	return args.Error(0)
 }
 
-func (m *MockStorage) UpdateStorageHandler(ctx context.Context, db *gorm.DB, name string, config map[string]string) (*model.Storage, error) {
-	args := m.Called(ctx, db, name, config)
+func (m *MockStorage) UpdateStorageHandler(ctx context.Context, db *gorm.DB, name string, request UpdateRequest) (*model.Storage, error) {
+	args := m.Called(ctx, db, name, request)
 	return args.Get(0).(*model.Storage), args.Error(1)
 }

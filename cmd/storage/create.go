@@ -1,18 +1,86 @@
 package storage
 
 import (
+	"net/url"
 	"path/filepath"
 	"strings"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/handler/storage"
+	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/gotidy/ptr"
+	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 )
+
+var defaultClientConfig = fs.NewConfig()
+
+var clientConfigFlags = []cli.Flag{
+	&cli.DurationFlag{
+		Name:        "client-connect-timeout",
+		Usage:       "HTTP Client Connect timeout",
+		DefaultText: defaultClientConfig.ConnectTimeout.String(),
+		Category:    "HTTP Client Config",
+	},
+	&cli.DurationFlag{
+		Name:        "client-timeout",
+		Usage:       "IO idle timeout",
+		DefaultText: defaultClientConfig.Timeout.String(),
+		Category:    "HTTP Client Config",
+	},
+	&cli.DurationFlag{
+		Name:        "client-expect-continue-timeout",
+		Usage:       "Timeout when using expect / 100-continue in HTTP",
+		DefaultText: defaultClientConfig.ExpectContinueTimeout.String(),
+		Category:    "HTTP Client Config",
+	},
+	&cli.BoolFlag{
+		Name:        "client-insecure-skip-verify",
+		Usage:       "Do not verify the server SSL certificate (insecure)",
+		DefaultText: "false",
+		Category:    "HTTP Client Config",
+	},
+	&cli.BoolFlag{
+		Name:        "client-no-gzip",
+		Usage:       "Don't set Accept-Encoding: gzip",
+		DefaultText: "false",
+		Category:    "HTTP Client Config",
+	},
+	&cli.StringFlag{
+		Name:        "client-user-agent",
+		Usage:       "Set the user-agent to a specified string",
+		DefaultText: defaultClientConfig.UserAgent,
+		Category:    "HTTP Client Config",
+	},
+	&cli.PathFlag{
+		Name:     "client-ca-cert",
+		Usage:    "Path to CA certificate used to verify servers",
+		Category: "HTTP Client Config",
+	},
+	&cli.PathFlag{
+		Name:     "client-cert",
+		Usage:    "Path to Client SSL certificate (PEM) for mutual TLS auth",
+		Category: "HTTP Client Config",
+	},
+	&cli.PathFlag{
+		Name:     "client-key",
+		Usage:    "Path to Client SSL private key (PEM) for mutual TLS auth",
+		Category: "HTTP Client Config",
+	},
+	&cli.StringSliceFlag{
+		Name:     "client-header",
+		Usage:    "Set HTTP header for all transactions (i.e. key=value)",
+		Category: "HTTP Client Config",
+	},
+}
+
+const localStorageType = "local"
 
 var CreateCmd = &cli.Command{
 	Name:  "create",
@@ -38,6 +106,7 @@ var CreateCmd = &cli.Command{
 						Category: "General",
 						Required: true,
 					})
+					command.Flags = append(command.Flags, clientConfigFlags...)
 					return command
 				}),
 			}
@@ -57,6 +126,9 @@ var CreateCmd = &cli.Command{
 			Category: "General",
 			Required: true,
 		})
+		if backend.Prefix != localStorageType {
+			command.Flags = append(command.Flags, clientConfigFlags...)
+		}
 		return command
 	}),
 }
@@ -72,7 +144,7 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 		name = util.RandomName()
 	}
 	path := c.String("path")
-	if storageType == "local" {
+	if storageType == localStorageType {
 		path, err = filepath.Abs(path)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get absolute path of %s", path)
@@ -87,15 +159,69 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 			config[strings.ReplaceAll(flagName, "-", "_")] = c.String(flagName)
 		}
 	}
+	clientConfig, err := getClientConfig(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	s, err := storage.Default.CreateStorageHandler(c.Context, db, storageType, storage.CreateRequest{
-		Provider: provider,
-		Name:     name,
-		Path:     path,
-		Config:   config,
+		Provider:     provider,
+		Name:         name,
+		Path:         path,
+		Config:       config,
+		ClientConfig: *clientConfig,
 	})
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	cliutil.Print(c, s)
 	return nil
+}
+
+func getClientConfig(c *cli.Context) (*model.ClientConfig, error) {
+	var config model.ClientConfig
+	if c.IsSet("client-connect-timeout") {
+		config.ConnectTimeout = ptr.Of(c.Duration("client-connect-timeout"))
+	}
+	if c.IsSet("client-timeout") {
+		config.Timeout = ptr.Of(c.Duration("client-timeout"))
+	}
+	if c.IsSet("client-expect-continue-timeout") {
+		config.ExpectContinueTimeout = ptr.Of(c.Duration("client-expect-continue-timeout"))
+	}
+	if c.IsSet("client-insecure-skip-verify") {
+		config.InsecureSkipVerify = ptr.Of(c.Bool("client-insecure-skip-verify"))
+	}
+	if c.IsSet("client-no-gzip") {
+		config.NoGzip = ptr.Of(c.Bool("client-no-gzip"))
+	}
+	if c.IsSet("client-user-agent") {
+		config.UserAgent = ptr.Of(c.String("client-user-agent"))
+	}
+	if c.IsSet("client-ca-cert") {
+		config.CaCert = []string{c.Path("client-ca-cert")}
+	}
+	if c.IsSet("client-cert") {
+		config.ClientCert = ptr.Of(c.Path("client-cert"))
+	}
+	if c.IsSet("client-key") {
+		config.ClientKey = ptr.Of(c.Path("client-key"))
+	}
+	if c.IsSet("client-header") {
+		val := c.StringSlice("client-header")
+
+		headers := make(map[string]string)
+		for _, header := range val {
+			kv := strings.SplitN(header, "=", 2)
+			if len(kv) != 2 {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+			}
+			var err error
+			headers[kv[0]], err = url.QueryUnescape(kv[1])
+			if err != nil {
+				return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid http header: %s", header)
+			}
+		}
+		config.Headers = headers
+	}
+	return &config, nil
 }

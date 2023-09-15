@@ -24,8 +24,9 @@ var ErrBackendNotSupported = errors.New("This backend is not supported")
 var ErrMoveNotSupported = errors.New("The backend does not support moving files")
 
 type RCloneHandler struct {
-	name string
-	fs   fs.Fs
+	name     string
+	fs       fs.Fs
+	fsNoHead fs.Fs
 }
 
 func (h RCloneHandler) Name() string {
@@ -133,18 +134,24 @@ func (h RCloneHandler) Check(ctx context.Context, path string) (fs.DirEntry, err
 	return h.fs.NewObject(ctx, path)
 }
 
+type readCloser struct {
+	io.Reader
+	io.Closer
+}
+
 func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	logger.Debugw("Read: reading path", "type", h.fs.Name(), "root", h.fs.Root(), "path", path, "offset", offset, "length", length)
-	object, err := h.fs.NewObject(ctx, path)
+	object, err := h.fsNoHead.NewObject(ctx, path)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
 	}
-	if length == 0 {
-		return &EmptyReadCloser{}, object, nil
-	}
-	option := &fs.RangeOption{Start: offset, End: offset + length - 1}
+	option := &fs.SeekOption{Offset: offset}
 	reader, err := object.Open(ctx, option)
-	return reader, object, errors.WithStack(err)
+
+	return readCloser{
+		Reader: io.LimitReader(reader, length),
+		Closer: reader,
+	}, object, errors.WithStack(err)
 }
 
 func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, error) {
@@ -154,10 +161,76 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		return nil, errors.Wrapf(ErrBackendNotSupported, "type: %s", s.Type)
 	}
 
-	f, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(s.Config))
+	ctx, _ = fs.AddConfig(ctx)
+	config := fs.GetConfig(ctx)
+	overrideConfig(config, s)
+
+	noHeadObjectConfig := make(map[string]string)
+	headObjectConfig := make(map[string]string)
+	for k, v := range s.Config {
+		noHeadObjectConfig[k] = v
+		headObjectConfig[k] = v
+	}
+	noHeadObjectConfig["no_head_object"] = "true"
+	headObjectConfig["no_head_object"] = "false"
+
+	noHeadFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(noHeadObjectConfig))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
-	return &RCloneHandler{s.Name, f}, nil
+	headFS, err := registry.NewFs(ctx, s.Type, s.Path, configmap.Simple(headObjectConfig))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
+	}
+
+	return &RCloneHandler{
+		name:     s.Name,
+		fs:       headFS,
+		fsNoHead: noHeadFS,
+	}, nil
+}
+
+func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
+	if s.ClientConfig.ConnectTimeout != nil {
+		config.ConnectTimeout = *s.ClientConfig.ConnectTimeout
+	}
+	if s.ClientConfig.Timeout != nil {
+		config.Timeout = *s.ClientConfig.Timeout
+	}
+	if s.ClientConfig.ExpectContinueTimeout != nil {
+		config.ExpectContinueTimeout = *s.ClientConfig.ExpectContinueTimeout
+	}
+	if s.ClientConfig.InsecureSkipVerify != nil {
+		config.InsecureSkipVerify = true
+	}
+	if s.ClientConfig.NoGzip != nil {
+		config.NoGzip = true
+	}
+	if s.ClientConfig.UserAgent != nil {
+		config.UserAgent = *s.ClientConfig.UserAgent
+	}
+	if len(s.ClientConfig.CaCert) > 0 {
+		config.CaCert = s.ClientConfig.CaCert
+	}
+	if s.ClientConfig.ClientCert != nil {
+		config.ClientCert = *s.ClientConfig.ClientCert
+	}
+	if s.ClientConfig.ClientKey != nil {
+		config.ClientKey = *s.ClientConfig.ClientKey
+	}
+	if len(s.ClientConfig.Headers) > 0 {
+		for k, v := range s.ClientConfig.Headers {
+			config.Headers = append(config.Headers, &fs.HTTPOption{
+				Key:   k,
+				Value: v,
+			})
+		}
+	}
+	if s.ClientConfig.DisableHTTP2 != nil {
+		config.DisableHTTP2 = *s.ClientConfig.DisableHTTP2
+	}
+	if s.ClientConfig.DisableHTTPKeepAlives != nil {
+		config.DisableHTTPKeepAlives = *s.ClientConfig.DisableHTTPKeepAlives
+	}
 }

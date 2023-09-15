@@ -3,6 +3,8 @@
 //lint:file-ignore U1000 Ignore all unused code, it's generated
 package storage
 
+import "github.com/data-preservation-programs/singularity/model"
+
 type acdConfig struct {
 	ClientId          string `json:"clientId"`                                 // OAuth Client Id.
 	ClientSecret      string `json:"clientSecret"`                             // OAuth Client Secret.
@@ -16,9 +18,10 @@ type acdConfig struct {
 }
 
 type createAcdStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config acdConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       acdConfig          `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateAcdStorage
@@ -69,9 +72,10 @@ type azureblobConfig struct {
 }
 
 type createAzureblobStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config azureblobConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       azureblobConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateAzureblobStorage
@@ -106,9 +110,10 @@ type b2Config struct {
 }
 
 type createB2StorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config b2Config
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       b2Config           `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateB2Storage
@@ -141,9 +146,10 @@ type boxConfig struct {
 }
 
 type createBoxStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config boxConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       boxConfig          `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateBoxStorage
@@ -205,9 +211,10 @@ type driveConfig struct {
 }
 
 type createDriveStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config driveConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       driveConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateDriveStorage
@@ -240,9 +247,10 @@ type dropboxConfig struct {
 }
 
 type createDropboxStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config dropboxConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       dropboxConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateDropboxStorage
@@ -266,9 +274,10 @@ type fichierConfig struct {
 }
 
 type createFichierStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config fichierConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       fichierConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateFichierStorage
@@ -294,9 +303,10 @@ type filefabricConfig struct {
 }
 
 type createFilefabricStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config filefabricConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       filefabricConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateFilefabricStorage
@@ -335,9 +345,10 @@ type ftpConfig struct {
 }
 
 type createFtpStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config ftpConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       ftpConfig          `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateFtpStorage
@@ -375,9 +386,10 @@ type gcsConfig struct {
 }
 
 type createGcsStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config gcsConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       gcsConfig          `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateGcsStorage
@@ -406,9 +418,10 @@ type gphotosConfig struct {
 }
 
 type createGphotosStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config gphotosConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       gphotosConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateGphotosStorage
@@ -432,9 +445,10 @@ type hdfsConfig struct {
 }
 
 type createHdfsStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config hdfsConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       hdfsConfig         `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateHdfsStorage
@@ -467,9 +481,10 @@ type hidriveConfig struct {
 }
 
 type createHidriveStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config hidriveConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       hidriveConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateHidriveStorage
@@ -492,9 +507,10 @@ type httpConfig struct {
 }
 
 type createHttpStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config httpConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       httpConfig         `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateHttpStorage
@@ -520,9 +536,10 @@ type internetarchiveConfig struct {
 }
 
 type createInternetarchiveStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config internetarchiveConfig
+	Name         string                `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string                `json:"path"`                      // Path of the storage
+	Config       internetarchiveConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig    `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateInternetarchiveStorage
@@ -547,9 +564,10 @@ type jottacloudConfig struct {
 }
 
 type createJottacloudStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config jottacloudConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       jottacloudConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateJottacloudStorage
@@ -573,9 +591,10 @@ type koofrDigistorageConfig struct {
 }
 
 type createKoofrDigistorageStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config koofrDigistorageConfig
+	Name         string                 `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string                 `json:"path"`                      // Path of the storage
+	Config       koofrDigistorageConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig     `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateKoofrDigistorageStorage
@@ -599,9 +618,10 @@ type koofrKoofrConfig struct {
 }
 
 type createKoofrKoofrStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config koofrKoofrConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       koofrKoofrConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateKoofrKoofrStorage
@@ -626,9 +646,10 @@ type koofrOtherConfig struct {
 }
 
 type createKoofrOtherStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config koofrOtherConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       koofrOtherConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateKoofrOtherStorage
@@ -661,9 +682,10 @@ type localConfig struct {
 }
 
 type createLocalStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config localConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       localConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateLocalStorage
@@ -692,9 +714,10 @@ type mailruConfig struct {
 }
 
 type createMailruStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config mailruConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       mailruConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateMailruStorage
@@ -719,9 +742,10 @@ type megaConfig struct {
 }
 
 type createMegaStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config megaConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       megaConfig         `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateMegaStorage
@@ -744,9 +768,10 @@ type netstorageConfig struct {
 }
 
 type createNetstorageStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config netstorageConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       netstorageConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateNetstorageStorage
@@ -786,9 +811,10 @@ type onedriveConfig struct {
 }
 
 type createOnedriveStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config onedriveConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       onedriveConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOnedriveStorage
@@ -811,9 +837,10 @@ type opendriveConfig struct {
 }
 
 type createOpendriveStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config opendriveConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       opendriveConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOpendriveStorage
@@ -851,9 +878,10 @@ type oosEnv_authConfig struct {
 }
 
 type createOosEnv_authStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config oosEnv_authConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       oosEnv_authConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOosEnv_authStorage
@@ -891,9 +919,10 @@ type oosInstance_principal_authConfig struct {
 }
 
 type createOosInstance_principal_authStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config oosInstance_principal_authConfig
+	Name         string                           `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string                           `json:"path"`                      // Path of the storage
+	Config       oosInstance_principal_authConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig               `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOosInstance_principal_authStorage
@@ -930,9 +959,10 @@ type oosNo_authConfig struct {
 }
 
 type createOosNo_authStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config oosNo_authConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       oosNo_authConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOosNo_authStorage
@@ -970,9 +1000,10 @@ type oosResource_principal_authConfig struct {
 }
 
 type createOosResource_principal_authStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config oosResource_principal_authConfig
+	Name         string                           `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string                           `json:"path"`                      // Path of the storage
+	Config       oosResource_principal_authConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig               `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOosResource_principal_authStorage
@@ -1012,9 +1043,10 @@ type oosUser_principal_authConfig struct {
 }
 
 type createOosUser_principal_authStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config oosUser_principal_authConfig
+	Name         string                       `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string                       `json:"path"`                      // Path of the storage
+	Config       oosUser_principal_authConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig           `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateOosUser_principal_authStorage
@@ -1043,9 +1075,10 @@ type pcloudConfig struct {
 }
 
 type createPcloudStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config pcloudConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       pcloudConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreatePcloudStorage
@@ -1066,9 +1099,10 @@ type premiumizemeConfig struct {
 }
 
 type createPremiumizemeStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config premiumizemeConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       premiumizemeConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreatePremiumizemeStorage
@@ -1088,9 +1122,10 @@ type putioConfig struct {
 }
 
 type createPutioStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config putioConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       putioConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreatePutioStorage
@@ -1119,9 +1154,10 @@ type qingstorConfig struct {
 }
 
 type createQingstorStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config qingstorConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       qingstorConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateQingstorStorage
@@ -1188,9 +1224,10 @@ type s3AWSConfig struct {
 }
 
 type createS3AWSStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3AWSConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3AWSConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3AWSStorage
@@ -1245,9 +1282,10 @@ type s3AlibabaConfig struct {
 }
 
 type createS3AlibabaStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3AlibabaConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3AlibabaConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3AlibabaStorage
@@ -1303,9 +1341,10 @@ type s3ArvanCloudConfig struct {
 }
 
 type createS3ArvanCloudStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3ArvanCloudConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3ArvanCloudConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3ArvanCloudStorage
@@ -1367,9 +1406,10 @@ type s3CephConfig struct {
 }
 
 type createS3CephStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3CephConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3CephConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3CephStorage
@@ -1430,9 +1470,10 @@ type s3ChinaMobileConfig struct {
 }
 
 type createS3ChinaMobileStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3ChinaMobileConfig
+	Name         string              `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string              `json:"path"`                      // Path of the storage
+	Config       s3ChinaMobileConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig  `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3ChinaMobileStorage
@@ -1486,9 +1527,10 @@ type s3CloudflareConfig struct {
 }
 
 type createS3CloudflareStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3CloudflareConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3CloudflareConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3CloudflareStorage
@@ -1544,9 +1586,10 @@ type s3DigitalOceanConfig struct {
 }
 
 type createS3DigitalOceanStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3DigitalOceanConfig
+	Name         string               `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string               `json:"path"`                      // Path of the storage
+	Config       s3DigitalOceanConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig   `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3DigitalOceanStorage
@@ -1602,9 +1645,10 @@ type s3DreamhostConfig struct {
 }
 
 type createS3DreamhostStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3DreamhostConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3DreamhostConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3DreamhostStorage
@@ -1659,9 +1703,10 @@ type s3HuaweiOBSConfig struct {
 }
 
 type createS3HuaweiOBSStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3HuaweiOBSConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3HuaweiOBSConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3HuaweiOBSStorage
@@ -1717,9 +1762,10 @@ type s3IBMCOSConfig struct {
 }
 
 type createS3IBMCOSStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3IBMCOSConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3IBMCOSConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3IBMCOSStorage
@@ -1772,9 +1818,10 @@ type s3IDriveConfig struct {
 }
 
 type createS3IDriveStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3IDriveConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3IDriveConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3IDriveStorage
@@ -1829,9 +1876,10 @@ type s3IONOSConfig struct {
 }
 
 type createS3IONOSStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3IONOSConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3IONOSConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3IONOSStorage
@@ -1886,9 +1934,10 @@ type s3LiaraConfig struct {
 }
 
 type createS3LiaraStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3LiaraConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3LiaraConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3LiaraStorage
@@ -1944,9 +1993,10 @@ type s3LyveCloudConfig struct {
 }
 
 type createS3LyveCloudStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3LyveCloudConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3LyveCloudConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3LyveCloudStorage
@@ -2008,9 +2058,10 @@ type s3MinioConfig struct {
 }
 
 type createS3MinioStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3MinioConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3MinioConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3MinioStorage
@@ -2066,9 +2117,10 @@ type s3NeteaseConfig struct {
 }
 
 type createS3NeteaseStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3NeteaseConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3NeteaseConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3NeteaseStorage
@@ -2124,9 +2176,10 @@ type s3OtherConfig struct {
 }
 
 type createS3OtherStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3OtherConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3OtherConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3OtherStorage
@@ -2183,9 +2236,10 @@ type s3QiniuConfig struct {
 }
 
 type createS3QiniuStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3QiniuConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3QiniuConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3QiniuStorage
@@ -2241,9 +2295,10 @@ type s3RackCorpConfig struct {
 }
 
 type createS3RackCorpStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3RackCorpConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3RackCorpConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3RackCorpStorage
@@ -2299,9 +2354,10 @@ type s3ScalewayConfig struct {
 }
 
 type createS3ScalewayStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3ScalewayConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3ScalewayConfig   `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3ScalewayStorage
@@ -2357,9 +2413,10 @@ type s3SeaweedFSConfig struct {
 }
 
 type createS3SeaweedFSStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3SeaweedFSConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3SeaweedFSConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3SeaweedFSStorage
@@ -2414,9 +2471,10 @@ type s3StackPathConfig struct {
 }
 
 type createS3StackPathStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3StackPathConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3StackPathConfig  `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3StackPathStorage
@@ -2469,9 +2527,10 @@ type s3StorjConfig struct {
 }
 
 type createS3StorjStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3StorjConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3StorjConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3StorjStorage
@@ -2526,9 +2585,10 @@ type s3TencentCOSConfig struct {
 }
 
 type createS3TencentCOSStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3TencentCOSConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3TencentCOSConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3TencentCOSStorage
@@ -2584,9 +2644,10 @@ type s3WasabiConfig struct {
 }
 
 type createS3WasabiStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config s3WasabiConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       s3WasabiConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateS3WasabiStorage
@@ -2614,9 +2675,10 @@ type seafileConfig struct {
 }
 
 type createSeafileStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config seafileConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       seafileConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSeafileStorage
@@ -2666,9 +2728,10 @@ type sftpConfig struct {
 }
 
 type createSftpStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config sftpConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       sftpConfig         `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSftpStorage
@@ -2692,9 +2755,10 @@ type sharefileConfig struct {
 }
 
 type createSharefileStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config sharefileConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       sharefileConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSharefileStorage
@@ -2717,9 +2781,10 @@ type siaConfig struct {
 }
 
 type createSiaStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config siaConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       siaConfig          `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSiaStorage
@@ -2748,9 +2813,10 @@ type smbConfig struct {
 }
 
 type createSmbStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config smbConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       smbConfig          `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSmbStorage
@@ -2770,9 +2836,10 @@ type storjExistingConfig struct {
 }
 
 type createStorjExistingStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config storjExistingConfig
+	Name         string              `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string              `json:"path"`                      // Path of the storage
+	Config       storjExistingConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig  `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateStorjExistingStorage
@@ -2794,9 +2861,10 @@ type storjNewConfig struct {
 }
 
 type createStorjNewStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config storjNewConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       storjNewConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateStorjNewStorage
@@ -2826,9 +2894,10 @@ type sugarsyncConfig struct {
 }
 
 type createSugarsyncStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config sugarsyncConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       sugarsyncConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSugarsyncStorage
@@ -2870,9 +2939,10 @@ type swiftConfig struct {
 }
 
 type createSwiftStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config swiftConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       swiftConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateSwiftStorage
@@ -2893,9 +2963,10 @@ type uptoboxConfig struct {
 }
 
 type createUptoboxStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config uptoboxConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       uptoboxConfig      `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateUptoboxStorage
@@ -2922,9 +2993,10 @@ type webdavConfig struct {
 }
 
 type createWebdavStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config webdavConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       webdavConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateWebdavStorage
@@ -2950,9 +3022,10 @@ type yandexConfig struct {
 }
 
 type createYandexStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config yandexConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       yandexConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateYandexStorage
@@ -2978,9 +3051,10 @@ type zohoConfig struct {
 }
 
 type createZohoStorageRequest struct {
-	Name   string `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path   string `json:"path"`                      // Path of the storage
-	Config zohoConfig
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       zohoConfig         `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
 }
 
 // @ID CreateZohoStorage

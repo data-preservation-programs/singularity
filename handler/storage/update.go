@@ -13,6 +13,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type UpdateRequest struct {
+	Config       map[string]string  `json:"config"`
+	ClientConfig model.ClientConfig `json:"clientConfig"`
+}
+
 // UpdateStorageHandler updates the configuration of a given storage system.
 //
 // This method performs the following operations:
@@ -41,13 +46,9 @@ func (DefaultHandler) UpdateStorageHandler(
 	ctx context.Context,
 	db *gorm.DB,
 	name string,
-	config map[string]string,
+	request UpdateRequest,
 ) (*model.Storage, error) {
 	db = db.WithContext(ctx)
-
-	if config == nil {
-		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "nothing to update")
-	}
 
 	var storage model.Storage
 	err := storage.FindByIDOrName(db, name)
@@ -63,7 +64,7 @@ func (DefaultHandler) UpdateStorageHandler(
 	}
 
 	provider := storage.Config["provider"]
-	if p, ok := config["provider"]; ok {
+	if p, ok := request.Config["provider"]; ok {
 		provider = p
 	}
 
@@ -85,11 +86,12 @@ func (DefaultHandler) UpdateStorageHandler(
 		rcloneConfig[key] = value
 	}
 
-	for key, value := range config {
+	for key, value := range request.Config {
 		rcloneConfig[key] = value
 	}
 
 	storage.Config = rcloneConfig
+	overrideStorageWithClientConfig(&storage, request.ClientConfig)
 	rclone, err := storagesystem.NewRCloneHandler(ctx, storage)
 	if err != nil {
 		return nil, errors.Join(handlererror.ErrInvalidParameter, errors.Wrap(err, "creating rclone handler failed"))
@@ -101,13 +103,77 @@ func (DefaultHandler) UpdateStorageHandler(
 	}
 
 	err = database.DoRetry(ctx, func() error {
-		return db.Model(&model.Storage{}).Where("id = ?", storage.ID).Update("config", storage.Config).Error
+		return db.Model(&model.Storage{}).Where("id = ?", storage.ID).Updates(map[string]any{
+			"config":        storage.Config,
+			"client_config": storage.ClientConfig,
+		}).Error
 	})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	return &storage, err
+}
+
+func overrideStorageWithClientConfig(storage *model.Storage, config model.ClientConfig) {
+	if config.ConnectTimeout != nil {
+		storage.ClientConfig.ConnectTimeout = config.ConnectTimeout
+	}
+	if config.Timeout != nil {
+		storage.ClientConfig.Timeout = config.Timeout
+	}
+	if config.ExpectContinueTimeout != nil {
+		storage.ClientConfig.ExpectContinueTimeout = config.ExpectContinueTimeout
+	}
+	if config.InsecureSkipVerify != nil {
+		storage.ClientConfig.InsecureSkipVerify = config.InsecureSkipVerify
+	}
+	if config.NoGzip != nil {
+		storage.ClientConfig.NoGzip = config.NoGzip
+	}
+	if config.UserAgent != nil {
+		storage.ClientConfig.UserAgent = config.UserAgent
+		if *storage.ClientConfig.UserAgent == "" {
+			storage.ClientConfig.UserAgent = nil
+		}
+	}
+	if len(config.CaCert) > 0 {
+		storage.ClientConfig.CaCert = config.CaCert
+		if storage.ClientConfig.CaCert[0] == "" {
+			storage.ClientConfig.CaCert = nil
+		}
+	}
+	if config.ClientCert != nil {
+		storage.ClientConfig.ClientCert = config.ClientCert
+		if *storage.ClientConfig.ClientCert == "" {
+			storage.ClientConfig.ClientCert = nil
+		}
+	}
+	if config.ClientKey != nil {
+		storage.ClientConfig.ClientKey = config.ClientKey
+		if *storage.ClientConfig.ClientKey == "" {
+			storage.ClientConfig.ClientKey = nil
+		}
+	}
+	if config.DisableHTTP2 != nil {
+		storage.ClientConfig.DisableHTTP2 = config.DisableHTTP2
+	}
+	if config.DisableHTTPKeepAlives != nil {
+		storage.ClientConfig.DisableHTTPKeepAlives = config.DisableHTTPKeepAlives
+	}
+	if config.Headers != nil {
+		for key, value := range config.Headers {
+			if key == "" && value == "" {
+				storage.ClientConfig.Headers = make(map[string]string)
+				break
+			}
+			if value == "" {
+				delete(storage.ClientConfig.Headers, key)
+			} else {
+				storage.ClientConfig.Headers[key] = value
+			}
+		}
+	}
 }
 
 // @ID UpdateStorage
