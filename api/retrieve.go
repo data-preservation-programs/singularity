@@ -26,7 +26,7 @@ func (s *Server) retrieveFile(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, HTTPError{Err: "failed to parse path parameter as number"})
 	}
-	data, name, modTime, err := s.fileHandler.RetrieveFileHandler(ctx, s.db.WithContext(ctx), id)
+	data, name, modTime, err := s.fileHandler.RetrieveFileHandler(ctx, s.db.WithContext(ctx), s.retriever, id)
 	if err != nil {
 		return httpResponseFromError(c, err)
 	}

@@ -7,9 +7,14 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
 )
+
+type FilecoinRetriever interface {
+	Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error
+}
 
 type Handler interface {
 	PrepareToPackFileHandler(
@@ -40,6 +45,7 @@ type Handler interface {
 	RetrieveFileHandler(
 		ctx context.Context,
 		db *gorm.DB,
+		retriever FilecoinRetriever,
 		id uint64,
 	) (data io.ReadSeekCloser, name string, modTime time.Time, err error)
 }
@@ -81,6 +87,7 @@ func (m *MockFile) GetFileDealsHandler(
 func (m *MockFile) RetrieveFileHandler(
 	ctx context.Context,
 	db *gorm.DB,
+	retriever FilecoinRetriever,
 	id uint64,
 ) (data io.ReadSeekCloser, name string, modTime time.Time, err error) {
 	args := m.Called(ctx, db, id)

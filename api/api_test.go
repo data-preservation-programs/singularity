@@ -118,7 +118,7 @@ func setupMockFile() file.Handler {
 		Return(int64(1), nil)
 	m.On("PushFileHandler", mock.Anything, mock.Anything, "id", "name", mock.Anything).
 		Return(&model.File{}, nil)
-	m.On("RetrieveFileHandler", mock.Anything, mock.Anything, uint64(1)).
+	m.On("RetrieveFileHandler", mock.Anything, mock.Anything, mock.Anything, uint64(1)).
 		Return(io.ReadSeekCloser(nopCloser{strings.NewReader("hello world")}), "hello.txt", time.Date(1999, 12, 31, 11, 59, 59, 0, time.UTC), nil)
 	return m
 }
