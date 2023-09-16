@@ -533,13 +533,6 @@ OPTIONS:
    --qingstor-upload-cutoff value       Cutoff for switching to chunked upload. (default: "200Mi") [$QINGSTOR_UPLOAD_CUTOFF]
    --qingstor-zone value                Zone to connect to. [$QINGSTOR_ZONE]
 
-   Retry Strategy
-
-   --client-retry-backoff value      The constant delay backoff for retrying IO read errors (default: 1s)
-   --client-retry-backoff-exp value  The exponential delay backoff for retrying IO read errors (default: 1.0)
-   --client-retry-delay value        The initial delay before retrying IO read errors (default: 1s)
-   --client-retry-max value          Max number of retries for IO read errors (default: 10)
-
    SMB / CIFS
 
    --smb-case-insensitive    Whether the server is configured to be case-insensitive. (default: true) [$SMB_CASE_INSENSITIVE]
