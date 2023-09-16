@@ -16,28 +16,19 @@ import (
 	"github.com/ipld/go-ipld-prime/linking"
 	cidlink "github.com/ipld/go-ipld-prime/linking/cid"
 	"github.com/ipld/go-ipld-prime/node/basicnode"
-	"github.com/ipld/go-ipld-prime/traversal"
 	"go.uber.org/multierr"
 )
 
 var (
-	ErrMalformedCar    = errors.New("malformed CAR")
+	// ErrMalformedCar indicates an error while trying to read a block from a car file
+	ErrMalformedCar = errors.New("malformed CAR")
+	// ErrUnexpectedBlock means we read the next block in the CAR file but it wasn't the one we were expecting
 	ErrUnexpectedBlock = errors.New("unexpected block in CAR")
 )
 
-func readerMatcher(p traversal.Progress, n datamodel.Node) error {
-	if lbn, ok := n.(datamodel.LargeBytesNode); ok {
-		rdr, err := lbn.AsLargeBytes()
-		if err != nil {
-			return err
-		}
-		_, err = io.Copy(io.Discard, rdr)
-		return err
-	}
-	return nil
-}
-
+// Deserialize is a function to deserialize a UnixFS file byte range from a CAR block reader
 func Deserialize(ctx context.Context, r *car.BlockReader, c cid.Cid, start int64, end int64, out io.Writer) (int64, error) {
+	// set up an ipld prime link system to read blocks from the car
 	lsys := cidlink.DefaultLinkSystem()
 	lsys.TrustedStorage = true
 	lsys.StorageReadOpener = func(lc linking.LinkContext, l datamodel.Link) (io.Reader, error) {
@@ -47,14 +38,17 @@ func Deserialize(ctx context.Context, r *car.BlockReader, c cid.Cid, start int64
 		}
 		return bytes.NewReader(data), nil
 	}
+	// load the first new node
 	node, err := loadNode(ctx, c, lsys)
 	if err != nil {
 		return 0, fmt.Errorf("deserializing, unable to load root node: %w", err)
 	}
+	// reify it as unixfs
 	fnode, err := file.NewUnixFSFile(ctx, node, &lsys)
 	if err != nil {
 		return 0, fmt.Errorf("deserializing, reifying as unix fs: %w", err)
 	}
+	// read the byte range
 	nlr, err := fnode.AsLargeBytes()
 	if err != nil {
 		return 0, fmt.Errorf("deserializing, reading as large bytes node: %w", err)
@@ -73,6 +67,7 @@ func Deserialize(ctx context.Context, r *car.BlockReader, c cid.Cid, start int64
 
 var protoChooser = dagpb.AddSupportToChooser(basicnode.Chooser)
 
+// load an individual node (required to start a selector traversal)
 func loadNode(ctx context.Context, rootCid cid.Cid, lsys linking.LinkSystem) (datamodel.Node, error) {
 	lnk := cidlink.Link{Cid: rootCid}
 	lnkCtx := linking.LinkContext{Ctx: ctx}
@@ -87,6 +82,7 @@ func loadNode(ctx context.Context, rootCid cid.Cid, lsys linking.LinkSystem) (da
 	return rootNode, nil
 }
 
+// read the next block from a car reader, verifying it matches the next expected block in traversal
 func readNextBlock(ctx context.Context, bs *car.BlockReader, expected cid.Cid) ([]byte, error) {
 	blk, err := bs.Next()
 	if err != nil {
