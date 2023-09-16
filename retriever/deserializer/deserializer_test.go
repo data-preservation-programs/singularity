@@ -78,6 +78,7 @@ func verifyCarDeserialization(t *testing.T, lsys *linking.LinkSystem, file testu
 	require.NoError(t, err)
 	ssb := builder.NewSelectorSpecBuilder(basicnode.Prototype.Any)
 	sel, err := ssb.ExploreInterpretAs("unixfs", ssb.MatcherSubset(start, end)).Selector()
+	require.NoError(t, err)
 	progress := traversal.Progress{
 		Cfg: &traversal.Config{
 			Ctx:                            context.Background(),
