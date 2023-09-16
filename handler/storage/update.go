@@ -174,6 +174,18 @@ func OverrideStorageWithClientConfig(storage *model.Storage, config model.Client
 			}
 		}
 	}
+	if config.RetryMaxCount != nil {
+		storage.ClientConfig.RetryMaxCount = config.RetryMaxCount
+	}
+	if config.RetryDelay != nil {
+		storage.ClientConfig.RetryDelay = config.RetryDelay
+	}
+	if config.RetryBackoff != nil {
+		storage.ClientConfig.RetryBackoff = config.RetryBackoff
+	}
+	if config.RetryBackoffExponential != nil {
+		storage.ClientConfig.RetryBackoffExponential = config.RetryBackoffExponential
+	}
 }
 
 // @ID UpdateStorage
