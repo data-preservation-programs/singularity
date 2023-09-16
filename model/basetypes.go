@@ -24,18 +24,22 @@ type ConfigMap map[string]string
 type CID cid.Cid
 
 type ClientConfig struct {
-	ConnectTimeout        *time.Duration    `cbor:"1,keyasint,omitempty"  json:"connectTimeout,omitempty"        swaggertype:"primitive,integer"` // HTTP Client Connect timeout
-	Timeout               *time.Duration    `cbor:"2,keyasint,omitempty"  json:"timeout,omitempty"               swaggertype:"primitive,integer"` // IO idle timeout
-	ExpectContinueTimeout *time.Duration    `cbor:"3,keyasint,omitempty"  json:"expectContinueTimeout,omitempty" swaggertype:"primitive,integer"` // Timeout when using expect / 100-continue in HTTP
-	InsecureSkipVerify    *bool             `cbor:"4,keyasint,omitempty"  json:"insecureSkipVerify,omitempty"`                                    // Do not verify the server SSL certificate (insecure)
-	NoGzip                *bool             `cbor:"5,keyasint,omitempty"  json:"noGzip,omitempty"`                                                // Don't set Accept-Encoding: gzip
-	UserAgent             *string           `cbor:"6,keyasint,omitempty"  json:"userAgent,omitempty"`                                             // Set the user-agent to a specified string
-	CaCert                []string          `cbor:"7,keyasint,omitempty"  json:"caCert,omitempty"`                                                // Paths to CA certificate used to verify servers
-	ClientCert            *string           `cbor:"8,keyasint,omitempty"  json:"clientCert,omitempty"`                                            // Path to Client SSL certificate (PEM) for mutual TLS auth
-	ClientKey             *string           `cbor:"9,keyasint,omitempty"  json:"clientKey,omitempty"`                                             // Path to Client SSL private key (PEM) for mutual TLS auth
-	Headers               map[string]string `cbor:"10,keyasint,omitempty" json:"headers,omitempty"`                                               // Set HTTP header for all transactions
-	DisableHTTP2          *bool             `cbor:"11,keyasint,omitempty" json:"disableHttp2,omitempty"`                                          // Disable HTTP/2 in the transport
-	DisableHTTPKeepAlives *bool             `cbor:"12,keyasint,omitempty" json:"disableHttpKeepAlives,omitempty"`                                 // Disable HTTP keep-alives and use each connection once.
+	ConnectTimeout          *time.Duration    `cbor:"1,keyasint,omitempty"  json:"connectTimeout,omitempty"          swaggertype:"primitive,integer"` // HTTP Client Connect timeout
+	Timeout                 *time.Duration    `cbor:"2,keyasint,omitempty"  json:"timeout,omitempty"                 swaggertype:"primitive,integer"` // IO idle timeout
+	ExpectContinueTimeout   *time.Duration    `cbor:"3,keyasint,omitempty"  json:"expectContinueTimeout,omitempty"   swaggertype:"primitive,integer"` // Timeout when using expect / 100-continue in HTTP
+	InsecureSkipVerify      *bool             `cbor:"4,keyasint,omitempty"  json:"insecureSkipVerify,omitempty"`                                      // Do not verify the server SSL certificate (insecure)
+	NoGzip                  *bool             `cbor:"5,keyasint,omitempty"  json:"noGzip,omitempty"`                                                  // Don't set Accept-Encoding: gzip
+	UserAgent               *string           `cbor:"6,keyasint,omitempty"  json:"userAgent,omitempty"`                                               // Set the user-agent to a specified string
+	CaCert                  []string          `cbor:"7,keyasint,omitempty"  json:"caCert,omitempty"`                                                  // Paths to CA certificate used to verify servers
+	ClientCert              *string           `cbor:"8,keyasint,omitempty"  json:"clientCert,omitempty"`                                              // Path to Client SSL certificate (PEM) for mutual TLS auth
+	ClientKey               *string           `cbor:"9,keyasint,omitempty"  json:"clientKey,omitempty"`                                               // Path to Client SSL private key (PEM) for mutual TLS auth
+	Headers                 map[string]string `cbor:"10,keyasint,omitempty" json:"headers,omitempty"`                                                 // Set HTTP header for all transactions
+	DisableHTTP2            *bool             `cbor:"11,keyasint,omitempty" json:"disableHttp2,omitempty"`                                            // Disable HTTP/2 in the transport
+	DisableHTTPKeepAlives   *bool             `cbor:"12,keyasint,omitempty" json:"disableHttpKeepAlives,omitempty"`                                   // Disable HTTP keep-alives and use each connection once.
+	RetryMaxCount           *int              `cbor:"13,keyasint,omitempty" json:"retryMaxCount,omitempty"`                                           // Maximum number of retries. Default is 10 retries.
+	RetryDelay              *time.Duration    `cbor:"14,keyasint,omitempty" json:"retryDelay,omitempty"`                                              // Delay between retries. Default is 1s.
+	RetryBackoff            *time.Duration    `cbor:"15,keyasint,omitempty" json:"retryBackoff,omitempty"`                                            // Constant backoff between retries. Default is 1s.
+	RetryBackoffExponential *float64          `cbor:"16,keyasint,omitempty" json:"retryBackoffExponential,omitempty"`                                 // Exponential backoff between retries. Default is 1.0.
 }
 
 func (c CID) MarshalBinary() ([]byte, error) {
@@ -217,6 +221,18 @@ func (c ClientConfig) String() string {
 	}
 	if c.DisableHTTPKeepAlives != nil {
 		values = append(values, "disableHTTPKeepAlives:"+fmt.Sprint(*c.DisableHTTPKeepAlives))
+	}
+	if c.RetryMaxCount != nil {
+		values = append(values, "retryMaxCount:"+fmt.Sprint(*c.RetryMaxCount))
+	}
+	if c.RetryDelay != nil {
+		values = append(values, "retryDelay:"+c.RetryDelay.String())
+	}
+	if c.RetryBackoff != nil {
+		values = append(values, "retryBackoff:"+c.RetryBackoff.String())
+	}
+	if c.RetryBackoffExponential != nil {
+		values = append(values, "retryBackoffExponential:"+fmt.Sprint(*c.RetryBackoffExponential))
 	}
 	return strings.Join(values, " ")
 }
