@@ -50,6 +50,9 @@ func (r *Retriever) deserialize(ctx context.Context, c cid.Cid, rangeStart int64
 // getContent fetches content through Lassie and writes the CAR file to an output writer
 func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, carOutput io.Writer) error {
 	writable, err := storage.NewWritable(carOutput, []cid.Cid{c}, car.WriteAsCarV1(true))
+	if err != nil {
+		return err
+	}
 	providerAddrs, err := r.endpointFinder.FindHTTPEndpoints(ctx, sps)
 	if err != nil {
 		return err
@@ -60,6 +63,9 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 		// byte range is INCLUSIVE in the lassie/trustless HTTP context, so decrement
 		To: &inclusiveRangeEnd,
 	})
+	if err != nil {
+		return err
+	}
 	request.Duplicates = true
 	request.Protocols = []multicodec.Code{multicodec.TransportIpfsGatewayHttp}
 	request.FixedPeers = providerAddrs
@@ -103,7 +109,7 @@ func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, r
 		case <-ctx.Done():
 			return ctx.Err()
 		case nextErr := <-errChan:
-			multierr.Append(err, nextErr)
+			err = multierr.Append(err, nextErr)
 		}
 	}
 	return err
