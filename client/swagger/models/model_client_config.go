@@ -8,7 +8,6 @@ package models
 import (
 	"context"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
@@ -48,22 +47,6 @@ type ModelClientConfig struct {
 	// Don't set Accept-Encoding: gzip
 	NoGzip bool `json:"noGzip,omitempty"`
 
-	// Constant backoff between retries. Default is 1s.
-	RetryBackoff struct {
-		TimeDuration
-	} `json:"retryBackoff,omitempty"`
-
-	// Exponential backoff between retries. Default is 1.0.
-	RetryBackoffExponential float64 `json:"retryBackoffExponential,omitempty"`
-
-	// Delay between retries. Default is 1s.
-	RetryDelay struct {
-		TimeDuration
-	} `json:"retryDelay,omitempty"`
-
-	// Maximum number of retries. Default is 10 retries.
-	RetryMaxCount int64 `json:"retryMaxCount,omitempty"`
-
 	// IO idle timeout
 	Timeout int64 `json:"timeout,omitempty"`
 
@@ -73,63 +56,11 @@ type ModelClientConfig struct {
 
 // Validate validates this model client config
 func (m *ModelClientConfig) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateRetryBackoff(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateRetryDelay(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
 	return nil
 }
 
-func (m *ModelClientConfig) validateRetryBackoff(formats strfmt.Registry) error {
-	if swag.IsZero(m.RetryBackoff) { // not required
-		return nil
-	}
-
-	return nil
-}
-
-func (m *ModelClientConfig) validateRetryDelay(formats strfmt.Registry) error {
-	if swag.IsZero(m.RetryDelay) { // not required
-		return nil
-	}
-
-	return nil
-}
-
-// ContextValidate validate this model client config based on the context it is used
+// ContextValidate validates this model client config based on context it is used
 func (m *ModelClientConfig) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.contextValidateRetryBackoff(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.contextValidateRetryDelay(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *ModelClientConfig) contextValidateRetryBackoff(ctx context.Context, formats strfmt.Registry) error {
-
-	return nil
-}
-
-func (m *ModelClientConfig) contextValidateRetryDelay(ctx context.Context, formats strfmt.Registry) error {
-
 	return nil
 }
 

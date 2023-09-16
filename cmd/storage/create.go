@@ -21,33 +21,6 @@ import (
 
 var defaultClientConfig = fs.NewConfig()
 
-var RetryConfigFlags = []cli.Flag{
-	&cli.IntFlag{
-		Name:        "client-retry-max",
-		Usage:       "Max number of retries for IO read errors",
-		DefaultText: "10",
-		Category:    "Retry Strategy",
-	},
-	&cli.DurationFlag{
-		Name:        "client-retry-delay",
-		Usage:       "The initial delay before retrying IO read errors",
-		DefaultText: "1s",
-		Category:    "Retry Strategy",
-	},
-	&cli.DurationFlag{
-		Name:        "client-retry-backoff",
-		Usage:       "The constant delay backoff for retrying IO read errors",
-		DefaultText: "1s",
-		Category:    "Retry Strategy",
-	},
-	&cli.Float64Flag{
-		Name:        "client-retry-backoff-exp",
-		Usage:       "The exponential delay backoff for retrying IO read errors",
-		DefaultText: "1.0",
-		Category:    "Retry Strategy",
-	},
-}
-
 var clientConfigFlags = []cli.Flag{
 	&cli.DurationFlag{
 		Name:        "client-connect-timeout",
@@ -134,7 +107,6 @@ var CreateCmd = &cli.Command{
 						Required: true,
 					})
 					command.Flags = append(command.Flags, clientConfigFlags...)
-					command.Flags = append(command.Flags, RetryConfigFlags...)
 					return command
 				}),
 			}
@@ -157,7 +129,6 @@ var CreateCmd = &cli.Command{
 		if backend.Prefix != localStorageType {
 			command.Flags = append(command.Flags, clientConfigFlags...)
 		}
-		command.Flags = append(command.Flags, RetryConfigFlags...)
 		return command
 	}),
 }
@@ -251,18 +222,6 @@ func getClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 			}
 		}
 		config.Headers = headers
-	}
-	if c.IsSet("client-retry-max") {
-		config.RetryMaxCount = ptr.Of(c.Int("client-retry-max"))
-	}
-	if c.IsSet("client-retry-delay") {
-		config.RetryDelay = ptr.Of(c.Duration("client-retry-delay"))
-	}
-	if c.IsSet("client-retry-backoff") {
-		config.RetryBackoff = ptr.Of(c.Duration("client-retry-backoff"))
-	}
-	if c.IsSet("client-retry-backoff-exp") {
-		config.RetryBackoffExponential = ptr.Of(c.Float64("client-retry-backoff-exp"))
 	}
 	return &config, nil
 }
