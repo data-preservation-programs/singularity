@@ -22,9 +22,12 @@ import (
 	"github.com/data-preservation-programs/singularity/handler/wallet"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/replication"
+	"github.com/data-preservation-programs/singularity/retriever"
+	"github.com/data-preservation-programs/singularity/retriever/endpointfinder"
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/contentprovider"
 	"github.com/data-preservation-programs/singularity/util"
+	"github.com/filecoin-project/lassie/pkg/lassie"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/ybbus/jsonrpc/v3"
 
@@ -46,6 +49,7 @@ type Server struct {
 	dealMaker       replication.DealMaker
 	closer          io.Closer
 	host            host.Host
+	retriever       *retriever.Retriever
 	storageHandler  storage.Handler
 	dataprepHandler dataprep.Handler
 	dealHandler     deal.Handler
@@ -115,7 +119,16 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 	if err != nil {
 		return Server{}, errors.Wrap(err, "failed to init host")
 	}
-
+	lassie, err := lassie.NewLassie(ctx, lassie.WithHost(h))
+	if err != nil {
+		return Server{}, errors.Wrap(err, "failed to init lassie")
+	}
+	endpointFinder, err := endpointfinder.NewEndpointFinder(replication.MinerInfoFetcher{
+		Client: util.NewLotusClient(params.LotusAPI, params.LotusToken),
+	}, h, 128)
+	if err != nil {
+		return Server{}, errors.Wrap(err, "failed to init endpoint finder")
+	}
 	return Server{
 		db:          db,
 		host:        h,
@@ -127,6 +140,7 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 			time.Hour,
 			time.Minute*5,
 		),
+		retriever:       retriever.NewRetriever(lassie, endpointFinder),
 		closer:          closer,
 		storageHandler:  &storage.DefaultHandler{},
 		dataprepHandler: &dataprep.DefaultHandler{},

@@ -12,6 +12,7 @@ import (
 	"github.com/ipld/go-car/v2/storage"
 	trustlessutils "github.com/ipld/go-trustless-utils"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/multiformats/go-multicodec"
 	"go.uber.org/multierr"
 )
 
@@ -24,6 +25,13 @@ type EndpointFinder interface {
 type Retriever struct {
 	lassie         lassietypes.Fetcher
 	endpointFinder EndpointFinder
+}
+
+func NewRetriever(lassie lassietypes.Fetcher, endpointFinder EndpointFinder) *Retriever {
+	return &Retriever{
+		lassie:         lassie,
+		endpointFinder: endpointFinder,
+	}
 }
 
 // deserialize takes an reader of a carFile and writes the deserialized output
@@ -49,6 +57,8 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 		// byte range is INCLUSIVE in the lassie/trustless HTTP context, so decrement
 		To: &inclusiveRangeEnd,
 	})
+	request.Duplicates = true
+	request.Protocols = []multicodec.Code{multicodec.TransportIpfsGatewayHttp}
 	request.FixedPeers = providerAddrs
 	_, err = r.lassie.Fetch(ctx, request, func(lassietypes.RetrievalEvent) {})
 	if err != nil {
