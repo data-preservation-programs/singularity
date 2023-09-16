@@ -90,6 +90,6 @@ func (m *MockFile) RetrieveFileHandler(
 	retriever FilecoinRetriever,
 	id uint64,
 ) (data io.ReadSeekCloser, name string, modTime time.Time, err error) {
-	args := m.Called(ctx, db, id)
+	args := m.Called(ctx, db, retriever, id)
 	return args.Get(0).(io.ReadSeekCloser), args.Get(1).(string), args.Get(2).(time.Time), args.Error(3)
 }
