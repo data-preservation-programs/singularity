@@ -21,18 +21,19 @@ var logger = log.Logger("singularity/handler/file")
 var ErrNoFileRangeRecord = errors.New("missing file range record")
 var ErrNoJobRecord = errors.New("missing job record")
 var ErrNoFilecoinDeals = errors.New("no filecoin deals available")
+var ErrByteOffsetBeyondFile = errors.New("byte offset would exceed file size")
 
-type ErrUnableToServeRange struct {
+type UnableToServeRangeError struct {
 	Start int64
 	End   int64
 	Err   error
 }
 
-func (e ErrUnableToServeRange) Unwrap() error {
+func (e UnableToServeRangeError) Unwrap() error {
 	return e.Err
 }
 
-func (e ErrUnableToServeRange) Error() string {
+func (e UnableToServeRangeError) Error() string {
 	return fmt.Sprintf("unable to serve byte range %d to %d: %s", e.Start, e.End, e.Err.Error())
 }
 
@@ -112,7 +113,7 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		readLen = remainingBytes
 	}
 
-	fileRanges, err := findFileRanges(r.ctx, r.db, r.id, r.offset, r.offset+readLen)
+	fileRanges, err := findFileRanges(r.db, r.id, r.offset, r.offset+readLen)
 	if err != nil {
 		return 0, fmt.Errorf("failed to retrieve file range deals: %w", err)
 	}
@@ -125,7 +126,7 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 			break
 		}
 		if fileRange.Offset > r.offset {
-			return read, ErrUnableToServeRange{Start: r.offset, End: fileRange.Offset, Err: ErrNoFileRangeRecord}
+			return read, UnableToServeRangeError{Start: r.offset, End: fileRange.Offset, Err: ErrNoFileRangeRecord}
 		}
 		rangeReadLen := readLen
 		remainingRange := (fileRange.Offset + fileRange.Length) - r.offset
@@ -133,15 +134,15 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 			rangeReadLen = remainingRange
 		}
 		if fileRange.JobID == nil {
-			return read, ErrUnableToServeRange{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoJobRecord}
+			return read, UnableToServeRangeError{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoJobRecord}
 		}
-		providers, err := findProviders(r.ctx, r.db, *fileRange.JobID)
+		providers, err := findProviders(r.db, *fileRange.JobID)
 		if err != nil || len(providers) == 0 {
-			return read, ErrUnableToServeRange{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoFilecoinDeals}
+			return read, UnableToServeRangeError{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoFilecoinDeals}
 		}
 		err = r.retriever.Retrieve(r.ctx, cid.Cid(fileRange.CID), r.offset, r.offset+rangeReadLen, providers, buf)
 		if err != nil {
-			return read, ErrUnableToServeRange{
+			return read, UnableToServeRangeError{
 				Start: r.offset,
 				End:   r.offset + rangeReadLen,
 				Err:   fmt.Errorf("unable to retrieve data from filecoin: %w", err),
@@ -154,7 +155,7 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 
 	// check for missing file ranges at the end
 	if readLen > 0 {
-		return read, ErrUnableToServeRange{Start: r.offset, End: r.offset + readLen, Err: ErrNoFileRangeRecord}
+		return read, UnableToServeRangeError{Start: r.offset, End: r.offset + readLen, Err: ErrNoFileRangeRecord}
 	}
 	return read, nil
 }
@@ -172,7 +173,7 @@ func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	if newOffset > r.size {
-		return 0, fmt.Errorf("byte offset would exceed file size")
+		return 0, ErrByteOffsetBeyondFile
 	}
 
 	r.offset = newOffset
@@ -184,7 +185,7 @@ func (r *filecoinReader) Close() error {
 	return nil
 }
 
-func findFileRanges(ctx context.Context, db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
+func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
 	var fileRanges []model.FileRange
 	err := db.Model(&model.FileRange{}).Where("file_ranges.file_id = ? AND file_ranges.offset < ? AND (file_ranges.offset+file_ranges.length) > ?", id, endRange, startRange).
 		Order("file_ranges.offset ASC").Find(&fileRanges).Error
@@ -198,7 +199,7 @@ type deal struct {
 	Provider string
 }
 
-func findProviders(ctx context.Context, db *gorm.DB, jobID model.JobID) ([]string, error) {
+func findProviders(db *gorm.DB, jobID model.JobID) ([]string, error) {
 	var deals []deal
 	err := db.Table("deals").Select("provider").
 		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
