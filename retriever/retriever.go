@@ -1,3 +1,4 @@
+// Package retriever wraps functionality for fetching data from filecoin.
 package retriever
 
 import (
@@ -16,17 +17,19 @@ import (
 	"go.uber.org/multierr"
 )
 
+// EndpointFinder finds http endpoints for set of SPs
 type EndpointFinder interface {
 	FindHTTPEndpoints(ctx context.Context, sps []string) ([]peer.AddrInfo, error)
 }
 
-// a retriever returns a byte stream for a cid at the root of a unixfs tree,
-// from a list of Filecoin providers
+// Retriever wraps Lassie and HTTP endpoint lookup to returns a byte stream for
+// a cid at the root of a unixfs tree, from a list of Filecoin providers
 type Retriever struct {
 	lassie         lassietypes.Fetcher
 	endpointFinder EndpointFinder
 }
 
+// NewRetriever returns a new retriever instance
 func NewRetriever(lassie lassietypes.Fetcher, endpointFinder EndpointFinder) *Retriever {
 	return &Retriever{
 		lassie:         lassie,
@@ -67,7 +70,7 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 	return writable.Finalize()
 }
 
-// Retrieve retrieves a range from a cid representing a unixfstree from a given list of SPs, writing the output to a car file
+// Retrieve retrieves a byte range from a cid representing a unixfstree from a given list of SPs, writing the output to a car file
 func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
 	reader, writer := io.Pipe()
 	errChan := make(chan error, 2)
