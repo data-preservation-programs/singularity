@@ -5816,11 +5816,7 @@ const docTemplate = `{
                 },
                 "retryBackoff": {
                     "description": "Constant backoff between retries. Default is 1s.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/time.Duration"
-                        }
-                    ]
+                    "type": "integer"
                 },
                 "retryBackoffExponential": {
                     "description": "Exponential backoff between retries. Default is 1.0.",
@@ -5828,11 +5824,7 @@ const docTemplate = `{
                 },
                 "retryDelay": {
                     "description": "Delay between retries. Default is 1s.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/time.Duration"
-                        }
-                    ]
+                    "type": "integer"
                 },
                 "retryMaxCount": {
                     "description": "Maximum number of retries. Default is 10 retries.",
@@ -16098,29 +16090,6 @@ const docTemplate = `{
         },
         "store.PieceReader": {
             "type": "object"
-        },
-        "time.Duration": {
-            "type": "integer",
-            "enum": [
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
-            ],
-            "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
-            ]
         },
         "wallet.ImportRequest": {
             "type": "object",

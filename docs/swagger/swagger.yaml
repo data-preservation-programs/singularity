@@ -308,16 +308,14 @@ definitions:
         description: 'Don''t set Accept-Encoding: gzip'
         type: boolean
       retryBackoff:
-        allOf:
-        - $ref: '#/definitions/time.Duration'
         description: Constant backoff between retries. Default is 1s.
+        type: integer
       retryBackoffExponential:
         description: Exponential backoff between retries. Default is 1.0.
         type: number
       retryDelay:
-        allOf:
-        - $ref: '#/definitions/time.Duration'
         description: Delay between retries. Default is 1s.
+        type: integer
       retryMaxCount:
         description: Maximum number of retries. Default is 10 retries.
         type: integer
@@ -8079,26 +8077,6 @@ definitions:
     type: object
   store.PieceReader:
     type: object
-  time.Duration:
-    enum:
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    type: integer
-    x-enum-varnames:
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
   wallet.ImportRequest:
     properties:
       privateKey:
