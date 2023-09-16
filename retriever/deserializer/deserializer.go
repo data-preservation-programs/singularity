@@ -32,7 +32,7 @@ func Deserialize(ctx context.Context, r *car.BlockReader, c cid.Cid, start int64
 	lsys := cidlink.DefaultLinkSystem()
 	lsys.TrustedStorage = true
 	lsys.StorageReadOpener = func(lc linking.LinkContext, l datamodel.Link) (io.Reader, error) {
-		data, err := readNextBlock(ctx, r, l.(cidlink.Link).Cid)
+		data, err := readNextBlock(r, l.(cidlink.Link).Cid)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +83,7 @@ func loadNode(ctx context.Context, rootCid cid.Cid, lsys linking.LinkSystem) (da
 }
 
 // read the next block from a car reader, verifying it matches the next expected block in traversal
-func readNextBlock(ctx context.Context, bs *car.BlockReader, expected cid.Cid) ([]byte, error) {
+func readNextBlock(bs *car.BlockReader, expected cid.Cid) ([]byte, error) {
 	blk, err := bs.Next()
 	if err != nil {
 		if errors.Is(err, io.EOF) {
