@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/retriever"
-	"github.com/filecoin-project/lassie/pkg/types"
 	lassietypes "github.com/filecoin-project/lassie/pkg/types"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-unixfsnode"
@@ -86,7 +85,7 @@ func (ef *fakeEndpointFinder) FindHTTPEndpoints(ctx context.Context, sps []strin
 }
 
 type fakeLassie struct {
-	lastRequest types.RetrievalRequest
+	lastRequest lassietypes.RetrievalRequest
 	lsys        *linking.LinkSystem
 }
 

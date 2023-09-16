@@ -58,6 +58,7 @@ func TestEndpointFetcher(t *testing.T) {
 			source, err := mn.GenPeer()
 			require.NoError(t, err)
 			other, err := mn.GenPeer()
+			require.NoError(t, err)
 			if !testCase.notDialable {
 				mn.LinkAll()
 			}
