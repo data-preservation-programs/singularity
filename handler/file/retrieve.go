@@ -74,6 +74,7 @@ func (DefaultHandler) RetrieveFileHandler(
 	seeker, obj, err := storagesystem.Open(rclone, ctx, file.Path)
 	if err != nil {
 		// we have no local copy, so we have to return a filecoin based reader
+		//nolint:nilerr
 		return &filecoinReader{
 			ctx:       ctx,
 			db:        db,
