@@ -92,6 +92,7 @@ var UpdateCmd = &cli.Command{
 					command.ArgsUsage = "<name|id>"
 					command.Before = cliutil.CheckNArgs
 					command.Flags = append(command.Flags, ClientConfigFlagsForUpdate...)
+					command.Flags = append(command.Flags, RetryConfigFlags...)
 					return command
 				}),
 			}
@@ -105,6 +106,7 @@ var UpdateCmd = &cli.Command{
 		if backend.Prefix != "local" {
 			command.Flags = append(command.Flags, ClientConfigFlagsForUpdate...)
 		}
+		command.Flags = append(command.Flags, RetryConfigFlags...)
 		return command
 	}),
 }
@@ -206,6 +208,18 @@ func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 			}
 		}
 		config.Headers = headers
+	}
+	if c.IsSet("client-retry-max") {
+		config.RetryMaxCount = ptr.Of(c.Int("client-retry-max"))
+	}
+	if c.IsSet("client-retry-delay") {
+		config.RetryDelay = ptr.Of(c.Duration("client-retry-delay"))
+	}
+	if c.IsSet("client-retry-backoff") {
+		config.RetryBackoff = ptr.Of(c.Duration("client-retry-backoff"))
+	}
+	if c.IsSet("client-retry-backoff-exp") {
+		config.RetryBackoffExponential = ptr.Of(c.Float64("client-retry-backoff-exp"))
 	}
 	return &config, nil
 }

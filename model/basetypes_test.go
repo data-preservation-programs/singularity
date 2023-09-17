@@ -2,11 +2,45 @@ package model
 
 import (
 	"testing"
+	"time"
 
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/boxo/util"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 )
+
+func TestClientConfigMarshal(t *testing.T) {
+	c := ClientConfig{
+		ConnectTimeout:          ptr.Of(time.Second),
+		Timeout:                 ptr.Of(time.Second),
+		ExpectContinueTimeout:   ptr.Of(time.Second),
+		InsecureSkipVerify:      ptr.Of(true),
+		NoGzip:                  ptr.Of(true),
+		UserAgent:               ptr.Of("x"),
+		CaCert:                  []string{"x"},
+		ClientCert:              ptr.Of("x"),
+		ClientKey:               ptr.Of("x"),
+		Headers:                 map[string]string{"x": "x"},
+		DisableHTTP2:            ptr.Of(true),
+		DisableHTTPKeepAlives:   ptr.Of(true),
+		RetryMaxCount:           ptr.Of(10),
+		RetryDelay:              ptr.Of(time.Second),
+		RetryBackoff:            ptr.Of(time.Second),
+		RetryBackoffExponential: ptr.Of(1.0),
+	}
+	data, err := c.Value()
+	require.NoError(t, err)
+	require.NotEmpty(t, data)
+
+	var c2 ClientConfig
+	err = c2.Scan(data)
+	require.NoError(t, err)
+	require.EqualValues(t, c, c2)
+
+	str := c.String()
+	require.Equal(t, "connectTimeout:1s timeout:1s expectContinueTimeout:1s insecureSkipVerify:true noGzip:true userAgent:x caCert:x clientCert:x clientKey:x headers:<hidden> disableHTTP2true disableHTTPKeepAlives:true retryMaxCount:10 retryDelay:1s retryBackoff:1s retryBackoffExponential:1", str)
+}
 
 var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))
 

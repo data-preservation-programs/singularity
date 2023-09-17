@@ -307,6 +307,18 @@ definitions:
       noGzip:
         description: 'Don''t set Accept-Encoding: gzip'
         type: boolean
+      retryBackoff:
+        description: Constant backoff between retries. Default is 1s.
+        type: integer
+      retryBackoffExponential:
+        description: Exponential backoff between retries. Default is 1.0.
+        type: number
+      retryDelay:
+        description: Delay between retries. Default is 1s.
+        type: integer
+      retryMaxCount:
+        description: Maximum number of retries. Default is 10 retries.
+        type: integer
       timeout:
         description: IO idle timeout
         type: integer
