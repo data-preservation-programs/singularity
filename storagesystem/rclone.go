@@ -24,9 +24,13 @@ var ErrBackendNotSupported = errors.New("This backend is not supported")
 var ErrMoveNotSupported = errors.New("The backend does not support moving files")
 
 type RCloneHandler struct {
-	name     string
-	fs       fs.Fs
-	fsNoHead fs.Fs
+	name                    string
+	fs                      fs.Fs
+	fsNoHead                fs.Fs
+	retryMaxCount           int
+	retryDelay              time.Duration
+	retryBackoff            time.Duration
+	retryBackoffExponential float64
 }
 
 func (h RCloneHandler) Name() string {
@@ -150,6 +154,56 @@ type readCloser struct {
 	io.Closer
 }
 
+type readerWithRetry struct {
+	ctx                     context.Context
+	object                  fs.Object
+	reader                  io.ReadCloser
+	offset                  int64
+	retryDelay              time.Duration
+	retryBackoff            time.Duration
+	retryCountMax           int
+	retryCount              int
+	retryBackoffExponential float64
+}
+
+func (r *readerWithRetry) Close() error {
+	return r.reader.Close()
+}
+
+func (r *readerWithRetry) Read(p []byte) (int, error) {
+	if r.ctx.Err() != nil {
+		return 0, r.ctx.Err()
+	}
+	n, err := r.reader.Read(p)
+	r.offset += int64(n)
+	//nolint:errorlint
+	if err == io.EOF || err == nil {
+		return n, err
+	}
+
+	if r.retryCount >= r.retryCountMax {
+		return n, err
+	}
+
+	// error is not EOF
+	logger.Warnf("Read error: %s, retrying after %s", err, r.retryDelay)
+	select {
+	case <-r.ctx.Done():
+		return n, errors.Join(err, r.ctx.Err())
+	case <-time.After(r.retryDelay):
+	}
+	r.retryCount += 1
+	r.retryDelay = time.Duration(float64(r.retryDelay) * r.retryBackoffExponential)
+	r.retryDelay += r.retryBackoff
+	r.reader.Close()
+	var err2 error
+	r.reader, err2 = r.object.Open(r.ctx, &fs.SeekOption{Offset: r.offset})
+	if err2 != nil {
+		return n, errors.Join(err, err2)
+	}
+	return n, nil
+}
+
 func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	logger.Debugw("Read: reading path", "type", h.fs.Name(), "root", h.fs.Root(), "path", path, "offset", offset, "length", length)
 	object, err := h.fsNoHead.NewObject(ctx, path)
@@ -158,10 +212,19 @@ func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, leng
 	}
 	option := &fs.SeekOption{Offset: offset}
 	reader, err := object.Open(ctx, option)
-
+	readerWithRetry := &readerWithRetry{
+		ctx:                     ctx,
+		object:                  object,
+		reader:                  reader,
+		offset:                  offset,
+		retryDelay:              h.retryDelay,
+		retryBackoff:            h.retryBackoff,
+		retryCountMax:           h.retryMaxCount,
+		retryBackoffExponential: h.retryBackoffExponential,
+	}
 	return readCloser{
-		Reader: io.LimitReader(reader, length),
-		Closer: reader,
+		Reader: io.LimitReader(readerWithRetry, length),
+		Closer: readerWithRetry,
 	}, object, errors.WithStack(err)
 }
 
@@ -195,11 +258,30 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
-	return &RCloneHandler{
-		name:     s.Name,
-		fs:       headFS,
-		fsNoHead: noHeadFS,
-	}, nil
+	handler := &RCloneHandler{
+		name:                    s.Name,
+		fs:                      headFS,
+		fsNoHead:                noHeadFS,
+		retryMaxCount:           10,
+		retryDelay:              time.Second,
+		retryBackoff:            time.Second,
+		retryBackoffExponential: 1.0,
+	}
+
+	if s.ClientConfig.RetryMaxCount != nil {
+		handler.retryMaxCount = *s.ClientConfig.RetryMaxCount
+	}
+	if s.ClientConfig.RetryDelay != nil {
+		handler.retryDelay = *s.ClientConfig.RetryDelay
+	}
+	if s.ClientConfig.RetryBackoff != nil {
+		handler.retryBackoff = *s.ClientConfig.RetryBackoff
+	}
+	if s.ClientConfig.RetryBackoffExponential != nil {
+		handler.retryBackoffExponential = *s.ClientConfig.RetryBackoffExponential
+	}
+
+	return handler, nil
 }
 
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {

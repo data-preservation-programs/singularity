@@ -9,10 +9,47 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/gotidy/ptr"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+type faultyReader struct {
+	willFail bool
+}
+
+func (f *faultyReader) Read(p []byte) (n int, err error) {
+	if f.willFail {
+		return 0, errors.New("test")
+	}
+	p[0] = 'a'
+	return 1, io.EOF
+}
+
+func (f *faultyReader) Close() error {
+	return nil
+}
+
+func TestReaderWithRetry(t *testing.T) {
+	ctx := context.Background()
+	mockObject := new(MockObject)
+	mockObject.On("Open", ctx, mock.Anything).Return(&faultyReader{willFail: false}, nil)
+	reader := &readerWithRetry{
+		ctx:                     ctx,
+		object:                  mockObject,
+		reader:                  &faultyReader{willFail: true},
+		offset:                  0,
+		retryDelay:              time.Second,
+		retryBackoff:            time.Second,
+		retryCountMax:           10,
+		retryBackoffExponential: 1.0,
+	}
+	out, err := io.ReadAll(reader)
+	require.NoError(t, err)
+	require.EqualValues(t, "a", out)
+}
 
 func TestRCloneHandler_OverrideConfig(t *testing.T) {
 	tmp := t.TempDir()

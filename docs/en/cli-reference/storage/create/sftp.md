@@ -335,5 +335,12 @@ OPTIONS:
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
 
+   Retry Strategy
+
+   --client-retry-backoff value      The constant delay backoff for retrying IO read errors (default: 1s)
+   --client-retry-backoff-exp value  The exponential delay backoff for retrying IO read errors (default: 1.0)
+   --client-retry-delay value        The initial delay before retrying IO read errors (default: 1s)
+   --client-retry-max value          Max number of retries for IO read errors (default: 10)
+
 ```
 {% endcode %}

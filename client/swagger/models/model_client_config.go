@@ -47,6 +47,18 @@ type ModelClientConfig struct {
 	// Don't set Accept-Encoding: gzip
 	NoGzip bool `json:"noGzip,omitempty"`
 
+	// Constant backoff between retries. Default is 1s.
+	RetryBackoff int64 `json:"retryBackoff,omitempty"`
+
+	// Exponential backoff between retries. Default is 1.0.
+	RetryBackoffExponential float64 `json:"retryBackoffExponential,omitempty"`
+
+	// Delay between retries. Default is 1s.
+	RetryDelay int64 `json:"retryDelay,omitempty"`
+
+	// Maximum number of retries. Default is 10 retries.
+	RetryMaxCount int64 `json:"retryMaxCount,omitempty"`
+
 	// IO idle timeout
 	Timeout int64 `json:"timeout,omitempty"`
 
