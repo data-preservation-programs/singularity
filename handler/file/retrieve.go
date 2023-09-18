@@ -130,7 +130,8 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 			return read, UnableToServeRangeError{Start: r.offset, End: fileRange.Offset, Err: ErrNoFileRangeRecord}
 		}
 		rangeReadLen := readLen
-		remainingRange := (fileRange.Offset + fileRange.Length) - r.offset
+		offsetInRange := r.offset - fileRange.Offset
+		remainingRange := fileRange.Length - offsetInRange
 		if rangeReadLen > remainingRange {
 			rangeReadLen = remainingRange
 		}
@@ -141,7 +142,7 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		if err != nil || len(providers) == 0 {
 			return read, UnableToServeRangeError{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoFilecoinDeals}
 		}
-		err = r.retriever.Retrieve(r.ctx, cid.Cid(fileRange.CID), r.offset, r.offset+rangeReadLen, providers, buf)
+		err = r.retriever.Retrieve(r.ctx, cid.Cid(fileRange.CID), offsetInRange, offsetInRange+rangeReadLen, providers, buf)
 		if err != nil {
 			return read, UnableToServeRangeError{
 				Start: r.offset,
