@@ -5830,6 +5830,10 @@ const docTemplate = `{
                     "description": "Maximum number of retries. Default is 10 retries.",
                     "type": "integer"
                 },
+                "skipInaccessibleFile": {
+                    "description": "Skip inaccessible files. Default is false.",
+                    "type": "boolean"
+                },
                 "timeout": {
                     "description": "IO idle timeout",
                     "type": "integer"

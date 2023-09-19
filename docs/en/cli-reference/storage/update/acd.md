@@ -110,6 +110,7 @@ OPTIONS:
    --client-retry-backoff-exp value  The exponential delay backoff for retrying IO read errors (default: 1.0)
    --client-retry-delay value        The initial delay before retrying IO read errors (default: 1s)
    --client-retry-max value          Max number of retries for IO read errors (default: 10)
+   --client-skip-inaccessible        Skip inaccessible files when opening (default: false)
 
 ```
 {% endcode %}

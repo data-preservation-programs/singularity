@@ -186,6 +186,9 @@ func OverrideStorageWithClientConfig(storage *model.Storage, config model.Client
 	if config.RetryBackoffExponential != nil {
 		storage.ClientConfig.RetryBackoffExponential = config.RetryBackoffExponential
 	}
+	if config.SkipInaccessibleFile != nil {
+		storage.ClientConfig.SkipInaccessibleFile = config.SkipInaccessibleFile
+	}
 }
 
 // @ID UpdateStorage
