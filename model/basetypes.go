@@ -37,8 +37,8 @@ type ClientConfig struct {
 	DisableHTTP2            *bool             `cbor:"11,keyasint,omitempty" json:"disableHttp2,omitempty"`                                            // Disable HTTP/2 in the transport
 	DisableHTTPKeepAlives   *bool             `cbor:"12,keyasint,omitempty" json:"disableHttpKeepAlives,omitempty"`                                   // Disable HTTP keep-alives and use each connection once.
 	RetryMaxCount           *int              `cbor:"13,keyasint,omitempty" json:"retryMaxCount,omitempty"`                                           // Maximum number of retries. Default is 10 retries.
-	RetryDelay              *time.Duration    `cbor:"14,keyasint,omitempty" json:"retryDelay,omitempty" swaggertype:"primitive,integer"`              // Delay between retries. Default is 1s.
-	RetryBackoff            *time.Duration    `cbor:"15,keyasint,omitempty" json:"retryBackoff,omitempty" swaggertype:"primitive,integer"`            // Constant backoff between retries. Default is 1s.
+	RetryDelay              *time.Duration    `cbor:"14,keyasint,omitempty" json:"retryDelay,omitempty"              swaggertype:"primitive,integer"` // Delay between retries. Default is 1s.
+	RetryBackoff            *time.Duration    `cbor:"15,keyasint,omitempty" json:"retryBackoff,omitempty"            swaggertype:"primitive,integer"` // Constant backoff between retries. Default is 1s.
 	RetryBackoffExponential *float64          `cbor:"16,keyasint,omitempty" json:"retryBackoffExponential,omitempty"`                                 // Exponential backoff between retries. Default is 1.0.
 }
 

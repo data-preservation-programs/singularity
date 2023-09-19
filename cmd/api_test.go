@@ -286,6 +286,6 @@ func TestBasicDataPrep(t *testing.T) {
 		require.Len(t, listPiecesResp.Payload, 1)
 		require.Len(t, listPiecesResp.Payload[0].Pieces, 2)
 		require.Equal(t, "baga6ea4seaqoahdvfwkrp64ecsxbjvyuqcwpz3o7ctxrjanlv2x4u2cq2qjf2ji", listPiecesResp.Payload[0].Pieces[0].PieceCid)
-		require.Equal(t, "baga6ea4seaqikgg6djdjtgro2pwsipxkjo754gwykmyglrv5yhjkgqi23dtqubq", listPiecesResp.Payload[0].Pieces[1].PieceCid)
+		require.Equal(t, "baga6ea4seaqbkouoyih2elxfrztq3gr23rpvgpx5e3fnud2rhvvzf4b7tneeyki", listPiecesResp.Payload[0].Pieces[1].PieceCid)
 	})
 }

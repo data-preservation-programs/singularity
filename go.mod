@@ -36,6 +36,7 @@ require (
 	github.com/ipfs/go-ipfs-routing v0.3.0
 	github.com/ipfs/go-ipld-cbor v0.0.6
 	github.com/ipfs/go-ipld-format v0.5.0
+	github.com/ipfs/go-ipld-legacy v0.2.1
 	github.com/ipfs/go-libipfs v0.7.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/ipfs/go-log/v2 v2.5.1
@@ -43,6 +44,8 @@ require (
 	github.com/ipfs/go-unixfs v0.4.5
 	github.com/ipld/go-car v0.6.1
 	github.com/ipld/go-car/v2 v2.10.2-0.20230622090957-499d0c909d33
+	github.com/ipld/go-codec-dagpb v1.6.0
+	github.com/ipld/go-ipld-prime v0.20.0
 	github.com/jellydator/ttlcache/v3 v3.0.1
 	github.com/joho/godotenv v1.5.1
 	github.com/jsign/go-filsigner v0.4.1
@@ -170,12 +173,9 @@ require (
 	github.com/ipfs/go-ipfs-exchange-interface v0.2.0 // indirect
 	github.com/ipfs/go-ipfs-pq v0.0.3 // indirect
 	github.com/ipfs/go-ipfs-util v0.0.3 // indirect
-	github.com/ipfs/go-ipld-legacy v0.2.1 // indirect
 	github.com/ipfs/go-metrics-interface v0.0.1 // indirect
 	github.com/ipfs/go-peertaskqueue v0.8.1 // indirect
 	github.com/ipfs/go-verifcid v0.0.2 // indirect
-	github.com/ipld/go-codec-dagpb v1.6.0 // indirect
-	github.com/ipld/go-ipld-prime v0.20.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.3.0 // indirect
