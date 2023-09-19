@@ -108,7 +108,7 @@ func (m multiBlockstore) HashOnRead(enabled bool) {
 //
 // Note:
 //
-//	The function only supports CAR files with CIDs of type Raw or DagProtobuf.
+//	The function only supports CAR files with CIDs of type raw or DagProtobuf.
 //	It recursively walks the input directory and gathers all .car files.
 //	For each CAR file, it reads the content and extracts the data for the given CID, then writes the extracted
 //	content to the specified output directory or file. If no CAR files are found in the input directory,

@@ -99,7 +99,7 @@ func (d *DagGenerator) Read(p []byte) (int, error) {
 		return 0, errors.WithStack(err)
 	}
 	d.dirCIDs[dir.ID] = dir.CID
-	_, blks, err := daggen.UnmarshalToBlocks(dir.Data)
+	blks, err := daggen.UnmarshalToBlocks(dir.Data)
 	if err != nil {
 		return 0, errors.Wrapf(err, "failed to unmarshall directory %d to blocks", dir.ID)
 	}

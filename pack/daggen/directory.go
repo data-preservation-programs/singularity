@@ -1,29 +1,23 @@
 package daggen
 
 import (
-	"bufio"
 	"bytes"
 	"context"
-	"io"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/packutil"
+	"github.com/fxamacker/cbor/v2"
 	blocks "github.com/ipfs/go-block-format"
-	"github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	uio "github.com/ipfs/go-unixfs/io"
-	"github.com/ipld/go-car"
-	"github.com/ipld/go-car/util"
 	"github.com/klauspost/compress/zstd"
 )
 
-var encoder, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
-var decoder, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(0))
+var compressor, _ = zstd.NewWriter(nil, zstd.WithEncoderLevel(zstd.SpeedDefault))
+var decompressor, _ = zstd.NewReader(nil, zstd.WithDecoderConcurrency(0))
 
 type DirectoryDetail struct {
 	Dir  *model.Directory
@@ -133,10 +127,11 @@ func (t DirectoryTree) Resolve(ctx context.Context, dirID model.DirectoryID) (*f
 //   - nodeDirty : A flag indicating whether the cached node representation is potentially outdated
 //     and needs to be refreshed from the internal directory representation.
 type DirectoryData struct {
-	dir       uio.Directory
-	bstore    blockstore.Blockstore
-	node      format.Node
-	nodeDirty bool
+	dir        uio.Directory
+	dagServ    *RecordedDagService
+	node       format.Node
+	nodeDirty  bool
+	additional map[cid.Cid][]byte
 }
 
 // Node retrieves the format.Node representation of the current DirectoryData.
@@ -174,15 +169,14 @@ func (d *DirectoryData) Node() (format.Node, error) {
 //
 //   - DirectoryData : A new DirectoryData instance with the initialized directory, blockstore, and a dirty node flag set to true.
 func NewDirectoryData() DirectoryData {
-	ds := datastore.NewMapDatastore()
-	bs := blockstore.NewBlockstore(ds, blockstore.WriteThrough())
-	dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
+	dagServ := NewRecordedDagService()
 	dir := uio.NewDirectory(dagServ)
 	dir.SetCidBuilder(merkledag.V1CidPrefix())
 	return DirectoryData{
-		dir:       dir,
-		bstore:    bs,
-		nodeDirty: true,
+		dir:        dir,
+		nodeDirty:  true,
+		dagServ:    dagServ,
+		additional: make(map[cid.Cid][]byte),
 	}
 }
 
@@ -201,7 +195,10 @@ func NewDirectoryData() DirectoryData {
 //
 //	error  : An error is returned if adding the child to the directory fails, otherwise it returns nil.
 func (d *DirectoryData) AddFile(ctx context.Context, name string, c cid.Cid, length uint64) error {
-	return d.dir.AddChild(ctx, name, NewDummyNode(length, c))
+	d.nodeDirty = true
+	node := NewDummyNode(length, c)
+	_ = d.dagServ.Add(ctx, node)
+	return d.dir.AddChild(ctx, name, node)
 }
 
 // AddFileFromLinks constructs a new file from a set of links and adds it to the directory.
@@ -230,10 +227,8 @@ func (d *DirectoryData) AddFileFromLinks(ctx context.Context, name string, links
 	if err != nil {
 		return cid.Undef, errors.WithStack(err)
 	}
-	err = d.bstore.PutMany(ctx, blks)
-	if err != nil {
-		return cid.Undef, errors.WithStack(err)
-	}
+	d.AddBlocks(ctx, blks)
+	d.nodeDirty = true
 	return node.Cid(), nil
 }
 
@@ -248,104 +243,124 @@ func (d *DirectoryData) AddFileFromLinks(ctx context.Context, name string, links
 //
 // This function is a wrapper that delegates the block adding task to the blockstore instance
 // associated with the DirectoryData instance.
-func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) error {
-	return d.bstore.PutMany(ctx, blks)
+func (d *DirectoryData) AddBlocks(ctx context.Context, blks []blocks.Block) {
+	for _, blk := range blks {
+		d.additional[blk.Cid()] = blk.RawData()
+	}
 }
 
-// MarshalBinary serializes the current state of the DirectoryData object into a binary format.
-// This method:
-//  1. Refreshes the internal representation of the directory (Node).
-//  2. Writes the CAR (Content Addressable Archives) header of the new Node to a buffer.
-//  3. If an old Node exists, it deletes the old Node from the blockstore.
-//  4. Puts the new Node into the blockstore.
-//  5. Iterates through all the keys in the blockstore, retrieves the corresponding data,
-//     and writes it as CAR blocks to the buffer.
-//  6. Returns the entire buffer content encoded.
+type directoryData struct {
+	_          struct{} `cbor:",toarray"`
+	Root       cid.Cid
+	Dummies    map[cid.Cid]uint32
+	Reals      map[cid.Cid][]byte
+	Additional map[cid.Cid][]byte
+}
+
+// MarshalBinary encodes the DirectoryData into a binary format using CBOR and then compresses the result.
+//
+// The method reconstructs the directory using the DagService, determines which blocks have been visited,
+// and constructs a representation containing both dummy and real data from the directory.
 //
 // Parameters:
-//
-//   - ctx : Context used to control cancellations or timeouts.
+//   - ctx: A context to allow for timeout or cancellation of operations.
 //
 // Returns:
-//
-//   - []byte : Binary representation of the DirectoryData, or nil if an error occurs.
-//   - error  : An error is returned if refreshing the Node, writing the CAR header, deleting the old Node,
-//     putting
+//   - A byte slice representing the compressed CBOR encoded binary of the DirectoryData.
+//   - An error, if any occurred during the encoding or compression process.
 func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	newNode, err := d.Node()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	_, err = packutil.WriteCarHeader(buf, newNode.Cid())
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	err = d.bstore.Put(ctx, newNode)
+	_ = d.dagServ.Add(ctx, newNode)
+
+	// Reconstruct the directory from dagServ and figure out the visited blocks
+	d.dagServ.ResetVisited()
+	d.dagServ.Visit(ctx, newNode.Cid())
+	d.dir, err = uio.NewDirectoryFromNode(d.dagServ, newNode)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	ch, err := d.bstore.AllKeysChan(ctx)
+	err = d.dir.ForEachLink(ctx, func(link *format.Link) error {
+		d.dagServ.Visit(ctx, link.Cid)
+		return nil
+	})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	for k := range ch {
-		data, err := d.bstore.Get(ctx, k)
-		if err != nil {
-			return nil, errors.WithStack(err)
+
+	data := directoryData{
+		Dummies:    make(map[cid.Cid]uint32),
+		Reals:      make(map[cid.Cid][]byte),
+		Additional: d.additional,
+		Root:       newNode.Cid(),
+	}
+
+	for c, d := range d.dagServ.blockstore {
+		if !d.visited {
+			continue
 		}
-		_, err = packutil.WriteCarBlock(buf, data)
-		if err != nil {
-			return nil, errors.WithStack(err)
+		if d.dummy {
+			data.Dummies[c] = d.size
+		} else {
+			data.Reals[c] = d.raw
 		}
 	}
-	return encoder.EncodeAll(buf.Bytes(), make([]byte, 0, len(buf.Bytes()))), nil
+	encoder := cbor.NewEncoder(buf)
+	err = encoder.Encode(data)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return compressor.EncodeAll(buf.Bytes(), make([]byte, 0, len(buf.Bytes()))), nil
 }
 
-// UnmarshalToBlocks deserializes binary data into a set of blocks and a root content identifier (CID).
-// This function:
-//  1. Decodes the input binary data.
-//  2. Reads the CAR (Content Addressable Archives) header from the decoded data to obtain the root CID.
-//  3. Iteratively reads CAR blocks from the data and constructs block objects from them.
+// UnmarshalToBlocks decodes a byte slice into a slice of blocks. The input byte slice is expected to
+// represent compressed CBOR encoded binary data of directoryData.
+//
+// The function first decompresses the input byte slice and then decodes it using CBOR to obtain
+// directoryData which contains information about real and additional blocks. These blocks are then
+// reconstructed and returned.
 //
 // Parameters:
-//
-//   - data : Binary data representing a serialized set of blocks and a root CID.
+//   - in: A byte slice representing the compressed CBOR encoded binary of the directoryData.
 //
 // Returns:
-//
-//   - cid.Cid     : The root CID extracted from the CAR header, or an undefined CID if an error occurs.
-//   - []blocks.Block : Slice of blocks.Block objects reconstructed from the input data, or nil if an error occurs.
-//   - error       : An error is returned if decoding the input data, reading the CAR header, or reading CAR blocks fails.
-//     Otherwise, it returns nil.
-func UnmarshalToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
-	if len(data) == 0 {
-		return cid.Undef, nil, nil
+//   - A slice of blocks reconstructed from the input byte slice.
+//   - An error, if any occurred during the decompression, decoding or block reconstruction process.
+func UnmarshalToBlocks(in []byte) ([]blocks.Block, error) {
+	if len(in) == 0 {
+		return nil, nil
 	}
-	decoded, err := decoder.DecodeAll(data, nil)
+
+	decompressed, err := decompressor.DecodeAll(in, nil)
 	if err != nil {
-		return cid.Undef, nil, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	reader := bufio.NewReader(bytes.NewReader(decoded))
-	ch, err := car.ReadHeader(reader)
+	decoder, err := cbor.DecOptions{
+		MaxMapPairs: 2147483647,
+	}.DecMode()
 	if err != nil {
-		return cid.Undef, nil, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	dirCID := ch.Roots[0]
-	var blks []blocks.Block
-	for {
-		c, data, err := util.ReadNode(reader)
-		if err != nil && !errors.Is(err, io.EOF) {
-			return cid.Undef, nil, errors.WithStack(err)
-		}
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		blk, _ := blocks.NewBlockWithCid(data, c)
+	var data directoryData
+	err = decoder.Unmarshal(decompressed, &data)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	blks := make([]blocks.Block, 0, len(data.Reals)+len(data.Additional))
+	for c, d := range data.Reals {
+		blk, _ := blocks.NewBlockWithCid(d, c)
 		blks = append(blks, blk)
 	}
-	return dirCID, blks, nil
+	for c, d := range data.Additional {
+		blk, _ := blocks.NewBlockWithCid(d, c)
+		blks = append(blks, blk)
+	}
+	return blks, nil
 }
 
 // UnmarshalBinary deserializes binary data into the current DirectoryData object.
@@ -367,44 +382,64 @@ func UnmarshalToBlocks(data []byte) (cid.Cid, []blocks.Block, error) {
 //   - error : An error is returned if unmarshalling the data, putting blocks into blockstore,
 //     retrieving the root directory node, or creating a new directory from the node fails.
 //     Otherwise, it returns nil.
-func (d *DirectoryData) UnmarshalBinary(ctx context.Context, data []byte) error {
-	ds := datastore.NewMapDatastore()
-	bs := blockstore.NewBlockstore(ds, blockstore.WriteThrough())
-	bs.HashOnRead(false)
-	dagServ := merkledag.NewDAGService(blockservice.New(bs, nil))
-	if len(data) == 0 {
+func (d *DirectoryData) UnmarshalBinary(ctx context.Context, in []byte) error {
+	dagServ := NewRecordedDagService()
+	if len(in) == 0 {
 		dir := uio.NewDirectory(dagServ)
 		dir.SetCidBuilder(merkledag.V1CidPrefix())
 		*d = DirectoryData{
-			dir:       dir,
-			bstore:    bs,
-			nodeDirty: true,
+			dir:        dir,
+			nodeDirty:  true,
+			dagServ:    dagServ,
+			additional: make(map[cid.Cid][]byte),
 		}
 		return nil
 	}
 
-	dirCID, blks, err := UnmarshalToBlocks(data)
+	var data directoryData
+
+	decompressed, err := decompressor.DecodeAll(in, nil)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	err = bs.PutMany(ctx, blks)
+	decoder, err := cbor.DecOptions{
+		MaxMapPairs: 2147483647,
+	}.DecMode()
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	dirNode, err := dagServ.Get(ctx, dirCID)
+	err = decoder.Unmarshal(decompressed, &data)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	dir, err := uio.NewDirectoryFromNode(dagServ, dirNode)
+
+	for c, d := range data.Dummies {
+		dagServ.blockstore[c] = blockData{
+			dummy: true,
+			size:  d,
+		}
+	}
+	for c, d := range data.Reals {
+		dagServ.blockstore[c] = blockData{
+			raw: d,
+		}
+	}
+
+	root, err := dagServ.Get(ctx, data.Root)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	dir, err := uio.NewDirectoryFromNode(dagServ, root)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 	dir.SetCidBuilder(merkledag.V1CidPrefix())
 	*d = DirectoryData{
-		dir:       dir,
-		bstore:    bs,
-		node:      nil,
-		nodeDirty: true,
+		dir:        dir,
+		node:       root,
+		nodeDirty:  false,
+		dagServ:    dagServ,
+		additional: data.Additional,
 	}
 	return nil
 }
