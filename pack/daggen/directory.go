@@ -257,25 +257,17 @@ type directoryData struct {
 	Additional map[cid.Cid][]byte
 }
 
-// MarshalBinary serializes the current state of the DirectoryData object into a binary format.
-// This method:
-//  1. Refreshes the internal representation of the directory (Node).
-//  2. Writes the CAR (Content Addressable Archives) header of the new Node to a buffer.
-//  3. If an old Node exists, it deletes the old Node from the blockstore.
-//  4. Puts the new Node into the blockstore.
-//  5. Iterates through all the keys in the blockstore, retrieves the corresponding data,
-//     and writes it as CAR blocks to the buffer.
-//  6. Returns the entire buffer content encoded.
+// MarshalBinary encodes the DirectoryData into a binary format using CBOR and then compresses the result.
+//
+// The method reconstructs the directory using the DagService, determines which blocks have been visited,
+// and constructs a representation containing both dummy and real data from the directory.
 //
 // Parameters:
-//
-//   - ctx : Context used to control cancellations or timeouts.
+//   - ctx: A context to allow for timeout or cancellation of operations.
 //
 // Returns:
-//
-//   - []byte : Binary representation of the DirectoryData, or nil if an error occurs.
-//   - error  : An error is returned if refreshing the Node, writing the CAR header, deleting the old Node,
-//     putting
+//   - A byte slice representing the compressed CBOR encoded binary of the DirectoryData.
+//   - An error, if any occurred during the encoding or compression process.
 func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	buf := &bytes.Buffer{}
 	newNode, err := d.Node()
@@ -293,9 +285,6 @@ func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	}
 
 	err = d.dir.ForEachLink(ctx, func(link *format.Link) error {
-		if link.Cid.String() == "bafybeibgzuxcjfvdxbq2kl253cnijejdxiqvblfumr65mxa77oarctf6ri" {
-			panic("here")
-		}
 		d.dagServ.Visit(ctx, link.Cid)
 		return nil
 	})
@@ -328,6 +317,19 @@ func (d *DirectoryData) MarshalBinary(ctx context.Context) ([]byte, error) {
 	return compressor.EncodeAll(buf.Bytes(), make([]byte, 0, len(buf.Bytes()))), nil
 }
 
+// UnmarshalToBlocks decodes a byte slice into a slice of blocks. The input byte slice is expected to
+// represent compressed CBOR encoded binary data of directoryData.
+//
+// The function first decompresses the input byte slice and then decodes it using CBOR to obtain
+// directoryData which contains information about real and additional blocks. These blocks are then
+// reconstructed and returned.
+//
+// Parameters:
+//   - in: A byte slice representing the compressed CBOR encoded binary of the directoryData.
+//
+// Returns:
+//   - A slice of blocks reconstructed from the input byte slice.
+//   - An error, if any occurred during the decompression, decoding or block reconstruction process.
 func UnmarshalToBlocks(in []byte) ([]blocks.Block, error) {
 	if len(in) == 0 {
 		return nil, nil
