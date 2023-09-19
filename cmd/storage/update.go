@@ -221,5 +221,8 @@ func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 	if c.IsSet("client-retry-backoff-exp") {
 		config.RetryBackoffExponential = ptr.Of(c.Float64("client-retry-backoff-exp"))
 	}
+	if c.IsSet("client-skip-inaccessible") {
+		config.SkipInaccessibleFile = ptr.Of(c.Bool("client-skip-inaccessible"))
+	}
 	return &config, nil
 }

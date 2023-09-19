@@ -40,6 +40,7 @@ type ClientConfig struct {
 	RetryDelay              *time.Duration    `cbor:"14,keyasint,omitempty" json:"retryDelay,omitempty"              swaggertype:"primitive,integer"` // Delay between retries. Default is 1s.
 	RetryBackoff            *time.Duration    `cbor:"15,keyasint,omitempty" json:"retryBackoff,omitempty"            swaggertype:"primitive,integer"` // Constant backoff between retries. Default is 1s.
 	RetryBackoffExponential *float64          `cbor:"16,keyasint,omitempty" json:"retryBackoffExponential,omitempty"`                                 // Exponential backoff between retries. Default is 1.0.
+	SkipInaccessibleFile    *bool             `cbor:"17,keyasint,omitempty" json:"skipInaccessibleFile,omitempty"`                                    // Skip inaccessible files. Default is false.
 }
 
 func (c CID) MarshalBinary() ([]byte, error) {
@@ -233,6 +234,9 @@ func (c ClientConfig) String() string {
 	}
 	if c.RetryBackoffExponential != nil {
 		values = append(values, "retryBackoffExponential:"+fmt.Sprint(*c.RetryBackoffExponential))
+	}
+	if c.SkipInaccessibleFile != nil {
+		values = append(values, "skipInaccessibleFile:"+fmt.Sprint(*c.SkipInaccessibleFile))
 	}
 	return strings.Join(values, " ")
 }
