@@ -50,8 +50,9 @@ type Assembler struct {
 	// carBlocks is a slice of CAR blocks that are used in the assembly process.
 	carBlocks []model.CarBlock
 	// assembleLinkFor is a pointer to the index in fileRanges for which links need to be assembled.
-	assembleLinkFor *int
-	noInline        bool
+	assembleLinkFor       *int
+	noInline              bool
+	skipInaccessibleFiles bool
 }
 
 // Close closes the assembler and all of its underlying readers
@@ -68,14 +69,15 @@ func (a *Assembler) Close() error {
 
 // NewAssembler initializes a new Assembler instance with the given parameters.
 func NewAssembler(ctx context.Context, reader storagesystem.Reader,
-	fileRanges []model.FileRange, noInline bool) *Assembler {
+	fileRanges []model.FileRange, noInline bool, skipInaccessibleFiles bool) *Assembler {
 	return &Assembler{
-		ctx:        ctx,
-		reader:     reader,
-		fileRanges: fileRanges,
-		buf:        make([]byte, packutil.ChunkSize),
-		objects:    make(map[model.FileID]fs.Object),
-		noInline:   noInline,
+		ctx:                   ctx,
+		reader:                reader,
+		fileRanges:            fileRanges,
+		buf:                   make([]byte, packutil.ChunkSize),
+		objects:               make(map[model.FileID]fs.Object),
+		noInline:              noInline,
+		skipInaccessibleFiles: skipInaccessibleFiles,
 	}
 }
 
@@ -174,7 +176,13 @@ func (a *Assembler) prefetch() error {
 		fileRange := a.fileRanges[a.index]
 		readCloser, obj, err := a.reader.Read(a.ctx, fileRange.File.Path, fileRange.Offset, fileRange.Length)
 		if err != nil {
-			return errors.WithStack(err)
+			if a.skipInaccessibleFiles {
+				logger.Warnf("skipping inaccessible file %s: %v", fileRange.File.Path, err)
+				a.index++
+				return nil
+			} else {
+				return errors.Wrapf(err, "failed to open file %s", fileRange.File.Path)
+			}
 		}
 		same, detail := storagesystem.IsSameEntry(a.ctx, *fileRange.File, obj)
 		if !same {

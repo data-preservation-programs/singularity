@@ -19,6 +19,54 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAssembler_InaccessibleFile(t *testing.T) {
+	tmp := t.TempDir()
+	ctx := context.Background()
+	err := os.WriteFile(filepath.Join(tmp, "test.txt"), []byte("test"), 0000)
+	require.NoError(t, err)
+
+	stat, err := os.Stat(filepath.Join(tmp, "test.txt"))
+	require.NoError(t, err)
+
+	reader, err := storagesystem.NewRCloneHandler(ctx, model.Storage{
+		Type: "local",
+		Path: tmp,
+	})
+	require.NoError(t, err)
+
+	assembler := NewAssembler(context.Background(), reader, []model.FileRange{
+		{
+			Offset: 0,
+			Length: 4,
+			File: &model.File{
+				Path:             "test.txt",
+				Size:             4,
+				LastModifiedNano: stat.ModTime().UnixNano(),
+			},
+		},
+	}, false, false)
+	defer assembler.Close()
+
+	_, err = io.ReadAll(assembler)
+	require.Error(t, err)
+
+	assembler2 := NewAssembler(context.Background(), reader, []model.FileRange{
+		{
+			Offset: 0,
+			Length: 4,
+			File: &model.File{
+				Path:             "test.txt",
+				Size:             4,
+				LastModifiedNano: stat.ModTime().UnixNano(),
+			},
+		},
+	}, false, true)
+	defer assembler2.Close()
+
+	_, err = io.ReadAll(assembler)
+	require.NoError(t, err)
+}
+
 func TestAssembler(t *testing.T) {
 	tmp := t.TempDir()
 	sizes := map[int]struct {
@@ -70,7 +118,7 @@ func TestAssembler(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Run(fmt.Sprintf("single size=%d", size), func(t *testing.T) {
-			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange}, false)
+			assembler := NewAssembler(context.Background(), reader, []model.FileRange{fileRange}, false, false)
 			defer assembler.Close()
 			content, err := io.ReadAll(assembler)
 			require.NoError(t, err)
@@ -84,7 +132,7 @@ func TestAssembler(t *testing.T) {
 		return allFileRanges[i].ID < allFileRanges[j].ID
 	})
 	t.Run("all", func(t *testing.T) {
-		assembler := NewAssembler(context.Background(), reader, allFileRanges, false)
+		assembler := NewAssembler(context.Background(), reader, allFileRanges, false, false)
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)
@@ -94,7 +142,7 @@ func TestAssembler(t *testing.T) {
 		require.Greater(t, len(assembler.carBlocks), 0)
 	})
 	t.Run("noinline", func(t *testing.T) {
-		assembler := NewAssembler(context.Background(), reader, allFileRanges, true)
+		assembler := NewAssembler(context.Background(), reader, allFileRanges, true, false)
 		defer assembler.Close()
 		content, err := io.ReadAll(assembler)
 		require.NoError(t, err)

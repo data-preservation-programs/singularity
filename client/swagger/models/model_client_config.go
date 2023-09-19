@@ -59,6 +59,9 @@ type ModelClientConfig struct {
 	// Maximum number of retries. Default is 10 retries.
 	RetryMaxCount int64 `json:"retryMaxCount,omitempty"`
 
+	// Skip inaccessible files. Default is false.
+	SkipInaccessibleFile bool `json:"skipInaccessibleFile,omitempty"`
+
 	// IO idle timeout
 	Timeout int64 `json:"timeout,omitempty"`
 

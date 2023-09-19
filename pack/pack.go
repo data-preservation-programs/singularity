@@ -67,6 +67,8 @@ func GetCommp(calc *commp.Calc, targetPieceSize uint64) (cid.Cid, uint64, error)
 	return commCid, rawPieceSize, nil
 }
 
+var ErrNoContent = errors.New("no content to pack")
+
 // Pack takes in a Job and processes its attachment by reading it, possibly encrypting it,
 // splitting it into manageable chunks, and then storing those chunks into a designated storage.
 // If the job's attachment requires encryption, it will be encrypted using the specified encryption method.
@@ -98,7 +100,11 @@ func Pack(
 		return nil, errors.Wrapf(err, "failed to get storage handler for %s", job.Attachment.Storage.Name)
 	}
 
-	assembler := NewAssembler(ctx, storageReader, job.FileRanges, job.Attachment.Preparation.NoInline)
+	var skipInaccessibleFile bool
+	if job.Attachment.Storage.ClientConfig.SkipInaccessibleFile != nil {
+		skipInaccessibleFile = *job.Attachment.Storage.ClientConfig.SkipInaccessibleFile
+	}
+	assembler := NewAssembler(ctx, storageReader, job.FileRanges, job.Attachment.Preparation.NoInline, skipInaccessibleFile)
 	defer assembler.Close()
 	var filename string
 	calc := &commp.Calc{}
@@ -114,6 +120,9 @@ func Pack(
 		}
 		fileSize = obj.Size()
 
+		if assembler.carOffset <= 65 {
+			return nil, errors.WithStack(ErrNoContent)
+		}
 		pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -129,6 +138,9 @@ func Pack(
 		fileSize, err = io.Copy(calc, assembler)
 		if err != nil {
 			return nil, errors.WithStack(err)
+		}
+		if assembler.carOffset <= 65 {
+			return nil, errors.WithStack(ErrNoContent)
 		}
 		pieceCid, finalPieceSize, err = GetCommp(calc, uint64(pieceSize))
 		if err != nil {
