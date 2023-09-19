@@ -63,7 +63,7 @@ func TestAssembler_InaccessibleFile(t *testing.T) {
 	}, false, true)
 	defer assembler2.Close()
 
-	_, err = io.ReadAll(assembler)
+	_, err = io.ReadAll(assembler2)
 	require.NoError(t, err)
 }
 
