@@ -273,10 +273,7 @@ func Pack(
 								return errors.Wrap(err, "failed to add file to directory")
 							}
 							if blks, ok := splitFileBlks[file.ID]; ok {
-								err = dirDetail.Data.AddBlocks(ctx, blks)
-								if err != nil {
-									return errors.Wrap(err, "failed to add blocks to directory")
-								}
+								dirDetail.Data.AddBlocks(ctx, blks)
 							}
 						}
 
