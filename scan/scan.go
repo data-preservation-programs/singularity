@@ -3,6 +3,7 @@ package scan
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -63,13 +64,15 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 	var lastScannedPath *string
 	defer func() {
 		if lastScannedPath != nil {
-			err = database.DoRetry(ctx, func() error {
+			ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			err = database.DoRetry(ctx2, func() error {
 				return db.Model(&model.SourceAttachment{}).Where("id = ?", attachment.ID).
 					Update("last_scanned_path", lastScannedPath).Error
 			})
 			if err != nil {
 				logger.Errorw("failed to update last scanned path", "error", err)
 			}
+			cancel()
 		}
 	}()
 	for entry := range entryChan {
