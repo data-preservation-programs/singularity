@@ -66,7 +66,7 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 		if lastScannedPath != nil {
 			ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			err = database.DoRetry(ctx2, func() error {
-				return db.Model(&model.SourceAttachment{}).Where("id = ?", attachment.ID).
+				return db.WithContext(ctx2).Model(&model.SourceAttachment{}).Where("id = ?", attachment.ID).
 					Update("last_scanned_path", lastScannedPath).Error
 			})
 			if err != nil {
