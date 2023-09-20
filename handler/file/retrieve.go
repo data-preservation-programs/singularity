@@ -203,7 +203,7 @@ type deal struct {
 
 func findProviders(db *gorm.DB, jobID model.JobID) ([]string, error) {
 	var deals []deal
-	err := db.Table("deals").Select("provider").
+	err := db.Table("deals").Select("distinct provider").
 		Joins("JOIN cars ON deals.piece_cid = cars.piece_cid").
 		Where("cars.job_id = ? and deals.state IN (?)", jobID, []model.DealState{
 			model.DealPublished,
