@@ -65,6 +65,7 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 	defer func() {
 		if lastScannedPath != nil {
 			ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			logger.Infof("updating last scanned path to %s", *lastScannedPath)
 			err = database.DoRetry(ctx2, func() error {
 				return db.WithContext(ctx2).Model(&model.SourceAttachment{}).Where("id = ?", attachment.ID).
 					Update("last_scanned_path", lastScannedPath).Error
@@ -119,7 +120,9 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 		}
 	}
 
-	lastScannedPath = ptr.Of("")
+	if ctx.Err() == nil {
+		lastScannedPath = ptr.Of("")
+	}
 
 	if len(remaining.FileRanges()) > 0 {
 		err = createPackJob(ctx, db, attachment.ID, remaining)

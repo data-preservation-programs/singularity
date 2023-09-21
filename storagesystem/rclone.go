@@ -285,6 +285,7 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 }
 
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
+	config.UseServerModTime = true
 	if s.ClientConfig.ConnectTimeout != nil {
 		config.ConnectTimeout = *s.ClientConfig.ConnectTimeout
 	}
