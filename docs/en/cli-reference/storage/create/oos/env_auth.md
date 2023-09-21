@@ -188,12 +188,7 @@ OPTIONS:
    --upload-concurrency value       Concurrency for multipart uploads. (default: 10) [$UPLOAD_CONCURRENCY]
    --upload-cutoff value            Cutoff for switching to chunked upload. (default: "200Mi") [$UPLOAD_CUTOFF]
 
-   General
-
-   --name value  Name of the storage (default: Auto generated)
-   --path value  Path of the storage
-
-   HTTP Client Config
+   Client Config
 
    --client-ca-cert value                           Path to CA certificate used to verify servers
    --client-cert value                              Path to Client SSL certificate (PEM) for mutual TLS auth
@@ -203,9 +198,15 @@ OPTIONS:
    --client-insecure-skip-verify                    Do not verify the server SSL certificate (insecure) (default: false)
    --client-key value                               Path to Client SSL private key (PEM) for mutual TLS auth
    --client-no-gzip                                 Don't set Accept-Encoding: gzip (default: false)
+   --client-scan-concurrency value                  Max number of concurrent listing requests when scanning data source (default: 1)
    --client-timeout value                           IO idle timeout (default: 5m0s)
    --client-use-server-mod-time                     Use server modified time if possible (default: false)
    --client-user-agent value                        Set the user-agent to a specified string (default: rclone/v1.62.2-DEV)
+
+   General
+
+   --name value  Name of the storage (default: Auto generated)
+   --path value  Path of the storage
 
    Retry Strategy
 

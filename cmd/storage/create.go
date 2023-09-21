@@ -21,7 +21,7 @@ import (
 
 var defaultClientConfig = fs.NewConfig()
 
-var RetryConfigFlags = []cli.Flag{
+var CommonConfigFlags = []cli.Flag{
 	&cli.IntFlag{
 		Name:        "client-retry-max",
 		Usage:       "Max number of retries for IO read errors",
@@ -57,69 +57,75 @@ var RetryConfigFlags = []cli.Flag{
 		DefaultText: "10",
 		Category:    "Retry Strategy",
 	},
+	&cli.IntFlag{
+		Name:        "client-scan-concurrency",
+		Usage:       "Max number of concurrent listing requests when scanning data source",
+		DefaultText: "1",
+		Category:    "Client Config",
+	},
 }
 
-var clientConfigFlags = []cli.Flag{
+var httpClientConfigFlags = []cli.Flag{
 	&cli.DurationFlag{
 		Name:        "client-connect-timeout",
 		Usage:       "HTTP Client Connect timeout",
 		DefaultText: defaultClientConfig.ConnectTimeout.String(),
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.DurationFlag{
 		Name:        "client-timeout",
 		Usage:       "IO idle timeout",
 		DefaultText: defaultClientConfig.Timeout.String(),
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.DurationFlag{
 		Name:        "client-expect-continue-timeout",
 		Usage:       "Timeout when using expect / 100-continue in HTTP",
 		DefaultText: defaultClientConfig.ExpectContinueTimeout.String(),
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.BoolFlag{
 		Name:        "client-insecure-skip-verify",
 		Usage:       "Do not verify the server SSL certificate (insecure)",
 		DefaultText: "false",
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.BoolFlag{
 		Name:        "client-no-gzip",
 		Usage:       "Don't set Accept-Encoding: gzip",
 		DefaultText: "false",
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.StringFlag{
 		Name:        "client-user-agent",
 		Usage:       "Set the user-agent to a specified string",
 		DefaultText: defaultClientConfig.UserAgent,
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.PathFlag{
 		Name:     "client-ca-cert",
 		Usage:    "Path to CA certificate used to verify servers",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.PathFlag{
 		Name:     "client-cert",
 		Usage:    "Path to Client SSL certificate (PEM) for mutual TLS auth",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.PathFlag{
 		Name:     "client-key",
 		Usage:    "Path to Client SSL private key (PEM) for mutual TLS auth",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.StringSliceFlag{
 		Name:     "client-header",
 		Usage:    "Set HTTP header for all transactions (i.e. key=value)",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.BoolFlag{
 		Name:     "client-use-server-mod-time",
 		Usage:    "Use server modified time if possible",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 }
 
@@ -149,8 +155,8 @@ var CreateCmd = &cli.Command{
 						Category: "General",
 						Required: true,
 					})
-					command.Flags = append(command.Flags, clientConfigFlags...)
-					command.Flags = append(command.Flags, RetryConfigFlags...)
+					command.Flags = append(command.Flags, httpClientConfigFlags...)
+					command.Flags = append(command.Flags, CommonConfigFlags...)
 					return command
 				}),
 			}
@@ -171,9 +177,9 @@ var CreateCmd = &cli.Command{
 			Required: true,
 		})
 		if backend.Prefix != localStorageType {
-			command.Flags = append(command.Flags, clientConfigFlags...)
+			command.Flags = append(command.Flags, httpClientConfigFlags...)
 		}
-		command.Flags = append(command.Flags, RetryConfigFlags...)
+		command.Flags = append(command.Flags, CommonConfigFlags...)
 		return command
 	}),
 }
@@ -288,6 +294,9 @@ func getClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 	}
 	if c.IsSet("client-use-server-mod-time") {
 		config.UseServerModTime = ptr.Of(c.Bool("client-use-server-mod-time"))
+	}
+	if c.IsSet("client-scan-concurrency") {
+		config.ScanConcurrency = ptr.Of(c.Int("client-scan-concurrency"))
 	}
 	return &config, nil
 }

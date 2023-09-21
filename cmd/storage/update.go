@@ -17,67 +17,67 @@ import (
 	"gorm.io/gorm"
 )
 
-var ClientConfigFlagsForUpdate = []cli.Flag{
+var HTTPClientConfigFlagsForUpdate = []cli.Flag{
 	&cli.DurationFlag{
 		Name:        "client-connect-timeout",
 		Usage:       "HTTP Client Connect timeout",
 		DefaultText: defaultClientConfig.ConnectTimeout.String(),
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.DurationFlag{
 		Name:        "client-timeout",
 		Usage:       "IO idle timeout",
 		DefaultText: defaultClientConfig.Timeout.String(),
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.DurationFlag{
 		Name:        "client-expect-continue-timeout",
 		Usage:       "Timeout when using expect / 100-continue in HTTP",
 		DefaultText: defaultClientConfig.ExpectContinueTimeout.String(),
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.BoolFlag{
 		Name:        "client-insecure-skip-verify",
 		Usage:       "Do not verify the server SSL certificate (insecure)",
 		DefaultText: "false",
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.BoolFlag{
 		Name:        "client-no-gzip",
 		Usage:       "Don't set Accept-Encoding: gzip",
 		DefaultText: "false",
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.StringFlag{
 		Name:        "client-user-agent",
 		Usage:       "Set the user-agent to a specified string. To remove, use empty string.",
 		DefaultText: defaultClientConfig.UserAgent,
-		Category:    "HTTP Client Config",
+		Category:    "Client Config",
 	},
 	&cli.PathFlag{
 		Name:     "client-ca-cert",
 		Usage:    "Path to CA certificate used to verify servers. To remove, use empty string.",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.PathFlag{
 		Name:     "client-cert",
 		Usage:    "Path to Client SSL certificate (PEM) for mutual TLS auth. To remove, use empty string.",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.PathFlag{
 		Name:     "client-key",
 		Usage:    "Path to Client SSL private key (PEM) for mutual TLS auth. To remove, use empty string.",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.StringSliceFlag{
 		Name:     "client-header",
 		Usage:    "Set HTTP header for all transactions (i.e. key=value). This will replace the existing header values. To remove a header, use --http-header \"key=\"\". To remove all headers, use --http-header \"\"",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 	&cli.BoolFlag{
 		Name:     "client-use-server-mod-time",
 		Usage:    "Use server modified time if possible",
-		Category: "HTTP Client Config",
+		Category: "Client Config",
 	},
 }
 
@@ -96,8 +96,8 @@ var UpdateCmd = &cli.Command{
 					}
 					command.ArgsUsage = "<name|id>"
 					command.Before = cliutil.CheckNArgs
-					command.Flags = append(command.Flags, ClientConfigFlagsForUpdate...)
-					command.Flags = append(command.Flags, RetryConfigFlags...)
+					command.Flags = append(command.Flags, HTTPClientConfigFlagsForUpdate...)
+					command.Flags = append(command.Flags, CommonConfigFlags...)
 					return command
 				}),
 			}
@@ -109,9 +109,9 @@ var UpdateCmd = &cli.Command{
 		command.ArgsUsage = "<name|id>"
 		command.Before = cliutil.CheckNArgs
 		if backend.Prefix != "local" {
-			command.Flags = append(command.Flags, ClientConfigFlagsForUpdate...)
+			command.Flags = append(command.Flags, HTTPClientConfigFlagsForUpdate...)
 		}
-		command.Flags = append(command.Flags, RetryConfigFlags...)
+		command.Flags = append(command.Flags, CommonConfigFlags...)
 		return command
 	}),
 }
@@ -234,6 +234,9 @@ func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 	}
 	if c.IsSet("client-use-server-mod-time") {
 		config.UseServerModTime = ptr.Of(c.Bool("client-use-server-mod-time"))
+	}
+	if c.IsSet("client-scan-concurrency") {
+		config.ScanConcurrency = ptr.Of(c.Int("client-scan-concurrency"))
 	}
 	return &config, nil
 }

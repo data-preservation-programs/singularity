@@ -47,8 +47,8 @@ var DownloadCmd = &cli.Command{
 			},
 		}
 
-		flags = append(flags, storage.ClientConfigFlagsForUpdate...)
-		flags = append(flags, storage.RetryConfigFlags...)
+		flags = append(flags, storage.HTTPClientConfigFlagsForUpdate...)
+		flags = append(flags, storage.CommonConfigFlags...)
 
 		keys := make(map[string]struct{})
 		for _, backend := range storagesystem.Backends {

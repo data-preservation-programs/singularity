@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -30,6 +31,37 @@ func (f *faultyReader) Read(p []byte) (n int, err error) {
 
 func (f *faultyReader) Close() error {
 	return nil
+}
+
+func TestScanWithConcurrency(t *testing.T) {
+	tmp := t.TempDir()
+	for i := 0; i < 10; i++ {
+		err := os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i)), 0755)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(tmp, strconv.Itoa(i), "test.txt"), []byte("test"), 0644)
+		require.NoError(t, err)
+		for j := 0; j < 10; j++ {
+			err = os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j)), 0755)
+			require.NoError(t, err)
+			err = os.WriteFile(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), "test.txt"), []byte("test"), 0644)
+			require.NoError(t, err)
+			for k := 0; k < 10; k++ {
+				err = os.MkdirAll(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), strconv.Itoa(k)), 0755)
+				require.NoError(t, err)
+				err = os.WriteFile(filepath.Join(tmp, strconv.Itoa(i), strconv.Itoa(j), strconv.Itoa(k), "test.txt"), []byte("test"), 0644)
+				require.NoError(t, err)
+			}
+		}
+	}
+
+	handler, err := NewRCloneHandler(context.Background(), model.Storage{Type: "local", Path: tmp, ClientConfig: model.ClientConfig{ScanConcurrency: ptr.Of(10)}})
+	require.NoError(t, err)
+	ch := handler.Scan(context.Background(), "")
+	var entries []Entry
+	for entry := range ch {
+		entries = append(entries, entry)
+	}
+	require.Len(t, entries, 2220)
 }
 
 func TestReaderWithRetry(t *testing.T) {
@@ -75,6 +107,7 @@ func TestRCloneHandler_OverrideConfig(t *testing.T) {
 		SkipInaccessibleFile:    ptr.Of(true),
 		UseServerModTime:        ptr.Of(true),
 		LowLevelRetries:         ptr.Of(10),
+		ScanConcurrency:         ptr.Of(10),
 	}})
 	require.NoError(t, err)
 	entries, err := handler.List(ctx, "")
@@ -122,65 +155,11 @@ func TestRCloneHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, 4, entry.Size())
 
-	entryChan := handler.Scan(ctx, "", "")
+	entryChan := handler.Scan(ctx, "")
 	require.NotNil(t, entryChan)
 	var scannedEntries []Entry
 	for entry := range entryChan {
 		scannedEntries = append(scannedEntries, entry)
 	}
 	require.Len(t, scannedEntries, 1)
-
-	/*
-	 | sub1
-	   | sub2
-	     | test.txt
-	   | test.txt
-	 | sub2.txt
-	 | sub3
-	   | sub3.txt
-	   | sub4
-	 | test.txt
-	*/
-
-	err = os.MkdirAll(filepath.Join(tmp, "sub1", "sub2"), 0755)
-	require.NoError(t, err)
-
-	err = os.MkdirAll(filepath.Join(tmp, "sub3", "sub4"), 0755)
-	require.NoError(t, err)
-
-	err = os.WriteFile(filepath.Join(tmp, "sub1", "sub2", "test.txt"), []byte("test"), 0644)
-	require.NoError(t, err)
-
-	err = os.WriteFile(filepath.Join(tmp, "sub1", "test.txt"), []byte("test"), 0644)
-	require.NoError(t, err)
-
-	err = os.WriteFile(filepath.Join(tmp, "sub2.txt"), []byte("test"), 0644)
-	require.NoError(t, err)
-
-	err = os.WriteFile(filepath.Join(tmp, "sub3", "sub3.txt"), []byte("test"), 0644)
-	require.NoError(t, err)
-
-	tests := map[string]int{
-		"":                   5,
-		"sub1/sub2/test.txt": 4,
-		"sub1/test.txt":      3,
-		"sub2.txt":           2,
-		"sub3/sub3.txt":      1,
-		"test.txt":           0,
-	}
-
-	for last, expect := range tests {
-		t.Run("start from "+last, func(t *testing.T) {
-			entryChan = handler.Scan(ctx, "", last)
-			require.NotNil(t, entryChan)
-			scannedEntries = []Entry{}
-			for entry := range entryChan {
-				if entry.Info == nil {
-					continue
-				}
-				scannedEntries = append(scannedEntries, entry)
-			}
-			require.Len(t, scannedEntries, expect)
-		})
-	}
 }

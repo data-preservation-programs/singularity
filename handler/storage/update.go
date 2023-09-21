@@ -195,6 +195,9 @@ func OverrideStorageWithClientConfig(storage *model.Storage, config model.Client
 	if config.LowLevelRetries != nil {
 		storage.ClientConfig.LowLevelRetries = config.LowLevelRetries
 	}
+	if config.ScanConcurrency != nil {
+		storage.ClientConfig.ScanConcurrency = config.ScanConcurrency
+	}
 }
 
 // @ID UpdateStorage

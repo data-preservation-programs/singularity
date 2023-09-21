@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -31,6 +32,7 @@ type RCloneHandler struct {
 	retryDelay              time.Duration
 	retryBackoff            time.Duration
 	retryBackoffExponential float64
+	scanConcurrency         int
 }
 
 func (h RCloneHandler) Name() string {
@@ -70,76 +72,69 @@ func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, er
 	return h.fs.List(ctx, path)
 }
 
-func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch chan<- Entry) error {
-	logger.Debugw("Scan: listing path", "type", h.fs.String(), "root", h.fs.Root(), "path", path, "last", last)
+func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wg *sync.WaitGroup, sem chan struct{}) {
+	logger.Debugw("Scan: listing path", "type", h.fs.String(), "root", h.fs.Root(), "path", path)
 	entries, err := h.fs.List(ctx, path)
 	if err != nil {
 		err = errors.Wrapf(err, "list path: %s", path)
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return
 		case ch <- Entry{Error: err}:
 		}
-		return errors.WithStack(err)
 	}
 
 	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
 		return strings.Compare(i.Remote(), j.Remote())
 	})
 
-	startScanning := last == "" // Start scanning immediately if 'last' is empty.
 	for _, entry := range entries {
 		switch v := entry.(type) {
 		case fs.Directory:
-			dirPath := v.Remote()
-			switch {
-			case strings.HasPrefix(last, dirPath+"/"):
-				// If 'last' starts with directory path followed by a slash, scan inside the directory with the remaining path.
-				err = h.scan(ctx, dirPath, last, ch)
-				if err != nil {
-					return errors.WithStack(err)
-				}
-			case startScanning || strings.Compare(dirPath, last) > 0:
-				// If we have started scanning or the directory is greater than 'last', scan inside without 'last' param.
-				err = h.scan(ctx, dirPath, "", ch)
-				if err != nil {
-					return errors.WithStack(err)
-				}
-			default:
-				continue
-			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return
 			case ch <- Entry{Dir: v}:
 			}
 
+			wg.Add(1)
+			go func(dir string) {
+				sem <- struct{}{}
+				defer wg.Done()
+				defer func() {
+					<-sem
+				}()
+				h.scan(ctx, dir, ch, wg, sem)
+			}(v.Remote())
+
 		case fs.Object:
-			// If 'last' is specified, skip entries until the first entry greater than 'last' is found.
-			if !startScanning {
-				if strings.Compare(entry.Remote(), last) > 0 {
-					logger.Debugw("Scan: found first entry greater than last", "entry", entry.Remote(), "last", last)
-					startScanning = true // Found the first entry greater than 'last', start scanning.
-				} else {
-					continue
-				}
-			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return
 			case ch <- Entry{Info: v}:
 			}
 		}
 	}
-
-	return nil
 }
 
-func (h RCloneHandler) Scan(ctx context.Context, path string, last string) <-chan Entry {
-	ch := make(chan Entry)
+func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
+	ch := make(chan Entry, h.scanConcurrency)
+	wg := &sync.WaitGroup{}
+	sem := make(chan struct{}, h.scanConcurrency)
+
+	wg.Add(1)
 	go func() {
-		defer close(ch)
-		_ = h.scan(ctx, path, last, ch)
+		sem <- struct{}{}
+		defer wg.Done()
+		defer func() {
+			<-sem
+		}()
+		h.scan(ctx, path, ch, wg, sem)
+	}()
+
+	go func() {
+		wg.Wait()
+		close(ch)
 	}()
 	return ch
 }
@@ -258,6 +253,11 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
+	scanConcurrency := 1
+	if s.ClientConfig.ScanConcurrency != nil {
+		scanConcurrency = *s.ClientConfig.ScanConcurrency
+	}
+
 	handler := &RCloneHandler{
 		name:                    s.Name,
 		fs:                      headFS,
@@ -266,6 +266,7 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		retryDelay:              time.Second,
 		retryBackoff:            time.Second,
 		retryBackoffExponential: 1.0,
+		scanConcurrency:         scanConcurrency,
 	}
 
 	if s.ClientConfig.RetryMaxCount != nil {

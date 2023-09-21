@@ -54,6 +54,7 @@ func TestUpdateStorageHandler(t *testing.T) {
 				DisableHTTPKeepAlives: ptr.Of(true),
 				LowLevelRetries:       ptr.Of(20),
 				UseServerModTime:      ptr.Of(true),
+				ScanConcurrency:       ptr.Of(10),
 			}})
 			require.NoError(t, err)
 			newConfig := model.ClientConfig{
@@ -71,6 +72,7 @@ func TestUpdateStorageHandler(t *testing.T) {
 				DisableHTTPKeepAlives: ptr.Of(false),
 				LowLevelRetries:       ptr.Of(10),
 				UseServerModTime:      ptr.Of(false),
+				ScanConcurrency:       ptr.Of(1),
 			}
 			storage, err := Default.UpdateStorageHandler(ctx, db, "name", UpdateRequest{ClientConfig: newConfig})
 			require.NoError(t, err)

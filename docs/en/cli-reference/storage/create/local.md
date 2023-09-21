@@ -152,6 +152,10 @@ OPTIONS:
    --unicode-normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
    --zero-size-links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]
 
+   Client Config
+
+   --client-scan-concurrency value  Max number of concurrent listing requests when scanning data source (default: 1)
+
    General
 
    --name value  Name of the storage (default: Auto generated)

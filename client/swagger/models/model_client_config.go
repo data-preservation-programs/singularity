@@ -62,6 +62,9 @@ type ModelClientConfig struct {
 	// Maximum number of retries. Default is 10 retries.
 	RetryMaxCount int64 `json:"retryMaxCount,omitempty"`
 
+	// Maximum number of concurrent scan requests. Default is 1.
+	ScanConcurrency int64 `json:"scanConcurrency,omitempty"`
+
 	// Skip inaccessible files. Default is false.
 	SkipInaccessibleFile bool `json:"skipInaccessibleFile,omitempty"`
 

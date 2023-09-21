@@ -3,14 +3,11 @@ package scan
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/pack/push"
 	"github.com/data-preservation-programs/singularity/storagesystem"
-	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-log/v2"
 	"gorm.io/gorm"
 )
@@ -60,22 +57,7 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	entryChan := sourceScanner.Scan(ctx, "", attachment.LastScannedPath)
-	var lastScannedPath *string
-	defer func() {
-		if lastScannedPath != nil {
-			ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			logger.Infof("updating last scanned path to %s", *lastScannedPath)
-			err = database.DoRetry(ctx2, func() error {
-				return db.WithContext(ctx2).Model(&model.SourceAttachment{}).Where("id = ?", attachment.ID).
-					Update("last_scanned_path", lastScannedPath).Error
-			})
-			if err != nil {
-				logger.Errorw("failed to update last scanned path", "error", err)
-			}
-			cancel()
-		}
-	}()
+	entryChan := sourceScanner.Scan(ctx, "")
 	for entry := range entryChan {
 		if entry.Error != nil {
 			logger.Errorw("failed to scan", "error", entry.Error)
@@ -112,16 +94,10 @@ func Scan(ctx context.Context, db *gorm.DB, attachment model.SourceAttachment) e
 			continue
 		}
 
-		lastScannedPath = &file.Path
-
 		err = addFileRangesAndCreatePackJob(ctx, db, attachment.ID, remaining, attachment.Preparation.MaxSize, fileRanges...)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-	}
-
-	if ctx.Err() == nil {
-		lastScannedPath = ptr.Of("")
 	}
 
 	if len(remaining.FileRanges()) > 0 {

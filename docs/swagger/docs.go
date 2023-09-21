@@ -5834,6 +5834,10 @@ const docTemplate = `{
                     "description": "Maximum number of retries. Default is 10 retries.",
                     "type": "integer"
                 },
+                "scanConcurrency": {
+                    "description": "Maximum number of concurrent scan requests. Default is 1.",
+                    "type": "integer"
+                },
                 "skipInaccessibleFile": {
                     "description": "Skip inaccessible files. Default is false.",
                     "type": "boolean"
