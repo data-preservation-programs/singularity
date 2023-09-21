@@ -45,7 +45,7 @@ func TestInAccessibleFiles(t *testing.T) {
 	})
 
 	t.Run("scan", func(t *testing.T) {
-		entryChan := handler.Scan(ctx, "", "")
+		entryChan := handler.Scan(ctx, "")
 		require.NotNil(t, entryChan)
 		scannedEntries := []Entry{}
 		for entry := range entryChan {

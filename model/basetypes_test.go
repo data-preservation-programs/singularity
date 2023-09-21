@@ -28,6 +28,10 @@ func TestClientConfigMarshal(t *testing.T) {
 		RetryDelay:              ptr.Of(time.Second),
 		RetryBackoff:            ptr.Of(time.Second),
 		RetryBackoffExponential: ptr.Of(1.0),
+		SkipInaccessibleFile:    ptr.Of(true),
+		UseServerModTime:        ptr.Of(true),
+		LowLevelRetries:         ptr.Of(10),
+		ScanConcurrency:         ptr.Of(10),
 	}
 	data, err := c.Value()
 	require.NoError(t, err)
@@ -39,7 +43,7 @@ func TestClientConfigMarshal(t *testing.T) {
 	require.EqualValues(t, c, c2)
 
 	str := c.String()
-	require.Equal(t, "connectTimeout:1s timeout:1s expectContinueTimeout:1s insecureSkipVerify:true noGzip:true userAgent:x caCert:x clientCert:x clientKey:x headers:<hidden> disableHTTP2true disableHTTPKeepAlives:true retryMaxCount:10 retryDelay:1s retryBackoff:1s retryBackoffExponential:1", str)
+	require.Equal(t, "connectTimeout:1s timeout:1s expectContinueTimeout:1s insecureSkipVerify:true noGzip:true userAgent:x caCert:x clientCert:x clientKey:x headers:<hidden> disableHTTP2true disableHTTPKeepAlives:true retryMaxCount:10 retryDelay:1s retryBackoff:1s retryBackoffExponential:1 skipInaccessibleFile:true useServerModTime:true lowLevelRetries:10 scanConcurrency:10", str)
 }
 
 var TestCid = cid.NewCidV1(cid.Raw, util.Hash([]byte("test")))

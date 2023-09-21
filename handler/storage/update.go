@@ -189,6 +189,15 @@ func OverrideStorageWithClientConfig(storage *model.Storage, config model.Client
 	if config.SkipInaccessibleFile != nil {
 		storage.ClientConfig.SkipInaccessibleFile = config.SkipInaccessibleFile
 	}
+	if config.UseServerModTime != nil {
+		storage.ClientConfig.UseServerModTime = config.UseServerModTime
+	}
+	if config.LowLevelRetries != nil {
+		storage.ClientConfig.LowLevelRetries = config.LowLevelRetries
+	}
+	if config.ScanConcurrency != nil {
+		storage.ClientConfig.ScanConcurrency = config.ScanConcurrency
+	}
 }
 
 // @ID UpdateStorage

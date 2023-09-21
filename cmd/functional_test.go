@@ -224,7 +224,7 @@ func TestDataPrep(t *testing.T) {
 	})
 	require.NoError(t, err)
 	var entries []storagesystem.Entry
-	for entry := range s3Handler.Scan(context.Background(), "", "") {
+	for entry := range s3Handler.Scan(context.Background(), "") {
 		entries = append(entries, entry)
 	}
 	for _, entry := range entries {
