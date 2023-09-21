@@ -4,10 +4,12 @@ import (
 	"context"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/gammazero/workerpool"
 	"github.com/ipfs/go-log/v2"
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/config/configmap"
@@ -31,6 +33,7 @@ type RCloneHandler struct {
 	retryDelay              time.Duration
 	retryBackoff            time.Duration
 	retryBackoffExponential float64
+	scanConcurrency         int
 }
 
 func (h RCloneHandler) Name() string {
@@ -57,7 +60,7 @@ func (h RCloneHandler) Remove(ctx context.Context, obj fs.Object) error {
 }
 
 func (h RCloneHandler) About(ctx context.Context) (*fs.Usage, error) {
-	logger.Debugw("About: getting usage", "type", h.fs.Name(), "root", h.fs.Root())
+	logger.Debugw("About: getting usage", "type", h.fs.Name())
 	if h.fs.Features().About != nil {
 		return h.fs.Features().About(ctx)
 	}
@@ -70,77 +73,77 @@ func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, er
 	return h.fs.List(ctx, path)
 }
 
-func (h RCloneHandler) scan(ctx context.Context, path string, last string, ch chan<- Entry) error {
-	logger.Debugw("Scan: listing path", "type", h.fs.String(), "root", h.fs.Root(), "path", path, "last", last)
-	entries, err := h.fs.List(ctx, path)
+func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
+	var entries []fs.DirEntry
+	var err error
+	if ctx.Err() != nil {
+		return
+	}
+	wp.SubmitWait(func() {
+		if ctx.Err() != nil {
+			return
+		}
+		logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
+		entries, err = h.fs.List(ctx, path)
+	})
 	if err != nil {
 		err = errors.Wrapf(err, "list path: %s", path)
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return
 		case ch <- Entry{Error: err}:
 		}
-		return errors.WithStack(err)
 	}
 
 	slices.SortFunc(entries, func(i, j fs.DirEntry) int {
 		return strings.Compare(i.Remote(), j.Remote())
 	})
 
-	startScanning := last == "" // Start scanning immediately if 'last' is empty.
 	for _, entry := range entries {
+		entry := entry
 		switch v := entry.(type) {
 		case fs.Directory:
-			dirPath := v.Remote()
-			switch {
-			case strings.HasPrefix(last, dirPath+"/"):
-				// If 'last' starts with directory path followed by a slash, scan inside the directory with the remaining path.
-				err = h.scan(ctx, dirPath, last, ch)
-				if err != nil {
-					return errors.WithStack(err)
-				}
-			case startScanning || strings.Compare(dirPath, last) > 0:
-				// If we have started scanning or the directory is greater than 'last', scan inside without 'last' param.
-				err = h.scan(ctx, dirPath, "", ch)
-				if err != nil {
-					return errors.WithStack(err)
-				}
-			default:
-				continue
-			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return
 			case ch <- Entry{Dir: v}:
 			}
 
+			subPath := v.Remote()
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				h.scan(ctx, subPath, ch, wp, wg)
+			}()
+
 		case fs.Object:
-			// If 'last' is specified, skip entries until the first entry greater than 'last' is found.
-			if !startScanning {
-				if strings.Compare(entry.Remote(), last) > 0 {
-					logger.Debugw("Scan: found first entry greater than last", "entry", entry.Remote(), "last", last)
-					startScanning = true // Found the first entry greater than 'last', start scanning.
-				} else {
-					continue
-				}
-			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return
 			case ch <- Entry{Info: v}:
 			}
 		}
 	}
 
-	return nil
+	logger.Debugf("Scan: finished listing path, remaining %d paths to list", wp.WaitingQueueSize())
 }
 
-func (h RCloneHandler) Scan(ctx context.Context, path string, last string) <-chan Entry {
-	ch := make(chan Entry)
+func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
+	wp := workerpool.New(h.scanConcurrency)
+	wg := &sync.WaitGroup{}
+	ch := make(chan Entry, h.scanConcurrency)
+	wg.Add(1)
 	go func() {
-		defer close(ch)
-		_ = h.scan(ctx, path, last, ch)
+		defer wg.Done()
+		h.scan(ctx, path, ch, wp, wg)
 	}()
+
+	go func() {
+		wg.Wait()
+		wp.StopWait()
+		close(ch)
+	}()
+
 	return ch
 }
 
@@ -258,6 +261,11 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		return nil, errors.Wrapf(err, "failed to create RClone backend %s: %s", s.Type, s.Path)
 	}
 
+	scanConcurrency := 1
+	if s.ClientConfig.ScanConcurrency != nil {
+		scanConcurrency = *s.ClientConfig.ScanConcurrency
+	}
+
 	handler := &RCloneHandler{
 		name:                    s.Name,
 		fs:                      headFS,
@@ -266,6 +274,7 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 		retryDelay:              time.Second,
 		retryBackoff:            time.Second,
 		retryBackoffExponential: 1.0,
+		scanConcurrency:         scanConcurrency,
 	}
 
 	if s.ClientConfig.RetryMaxCount != nil {
@@ -285,6 +294,7 @@ func NewRCloneHandler(ctx context.Context, s model.Storage) (*RCloneHandler, err
 }
 
 func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
+	config.UseServerModTime = true
 	if s.ClientConfig.ConnectTimeout != nil {
 		config.ConnectTimeout = *s.ClientConfig.ConnectTimeout
 	}
@@ -325,5 +335,11 @@ func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	}
 	if s.ClientConfig.DisableHTTPKeepAlives != nil {
 		config.DisableHTTPKeepAlives = *s.ClientConfig.DisableHTTPKeepAlives
+	}
+	if s.ClientConfig.UseServerModTime != nil {
+		config.UseServerModTime = *s.ClientConfig.UseServerModTime
+	}
+	if s.ClientConfig.LowLevelRetries != nil {
+		config.LowLevelRetries = *s.ClientConfig.LowLevelRetries
 	}
 }

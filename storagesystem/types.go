@@ -83,7 +83,7 @@ type Lister interface {
 	// Scan scans the data source starting at the given path and returns a channel of entries.
 	// The `last` parameter is used to resume scanning from the last entry returned by a previous scan. It is exclusive.
 	// The returned entries must be sorted by path in ascending order.
-	Scan(ctx context.Context, path string, last string) <-chan Entry
+	Scan(ctx context.Context, path string) <-chan Entry
 
 	// Check checks the size and last modified time of the file at the given path.
 	Check(ctx context.Context, path string) (fs.DirEntry, error)

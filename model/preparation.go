@@ -98,11 +98,10 @@ type SourceAttachment struct {
 	ID SourceAttachmentID `gorm:"primaryKey" json:"id"`
 
 	// Associations
-	PreparationID   PreparationID `gorm:"uniqueIndex:prep_source"                              json:"preparationId"`
-	Preparation     *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
-	StorageID       StorageID     `gorm:"uniqueIndex:prep_source"                              json:"storageId"`
-	Storage         *Storage      `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
-	LastScannedPath string        `json:"lastScannedPath"`
+	PreparationID PreparationID `gorm:"uniqueIndex:prep_source"                              json:"preparationId"`
+	Preparation   *Preparation  `gorm:"foreignKey:PreparationID;constraint:OnDelete:CASCADE" json:"preparation,omitempty" swaggerignore:"true"`
+	StorageID     StorageID     `gorm:"uniqueIndex:prep_source"                              json:"storageId"`
+	Storage       *Storage      `gorm:"foreignKey:StorageID;constraint:OnDelete:CASCADE"     json:"storage,omitempty"     swaggerignore:"true"`
 }
 
 func (s *SourceAttachment) FindByPreparationAndSource(db *gorm.DB, preparation string, source string) error {

@@ -152,6 +152,10 @@ OPTIONS:
    --unicode-normalization  Apply unicode NFC normalization to paths and filenames. (default: false) [$UNICODE_NORMALIZATION]
    --zero-size-links        Assume the Stat size of links is zero (and read them instead) (deprecated). (default: false) [$ZERO_SIZE_LINKS]
 
+   Client Config
+
+   --client-scan-concurrency value  Max number of concurrent listing requests when scanning data source (default: 1)
+
    General
 
    --name value  Name of the storage (default: Auto generated)
@@ -159,6 +163,7 @@ OPTIONS:
 
    Retry Strategy
 
+   --client-low-level-retries value  Maximum number of retries for low-level client errors (default: 10)
    --client-retry-backoff value      The constant delay backoff for retrying IO read errors (default: 1s)
    --client-retry-backoff-exp value  The exponential delay backoff for retrying IO read errors (default: 1.0)
    --client-retry-delay value        The initial delay before retrying IO read errors (default: 1s)

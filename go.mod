@@ -19,6 +19,7 @@ require (
 	github.com/filecoin-project/go-state-types v0.12.0
 	github.com/filecoin-shipyard/boostly v0.0.0-20230813165216-a449c35ece79
 	github.com/fxamacker/cbor/v2 v2.4.0
+	github.com/gammazero/workerpool v1.1.3
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-openapi/errors v0.20.4
 	github.com/go-openapi/runtime v0.26.0
@@ -128,6 +129,7 @@ require (
 	github.com/filecoin-project/specs-actors v0.9.13 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
+	github.com/gammazero/deque v0.2.0 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
 	github.com/getsentry/sentry-go v0.18.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.1 // indirect
