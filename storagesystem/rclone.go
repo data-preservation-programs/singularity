@@ -327,4 +327,10 @@ func overrideConfig(config *fs.ConfigInfo, s model.Storage) {
 	if s.ClientConfig.DisableHTTPKeepAlives != nil {
 		config.DisableHTTPKeepAlives = *s.ClientConfig.DisableHTTPKeepAlives
 	}
+	if s.ClientConfig.UseServerModTime != nil {
+		config.UseServerModTime = *s.ClientConfig.UseServerModTime
+	}
+	if s.ClientConfig.LowLevelRetries != nil {
+		config.LowLevelRetries = *s.ClientConfig.LowLevelRetries
+	}
 }

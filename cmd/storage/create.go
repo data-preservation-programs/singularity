@@ -51,6 +51,12 @@ var RetryConfigFlags = []cli.Flag{
 		Usage:    "Skip inaccessible files when opening",
 		Category: "Retry Strategy",
 	},
+	&cli.IntFlag{
+		Name:        "client-low-level-retries",
+		Usage:       "Maximum number of retries for low-level client errors",
+		DefaultText: "10",
+		Category:    "Retry Strategy",
+	},
 }
 
 var clientConfigFlags = []cli.Flag{
@@ -108,6 +114,11 @@ var clientConfigFlags = []cli.Flag{
 	&cli.StringSliceFlag{
 		Name:     "client-header",
 		Usage:    "Set HTTP header for all transactions (i.e. key=value)",
+		Category: "HTTP Client Config",
+	},
+	&cli.BoolFlag{
+		Name:     "client-use-server-mod-time",
+		Usage:    "Use server modified time if possible",
 		Category: "HTTP Client Config",
 	},
 }
@@ -271,6 +282,12 @@ func getClientConfig(c *cli.Context) (*model.ClientConfig, error) {
 	}
 	if c.IsSet("client-skip-inaccessible") {
 		config.SkipInaccessibleFile = ptr.Of(c.Bool("client-skip-inaccessible"))
+	}
+	if c.IsSet("client-low-level-retries") {
+		config.LowLevelRetries = ptr.Of(c.Int("client-low-level-retries"))
+	}
+	if c.IsSet("client-use-server-mod-time") {
+		config.UseServerModTime = ptr.Of(c.Bool("client-use-server-mod-time"))
 	}
 	return &config, nil
 }

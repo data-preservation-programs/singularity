@@ -154,6 +154,7 @@ OPTIONS:
 
    Retry Strategy
 
+   --client-low-level-retries value  Maximum number of retries for low-level client errors (default: 10)
    --client-retry-backoff value      The constant delay backoff for retrying IO read errors (default: 1s)
    --client-retry-backoff-exp value  The exponential delay backoff for retrying IO read errors (default: 1.0)
    --client-retry-delay value        The initial delay before retrying IO read errors (default: 1s)

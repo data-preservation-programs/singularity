@@ -44,6 +44,9 @@ type ModelClientConfig struct {
 	// Do not verify the server SSL certificate (insecure)
 	InsecureSkipVerify bool `json:"insecureSkipVerify,omitempty"`
 
+	// Maximum number of retries for low-level client errors. Default is 10 retries.
+	LowlevelRetries int64 `json:"lowlevelRetries,omitempty"`
+
 	// Don't set Accept-Encoding: gzip
 	NoGzip bool `json:"noGzip,omitempty"`
 
@@ -64,6 +67,9 @@ type ModelClientConfig struct {
 
 	// IO idle timeout
 	Timeout int64 `json:"timeout,omitempty"`
+
+	// Use server modified time instead of object metadata
+	UseServerModTime bool `json:"useServerModTime,omitempty"`
 
 	// Set the user-agent to a specified string
 	UserAgent string `json:"userAgent,omitempty"`

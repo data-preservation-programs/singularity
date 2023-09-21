@@ -5810,6 +5810,10 @@ const docTemplate = `{
                     "description": "Do not verify the server SSL certificate (insecure)",
                     "type": "boolean"
                 },
+                "lowlevelRetries": {
+                    "description": "Maximum number of retries for low-level client errors. Default is 10 retries.",
+                    "type": "integer"
+                },
                 "noGzip": {
                     "description": "Don't set Accept-Encoding: gzip",
                     "type": "boolean"
@@ -5837,6 +5841,10 @@ const docTemplate = `{
                 "timeout": {
                     "description": "IO idle timeout",
                     "type": "integer"
+                },
+                "useServerModTime": {
+                    "description": "Use server modified time instead of object metadata",
+                    "type": "boolean"
                 },
                 "userAgent": {
                     "description": "Set the user-agent to a specified string",

@@ -56,18 +56,25 @@ func TestRCloneHandler_OverrideConfig(t *testing.T) {
 
 	ctx := context.Background()
 	handler, err := NewRCloneHandler(ctx, model.Storage{Type: "local", Path: tmp, ClientConfig: model.ClientConfig{
-		ConnectTimeout:        ptr.Of(time.Hour),
-		Timeout:               ptr.Of(time.Hour),
-		ExpectContinueTimeout: ptr.Of(time.Hour),
-		InsecureSkipVerify:    ptr.Of(true),
-		NoGzip:                ptr.Of(true),
-		UserAgent:             ptr.Of("test"),
-		CaCert:                []string{"a"},
-		ClientCert:            ptr.Of("test"),
-		ClientKey:             ptr.Of("test"),
-		Headers:               map[string]string{"a": "b"},
-		DisableHTTP2:          ptr.Of(true),
-		DisableHTTPKeepAlives: ptr.Of(true),
+		ConnectTimeout:          ptr.Of(time.Hour),
+		Timeout:                 ptr.Of(time.Hour),
+		ExpectContinueTimeout:   ptr.Of(time.Hour),
+		InsecureSkipVerify:      ptr.Of(true),
+		NoGzip:                  ptr.Of(true),
+		UserAgent:               ptr.Of("test"),
+		CaCert:                  []string{"a"},
+		ClientCert:              ptr.Of("test"),
+		ClientKey:               ptr.Of("test"),
+		Headers:                 map[string]string{"a": "b"},
+		DisableHTTP2:            ptr.Of(true),
+		DisableHTTPKeepAlives:   ptr.Of(true),
+		RetryMaxCount:           ptr.Of(10),
+		RetryDelay:              ptr.Of(time.Second),
+		RetryBackoff:            ptr.Of(time.Second),
+		RetryBackoffExponential: ptr.Of(1.0),
+		SkipInaccessibleFile:    ptr.Of(true),
+		UseServerModTime:        ptr.Of(true),
+		LowLevelRetries:         ptr.Of(10),
 	}})
 	require.NoError(t, err)
 	entries, err := handler.List(ctx, "")

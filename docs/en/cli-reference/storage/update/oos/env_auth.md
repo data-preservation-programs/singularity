@@ -199,10 +199,12 @@ OPTIONS:
    --client-key value                               Path to Client SSL private key (PEM) for mutual TLS auth. To remove, use empty string.
    --client-no-gzip                                 Don't set Accept-Encoding: gzip (default: false)
    --client-timeout value                           IO idle timeout (default: 5m0s)
+   --client-use-server-mod-time                     Use server modified time if possible (default: false)
    --client-user-agent value                        Set the user-agent to a specified string. To remove, use empty string. (default: rclone/v1.62.2-DEV)
 
    Retry Strategy
 
+   --client-low-level-retries value  Maximum number of retries for low-level client errors (default: 10)
    --client-retry-backoff value      The constant delay backoff for retrying IO read errors (default: 1s)
    --client-retry-backoff-exp value  The exponential delay backoff for retrying IO read errors (default: 1.0)
    --client-retry-delay value        The initial delay before retrying IO read errors (default: 1s)

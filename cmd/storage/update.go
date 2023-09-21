@@ -74,6 +74,11 @@ var ClientConfigFlagsForUpdate = []cli.Flag{
 		Usage:    "Set HTTP header for all transactions (i.e. key=value). This will replace the existing header values. To remove a header, use --http-header \"key=\"\". To remove all headers, use --http-header \"\"",
 		Category: "HTTP Client Config",
 	},
+	&cli.BoolFlag{
+		Name:     "client-use-server-mod-time",
+		Usage:    "Use server modified time if possible",
+		Category: "HTTP Client Config",
+	},
 }
 
 var UpdateCmd = &cli.Command{
@@ -223,6 +228,12 @@ func GetClientConfigForUpdate(c *cli.Context) (*model.ClientConfig, error) {
 	}
 	if c.IsSet("client-skip-inaccessible") {
 		config.SkipInaccessibleFile = ptr.Of(c.Bool("client-skip-inaccessible"))
+	}
+	if c.IsSet("client-low-level-retries") {
+		config.LowLevelRetries = ptr.Of(c.Int("client-low-level-retries"))
+	}
+	if c.IsSet("client-use-server-mod-time") {
+		config.UseServerModTime = ptr.Of(c.Bool("client-use-server-mod-time"))
 	}
 	return &config, nil
 }
