@@ -16,8 +16,6 @@ Singularity offers a range of configurations allowing users to optimize data pre
 * **Configuration**:
   To disable, use `--no-dag` with `singularity prep create`.
 
-To turn off DAG updates, set `--no-dag` when creating a preparation using `singularity prep create`.
-
 ## Parallelism in Data Preparation
 
 ### Scanning
