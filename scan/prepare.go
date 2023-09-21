@@ -19,7 +19,7 @@ func NextAvailablePackJob(
 ) (*model.Job, error) {
 	var packJob model.Job
 	err := database.DoRetry(ctx, func() error {
-		return db.Where(model.Job{AttachmentID: attachmentID, State: model.Created}).Preload("FileRanges").FirstOrCreate(&packJob).Error
+		return db.Where(model.Job{AttachmentID: attachmentID, State: model.Created, Type: model.Pack}).Preload("FileRanges").FirstOrCreate(&packJob).Error
 	})
 	return &packJob, errors.WithStack(err)
 }
