@@ -69,6 +69,8 @@ func TestPrepareToPackFileHandler(t *testing.T) {
 		err = db.Find(&jobs).Error
 		require.NoError(t, err)
 		require.Len(t, jobs, 2)
+		require.Equal(t, model.Pack, jobs[0].Type)
+		require.Equal(t, model.Pack, jobs[1].Type)
 		require.Equal(t, model.Ready, jobs[0].State)
 		require.Equal(t, model.Created, jobs[1].State)
 	})
