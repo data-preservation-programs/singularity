@@ -14,6 +14,7 @@ import (
 	"github.com/gotidy/ptr"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
@@ -141,8 +142,18 @@ func updateAction(c *cli.Context, storageType string, provider string) error {
 		return errors.Wrapf(handlererror.ErrInvalidParameter, "storage %s is not of provider %s", name, provider)
 	}
 
+	var extraFlagNames []string
+	for _, flag := range HTTPClientConfigFlagsForUpdate {
+		extraFlagNames = append(extraFlagNames, flag.Names()...)
+	}
+	for _, flag := range CommonConfigFlags {
+		extraFlagNames = append(extraFlagNames, flag.Names()...)
+	}
 	config := make(map[string]string)
 	for _, flagName := range c.LocalFlagNames() {
+		if slices.Contains(extraFlagNames, flagName) {
+			continue
+		}
 		if c.IsSet(flagName) {
 			config[strings.ReplaceAll(flagName, "-", "_")] = c.String(flagName)
 		}

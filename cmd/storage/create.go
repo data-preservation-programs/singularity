@@ -17,6 +17,7 @@ import (
 	"github.com/rclone/rclone/fs"
 	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/exp/slices"
 )
 
 var defaultClientConfig = fs.NewConfig()
@@ -202,8 +203,15 @@ func createAction(c *cli.Context, storageType string, provider string) error {
 		}
 	}
 	config := make(map[string]string)
+	extraFlagNames := []string{"name", "path"}
+	for _, flag := range httpClientConfigFlags {
+		extraFlagNames = append(extraFlagNames, flag.Names()...)
+	}
+	for _, flag := range CommonConfigFlags {
+		extraFlagNames = append(extraFlagNames, flag.Names()...)
+	}
 	for _, flagName := range c.LocalFlagNames() {
-		if flagName == "name" || flagName == "path" {
+		if slices.Contains(extraFlagNames, flagName) {
 			continue
 		}
 		if c.IsSet(flagName) {
