@@ -15,6 +15,7 @@
 ## Data Preparation <a href="#data-preparation" id="data-preparation"></a>
 
 * [Get Started](data-preparation/get-started.md)
+* [Performance Tuning](data-preparation/performance-tuning.md)
 
 ## Content Distribution <a href="#content-distribution" id="content-distribution"></a>
 
