@@ -50,7 +50,7 @@ var DatasetWorkerCmd = &cli.Command{
 		},
 		&cli.DurationFlag{
 			Name:  "max-interval",
-			Usage: "How often to scan storages (maximum)",
+			Usage: "How often to check for new jobs (maximum)",
 			Value: 160 * time.Second,
 		},
 	},
