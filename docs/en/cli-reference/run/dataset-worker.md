@@ -16,7 +16,7 @@ OPTIONS:
    --exit-on-complete    Exit the worker when there is no more work to do (default: false)
    --exit-on-error       Exit the worker when there is any error (default: false)
    --min-interval value  How often to check for new jobs (minimum) (default: 5s)
-   --max-interval value  How often to scan storages (maximum) (default: 2m40s)
+   --max-interval value  How often to check for new jobs (maximum) (default: 2m40s)
    --help, -h            show help
 ```
 {% endcode %}
