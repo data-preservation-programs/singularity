@@ -9,12 +9,14 @@ USAGE:
    singularity run dataset-worker [command options] [arguments...]
 
 OPTIONS:
-   --concurrency value  Number of concurrent workers to run (default: 1)
-   --enable-scan        Enable scanning of datasets (default: true)
-   --enable-pack        Enable packing of datasets that calculates CIDs and packs them into CAR files (default: true)
-   --enable-dag         Enable dag generation of datasets that maintains the directory structure of datasets (default: true)
-   --exit-on-complete   Exit the worker when there is no more work to do (default: false)
-   --exit-on-error      Exit the worker when there is any error (default: false)
-   --help, -h           show help
+   --concurrency value   Number of concurrent workers to run (default: 1)
+   --enable-scan         Enable scanning of datasets (default: true)
+   --enable-pack         Enable packing of datasets that calculates CIDs and packs them into CAR files (default: true)
+   --enable-dag          Enable dag generation of datasets that maintains the directory structure of datasets (default: true)
+   --exit-on-complete    Exit the worker when there is no more work to do (default: false)
+   --exit-on-error       Exit the worker when there is any error (default: false)
+   --min-interval value  How often to scan storages (minimum) (default: 5s)
+   --max-interval value  How often to scan storages (maximum) (default: 2m40s)
+   --help, -h            show help
 ```
 {% endcode %}
