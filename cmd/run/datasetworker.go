@@ -45,7 +45,7 @@ var DatasetWorkerCmd = &cli.Command{
 		},
 		&cli.DurationFlag{
 			Name:  "min-interval",
-			Usage: "How often to scan storages (minimum)",
+			Usage: "How often to check for new jobs (minimum)",
 			Value: 5 * time.Second,
 		},
 		&cli.DurationFlag{
