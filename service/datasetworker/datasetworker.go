@@ -24,6 +24,9 @@ type Worker struct {
 	config      Config
 }
 
+const defaultMinInterval = 5 * time.Second
+const defaultMaxInterval = 160 * time.Second
+
 type Config struct {
 	Concurrency    int
 	ExitOnComplete bool
@@ -31,9 +34,19 @@ type Config struct {
 	EnablePack     bool
 	EnableDag      bool
 	ExitOnError    bool
+	MinInterval    time.Duration
+	MaxInterval    time.Duration
 }
 
 func NewWorker(db *gorm.DB, config Config) *Worker {
+	// intervals need to be > 0 so if they are set to 0 use sensible
+	// defaults
+	if config.MinInterval == 0 {
+		config.MinInterval = defaultMinInterval
+	}
+	if config.MaxInterval == 0 {
+		config.MinInterval = defaultMaxInterval
+	}
 	return &Worker{
 		dbNoContext: db,
 		config:      config,
@@ -240,9 +253,8 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 	if w.config.EnablePack {
 		jobTypes = append(jobTypes, model.Pack)
 	}
-	minInterval := 5 * time.Second
-	maxInterval := 160 * time.Second
-	interval := minInterval
+
+	interval := w.config.MinInterval
 	for {
 		job, err := w.findJob(ctx, jobTypes)
 		if err != nil {
@@ -280,7 +292,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 					"type", job.Type, "jobID", job.ID, "error", err2)
 				goto errorLoop
 			}
-			interval = minInterval
+			interval = w.config.MinInterval
 			continue
 		}
 	errorLoop:
@@ -303,8 +315,8 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			return
 		case <-time.After(interval):
 			interval *= 2
-			if interval > maxInterval {
-				interval = maxInterval
+			if interval > w.config.MaxInterval {
+				interval = w.config.MaxInterval
 			}
 		}
 	}

@@ -1,6 +1,8 @@
 package run
 
 import (
+	"time"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service/datasetworker"
@@ -41,6 +43,16 @@ var DatasetWorkerCmd = &cli.Command{
 			Usage: "Exit the worker when there is any error",
 			Value: false,
 		},
+		&cli.DurationFlag{
+			Name:  "min-interval",
+			Usage: "How often to scan storages (minimum)",
+			Value: 5 * time.Second,
+		},
+		&cli.DurationFlag{
+			Name:  "max-interval",
+			Usage: "How often to scan storages (maximum)",
+			Value: 160 * time.Second,
+		},
 	},
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -57,6 +69,8 @@ var DatasetWorkerCmd = &cli.Command{
 				EnableDag:      c.Bool("enable-dag"),
 				ExitOnComplete: c.Bool("exit-on-complete"),
 				ExitOnError:    c.Bool("exit-on-error"),
+				MinInterval:    c.Duration("min-interval"),
+				MaxInterval:    c.Duration("max-interval"),
 			})
 		err = worker.Run(c.Context)
 		if err != nil {
