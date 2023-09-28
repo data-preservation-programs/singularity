@@ -166,6 +166,11 @@ func (m *ConfigMap) Scan(src any) error {
 	return json.Unmarshal(source, m)
 }
 
+func IsSecretConfigName(key string) bool {
+	k := strings.ToLower(key)
+	return strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key")
+}
+
 func (m ConfigMap) String() string {
 	if m == nil {
 		return "<nil>"
@@ -175,7 +180,7 @@ func (m ConfigMap) String() string {
 		if v == "" || v == "0" || v == "false" {
 			continue
 		}
-		if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
+		if IsSecretConfigName(k) {
 			v = "*"
 		}
 		values = append(values, k+":"+v)

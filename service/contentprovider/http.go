@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -193,7 +192,7 @@ func GetMetadataHandler(c echo.Context, db *gorm.DB) error {
 
 	// Remove all credentials
 	for k := range metadata.Storage.Config {
-		if strings.Contains(k, "secret") || strings.Contains(k, "pass") || strings.Contains(k, "token") || strings.Contains(k, "key") {
+		if model.IsSecretConfigName(k) {
 			delete(metadata.Storage.Config, k)
 		}
 	}
@@ -323,7 +322,7 @@ func (s *HTTPServer) findPiece(ctx context.Context, pieceCid cid.Cid) (
 	return nil, time.Time{}, &util.AggregateError{Errors: errs}
 }
 
-func (s *HTTPServer) setCommonHeaders(c echo.Context, pieceCid string) {
+func SetCommonHeaders(c echo.Context, pieceCid string) {
 	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", pieceCid+".car"))
 	c.Response().Header().Set("Content-Type", "application/vnd.ipld.car; version=1")
 	c.Response().Header().Set("Accept-Ranges", "bytes")
@@ -351,6 +350,9 @@ func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusBadRequest, "failed to parse piece CID: "+err.Error())
 	}
+	if pieceCid.Type() != cid.FilCommitmentUnsealed {
+		return c.String(http.StatusBadRequest, "CID is not a commp")
+	}
 
 	reader, lastModified, err := s.findPiece(c.Request().Context(), pieceCid)
 	if oserror.IsNotExist(err) {
@@ -361,7 +363,7 @@ func (s *HTTPServer) handleGetPiece(c echo.Context) error {
 	}
 
 	defer reader.Close()
-	s.setCommonHeaders(c, pieceCid.String())
+	SetCommonHeaders(c, pieceCid.String())
 	http.ServeContent(
 		c.Response(),
 		c.Request(),

@@ -150,6 +150,7 @@ Logging:
 				run.ContentProviderCmd,
 				run.DealTrackerCmd,
 				run.DealPusherCmd,
+				run.DownloadServerCmd,
 			},
 		},
 		{
