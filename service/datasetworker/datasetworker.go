@@ -296,6 +296,10 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			err = w.ExportDag(workCtx, *job)
 		}
 		workCancel()
+		if workCtx.Err() != nil {
+			interval = w.config.MinInterval
+			continue
+		}
 		if err != nil {
 			err2 := w.handleWorkError(ctx, job.ID, err)
 			if err2 != nil {
