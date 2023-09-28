@@ -256,6 +256,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 
 	interval := w.config.MinInterval
 	for {
+		workCtx, workCancel := context.WithCancel(ctx)
 		job, err := w.findJob(ctx, jobTypes)
 		if err != nil {
 			goto errorLoop
@@ -270,14 +271,31 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			goto loop
 		}
 
+		go func() {
+			for {
+				var found model.Job
+				err := w.dbNoContext.WithContext(workCtx).Select("state").First(&found, job.ID).Error
+				if err == nil && found.State != model.Processing && found.State != model.Error && found.State != model.Complete {
+					logger.Warnf("Job %d is being paused as the state changes to %s", job.ID, found.State)
+					workCancel()
+					return
+				}
+				select {
+				case <-workCtx.Done():
+				case <-time.After(time.Second * 5):
+				}
+			}
+		}()
+
 		switch job.Type {
 		case model.Scan:
-			err = w.scan(ctx, *job.Attachment)
+			err = w.scan(workCtx, *job.Attachment)
 		case model.Pack:
-			err = w.pack(ctx, *job)
+			err = w.pack(workCtx, *job)
 		case model.DagGen:
-			err = w.ExportDag(ctx, *job)
+			err = w.ExportDag(workCtx, *job)
 		}
+		workCancel()
 		if err != nil {
 			err2 := w.handleWorkError(ctx, job.ID, err)
 			if err2 != nil {
