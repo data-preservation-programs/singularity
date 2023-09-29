@@ -77,8 +77,8 @@ func TestEndpointFetcher(t *testing.T) {
 			if !testCase.noHTTP {
 
 				response.Protocols = append(response.Protocols, struct {
-					Name      string                "json:\"name,omitempty\""
-					Addresses []multiaddr.Multiaddr "json:\"addresses,omitempty\""
+					Name      string                `json:"name,omitempty"`
+					Addresses []multiaddr.Multiaddr `json:"addresses,omitempty"`
 				}{
 					Name:      "http",
 					Addresses: []multiaddr.Multiaddr{m},
