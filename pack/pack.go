@@ -113,12 +113,12 @@ func Pack(
 	var finalPieceSize uint64
 	var fileSize int64
 	if storageWriter != nil {
-		var renamed bool
+		var carGenerated bool
 		reader := io.TeeReader(assembler, calc)
 		filename = uuid.NewString() + ".car"
 		obj, err := storageWriter.Write(ctx, filename, reader)
 		defer func() {
-			if !renamed && obj != nil {
+			if !carGenerated && obj != nil {
 				removeCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 				err := storageWriter.Remove(removeCtx, obj)
 				if err != nil {
@@ -146,7 +146,7 @@ func Pack(
 		if err == nil {
 			filename = pieceCid.String() + ".car"
 		}
-		renamed = true
+		carGenerated = true
 	} else {
 		fileSize, err = io.Copy(calc, assembler)
 		if err != nil {
