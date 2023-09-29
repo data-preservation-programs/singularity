@@ -204,9 +204,10 @@ func TestRescan(t *testing.T) {
 // 3. Create a preparation with the local source and output
 // 4. Start scanning, packing and daggen
 // 5. Download the pieces using the piece API
-// 6. Download the pieces using the metadata API with Download utility
-// 7. Extract into folder and compare with the original source
-// 8. Repeat above with different maxSize and inline
+// 6. Download the pieces using the download server
+// 7. Download the pieces using the metadata API with Download utility
+// 8. Extract into folder and compare with the original source
+// 9. Repeat above with different maxSize and inline
 func TestDataPrep(t *testing.T) {
 	// Prepare local source
 	tmp := t.TempDir()
