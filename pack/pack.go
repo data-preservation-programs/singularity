@@ -3,6 +3,7 @@ package pack
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
@@ -112,9 +113,20 @@ func Pack(
 	var finalPieceSize uint64
 	var fileSize int64
 	if storageWriter != nil {
+		var carGenerated bool
 		reader := io.TeeReader(assembler, calc)
 		filename = uuid.NewString() + ".car"
 		obj, err := storageWriter.Write(ctx, filename, reader)
+		defer func() {
+			if !carGenerated && obj != nil {
+				removeCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+				err := storageWriter.Remove(removeCtx, obj)
+				if err != nil {
+					logger.Errorf("failed to remove temporary CAR file %s: %v", filename, err)
+				}
+				cancel()
+			}
+		}()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -134,6 +146,7 @@ func Pack(
 		if err == nil {
 			filename = pieceCid.String() + ".car"
 		}
+		carGenerated = true
 	} else {
 		fileSize, err = io.Copy(calc, assembler)
 		if err != nil {
