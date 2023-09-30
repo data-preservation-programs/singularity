@@ -259,15 +259,18 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		workCtx, workCancel := context.WithCancel(ctx)
 		job, err := w.findJob(ctx, jobTypes)
 		if err != nil {
+			workCancel()
 			goto errorLoop
 		}
 
 		if job == nil {
 			if w.config.ExitOnComplete {
 				w.logger.Info("no work found, exiting")
+				workCancel()
 				return
 			}
 			w.logger.Info("no work found")
+			workCancel()
 			goto loop
 		}
 
@@ -298,6 +301,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		}
 		if workCtx.Err() != nil && ctx.Err() == nil {
 			interval = w.config.MinInterval
+			workCancel()
 			continue
 		}
 		workCancel()
