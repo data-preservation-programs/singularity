@@ -36,9 +36,7 @@ var DownloadServerCmd = &cli.Command{
 
 		keys := make(map[string]struct{})
 		for _, backend := range storagesystem.Backends {
-			var providers []string
 			for _, providerOptions := range backend.ProviderOptions {
-				providers = append(providers, providerOptions.Provider)
 				for _, option := range providerOptions.Options {
 					if !model.IsSecretConfigName(option.Name) {
 						continue
