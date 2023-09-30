@@ -256,28 +256,55 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 
 	interval := w.config.MinInterval
 	for {
+		workCtx, workCancel := context.WithCancel(ctx)
 		job, err := w.findJob(ctx, jobTypes)
 		if err != nil {
+			workCancel()
 			goto errorLoop
 		}
 
 		if job == nil {
 			if w.config.ExitOnComplete {
 				w.logger.Info("no work found, exiting")
+				workCancel()
 				return
 			}
 			w.logger.Info("no work found")
+			workCancel()
 			goto loop
 		}
 
+		go func() {
+			for {
+				var found model.Job
+				err := w.dbNoContext.WithContext(workCtx).Select("state").First(&found, job.ID).Error
+				if err == nil && found.State == model.Paused {
+					logger.Warnf("Job %d is being paused as the state changes to %s", job.ID, found.State)
+					workCancel()
+					return
+				}
+				select {
+				case <-workCtx.Done():
+					return
+				case <-time.After(time.Second * 5):
+				}
+			}
+		}()
+
 		switch job.Type {
 		case model.Scan:
-			err = w.scan(ctx, *job.Attachment)
+			err = w.scan(workCtx, *job.Attachment)
 		case model.Pack:
-			err = w.pack(ctx, *job)
+			err = w.pack(workCtx, *job)
 		case model.DagGen:
-			err = w.ExportDag(ctx, *job)
+			err = w.ExportDag(workCtx, *job)
 		}
+		if workCtx.Err() != nil && ctx.Err() == nil {
+			interval = w.config.MinInterval
+			workCancel()
+			continue
+		}
+		workCancel()
 		if err != nil {
 			err2 := w.handleWorkError(ctx, job.ID, err)
 			if err2 != nil {
