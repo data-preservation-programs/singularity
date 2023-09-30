@@ -275,13 +275,14 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			for {
 				var found model.Job
 				err := w.dbNoContext.WithContext(workCtx).Select("state").First(&found, job.ID).Error
-				if err == nil && found.State != model.Processing && found.State != model.Error && found.State != model.Complete {
+				if err == nil && found.State == model.Paused {
 					logger.Warnf("Job %d is being paused as the state changes to %s", job.ID, found.State)
 					workCancel()
 					return
 				}
 				select {
 				case <-workCtx.Done():
+					return
 				case <-time.After(time.Second * 5):
 				}
 			}
@@ -295,11 +296,11 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		case model.DagGen:
 			err = w.ExportDag(workCtx, *job)
 		}
-		workCancel()
-		if workCtx.Err() != nil {
+		if workCtx.Err() != nil && ctx.Err() == nil {
 			interval = w.config.MinInterval
 			continue
 		}
+		workCancel()
 		if err != nil {
 			err2 := w.handleWorkError(ctx, job.ID, err)
 			if err2 != nil {
