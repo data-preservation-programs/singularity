@@ -50,7 +50,7 @@ func TestHTTPServerHandler(t *testing.T) {
 			bind:        ":0",
 		}
 
-		pieceCID := cid.NewCidV1(cid.FilCommitmentSealed, util.Hash([]byte("test")))
+		pieceCID := cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("test")))
 		err := db.Create(&model.Car{
 			PieceCID:      model.CID(pieceCID),
 			PieceSize:     128,
@@ -85,7 +85,7 @@ func TestHTTPServerHandler(t *testing.T) {
 		}{
 			{
 				name: "not_found",
-				cid:  cid.NewCidV1(cid.FilCommitmentSealed, util.Hash([]byte("not_exist"))).String(),
+				cid:  cid.NewCidV1(cid.FilCommitmentUnsealed, util.Hash([]byte("not_exist"))).String(),
 				code: http.StatusNotFound,
 				body: "piece not found",
 			},

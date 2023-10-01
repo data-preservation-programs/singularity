@@ -204,9 +204,10 @@ func TestRescan(t *testing.T) {
 // 3. Create a preparation with the local source and output
 // 4. Start scanning, packing and daggen
 // 5. Download the pieces using the piece API
-// 6. Download the pieces using the metadata API with Download utility
-// 7. Extract into folder and compare with the original source
-// 8. Repeat above with different maxSize and inline
+// 6. Download the pieces using the download server
+// 7. Download the pieces using the metadata API with Download utility
+// 8. Extract into folder and compare with the original source
+// 9. Repeat above with different maxSize and inline
 func TestDataPrep(t *testing.T) {
 	// Prepare local source
 	tmp := t.TempDir()
@@ -392,25 +393,42 @@ func TestDataPrep(t *testing.T) {
 						// run the content provider
 						contentProviderCtx, cancel := context.WithCancel(ctx)
 						contentProviderDone := make(chan struct{})
+						downloadServerDone := make(chan struct{})
 						defer func() { <-contentProviderDone }()
+						defer func() { <-downloadServerDone }()
 						defer cancel()
 						go func() {
 							NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
 							close(contentProviderDone)
 						}()
-
 						// Wait for content provider to be ready
 						err = WaitForServerReady(ctx, fmt.Sprintf("http://%s/health", contentProviderBind))
 						require.NoError(t, err)
 
+						go func() {
+							NewRunner().Run(contentProviderCtx, "singularity run download-server --metadata-api http://"+contentProviderBind)
+							close(downloadServerDone)
+						}()
+						// Wait for download server to be ready
+						err = WaitForServerReady(ctx, fmt.Sprintf("http://%s/health", "127.0.0.1:8888"))
+						require.NoError(t, err)
+
 						// Download all pieces from content provider
 						for _, pieceCID := range pieceCIDs {
-							downloaded, err := Download(ctx, fmt.Sprintf("http://%s/piece/%s", contentProviderBind, pieceCID), 1)
+							downloaded, err := Download(ctx, fmt.Sprintf("http://%s/piece/%s", contentProviderBind, pieceCID), 10)
 							require.NoError(t, err)
 							calculatedPieceCID := CalculateCommp(t, downloaded, pieceSize)
 							require.Equal(t, pieceCID, calculatedPieceCID)
 							err = os.WriteFile(filepath.Join(downloadDir, pieceCID+".car"), downloaded, 0777)
 							require.NoError(t, err)
+						}
+
+						// Download all pieces using local download server
+						for _, pieceCID := range pieceCIDs {
+							downloaded, err := Download(ctx, fmt.Sprintf("http://%s/piece/%s", "127.0.0.1:8888", pieceCID), 10)
+							require.NoError(t, err)
+							calculatedPieceCID := CalculateCommp(t, downloaded, pieceSize)
+							require.Equal(t, pieceCID, calculatedPieceCID)
 						}
 
 						// Download all pieces using download CLI

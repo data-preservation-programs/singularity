@@ -1,48 +1,33 @@
-package cmd
+package run
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/cmd/storage"
-	"github.com/data-preservation-programs/singularity/handler"
 	"github.com/data-preservation-programs/singularity/model"
+	"github.com/data-preservation-programs/singularity/service"
+	"github.com/data-preservation-programs/singularity/service/downloadserver"
 	"github.com/data-preservation-programs/singularity/storagesystem"
-	"github.com/ipfs/go-log"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
 
-var DownloadCmd = &cli.Command{
-	Name:      "download",
-	Usage:     "Download a CAR file from the metadata API",
-	Category:  "Utility",
-	Before:    cliutil.CheckNArgs,
-	ArgsUsage: "<piece_cid>",
+var DownloadServerCmd = &cli.Command{
+	Name:        "download-server",
+	Usage:       "An HTTP server connecting to remote metadata API to offer CAR file downloads",
+	Description: "Example Usage:\n  singularity run download-server --metadata-api \"http://remote-metadata-api:7777\" --bind \"127.0.0.1:8888\"",
 	Flags: func() []cli.Flag {
 		flags := []cli.Flag{
 			&cli.StringFlag{
-				Name:     "api",
+				Name:     "metadata-api",
 				Usage:    "URL of the metadata API",
 				Value:    "http://127.0.0.1:7777",
 				Category: "General Config",
 			},
 			&cli.StringFlag{
-				Name:     "out-dir",
-				Usage:    "Directory to write CAR files to",
-				Value:    ".",
+				Name:     "bind",
+				Usage:    "Address to bind the HTTP server to",
+				Value:    "127.0.0.1:8888",
 				Category: "General Config",
-			},
-			&cli.IntFlag{
-				Name:     "concurrency",
-				Usage:    "Number of concurrent downloads",
-				Value:    10,
-				Category: "General Config",
-			},
-			&cli.BoolFlag{
-				Name:     "quiet",
-				Usage:    "Suppress all output",
-				Category: "General Config",
-				Value:    false,
 			},
 		}
 
@@ -68,14 +53,12 @@ var DownloadCmd = &cli.Command{
 		return flags
 	}(),
 	Action: func(c *cli.Context) error {
-		api := c.String("api")
-		outDir := c.String("out-dir")
-		concurrency := c.Int("concurrency")
-		piece := c.Args().First()
+		api := c.String("metadata-api")
+		bind := c.String("bind")
 		config := map[string]string{}
 		for _, key := range c.LocalFlagNames() {
 			if c.IsSet(key) {
-				if slices.Contains([]string{"api", "out-dir", "concurrency", "quiet"}, key) {
+				if slices.Contains([]string{"api", "bind"}, key) {
 					continue
 				}
 				value := c.String(key)
@@ -86,11 +69,8 @@ var DownloadCmd = &cli.Command{
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		err = handler.DownloadHandler(c, piece, api, config, *clientConfig, outDir, concurrency)
-		if err == nil {
-			log.Logger("Download").Info("Download complete")
-			return nil
-		}
-		return errors.WithStack(err)
+
+		server := downloadserver.NewDownloadServer(bind, api, config, *clientConfig)
+		return service.StartServers(c.Context, downloadserver.Logger, server)
 	},
 }

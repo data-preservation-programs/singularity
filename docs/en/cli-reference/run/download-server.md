@@ -1,17 +1,20 @@
-# Download a CAR file from the metadata API
+# An HTTP server connecting to remote metadata API to offer CAR file downloads
 
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity download - Download a CAR file from the metadata API
+   singularity run download-server - An HTTP server connecting to remote metadata API to offer CAR file downloads
 
 USAGE:
-   singularity download [command options] <piece_cid>
+   singularity run download-server [command options] [arguments...]
 
-CATEGORY:
-   Utility
+DESCRIPTION:
+   Example Usage:
+     singularity run download-server --metadata-api "http://remote-metadata-api:7777" --bind "127.0.0.1:8888"
 
 OPTIONS:
+   --help, -h  show help
+
    1Fichier
 
    --fichier-api-key value          Your API Key, get it from https://1fichier.com/console/params.pl. [$FICHIER_API_KEY]
@@ -83,10 +86,8 @@ OPTIONS:
 
    General Config
 
-   --api value          URL of the metadata API (default: "http://127.0.0.1:7777")
-   --concurrency value  Number of concurrent downloads (default: 10)
-   --out-dir value      Directory to write CAR files to (default: ".")
-   --quiet              Suppress all output (default: false)
+   --bind value          Address to bind the HTTP server to (default: "127.0.0.1:8888")
+   --metadata-api value  URL of the metadata API (default: "http://127.0.0.1:7777")
 
    Google Cloud Storage (this is not Google Drive)
 

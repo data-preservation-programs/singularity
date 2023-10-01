@@ -4,20 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/cockroachdb/errors"
-	"github.com/data-preservation-programs/singularity/handler/storage"
 	"github.com/data-preservation-programs/singularity/model"
-	"github.com/data-preservation-programs/singularity/service/contentprovider"
-	"github.com/data-preservation-programs/singularity/storagesystem"
+	"github.com/data-preservation-programs/singularity/service/downloadserver"
 	"github.com/data-preservation-programs/singularity/store"
-	"github.com/fxamacker/cbor/v2"
-	"github.com/rjNemo/underscore"
 	"github.com/urfave/cli/v2"
 )
 
@@ -42,65 +36,10 @@ func DownloadHandler(ctx *cli.Context,
 	outDir string,
 	concurrency int,
 ) error {
-	req, err := http.NewRequestWithContext(ctx.Context, http.MethodGet, api+"/piece/metadata/"+piece, nil)
+	pieceMetadata, _, err := downloadserver.GetMetadata(ctx.Context, api, config, clientConfig, piece)
 	if err != nil {
-		return errors.Wrap(err, "failed to create request")
+		return errors.WithStack(err)
 	}
-	req.Header.Add("Accept", "application/cbor")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "failed to get metadata")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return errors.Errorf("failed to get metadata: %s", resp.Status)
-	}
-
-	var pieceMetadata contentprovider.PieceMetadata
-	err = cbor.NewDecoder(resp.Body).Decode(&pieceMetadata)
-	if err != nil {
-		return errors.Wrap(err, "failed to decode metadata")
-	}
-
-	cfg := make(map[string]string)
-	backend, ok := storagesystem.BackendMap[pieceMetadata.Storage.Type]
-	if !ok {
-		return errors.Newf("storage type %s is not supported", pieceMetadata.Storage.Type)
-	}
-
-	prefix := pieceMetadata.Storage.Type + "-"
-	provider := pieceMetadata.Storage.Config["provider"]
-	if provider == "" {
-		provider = config[prefix+"provider"]
-	}
-	providerOptions, err := underscore.Find(backend.ProviderOptions, func(providerOption storagesystem.ProviderOptions) bool {
-		return providerOption.Provider == provider
-	})
-	if err != nil {
-		return errors.Newf("provider '%s' is not supported", provider)
-	}
-
-	for _, option := range providerOptions.Options {
-		if option.Default != nil {
-			cfg[option.Name] = fmt.Sprintf("%v", option.Default)
-		}
-	}
-
-	for key, value := range pieceMetadata.Storage.Config {
-		cfg[key] = value
-	}
-
-	for key, value := range config {
-		if strings.HasPrefix(key, prefix) {
-			trimmed := strings.TrimPrefix(key, prefix)
-			snake := strings.ReplaceAll(trimmed, "-", "_")
-			cfg[snake] = value
-		}
-	}
-
-	pieceMetadata.Storage.Config = cfg
-	storage.OverrideStorageWithClientConfig(&pieceMetadata.Storage, clientConfig)
-
 	pieceReader, err := store.NewPieceReader(ctx.Context, pieceMetadata.Car, pieceMetadata.Storage, pieceMetadata.CarBlocks, pieceMetadata.Files)
 	if err != nil {
 		return errors.Wrap(err, "failed to create piece reader")

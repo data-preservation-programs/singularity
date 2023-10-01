@@ -7,22 +7,23 @@
 
 ## 설치 <a href="#installation" id="installation"></a>
 
-* [바이너리 다운로드](installation/download-binaries.md)
+* [바이너리 파일 다운로드](installation/download-binaries.md)
 * [도커를 통한 설치](installation/install-from-docker.md)
-* [소스에서 빌드](installation/install-from-source.md)
+* [소스 코드에서 빌드](installation/install-from-source.md)
 * [운영 환경에 배포](installation/deploy-to-production.md)
 
 ## 데이터 준비 <a href="#data-preparation" id="data-preparation"></a>
 
 * [시작하기](data-preparation/get-started.md)
+* [성능 조정](data-preparation/performance-tuning.md)
 
 ## 콘텐츠 배포 <a href="#content-distribution" id="content-distribution"></a>
 
 * [CAR 파일 배포하기](content-distribution/distribute-car-files.md)
 
-## 거래 생성 <a href="#deal-making" id="deal-making"></a>
+## 거래 수립 <a href="#deal-making" id="deal-making"></a>
 
-* [거래 일정 생성](deal-making/create-a-deal-schedule.md)
+* [거래 일정 만들기](deal-making/create-a-deal-schedule.md)
 
 ## 주제 <a href="#topics" id="topics"></a>
 
@@ -38,26 +39,27 @@
 * [관리자](cli-reference/admin/README.md)
   * [초기화](cli-reference/admin/init.md)
   * [재설정](cli-reference/admin/reset.md)
-  * [데이터셋 이동](cli-reference/admin/migrate-dataset.md)
-  * [일정 이동](cli-reference/admin/migrate-schedule.md)
+  * [데이터셋 이전](cli-reference/admin/migrate-dataset.md)
+  * [일정 이전](cli-reference/admin/migrate-schedule.md)
 * [다운로드](cli-reference/download.md)
 * [CAR 추출](cli-reference/extract-car.md)
 * [거래](cli-reference/deal/README.md)
   * [일정](cli-reference/deal/schedule/README.md)
     * [생성](cli-reference/deal/schedule/create.md)
     * [목록](cli-reference/deal/schedule/list.md)
-    * [업데이트](cli-reference/deal/schedule/update.md)
-    * [일시 정지](cli-reference/deal/schedule/pause.md)
+    * [수정](cli-reference/deal/schedule/update.md)
+    * [일시 중지](cli-reference/deal/schedule/pause.md)
     * [재개](cli-reference/deal/schedule/resume.md)
   * [수동 전송](cli-reference/deal/send-manual.md)
   * [목록](cli-reference/deal/list.md)
 * [실행](cli-reference/run/README.md)
   * [API](cli-reference/run/api.md)
-  * [데이터셋 작업자](cli-reference/run/dataset-worker.md)
-  * [컨텐츠 제공자](cli-reference/run/content-provider.md)
+  * [데이터셋 워커](cli-reference/run/dataset-worker.md)
+  * [콘텐츠 제공자](cli-reference/run/content-provider.md)
   * [거래 추적기](cli-reference/run/deal-tracker.md)
   * [거래 푸셔](cli-reference/run/deal-pusher.md)
-* [지갑](cli-reference/wallet/README.md)
+  * [다운로드 서버](cli-reference/run/download-server.md)
+* [월렛](cli-reference/wallet/README.md)
   * [가져오기](cli-reference/wallet/import.md)
   * [목록](cli-reference/wallet/list.md)
   * [제거](cli-reference/wallet/remove.md)
@@ -99,7 +101,7 @@
     * [Premiumizeme](cli-reference/storage/create/premiumizeme.md)
     * [Putio](cli-reference/storage/create/putio.md)
     * [Qingstor](cli-reference/storage/create/qingstor.md)
-    * [AWS S3 and compliant](cli-reference/storage/create/s3/README.md)
+    * [AWS S3 및 호환](cli-reference/storage/create/s3/README.md)
       * [Aws](cli-reference/storage/create/s3/aws.md)
       * [Alibaba](cli-reference/storage/create/s3/alibaba.md)
       * [Arvancloud](cli-reference/storage/create/s3/arvancloud.md)
@@ -132,7 +134,7 @@
     * [Smb](cli-reference/storage/create/smb.md)
     * [Storj](cli-reference/storage/create/storj/README.md)
       * [기존](cli-reference/storage/create/storj/existing.md)
-      * [새로운](cli-reference/storage/create/storj/new.md)
+      * [새로 만들기](cli-reference/storage/create/storj/new.md)
     * [Sugarsync](cli-reference/storage/create/sugarsync.md)
     * [Swift](cli-reference/storage/create/swift.md)
     * [Uptobox](cli-reference/storage/create/uptobox.md)
@@ -142,7 +144,7 @@
   * [탐색](cli-reference/storage/explore.md)
   * [목록](cli-reference/storage/list.md)
   * [제거](cli-reference/storage/remove.md)
-  * [업데이트](cli-reference/storage/update/README.md)
+  * [갱신](cli-reference/storage/update/README.md)
     * [Acd](cli-reference/storage/update/acd.md)
     * [Azureblob](cli-reference/storage/update/azureblob.md)
     * [B2](cli-reference/storage/update/b2.md)
@@ -179,7 +181,7 @@
     * [Premiumizeme](cli-reference/storage/update/premiumizeme.md)
     * [Putio](cli-reference/storage/update/putio.md)
     * [Qingstor](cli-reference/storage/update/qingstor.md)
-    * [AWS S3 and compliant](cli-reference/storage/update/s3/README.md)
+    * [AWS S3 및 호환](cli-reference/storage/update/s3/README.md)
       * [Aws](cli-reference/storage/update/s3/aws.md)
       * [Alibaba](cli-reference/storage/update/s3/alibaba.md)
       * [Arvancloud](cli-reference/storage/update/s3/arvancloud.md)
@@ -212,32 +214,34 @@
     * [Smb](cli-reference/storage/update/smb.md)
     * [Storj](cli-reference/storage/update/storj/README.md)
       * [기존](cli-reference/storage/update/storj/existing.md)
-      * [새로운](cli-reference/storage/update/storj/new.md)
+      * [새로 만들기](cli-reference/storage/update/storj/new.md)
     * [Sugarsync](cli-reference/storage/update/sugarsync.md)
     * [Swift](cli-reference/storage/update/swift.md)
     * [Uptobox](cli-reference/storage/update/uptobox.md)
     * [Webdav](cli-reference/storage/update/webdav.md)
     * [Yandex](cli-reference/storage/update/yandex.md)
     * [Zoho](cli-reference/storage/update/zoho.md)
+  * [이름 변경](cli-reference/storage/rename.md)
 * [Prep](cli-reference/prep/README.md)
   * [생성](cli-reference/prep/create.md)
   * [목록](cli-reference/prep/list.md)
   * [상태](cli-reference/prep/status.md)
+  * [이름 변경](cli-reference/prep/rename.md)
   * [소스 연결](cli-reference/prep/attach-source.md)
   * [출력 연결](cli-reference/prep/attach-output.md)
   * [출력 분리](cli-reference/prep/detach-output.md)
   * [스캔 시작](cli-reference/prep/start-scan.md)
-  * [스캔 일시 정지](cli-reference/prep/pause-scan.md)
-  * [팩 시작](cli-reference/prep/start-pack.md)
-  * [팩 일시 정지](cli-reference/prep/pause-pack.md)
+  * [스캔 일시 중지](cli-reference/prep/pause-scan.md)
+  * [팩 생성 시작](cli-reference/prep/start-pack.md)
+  * [팩 일시 중지](cli-reference/prep/pause-pack.md)
   * [Daggen 시작](cli-reference/prep/start-daggen.md)
-  * [Daggen 일시 정지](cli-reference/prep/pause-daggen.md)
-  * [작업 목록](cli-reference/prep/list-pieces.md)
+  * [Daggen 일시 중지](cli-reference/prep/pause-daggen.md)
+  * [조각 목록](cli-reference/prep/list-pieces.md)
   * [조각 추가](cli-reference/prep/add-piece.md)
   * [탐색](cli-reference/prep/explore.md)
-  * [지갑 연결](cli-reference/prep/attach-wallet.md)
-  * [지갑 목록](cli-reference/prep/list-wallets.md)
-  * [지갑 분리](cli-reference/prep/detach-wallet.md)
+  * [월렛 연결](cli-reference/prep/attach-wallet.md)
+  * [월렛 목록](cli-reference/prep/list-wallets.md)
+  * [월렛 분리](cli-reference/prep/detach-wallet.md)
 
 <!-- cli end -->
 
@@ -249,14 +253,14 @@
 * [파일](web-api-reference/file.md)
 * [작업](web-api-reference/job.md)
 * [조각](web-api-reference/piece.md)
-* [준비](web-api-reference/preparation.md)
+* [준비 작업](web-api-reference/preparation.md)
 * [저장소](web-api-reference/storage.md)
-* [지갑 연결](web-api-reference/wallet-association.md)
-* [지갑](web-api-reference/wallet.md)
+* [월렛 연결](web-api-reference/wallet-association.md)
+* [월렛](web-api-reference/wallet.md)
 * [사양](https://raw.githubusercontent.com/data-preservation-programs/singularity/main/docs/swagger/swagger.yaml)
 
 <!-- webapi end -->
 
 ## ❓ FAQ <a href="#faq" id="faq"></a>
 
-* [데이터베이스가 잠겼습니다](faq/database-is-locked.md)
+* [데이터베이스가 잠김](faq/database-is-locked.md)
