@@ -14,6 +14,7 @@ COMMANDS:
    content-provider  Start a content provider that serves retrieval requests
    deal-tracker      Start a deal tracker that tracks the deal for all relevant wallets
    deal-pusher       Start a deal pusher that monitors deal schedules and pushes deals to storage providers
+   download-server   An HTTP server connecting to remote metadata API to offer CAR file downloads
    help, h           Shows a list of commands or help for one command
 
 OPTIONS:

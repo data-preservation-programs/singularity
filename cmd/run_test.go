@@ -75,3 +75,11 @@ func TestRunDealPusher(t *testing.T) {
 		require.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 }
+
+func TestRunDownloadServer(t *testing.T) {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	_, _, err := NewRunner().Run(ctx, "singularity run download-server")
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+}
