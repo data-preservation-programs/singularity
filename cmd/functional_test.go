@@ -401,14 +401,14 @@ func TestDataPrep(t *testing.T) {
 							NewRunner().Run(contentProviderCtx, "singularity run content-provider --http-bind "+contentProviderBind)
 							close(contentProviderDone)
 						}()
+						// Wait for content provider to be ready
+						err = WaitForServerReady(ctx, fmt.Sprintf("http://%s/health", contentProviderBind))
+						require.NoError(t, err)
+
 						go func() {
 							NewRunner().Run(contentProviderCtx, "singularity run download-server --metadata-api http://"+contentProviderBind)
 							close(downloadServerDone)
 						}()
-
-						// Wait for content provider to be ready
-						err = WaitForServerReady(ctx, fmt.Sprintf("http://%s/health", contentProviderBind))
-						require.NoError(t, err)
 						// Wait for download server to be ready
 						err = WaitForServerReady(ctx, fmt.Sprintf("http://%s/health", "127.0.0.1:8888"))
 						require.NoError(t, err)
