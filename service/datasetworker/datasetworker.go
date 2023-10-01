@@ -20,8 +20,9 @@ import (
 var logger = log.Logger("datasetworker")
 
 type Worker struct {
-	dbNoContext *gorm.DB
-	config      Config
+	dbNoContext  *gorm.DB
+	config       Config
+	stateMonitor *StateMonitor
 }
 
 const defaultMinInterval = 5 * time.Second
@@ -47,17 +48,20 @@ func NewWorker(db *gorm.DB, config Config) *Worker {
 	if config.MaxInterval == 0 {
 		config.MinInterval = defaultMaxInterval
 	}
+	stateMonitor := NewStateMonitor(db)
 	return &Worker{
-		dbNoContext: db,
-		config:      config,
+		dbNoContext:  db,
+		config:       config,
+		stateMonitor: stateMonitor,
 	}
 }
 
 type Thread struct {
-	id          uuid.UUID
-	dbNoContext *gorm.DB
-	logger      *zap.SugaredLogger
-	config      Config
+	id           uuid.UUID
+	dbNoContext  *gorm.DB
+	logger       *zap.SugaredLogger
+	config       Config
+	stateMonitor *StateMonitor
 }
 
 // Start initializes and starts the execution of a worker thread.
@@ -170,15 +174,18 @@ func (w Worker) Run(ctx context.Context) error {
 	for i := 0; i < w.config.Concurrency; i++ {
 		id := uuid.New()
 		thread := &Thread{
-			id:          id,
-			dbNoContext: w.dbNoContext,
-			logger:      logger.With("workerID", id.String()),
-			config:      w.config,
+			id:           id,
+			dbNoContext:  w.dbNoContext,
+			logger:       logger.With("workerID", id.String()),
+			config:       w.config,
+			stateMonitor: w.stateMonitor,
 		}
 		threads[i] = thread
 	}
+	monitorDone := w.stateMonitor.Start(ctx)
 	err = service.StartServers(ctx, logger, threads...)
 	cancel()
+	<-monitorDone
 	<-eventsFlushed
 	return errors.WithStack(err)
 }
@@ -274,23 +281,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 			goto loop
 		}
 
-		go func() {
-			for {
-				var found model.Job
-				err := w.dbNoContext.WithContext(workCtx).Select("state").First(&found, job.ID).Error
-				if err == nil && found.State == model.Paused {
-					logger.Warnf("Job %d is being paused as the state changes to %s", job.ID, found.State)
-					workCancel()
-					return
-				}
-				select {
-				case <-workCtx.Done():
-					return
-				case <-time.After(time.Second * 5):
-				}
-			}
-		}()
-
+		w.stateMonitor.AddJob(job.ID, workCancel)
 		switch job.Type {
 		case model.Scan:
 			err = w.scan(workCtx, *job.Attachment)
@@ -299,6 +290,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		case model.DagGen:
 			err = w.ExportDag(workCtx, *job)
 		}
+		w.stateMonitor.RemoveJob(job.ID)
 		if workCtx.Err() != nil && ctx.Err() == nil {
 			interval = w.config.MinInterval
 			workCancel()
