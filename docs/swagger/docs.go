@@ -6359,7 +6359,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scheduleCron": {
-                    "description": "Schedule cron patter",
+                    "description": "Schedule cron pattern",
                     "type": "string"
                 },
                 "scheduleCronPerpetual": {
@@ -6458,7 +6458,7 @@ const docTemplate = `{
                     "default": 0
                 },
                 "scheduleCron": {
-                    "description": "Schedule cron patter",
+                    "description": "Schedule cron pattern",
                     "type": "string"
                 },
                 "scheduleCronPerpetual": {
