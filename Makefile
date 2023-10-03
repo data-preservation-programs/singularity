@@ -1,19 +1,40 @@
-build:
+help:
+	@echo "Available targets:"
+	@echo "  build            Compile the Go code in the current directory."
+	@echo "  buildall         Compile all Go code in all subdirectories."
+	@echo "  generate         Run the Go generate tool on all packages."
+	@echo "  lint             Run various linting and formatting tools."
+	@echo "  test             Execute tests using gotestsum."
+	@echo "  diagram          Generate a database schema diagram."
+	@echo "  languagetool     Check or install LanguageTool and process spelling."
+	@echo "  godoclint        Check Go source files for specific comment patterns."
+
+check-go:
+	@which go > /dev/null || (echo "Go is not installed. Please install Go." && exit 1)
+
+install-lint-deps:
+	@which golangci-lint > /dev/null || (echo "Required golangci-lint not found. Installing it..." && GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
+	@which staticcheck > /dev/null || (echo "Required staticcheck not found. Installing it..." && GO111MODULE=on go get honnef.co/go/tools/cmd/staticcheck)
+
+install-test-deps:
+	@which gotestsum > /dev/null || (echo "Installing gotestsum..." && GO111MODULE=on go get gotest.tools/gotestsum@latest)
+
+build: check-go
 	go build -o singularity .
 
-buildall:
+buildall: check-go
 	go build ./...
 
-generate:
+generate: check-go
 	go generate ./...
 
-lint:
+lint: check-go install-lint-deps
 	gofmt -s -w .
 	golangci-lint run --no-config --fix --disable-all -E tagalign
 	golangci-lint run --fix
 	staticcheck ./...
 
-test:
+test: check-go install-test-deps
 	go run gotest.tools/gotestsum@latest --format testname ./...
 
 diagram: build
