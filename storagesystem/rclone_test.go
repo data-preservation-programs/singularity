@@ -115,6 +115,25 @@ func TestRCloneHandler_OverrideConfig(t *testing.T) {
 	require.Len(t, entries, 0)
 }
 
+func TestRCloneHandler_EmptyS3File(t *testing.T) {
+	ctx := context.Background()
+	handler, err := NewRCloneHandler(ctx, model.Storage{
+		Type:   "s3",
+		Path:   "public-dataset-test",
+		Config: map[string]string{"provider": "AWS", "region": "us-west-2", "chunk_size": "5Mi"},
+	})
+	require.NoError(t, err)
+	stream, obj, err := handler.Read(ctx, "subfolder/empty.bin", 0, 0)
+	require.NoError(t, err)
+	defer stream.Close()
+	require.NotNil(t, stream)
+	require.NotNil(t, obj)
+	require.EqualValues(t, 0, obj.Size())
+	content, err := io.ReadAll(stream)
+	require.NoError(t, err)
+	require.Len(t, content, 0)
+}
+
 func TestRCloneHandler(t *testing.T) {
 	tmp := t.TempDir()
 
