@@ -216,7 +216,7 @@ func TestDataPrep(t *testing.T) {
 	s3Handler, err := storagesystem.NewRCloneHandler(context.Background(), model.Storage{
 		Type: "s3",
 		Path: "public-dataset-test",
-		Config: map[string]string{d
+		Config: map[string]string{
 			"region":     "us-west-2",
 			"provider":   "AWS",
 			"chunk_size": "5Mi",
