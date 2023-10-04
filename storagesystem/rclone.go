@@ -1,6 +1,7 @@
 package storagesystem
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"strings"
@@ -209,6 +210,13 @@ func (r *readerWithRetry) Read(p []byte) (int, error) {
 
 func (h RCloneHandler) Read(ctx context.Context, path string, offset int64, length int64) (io.ReadCloser, fs.Object, error) {
 	logger.Debugw("Read: reading path", "type", h.fs.Name(), "root", h.fs.Root(), "path", path, "offset", offset, "length", length)
+	if length == 0 {
+		object, err := h.fs.NewObject(ctx, path)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
+		}
+		return io.NopCloser(bytes.NewReader(nil)), object, nil
+	}
 	object, err := h.fsNoHead.NewObject(ctx, path)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to open object %s", path)
