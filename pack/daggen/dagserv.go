@@ -2,6 +2,7 @@ package daggen
 
 import (
 	"context"
+	"sync"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
@@ -35,6 +36,7 @@ type blockData struct {
 // * Directly supports DummyNode
 type RecordedDagService struct {
 	blockstore map[cid.Cid]blockData
+	mu         sync.RWMutex
 }
 
 type DagServEntry struct {
@@ -53,6 +55,8 @@ func NewRecordedDagService() *RecordedDagService {
 }
 
 func (r *RecordedDagService) ResetVisited() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	for c, data := range r.blockstore {
 		data.visited = false
 		r.blockstore[c] = data
@@ -76,10 +80,14 @@ func (r *RecordedDagService) ResetVisited() {
 //   - An error if the CID does not match any blocks in the service's blockstore or if other issues arise.
 //     If the CID is not found, format.ErrNotFound with the CID is returned.
 func (r *RecordedDagService) Get(ctx context.Context, c cid.Cid) (format.Node, error) {
+	r.mu.RLock()
 	if data, ok := r.blockstore[c]; ok {
+		r.mu.RUnlock()
 		if !data.visited {
 			data.visited = true
+			r.mu.Lock()
 			r.blockstore[c] = data
+			r.mu.Unlock()
 		}
 		if data.dummy {
 			return NewDummyNode(uint64(data.size), c), nil
@@ -87,6 +95,7 @@ func (r *RecordedDagService) Get(ctx context.Context, c cid.Cid) (format.Node, e
 		blk, _ := blocks.NewBlockWithCid(data.raw, c)
 		return ipldLegacyDecoder.DecodeNode(ctx, blk)
 	}
+	r.mu.RUnlock()
 	return nil, format.ErrNotFound{Cid: c}
 }
 
@@ -101,6 +110,8 @@ func (r *RecordedDagService) Get(ctx context.Context, c cid.Cid) (format.Node, e
 //   - ctx: A context to allow for timeout or cancellation of operations.
 //   - c: A CID representing the content identifier of the block to be marked as visited.
 func (r *RecordedDagService) Visit(ctx context.Context, c cid.Cid) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if data, ok := r.blockstore[c]; ok {
 		if !data.visited {
 			data.visited = true
@@ -122,6 +133,8 @@ func (r *RecordedDagService) Visit(ctx context.Context, c cid.Cid) {
 //   - An error if any issues arise during the addition process; otherwise, it returns nil.
 func (r *RecordedDagService) Add(ctx context.Context, node format.Node) error {
 	dummy, ok := node.(*DummyNode)
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if ok {
 		r.blockstore[dummy.cid] = blockData{
 			size:  uint32(dummy.size),
