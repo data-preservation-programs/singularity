@@ -18,6 +18,7 @@ DESCRIPTION:
 
 OPTIONS:
    --help, -h       show help
+   --save           Whether to save the deal proposal to the database for tracking purpose (default: false)
    --timeout value  Timeout for the deal proposal (default: 1m)
 
    Boost Only
