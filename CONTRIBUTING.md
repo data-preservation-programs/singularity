@@ -34,7 +34,7 @@ Singularity, including all related modules, follows the
 
 ## How can I contribute?
 
-Here at `singularity`, there’s always a lot of work to do. There are many ways you can support the project, from progamming, writing, organizing, and more. Consider these as starting points:
+Here at `singularity`, there’s always a lot of work to do. There are many ways you can support the project, from programming, writing, organizing, and more. Consider these as starting points:
 
 - **Submit bugs**: Perform a cursory [search](https://github.com/data-preservation-programs/singularity/issues) to see if the problem has already been reported. If it does exist, add a 👍 to the issue to indicate this is also an issue for you, and add a comment if there is extra information you can contribute. 
 If it does not exist, [create a new issue](https://github.com/data-preservation-programs/singularity/issues/new/choose) (using the Bug report template).

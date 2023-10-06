@@ -43,4 +43,4 @@ When the packing process is done, we have CAR files to store every ItemPart in a
 
 # Daggen
 
-Because files and directory structures can change over time, storing a snapshot of this structure into Filecoin is a manual preparation step called Daggen. When a user initiates this step seperately, the UnixFS DAG tree assembled during Pack but not written to a CAR is serialized into a CAR to be stored on Filecoin. Once this is done, if we store every CAR written in the data prep process onto Filecoin, we will have stored everything needed to retrieve an entire snapshot of the data source from Filecoin
+Because files and directory structures can change over time, storing a snapshot of this structure into Filecoin is a manual preparation step called Daggen. When a user initiates this step separately, the UnixFS DAG tree assembled during Pack but not written to a CAR is serialized into a CAR to be stored on Filecoin. Once this is done, if we store every CAR written in the data prep process onto Filecoin, we will have stored everything needed to retrieve an entire snapshot of the data source from Filecoin
