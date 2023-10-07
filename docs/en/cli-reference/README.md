@@ -3,7 +3,7 @@
 {% code fullWidth="true" %}
 ```
 NAME:
-   singularity - A tool for large-scale clients with PB-scale data onboarding to Filecoin network
+   singularity - A tool for large-scale clients with PB-scale data onboarding to Filecoin network.
 
 USAGE:
    singularity [global options] command [command options] [arguments...]
