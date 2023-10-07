@@ -12,3 +12,13 @@ runs:
         key: ${{ matrix.os }}-golang-${{ matrix.go }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ matrix.os }}-golang-${{ matrix.go }}-
+    - name: Run go generate
+      shell: bash
+      run: |
+        go generate ./...
+    - name: Commit and push if changed
+      shell: bash
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        git diff --quiet || (git add -A && git commit -m "Generate files" && git push)
