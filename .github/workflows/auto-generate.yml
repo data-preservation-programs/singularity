@@ -1,0 +1,27 @@
+name: Go Generate and Commit
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20.x'
+
+    - name: Run go generate
+      run: |
+        go generate ./...
+
+    - name: Commit and push if changed
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Go generate"
