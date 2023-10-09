@@ -783,7 +783,6 @@ type createFilefabricStorageRequest struct {
 // @Param request body createFilefabricStorageRequest true "Request body"
 // @Router /storage/filefabric [post]
 func createFilefabricStorage() {}
-
 type oosEnv_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
 	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
@@ -990,6 +989,142 @@ type createOosUser_principal_authStorageRequest struct {
 // @Router /storage/oos/user_principal_auth [post]
 func createOosUser_principal_authStorage() {}
 
+type opendriveConfig struct {
+	Username  string `json:"username"`                                                                                                                                         // Username.
+	Password  string `json:"password"`                                                                                                                                         // Password.
+	Encoding  string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"` // The encoding for the backend.
+	ChunkSize string `json:"chunkSize" default:"10Mi"`                                                                                                                         // Files will be uploaded in chunks this size.
+}
+
+type createOpendriveStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       opendriveConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateOpendriveStorage
+// @Summary Create Opendrive storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createOpendriveStorageRequest true "Request body"
+// @Router /storage/opendrive [post]
+func createOpendriveStorage() {}
+
+type pcloudConfig struct {
+	ClientId     string `json:"clientId"`                                                   // OAuth Client Id.
+	ClientSecret string `json:"clientSecret"`                                               // OAuth Client Secret.
+	Token        string `json:"token"`                                                      // OAuth Access Token as a JSON blob.
+	AuthUrl      string `json:"authUrl"`                                                    // Auth server URL.
+	TokenUrl     string `json:"tokenUrl"`                                                   // Token server url.
+	Encoding     string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+	RootFolderId string `json:"rootFolderId" default:"d0"`                                  // Fill in for rclone to use a non root folder as its starting point.
+	Hostname     string `json:"hostname" default:"api.pcloud.com" example:"api.pcloud.com"` // Hostname to connect to.
+	Username     string `json:"username"`                                                   // Your pcloud username.
+	Password     string `json:"password"`                                                   // Your pcloud password.
+}
+
+type createPcloudStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       pcloudConfig       `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreatePcloudStorage
+// @Summary Create Pcloud storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createPcloudStorageRequest true "Request body"
+// @Router /storage/pcloud [post]
+func createPcloudStorage() {}
+
+type premiumizemeConfig struct {
+	ApiKey   string `json:"apiKey"`                                                                 // API Key.
+	Encoding string `json:"encoding" default:"Slash,DoubleQuote,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+}
+
+type createPremiumizemeStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       premiumizemeConfig `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreatePremiumizemeStorage
+// @Summary Create Premiumizeme storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createPremiumizemeStorageRequest true "Request body"
+// @Router /storage/premiumizeme [post]
+func createPremiumizemeStorage() {}
+
+type putioConfig struct {
+	Encoding string `json:"encoding" default:"Slash,BackSlash,Del,Ctl,InvalidUtf8,Dot"` // The encoding for the backend.
+}
+
+type createPutioStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       putioConfig        `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreatePutioStorage
+// @Summary Create Putio storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createPutioStorageRequest true "Request body"
+// @Router /storage/putio [post]
+func createPutioStorage() {}
+
+type qingstorConfig struct {
+	EnvAuth           bool   `json:"envAuth" default:"false" example:"false"`  // Get QingStor credentials from runtime.
+	AccessKeyId       string `json:"accessKeyId"`                              // QingStor Access Key ID.
+	SecretAccessKey   string `json:"secretAccessKey"`                          // QingStor Secret Access Key (password).
+	Endpoint          string `json:"endpoint"`                                 // Enter an endpoint URL to connection QingStor API.
+	Zone              string `json:"zone" example:"pek3a"`                     // Zone to connect to.
+	ConnectionRetries int    `json:"connectionRetries" default:"3"`            // Number of connection retries.
+	UploadCutoff      string `json:"uploadCutoff" default:"200Mi"`             // Cutoff for switching to chunked upload.
+	ChunkSize         string `json:"chunkSize" default:"4Mi"`                  // Chunk size to use for uploading.
+	UploadConcurrency int    `json:"uploadConcurrency" default:"1"`            // Concurrency for multipart uploads.
+	Encoding          string `json:"encoding" default:"Slash,Ctl,InvalidUtf8"` // The encoding for the backend.
+}
+
+type createQingstorStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       qingstorConfig     `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateQingstorStorage
+// @Summary Create Qingstor storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createQingstorStorageRequest true "Request body"
+// @Router /storage/qingstor [post]
+func createQingstorStorage() {}
 type s3AWSConfig struct {
 	EnvAuth               bool   `json:"envAuth" default:"false" example:"false"`  // Get AWS credentials from runtime (environment variables or EC2/ECS meta data if no env vars).
 	AccessKeyId           string `json:"accessKeyId"`                              // AWS Access Key ID.

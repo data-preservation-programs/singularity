@@ -21,7 +21,12 @@ COMMANDS:
    koofr            Koofr, Digi Storage and other Koofr-compatible storage providers
    mega             Mega
    netstorage       Akamai NetStorage
+   onedrive         Microsoft OneDrive
+   oos              Oracle Cloud Infrastructure Object Storage
    opendrive        OpenDrive
+   pcloud           Pcloud
+   premiumizeme     premiumize.me
+   putio            Put.io
    qingstor         QingCloud Object Storage
    seafile          seafile
    sftp             SSH/SFTP
