@@ -50,7 +50,7 @@ type ScheduleUpdateRequest struct {
 	// Price in FIL per GiB per epoch
 	PricePerGbEpoch float64 `json:"pricePerGbEpoch,omitempty"`
 
-	// Schedule cron patter
+	// Schedule cron pattern
 	ScheduleCron string `json:"scheduleCron,omitempty"`
 
 	// Whether a cron schedule should run in definitely
