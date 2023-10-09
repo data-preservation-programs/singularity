@@ -310,5 +310,8 @@ func init() {
 
 		Backends = append(Backends, backend)
 		BackendMap[backend.Prefix] = backend
+		slices.SortFunc(Backends, func(i, j Backend) int {
+			return strings.Compare(i.Prefix, j.Prefix)
+		})
 	}
 }

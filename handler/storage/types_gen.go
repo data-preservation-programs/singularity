@@ -829,32 +829,6 @@ type createOnedriveStorageRequest struct {
 // @Router /storage/onedrive [post]
 func createOnedriveStorage() {}
 
-type opendriveConfig struct {
-	Username  string `json:"username"`                                                                                                                                         // Username.
-	Password  string `json:"password"`                                                                                                                                         // Password.
-	Encoding  string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"` // The encoding for the backend.
-	ChunkSize string `json:"chunkSize" default:"10Mi"`                                                                                                                         // Files will be uploaded in chunks this size.
-}
-
-type createOpendriveStorageRequest struct {
-	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
-	Path         string             `json:"path"`                      // Path of the storage
-	Config       opendriveConfig    `json:"config"`                    // config for the storage
-	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
-}
-
-// @ID CreateOpendriveStorage
-// @Summary Create Opendrive storage
-// @Tags Storage
-// @Accept json
-// @Produce json
-// @Success 200 {object} model.Storage
-// @Failure 400 {object} api.HTTPError
-// @Failure 500 {object} api.HTTPError
-// @Param request body createOpendriveStorageRequest true "Request body"
-// @Router /storage/opendrive [post]
-func createOpendriveStorage() {}
-
 type oosEnv_authConfig struct {
 	Namespace            string `json:"namespace"`                                         // Object storage namespace
 	Compartment          string `json:"compartment"`                                       // Object storage compartment OCID
@@ -1060,6 +1034,32 @@ type createOosUser_principal_authStorageRequest struct {
 // @Param request body createOosUser_principal_authStorageRequest true "Request body"
 // @Router /storage/oos/user_principal_auth [post]
 func createOosUser_principal_authStorage() {}
+
+type opendriveConfig struct {
+	Username  string `json:"username"`                                                                                                                                         // Username.
+	Password  string `json:"password"`                                                                                                                                         // Password.
+	Encoding  string `json:"encoding" default:"Slash,LtGt,DoubleQuote,Colon,Question,Asterisk,Pipe,BackSlash,LeftSpace,LeftCrLfHtVt,RightSpace,RightCrLfHtVt,InvalidUtf8,Dot"` // The encoding for the backend.
+	ChunkSize string `json:"chunkSize" default:"10Mi"`                                                                                                                         // Files will be uploaded in chunks this size.
+}
+
+type createOpendriveStorageRequest struct {
+	Name         string             `json:"name" example:"my-storage"` // Name of the storage, must be unique
+	Path         string             `json:"path"`                      // Path of the storage
+	Config       opendriveConfig    `json:"config"`                    // config for the storage
+	ClientConfig model.ClientConfig `json:"clientConfig"`              // config for underlying HTTP client
+}
+
+// @ID CreateOpendriveStorage
+// @Summary Create Opendrive storage
+// @Tags Storage
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Storage
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Param request body createOpendriveStorageRequest true "Request body"
+// @Router /storage/opendrive [post]
+func createOpendriveStorage() {}
 
 type pcloudConfig struct {
 	ClientId     string `json:"clientId"`                                                   // OAuth Client Id.
