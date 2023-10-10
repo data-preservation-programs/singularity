@@ -56,7 +56,7 @@ type ScheduleCreateRequest struct {
 	// Provider
 	Provider string `json:"provider,omitempty"`
 
-	// Schedule cron patter
+	// Schedule cron pattern
 	ScheduleCron string `json:"scheduleCron,omitempty"`
 
 	// Whether a cron schedule should run in definitely
