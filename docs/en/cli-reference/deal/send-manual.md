@@ -25,8 +25,8 @@ OPTIONS:
 
    --file-size value                            File size in bytes for boost to fetch the CAR file (default: 0)
    --http-header value [ --http-header value ]  http headers to be passed with the request (i.e. key=value)
+   --http-url value, --url-template value       URL or URL template with PIECE_CID placeholder for boost to fetch the CAR file, e.g. http://127.0.0.1/piece/{PIECE_CID}.car
    --ipni                                       Whether to announce the deal to IPNI (default: true)
-   --url-template value                         URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car
 
    Deal Proposal
 
