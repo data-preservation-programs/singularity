@@ -33,6 +33,12 @@ func TestNewLotusClient(t *testing.T) {
 	}
 }
 
+func TestGetLotusHeadTime(t *testing.T) {
+	headTime, err := GetLotusHeadTime(context.Background(), "https://api.node.glif.io/", "")
+	require.NoError(t, err)
+	require.NotZero(t, headTime)
+}
+
 func TestPackJobSlice(t *testing.T) {
 	tests := []struct {
 		name      string
