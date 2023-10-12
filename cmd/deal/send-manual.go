@@ -59,9 +59,10 @@ Notes:
 			Usage:    "http headers to be passed with the request (i.e. key=value)",
 		},
 		&cli.StringFlag{
-			Name:     "url-template",
+			Name:     "http-url",
 			Category: "Boost Only",
-			Usage:    "URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car",
+			Usage:    "URL or URL template with PIECE_CID placeholder for boost to fetch the CAR file, e.g. http://127.0.0.1/piece/{PIECE_CID}.car",
+			Aliases:  []string{"url-template"},
 			Value:    "",
 		},
 		&cli.Uint64Flag{
