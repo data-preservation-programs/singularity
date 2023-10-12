@@ -1,8 +1,10 @@
 package util
 
 import (
+	"context"
 	"crypto/rand"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -167,4 +169,26 @@ func RandomName() string {
 		}
 		return strings.ToLower(candidate)
 	}
+}
+
+// GetLotusHeadTime retrieves the timestamp of the latest block in the Lotus API and returns it as a time.Time value.
+//
+//nolint:tagliatelle
+func GetLotusHeadTime(ctx context.Context, lotusAPI string, lotusToken string) (time.Time, error) {
+	client := NewLotusClient(lotusAPI, lotusToken)
+	var resp struct {
+		Blocks []struct {
+			Timestamp int64 `json:"Timestamp"`
+		} `json:"Blocks"`
+	}
+	err := client.CallFor(ctx, &resp, "Filecoin.ChainHead")
+	if err != nil {
+		return time.Time{}, errors.Wrap(err, "failed to get chain head")
+	}
+
+	if len(resp.Blocks) == 0 {
+		return time.Time{}, errors.New("chain head is empty")
+	}
+
+	return time.Unix(resp.Blocks[0].Timestamp, 0), nil
 }
