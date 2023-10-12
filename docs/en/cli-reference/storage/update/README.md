@@ -31,8 +31,8 @@ COMMANDS:
    mega             Mega
    netstorage       Akamai NetStorage
    onedrive         Microsoft OneDrive
-   opendrive        OpenDrive
    oos              Oracle Cloud Infrastructure Object Storage
+   opendrive        OpenDrive
    pcloud           Pcloud
    premiumizeme     premiumize.me
    putio            Put.io

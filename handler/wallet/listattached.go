@@ -17,7 +17,7 @@ import (
 // an error is returned.
 //
 // Parameters:
-//   - ctx: The context in which the handler function is executed, used for controlling cancelation.
+//   - ctx: The context in which the handler function is executed, used for controlling cancellation.
 //   - db: A pointer to a gorm.DB object, which provides database access.
 //   - preparationID: The ID or name of the preparation whose attached wallets need to be fetched.
 //

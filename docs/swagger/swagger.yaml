@@ -695,7 +695,7 @@ definitions:
         description: Provider
         type: string
       scheduleCron:
-        description: Schedule cron patter
+        description: Schedule cron pattern
         type: string
       scheduleCronPerpetual:
         description: Whether a cron schedule should run in definitely
@@ -772,7 +772,7 @@ definitions:
         description: Price in FIL per GiB per epoch
         type: number
       scheduleCron:
-        description: Schedule cron patter
+        description: Schedule cron pattern
         type: string
       scheduleCronPerpetual:
         description: Whether a cron schedule should run in definitely

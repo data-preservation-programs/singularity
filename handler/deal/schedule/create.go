@@ -34,7 +34,7 @@ type CreateRequest struct {
 	KeepUnsealed          bool     `default:"true"               json:"keepUnsealed"`    // Whether the deal should be kept unsealed
 	StartDelay            string   `default:"72h"                json:"startDelay"`      // Deal start delay in epoch or in duration format, i.e. 1000, 72h
 	Duration              string   `default:"12840h"             json:"duration"`        // Duration in epoch or in duration format, i.e. 1500000, 2400h
-	ScheduleCron          string   `json:"scheduleCron"`                                 // Schedule cron patter
+	ScheduleCron          string   `json:"scheduleCron"`                                 // Schedule cron pattern
 	ScheduleCronPerpetual bool     `json:"scheduleCronPerpetual"`                        // Whether a cron schedule should run in definitely
 	ScheduleDealNumber    int      `json:"scheduleDealNumber"`                           // Number of deals per scheduled time
 	TotalDealNumber       int      `json:"totalDealNumber"`                              // Total number of deals
