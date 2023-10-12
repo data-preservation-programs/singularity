@@ -32,6 +32,11 @@ type Handler interface {
 		db *gorm.DB,
 		scheduleID uint32,
 	) (*model.Schedule, error)
+	RemoveHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		scheduleID uint32,
+	) error
 	ResumeHandler(
 		ctx context.Context,
 		db *gorm.DB,
@@ -47,6 +52,11 @@ var _ Handler = &MockSchedule{}
 
 type MockSchedule struct {
 	mock.Mock
+}
+
+func (m *MockSchedule) RemoveHandler(ctx context.Context, db *gorm.DB, scheduleID uint32) error {
+	args := m.Called(ctx, db, scheduleID)
+	return args.Error(0)
 }
 
 func (m *MockSchedule) UpdateHandler(ctx context.Context, db *gorm.DB, scheduleID uint32, request UpdateRequest) (*model.Schedule, error) {

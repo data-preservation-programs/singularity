@@ -307,6 +307,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 
 	// Preparation
 	e.POST("/api/preparation", s.toEchoHandler(s.dataprepHandler.CreatePreparationHandler))
+	e.DELETE("/api/preparation/:id", s.toEchoHandler(s.dataprepHandler.RemovePreparationHandler))
 	e.GET("/api/preparation", s.toEchoHandler(s.dataprepHandler.ListHandler))
 	e.GET("/api/preparation/:id", s.toEchoHandler(s.jobHandler.GetStatusHandler))
 	e.GET("/api/preparation/:id/schedules", s.toEchoHandler(s.dataprepHandler.ListSchedulesHandler))
@@ -354,6 +355,7 @@ func (s Server) setupRoutes(e *echo.Echo) {
 	e.POST("/api/schedule/:id/pause", s.toEchoHandler(s.scheduleHandler.PauseHandler))
 	e.POST("/api/schedule/:id/resume", s.toEchoHandler(s.scheduleHandler.ResumeHandler))
 	e.PATCH("/api/schedule/:id", s.toEchoHandler(s.scheduleHandler.UpdateHandler))
+	e.DELETE("/api/schedule/:id", s.toEchoHandler(s.scheduleHandler.RemoveHandler))
 
 	// Deal
 	e.POST("/api/deal", s.toEchoHandler(s.dealHandler.ListHandler))

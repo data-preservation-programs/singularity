@@ -85,3 +85,16 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 
 	return nil
 }
+
+// @ID RemovePreparation
+// @Summary Remove a preparation
+// @Tags Preparation
+// @Param name path string true "Preparation ID or name"
+// @Param request body RemoveRequest true "Remove Request"
+// @Accept json
+// @Produce json
+// @Success 204
+// @Failure 400 {object} api.HTTPError
+// @Failure 500 {object} api.HTTPError
+// @Router /preparation/{name} [delete]
+func _() {}
