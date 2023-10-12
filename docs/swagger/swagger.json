@@ -6352,7 +6352,7 @@
                     "type": "string"
                 },
                 "scheduleCron": {
-                    "description": "Schedule cron patter",
+                    "description": "Schedule cron pattern",
                     "type": "string"
                 },
                 "scheduleCronPerpetual": {
@@ -6451,7 +6451,7 @@
                     "default": 0
                 },
                 "scheduleCron": {
-                    "description": "Schedule cron patter",
+                    "description": "Schedule cron pattern",
                     "type": "string"
                 },
                 "scheduleCronPerpetual": {

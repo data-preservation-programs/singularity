@@ -6,12 +6,11 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/replication"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/util"
-
-	"github.com/data-preservation-programs/singularity/database"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,6 +24,10 @@ Notes:
   * The deal proposal will not be saved in the database however will eventually be tracked if the deal tracker is running
   * There is a quick address verification using GLIF API which can be made faster by setting LOTUS_API and LOTUS_TOKEN to your own lotus node`,
 	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "save",
+			Usage: "Whether to save the deal proposal to the database for tracking purpose",
+		},
 		&cli.StringFlag{
 			Name:     "client",
 			Category: "Deal Proposal",
@@ -56,9 +59,10 @@ Notes:
 			Usage:    "http headers to be passed with the request (i.e. key=value)",
 		},
 		&cli.StringFlag{
-			Name:     "url-template",
+			Name:     "http-url",
 			Category: "Boost Only",
-			Usage:    "URL template with PIECE_CID placeholder for boost to fetch the CAR file, i.e. http://127.0.0.1/piece/{PIECE_CID}.car",
+			Usage:    "URL or URL template with PIECE_CID placeholder for boost to fetch the CAR file, e.g. http://127.0.0.1/piece/{PIECE_CID}.car",
+			Aliases:  []string{"url-template"},
 			Value:    "",
 		},
 		&cli.Uint64Flag{
@@ -181,6 +185,15 @@ Notes:
 		dealModel, err := deal.Default.SendManualHandler(ctx, db, dealMaker, proposal)
 		if err != nil {
 			return errors.WithStack(err)
+		}
+		if c.Bool("save") {
+			db = db.WithContext(ctx)
+			err = database.DoRetry(ctx, func() error {
+				return db.Create(dealModel).Error
+			})
+			if err != nil {
+				return errors.WithStack(err)
+			}
 		}
 		cliutil.Print(c, dealModel)
 		return nil

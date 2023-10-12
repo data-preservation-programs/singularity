@@ -17,6 +17,7 @@ import (
 	"github.com/data-preservation-programs/singularity/service"
 	"github.com/data-preservation-programs/singularity/service/epochutil"
 	"github.com/data-preservation-programs/singularity/service/healthcheck"
+	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
 	"github.com/ipfs/go-cid"
@@ -38,17 +39,17 @@ func (d Deal) Key() string {
 		d.Proposal.PieceCID.Root, d.Proposal.StartEpoch, d.Proposal.EndEpoch)
 }
 
-func (d Deal) GetState() model.DealState {
+func (d Deal) GetState(headTime time.Time) model.DealState {
 	if d.State.SlashEpoch > 0 {
 		return model.DealSlashed
 	}
 	if d.State.SectorStartEpoch < 0 {
-		if epochutil.EpochToTime(d.Proposal.StartEpoch).Before(time.Now().Add(-24 * time.Hour)) {
+		if epochutil.EpochToTime(d.Proposal.StartEpoch).Before(headTime) {
 			return model.DealProposalExpired
 		}
 		return model.DealPublished
 	}
-	if epochutil.EpochToTime(d.Proposal.EndEpoch).Before(time.Now().Add(-24 * time.Hour)) {
+	if epochutil.EpochToTime(d.Proposal.EndEpoch).Before(headTime) {
 		return model.DealExpired
 	}
 	return model.DealActive
@@ -387,11 +388,16 @@ type UnknownDeal struct {
 //
 //   - error: An error that represents the failure of the operation, or nil if the operation was successful.
 func (d *DealTracker) runOnce(ctx context.Context) error {
+	headTime, err := util.GetLotusHeadTime(ctx, d.lotusURL, d.lotusToken)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get lotus head time from %s", d.lotusURL)
+	}
+
 	var lastEpoch int32
 
 	db := d.dbNoContext.WithContext(ctx)
 	var wallets []model.Wallet
-	err := db.Find(&wallets).Error
+	err = db.Find(&wallets).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to get wallets from database")
 	}
@@ -458,13 +464,16 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		if !ok {
 			return nil
 		}
-		newState := deal.GetState()
+		newState := deal.GetState(headTime)
 		current, ok := knownDeals[dealID]
 		if ok {
 			if current == newState {
 				return nil
 			}
 
+			if newState == model.DealExpired || newState == model.DealProposalExpired {
+				return nil
+			}
 			Logger.Infow("Deal state changed", "dealID", dealID, "oldState", current, "newState", newState)
 			err = database.DoRetry(ctx, func() error {
 				return db.Model(&model.Deal{}).Where("deal_id = ?", dealID).Updates(
@@ -482,6 +491,9 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 		dealKey := deal.Key()
 		found, ok := unknownDeals[dealKey]
 		if ok {
+			if newState == model.DealExpired || newState == model.DealProposalExpired {
+				return nil
+			}
 			f := found[0]
 			Logger.Infow("Deal matched on-chain", "dealID", dealID, "state", newState)
 			err = database.DoRetry(ctx, func() error {

@@ -342,7 +342,7 @@ func TestRunOnce(t *testing.T) {
 		url, server := setupTestServerWithBody(t, string(body))
 		defer server.Close()
 		require.NoError(t, err)
-		tracker := NewDealTracker(db, time.Minute, url, "", "", true)
+		tracker := NewDealTracker(db, time.Minute, url, "https://api.node.glif.io/", "", true)
 		err = tracker.runOnce(context.Background())
 		require.NoError(t, err)
 		var allDeals []model.Deal

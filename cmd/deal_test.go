@@ -23,15 +23,14 @@ func swapDealHandler(mockHandler deal.Handler) func() {
 }
 
 func TestSendDealHandler(t *testing.T) {
-	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+	testutil.One(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Wallet{ID: "client_id"}).Error
+		require.NoError(t, err)
 		runner := NewRunner()
 		defer runner.Save(t)
 		mockHandler := new(deal.MockDeal)
 		defer swapDealHandler(mockHandler)()
 		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
-			ID:               1,
-			CreatedAt:        time.Time{},
-			UpdatedAt:        time.Time{},
 			State:            "proposed",
 			Provider:         "f01",
 			ProposalID:       "proposal_id",
@@ -44,11 +43,24 @@ func TestSendDealHandler(t *testing.T) {
 			Price:            "0",
 			Verified:         true,
 			ClientID:         "client_id",
-		}, nil)
-		_, _, err := runner.Run(ctx, "singularity deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024")
+		}, nil).Once()
+		_, _, err = runner.Run(ctx, "singularity deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024 --save")
 		require.NoError(t, err)
-
-		_, _, err = runner.Run(ctx, "singularity --verbose deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024")
+		mockHandler.On("SendManualHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&model.Deal{
+			State:            "proposed",
+			Provider:         "f01",
+			ProposalID:       "proposal_id",
+			Label:            "label",
+			PieceCID:         model.CID(testutil.TestCid),
+			PieceSize:        1024,
+			StartEpoch:       1001,
+			EndEpoch:         1999,
+			SectorStartEpoch: 1500,
+			Price:            "0",
+			Verified:         true,
+			ClientID:         "client_id",
+		}, nil).Once()
+		_, _, err = runner.Run(ctx, "singularity --verbose deal send-manual --client client --provider provider --piece-cid piece_cid --piece-size 1024 --save")
 		require.NoError(t, err)
 	})
 }

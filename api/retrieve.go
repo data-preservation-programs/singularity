@@ -30,7 +30,7 @@ func (s *Server) retrieveFile(c echo.Context) error {
 	if err != nil {
 		return httpResponseFromError(c, err)
 	}
-	c.Response().Writer.Header().Add("Content-Type", "application/octet-stream")
-	http.ServeContent(c.Response().Writer, c.Request(), name, modTime, data)
+	c.Response().Header().Add("Content-Type", "application/octet-stream")
+	http.ServeContent(c.Response(), c.Request(), name, modTime, data)
 	return data.Close()
 }
