@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
@@ -23,6 +25,9 @@ func swapWalletHandler(mockHandler wallet.Handler) func() {
 
 func TestWalletImport(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		tmp := t.TempDir()
+		err := os.WriteFile(filepath.Join(tmp, "private"), []byte("private"), 0644)
+		require.NoError(t, err)
 		runner := NewRunner()
 		defer runner.Save(t)
 		mockHandler := new(wallet.MockWallet)
@@ -32,9 +37,9 @@ func TestWalletImport(t *testing.T) {
 			Address:    "address",
 			PrivateKey: "private",
 		}, nil)
-		_, _, err := runner.Run(ctx, "singularity wallet import xxx")
+		_, _, err = runner.Run(ctx, "singularity wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
 		require.NoError(t, err)
-		_, _, err = runner.Run(ctx, "singularity --verbose wallet import xxx")
+		_, _, err = runner.Run(ctx, "singularity --verbose wallet import "+testutil.EscapePath(filepath.Join(tmp, "private")))
 		require.NoError(t, err)
 	})
 }
