@@ -1,4 +1,4 @@
-//go:build !(windows && 386)
+//go:build !386
 
 package testutil
 

@@ -1,6 +1,10 @@
 package wallet
 
 import (
+	"bufio"
+	"fmt"
+	"os"
+
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/cmd/cliutil"
 	"github.com/data-preservation-programs/singularity/database"
@@ -12,8 +16,7 @@ import (
 var ImportCmd = &cli.Command{
 	Name:      "import",
 	Usage:     "Import a wallet from exported private key",
-	ArgsUsage: "<private_key>",
-	Before:    cliutil.CheckNArgs,
+	ArgsUsage: "[path, or stdin if omitted]",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {
@@ -21,13 +24,30 @@ var ImportCmd = &cli.Command{
 		}
 		defer closer.Close()
 
+		var privateKey string
+		if c.Args().Len() > 0 {
+			privateKeyBytes, err := os.ReadFile(c.Args().Get(0))
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			privateKey = string(privateKeyBytes)
+		} else {
+			scanner := bufio.NewScanner(os.Stdin)
+			fmt.Print("Enter the private key: ")
+			if scanner.Scan() {
+				privateKey = scanner.Text()
+			} else {
+				return errors.Wrap(scanner.Err(), "failed to read from stdin")
+			}
+		}
+
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
 		w, err := wallet.Default.ImportHandler(
 			c.Context,
 			db,
 			lotusClient,
 			wallet.ImportRequest{
-				PrivateKey: c.Args().Get(0),
+				PrivateKey: privateKey,
 			})
 		if err != nil {
 			return errors.WithStack(err)
