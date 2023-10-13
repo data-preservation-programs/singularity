@@ -96,6 +96,21 @@ func TestScheduleListHandler(t *testing.T) {
 	})
 }
 
+func TestScheduleRemoveHandler(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(schedule.MockSchedule)
+		defer swapScheduleHandler(mockHandler)()
+		mockHandler.On("RemoveHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		_, _, err := runner.Run(ctx, "singularity deal schedule remove 1")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose deal schedule remove 1")
+		require.NoError(t, err)
+	})
+}
+
 func TestScheduleCreateHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
 		runner := NewRunner()

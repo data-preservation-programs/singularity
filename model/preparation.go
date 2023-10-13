@@ -58,6 +58,15 @@ func (s *Preparation) FindByIDOrName(db *gorm.DB, name string, preloads ...strin
 	}
 }
 
+func (s *Preparation) SourceAttachments(db *gorm.DB, preloads ...string) ([]SourceAttachment, error) {
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+	var attachments []SourceAttachment
+	err := db.Where("preparation_id = ?", s.ID).Find(&attachments).Error
+	return attachments, errors.WithStack(err)
+}
+
 type StorageID uint32
 
 // Storage is a storage system definition that can be used as either source or output of a Preparation.

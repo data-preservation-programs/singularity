@@ -105,6 +105,11 @@ definitions:
       storageId:
         type: integer
     type: object
+  dataprep.RemoveRequest:
+    properties:
+      removeCars:
+        type: boolean
+    type: object
   dataprep.RenameRequest:
     properties:
       name:
@@ -9037,6 +9042,39 @@ paths:
       summary: Attach a new wallet with a preparation
       tags:
       - Wallet Association
+  /preparation/{name}:
+    delete:
+      consumes:
+      - application/json
+      operationId: RemovePreparation
+      parameters:
+      - description: Preparation ID or name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Remove Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dataprep.RemoveRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Remove a preparation
+      tags:
+      - Preparation
   /preparation/{name}/rename:
     patch:
       consumes:
@@ -9126,6 +9164,30 @@ paths:
       tags:
       - Deal Schedule
   /schedule/{id}:
+    delete:
+      operationId: RemoveSchedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Delete a specific schedule
+      tags:
+      - Deal Schedule
     patch:
       consumes:
       - application/json
