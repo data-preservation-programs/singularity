@@ -1417,6 +1417,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/preparation/{name}": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Preparation"
+                ],
+                "summary": "Remove a preparation",
+                "operationId": "RemovePreparation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preparation ID or name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Remove Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataprep.RemoveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/preparation/{name}/rename": {
             "patch": {
                 "consumes": [
@@ -1551,6 +1601,42 @@ const docTemplate = `{
             }
         },
         "/schedule/{id}": {
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Deal Schedule"
+                ],
+                "summary": "Delete a specific schedule",
+                "operationId": "RemoveSchedule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            },
             "patch": {
                 "description": "Update a schedule",
                 "consumes": [
@@ -5532,6 +5618,14 @@ const docTemplate = `{
                 },
                 "storageId": {
                     "type": "integer"
+                }
+            }
+        },
+        "dataprep.RemoveRequest": {
+            "type": "object",
+            "properties": {
+                "removeCars": {
+                    "type": "boolean"
                 }
             }
         },
