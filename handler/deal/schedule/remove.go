@@ -41,7 +41,7 @@ func (DefaultHandler) RemoveHandler(
 	return errors.WithStack(err)
 }
 
-// @ID Delete a Schedule
+// @ID RemoveSchedule
 // @Summary Delete a specific schedule
 // @Tags Deal Schedule
 // @Produce json

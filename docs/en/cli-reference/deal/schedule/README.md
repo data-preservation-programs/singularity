@@ -14,6 +14,7 @@ COMMANDS:
    update   Update an existing schedule
    pause    Pause a specific schedule
    resume   Resume a specific schedule
+   remove   Remove a paused or completed schedule
    help, h  Shows a list of commands or help for one command
 
 OPTIONS:

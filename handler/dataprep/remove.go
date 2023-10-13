@@ -10,6 +10,7 @@ import (
 	"github.com/data-preservation-programs/singularity/storagesystem"
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/rclone/rclone/fs"
+	"github.com/rjNemo/underscore"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +28,20 @@ func (DefaultHandler) RemovePreparationHandler(ctx context.Context, db *gorm.DB,
 	}
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	attachments, err := preparation.SourceAttachments(db)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	attachmentIDs := underscore.Map(attachments, func(attachment model.SourceAttachment) model.SourceAttachmentID { return attachment.ID })
+	var activeCount int64
+	err = db.Model(&model.Job{}).Where("attachment_id in ? and state = ?", attachmentIDs, model.Processing).Count(&activeCount).Error
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	if activeCount > 0 {
+		return errors.Wrapf(handlererror.ErrInvalidParameter, "preparation %s has %d active jobs", name, activeCount)
 	}
 
 	var cars []model.Car

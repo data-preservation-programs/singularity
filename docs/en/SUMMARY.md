@@ -50,6 +50,7 @@
     * [Update](cli-reference/deal/schedule/update.md)
     * [Pause](cli-reference/deal/schedule/pause.md)
     * [Resume](cli-reference/deal/schedule/resume.md)
+    * [Remove](cli-reference/deal/schedule/remove.md)
   * [Send Manual](cli-reference/deal/send-manual.md)
   * [List](cli-reference/deal/list.md)
 * [Run](cli-reference/run/README.md)
@@ -242,6 +243,7 @@
   * [Attach Wallet](cli-reference/prep/attach-wallet.md)
   * [List Wallets](cli-reference/prep/list-wallets.md)
   * [Detach Wallet](cli-reference/prep/detach-wallet.md)
+  * [Remove](cli-reference/prep/remove.md)
 
 <!-- cli end -->
 

@@ -64,7 +64,7 @@ func (DefaultHandler) RenamePreparationHandler(
 // @Summary Rename a preparation
 // @Tags Preparation
 // @Param name path string true "Preparation ID or name"
-// @Param request body RenameRequest true "Preparation Request"
+// @Param request body RenameRequest true "New preparation name"
 // @Accept json
 // @Produce json
 // @Success 200 {object} model.Preparation

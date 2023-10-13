@@ -123,6 +123,21 @@ func TestDataPrepListHandler(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+func TestDataPrepRemoveHandler(t *testing.T) {
+	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		runner := NewRunner()
+		defer runner.Save(t)
+		mockHandler := new(dataprep.MockDataPrep)
+		defer swapDataPrepHandler(mockHandler)()
+
+		mockHandler.On("RemovePreparationHandler", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		_, _, err := runner.Run(ctx, "singularity prep remove 1")
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, "singularity --verbose prep remove 1")
+		require.NoError(t, err)
+	})
+}
 
 func TestDataPrepAttachSourceHandler(t *testing.T) {
 	testutil.OneWithoutReset(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {

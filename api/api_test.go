@@ -75,6 +75,8 @@ func setupMockDataPrep() dataprep.Handler {
 		Return(&model.Preparation{}, nil)
 	m.On("RenamePreparationHandler", mock.Anything, mock.Anything, "old", mock.Anything).
 		Return(&model.Preparation{}, nil)
+	m.On("RemovePreparationHandler", mock.Anything, mock.Anything, "old", mock.Anything).
+		Return(nil)
 	return m
 }
 
@@ -99,6 +101,8 @@ func setupMockSchedule() schedule.Handler {
 		Return(&model.Schedule{}, nil)
 	m.On("UpdateHandler", mock.Anything, mock.Anything, uint32(1), mock.Anything).
 		Return(&model.Schedule{}, nil)
+	m.On("RemoveHandler", mock.Anything, mock.Anything, uint32(1)).
+		Return(nil)
 	return m
 }
 
@@ -494,6 +498,14 @@ func TestAllAPIs(t *testing.T) {
 				require.True(t, resp.IsSuccess())
 				require.NotNil(t, resp.Payload)
 			})
+			t.Run("RemoveSchedule", func(t *testing.T) {
+				resp, err := client.DealSchedule.RemoveSchedule(&deal_schedule.RemoveScheduleParams{
+					ID:      1,
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+			})
 		})
 
 		t.Run("preparation", func(t *testing.T) {
@@ -575,6 +587,17 @@ func TestAllAPIs(t *testing.T) {
 				require.NoError(t, err)
 				require.True(t, resp.IsSuccess())
 				require.Len(t, resp.Payload, 1)
+			})
+			t.Run("RemovePreparation", func(t *testing.T) {
+				resp, err := client.Preparation.RemovePreparation(&preparation.RemovePreparationParams{
+					Name: "old",
+					Request: &models.DataprepRemoveRequest{
+						RemoveCars: true,
+					},
+					Context: ctx,
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
 			})
 		})
 
