@@ -64,9 +64,9 @@ var createRequest = CreateRequest{
 	StartDelay:            "24h",
 	Duration:              "2400h",
 	ScheduleCron:          "",
-	ScheduleDealNumber:    100,
+	ScheduleDealNumber:    0,
 	TotalDealNumber:       100,
-	ScheduleDealSize:      "1TiB",
+	ScheduleDealSize:      "",
 	TotalDealSize:         "1PiB",
 	Notes:                 "notes",
 	MaxPendingDealSize:    "10TiB",
@@ -218,7 +218,25 @@ func TestCreateHandler_DealSizeNotSetForCron(t *testing.T) {
 		createRequest.TotalDealSize = ""
 		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
-		require.ErrorContains(t, err, "must be set")
+		require.ErrorContains(t, err, "schedule deal number or size must be set")
+	})
+}
+
+func TestCreateHandler_ScheduleDealSizeSetForNonCron(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		err := db.Create(&model.Preparation{
+			Wallets: []model.Wallet{{
+				ID: "f01",
+			}},
+		}).Error
+		require.NoError(t, err)
+		createRequest := createRequest
+		createRequest.ScheduleCron = ""
+		createRequest.ScheduleDealNumber = 10
+		createRequest.ScheduleDealSize = "100"
+		_, err = Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
+		require.ErrorIs(t, err, handlererror.ErrInvalidParameter)
+		require.ErrorContains(t, err, "schedule cron must be set")
 	})
 }
 
@@ -236,6 +254,8 @@ func TestCreateHandler_Success(t *testing.T) {
 				createRequest := createRequest
 				createRequest.ScheduleCron = "@daily"
 				createRequest.Preparation = name
+				createRequest.ScheduleDealNumber = 100
+				createRequest.ScheduleDealSize = "1PiB"
 				schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 				require.NoError(t, err)
 				require.NotNil(t, schedule)

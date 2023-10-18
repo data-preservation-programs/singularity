@@ -130,26 +130,23 @@ func (DefaultHandler) CreateHandler(
 		}
 	}
 	var totalDealSize, scheduleDealSize, pendingDealSize uint64
-	if request.TotalDealSize != "" {
-		totalDealSize, err = humanize.ParseBytes(request.TotalDealSize)
-		if err != nil {
-			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid total deal size %s", request.TotalDealSize)
-		}
+	totalDealSize, err = humanize.ParseBytes(request.TotalDealSize)
+	if err != nil {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid total deal size %s", request.TotalDealSize)
 	}
-	if request.ScheduleDealSize != "" {
-		scheduleDealSize, err = humanize.ParseBytes(request.ScheduleDealSize)
-		if err != nil {
-			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid schedule deal size %s", request.ScheduleDealSize)
-		}
+	scheduleDealSize, err = humanize.ParseBytes(request.ScheduleDealSize)
+	if err != nil {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid schedule deal size %s", request.ScheduleDealSize)
 	}
-	if request.MaxPendingDealSize != "" {
-		pendingDealSize, err = humanize.ParseBytes(request.MaxPendingDealSize)
-		if err != nil {
-			return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid max pending deal size %s", request.MaxPendingDealSize)
-		}
+	pendingDealSize, err = humanize.ParseBytes(request.MaxPendingDealSize)
+	if err != nil {
+		return nil, errors.Wrapf(handlererror.ErrInvalidParameter, "invalid max pending deal size %s", request.MaxPendingDealSize)
 	}
 	if scheduleCron != "" && scheduleDealSize == 0 && request.ScheduleDealNumber == 0 {
 		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "schedule deal number or size must be set when using cron schedule")
+	}
+	if scheduleCron == "" && (scheduleDealSize > 0 || request.ScheduleDealNumber > 0) {
+		return nil, errors.Wrap(handlererror.ErrInvalidParameter, "schedule cron must be set when using schedule deal number or size")
 	}
 	for _, pieceCID := range request.AllowedPieceCIDs {
 		parsed, err := cid.Parse(pieceCID)

@@ -9,6 +9,7 @@ import (
 	"github.com/data-preservation-programs/singularity/analytics"
 	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/service"
+	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/rjNemo/underscore"
 	"github.com/robfig/cron/v3"
@@ -226,6 +227,14 @@ func (d *DealPusher) updateScheduleUnsafe(ctx context.Context, schedule model.Sc
 //  2. An error if any step of the process encounters an issue, otherwise nil.
 func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) (model.ScheduleState, error) {
 	db := d.dbNoContext.WithContext(ctx)
+	var allowedPieceCIDs []model.CID
+	for _, c := range schedule.AllowedPieceCIDs {
+		c2, err := cid.Parse(c)
+		if err != nil {
+			return model.ScheduleError, errors.Wrapf(err, "failed to parse CID %s", c)
+		}
+		allowedPieceCIDs = append(allowedPieceCIDs, model.CID(c2))
+	}
 	// Find all attachment IDs for this schedule
 	var attachments []model.SourceAttachment
 	err := db.Model(&model.SourceAttachment{}).Where("preparation_id = ?", schedule.PreparationID).Find(&attachments).Error
@@ -285,14 +294,31 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", nil
 			}
 
-			err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
-				underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
-				db.Table("deals").Select("piece_cid").
-					Where("provider = ? AND state IN (?)",
-						schedule.Provider,
-						[]model.DealState{
-							model.DealProposed, model.DealPublished, model.DealActive,
-						})).First(&car).Error
+			if len(allowedPieceCIDs) == 0 {
+				err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
+					underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
+					db.Table("deals").Select("piece_cid").
+						Where("provider = ? AND state IN (?)",
+							schedule.Provider,
+							[]model.DealState{
+								model.DealProposed, model.DealPublished, model.DealActive,
+							})).First(&car).Error
+			} else {
+				pieceCIDChunks := util.ChunkSlice(allowedPieceCIDs, util.BatchSize)
+				for _, pieceCIDChunk := range pieceCIDChunks {
+					err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?) AND piece_cid IN ?",
+						underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
+						db.Table("deals").Select("piece_cid").
+							Where("provider = ? AND state IN (?)",
+								schedule.Provider,
+								[]model.DealState{
+									model.DealProposed, model.DealPublished, model.DealActive,
+								}), pieceCIDChunk).First(&car).Error
+					if err == nil {
+						break
+					}
+				}
+			}
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				Logger.Infow("no more pieces to send deal", "schedule_id", schedule.ID)
 				// we're out of deals to schedule, but if we're running a perpetual cron, we simply put things on hold till next cron

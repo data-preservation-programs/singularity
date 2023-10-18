@@ -18,6 +18,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
+	"github.com/rjNemo/underscore"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -367,6 +368,14 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 		require.NoError(t, err)
 		mockDealmaker := new(MockDealMaker)
 		service.dealMaker = mockDealmaker
+		pieceCIDs := []model.CID{
+			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
+		}
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		// All deal proposal will be accepted
@@ -382,8 +391,9 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 				},
 				SourceStorages: []model.Storage{{}},
 			},
-			State:    model.ScheduleActive,
-			Provider: provider,
+			State:            model.ScheduleActive,
+			Provider:         provider,
+			AllowedPieceCIDs: underscore.Map(pieceCIDs[:5], func(cid model.CID) string { return cid.String() }),
 		}
 		err = db.Create(&schedule).Error
 		require.NoError(t, err)
@@ -392,13 +402,6 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 			ScheduleID: &schedule.ID,
 		}, nil)
 
-		pieceCIDs := []model.CID{
-			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-			model.CID(calculateCommp(t, generateRandomBytes(1000), 1024)),
-		}
 		err = db.Create([]model.Car{
 			{
 				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
@@ -434,6 +437,13 @@ func TestDealMakerService_NewScheduleOneOff(t *testing.T) {
 				PieceCID:      pieceCIDs[4],
 				PieceSize:     1024,
 				StoragePath:   "4",
+			},
+			{
+				AttachmentID:  ptr.Of(model.SourceAttachmentID(1)),
+				PreparationID: 1,
+				PieceCID:      pieceCIDs[5],
+				PieceSize:     1024,
+				StoragePath:   "5",
 			},
 		}).Error
 		require.NoError(t, err)
