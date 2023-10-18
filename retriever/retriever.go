@@ -4,7 +4,6 @@ package retriever
 import (
 	"context"
 	"io"
-	"sync"
 
 	"github.com/data-preservation-programs/singularity/retriever/deserializer"
 	lassietypes "github.com/filecoin-project/lassie/pkg/types"
@@ -80,27 +79,14 @@ func (r *Retriever) getContent(ctx context.Context, c cid.Cid, rangeStart int64,
 func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
 	reader, writer := io.Pipe()
 	errChan := make(chan error, 2)
-	var wg sync.WaitGroup
-	wg.Add(2)
 	go func() {
-		defer wg.Done()
-		err := r.deserialize(ctx, c, rangeStart, rangeEnd, reader, out)
+		errChan <- r.deserialize(ctx, c, rangeStart, rangeEnd, reader, out)
 		reader.Close()
-		select {
-		case <-ctx.Done():
-		case errChan <- err:
-		}
 	}()
 	go func() {
-		defer wg.Done()
-		err := r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
+		errChan <- r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
 		writer.Close()
-		select {
-		case <-ctx.Done():
-		case errChan <- err:
-		}
 	}()
-	wg.Wait()
 
 	// collect errors
 	var err error
