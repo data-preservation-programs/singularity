@@ -453,3 +453,43 @@ func TestDataPrep(t *testing.T) {
 		})
 	}
 }
+
+func TestNoDuplicatedOutput(t *testing.T) {
+	testutil.All(t, func(ctx context.Context, t *testing.T, db *gorm.DB) {
+		source := t.TempDir()
+		output := t.TempDir()
+		// create file of different sizes
+		const size = 1 << 20
+		err := os.WriteFile(filepath.Join(source, fmt.Sprintf("size-%d.txt", size)), testutil.GenerateFixedBytes(size), 0777)
+		require.NoError(t, err)
+
+		runner := Runner{mode: Verbose}
+		defer runner.Save(t, source, output)
+
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity storage create local --name source --path %s", testutil.EscapePath(source)))
+		require.NoError(t, err)
+
+		_, _, err = runner.Run(ctx, fmt.Sprintf("singularity prep create --name test-prep --delete-after-export --source source --local-output %s --max-size=500KiB", testutil.EscapePath(output)))
+		require.NoError(t, err)
+
+		// Start scanning
+		_, _, err = runner.Run(ctx, "singularity prep start-scan test-prep source")
+		require.NoError(t, err)
+
+		// run the dataset worker. If multiple workers try to work on the same
+		// job, then this will return fail because a previous worker will have
+		// removed files.
+		_, _, err = runner.Run(ctx, "singularity run dataset-worker --exit-on-complete=true --exit-on-error=true --concurrency=8")
+		require.NoError(t, err)
+
+		// Check output to make sure is has some CAR files
+		entries, err := os.ReadDir(output)
+		require.NoError(t, err)
+		require.NotEmpty(t, entries)
+		require.Equal(t, 3, len(entries))
+
+		// Explore should still work even the directory does not have CID
+		_, _, err = runner.Run(ctx, "singularity prep explore 1 1")
+		require.NoError(t, err)
+	})
+}

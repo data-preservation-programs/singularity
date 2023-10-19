@@ -15,7 +15,7 @@ import (
 )
 
 func retryOn(err error) bool {
-	return strings.Contains(err.Error(), "could not serialize access ") || strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
+	return strings.Contains(err.Error(), "could not serialize access") || strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
 }
 
 func DoRetry(ctx context.Context, f func() error) error {
@@ -54,7 +54,7 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		lvl = logging.LevelWarn
 		sql = "[SLOW!] " + sql
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !strings.Contains(err.Error(), "could not serialize access") {
 		lvl = logging.LevelError
 	}
 
