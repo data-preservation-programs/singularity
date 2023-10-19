@@ -145,6 +145,11 @@ var CreateCmd = &cli.Command{
 			Usage:       "Max total deal number for this request, i.e. 1000",
 			DefaultText: "Unlimited",
 		},
+		&cli.BoolFlag{
+			Name:     "force",
+			Category: "Restrictions",
+			Usage:    "Force to send out deals regardless of replication restriction",
+		},
 		&cli.StringFlag{
 			Name:        "schedule-deal-size",
 			Category:    "Scheduling",
@@ -233,6 +238,7 @@ var CreateCmd = &cli.Command{
 			MaxPendingDealSize:   c.String("max-pending-deal-size"),
 			MaxPendingDealNumber: c.Int("max-pending-deal-number"),
 			AllowedPieceCIDs:     allowedPieceCIDs,
+			Force:                c.Bool("force"),
 		}
 		lotusClient := util.NewLotusClient(c.String("lotus-api"), c.String("lotus-token"))
 		schedule, err := schedule.Default.CreateHandler(c.Context, db, lotusClient, request)

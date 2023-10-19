@@ -33,6 +33,9 @@ type ModelSchedule struct {
 	// error message
 	ErrorMessage string `json:"errorMessage,omitempty"`
 
+	// force
+	Force bool `json:"force,omitempty"`
+
 	// http headers
 	HTTPHeaders ModelConfigMap `json:"httpHeaders,omitempty"`
 

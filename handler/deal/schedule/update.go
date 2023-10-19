@@ -38,6 +38,7 @@ type UpdateRequest struct {
 	MaxPendingDealNumber  *int     `json:"maxPendingDealNumber"`                         // Max pending deal number
 	//nolint:tagliatelle
 	AllowedPieceCIDs []string `json:"allowedPieceCids"` // Allowed piece CIDs in this schedule
+	Force            *bool    `json:"force"`            // Force to send out deals regardless of replication restriction
 }
 
 // UpdateHandler modifies an existing schedule record based on the provided update request.
@@ -229,6 +230,10 @@ func (DefaultHandler) UpdateHandler(
 			}
 		}
 		updates["max_pending_deal_size"] = maxPendingDealSize
+	}
+
+	if request.Force != nil {
+		updates["force"] = *request.Force
 	}
 
 	err = db.Model(&schedule).Updates(updates).Error
