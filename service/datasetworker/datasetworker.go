@@ -107,20 +107,15 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 	done := make(chan struct{})
 	fail := make(chan error)
 	go func() {
-		defer cancel()
 		defer close(done)
 		w.run(ctx, fail)
 		w.logger.Info("worker thread finished")
-	}()
+		cancel()
 
-	cleanupDone := make(chan struct{})
-	go func() {
-		defer close(cleanupDone)
-		<-ctx.Done()
-		ctx2, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+		ctxCleanup, cancelCleanup := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancelCleanup()
 		//nolint:contextcheck
-		err := w.cleanup(ctx2)
+		err := w.cleanup(ctxCleanup)
 		if err != nil {
 			w.logger.Errorw("failed to cleanup", "error", err)
 		} else {
@@ -128,7 +123,7 @@ func (w *Thread) Start(ctx context.Context) ([]service.Done, service.Fail, error
 		}
 	}()
 
-	return []service.Done{done, healthcheckDone, healthcheckCleanupDone, cleanupDone}, fail, nil
+	return []service.Done{done, healthcheckDone, healthcheckCleanupDone}, fail, nil
 }
 
 func (w *Thread) Name() string {
@@ -261,6 +256,7 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		jobTypes = append(jobTypes, model.Pack)
 	}
 
+	var timer *time.Timer
 	interval := w.config.MinInterval
 	for {
 		workCtx, workCancel := context.WithCancel(ctx)
@@ -329,10 +325,16 @@ func (w *Thread) run(ctx context.Context, errChan chan error) {
 		}
 	loop:
 		w.logger.Infof("sleeping for %s", interval)
+		if timer == nil {
+			timer = time.NewTimer(interval)
+		} else {
+			timer.Reset(interval)
+		}
 		select {
 		case <-ctx.Done():
+			timer.Stop()
 			return
-		case <-time.After(interval):
+		case <-timer.C:
 			interval *= 2
 			if interval > w.config.MaxInterval {
 				interval = w.config.MaxInterval
