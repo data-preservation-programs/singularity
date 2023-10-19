@@ -39,6 +39,9 @@ type ModelDeal struct {
 	// label
 	Label string `json:"label,omitempty"`
 
+	// LastVerifiedAt is the last time the deal was verified as active by the tracker
+	LastVerifiedAt string `json:"lastVerifiedAt,omitempty"`
+
 	// piece cid
 	PieceCid string `json:"pieceCid,omitempty"`
 

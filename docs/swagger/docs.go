@@ -5980,6 +5980,10 @@ const docTemplate = `{
                 "label": {
                     "type": "string"
                 },
+                "lastVerifiedAt": {
+                    "description": "LastVerifiedAt is the last time the deal was verified as active by the tracker",
+                    "type": "string"
+                },
                 "pieceCid": {
                     "type": "string"
                 },
