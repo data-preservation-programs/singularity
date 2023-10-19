@@ -26,7 +26,7 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 	db := w.dbNoContext.WithContext(ctx)
 
 	txOpts := &sql.TxOptions{
-		Isolation: sql.LevelRepeatableRead,
+		Isolation: sql.LevelSerializable,
 	}
 	var job model.Job
 	for _, jobType := range typesOrdered {
