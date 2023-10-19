@@ -2,6 +2,7 @@ package datasetworker
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/cockroachdb/errors"
 	"github.com/data-preservation-programs/singularity/database"
@@ -24,6 +25,9 @@ import (
 func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*model.Job, error) {
 	db := w.dbNoContext.WithContext(ctx)
 
+	txOpts := &sql.TxOptions{
+		Isolation: sql.LevelRepeatableRead,
+	}
 	var job model.Job
 	for _, jobType := range typesOrdered {
 		err := database.DoRetry(ctx, func() error {
@@ -31,12 +35,11 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 				err := db.Preload("Attachment.Preparation.OutputStorages").Preload("Attachment.Storage").
 					Where("type = ? AND state = ? OR (state = ? AND worker_id is null)", jobType, model.Ready, model.Processing).
 					First(&job).Error
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					job.ID = 0
-					return nil
-				}
-
 				if err != nil {
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						job.ID = 0
+						return nil
+					}
 					return errors.WithStack(err)
 				}
 
@@ -46,7 +49,7 @@ func (w *Thread) findJob(ctx context.Context, typesOrdered []model.JobType) (*mo
 						"worker_id":     w.id,
 						"error_message": "",
 					}).Error
-			})
+			}, txOpts)
 		})
 		if err != nil {
 			return nil, errors.WithStack(err)
