@@ -15,7 +15,8 @@ import (
 )
 
 func retryOn(err error) bool {
-	return strings.Contains(err.Error(), "could not serialize access") || strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
+	emsg := err.Error()
+	return strings.Contains(emsg, "could not serialize access") || strings.Contains(emsg, "Deadlock found when trying to get lock") || strings.Contains(emsg, "database is locked") || strings.Contains(emsg, "database table is locked")
 }
 
 func DoRetry(ctx context.Context, f func() error) error {
