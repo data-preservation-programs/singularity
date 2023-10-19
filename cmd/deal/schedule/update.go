@@ -90,6 +90,11 @@ var UpdateCmd = &cli.Command{
 			Value:    true,
 		},
 		&cli.BoolFlag{
+			Name:     "force",
+			Category: "Restrictions",
+			Usage:    "Force to send out deals regardless of replication restriction",
+		},
+		&cli.BoolFlag{
 			Name:     "keep-unsealed",
 			Category: "Deal Proposal",
 			Usage:    "Whether to keep unsealed copy",
@@ -238,6 +243,9 @@ var UpdateCmd = &cli.Command{
 		}
 		if c.IsSet("max-pending-deal-number") {
 			request.MaxPendingDealNumber = ptr.Of(c.Int("max-pending-deal-number"))
+		}
+		if c.IsSet("force") {
+			request.Force = ptr.Of(c.Bool("force"))
 		}
 
 		id, err := strconv.ParseUint(c.Args().Get(0), 10, 32)

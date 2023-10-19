@@ -73,6 +73,7 @@ var createRequest = CreateRequest{
 	MaxPendingDealNumber:  100,
 	AllowedPieceCIDs:      []string{"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},
 	ScheduleCronPerpetual: true,
+	Force:                 true,
 }
 
 func TestCreateHandler_DatasetNotFound(t *testing.T) {
@@ -259,6 +260,7 @@ func TestCreateHandler_Success(t *testing.T) {
 				schedule, err := Default.CreateHandler(ctx, db, getMockLotusClient(), createRequest)
 				require.NoError(t, err)
 				require.NotNil(t, schedule)
+				require.True(t, createRequest.Force)
 			})
 		})
 	}

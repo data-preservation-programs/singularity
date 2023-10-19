@@ -134,6 +134,7 @@ type Schedule struct {
 	Notes                 string        `json:"notes"`
 	ErrorMessage          string        `json:"errorMessage"                        table:"verbose"`
 	AllowedPieceCIDs      StringSlice   `gorm:"type:JSON;column:allowed_piece_cids" json:"allowedPieceCids"                    table:"verbose"`
+	Force                 bool          `json:"force"`
 
 	// Associations
 	PreparationID PreparationID `json:"preparationId"`

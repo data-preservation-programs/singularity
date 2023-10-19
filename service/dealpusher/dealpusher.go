@@ -294,26 +294,25 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 				return "", nil
 			}
 
+			existingPieceCIDQuery := db.Table("deals").Select("piece_cid").
+				Where("provider = ? AND state IN (?)",
+					schedule.Provider,
+					[]model.DealState{
+						model.DealProposed, model.DealPublished, model.DealActive,
+					})
+			if schedule.Force {
+				existingPieceCIDQuery = db.Table("deals").Select("piece_cid").Where("schedule_id = ?", schedule.ID)
+			}
 			if len(allowedPieceCIDs) == 0 {
 				err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?)",
 					underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
-					db.Table("deals").Select("piece_cid").
-						Where("provider = ? AND state IN (?)",
-							schedule.Provider,
-							[]model.DealState{
-								model.DealProposed, model.DealPublished, model.DealActive,
-							})).First(&car).Error
+					existingPieceCIDQuery).First(&car).Error
 			} else {
 				pieceCIDChunks := util.ChunkSlice(allowedPieceCIDs, util.BatchSize)
 				for _, pieceCIDChunk := range pieceCIDChunks {
 					err = db.Where("attachment_id IN ? AND piece_cid NOT IN (?) AND piece_cid IN ?",
 						underscore.Map(attachments, func(a model.SourceAttachment) model.SourceAttachmentID { return a.ID }),
-						db.Table("deals").Select("piece_cid").
-							Where("provider = ? AND state IN (?)",
-								schedule.Provider,
-								[]model.DealState{
-									model.DealProposed, model.DealPublished, model.DealActive,
-								}), pieceCIDChunk).First(&car).Error
+						existingPieceCIDQuery, pieceCIDChunk).First(&car).Error
 					if err == nil {
 						break
 					}

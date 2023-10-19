@@ -6235,6 +6235,9 @@ const docTemplate = `{
                 "errorMessage": {
                     "type": "string"
                 },
+                "force": {
+                    "type": "boolean"
+                },
                 "httpHeaders": {
                     "$ref": "#/definitions/model.ConfigMap"
                 },
@@ -6404,6 +6407,10 @@ const docTemplate = `{
                     "type": "string",
                     "default": "12840h"
                 },
+                "force": {
+                    "description": "Force to send out deals regardless of replication restriction",
+                    "type": "boolean"
+                },
                 "httpHeaders": {
                     "description": "http headers to be passed with the request (i.e. key=value)",
                     "type": "array",
@@ -6510,6 +6517,10 @@ const docTemplate = `{
                     "description": "Duration in epoch or in duration format, i.e. 1500000, 2400h",
                     "type": "string",
                     "default": "12840h"
+                },
+                "force": {
+                    "description": "Force to send out deals regardless of replication restriction",
+                    "type": "boolean"
                 },
                 "httpHeaders": {
                     "description": "http headers to be passed with the request (i.e. key=value)",
