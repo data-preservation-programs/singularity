@@ -354,6 +354,9 @@ func (d *DealPusher) runSchedule(ctx context.Context, schedule *model.Schedule) 
 						PricePerGB:      schedule.PricePerGB,
 						PricePerGBEpoch: schedule.PricePerGBEpoch,
 					})
+				if err != nil {
+					Logger.Errorw("failed to send deal", "error", err, "provider", schedule.Provider)
+				}
 				return errors.WithStack(err)
 			}, retry.Attempts(d.sendDealAttempts), retry.Delay(time.Second),
 				retry.DelayType(retry.FixedDelay), retry.Context(ctx))
