@@ -23,6 +23,9 @@ type ScheduleUpdateRequest struct {
 	// Duration in epoch or in duration format, i.e. 1500000, 2400h
 	Duration *string `json:"duration,omitempty"`
 
+	// Force to send out deals regardless of replication restriction
+	Force bool `json:"force,omitempty"`
+
 	// http headers to be passed with the request (i.e. key=value)
 	HTTPHeaders []string `json:"httpHeaders"`
 

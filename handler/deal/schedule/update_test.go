@@ -33,6 +33,7 @@ var updateRequest = UpdateRequest{
 	MaxPendingDealNumber:  ptr.Of(100),
 	AllowedPieceCIDs:      []string{"baga6ea4seaqao7s73y24kcutaosvacpdjgfe5pw76ooefnyqw4ynr3d2y6x2mpq"},
 	ScheduleCronPerpetual: ptr.Of(true),
+	Force:                 ptr.Of(true),
 }
 
 func TestUpdateHandler_DatasetNotFound(t *testing.T) {
@@ -202,6 +203,7 @@ func TestUpdateHandler_Success(t *testing.T) {
 		schedule, err := Default.UpdateHandler(ctx, db, 1, updateRequest)
 		require.NoError(t, err)
 		require.NotNil(t, schedule)
+		require.True(t, schedule.Force)
 	})
 }
 
