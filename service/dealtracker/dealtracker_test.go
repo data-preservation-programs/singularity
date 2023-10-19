@@ -351,10 +351,12 @@ func TestRunOnce(t *testing.T) {
 		require.Len(t, allDeals, 7)
 		require.Equal(t, model.DealSlashed, allDeals[0].State)
 		require.Equal(t, model.DealActive, allDeals[1].State)
+		require.NotNil(t, allDeals[1].LastVerifiedAt)
 		require.Equal(t, model.DealProposalExpired, allDeals[2].State)
 		require.Equal(t, model.DealExpired, allDeals[3].State)
 		require.Equal(t, model.DealExpired, allDeals[4].State)
 		require.Equal(t, model.DealProposalExpired, allDeals[5].State)
 		require.Equal(t, model.DealActive, allDeals[6].State)
+		require.NotNil(t, allDeals[6].LastVerifiedAt)
 	})
 }

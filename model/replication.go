@@ -75,22 +75,23 @@ type DealID uint64
 // The index on PieceCID is used to track replication of the same piece CID.
 // The index on State and ClientID is used to calculate number and size of pending deals.
 type Deal struct {
-	ID               DealID    `gorm:"primaryKey"                      json:"id"                                  table:"verbose"`
-	CreatedAt        time.Time `json:"createdAt"                       table:"verbose;format:2006-01-02 15:04:05"`
-	UpdatedAt        time.Time `json:"updatedAt"                       table:"verbose;format:2006-01-02 15:04:05"`
-	DealID           *uint64   `gorm:"unique"                          json:"dealId"`
-	State            DealState `gorm:"index:idx_pending"               json:"state"`
-	Provider         string    `json:"provider"`
-	ProposalID       string    `json:"proposalId"                      table:"verbose"`
-	Label            string    `json:"label"                           table:"verbose"`
-	PieceCID         CID       `gorm:"column:piece_cid;index;size:255" json:"pieceCid"                            swaggertype:"string"`
-	PieceSize        int64     `json:"pieceSize"`
-	StartEpoch       int32     `json:"startEpoch"`
-	EndEpoch         int32     `json:"endEpoch"                        table:"verbose"`
-	SectorStartEpoch int32     `json:"sectorStartEpoch"                table:"verbose"`
-	Price            string    `json:"price"`
-	Verified         bool      `json:"verified"`
-	ErrorMessage     string    `json:"errorMessage"                    table:"verbose"`
+	ID               DealID     `gorm:"primaryKey"                      json:"id"                                  table:"verbose"`
+	CreatedAt        time.Time  `json:"createdAt"                       table:"verbose;format:2006-01-02 15:04:05"`
+	UpdatedAt        time.Time  `json:"updatedAt"                       table:"verbose;format:2006-01-02 15:04:05"`
+	LastVerifiedAt   *time.Time `json:"lastVerifiedAt"                  table:"verbose;format:2006-01-02 15:04:05"` // LastVerifiedAt is the last time the deal was verified as active by the tracker
+	DealID           *uint64    `gorm:"unique"                          json:"dealId"`
+	State            DealState  `gorm:"index:idx_pending"               json:"state"`
+	Provider         string     `json:"provider"`
+	ProposalID       string     `json:"proposalId"                      table:"verbose"`
+	Label            string     `json:"label"                           table:"verbose"`
+	PieceCID         CID        `gorm:"column:piece_cid;index;size:255" json:"pieceCid"                            swaggertype:"string"`
+	PieceSize        int64      `json:"pieceSize"`
+	StartEpoch       int32      `json:"startEpoch"`
+	EndEpoch         int32      `json:"endEpoch"                        table:"verbose"`
+	SectorStartEpoch int32      `json:"sectorStartEpoch"                table:"verbose"`
+	Price            string     `json:"price"`
+	Verified         bool       `json:"verified"`
+	ErrorMessage     string     `json:"errorMessage"                    table:"verbose"`
 
 	// Associations
 	ScheduleID *ScheduleID `json:"scheduleId"                                         table:"verbose"`
