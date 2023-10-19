@@ -6,7 +6,7 @@ COPY . ./
 RUN go build -o singularity .
 FROM debian:bookworm-slim
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ca-certificates && \
+    ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/singularity /app/singularity

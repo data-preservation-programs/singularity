@@ -54,6 +54,12 @@ type Handler interface {
 		name string,
 		request RenameRequest,
 	) (*model.Preparation, error)
+
+	RemovePreparationHandler(
+		ctx context.Context,
+		db *gorm.DB,
+		name string,
+		request RemoveRequest) error
 }
 
 type DefaultHandler struct{}
@@ -62,6 +68,11 @@ var Default Handler = &DefaultHandler{}
 
 type MockDataPrep struct {
 	mock.Mock
+}
+
+func (m *MockDataPrep) RemovePreparationHandler(ctx context.Context, db *gorm.DB, name string, request RemoveRequest) error {
+	args := m.Called(ctx, db, name, request)
+	return args.Error(0)
 }
 
 func (m *MockDataPrep) RenamePreparationHandler(ctx context.Context, db *gorm.DB, name string, request RenameRequest) (*model.Preparation, error) {

@@ -95,14 +95,16 @@ Logging:
 			Category: "Lotus",
 			Usage:    "Whether the runtime environment is using Testnet.",
 			EnvVars:  []string{"LOTUS_TEST"},
-			Action: func(c *cli.Context, testnet bool) error {
-				if testnet {
-					address.CurrentNetwork = address.Testnet
-					logger.Infow("Current network is set to Testnet")
-				}
-				return nil
-			},
 		},
+	},
+	Before: func(c *cli.Context) error {
+		if c.Bool("lotus-test") {
+			address.CurrentNetwork = address.Testnet
+			logger.Infow("Current network is set to Testnet")
+		} else {
+			address.CurrentNetwork = address.Mainnet
+		}
+		return nil
 	},
 	Commands: []*cli.Command{
 		ez.PrepCmd,
@@ -134,6 +136,7 @@ Logging:
 						schedule.UpdateCmd,
 						schedule.PauseCmd,
 						schedule.ResumeCmd,
+						schedule.RemoveCmd,
 					},
 				},
 				deal.SendManualCmd,
@@ -200,6 +203,7 @@ Logging:
 				dataprep.AttachWalletCmd,
 				dataprep.ListWalletsCmd,
 				dataprep.DetachWalletCmd,
+				dataprep.RemoveCmd,
 			},
 		},
 	},

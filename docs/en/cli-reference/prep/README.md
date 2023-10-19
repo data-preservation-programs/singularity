@@ -28,6 +28,7 @@ COMMANDS:
    attach-wallet  Attach a wallet to a preparation
    list-wallets   List attached wallets with a preparation
    detach-wallet  Detach a wallet to a preparation
+   remove         Remove a preparation
    help, h        Shows a list of commands or help for one command
 
 OPTIONS:
