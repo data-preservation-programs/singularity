@@ -5,7 +5,6 @@ import (
 	"context"
 	"io"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -74,19 +73,12 @@ func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, er
 	return h.fs.List(ctx, path)
 }
 
-func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
-	var entries []fs.DirEntry
-	var err error
+func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool) {
 	if ctx.Err() != nil {
 		return
 	}
-	wp.SubmitWait(func() {
-		if ctx.Err() != nil {
-			return
-		}
-		logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
-		entries, err = h.fs.List(ctx, path)
-	})
+	logger.Infow("Scan: listing path", "type", h.fs.String(), "path", path)
+	entries, err := h.fs.List(ctx, path)
 	if err != nil {
 		err = errors.Wrapf(err, "list path: %s", path)
 		select {
@@ -100,6 +92,7 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 		return strings.Compare(i.Remote(), j.Remote())
 	})
 
+	var subCount int
 	for _, entry := range entries {
 		entry := entry
 		switch v := entry.(type) {
@@ -111,12 +104,10 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 			}
 
 			subPath := v.Remote()
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				h.scan(ctx, subPath, ch, wp, wg)
-			}()
-
+			wp.Submit(func() {
+				h.scan(ctx, subPath, ch, wp)
+			})
+			subCount++
 		case fs.Object:
 			select {
 			case <-ctx.Done():
@@ -126,25 +117,17 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 		}
 	}
 
-	logger.Debugf("Scan: finished listing path, remaining %d paths to list", wp.WaitingQueueSize())
+	logger.Debugf("Scan: finished listing path, remaining %d paths to list", subCount)
 }
 
 func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
-	wp := workerpool.New(h.scanConcurrency)
-	wg := &sync.WaitGroup{}
 	ch := make(chan Entry, h.scanConcurrency)
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		h.scan(ctx, path, ch, wp, wg)
-	}()
-
-	go func() {
-		wg.Wait()
+		wp := workerpool.New(h.scanConcurrency)
+		h.scan(ctx, path, ch, wp)
 		wp.StopWait()
 		close(ch)
 	}()
-
 	return ch
 }
 
