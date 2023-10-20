@@ -128,7 +128,11 @@ func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
 	go func() {
 		var wg sync.WaitGroup
 		wp := workerpool.New(h.scanConcurrency)
-		h.scan(ctx, path, ch, wp, &wg)
+		wg.Add(1)
+		wp.Submit(func() {
+			h.scan(ctx, path, ch, wp, &wg)
+			wg.Done()
+		})
 		wg.Wait() // OK to wait while child scans continue adding to wg
 		wp.StopWait()
 		close(ch)
