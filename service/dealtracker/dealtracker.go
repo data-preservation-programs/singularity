@@ -20,6 +20,7 @@ import (
 	"github.com/data-preservation-programs/singularity/util"
 	"github.com/dustin/go-humanize"
 	"github.com/google/uuid"
+	"github.com/gotidy/ptr"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-log/v2"
 	"github.com/klauspost/compress/zstd"
@@ -465,6 +466,10 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 			return nil
 		}
 		newState := deal.GetState(headTime)
+		var lastVerifiedAt *time.Time
+		if newState == model.DealActive {
+			lastVerifiedAt = ptr.Of(headTime)
+		}
 		current, ok := knownDeals[dealID]
 		if ok {
 			if current == newState {
@@ -480,6 +485,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 					map[string]any{
 						"state":              newState,
 						"sector_start_epoch": deal.State.SectorStartEpoch,
+						"last_verified_at":   lastVerifiedAt,
 					}).Error
 			})
 			if err != nil {
@@ -501,6 +507,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 					"deal_id":            dealID,
 					"state":              newState,
 					"sector_start_epoch": deal.State.SectorStartEpoch,
+					"last_verified_at":   lastVerifiedAt,
 				}).Error
 			})
 			if err != nil {
@@ -532,6 +539,7 @@ func (d *DealTracker) runOnce(ctx context.Context) error {
 				SectorStartEpoch: deal.State.SectorStartEpoch,
 				Price:            deal.Proposal.StoragePricePerEpoch,
 				Verified:         deal.Proposal.VerifiedDeal,
+				LastVerifiedAt:   lastVerifiedAt,
 			}).Error
 		})
 		if err != nil {

@@ -45,6 +45,7 @@ type CreateRequest struct {
 	MaxPendingDealNumber  int      `json:"maxPendingDealNumber"`                         // Max pending deal number
 	//nolint:tagliatelle
 	AllowedPieceCIDs []string `json:"allowedPieceCids"` // Allowed piece CIDs in this schedule
+	Force            bool     `json:"force"`            // Force to send out deals regardless of replication restriction
 }
 
 func argToDuration(s string) (time.Duration, error) {
@@ -204,6 +205,7 @@ func (DefaultHandler) CreateHandler(
 		PricePerGB:            request.PricePerGB,
 		PricePerDeal:          request.PricePerDeal,
 		ScheduleCronPerpetual: request.ScheduleCronPerpetual,
+		Force:                 request.Force,
 	}
 
 	if err := database.DoRetry(ctx, func() error {

@@ -64,6 +64,7 @@ OPTIONS:
 
    --allowed-piece-cid value, --piece-cid value [ --allowed-piece-cid value, --piece-cid value ]                      List of allowed piece CIDs in this schedule (default: Any)
    --allowed-piece-cid-file value, --piece-cid-file value [ --allowed-piece-cid-file value, --piece-cid-file value ]  List of files that contains a list of piece CIDs to allow
+   --force                                                                                                            Force to send out deals regardless of replication restriction (default: false)
    --max-pending-deal-number value, --pending-number value                                                            Max pending deal number overall for this request, i.e. 100TiB (default: Unlimited)
    --max-pending-deal-size value, --pending-size value                                                                Max pending deal sizes overall for this request, i.e. 1000 (default: Unlimited)
    --total-deal-number value, --total-number value                                                                    Max total deal number for this request, i.e. 1000 (default: Unlimited)
