@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -73,7 +74,7 @@ func (h RCloneHandler) List(ctx context.Context, path string) ([]fs.DirEntry, er
 	return h.fs.List(ctx, path)
 }
 
-func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool) {
+func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, wp *workerpool.WorkerPool, wg *sync.WaitGroup) {
 	if ctx.Err() != nil {
 		return
 	}
@@ -104,8 +105,10 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 			}
 
 			subPath := v.Remote()
+			wg.Add(1)
 			wp.Submit(func() {
-				h.scan(ctx, subPath, ch, wp)
+				h.scan(ctx, subPath, ch, wp, wg)
+				wg.Done()
 			})
 			subCount++
 		case fs.Object:
@@ -123,8 +126,10 @@ func (h RCloneHandler) scan(ctx context.Context, path string, ch chan<- Entry, w
 func (h RCloneHandler) Scan(ctx context.Context, path string) <-chan Entry {
 	ch := make(chan Entry, h.scanConcurrency)
 	go func() {
+		var wg sync.WaitGroup
 		wp := workerpool.New(h.scanConcurrency)
-		h.scan(ctx, path, ch, wp)
+		h.scan(ctx, path, ch, wp, &wg)
+		wg.Wait() // OK to wait while child scans continue adding to wg
 		wp.StopWait()
 		close(ch)
 	}()
