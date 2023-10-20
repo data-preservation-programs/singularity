@@ -14,8 +14,19 @@ import (
 	logger2 "gorm.io/gorm/logger"
 )
 
+// SQL state value that appears in serialization errors from all DBs.
+const sqlSerializationFailure = "40001"
+
+var logger = logging.Logger("database")
+
+var (
+	ErrInmemoryWithHighConcurrency = errors.New("cannot use in-memory database with concurrency > 1")
+	ErrDatabaseNotSupported        = errors.New("database not supported")
+)
+
 func retryOn(err error) bool {
-	return strings.Contains(err.Error(), "database is locked") || strings.Contains(err.Error(), "database table is locked")
+	emsg := err.Error()
+	return strings.Contains(emsg, sqlSerializationFailure) || strings.Contains(emsg, "database is locked") || strings.Contains(emsg, "database table is locked")
 }
 
 func DoRetry(ctx context.Context, f func() error) error {
@@ -54,7 +65,7 @@ func (d *databaseLogger) Trace(ctx context.Context, begin time.Time, fc func() (
 		lvl = logging.LevelWarn
 		sql = "[SLOW!] " + sql
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) && !strings.Contains(err.Error(), sqlSerializationFailure) {
 		lvl = logging.LevelError
 	}
 
@@ -84,9 +95,3 @@ func OpenFromCLI(c *cli.Context) (*gorm.DB, io.Closer, error) {
 	connString := c.String("database-connection-string")
 	return OpenWithLogger(connString)
 }
-
-var ErrInmemoryWithHighConcurrency = errors.New("cannot use in-memory database with concurrency > 1")
-
-var ErrDatabaseNotSupported = errors.New("database not supported")
-
-var logger = logging.Logger("database")
