@@ -48,6 +48,13 @@ func Init(ctx context.Context, db *gorm.DB) error {
 	}
 	Instance = global.Value
 
+	var identity model.Global
+	where = clause.Where{Exprs: []clause.Expression{
+		clause.Eq{Column: clause.Column{Name: "key"}, Value: "identity"},
+	}}
+	db.WithContext(ctx).Clauses(where).First(&identity)
+	Identity = identity.Value
+
 	if os.Getenv("SINGULARITY_ANALYTICS") == "0" {
 		Enabled = false
 	}
@@ -55,6 +62,7 @@ func Init(ctx context.Context, db *gorm.DB) error {
 }
 
 var Instance string
+var Identity string
 
 type Collector struct {
 	mu            sync.Mutex
@@ -68,6 +76,7 @@ func (c *Collector) QueuePushJobEvent(event PackJobEvent) {
 	}
 	event.Timestamp = time.Now().Unix()
 	event.Instance = Instance
+	event.Identity = Identity
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.packJobEvents = append(c.packJobEvents, event)
@@ -79,6 +88,7 @@ func (c *Collector) QueueDealEvent(event DealProposalEvent) {
 	}
 	event.Timestamp = time.Now().Unix()
 	event.Instance = Instance
+	event.Identity = Identity
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.dealEvents = append(c.dealEvents, event)
