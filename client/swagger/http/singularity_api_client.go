@@ -10,6 +10,7 @@ import (
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/data-preservation-programs/singularity/client/swagger/http/admin"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_schedule"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/file"
@@ -63,6 +64,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Singularit
 
 	cli := new(SingularityAPI)
 	cli.Transport = transport
+	cli.Admin = admin.New(transport, formats)
 	cli.Deal = deal.New(transport, formats)
 	cli.DealSchedule = deal_schedule.New(transport, formats)
 	cli.File = file.New(transport, formats)
@@ -116,6 +118,8 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // SingularityAPI is a client for singularity API
 type SingularityAPI struct {
+	Admin admin.ClientService
+
 	Deal deal.ClientService
 
 	DealSchedule deal_schedule.ClientService
@@ -140,6 +144,7 @@ type SingularityAPI struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *SingularityAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
+	c.Admin.SetTransport(transport)
 	c.Deal.SetTransport(transport)
 	c.DealSchedule.SetTransport(transport)
 	c.File.SetTransport(transport)
