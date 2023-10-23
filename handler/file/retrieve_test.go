@@ -169,38 +169,42 @@ func TestRetrieveFileHandler(t *testing.T) {
 				outBuf := make([]byte, 1<<20)
 				_, err = seeker.Read(outBuf)
 				require.NoError(t, err)
-				require.Equal(t, outBuf, bytes.Join([][]byte{ranges[0].expectedBytes[1<<19 : 1<<20], ranges[1].expectedBytes[0 : 1<<19]}, nil))
+				expected := bytes.Join([][]byte{ranges[0].expectedBytes[1<<19 : 1<<20], ranges[1].expectedBytes[0 : 1<<19]}, nil)
+				require.Equal(t, len(expected), len(outBuf))
+				require.Equal(t, expected, outBuf)
 				if !testCase.keepLocalFile {
 					require.Len(t, fr.requests, 2)
-					require.Equal(t, fr.requests[0], retrieveRequest{ranges[0].file.Root, 1 << 19, 1 << 20, []string{deals[0].Provider, deals[1].Provider}})
-					require.Equal(t, fr.requests[1], retrieveRequest{ranges[1].file.Root, 0, 1 << 19, []string{deals[0].Provider, deals[1].Provider}})
+					require.Equal(t, retrieveRequest{ranges[0].file.Root, 1 << 19, 1 << 20, []string{deals[0].Provider, deals[1].Provider}}, fr.requests[0])
+					require.Equal(t, retrieveRequest{ranges[1].file.Root, 0, 1 << 19, []string{deals[0].Provider, deals[1].Provider}}, fr.requests[1])
 					fr.requests = nil
 				}
 				_, err = seeker.Read(outBuf)
 				require.NoError(t, err)
-				require.Equal(t, outBuf, bytes.Join([][]byte{ranges[1].expectedBytes[1<<19 : 1<<20], ranges[2].expectedBytes[0 : 1<<19]}, nil))
+				expected = bytes.Join([][]byte{ranges[1].expectedBytes[1<<19 : 1<<20], ranges[2].expectedBytes[0 : 1<<19]}, nil)
+				require.Equal(t, expected, outBuf)
 				if !testCase.keepLocalFile {
 					require.Len(t, fr.requests, 2)
-					require.Equal(t, fr.requests[0], retrieveRequest{ranges[1].file.Root, 1 << 19, 1 << 20, []string{deals[0].Provider, deals[1].Provider}})
-					require.Equal(t, fr.requests[1], retrieveRequest{ranges[2].file.Root, 0, 1 << 19, []string{deals[2].Provider}})
+					require.Equal(t, retrieveRequest{ranges[1].file.Root, 1 << 19, 1 << 20, []string{deals[0].Provider, deals[1].Provider}}, fr.requests[0])
+					require.Equal(t, retrieveRequest{ranges[2].file.Root, 0, 1 << 19, []string{deals[2].Provider}}, fr.requests[1])
 					fr.requests = nil
 				}
 				_, err = seeker.Read(outBuf)
 				require.NoError(t, err)
-				require.Equal(t, outBuf, bytes.Join([][]byte{ranges[2].expectedBytes[1<<19 : 1<<20], ranges[3].expectedBytes[0 : 1<<19]}, nil))
+				expected = bytes.Join([][]byte{ranges[2].expectedBytes[1<<19 : 1<<20], ranges[3].expectedBytes[0 : 1<<19]}, nil)
+				require.Equal(t, expected, outBuf)
 				if !testCase.keepLocalFile {
 					require.Len(t, fr.requests, 2)
-					require.Equal(t, fr.requests[0], retrieveRequest{ranges[2].file.Root, 1 << 19, 1 << 20, []string{deals[2].Provider}})
-					require.Equal(t, fr.requests[1], retrieveRequest{ranges[3].file.Root, 0, 1 << 19, []string{deals[2].Provider}})
+					require.Equal(t, retrieveRequest{ranges[2].file.Root, 1 << 19, 1 << 20, []string{deals[2].Provider}}, fr.requests[0])
+					require.Equal(t, retrieveRequest{ranges[3].file.Root, 0, 1 << 19, []string{deals[2].Provider}}, fr.requests[1])
 					fr.requests = nil
 				}
 				n, err := seeker.Read(outBuf)
 				require.NoError(t, err)
-				require.Equal(t, n, 1<<19)
-				require.Equal(t, outBuf[:n], ranges[3].expectedBytes[1<<19:1<<20])
+				require.Equal(t, 1<<19, n)
+				require.Equal(t, ranges[3].expectedBytes[1<<19:1<<20], outBuf[:n])
 				if !testCase.keepLocalFile {
 					require.Len(t, fr.requests, 1)
-					require.Equal(t, fr.requests[0], retrieveRequest{ranges[3].file.Root, 1 << 19, 1 << 20, []string{deals[2].Provider}})
+					require.Equal(t, retrieveRequest{ranges[3].file.Root, 1 << 19, 1 << 20, []string{deals[2].Provider}}, fr.requests[0])
 					fr.requests = nil
 				}
 			})

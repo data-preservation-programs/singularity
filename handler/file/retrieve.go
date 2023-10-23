@@ -100,9 +100,6 @@ type filecoinReader struct {
 func (r *filecoinReader) Read(p []byte) (int, error) {
 	logger.Infof("buffer size: %v", len(p))
 
-	buf := bytes.NewBuffer(p)
-	buf.Reset()
-
 	if r.offset >= r.size {
 		return 0, io.EOF
 	}
@@ -114,12 +111,30 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		readLen = remainingBytes
 	}
 
+	buf := bytes.NewBuffer(p)
+	buf.Reset()
+
+	n, err := r.writeToN(buf, readLen)
+	return int(n), err
+}
+
+func (r *filecoinReader) WriteTo(w io.Writer) (int64, error) {
+	if r.offset >= r.size {
+		return 0, io.EOF
+	}
+	// Read all remaining bytes and write them to w.
+	return r.writeToN(w, r.size-r.offset)
+}
+
+func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
+	// Get all ranges, from current offset, that are covered by readLen.
 	fileRanges, err := findFileRanges(r.db, r.id, r.offset, r.offset+readLen)
 	if err != nil {
 		return 0, fmt.Errorf("failed to retrieve file range deals: %w", err)
 	}
 
-	read := 0
+	// Read from each range until readLen bytes read.
+	var read int64
 	for _, fileRange := range fileRanges {
 		if readLen == 0 {
 			// this shouldn't happen
@@ -142,7 +157,7 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		if err != nil || len(providers) == 0 {
 			return read, UnableToServeRangeError{Start: r.offset, End: r.offset + rangeReadLen, Err: ErrNoFilecoinDeals}
 		}
-		err = r.retriever.Retrieve(r.ctx, cid.Cid(fileRange.CID), offsetInRange, offsetInRange+rangeReadLen, providers, buf)
+		err = r.retriever.Retrieve(r.ctx, cid.Cid(fileRange.CID), offsetInRange, offsetInRange+rangeReadLen, providers, w)
 		if err != nil {
 			return read, UnableToServeRangeError{
 				Start: r.offset,
@@ -152,7 +167,7 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 		}
 		r.offset += rangeReadLen
 		readLen -= rangeReadLen
-		read += int(rangeReadLen)
+		read += rangeReadLen
 	}
 
 	// check for missing file ranges at the end
