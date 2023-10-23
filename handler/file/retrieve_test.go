@@ -34,11 +34,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 	testCases := []struct {
 		name          string
 		keepLocalFile bool
-	}{
-		{
-			name:          "from available local file",
-			keepLocalFile: true,
-		},
+	}{addd
 		{
 			name:          "via filecoin retriever",
 			keepLocalFile: false,

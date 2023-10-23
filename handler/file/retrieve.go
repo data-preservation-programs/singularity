@@ -208,7 +208,6 @@ func findProviders(db *gorm.DB, jobID model.JobID) ([]string, error) {
 		Where("cars.job_id = ? and deals.state IN (?)", jobID, []model.DealState{
 			model.DealPublished,
 			model.DealActive,
-			model.DealProposed,
 		}).Find(&deals).Error
 	if err != nil {
 		return nil, err
