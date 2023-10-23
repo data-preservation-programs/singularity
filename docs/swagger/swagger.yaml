@@ -2,6 +2,11 @@ basePath: /api
 consumes:
 - application/json
 definitions:
+  admin.SetIdentityRequest:
+    properties:
+      identity:
+        type: string
+    type: object
   api.HTTPError:
     properties:
       err:
@@ -8284,6 +8289,34 @@ paths:
       summary: Get content of a file
       tags:
       - File
+  /identity:
+    post:
+      consumes:
+      - application/json
+      operationId: SetIdentity
+      parameters:
+      - description: Create Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/admin.SetIdentityRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HTTPError'
+      summary: Set the user identity for tracking purpose
+      tags:
+      - Admin
   /job/{id}/pack:
     post:
       consumes:

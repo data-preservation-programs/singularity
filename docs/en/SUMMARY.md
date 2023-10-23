@@ -250,6 +250,7 @@
 ## 🌐 Web API Reference <a href="#web-api-reference" id="web-api-reference"></a>
 <!-- webapi begin -->
 
+* [Admin](web-api-reference/admin.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
 * [Deal](web-api-reference/deal.md)
 * [File](web-api-reference/file.md)
