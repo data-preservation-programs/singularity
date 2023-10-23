@@ -8,8 +8,9 @@ import (
 )
 
 var InitCmd = &cli.Command{
-	Name:  "init",
-	Usage: "Initialize the database",
+	Name:        "init",
+	Usage:       "Initialize or upgrade the database",
+	Description: "This commands need to be run before running any singularity daemon or after any version upgrade",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
 		if err != nil {

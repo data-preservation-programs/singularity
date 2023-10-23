@@ -11,6 +11,7 @@
 * [Install via docker](installation/install-from-docker.md)
 * [Built from source](installation/install-from-source.md)
 * [Deploy to production](installation/deploy-to-production.md)
+* [Version upgrade](installation/upgrade.md)
 
 ## Data Preparation <a href="#data-preparation" id="data-preparation"></a>
 
