@@ -12,6 +12,7 @@ DESCRIPTION:
    This commands need to be run before running any singularity daemon or after any version upgrade
 
 OPTIONS:
-   --help, -h  show help
+   --identity value  Name of the user or service that is running the Singularity for tracking and logging purpose
+   --help, -h        show help
 ```
 {% endcode %}
