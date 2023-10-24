@@ -8,8 +8,14 @@ import (
 )
 
 var InitCmd = &cli.Command{
-	Name:        "init",
-	Usage:       "Initialize or upgrade the database",
+	Name:  "init",
+	Usage: "Initialize or upgrade the database",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:  "identity",
+			Usage: "Name of the user or service that is running the Singularity for tracking and logging purpose",
+		},
+	},
 	Description: "This commands need to be run before running any singularity daemon or after any version upgrade",
 	Action: func(c *cli.Context) error {
 		db, closer, err := database.OpenFromCLI(c)
@@ -17,6 +23,18 @@ var InitCmd = &cli.Command{
 			return errors.WithStack(err)
 		}
 		defer closer.Close()
-		return admin.Default.InitHandler(c.Context, db)
+		err = admin.Default.InitHandler(c.Context, db)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if c.IsSet("identity") {
+			err = admin.Default.SetIdentityHandler(c.Context, db, admin.SetIdentityRequest{
+				Identity: c.String("identity"),
+			})
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		}
+		return nil
 	},
 }
