@@ -9,7 +9,7 @@ USAGE:
    singularity admin command [command options] [arguments...]
 
 COMMANDS:
-   init              Initialize the database
+   init              Initialize or upgrade the database
    reset             Reset the database
    migrate-dataset   Migrate dataset from old singularity mongodb
    migrate-schedule  Migrate schedule from old singularity mongodb

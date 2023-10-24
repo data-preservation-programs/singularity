@@ -56,6 +56,10 @@ Logging:
     * GOLOG_LOG_LEVEL  - example values: debug, info, warn, error, dpanic, panic, fatal
     * GOLOG_LOG_FMT    - example values: color, nocolor, json
     * More details can be found at https://github.com/ipfs/go-log
+
+Upgrading:
+  Within each minor version upgrade, use "singularity admin init" to upgrade the database schema.
+  For major version upgrade, please refer to the release notes for upgrade instructions.
 `,
 	EnableBashCompletion: true,
 	Flags: []cli.Flag{
