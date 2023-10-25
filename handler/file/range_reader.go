@@ -1,6 +1,7 @@
 package file
 
 import (
+	"errors"
 	"io"
 )
 
@@ -33,7 +34,7 @@ func (rr *rangeReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 			// Copy requested number of bytes.
 			n, err = io.CopyN(w, rr.reader, readLen)
 		}
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return 0, err
 		}
 		if n == 0 {
@@ -53,7 +54,7 @@ func (rr *rangeReader) close() error {
 	var err error
 	if rr.reader != nil {
 		if rr.remaining != 0 {
-			io.Copy(io.Discard, rr.reader)
+			_, _ = io.Copy(io.Discard, rr.reader)
 			rr.remaining = 0
 		}
 		err = rr.reader.Close()

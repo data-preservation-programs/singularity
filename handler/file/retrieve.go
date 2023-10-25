@@ -138,11 +138,16 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 			// or a seek beyond the remaining data would not be in range.
 			if r.offset > r.rangeReader.offset {
 				// Detected seek within range to r.offset, discarding skipped data.
-				r.rangeReader.writeToN(io.Discard, r.offset-r.rangeReader.offset)
+				_, err := r.rangeReader.writeToN(io.Discard, r.offset-r.rangeReader.offset)
+				if err != nil {
+					r.rangeReader.close()
+					r.rangeReader = nil
+					return 0, err
+				}
 			}
 			// Reading data leftover from previous read into w.
 			n, err := r.rangeReader.writeToN(w, readLen)
-			if err != nil && err != io.EOF {
+			if err != nil && !errors.Is(err, io.EOF) {
 				return 0, err
 			}
 			r.offset += n
@@ -198,7 +203,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 		if rangeReadLen > remainingRange {
 			rangeReadLen = remainingRange
 		}
-		// Range starts at fileRange.Offset, has total lenght fileRange.Length,
+		// Range starts at fileRange.Offset, has total length fileRange.Length,
 		// and has remainingRange bytes left to read. Now read rangeReadLen
 		// bytes of the remaining bytes this range.
 
@@ -227,7 +232,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 
 		// Reading readLen of the remaining bytes in this range.
 		n, err := rr.writeToN(w, readLen)
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			rr.close()
 			return 0, err
 		}
