@@ -225,12 +225,7 @@ func (r *rcloneSeeker) Read(p []byte) (n int, err error) {
 }
 
 func (r *rcloneSeeker) Seek(offset int64, whence int) (int64, error) {
-	if r.file != nil {
-		err := r.file.Close()
-		if err != nil {
-			return 0, errors.WithStack(err)
-		}
-	}
+	prevOffset := r.offset
 	switch whence {
 	case io.SeekStart:
 		r.offset = offset
@@ -239,13 +234,28 @@ func (r *rcloneSeeker) Seek(offset int64, whence int) (int64, error) {
 	case io.SeekEnd:
 		r.offset = r.size + offset
 	default:
-		return 0, errors.New("Unknown seek mode")
+		return 0, errors.New("unknown seek mode")
 	}
 	if r.offset > r.size {
-		return 0, errors.New("Seeking past end of file")
+		return 0, errors.New("seeking past end of file")
 	}
 	if r.offset < 0 {
-		return 0, errors.New("Seeking before start of file")
+		return 0, errors.New("seeking before start of file")
+	}
+	if r.file != nil {
+		var err error
+		if r.offset > prevOffset {
+			// Handle forward seek.
+			_, err = io.CopyN(io.Discard, r.file, r.offset-prevOffset)
+		} else if r.offset < prevOffset {
+			// Cannot handle backward seek.
+			err = r.file.Close()
+			// Re-open file on next read.
+			r.file = nil
+		}
+		if err != nil {
+			return 0, errors.WithStack(err)
+		}
 	}
 	return r.offset, nil
 }
