@@ -196,6 +196,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 					fr.requests = nil
 				}
 				_, err = seeker.Read(outBuf)
+				require.NoError(t, err)
 				expected = bytes.Join([][]byte{ranges[2].expectedBytes[1<<19 : 1<<20], ranges[3].expectedBytes[0 : 1<<19]}, nil)
 				require.Equal(t, expected, outBuf)
 				if !testCase.keepLocalFile {
