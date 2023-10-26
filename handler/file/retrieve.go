@@ -134,10 +134,15 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	var read int64
 	if r.rangeReader != nil {
 		if r.rangeReader.inRange(r.offset) {
-			// If seek happened since last partial range read. A backwards seek
-			// or a seek beyond the remaining data would not be in range.
+			// Check if a forward seek happened since last partial range read.
+			// A backward seek or a seek beyond the remaining data would not
+			// be in range.
 			if r.offset > r.rangeReader.offset {
 				// Detected seek within range to r.offset, discarding skipped data.
+				//
+				// TODO: If the forward seek is sufficiently large, it may be
+				// more efficient to re-retrieve the data than to discard it
+				// from this rangeReader.
 				_, err := r.rangeReader.writeToN(io.Discard, r.offset-r.rangeReader.offset)
 				if err != nil {
 					r.rangeReader.close()
