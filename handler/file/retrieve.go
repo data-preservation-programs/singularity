@@ -121,6 +121,8 @@ func (r *filecoinReader) Read(p []byte) (int, error) {
 	return int(n), err
 }
 
+// WriteTo is implemented in order to directly handle io.Copy operations
+// rather than allow small, separate Read operations.
 func (r *filecoinReader) WriteTo(w io.Writer) (int64, error) {
 	if r.offset >= r.size {
 		return 0, io.EOF
