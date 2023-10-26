@@ -101,8 +101,6 @@ type filecoinReader struct {
 }
 
 func (r *filecoinReader) Read(p []byte) (int, error) {
-	logger.Debugf("buffer size: %v", len(p))
-
 	if r.offset >= r.size {
 		return 0, io.EOF
 	}
@@ -281,7 +279,12 @@ func (r *filecoinReader) Seek(offset int64, whence int) (int64, error) {
 }
 
 func (r *filecoinReader) Close() error {
-	return nil
+	var err error
+	if r.rangeReader != nil {
+		err = r.rangeReader.close()
+		r.rangeReader = nil
+	}
+	return err
 }
 
 func findFileRanges(db *gorm.DB, id uint64, startRange int64, endRange int64) ([]model.FileRange, error) {
