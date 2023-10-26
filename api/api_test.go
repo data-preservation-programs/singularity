@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/client/swagger/http"
+	admin2 "github.com/data-preservation-programs/singularity/client/swagger/http/admin"
 	deal2 "github.com/data-preservation-programs/singularity/client/swagger/http/deal"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/deal_schedule"
 	file2 "github.com/data-preservation-programs/singularity/client/swagger/http/file"
@@ -22,6 +23,7 @@ import (
 	wallet2 "github.com/data-preservation-programs/singularity/client/swagger/http/wallet"
 	"github.com/data-preservation-programs/singularity/client/swagger/http/wallet_association"
 	"github.com/data-preservation-programs/singularity/client/swagger/models"
+	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -51,6 +53,17 @@ type MockDealMaker struct {
 func (m *MockDealMaker) MakeDeal(ctx context.Context, walletObj model.Wallet, car model.Car, dealConfig replication.DealConfig) (*model.Deal, error) {
 	args := m.Called(ctx, walletObj, car, dealConfig)
 	return args.Get(0).(*model.Deal), args.Error(1)
+}
+
+func setupMockAdmin() admin.Handler {
+	m := new(admin.MockAdmin)
+	m.On("InitHandler", mock.Anything, mock.Anything).
+		Return(nil)
+	m.On("ResetHandler", mock.Anything, mock.Anything).
+		Return(nil)
+	m.On("SetIdentityHandler", mock.Anything, mock.Anything, mock.Anything).
+		Return(nil)
+	return m
 }
 
 func setupMockDataPrep() dataprep.Handler {
@@ -185,6 +198,7 @@ func setupMockWallet() wallet.Handler {
 }
 
 func TestAllAPIs(t *testing.T) {
+	mockAdmin := setupMockAdmin()
 	mockDataPrep := setupMockDataPrep()
 	mockDeal := setupMockDeal()
 	mockStorage := setupMockStorage()
@@ -208,6 +222,7 @@ func TestAllAPIs(t *testing.T) {
 			dealMaker:       mockDealMaker,
 			closer:          io.NopCloser(nil),
 			host:            h,
+			adminHandler:    mockAdmin,
 			storageHandler:  mockStorage,
 			dataprepHandler: mockDataPrep,
 			dealHandler:     mockDeal,
@@ -238,6 +253,19 @@ func TestAllAPIs(t *testing.T) {
 		client := http.NewHTTPClientWithConfig(nil, &http.TransportConfig{
 			Host:     apiBind,
 			BasePath: http.DefaultBasePath,
+		})
+
+		t.Run("admin", func(t *testing.T) {
+			t.Run("SetIdentity", func(t *testing.T) {
+				resp, err := client.Admin.SetIdentity(&admin2.SetIdentityParams{
+					Context: ctx,
+					Request: &models.AdminSetIdentityRequest{
+						Identity: "test",
+					},
+				})
+				require.NoError(t, err)
+				require.True(t, resp.IsSuccess())
+			})
 		})
 
 		t.Run("wallet_association", func(t *testing.T) {

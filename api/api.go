@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/data-preservation-programs/singularity/analytics"
+	"github.com/data-preservation-programs/singularity/handler/admin"
 	"github.com/data-preservation-programs/singularity/handler/dataprep"
 	"github.com/data-preservation-programs/singularity/handler/deal"
 	"github.com/data-preservation-programs/singularity/handler/deal/schedule"
@@ -50,6 +51,7 @@ type Server struct {
 	closer          io.Closer
 	host            host.Host
 	retriever       *retriever.Retriever
+	adminHandler    admin.Handler
 	storageHandler  storage.Handler
 	dataprepHandler dataprep.Handler
 	dealHandler     deal.Handler
@@ -142,6 +144,7 @@ func InitServer(ctx context.Context, params APIParams) (Server, error) {
 		),
 		retriever:       retriever.NewRetriever(lassie, endpointFinder),
 		closer:          closer,
+		adminHandler:    &admin.DefaultHandler{},
 		storageHandler:  &storage.DefaultHandler{},
 		dataprepHandler: &dataprep.DefaultHandler{},
 		dealHandler:     &deal.DefaultHandler{},
@@ -288,6 +291,8 @@ func (s Server) toEchoHandler(handlerFunc any) echo.HandlerFunc {
 }
 
 func (s Server) setupRoutes(e *echo.Echo) {
+	// Admin
+	e.POST("/api/identity", s.toEchoHandler(s.adminHandler.SetIdentityHandler))
 	// Storage
 	e.POST("/api/storage/:type", s.toEchoHandler(s.storageHandler.CreateStorageHandler))
 	e.POST("/api/storage/:type/:provider", s.toEchoHandler(func(

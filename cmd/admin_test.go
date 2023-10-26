@@ -27,7 +27,8 @@ func TestAdminInit(t *testing.T) {
 		mockHandler := new(admin.MockAdmin)
 		defer swapAdminHandler(mockHandler)()
 		mockHandler.On("InitHandler", mock.Anything, mock.Anything).Return(nil)
-		_, _, err := runner.Run(ctx, "singularity admin init")
+		mockHandler.On("SetIdentityHandler", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		_, _, err := runner.Run(ctx, "singularity admin init --identity test")
 		require.NoError(t, err)
 	})
 }

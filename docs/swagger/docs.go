@@ -264,6 +264,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/identity": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Set the user identity for tracking purpose",
+                "operationId": "SetIdentity",
+                "parameters": [
+                    {
+                        "description": "Create Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin.SetIdentityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/job/{id}/pack": {
             "post": {
                 "consumes": [
@@ -5481,6 +5524,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "admin.SetIdentityRequest": {
+            "type": "object",
+            "properties": {
+                "identity": {
+                    "type": "string"
+                }
+            }
+        },
         "api.HTTPError": {
             "type": "object",
             "properties": {

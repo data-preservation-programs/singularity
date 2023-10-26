@@ -11,6 +11,7 @@
 * [Install via docker](installation/install-from-docker.md)
 * [Built from source](installation/install-from-source.md)
 * [Deploy to production](installation/deploy-to-production.md)
+* [Version upgrade](installation/upgrade.md)
 
 ## Data Preparation <a href="#data-preparation" id="data-preparation"></a>
 
@@ -250,6 +251,7 @@
 ## 🌐 Web API Reference <a href="#web-api-reference" id="web-api-reference"></a>
 <!-- webapi begin -->
 
+* [Admin](web-api-reference/admin.md)
 * [Deal Schedule](web-api-reference/deal-schedule.md)
 * [Deal](web-api-reference/deal.md)
 * [File](web-api-reference/file.md)

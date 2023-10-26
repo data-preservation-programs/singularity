@@ -22,6 +22,8 @@ type PackJobEvent struct {
 	PieceCID   string `cbor:"6,keyasint"`
 	CarSize    int64  `cbor:"7,keyasint"`
 	NumOfFiles int64  `cbor:"8,keyasint"`
+
+	Identity string `cbor:"9,keyasint"`
 }
 
 type DealProposalEvent struct {
@@ -36,4 +38,6 @@ type DealProposalEvent struct {
 	Verified   bool   `cbor:"8,keyasint"`
 	StartEpoch int32  `cbor:"9,keyasint"`
 	EndEpoch   int32  `cbor:"10,keyasint"`
+
+	Identity string `cbor:"11,keyasint"`
 }
