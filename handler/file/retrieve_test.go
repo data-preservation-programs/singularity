@@ -534,7 +534,7 @@ func (fr *fakeRetriever) checkDone() error {
 	case <-done:
 		timer.Stop()
 	case <-timer.C:
-		errors.New("retrieve goroutines have not exited")
+		return errors.New("retrieve goroutines have not exited")
 	}
 	return nil
 }
