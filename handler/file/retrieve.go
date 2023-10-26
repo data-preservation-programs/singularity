@@ -135,7 +135,7 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	// Check if offset is in current range.
 	var read int64
 	if r.rangeReader != nil {
-		if r.rangeReader.inRange(r.offset) {
+		if r.rangeReader.inCurrentRange(r.offset) {
 			// Check if a forward seek happened since last partial range read.
 			// A backward seek or a seek beyond the remaining data would not
 			// be in range.

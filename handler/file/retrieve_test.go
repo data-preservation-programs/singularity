@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -213,6 +216,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 				if !testCase.keepLocalFile {
 					require.Len(t, fr.requests, 0) // zero because 1st read was got leftover data already in rangeReader
 				}
+				require.NoError(t, fr.checkDone())
 			})
 		})
 	}
@@ -424,6 +428,7 @@ type retrieveRequest struct {
 type fakeRetriever struct {
 	requests []retrieveRequest
 	lsys     *linking.LinkSystem
+	wg       sync.WaitGroup
 }
 
 func (fr *fakeRetriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string, out io.Writer) error {
@@ -473,12 +478,6 @@ func (fr *fakeRetriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int
 		}
 	}
 	return err
-
-	/*
-		rangeLeftReader := io.LimitReader(nlr, rangeEnd-rangeStart)
-		_, err = io.Copy(out, rangeLeftReader)
-		return err
-	*/
 }
 
 func (fr *fakeRetriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string) (io.ReadCloser, error) {
@@ -501,12 +500,15 @@ func (fr *fakeRetriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeSta
 		return nil, err
 	}
 
+	fr.wg.Add(2)
+
 	// Create pipe and goroutines to simulate Retriever.
 	reader, writer := io.Pipe()
 	go func() {
 		// Simulate getContent goroutine.
 		_, err := io.Copy(writer, io.LimitReader(nlr, rangeEnd-rangeStart))
 		writer.CloseWithError(err)
+		fr.wg.Done()
 	}()
 	outReader, outWriter := io.Pipe()
 	go func() {
@@ -514,9 +516,27 @@ func (fr *fakeRetriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeSta
 		_, err := io.Copy(outWriter, reader)
 		reader.Close()
 		outWriter.CloseWithError(err)
+		fr.wg.Done()
 	}()
 
 	return outReader, nil
+}
+
+// checkDone checks that all pipe goroutines have finished.
+func (fr *fakeRetriever) checkDone() error {
+	done := make(chan struct{})
+	go func() {
+		fr.wg.Wait()
+		close(done)
+	}()
+	timer := time.NewTimer(time.Second)
+	select {
+	case <-done:
+		timer.Stop()
+	case <-timer.C:
+		errors.New("retrieve goroutines have not exited")
+	}
+	return nil
 }
 
 type tinyWriter struct {
