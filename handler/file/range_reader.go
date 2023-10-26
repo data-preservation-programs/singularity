@@ -14,10 +14,6 @@ type rangeReader struct {
 	remaining int64
 }
 
-func (rr *rangeReader) inCurrentRange(pos int64) bool {
-	return pos >= rr.offset && pos < rr.offset+rr.remaining
-}
-
 func (rr *rangeReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	var read int64
 	for readLen > 0 {
