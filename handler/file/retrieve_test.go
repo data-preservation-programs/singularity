@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
 	"github.com/gotidy/ptr"
@@ -170,7 +172,7 @@ func TestRetrieveFileHandler(t *testing.T) {
 				require.NoError(t, err)
 				outBuf := make([]byte, 1<<20)
 
-				// tinyWriter forces copying through a small intermediate buffer.
+				// tinyWriter forces copying through the small buffer created with io.CopyN.
 				tinyW := &tinyWriter{
 					dst: outBuf,
 				}
@@ -217,9 +219,47 @@ func TestRetrieveFileHandler(t *testing.T) {
 					require.Len(t, fr.requests, 0) // zero because 1st read was got leftover data already in rangeReader
 				}
 				require.NoError(t, fr.checkDone())
+
+				// Test seeking to 16Kib from end of file, and reading all
+				// remaining data. This also tests the seeker's WriteTo
+				// function.
+				const seekBack = 16384
+				seeker.Seek(-seekBack, io.SeekEnd)
+				buf := bytes.NewBuffer(nil)
+				copied, err := io.Copy(buf, seeker)
+				require.NoError(t, err)
+				require.Equal(t, seekBack, buf.Len())
+
+				// Reading again should result in EOF.
+				buf.Reset()
+				copied, err = io.Copy(buf, seeker)
+				require.Zero(t, copied)
+				require.ErrorIs(t, err, io.EOF)
+
+				// Check that close does not return error.
+				require.NoError(t, seeker.Close())
+
+				// Check that trying to read bad ID gets correct error.
+				_, _, _, err = Default.RetrieveFileHandler(ctx, db, fr, uint64(file.ID+37))
+				require.ErrorIs(t, err, handlererror.ErrNotFound)
 			})
 		})
 	}
+}
+
+func TestUnableToServeRangeError(t *testing.T) {
+	origErr := UnableToServeRangeError{
+		Start: 0,
+		End:   1 << 10,
+		Err:   ErrNoJobRecord,
+	}
+
+	err := fmt.Errorf("cannot serve data: %w", origErr)
+	var uerr UnableToServeRangeError
+	require.ErrorAs(t, err, &uerr)
+
+	err = uerr.Unwrap()
+	require.ErrorIs(t, err, ErrNoJobRecord)
 }
 
 type retrieveRequest struct {
