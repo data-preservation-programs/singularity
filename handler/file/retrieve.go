@@ -135,23 +135,8 @@ func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
 	// Check if offset is in current range.
 	var read int64
 	if r.rangeReader != nil {
-		if r.rangeReader.inCurrentRange(r.offset) {
-			// Check if a forward seek happened since last partial range read.
-			// A backward seek or a seek beyond the remaining data would not
-			// be in range.
-			if r.offset > r.rangeReader.offset {
-				// Detected seek within range to r.offset, discarding skipped data.
-				//
-				// TODO: If the forward seek is sufficiently large, it may be
-				// more efficient to re-retrieve the data than to discard it
-				// from this rangeReader.
-				_, err := r.rangeReader.writeToN(io.Discard, r.offset-r.rangeReader.offset)
-				if err != nil {
-					r.rangeReader.close()
-					r.rangeReader = nil
-					return 0, err
-				}
-			}
+		// If continuing from the previous read, keep reading from this rangeReader.
+		if r.offset == r.rangeReader.offset {
 			// Reading data leftover from previous read into w.
 			n, err := r.rangeReader.writeToN(w, readLen)
 			if err != nil && !errors.Is(err, io.EOF) {
