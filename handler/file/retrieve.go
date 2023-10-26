@@ -132,8 +132,10 @@ func (r *filecoinReader) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (r *filecoinReader) writeToN(w io.Writer, readLen int64) (int64, error) {
-	// Check if offset is in current range.
 	var read int64
+	// If there is a rangeReader from the previous read that can be used to
+	// continue reading more data, then use it instead of doing another
+	// findFileRanges and Retrieve for more reads from this same range.
 	if r.rangeReader != nil {
 		// If continuing from the previous read, keep reading from this rangeReader.
 		if r.offset == r.rangeReader.offset {
