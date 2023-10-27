@@ -223,13 +223,13 @@ func TestRetrieveFileHandler(t *testing.T) {
 				// Test seeking to 16Kib from end of file, and reading all
 				// remaining data. This also tests the seeker's WriteTo
 				// function.
-				const seekBack = 16384
+				const seekBack = int64(16384)
 				seeker.Seek(-seekBack, io.SeekEnd)
 				buf := bytes.NewBuffer(nil)
 				copied, err := io.Copy(buf, seeker)
 				require.NoError(t, err)
 				require.Equal(t, seekBack, copied)
-				require.Equal(t, seekBack, buf.Len())
+				require.Equal(t, int(seekBack), buf.Len())
 
 				// Reading again should result in EOF.
 				buf.Reset()
