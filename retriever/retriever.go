@@ -100,3 +100,20 @@ func (r *Retriever) Retrieve(ctx context.Context, c cid.Cid, rangeStart int64, r
 	}
 	return err
 }
+
+func (r *Retriever) RetrieveReader(ctx context.Context, c cid.Cid, rangeStart int64, rangeEnd int64, sps []string) (io.ReadCloser, error) {
+	reader, writer := io.Pipe()
+	go func() {
+		err := r.getContent(ctx, c, rangeStart, rangeEnd, sps, writer)
+		writer.CloseWithError(err)
+	}()
+
+	outReader, outWriter := io.Pipe()
+	go func() {
+		err := r.deserialize(ctx, c, rangeStart, rangeEnd, reader, outWriter)
+		reader.Close()
+		outWriter.CloseWithError(err)
+	}()
+
+	return outReader, nil
+}
