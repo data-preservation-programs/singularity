@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/data-preservation-programs/singularity/database"
 	"github.com/data-preservation-programs/singularity/handler/handlererror"
 	"github.com/data-preservation-programs/singularity/model"
 	"github.com/data-preservation-programs/singularity/util/testutil"
@@ -393,4 +394,151 @@ func (w *tinyWriter) Write(p []byte) (int, error) {
 	n := copy(w.dst[w.offset:], p)
 	w.offset += n
 	return n, nil
+}
+
+func (w *tinyWriter) reset() {
+	w.offset = 0
+}
+
+func BenchmarkFilecoinRetrieve(b *testing.B) {
+	connStr := "sqlite:" + b.TempDir() + "/singularity.db"
+	db, closer, err := database.OpenWithLogger(connStr)
+	require.NoError(b, err)
+	defer closer.Close()
+	b.Setenv("DATABASE_CONNECTION_STRING", connStr)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	db = db.WithContext(ctx)
+	require.NoError(b, model.AutoMigrate(db))
+
+	path := b.TempDir()
+	lsys := cidlink.DefaultLinkSystem()
+	memSys := memstore.Store{
+		Bag: make(map[string][]byte),
+	}
+	lsys.SetReadStorage(&memSys)
+	lsys.SetWriteStorage(&memSys)
+	lsys.TrustedStorage = true
+	ranges := make([]testRange, 0, 4)
+	for i := 0; i < 4; i++ {
+		expectedByteRange := make([]byte, 1<<24)
+		expectedBytesWriter := bytes.NewBuffer(expectedByteRange)
+		expectedBytesWriter.Reset()
+		fileReader := io.TeeReader(rand.Reader, expectedBytesWriter)
+		file := ufstestutil.GenerateFile(b, &lsys, fileReader, 1<<24)
+		ranges = append(ranges, testRange{expectedByteRange, file})
+	}
+
+	name := "deletedFile.txt"
+	file := model.File{
+		Path: name,
+		Size: 4 << 24,
+		Attachment: &model.SourceAttachment{
+			Preparation: &model.Preparation{
+				Name: "prep",
+			},
+			Storage: &model.Storage{
+				Name: "source",
+				Type: "local",
+				Path: path,
+			},
+		},
+	}
+	err = db.Create(&file).Error
+	require.NoError(b, err)
+
+	jobs := make([]model.Job, 2)
+	for i := 0; i < 2; i++ {
+		job := model.Job{
+			AttachmentID: file.Attachment.ID,
+		}
+		err = db.Create(&job).Error
+		require.NoError(b, err)
+		jobs[i] = job
+	}
+
+	for i, testRange := range ranges {
+		fileRange := model.FileRange{
+			FileID: file.ID,
+			CID:    model.CID(testRange.file.Root),
+			Offset: int64(i) * (1 << 24),
+			Length: 1 << 24,
+			JobID:  ptr.Of(jobs[i/2].ID),
+		}
+		err = db.Create(&fileRange).Error
+		require.NoError(b, err)
+	}
+
+	testCids := make([]cid.Cid, 0, 2)
+	for i := 0; i < 2; i++ {
+		testCids = append(testCids, cid.NewCidV1(cid.Raw, util.Hash([]byte("test"+strconv.Itoa(i)))))
+	}
+
+	for i, job := range jobs {
+		car := model.Car{
+			JobID:         ptr.Of(job.ID),
+			PieceCID:      model.CID(testCids[i]),
+			PreparationID: file.Attachment.PreparationID,
+		}
+		err = db.Create(&car).Error
+		require.NoError(b, err)
+	}
+
+	deals := make([]model.Deal, 0, 4)
+	for i, testCid := range testCids {
+		deal := model.Deal{
+			State:    model.DealActive,
+			PieceCID: model.CID(testCid),
+			Provider: "apples" + strconv.Itoa(i),
+			Wallet:   &model.Wallet{},
+		}
+		err = db.Create(&deal).Error
+		require.NoError(b, err)
+
+		deals = append(deals, deal)
+		state := model.DealPublished
+		if i > 0 {
+			state = model.DealProposed
+		}
+		deal = model.Deal{
+			State:    state,
+			PieceCID: model.CID(testCid),
+			Provider: "oranges" + strconv.Itoa(i),
+			Wallet:   &model.Wallet{},
+		}
+		err = db.Create(&deal).Error
+		require.NoError(b, err)
+		deals = append(deals, deal)
+	}
+	fr := &fakeRetriever{
+		lsys: &lsys,
+	}
+	outBuf := make([]byte, 1<<20)
+
+	// tinyWriter forces copying through the small buffer created with io.CopyN.
+	tinyW := &tinyWriter{
+		dst: outBuf,
+	}
+	readLen := int64(len(outBuf))
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		seeker, _, _, _ := Default.RetrieveFileHandler(ctx, db, fr, uint64(file.ID))
+		fr.requests = nil
+
+		// Read the entire file in 1Mib chunks.
+		for {
+			n, _ := io.CopyN(tinyW, seeker, readLen)
+			tinyW.reset()
+			if n == 0 {
+				break
+			}
+		}
+
+		seeker.Close()
+	}
+
+	b.StopTimer()
+	b.Log("Number of retrieve requests:", len(fr.requests))
 }
