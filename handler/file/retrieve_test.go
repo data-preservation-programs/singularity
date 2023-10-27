@@ -344,7 +344,6 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 		require.NoError(b, err)
 	}
 
-	deals := make([]model.Deal, 0, 4)
 	for i, testCid := range testCids {
 		deal := model.Deal{
 			State:    model.DealActive,
@@ -355,7 +354,6 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 		err = db.Create(&deal).Error
 		require.NoError(b, err)
 
-		deals = append(deals, deal)
 		state := model.DealPublished
 		if i > 0 {
 			state = model.DealProposed
@@ -368,7 +366,6 @@ func BenchmarkFilecoinRetrieve(b *testing.B) {
 		}
 		err = db.Create(&deal).Error
 		require.NoError(b, err)
-		deals = append(deals, deal)
 	}
 	fr := &fakeRetriever{
 		lsys: &lsys,
